@@ -20,6 +20,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        System.out.println("====== JWT拦截器被调用 ======");
+        System.out.println("请求路径: " + request.getRequestURI());
+
         // 放行 OPTIONS 请求
         if ("OPTIONS".equals(request.getMethod())) {
             return true;
@@ -27,6 +30,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
         // 获取 Token
         String token = getTokenFromRequest(request);
+        System.out.println("提取到的token: " + (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
 
         if (token == null || token.isEmpty()) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -49,6 +53,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             String username = jwtUtil.getUsernameFromToken(token);
             String role = jwtUtil.getRoleFromToken(token);
 
+            System.out.println("提取的用户信息 - userId: " + userId + ", username: " + username + ", role: " + role);
+            log.info("从Token中提取的用户信息 - userId: {}, username: {}, role: {}", userId, username, role);
+
             request.setAttribute("userId", userId);
             request.setAttribute("username", username);
             request.setAttribute("role", role);
@@ -56,7 +63,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             return true;
 
         } catch (Exception e) {
-            log.error("Token验证失败: {}", e.getMessage());
+            log.error("Token验证失败: {}", e.getMessage(), e);
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":401,\"message\":\"Token验证失败\"}");

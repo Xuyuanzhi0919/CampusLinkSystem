@@ -55,11 +55,17 @@ public enum ResultCode {
     CANNOT_ACCEPT_OWN_TASK(40003, "不能接受自己发布的任务"),
     TASK_NOT_IN_PROGRESS(40004, "任务未在进行中"),
 
-    // 活动社团 50001-50004
+    // 活动社团 50001-50010
     ACTIVITY_NOT_FOUND(50001, "活动不存在"),
     ACTIVITY_FULL(50002, "活动已满员"),
     ALREADY_REGISTERED(50003, "已报名该活动"),
-    CLUB_NOT_FOUND(50004, "社团不存在");
+    CLUB_NOT_FOUND(50004, "社团不存在"),
+    CLUB_DISBANDED(50005, "社团已解散"),
+    ALREADY_JOINED_CLUB(50006, "已加入该社团"),
+    NOT_CLUB_MEMBER(50007, "不是社团成员"),
+    FOUNDER_CANNOT_LEAVE(50008, "创始人不能退出社团"),
+    NOT_CLUB_ADMIN(50009, "不是社团管理员"),
+    NOT_ACTIVITY_PARTICIPANT(50010, "未报名该活动");
 
     private final Integer code;
     private final String message;

@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.task.*;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Task;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.TaskMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import java.util.List;
 public class TaskService {
     private final TaskMapper taskMapper;
     private final UserMapper userMapper;
+    private final PointsLogMapper pointsLogMapper;
 
     /**
      * 发布任务
@@ -43,7 +46,8 @@ public class TaskService {
         }
 
         // 扣除悬赏积分
-        user.setPoints(user.getPoints() - request.getRewardPoints());
+        Integer oldPoints = user.getPoints();
+        user.setPoints(oldPoints - request.getRewardPoints());
         userMapper.updateById(user);
 
         // 创建任务
@@ -60,6 +64,17 @@ public class TaskService {
         task.setUpdatedAt(LocalDateTime.now());
 
         taskMapper.insert(task);
+
+        // 记录积分日志
+        recordPointsLog(
+                userId,
+                -request.getRewardPoints(),
+                user.getPoints(),
+                "发布任务：" + request.getTitle(),
+                "task",
+                task.getTid()
+        );
+
         return task.getTid();
     }
 
@@ -233,8 +248,19 @@ public class TaskService {
         if (task.getAccepterId() != null) {
             User accepter = userMapper.selectById(task.getAccepterId());
             if (accepter != null) {
-                accepter.setPoints(accepter.getPoints() + task.getRewardPoints());
+                Integer oldPoints = accepter.getPoints();
+                accepter.setPoints(oldPoints + task.getRewardPoints());
                 userMapper.updateById(accepter);
+
+                // 记录积分日志
+                recordPointsLog(
+                        accepter.getUId(),
+                        task.getRewardPoints(),
+                        accepter.getPoints(),
+                        "完成任务：" + task.getTitle(),
+                        "task",
+                        task.getTid()
+                );
             }
         }
     }
@@ -267,8 +293,19 @@ public class TaskService {
         // 退还悬赏积分给发布者
         User publisher = userMapper.selectById(task.getPublisherId());
         if (publisher != null) {
-            publisher.setPoints(publisher.getPoints() + task.getRewardPoints());
+            Integer oldPoints = publisher.getPoints();
+            publisher.setPoints(oldPoints + task.getRewardPoints());
             userMapper.updateById(publisher);
+
+            // 记录积分日志
+            recordPointsLog(
+                    publisher.getUId(),
+                    task.getRewardPoints(),
+                    publisher.getPoints(),
+                    "取消任务退还积分：" + task.getTitle(),
+                    "task",
+                    task.getTid()
+            );
         }
     }
 
@@ -368,5 +405,21 @@ public class TaskService {
         pageResult.setTotalPages((result.getTotal() + pageSize - 1) / pageSize);
 
         return pageResult;
+    }
+
+    /**
+     * 记录积分变化日志
+     */
+    private void recordPointsLog(Long userId, Integer pointsChange, Integer pointsAfter,
+                                   String reason, String relatedType, Long relatedId) {
+        PointsLog pointsLog = new PointsLog();
+        pointsLog.setUserId(userId);
+        pointsLog.setPointsChange(pointsChange);
+        pointsLog.setPointsAfter(pointsAfter);
+        pointsLog.setReason(reason);
+        pointsLog.setRelatedType(relatedType);
+        pointsLog.setRelatedId(relatedId);
+        pointsLog.setCreatedAt(LocalDateTime.now());
+        pointsLogMapper.insert(pointsLog);
     }
 }

@@ -1,0 +1,260 @@
+####################
+# 社团和活动模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册第一个测试用户（社团创建者）
+# @name user1Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "club_creator_001",
+  "password": "123456",
+  "nickname": "社团创建者001",
+  "email": "creator001@campuslink.com",
+  "phone": "13900001001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置第一个用户的token
+@user1Token =
+
+### 2. 注册第二个测试用户（普通成员）
+# @name user2Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "club_member_002",
+  "password": "123456",
+  "nickname": "社团成员002",
+  "email": "member002@campuslink.com",
+  "phone": "13900001002",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置第二个用户的token
+@user2Token =
+
+####################
+# 社团管理测试
+####################
+
+### 3. 用户1创建社团
+POST {{baseUrl}}/club/create
+Authorization: Bearer {{user1Token}}
+Content-Type: application/json
+
+{
+  "clubName": "计算机科学协会",
+  "description": "专注于计算机科学技术交流与学习的学生社团",
+  "logoUrl": "https://example.com/club-logo.jpg"
+}
+
+### 4. 获取社团列表（需要登录才能看到是否加入）
+GET {{baseUrl}}/club/list?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 5. 获取社团详情（假设社团ID为1）
+GET {{baseUrl}}/club/1
+Authorization: Bearer {{user1Token}}
+
+### 6. 用户2加入社团
+POST {{baseUrl}}/club/1/join
+Authorization: Bearer {{user2Token}}
+
+### 7. 获取社团成员列表
+GET {{baseUrl}}/club/1/members?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 8. 查看用户1加入的社团
+GET {{baseUrl}}/club/my?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 9. 查看用户2加入的社团
+GET {{baseUrl}}/club/my?page=1&pageSize=10
+Authorization: Bearer {{user2Token}}
+
+### 10. 用户2退出社团
+POST {{baseUrl}}/club/1/leave
+Authorization: Bearer {{user2Token}}
+
+### 11. 再次查看社团成员列表（应该只有创建者）
+GET {{baseUrl}}/club/1/members?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+####################
+# 活动管理测试
+####################
+
+### 12. 用户1（社团创始人）创建活动
+POST {{baseUrl}}/activity/club/1/create
+Authorization: Bearer {{user1Token}}
+Content-Type: application/json
+
+{
+  "title": "编程马拉松2025",
+  "description": "24小时编程挑战赛，锻炼编程能力和团队协作",
+  "location": "图书馆201会议室",
+  "startTime": "2025-11-15T09:00:00",
+  "endTime": "2025-11-16T09:00:00",
+  "maxParticipants": 50,
+  "rewardPoints": 20,
+  "coverImage": "https://example.com/activity-cover.jpg"
+}
+
+### 13. 获取活动列表
+GET {{baseUrl}}/activity/list?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 14. 获取指定社团的活动列表
+GET {{baseUrl}}/activity/list?page=1&pageSize=10&clubId=1
+Authorization: Bearer {{user1Token}}
+
+### 15. 获取活动详情（假设活动ID为1）
+GET {{baseUrl}}/activity/1
+Authorization: Bearer {{user1Token}}
+
+### 16. 用户2重新加入社团（为了报名活动）
+POST {{baseUrl}}/club/1/join
+Authorization: Bearer {{user2Token}}
+
+### 17. 用户2报名活动
+POST {{baseUrl}}/activity/1/join
+Authorization: Bearer {{user2Token}}
+
+### 18. 获取活动参与者列表
+GET {{baseUrl}}/activity/1/participants?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 19. 查看用户2报名的活动
+GET {{baseUrl}}/activity/my?page=1&pageSize=10
+Authorization: Bearer {{user2Token}}
+
+### 20. 用户2取消报名
+POST {{baseUrl}}/activity/1/cancel
+Authorization: Bearer {{user2Token}}
+
+### 21. 再次查看参与者列表（应该为空）
+GET {{baseUrl}}/activity/1/participants?page=1&pageSize=10
+Authorization: Bearer {{user1Token}}
+
+### 22. 用户2再次报名（准备测试签到）
+POST {{baseUrl}}/activity/1/join
+Authorization: Bearer {{user2Token}}
+
+### 23. 用户2尝试签到（应该失败，因为活动状态为0-未开始）
+POST {{baseUrl}}/activity/1/signin
+Authorization: Bearer {{user2Token}}
+
+### 注意：需要手动将activity表中id=1的活动status改为1（进行中）才能签到
+### 可以在数据库中执行: UPDATE activity SET status = 1 WHERE activity_id = 1;
+
+### 24. 用户2签到（修改活动状态后再测试）
+POST {{baseUrl}}/activity/1/signin
+Authorization: Bearer {{user2Token}}
+
+### 25. 查看用户2的积分记录（应该能看到活动签到的加分记录）
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+Authorization: Bearer {{user2Token}}
+
+####################
+# 错误场景测试
+####################
+
+### 26. 尝试加入不存在的社团（应该失败）
+POST {{baseUrl}}/club/9999/join
+Authorization: Bearer {{user2Token}}
+
+### 27. 尝试重复加入社团（应该失败）
+POST {{baseUrl}}/club/1/join
+Authorization: Bearer {{user2Token}}
+
+### 28. 创始人尝试退出社团（应该失败）
+POST {{baseUrl}}/club/1/leave
+Authorization: Bearer {{user1Token}}
+
+### 29. 普通成员尝试创建活动（应该失败）
+POST {{baseUrl}}/activity/club/1/create
+Authorization: Bearer {{user2Token}}
+Content-Type: application/json
+
+{
+  "title": "测试活动",
+  "description": "这个活动不应该被创建",
+  "location": "测试地点",
+  "startTime": "2025-11-20T10:00:00",
+  "endTime": "2025-11-20T12:00:00",
+  "maxParticipants": 30,
+  "rewardPoints": 10
+}
+
+### 30. 尝试报名不存在的活动（应该失败）
+POST {{baseUrl}}/activity/9999/join
+Authorization: Bearer {{user2Token}}
+
+### 31. 尝试重复报名活动（应该失败）
+POST {{baseUrl}}/activity/1/join
+Authorization: Bearer {{user2Token}}
+
+### 32. 未报名的用户尝试签到（应该失败）
+# 先让用户2取消报名
+POST {{baseUrl}}/activity/1/cancel
+Authorization: Bearer {{user2Token}}
+
+### 然后尝试签到
+POST {{baseUrl}}/activity/1/signin
+Authorization: Bearer {{user2Token}}
+
+####################
+# 综合流程测试
+####################
+
+### 33. 用户1创建第二个活动（有参与人数限制）
+POST {{baseUrl}}/activity/club/1/create
+Authorization: Bearer {{user1Token}}
+Content-Type: application/json
+
+{
+  "title": "技术分享会",
+  "description": "每周技术分享交流",
+  "location": "教学楼A301",
+  "startTime": "2025-11-18T14:00:00",
+  "endTime": "2025-11-18T16:00:00",
+  "maxParticipants": 1,
+  "rewardPoints": 5
+}
+
+### 34. 用户2报名第二个活动
+POST {{baseUrl}}/activity/2/join
+Authorization: Bearer {{user2Token}}
+
+### 35. 注册第三个用户
+# @name user3Register
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "club_member_003",
+  "password": "123456",
+  "nickname": "社团成员003",
+  "email": "member003@campuslink.com",
+  "phone": "13900001003",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置第三个用户的token
+@user3Token =
+
+### 36. 用户3加入社团
+POST {{baseUrl}}/club/1/join
+Authorization: Bearer {{user3Token}}
+
+### 37. 用户3尝试报名已满员的活动（应该失败）
+POST {{baseUrl}}/activity/2/join
+Authorization: Bearer {{user3Token}}

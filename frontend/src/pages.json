@@ -3,8 +3,8 @@
 		{
 			"path": "pages/home/index",
 			"style": {
-				"navigationBarTitleText": "CampusLink - 首页",
-				"navigationBarBackgroundColor": "#007AFF",
+				"navigationBarTitleText": "CampusLink",
+				"navigationStyle": "custom",
 				"navigationBarTextStyle": "white"
 			}
 		}

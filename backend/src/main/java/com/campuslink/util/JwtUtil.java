@@ -94,6 +94,7 @@ public class JwtUtil {
     public Long getUserIdFromToken(String token) {
         Claims claims = getClaimsFromToken(token);
         Object userId = claims.get("userId");
+        log.info("JWT解析 - claims中的userId对象: {}, 类型: {}", userId, userId != null ? userId.getClass().getName() : "null");
         if (userId instanceof Integer) {
             return ((Integer) userId).longValue();
         }

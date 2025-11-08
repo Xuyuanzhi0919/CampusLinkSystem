@@ -1,6 +1,9 @@
 package com.campuslink.controller;
 
+import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
+import com.campuslink.dto.PointsLogVO;
+import com.campuslink.dto.UpdateProfileRequest;
 import com.campuslink.dto.UserVO;
 import com.campuslink.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,5 +37,32 @@ public class UserController {
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
         UserVO user = userService.getUserById(userId);
         return Result.success(user);
+    }
+
+    @Operation(summary = "获取当前用户资料", description = "获取当前登录用户的个人资料")
+    @GetMapping("/profile")
+    public Result<UserVO> getUserProfile(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
+        UserVO userProfile = userService.getUserProfile(userId);
+        return Result.success(userProfile);
+    }
+
+    @Operation(summary = "更新当前用户资料", description = "更新当前登录用户的个人资料")
+    @PutMapping("/profile")
+    public Result<UserVO> updateProfile(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @RequestBody UpdateProfileRequest request) {
+        UserVO updatedProfile = userService.updateProfile(userId, request);
+        return Result.success(updatedProfile);
+    }
+
+    @Operation(summary = "获取当前用户积分记录", description = "分页获取当前用户的积分变化记录")
+    @GetMapping("/points/log")
+    public Result<PageResult<PointsLogVO>> getPointsLog(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        PageResult<PointsLogVO> pointsLog = userService.getPointsLog(userId, page, pageSize);
+        return Result.success(pointsLog);
     }
 }

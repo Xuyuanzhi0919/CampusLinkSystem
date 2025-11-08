@@ -37,7 +37,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/question/list",      // 问题列表（游客可浏览）
                         "/question/*/answers", // 问题答案列表（游客可浏览）
                         "/task/list",          // 任务列表（游客可浏览）
-                        "/task/*",             // 任务详情（游客可浏览，但这里需要注意只允许GET请求）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",
                         "/v3/api-docs/**",

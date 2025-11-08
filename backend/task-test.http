@@ -10,11 +10,11 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "task_publisher_001",
+  "username": "task_publisher_007",
   "password": "123456",
   "nickname": "任务发布者",
   "email": "publisher@campuslink.com",
-  "phone": "13800000001",
+  "phone": "13800010005",
   "schoolId": 1,
   "role": "student"
 }
@@ -25,23 +25,20 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "task_accepter_001",
+  "username": "task_accepter_007",
   "password": "123456",
   "nickname": "任务接单者",
-  "email": "accepter@campuslink.com",
-  "phone": "13800000002",
+  "email": "acceter@campuslink.com",
+  "phone": "13800000302",
   "schoolId": 1,
   "role": "student"
 }
 
 ### 手动设置token（从上面的注册响应中复制）
 # 发布者token（从步骤1的响应中获取）
-@publisherToken =
-
+@publisherToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MTgsInVzZXJuYW1lIjoidGFza19wdWJsaXNoZXJfMDA3IiwiaWF0IjoxNzYyNjAyMDM0LCJleHAiOjE3NjI2MDkyMzR9.odsvqVfDfrrG00IKdqmlVrYCsK5yG-QbKRNmfPRCboA
 # 接单者token（从步骤2的响应中获取）
-@accepterToken =
-
-
+@accepterToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MTksInVzZXJuYW1lIjoidGFza19hY2NlcHRlcl8wMDciLCJpYXQiOjE3NjI2MDIwNTAsImV4cCI6MTc2MjYwOTI1MH0.TBLy86f2038osLBdlrJl5hnFH7NaJwMXRDglcbnmbBE
 ####################
 # 任务发布与查询
 ####################
@@ -137,7 +134,7 @@ GET {{baseUrl}}/task/2
 ####################
 
 ### 14. 接单 - 接单者接受任务1
-POST {{baseUrl}}/task/1/accept
+POST {{baseUrl}}/task/4/accept
 Authorization: Bearer {{accepterToken}}
 
 
@@ -152,7 +149,7 @@ Authorization: Bearer {{publisherToken}}
 
 
 ### 17. 完成任务 - 发布者确认任务完成
-POST {{baseUrl}}/task/1/complete
+POST {{baseUrl}}/task/4/complete
 Authorization: Bearer {{publisherToken}}
 
 

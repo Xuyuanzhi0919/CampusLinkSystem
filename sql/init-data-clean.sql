@@ -1,13 +1,38 @@
 -- ============================================
--- CampusLink 初始化数据脚本
--- 版本: v1.0
--- 创建时间: 2024-01-01
+-- CampusLink 数据清理和初始化脚本
+-- 版本: v1.1
+-- 说明: 先清理所有数据，再重新初始化
 -- ============================================
 
 USE `campuslink`;
 
 -- ============================================
--- 1. 初始化学校数据
+-- 步骤1: 清理所有表数据（按照外键依赖顺序）
+-- ============================================
+SET FOREIGN_KEY_CHECKS = 0;
+
+TRUNCATE TABLE `activity_participant`;
+TRUNCATE TABLE `activity`;
+TRUNCATE TABLE `club_member`;
+TRUNCATE TABLE `club`;
+TRUNCATE TABLE `task`;
+TRUNCATE TABLE `answer`;
+TRUNCATE TABLE `question`;
+TRUNCATE TABLE `resource`;
+TRUNCATE TABLE `comment`;
+TRUNCATE TABLE `download_log`;
+TRUNCATE TABLE `points_log`;
+TRUNCATE TABLE `report`;
+TRUNCATE TABLE `notification`;
+TRUNCATE TABLE `message`;
+TRUNCATE TABLE `system_config`;
+TRUNCATE TABLE `user`;
+TRUNCATE TABLE `school`;
+
+SET FOREIGN_KEY_CHECKS = 1;
+
+-- ============================================
+-- 步骤2: 初始化学校数据
 -- ============================================
 INSERT INTO `school` (`school_name`, `province`, `city`, `address`, `status`) VALUES
 ('清华大学', '北京市', '北京市', '北京市海淀区清华园1号', 1),
@@ -22,25 +47,26 @@ INSERT INTO `school` (`school_name`, `province`, `city`, `address`, `status`) VA
 ('西安交通大学', '陕西省', '西安市', '陕西省西安市碑林区咸宁西路28号', 1);
 
 -- ============================================
--- 2. 初始化管理员账号
+-- 步骤3: 初始化管理员账号
 -- ============================================
--- 密码: admin123 (BCrypt加密后的哈希值，实际使用时需要用BCrypt生成)
+-- 密码: admin123 (BCrypt加密后的哈希值)
 INSERT INTO `user` (`username`, `nickname`, `email`, `phone`, `password_hash`, `school_id`, `role`, `points`, `level`, `status`, `is_verified`) VALUES
 ('admin', '系统管理员', 'admin@campuslink.com', '13800000000', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', 1, 'admin', 10000, 10, 1, 1);
 
 -- ============================================
--- 3. 初始化测试用户
+-- 步骤4: 初始化测试用户
 -- ============================================
--- 密码: 123456 (BCrypt加密后的哈希值，实际使用时需要用BCrypt生成)
+-- 密码: 123456 (BCrypt加密后的哈希值)
 INSERT INTO `user` (`username`, `nickname`, `email`, `phone`, `password_hash`, `student_id`, `school_id`, `major`, `grade`, `role`, `points`, `level`, `status`, `is_verified`) VALUES
 ('zhangsan', '张三', 'zhangsan@example.com', '13800000001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2021001', 1, '计算机科学与技术', 2021, 'student', 500, 3, 1, 1),
 ('lisi', '李四', 'lisi@example.com', '13800000002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2021002', 1, '软件工程', 2021, 'student', 300, 2, 1, 1),
 ('wangwu', '王五', 'wangwu@example.com', '13800000003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2020001', 1, '电子信息工程', 2020, 'student', 800, 5, 1, 1),
 ('zhaoliu', '赵六', 'zhaoliu@example.com', '13800000004', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2022001', 1, '数据科学与大数据技术', 2022, 'student', 200, 1, 1, 0),
-('sunqi', '孙七', 'sunqi@example.com', '13800000005', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2019001', 1, '人工智能', 2019, 'student', 1200, 8, 1, 1);
+('sunqi', '孙七', 'sunqi@example.com', '13800000005', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2019001', 1, '人工智能', 2019, 'student', 1200, 8, 1, 1),
+('wangba', '王八', 'wangba@example.com', '13800000006', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', '2021003', 1, '网络工程', 2021, 'student', 600, 4, 1, 1);
 
 -- ============================================
--- 4. 初始化系统配置
+-- 步骤5: 初始化系统配置
 -- ============================================
 INSERT INTO `system_config` (`config_key`, `config_value`, `description`) VALUES
 ('points.upload_resource', '10', '上传资源获得的积分'),
@@ -73,7 +99,7 @@ INSERT INTO `system_config` (`config_key`, `config_value`, `description`) VALUES
 ('ai.answer_delay', '5', 'AI答案生成延迟（秒）');
 
 -- ============================================
--- 5. 初始化示例资源
+-- 步骤6: 初始化示例资源
 -- ============================================
 INSERT INTO `resource` (`title`, `description`, `uploader_id`, `file_url`, `file_name`, `file_size`, `file_type`, `category`, `course_name`, `school_id`, `score`, `downloads`, `likes`, `status`) VALUES
 ('数据结构课件-第一章', '数据结构基础知识，包括线性表、栈、队列等内容', 2, 'https://oss.example.com/resources/ds-chapter1.pdf', '数据结构-第一章.pdf', 2048576, 'pdf', '课件', '数据结构', 1, 5, 150, 35, 1),
@@ -83,7 +109,7 @@ INSERT INTO `resource` (`title`, `description`, `uploader_id`, `file_url`, `file
 ('数据库系统概论习题集', '数据库课程习题及答案解析', 6, 'https://oss.example.com/resources/db-exercises.pdf', '数据库习题.pdf', 2621440, 'pdf', '试题', '数据库系统概论', 1, 6, 95, 18, 1);
 
 -- ============================================
--- 6. 初始化示例问题
+-- 步骤7: 初始化示例问题
 -- ============================================
 INSERT INTO `question` (`title`, `content`, `asker_id`, `category`, `tags`, `reward_points`, `views`, `answer_count`, `is_solved`) VALUES
 ('如何学习数据结构？', '我是大一新生，想学习数据结构，有什么好的建议吗？需要掌握哪些基础知识？', 5, '学习', '["数据结构", "学习方法"]', 10, 150, 3, 1),
@@ -92,7 +118,7 @@ INSERT INTO `question` (`title`, `content`, `asker_id`, `category`, `tags`, `rew
 ('考研需要准备多久？', '打算考研，想问问学长学姐们一般需要准备多长时间？', 2, '学习', '["考研", "备考"]', 15, 300, 8, 0);
 
 -- ============================================
--- 7. 初始化示例回答
+-- 步骤8: 初始化示例回答
 -- ============================================
 INSERT INTO `answer` (`question_id`, `responder_id`, `content`, `likes`, `is_accepted`) VALUES
 (1, 4, '学习数据结构建议从基础的线性表开始，然后学习栈、队列、树、图等。推荐《数据结构与算法分析》这本书，同时多刷LeetCode上的题目。', 20, 1),
@@ -102,7 +128,7 @@ INSERT INTO `answer` (`question_id`, `responder_id`, `content`, `likes`, `is_acc
 (3, 4, '也可以直接去图书馆前台登记，但高峰期可能没有位置。', 5, 0);
 
 -- ============================================
--- 8. 初始化示例任务
+-- 步骤9: 初始化示例任务
 -- ============================================
 INSERT INTO `task` (`publisher_id`, `title`, `content`, `task_type`, `reward_points`, `location`, `deadline`, `status`) VALUES
 (2, '帮忙取快递', '菜鸟驿站有个快递，帮忙取一下，取件码：1234', 'errand', 5, '菜鸟驿站', DATE_ADD(NOW(), INTERVAL 1 DAY), 0),
@@ -110,7 +136,7 @@ INSERT INTO `task` (`publisher_id`, `title`, `content`, `task_type`, `reward_poi
 (5, '代签到', '明天上午第一节课帮忙签到，教室：教学楼A101', 'sign', 3, '教学楼A101', DATE_ADD(NOW(), INTERVAL 1 DAY), 0);
 
 -- ============================================
--- 9. 初始化示例社团
+-- 步骤10: 初始化示例社团
 -- ============================================
 INSERT INTO `club` (`club_name`, `description`, `school_id`, `founder_id`, `member_count`, `status`) VALUES
 ('计算机协会', '致力于计算机技术交流与学习，定期举办技术分享会和编程比赛', 1, 6, 150, 1),
@@ -118,7 +144,7 @@ INSERT INTO `club` (`club_name`, `description`, `school_id`, `founder_id`, `memb
 ('摄影社', '摄影爱好者的聚集地，定期组织外拍活动', 1, 3, 120, 1);
 
 -- ============================================
--- 10. 初始化社团成员
+-- 步骤11: 初始化社团成员
 -- ============================================
 INSERT INTO `club_member` (`club_id`, `user_id`, `role`) VALUES
 (1, 6, 'founder'),
@@ -133,7 +159,7 @@ INSERT INTO `club_member` (`club_id`, `user_id`, `role`) VALUES
 (3, 5, 'member');
 
 -- ============================================
--- 11. 初始化示例活动
+-- 步骤12: 初始化示例活动
 -- ============================================
 INSERT INTO `activity` (`club_id`, `title`, `description`, `location`, `start_time`, `end_time`, `max_participants`, `current_participants`, `reward_points`, `status`) VALUES
 (1, '编程马拉松', '24小时编程挑战赛，组队参加，优胜者有丰厚奖品', '图书馆三楼', DATE_ADD(NOW(), INTERVAL 7 DAY), DATE_ADD(NOW(), INTERVAL 8 DAY), 50, 30, 20, 0),
@@ -142,57 +168,29 @@ INSERT INTO `activity` (`club_id`, `title`, `description`, `location`, `start_ti
 (3, '校园风光摄影大赛', '拍摄校园美景，优秀作品将在校园展出', '全校园', DATE_ADD(NOW(), INTERVAL 10 DAY), DATE_ADD(NOW(), INTERVAL 20 DAY), NULL, 45, 15, 0);
 
 -- ============================================
--- 12. 初始化活动参与记录
+-- 步骤13: 初始化活动参与记录
 -- ============================================
 INSERT INTO `activity_participant` (`activity_id`, `user_id`, `is_signed_in`) VALUES
 (1, 2, 0),
 (1, 3, 0),
-(1, 4, 0),
 (1, 5, 0),
 (2, 2, 0),
 (2, 4, 0),
+(2, 5, 0),
 (2, 6, 0),
 (3, 3, 0),
 (3, 5, 0),
-(4, 3, 0),
-(4, 5, 0);
+(4, 2, 0),
+(4, 4, 0);
 
 -- ============================================
--- 13. 初始化积分记录
+-- 完成提示
 -- ============================================
-INSERT INTO `points_log` (`user_id`, `points_change`, `points_after`, `reason`, `related_type`, `related_id`) VALUES
-(2, 100, 100, '注册奖励', 'system', NULL),
-(2, 10, 110, '上传资源', 'resource', 1),
-(2, 5, 115, '回答问题', 'answer', 1),
-(3, 100, 100, '注册奖励', 'system', NULL),
-(3, 10, 110, '上传资源', 'resource', 2),
-(4, 100, 100, '注册奖励', 'system', NULL),
-(4, 10, 110, '上传资源', 'resource', 3),
-(4, 20, 130, '回答被采纳', 'answer', 1),
-(5, 100, 100, '注册奖励', 'system', NULL),
-(5, -10, 90, '提问悬赏', 'question', 1),
-(6, 100, 100, '注册奖励', 'system', NULL),
-(6, 10, 110, '上传资源', 'resource', 4);
-
--- ============================================
--- 14. 初始化通知
--- ============================================
-INSERT INTO `notification` (`user_id`, `title`, `content`, `notify_type`, `related_type`, `related_id`, `is_read`) VALUES
-(2, '欢迎加入CampusLink', '欢迎使用CampusLink校园互助平台，开始你的互助之旅吧！', 'system', NULL, NULL, 1),
-(5, '你的问题有新回答', '你的问题"如何学习数据结构？"收到了新的回答', 'answer', 'question', 1, 0),
-(4, '你的回答被采纳', '你的回答被采纳了，获得20积分奖励', 'answer', 'answer', 1, 0),
-(2, '活动报名成功', '你已成功报名"编程马拉松"活动', 'activity', 'activity', 1, 1);
-
--- ============================================
--- 完成初始化
--- ============================================
-SELECT '数据库初始化完成！' AS message;
-SELECT CONCAT('学校数量: ', COUNT(*)) AS schools FROM school;
-SELECT CONCAT('用户数量: ', COUNT(*)) AS users FROM user;
-SELECT CONCAT('资源数量: ', COUNT(*)) AS resources FROM resource;
-SELECT CONCAT('问题数量: ', COUNT(*)) AS questions FROM question;
-SELECT CONCAT('回答数量: ', COUNT(*)) AS answers FROM answer;
-SELECT CONCAT('任务数量: ', COUNT(*)) AS tasks FROM task;
-SELECT CONCAT('社团数量: ', COUNT(*)) AS clubs FROM club;
-SELECT CONCAT('活动数量: ', COUNT(*)) AS activities FROM activity;
-
+SELECT '数据初始化完成！' AS message;
+SELECT COUNT(*) AS school_count FROM school;
+SELECT COUNT(*) AS user_count FROM user;
+SELECT COUNT(*) AS resource_count FROM resource;
+SELECT COUNT(*) AS question_count FROM question;
+SELECT COUNT(*) AS task_count FROM task;
+SELECT COUNT(*) AS club_count FROM club;
+SELECT COUNT(*) AS activity_count FROM activity;

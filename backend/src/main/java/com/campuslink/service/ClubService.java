@@ -1,0 +1,303 @@
+package com.campuslink.service;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campuslink.common.PageResult;
+import com.campuslink.common.ResultCode;
+import com.campuslink.dto.club.ClubMemberResponse;
+import com.campuslink.dto.club.ClubResponse;
+import com.campuslink.dto.club.CreateClubRequest;
+import com.campuslink.entity.Club;
+import com.campuslink.entity.ClubMember;
+import com.campuslink.entity.User;
+import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.ClubMapper;
+import com.campuslink.mapper.ClubMemberMapper;
+import com.campuslink.mapper.UserMapper;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
+/**
+ * 社团服务类
+ */
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class ClubService {
+
+    private final ClubMapper clubMapper;
+    private final ClubMemberMapper clubMemberMapper;
+    private final UserMapper userMapper;
+
+    /**
+     * 创建社团
+     */
+    @Transactional
+    public Long createClub(Long userId, CreateClubRequest request) {
+        // 验证用户存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 创建社团
+        Club club = new Club();
+        BeanUtils.copyProperties(request, club);
+        club.setSchoolId(user.getSchoolId());
+        club.setFounderId(userId);
+        club.setMemberCount(1);
+        club.setStatus(1);
+        club.setCreatedAt(LocalDateTime.now());
+        club.setUpdatedAt(LocalDateTime.now());
+
+        clubMapper.insert(club);
+
+        // 添加创始人为成员
+        ClubMember member = new ClubMember();
+        member.setClubId(club.getClubId());
+        member.setUserId(userId);
+        member.setRole("founder");
+        member.setJoinedAt(LocalDateTime.now());
+        clubMemberMapper.insert(member);
+
+        log.info("用户 {} 创建了社团 {}", userId, club.getClubId());
+        return club.getClubId();
+    }
+
+    /**
+     * 获取社团列表
+     */
+    public PageResult<ClubResponse> getClubList(Long userId, Integer page, Integer pageSize) {
+        Page<Club> clubPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Club> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Club::getStatus, 1)
+                .orderByDesc(Club::getCreatedAt);
+
+        clubPage = clubMapper.selectPage(clubPage, wrapper);
+
+        List<ClubResponse> clubResponses = clubPage.getRecords().stream()
+                .map(club -> convertToResponse(club, userId))
+                .collect(Collectors.toList());
+
+        return new PageResult<>(
+                clubResponses,
+                clubPage.getTotal(),
+                clubPage.getCurrent(),
+                clubPage.getSize(),
+                clubPage.getPages()
+        );
+    }
+
+    /**
+     * 获取社团详情
+     */
+    public ClubResponse getClubDetail(Long clubId, Long userId) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) {
+            throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+        }
+
+        return convertToResponse(club, userId);
+    }
+
+    /**
+     * 加入社团
+     */
+    @Transactional
+    public void joinClub(Long clubId, Long userId) {
+        // 验证社团存在
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) {
+            throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+        }
+
+        if (club.getStatus() != 1) {
+            throw new BusinessException(ResultCode.CLUB_DISBANDED);
+        }
+
+        // 检查是否已加入
+        LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClubMember::getClubId, clubId)
+                .eq(ClubMember::getUserId, userId);
+        if (clubMemberMapper.selectCount(wrapper) > 0) {
+            throw new BusinessException(ResultCode.ALREADY_JOINED_CLUB);
+        }
+
+        // 添加成员
+        ClubMember member = new ClubMember();
+        member.setClubId(clubId);
+        member.setUserId(userId);
+        member.setRole("member");
+        member.setJoinedAt(LocalDateTime.now());
+        clubMemberMapper.insert(member);
+
+        // 更新成员数量
+        club.setMemberCount(club.getMemberCount() + 1);
+        clubMapper.updateById(club);
+
+        log.info("用户 {} 加入了社团 {}", userId, clubId);
+    }
+
+    /**
+     * 退出社团
+     */
+    @Transactional
+    public void leaveClub(Long clubId, Long userId) {
+        // 验证社团存在
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) {
+            throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+        }
+
+        // 检查成员关系
+        LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClubMember::getClubId, clubId)
+                .eq(ClubMember::getUserId, userId);
+        ClubMember member = clubMemberMapper.selectOne(wrapper);
+
+        if (member == null) {
+            throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+        }
+
+        // 创始人不能退出
+        if ("founder".equals(member.getRole())) {
+            throw new BusinessException(ResultCode.FOUNDER_CANNOT_LEAVE);
+        }
+
+        // 删除成员关系
+        clubMemberMapper.deleteById(member.getCmId());
+
+        // 更新成员数量
+        club.setMemberCount(club.getMemberCount() - 1);
+        clubMapper.updateById(club);
+
+        log.info("用户 {} 退出了社团 {}", userId, clubId);
+    }
+
+    /**
+     * 获取社团成员列表
+     */
+    public PageResult<ClubMemberResponse> getClubMembers(Long clubId, Integer page, Integer pageSize) {
+        // 验证社团存在
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) {
+            throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+        }
+
+        Page<ClubMember> memberPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClubMember::getClubId, clubId)
+                .orderByAsc(ClubMember::getJoinedAt);
+
+        memberPage = clubMemberMapper.selectPage(memberPage, wrapper);
+
+        List<ClubMemberResponse> memberResponses = memberPage.getRecords().stream()
+                .map(this::convertToMemberResponse)
+                .collect(Collectors.toList());
+
+        return new PageResult<>(
+                memberResponses,
+                memberPage.getTotal(),
+                memberPage.getCurrent(),
+                memberPage.getSize(),
+                memberPage.getPages()
+        );
+    }
+
+    /**
+     * 获取我加入的社团
+     */
+    public PageResult<ClubResponse> getMyClubs(Long userId, Integer page, Integer pageSize) {
+        // 查询用户加入的社团ID列表
+        LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ClubMember::getUserId, userId);
+        List<ClubMember> memberList = clubMemberMapper.selectList(wrapper);
+
+        if (memberList.isEmpty()) {
+            return new PageResult<>(new ArrayList<>(), 0L, (long) page, (long) pageSize, 0L);
+        }
+
+        List<Long> clubIds = memberList.stream()
+                .map(ClubMember::getClubId)
+                .collect(Collectors.toList());
+
+        // 分页查询社团
+        Page<Club> clubPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Club> clubWrapper = new LambdaQueryWrapper<>();
+        clubWrapper.in(Club::getClubId, clubIds)
+                .eq(Club::getStatus, 1)
+                .orderByDesc(Club::getCreatedAt);
+
+        clubPage = clubMapper.selectPage(clubPage, clubWrapper);
+
+        List<ClubResponse> clubResponses = clubPage.getRecords().stream()
+                .map(club -> convertToResponse(club, userId))
+                .collect(Collectors.toList());
+
+        return new PageResult<>(
+                clubResponses,
+                clubPage.getTotal(),
+                clubPage.getCurrent(),
+                clubPage.getSize(),
+                clubPage.getPages()
+        );
+    }
+
+    /**
+     * 转换为社团响应对象
+     */
+    private ClubResponse convertToResponse(Club club, Long userId) {
+        ClubResponse response = new ClubResponse();
+        BeanUtils.copyProperties(club, response);
+
+        // 查询创始人昵称
+        User founder = userMapper.selectById(club.getFounderId());
+        if (founder != null) {
+            response.setFounderName(founder.getNickname());
+        }
+
+        // 查询当前用户是否为成员及角色
+        if (userId != null) {
+            LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(ClubMember::getClubId, club.getClubId())
+                    .eq(ClubMember::getUserId, userId);
+            ClubMember member = clubMemberMapper.selectOne(wrapper);
+
+            if (member != null) {
+                response.setIsMember(true);
+                response.setUserRole(member.getRole());
+            } else {
+                response.setIsMember(false);
+            }
+        }
+
+        return response;
+    }
+
+    /**
+     * 转换为成员响应对象
+     */
+    private ClubMemberResponse convertToMemberResponse(ClubMember member) {
+        ClubMemberResponse response = new ClubMemberResponse();
+        response.setUserId(member.getUserId());
+        response.setRole(member.getRole());
+        response.setJoinedAt(member.getJoinedAt());
+
+        // 查询用户信息
+        User user = userMapper.selectById(member.getUserId());
+        if (user != null) {
+            response.setNickname(user.getNickname());
+            response.setAvatarUrl(user.getAvatarUrl());
+        }
+
+        return response;
+    }
+}

@@ -1,0 +1,195 @@
+####################
+# 用户模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册测试用户
+# @name userRegister
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "user_test_001",
+  "password": "123456",
+  "nickname": "测试用户001",
+  "email": "user001@campuslink.com",
+  "phone": "13900000001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+@userToken =
+
+####################
+# 个人资料管理
+####################
+
+### 2. 获取当前用户资料
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{userToken}}
+
+
+### 3. 更新个人资料 - 完整信息
+PUT {{baseUrl}}/user/profile
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "nickname": "更新后的昵称",
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "studentId": "2021001001",
+  "major": "计算机科学与技术",
+  "grade": 2021,
+  "phone": "13900000002"
+}
+
+
+### 4. 更新个人资料 - 部分信息（只更新昵称和头像）
+PUT {{baseUrl}}/user/profile
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "nickname": "新昵称",
+  "avatarUrl": "https://example.com/new-avatar.jpg"
+}
+
+
+### 5. 再次获取资料，确认更新成功
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{userToken}}
+
+
+####################
+# 积分记录查询
+####################
+
+### 6. 获取积分记录 - 第1页
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+Authorization: Bearer {{userToken}}
+
+
+### 7. 获取积分记录 - 第2页
+GET {{baseUrl}}/user/points/log?page=2&pageSize=5
+Authorization: Bearer {{userToken}}
+
+
+####################
+# 积分变化测试（结合任务模块）
+####################
+
+### 8. 发布任务（扣除积分，应该生成积分日志）
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "测试任务 - 用于验证积分日志",
+  "content": "这是一个测试任务，用于验证积分日志记录功能",
+  "taskType": "other",
+  "rewardPoints": 10,
+  "location": "测试地点",
+  "deadline": "2025-11-10T18:00:00"
+}
+
+
+### 9. 查看积分记录，应该看到发布任务的扣分记录
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+Authorization: Bearer {{userToken}}
+
+
+### 10. 注册第二个用户（用于接单）
+# @name userRegister2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "user_test_002",
+  "password": "123456",
+  "nickname": "测试用户002",
+  "email": "user002@campuslink.com",
+  "phone": "13900000003",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 设置第二个用户的token
+@userToken2 =
+
+
+### 11. 第二个用户接单（假设任务ID为上面发布的任务）
+POST {{baseUrl}}/task/7/accept
+Authorization: Bearer {{userToken2}}
+
+
+### 12. 第一个用户完成任务（奖励第二个用户积分）
+POST {{baseUrl}}/task/7/complete
+Authorization: Bearer {{userToken}}
+
+
+### 13. 第二个用户查看积分记录，应该看到完成任务的加分记录
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+Authorization: Bearer {{userToken2}}
+
+
+### 14. 第一个用户发布另一个任务
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "测试任务2 - 用于取消",
+  "content": "这个任务将被取消，用于测试退还积分",
+  "taskType": "other",
+  "rewardPoints": 5,
+  "location": "测试地点",
+  "deadline": "2025-11-10T20:00:00"
+}
+
+
+### 15. 取消任务（应该退还积分）
+POST {{baseUrl}}/task/8/cancel
+Authorization: Bearer {{userToken}}
+
+
+### 16. 查看积分记录，应该看到取消任务的退还积分记录
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+Authorization: Bearer {{userToken}}
+
+
+####################
+# 错误场景测试
+####################
+
+### 17. 尝试更新为已存在的手机号（应该失败）
+PUT {{baseUrl}}/user/profile
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "phone": "13900000003"
+}
+
+
+### 18. 未登录获取资料（应该返回401）
+GET {{baseUrl}}/user/profile
+
+
+### 19. 未登录获取积分记录（应该返回401）
+GET {{baseUrl}}/user/points/log?page=1&pageSize=10
+
+
+####################
+# 分页测试
+####################
+
+### 20. 获取积分记录 - 每页1条
+GET {{baseUrl}}/user/points/log?page=1&pageSize=1
+Authorization: Bearer {{userToken}}
+
+
+### 21. 获取积分记录 - 每页20条
+GET {{baseUrl}}/user/points/log?page=1&pageSize=20
+Authorization: Bearer {{userToken}}

@@ -1,19 +1,26 @@
 package com.campuslink.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.*;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.UserMapper;
 import com.campuslink.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.DigestUtils;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 用户服务类
@@ -24,6 +31,7 @@ import java.time.LocalDateTime;
 public class UserService {
 
     private final UserMapper userMapper;
+    private final PointsLogMapper pointsLogMapper;
     private final JwtUtil jwtUtil;
 
     /**
@@ -169,6 +177,105 @@ public class UserService {
      */
     private String encryptPassword(String password) {
         return DigestUtils.md5DigestAsHex(password.getBytes());
+    }
+
+    /**
+     * 获取用户个人资料
+     */
+    public UserVO getUserProfile(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+        return convertToVO(user);
+    }
+
+    /**
+     * 更新个人资料
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public UserVO updateProfile(Long userId, UpdateProfileRequest request) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 如果要更新手机号，检查是否已被其他用户使用
+        if (request.getPhone() != null && !request.getPhone().isEmpty()) {
+            if (!request.getPhone().equals(user.getPhone())) {
+                LambdaQueryWrapper<User> phoneQuery = new LambdaQueryWrapper<>();
+                phoneQuery.eq(User::getPhone, request.getPhone());
+                phoneQuery.ne(User::getUId, userId);
+                if (userMapper.selectCount(phoneQuery) > 0) {
+                    throw new BusinessException(400, "该手机号已被其他用户使用");
+                }
+            }
+        }
+
+        // 更新字段（只更新非空字段）
+        if (request.getNickname() != null && !request.getNickname().isEmpty()) {
+            user.setNickname(request.getNickname());
+        }
+        if (request.getAvatarUrl() != null && !request.getAvatarUrl().isEmpty()) {
+            user.setAvatarUrl(request.getAvatarUrl());
+        }
+        if (request.getStudentId() != null && !request.getStudentId().isEmpty()) {
+            user.setStudentId(request.getStudentId());
+        }
+        if (request.getMajor() != null && !request.getMajor().isEmpty()) {
+            user.setMajor(request.getMajor());
+        }
+        if (request.getGrade() != null) {
+            user.setGrade(request.getGrade());
+        }
+        if (request.getPhone() != null && !request.getPhone().isEmpty()) {
+            user.setPhone(request.getPhone());
+        }
+
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        log.info("用户资料更新成功: userId={}", userId);
+
+        return convertToVO(user);
+    }
+
+    /**
+     * 获取积分记录列表
+     */
+    public PageResult<PointsLogVO> getPointsLog(Long userId, Integer page, Integer pageSize) {
+        // 验证用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 构建查询条件
+        LambdaQueryWrapper<PointsLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PointsLog::getUserId, userId);
+        wrapper.orderByDesc(PointsLog::getCreatedAt);
+
+        // 分页查询
+        Page<PointsLog> pageObj = new Page<>(page, pageSize);
+        Page<PointsLog> result = pointsLogMapper.selectPage(pageObj, wrapper);
+
+        // 转换为VO对象
+        List<PointsLogVO> voList = new ArrayList<>();
+        for (PointsLog log : result.getRecords()) {
+            PointsLogVO vo = new PointsLogVO();
+            BeanUtils.copyProperties(log, vo);
+            voList.add(vo);
+        }
+
+        // 构建分页结果
+        PageResult<PointsLogVO> pageResult = new PageResult<>();
+        pageResult.setList(voList);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setPage((long) page);
+        pageResult.setPageSize((long) pageSize);
+        pageResult.setTotalPages((result.getTotal() + pageSize - 1) / pageSize);
+
+        return pageResult;
     }
 
     /**

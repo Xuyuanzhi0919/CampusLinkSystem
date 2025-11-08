@@ -1,5 +1,5 @@
 <template>
-  <view class="question-card" @click="handleClick">
+  <view class="question-card" :class="{ active: isActive }" @click="handleClick" @touchstart="onTouchStart" @touchend="onTouchEnd">
     <!-- 问题标题 -->
     <view class="card-header">
       <text class="title">{{ question.title }}</text>
@@ -43,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { QuestionItem } from '@/types/question'
 
 // Props
@@ -56,6 +57,25 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   click: [question: QuestionItem]
 }>()
+
+// 点击激活状态
+const isActive = ref(false)
+
+/**
+ * 触摸开始
+ */
+const onTouchStart = () => {
+  isActive.value = true
+}
+
+/**
+ * 触摸结束
+ */
+const onTouchEnd = () => {
+  setTimeout(() => {
+    isActive.value = false
+  }, 150)
+}
 
 /**
  * 格式化时间
@@ -97,6 +117,13 @@ const handleClick = () => {
   padding: 24rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.question-card.active {
+  background: #F5F7FA;
+  transform: scale(0.98);
 }
 
 .card-header {

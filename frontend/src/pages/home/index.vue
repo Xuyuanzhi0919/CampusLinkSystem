@@ -1,6 +1,6 @@
 <template>
   <view class="home-page">
-    <!-- 顶部搜索栏 -->
+    <!-- 顶部导航栏 -->
     <view class="top-bar">
       <view class="logo-section">
         <text class="logo-icon">📚</text>
@@ -14,6 +14,17 @@
         <view class="icon-btn" @click="goToMessages">
           <text class="icon">💬</text>
           <view v-if="unreadCount > 0" class="badge">{{ unreadCount }}</view>
+        </view>
+        <view class="avatar-btn" @click="goToProfile">
+          <image
+            v-if="userStore.userInfo?.avatar"
+            :src="userStore.userInfo.avatar"
+            class="avatar"
+            mode="aspectFill"
+          />
+          <view v-else class="avatar-placeholder">
+            <text class="avatar-text">{{ userStore.userInfo?.username?.charAt(0) || '👤' }}</text>
+          </view>
         </view>
       </view>
     </view>
@@ -158,6 +169,21 @@ const handleBannerClick = (banner: any) => {
 }
 
 /**
+ * 跳转到个人中心
+ */
+const goToProfile = () => {
+  uni.navigateTo({
+    url: '/pages/user/profile',
+    fail: () => {
+      uni.showToast({
+        title: '功能开发中',
+        icon: 'none',
+      })
+    },
+  })
+}
+
+/**
  * 页面加载
  */
 onMounted(() => {
@@ -181,9 +207,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 20rpx;
-  padding: 20rpx 30rpx;
+  padding: 28rpx 30rpx; /* 调整为 56px 高度（112rpx - 内边距） */
   background: white;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
 }
 
 .logo-section {
@@ -257,6 +284,41 @@ onMounted(() => {
   font-size: 20rpx;
   color: white;
   line-height: 1;
+}
+
+.avatar-btn {
+  width: 56rpx;
+  height: 56rpx;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.avatar-btn:active {
+  transform: scale(0.95);
+}
+
+.avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 2rpx solid #409EFF;
+}
+
+.avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #409EFF 0%, #337ECC 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  font-size: 24rpx;
+  color: white;
+  font-weight: 600;
 }
 
 /* 主滚动区域 */

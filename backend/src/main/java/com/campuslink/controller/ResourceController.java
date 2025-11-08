@@ -32,7 +32,7 @@ public class ResourceController {
     ) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         Long resourceId = resourceService.uploadResource(userId, request);
-        return Result.success(Map.of("resourceId", resourceId), "上传成功，等待审核");
+        return Result.success("上传成功，等待审核", Map.of("resourceId", resourceId));
     }
 
     @Operation(summary = "获取资源列表")
@@ -71,7 +71,7 @@ public class ResourceController {
     ) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         DownloadResourceResponse response = resourceService.downloadResource(id, userId);
-        return Result.success(response, "下载成功");
+        return Result.success("下载成功", response);
     }
 
     @Operation(summary = "点赞资源")
@@ -80,7 +80,7 @@ public class ResourceController {
             @Parameter(description = "资源ID") @PathVariable Long id
     ) {
         Integer likes = resourceService.likeResource(id);
-        return Result.success(Map.of("likes", likes), "点赞成功");
+        return Result.success("点赞成功", Map.of("likes", likes));
     }
 
     @Operation(summary = "取消点赞")
@@ -89,7 +89,7 @@ public class ResourceController {
             @Parameter(description = "资源ID") @PathVariable Long id
     ) {
         Integer likes = resourceService.unlikeResource(id);
-        return Result.success(Map.of("likes", likes), "取消点赞成功");
+        return Result.success("取消点赞成功", Map.of("likes", likes));
     }
 
     @Operation(summary = "搜索资源")

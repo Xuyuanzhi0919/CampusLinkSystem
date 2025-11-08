@@ -1,5 +1,5 @@
 <template>
-  <view class="resource-card" @click="handleClick">
+  <view class="resource-card" :class="{ active: isActive }" @click="handleClick" @touchstart="onTouchStart" @touchend="onTouchEnd">
     <!-- 资源标题 -->
     <view class="card-header">
       <text class="title">{{ resource.title }}</text>
@@ -44,6 +44,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 
 // Props
@@ -57,6 +58,9 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   click: [resource: ResourceItem]
 }>()
+
+// 点击激活状态
+const isActive = ref(false)
 
 /**
  * 获取分类文本
@@ -97,6 +101,22 @@ const formatTime = (time: string) => {
 }
 
 /**
+ * 触摸开始
+ */
+const onTouchStart = () => {
+  isActive.value = true
+}
+
+/**
+ * 触摸结束
+ */
+const onTouchEnd = () => {
+  setTimeout(() => {
+    isActive.value = false
+  }, 150)
+}
+
+/**
  * 点击卡片
  */
 const handleClick = () => {
@@ -111,6 +131,13 @@ const handleClick = () => {
   padding: 24rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.resource-card.active {
+  background: #F5F7FA;
+  transform: scale(0.98);
 }
 
 .card-header {

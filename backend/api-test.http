@@ -1,24 +1,21 @@
 ### CampusLink API 测试文件
-### 使用方法：安装 VS Code 插件 "REST Client"，然后点击 "Send Request" 执行请求
+### 使用方法：
+### 1. 安装 VS Code 插件 "REST Client"
+### 2. 点击每个请求上方的 "Send Request" 执行
+### 3. 按顺序测试，变量会自动提取
 
 @baseUrl = http://localhost:8080/api/v1
-@token =
-@refreshToken =
 
 ####################
-# 健康检查
+# 快速开始 - 推荐按此顺序测试
 ####################
 
-### 1. 健康检查
+### ✅ 步骤1: 健康检查
 GET {{baseUrl}}/health
-Content-Type: application/json
 
 
-####################
-# 用户认证
-####################
-
-### 2. 用户注册
+### ✅ 步骤2: 注册新用户
+# @name register
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
@@ -32,7 +29,245 @@ Content-Type: application/json
   "role": "student"
 }
 
-### 3. 用户注册（第二个用户）
+
+### ✅ 步骤3: 使用注册返回的 Token 获取当前用户信息
+@token = {{register.response.body.data.token}}
+
+GET {{baseUrl}}/user/me
+Authorization: Bearer {{token}}
+
+
+### ✅ 步骤4: 登录（使用用户名）
+# @name loginByUsername
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "testuser",
+  "password": "123456"
+}
+
+
+### ✅ 步骤5: 登录（使用邮箱）
+# @name loginByEmail
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "test@campuslink.com",
+  "password": "123456"
+}
+
+
+### ✅ 步骤6: 登录（使用手机号）
+# @name loginByPhone
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "13800138000",
+  "password": "123456"
+}
+
+
+### ✅ 步骤7: 刷新 Token
+@refreshToken = {{loginByUsername.response.body.data.refreshToken}}
+
+POST {{baseUrl}}/auth/refresh
+Refresh-Token: {{refreshToken}}
+
+
+### ✅ 步骤8: 退出登录
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+
+####################
+# 资源模块测试
+####################
+
+### 📚 资源-1: 上传资源
+# @name uploadResource
+POST {{baseUrl}}/resource/upload
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "数据结构课件-第一章",
+  "description": "数据结构与算法课程第一章课件，包含线性表、栈、队列等内容",
+  "fileUrl": "https://campuslink.oss-cn-hangzhou.aliyuncs.com/resources/data-structure-ch1.pdf",
+  "fileName": "数据结构-第一章.pdf",
+  "fileSize": 2048576,
+  "fileType": "pdf",
+  "category": "courseware",
+  "courseName": "数据结构与算法",
+  "schoolId": 1,
+  "score": 5
+}
+
+
+### 📚 资源-2: 获取资源列表（游客可访问）
+GET {{baseUrl}}/resource/list?page=1&pageSize=10
+
+
+### 📚 资源-3: 获取资源列表（按分类筛选）
+GET {{baseUrl}}/resource/list?category=courseware&page=1&pageSize=10
+
+
+### 📚 资源-4: 搜索资源（游客可访问）
+GET {{baseUrl}}/resource/search?q=数据结构&page=1&pageSize=10
+
+
+### 📚 资源-5: 获取资源详情
+GET {{baseUrl}}/resource/1
+Authorization: Bearer {{token}}
+
+
+### 📚 资源-6: 下载资源
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{token}}
+
+
+### 📚 资源-7: 点赞资源
+POST {{baseUrl}}/resource/1/like
+Authorization: Bearer {{token}}
+
+
+### 📚 资源-8: 取消点赞
+DELETE {{baseUrl}}/resource/1/like
+Authorization: Bearer {{token}}
+
+
+####################
+# 错误测试
+####################
+
+### ❌ 登录失败 - 密码错误
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "testuser",
+  "password": "wrong_password"
+}
+
+
+### ❌ 登录失败 - 用户不存在
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "nonexistent_user",
+  "password": "123456"
+}
+
+
+### ❌ 注册失败 - 用户名已存在
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "123456",
+  "nickname": "重复用户",
+  "email": "duplicate@campuslink.com",
+  "phone": "13700137000"
+}
+
+
+### ❌ 注册失败 - 邮箱已存在
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser2",
+  "password": "123456",
+  "nickname": "测试用户2",
+  "email": "test@campuslink.com",
+  "phone": "13700137001"
+}
+
+
+### ❌ 未授权访问 - 没有 Token
+GET {{baseUrl}}/user/me
+
+
+### ❌ 未授权访问 - 无效 Token
+GET {{baseUrl}}/user/me
+Authorization: Bearer invalid_token_here
+
+
+####################
+# 参数校验测试
+####################
+
+### ❌ 用户名太短（少于3个字符）
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "ab",
+  "password": "123456",
+  "nickname": "测试",
+  "email": "test1@campuslink.com"
+}
+
+
+### ❌ 用户名包含特殊字符
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "test@user",
+  "password": "123456",
+  "nickname": "测试",
+  "email": "test2@campuslink.com"
+}
+
+
+### ❌ 密码太短（少于6个字符）
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser3",
+  "password": "123",
+  "nickname": "测试",
+  "email": "test3@campuslink.com"
+}
+
+
+### ❌ 邮箱格式错误
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser4",
+  "password": "123456",
+  "nickname": "测试",
+  "email": "invalid-email-format"
+}
+
+
+### ❌ 手机号格式错误
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testuser5",
+  "password": "123456",
+  "nickname": "测试",
+  "email": "test5@campuslink.com",
+  "phone": "12345678901"
+}
+
+
+####################
+# 批量注册测试用户
+####################
+
+### 注册用户 - Alice
+# @name registerAlice
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
@@ -46,7 +281,25 @@ Content-Type: application/json
   "role": "student"
 }
 
-### 4. 用户注册（教师）
+
+### 注册用户 - Bob
+# @name registerBob
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "bob",
+  "password": "123456",
+  "nickname": "Bob",
+  "email": "bob@campuslink.com",
+  "phone": "13900139001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+
+### 注册教师 - 王老师
+# @name registerTeacher
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
@@ -60,203 +313,102 @@ Content-Type: application/json
   "role": "teacher"
 }
 
-### 5. 用户登录（使用用户名）
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
 
-{
-  "account": "testuser",
-  "password": "123456"
-}
+####################
+# 用户信息查询
+####################
 
-### 6. 用户登录（使用邮箱）
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
+### 获取指定用户信息（ID=1）
+GET {{baseUrl}}/user/1
+Authorization: Bearer {{token}}
 
-{
-  "account": "test@campuslink.com",
-  "password": "123456"
-}
 
-### 7. 用户登录（使用手机号）
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
+### 获取指定用户信息（ID=2）
+GET {{baseUrl}}/user/2
+Authorization: Bearer {{token}}
 
-{
-  "account": "13800138000",
-  "password": "123456"
-}
 
-### 8. 用户登录（密码错误）
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "account": "testuser",
-  "password": "wrong_password"
-}
-
-### 9. 用户登录（用户不存在）
-POST {{baseUrl}}/auth/login
-Content-Type: application/json
-
-{
-  "account": "nonexistent",
-  "password": "123456"
-}
-
-### 10. 刷新 Token
-# 注意：需要先从登录响应中复制 refreshToken，然后替换下面的 YOUR_REFRESH_TOKEN
-POST {{baseUrl}}/auth/refresh
-Content-Type: application/json
-Refresh-Token: YOUR_REFRESH_TOKEN
-
-### 11. 退出登录
-POST {{baseUrl}}/auth/logout
-Content-Type: application/json
+### 获取不存在的用户（ID=999）
+GET {{baseUrl}}/user/999
 Authorization: Bearer {{token}}
 
 
 ####################
-# 用户信息（需要认证）
+# 完整流程测试（自动化）
 ####################
 
-### 12. 获取当前用户信息
-# 注意：需要先从登录响应中复制 token，然后替换下面的 YOUR_TOKEN
-GET {{baseUrl}}/user/me
-Content-Type: application/json
-Authorization: Bearer YOUR_TOKEN
-
-### 13. 获取指定用户信息
-# 注意：需要先从登录响应中复制 token，然后替换下面的 YOUR_TOKEN
-GET {{baseUrl}}/user/1
-Content-Type: application/json
-Authorization: Bearer YOUR_TOKEN
-
-### 14. 未授权访问（没有 Token）
-GET {{baseUrl}}/user/me
-Content-Type: application/json
-
-### 15. 无效 Token 访问
-GET {{baseUrl}}/user/me
-Content-Type: application/json
-Authorization: Bearer invalid_token_here
-
-
-####################
-# 参数校验测试
-####################
-
-### 16. 注册 - 用户名太短
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "ab",
-  "password": "123456",
-  "nickname": "测试",
-  "email": "test2@campuslink.com",
-  "phone": "13800138001"
-}
-
-### 17. 注册 - 用户名包含特殊字符
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "test@user",
-  "password": "123456",
-  "nickname": "测试",
-  "email": "test3@campuslink.com",
-  "phone": "13800138002"
-}
-
-### 18. 注册 - 密码太短
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "testuser2",
-  "password": "123",
-  "nickname": "测试",
-  "email": "test4@campuslink.com",
-  "phone": "13800138003"
-}
-
-### 19. 注册 - 邮箱格式错误
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "testuser3",
-  "password": "123456",
-  "nickname": "测试",
-  "email": "invalid-email",
-  "phone": "13800138004"
-}
-
-### 20. 注册 - 手机号格式错误
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "testuser4",
-  "password": "123456",
-  "nickname": "测试",
-  "email": "test5@campuslink.com",
-  "phone": "12345678901"
-}
-
-### 21. 注册 - 用户名已存在
-POST {{baseUrl}}/auth/register
-Content-Type: application/json
-
-{
-  "username": "testuser",
-  "password": "123456",
-  "nickname": "测试2",
-  "email": "test6@campuslink.com",
-  "phone": "13800138005"
-}
-
-
-####################
-# 完整流程测试
-####################
-
-### 22. 完整流程 - 注册
-# @name register
+### 🔄 完整流程 - 1. 注册
+# @name flowRegister
 POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
   "username": "workflow_test",
   "password": "123456",
-  "nickname": "流程测试",
+  "nickname": "流程测试用户",
   "email": "workflow@campuslink.com",
   "phone": "13600136000",
   "schoolId": 1,
   "role": "student"
 }
 
-### 23. 完整流程 - 使用注册返回的 Token 获取用户信息
-@workflowToken = {{register.response.body.data.token}}
+
+### 🔄 完整流程 - 2. 使用注册返回的 Token 获取用户信息
+@flowToken = {{flowRegister.response.body.data.token}}
 
 GET {{baseUrl}}/user/me
-Content-Type: application/json
-Authorization: Bearer {{workflowToken}}
+Authorization: Bearer {{flowToken}}
 
-### 24. 完整流程 - 使用 RefreshToken 刷新
-# @name refresh
-@workflowRefreshToken = {{register.response.body.data.refreshToken}}
+
+### 🔄 完整流程 - 3. 刷新 Token
+# @name flowRefresh
+@flowRefreshToken = {{flowRegister.response.body.data.refreshToken}}
 
 POST {{baseUrl}}/auth/refresh
-Content-Type: application/json
-Refresh-Token: {{workflowRefreshToken}}
+Refresh-Token: {{flowRefreshToken}}
 
-### 25. 完整流程 - 使用新 Token 获取用户信息
-@newToken = {{refresh.response.body.data.token}}
+
+### 🔄 完整流程 - 4. 使用新 Token 获取用户信息
+@flowNewToken = {{flowRefresh.response.body.data.token}}
 
 GET {{baseUrl}}/user/me
+Authorization: Bearer {{flowNewToken}}
+
+
+### 🔄 完整流程 - 5. 退出登录
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{flowNewToken}}
+
+
+####################
+# 性能测试（可选）
+####################
+
+### 连续登录测试 - 1
+POST {{baseUrl}}/auth/login
 Content-Type: application/json
-Authorization: Bearer {{newToken}}
+
+{
+  "account": "testuser",
+  "password": "123456"
+}
+
+
+### 连续登录测试 - 2
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "testuser",
+  "password": "123456"
+}
+
+
+### 连续登录测试 - 3
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "account": "testuser",
+  "password": "123456"
+}

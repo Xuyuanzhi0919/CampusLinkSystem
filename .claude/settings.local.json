@@ -9,7 +9,8 @@
       "Bash(npm install)",
       "Bash(npm run dev:h5:*)",
       "Bash(mvn spring-boot:run:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": [],
     "ask": []

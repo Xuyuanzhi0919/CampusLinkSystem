@@ -32,6 +32,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/auth/login",         // 登录
                         "/auth/refresh",       // 刷新Token
                         "/health",             // 健康检查
+                        "/resource/list",      // 资源列表（游客可浏览）
+                        "/resource/search",    // 搜索资源（游客可浏览）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",
                         "/v3/api-docs/**",

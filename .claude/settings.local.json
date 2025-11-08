@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git ls-tree:*)",
+      "Bash(cat:*)",
+      "Bash(curl:*)",
+      "Bash(unzip:*)",
+      "Bash(tree:*)",
+      "Bash(npm install)",
+      "Bash(npm run dev:h5:*)",
+      "Bash(mvn spring-boot:run:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

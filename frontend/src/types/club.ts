@@ -1,0 +1,95 @@
+/**
+ * 社团模块类型定义
+ */
+
+// 社团列表项
+export interface ClubItem {
+  clubId: number
+  clubName: string
+  description: string
+  logoUrl?: string
+  schoolName: string
+  memberCount: number
+  createdAt: string
+}
+
+// 社团详情
+export interface ClubDetail extends ClubItem {
+  schoolId: number
+  founderId: number
+  founderName: string
+  isMember: boolean
+}
+
+// 活动列表项
+export interface ActivityItem {
+  activityId: number
+  clubId: number
+  clubName: string
+  title: string
+  description: string
+  coverImage?: string
+  location: string
+  startTime: string
+  endTime: string
+  maxParticipants: number
+  currentParticipants: number
+  signupDeadline: string
+  status: ActivityStatus
+  createdAt: string
+}
+
+// 活动状态
+export enum ActivityStatus {
+  NOT_STARTED = 0, // 未开始
+  IN_PROGRESS = 1, // 进行中
+  ENDED = 2,       // 已结束
+}
+
+// 活动详情
+export interface ActivityDetail extends ActivityItem {
+  organizerId: number
+  organizerName: string
+  isParticipant: boolean
+  checkInPoints: number
+}
+
+// 社团列表查询参数
+export interface ClubListParams {
+  schoolId?: number
+  keyword?: string
+  page?: number
+  pageSize?: number
+}
+
+// 活动列表查询参数
+export interface ActivityListParams {
+  clubId?: number
+  status?: ActivityStatus
+  keyword?: string
+  page?: number
+  pageSize?: number
+}
+
+// 创建社团参数
+export interface ClubCreateParams {
+  clubName: string
+  description: string
+  logoUrl?: string
+  schoolId: number
+}
+
+// 创建活动参数
+export interface ActivityCreateParams {
+  clubId: number
+  title: string
+  description: string
+  coverImage?: string
+  location: string
+  startTime: string
+  endTime: string
+  maxParticipants: number
+  signupDeadline: string
+  checkInPoints: number
+}
+

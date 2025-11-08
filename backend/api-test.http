@@ -20,11 +20,11 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "testquser1",
+  "username": "tes111tquse",
   "password": "123456",
   "nickname": "测试用户",
-  "email": "t1e1st@campuslink.com",
-  "phone": "13801238000",
+  "email": "t1st1@campuslink.com",
+  "phone": "13101238000",
   "schoolId": 1,
   "role": "student"
 }
@@ -86,10 +86,26 @@ Authorization: Bearer {{token}}
 # 资源模块测试
 ####################
 
+### 📚 资源-0: 注册测试用户（用于资源模块测试）
+# @name resourceTestRegister
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "resource_test_user",
+  "password": "123456",
+  "nickname": "资源测试用户",
+  "email": "resource_test@campuslink.com",
+  "phone": "13900000000",
+  "schoolId": 1,
+  "role": "student"
+}
+
+
 ### 📚 资源-1: 上传资源
 # @name uploadResource
 POST {{baseUrl}}/resource/upload
-Authorization: Bearer {{register.response.body.data.token}}
+Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
 Content-Type: application/json
 
 {
@@ -120,22 +136,22 @@ GET {{baseUrl}}/resource/search?q=数据结构&page=1&pageSize=10
 
 ### 📚 资源-5: 获取资源详情
 GET {{baseUrl}}/resource/1
-Authorization: Bearer {{register.response.body.data.token}}
+Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
 
 
 ### 📚 资源-6: 下载资源
 POST {{baseUrl}}/resource/1/download
-Authorization: Bearer {{register.response.body.data.token}}
+Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
 
 
 ### 📚 资源-7: 点赞资源
 POST {{baseUrl}}/resource/1/like
-Authorization: Bearer {{register.response.body.data.token}}
+Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
 
 
 ### 📚 资源-8: 取消点赞
 DELETE {{baseUrl}}/resource/1/like
-Authorization: Bearer {{register.response.body.data.token}}
+Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
 
 
 ####################

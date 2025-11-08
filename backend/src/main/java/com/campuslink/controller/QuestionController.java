@@ -1,0 +1,133 @@
+package com.campuslink.controller;
+
+import com.campuslink.common.PageResult;
+import com.campuslink.common.Result;
+import com.campuslink.dto.question.*;
+import com.campuslink.service.QuestionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+/**
+ * 问答控制器
+ */
+@Tag(name = "问答模块", description = "提问、回答、采纳、点赞等接口")
+@RestController
+@RequestMapping("/question")
+@RequiredArgsConstructor
+public class QuestionController {
+    private final QuestionService questionService;
+
+    @Operation(summary = "提问")
+    @PostMapping("/ask")
+    public Result<Map<String, Long>> askQuestion(
+            @Valid @RequestBody AskQuestionRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Long questionId = questionService.askQuestion(userId, request);
+        return Result.success("提问成功", Map.of("questionId", questionId));
+    }
+
+    @Operation(summary = "获取问题列表")
+    @GetMapping("/list")
+    public Result<PageResult<QuestionListResponse>> getQuestionList(
+            @Parameter(description = "问题分类") @RequestParam(required = false) String category,
+            @Parameter(description = "学校ID") @RequestParam(required = false) Long schoolId,
+            @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "排序字段") @RequestParam(defaultValue = "created_at") String sortBy,
+            @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder
+    ) {
+        PageResult<QuestionListResponse> result = questionService.getQuestionList(
+                category, schoolId, keyword, page, pageSize, sortBy, sortOrder
+        );
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取问题详情")
+    @GetMapping("/{id}")
+    public Result<QuestionResponse> getQuestionById(
+            @Parameter(description = "问题ID") @PathVariable Long id
+    ) {
+        QuestionResponse question = questionService.getQuestionById(id);
+        return Result.success(question);
+    }
+
+    @Operation(summary = "回答问题")
+    @PostMapping("/{id}/answer")
+    public Result<Map<String, Long>> answerQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id,
+            @Valid @RequestBody AnswerQuestionRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Long answerId = questionService.answerQuestion(userId, id, request);
+        return Result.success("回答成功", Map.of("answerId", answerId));
+    }
+
+    @Operation(summary = "获取问题的所有答案")
+    @GetMapping("/{id}/answers")
+    public Result<List<AnswerResponse>> getAnswers(
+            @Parameter(description = "问题ID") @PathVariable Long id
+    ) {
+        List<AnswerResponse> answers = questionService.getAnswersByQuestionId(id);
+        return Result.success(answers);
+    }
+
+    @Operation(summary = "采纳答案")
+    @PostMapping("/{questionId}/accept/{answerId}")
+    public Result<Void> acceptAnswer(
+            @Parameter(description = "问题ID") @PathVariable Long questionId,
+            @Parameter(description = "答案ID") @PathVariable Long answerId,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        questionService.acceptAnswer(userId, questionId, answerId);
+        return Result.success("采纳成功", null);
+    }
+
+    @Operation(summary = "点赞问题")
+    @PostMapping("/{id}/like")
+    public Result<Map<String, Integer>> likeQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id
+    ) {
+        Integer likes = questionService.likeQuestion(id);
+        return Result.success("点赞成功", Map.of("likes", likes));
+    }
+
+    @Operation(summary = "取消点赞问题")
+    @DeleteMapping("/{id}/like")
+    public Result<Map<String, Integer>> unlikeQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id
+    ) {
+        Integer likes = questionService.unlikeQuestion(id);
+        return Result.success("取消点赞成功", Map.of("likes", likes));
+    }
+
+    @Operation(summary = "点赞答案")
+    @PostMapping("/answer/{id}/like")
+    public Result<Map<String, Integer>> likeAnswer(
+            @Parameter(description = "答案ID") @PathVariable Long id
+    ) {
+        Integer likes = questionService.likeAnswer(id);
+        return Result.success("点赞成功", Map.of("likes", likes));
+    }
+
+    @Operation(summary = "取消点赞答案")
+    @DeleteMapping("/answer/{id}/like")
+    public Result<Map<String, Integer>> unlikeAnswer(
+            @Parameter(description = "答案ID") @PathVariable Long id
+    ) {
+        Integer likes = questionService.unlikeAnswer(id);
+        return Result.success("取消点赞成功", Map.of("likes", likes));
+    }
+}

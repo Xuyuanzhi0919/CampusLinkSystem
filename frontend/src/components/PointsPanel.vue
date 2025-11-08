@@ -120,17 +120,22 @@ const handleTaskClick = (task: Task) => {
 
 <style scoped>
 .points-panel {
+  /* 轻卡片容器：白色背景 + 4px圆角 + 轻微阴影 */
   background: white;
-  border-radius: 12rpx;
+  border-radius: 8rpx; /* 从 12rpx 调整为 8rpx (4px) */
   padding: 30rpx;
-  margin: 20rpx 30rpx;
+  margin: 0 30rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); /* 轻微阴影 */
 }
 
 .points-card {
-  background: linear-gradient(135deg, #409EFF 0%, #66B1FF 100%);
+  /* 浅蓝渐变 + 白色边框，提升视觉重点 */
+  background: linear-gradient(135deg, #ECF5FF 0%, #E6F7FF 100%);
+  border: 2rpx solid white;
   border-radius: 12rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(64, 158, 255, 0.1); /* 添加蓝色阴影 */
 }
 
 .card-header {
@@ -142,7 +147,8 @@ const handleTaskClick = (task: Task) => {
 
 .card-title {
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600; /* 加粗标题 */
+  color: #1D2129; /* 从白色改为深色，适配浅色背景 */
 }
 
 .points-value {
@@ -156,19 +162,19 @@ const handleTaskClick = (task: Task) => {
 }
 
 .points-number {
-  font-size: 40rpx;
-  font-weight: 600;
-  color: white;
+  font-size: 48rpx; /* 从 40rpx 增大到 48rpx，更醒目 */
+  font-weight: 700; /* 从 600 加粗到 700 */
+  color: #FF7D00; /* 活力橙，提升视觉重点 */
 }
 
 .points-tip {
   padding-top: 12rpx;
-  border-top: 1rpx solid rgba(255, 255, 255, 0.2);
+  border-top: 1rpx solid #E6E8EB; /* 从白色半透明改为浅灰色 */
 }
 
 .tip-text {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: #86909C; /* 从白色半透明改为中性灰 */
 }
 
 .tasks-section {

@@ -102,10 +102,12 @@ const goToDetail = (id: number) => {
 
 <style scoped>
 .notice-list {
+  /* 轻卡片容器：白色背景 + 4px圆角 + 轻微阴影 */
   background: white;
-  border-radius: 12rpx;
+  border-radius: 8rpx; /* 从 12rpx 调整为 8rpx (4px) */
   padding: 30rpx;
-  margin: 20rpx 30rpx;
+  margin: 0 30rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); /* 轻微阴影 */
 }
 
 .header {

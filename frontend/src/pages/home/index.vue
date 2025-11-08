@@ -38,25 +38,39 @@
       @refresherrefresh="onRefresh"
     >
       <!-- Banner 轮播 -->
-      <BannerSwiper :banners="banners" @click="handleBannerClick" />
+      <view class="section-wrapper fade-in">
+        <BannerSwiper :banners="banners" @click="handleBannerClick" />
+      </view>
 
       <!-- 功能入口 -->
-      <FunctionGrid />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.1s">
+        <FunctionGrid />
+      </view>
 
       <!-- 个性化推荐 -->
-      <RecommendCards />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.2s">
+        <RecommendCards />
+      </view>
 
       <!-- 热门榜单 -->
-      <HotRanking />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.3s">
+        <HotRanking />
+      </view>
 
       <!-- 社团活动 -->
-      <ActivityScroll />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.4s">
+        <ActivityScroll />
+      </view>
 
       <!-- 积分动态 -->
-      <PointsPanel />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.5s">
+        <PointsPanel />
+      </view>
 
       <!-- 校园公告 -->
-      <NoticeList />
+      <view class="section-wrapper fade-in" style="animation-delay: 0.6s">
+        <NoticeList />
+      </view>
 
       <!-- 底部间距 -->
       <view class="bottom-spacing"></view>
@@ -67,6 +81,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { BANNER_IMAGES } from '@/config/images'
 import BannerSwiper from '@/components/BannerSwiper.vue'
 import FunctionGrid from '@/components/FunctionGrid.vue'
 import RecommendCards from '@/components/RecommendCards.vue'
@@ -87,19 +102,19 @@ const unreadCount = computed(() => 0) // TODO: 从 store 获取
 const banners = ref([
   {
     id: 1,
-    image: 'https://via.placeholder.com/750x440/409EFF/FFFFFF?text=CampusLink',
+    image: BANNER_IMAGES.campusStudy,
     title: '100万+大学生的学习互助圈',
     description: '海量课件、智能问答、互助任务，一站式解决学习难题',
   },
   {
     id: 2,
-    image: 'https://via.placeholder.com/750x440/FF7D00/FFFFFF?text=资源共享',
+    image: BANNER_IMAGES.library,
     title: '海量学习资源免费下载',
     description: '课件、试题、笔记应有尽有，助力学业进步',
   },
   {
     id: 3,
-    image: 'https://via.placeholder.com/750x440/00B42A/FFFFFF?text=智能问答',
+    image: BANNER_IMAGES.discussion,
     title: 'AI智能答疑，秒速解惑',
     description: '遇到难题？AI助手24小时在线为你解答',
   },
@@ -225,9 +240,10 @@ onMounted(() => {
 }
 
 .logo-text {
-  font-size: 32rpx;
-  font-weight: 600;
+  font-size: 34rpx;
+  font-weight: 700;
   color: #409EFF;
+  letter-spacing: 0.5rpx;
 }
 
 .search-box {
@@ -245,8 +261,9 @@ onMounted(() => {
 }
 
 .search-placeholder {
-  font-size: 26rpx;
+  font-size: 28rpx;
   color: #86909C;
+  font-weight: 400;
 }
 
 .icons-section {
@@ -324,10 +341,35 @@ onMounted(() => {
 /* 主滚动区域 */
 .main-scroll {
   height: calc(100vh - 112rpx);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 平滑滚动 */
 }
 
 /* 底部间距 */
 .bottom-spacing {
   height: 40rpx;
+}
+
+/* 区块包装器 */
+.section-wrapper {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease forwards;
+}
+
+/* 淡入向上动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 淡入类 */
+.fade-in {
+  animation: fadeInUp 0.6s ease forwards;
 }
 </style>

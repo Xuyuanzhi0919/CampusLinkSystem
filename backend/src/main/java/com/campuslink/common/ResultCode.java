@@ -42,10 +42,12 @@ public enum ResultCode {
     INSUFFICIENT_POINTS(20004, "积分不足"),
     RESOURCE_NOT_APPROVED(20005, "资源未审核通过"),
 
-    // 问答模块 30001-30003
+    // 问答模块 30001-30004
     QUESTION_NOT_FOUND(30001, "问题不存在"),
     ANSWER_NOT_FOUND(30002, "回答不存在"),
     ANSWER_ALREADY_ACCEPTED(30003, "已采纳其他回答"),
+    QUESTION_ALREADY_SOLVED(30004, "问题已解决"),
+    PERMISSION_DENIED(30005, "无权执行此操作"),
 
     // 任务模块 40001-40004
     TASK_NOT_FOUND(40001, "任务不存在"),

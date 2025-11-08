@@ -1,0 +1,237 @@
+####################
+# 任务模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册发布者账号
+# @name taskPublisher
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "task_publisher_001",
+  "password": "123456",
+  "nickname": "任务发布者",
+  "email": "publisher@campuslink.com",
+  "phone": "13800000001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 2. 注册接单者账号
+# @name taskAccepter
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "task_accepter_001",
+  "password": "123456",
+  "nickname": "任务接单者",
+  "email": "accepter@campuslink.com",
+  "phone": "13800000002",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+# 发布者token（从步骤1的响应中获取）
+@publisherToken =
+
+# 接单者token（从步骤2的响应中获取）
+@accepterToken =
+
+
+####################
+# 任务发布与查询
+####################
+
+### 3. 发布任务 - 帮忙取快递
+# @name publishTask1
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{publisherToken}}
+Content-Type: application/json
+
+{
+  "title": "帮忙取快递 - 顺丰快递",
+  "content": "我在上课不方便去拿快递，希望有人帮我取一下，地点在学校北门顺丰驿站，取货码1234",
+  "taskType": "errand",
+  "rewardPoints": 5,
+  "location": "学校北门顺丰驿站",
+  "deadline": "2025-11-09T18:00:00"
+}
+
+### 4. 发布任务 - 代购奶茶
+# @name publishTask2
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{publisherToken}}
+Content-Type: application/json
+
+{
+  "title": "代购奶茶 - 蜜雪冰城",
+  "content": "想喝蜜雪冰城的柠檬水，帮忙带一杯，谢谢！",
+  "taskType": "purchase",
+  "rewardPoints": 3,
+  "location": "学校东门蜜雪冰城",
+  "deadline": "2025-11-08T20:00:00"
+}
+
+### 5. 发布任务 - 打印文件
+# @name publishTask3
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{publisherToken}}
+Content-Type: application/json
+
+{
+  "title": "帮忙打印文件",
+  "content": "需要打印一份文档，大概10页，图书馆打印店即可",
+  "taskType": "other",
+  "rewardPoints": 2,
+  "location": "图书馆一楼打印店",
+  "deadline": "2025-11-09T12:00:00"
+}
+
+
+####################
+# 任务列表查询（游客可访问）
+####################
+
+### 6. 获取所有任务列表
+GET {{baseUrl}}/task/list?page=1&pageSize=10
+
+
+### 7. 按类型筛选 - 跑腿任务
+GET {{baseUrl}}/task/list?taskType=errand&page=1&pageSize=10
+
+
+### 8. 按状态筛选 - 待接单
+GET {{baseUrl}}/task/list?status=0&page=1&pageSize=10
+
+
+### 9. 按状态筛选 - 进行中
+GET {{baseUrl}}/task/list?status=1&page=1&pageSize=10
+
+
+### 10. 按悬赏积分排序（从高到低）
+GET {{baseUrl}}/task/list?page=1&pageSize=10&sortBy=reward_points&sortOrder=desc
+
+
+### 11. 按截止时间排序（从近到远）
+GET {{baseUrl}}/task/list?page=1&pageSize=10&sortBy=deadline&sortOrder=asc
+
+
+####################
+# 任务详情查询（游客可访问）
+####################
+
+### 12. 查看任务详情 - 任务ID=1
+GET {{baseUrl}}/task/1
+
+
+### 13. 查看任务详情 - 任务ID=2
+GET {{baseUrl}}/task/2
+
+
+####################
+# 任务接单与完成流程
+####################
+
+### 14. 接单 - 接单者接受任务1
+POST {{baseUrl}}/task/1/accept
+Authorization: Bearer {{accepterToken}}
+
+
+### 15. 查看我接受的任务（接单者查看）
+GET {{baseUrl}}/task/my/accepted?page=1&pageSize=10
+Authorization: Bearer {{accepterToken}}
+
+
+### 16. 查看我发布的任务（发布者查看）
+GET {{baseUrl}}/task/my/published?page=1&pageSize=10
+Authorization: Bearer {{publisherToken}}
+
+
+### 17. 完成任务 - 发布者确认任务完成
+POST {{baseUrl}}/task/1/complete
+Authorization: Bearer {{publisherToken}}
+
+
+### 18. 再次查看任务详情，确认状态为已完成
+GET {{baseUrl}}/task/1
+
+
+####################
+# 任务取消流程
+####################
+
+### 19. 接单者接受任务2
+POST {{baseUrl}}/task/2/accept
+Authorization: Bearer {{accepterToken}}
+
+
+### 20. 发布者取消任务2（可以取消进行中的任务）
+POST {{baseUrl}}/task/2/cancel
+Authorization: Bearer {{publisherToken}}
+
+
+### 21. 发布者取消任务3（待接单状态）
+POST {{baseUrl}}/task/3/cancel
+Authorization: Bearer {{publisherToken}}
+
+
+### 22. 查看我发布的任务 - 筛选已取消的任务
+GET {{baseUrl}}/task/my/published?status=3&page=1&pageSize=10
+Authorization: Bearer {{publisherToken}}
+
+
+####################
+# 错误场景测试
+####################
+
+### 23. 尝试接受自己发布的任务（应该失败）
+POST {{baseUrl}}/task/1/accept
+Authorization: Bearer {{publisherToken}}
+
+
+### 24. 尝试用接单者身份完成任务（应该失败，只有发布者可以标记完成）
+POST {{baseUrl}}/task/1/complete
+Authorization: Bearer {{accepterToken}}
+
+
+### 25. 发布任务但积分不足（需要先消耗积分）
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{publisherToken}}
+Content-Type: application/json
+
+{
+  "title": "高积分任务",
+  "content": "这个任务需要大量积分",
+  "taskType": "other",
+  "rewardPoints": 10000,
+  "location": "学校",
+  "deadline": "2025-11-09T18:00:00"
+}
+
+
+### 26. 尝试重复接单（应该失败）
+POST {{baseUrl}}/task/1/accept
+Authorization: Bearer {{accepterToken}}
+
+
+####################
+# 查询统计
+####################
+
+### 27. 查看我接受的任务 - 只看进行中的
+GET {{baseUrl}}/task/my/accepted?status=1&page=1&pageSize=10
+Authorization: Bearer {{accepterToken}}
+
+
+### 28. 查看我接受的任务 - 只看已完成的
+GET {{baseUrl}}/task/my/accepted?status=2&page=1&pageSize=10
+Authorization: Bearer {{accepterToken}}
+
+
+### 29. 查看我发布的任务 - 只看待接单的
+GET {{baseUrl}}/task/my/published?status=0&page=1&pageSize=10
+Authorization: Bearer {{publisherToken}}

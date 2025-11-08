@@ -92,20 +92,28 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "resource_test_user",
+  "username": "res1ce_test_user123",
   "password": "123456",
   "nickname": "资源测试用户",
-  "email": "resource_test@campuslink.com",
-  "phone": "13900000000",
+  "email": "resorce_test123@campuslink.com",
+  "phone": "13811000123",
   "schoolId": 1,
   "role": "student"
 }
 
+### 使用说明：
+# 1. 先执行上面的"资源-0"注册请求
+# 2. 从响应中复制token值
+# 3. 在下面定义token变量（取消注释并替换token值）
+# 4. 然后就可以测试所有资源接口了
+
+# 手动设置token（将下面一行取消注释，并替换为实际token）
+@resourceToken = eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjQsInVzZXJuYW1lIjoidGExc2tfdGVzdF91c2VyIiwiaWF0IjoxNzYyNTk5MDgwLCJleHAiOjE3NjI2MDYyODB9.OGNN-UNowTwKxbmVm05ng8xZiIox9eM2BerN5zrbv4s
 
 ### 📚 资源-1: 上传资源
 # @name uploadResource
 POST {{baseUrl}}/resource/upload
-Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
+Authorization: Bearer {{resourceToken}}
 Content-Type: application/json
 
 {
@@ -136,22 +144,22 @@ GET {{baseUrl}}/resource/search?q=数据结构&page=1&pageSize=10
 
 ### 📚 资源-5: 获取资源详情
 GET {{baseUrl}}/resource/1
-Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
+Authorization: Bearer {{resourceToken}}
 
 
 ### 📚 资源-6: 下载资源
 POST {{baseUrl}}/resource/1/download
-Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
+Authorization: Bearer {{resourceToken}}
 
 
 ### 📚 资源-7: 点赞资源
 POST {{baseUrl}}/resource/1/like
-Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
+Authorization: Bearer {{resourceToken}}
 
 
 ### 📚 资源-8: 取消点赞
 DELETE {{baseUrl}}/resource/1/like
-Authorization: Bearer {{resourceTestRegister.response.body.data.token}}
+Authorization: Bearer {{resourceToken}}
 
 
 ####################
@@ -428,3 +436,240 @@ Content-Type: application/json
   "account": "testuser",
   "password": "123456"
 }
+
+
+####################
+# 问答模块测试
+####################
+
+### 💬 问答-0: 注册测试用户（用于问答模块测试）
+# @name questionTestRegister
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "questi1on_test_user",
+  "password": "123456",
+  "nickname": "问答测试用户",
+  "email": "question_test@campuslink.com",
+  "phone": "13922000000",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 使用说明：
+# 1. 先执行上面的"问答-0"注册请求
+# 2. 从响应中复制token值
+# 3. 在下面定义token变量（取消注释并替换token值）
+# 4. 然后就可以测试所有问答接口了
+
+# 手动设置token（将下面一行取消注释，并替换为实际token）
+# @questionToken = your_token_here
+
+### 💬 问答-1: 提问（不设悬赏）
+# @name askQuestion1
+POST {{baseUrl}}/question/ask
+Authorization: Bearer {{resourceToken}}
+Content-Type: application/json
+
+{
+  "title": "如何学好数据结构与算法？",
+  "content": "我是大一新生，对数据结构与算法很感兴趣，但是不知道从哪里开始学习，有没有好的学习资源推荐？",
+  "category": "学习问题",
+  "bounty": 0
+}
+
+
+### 💬 问答-2: 提问（设置悬赏）
+# @name askQuestion2
+POST {{baseUrl}}/question/ask
+Authorization: Bearer {{resourceToken}}
+Content-Type: application/json
+
+{
+  "title": "Java Spring Boot项目如何集成Redis？",
+  "content": "我想在我的Spring Boot项目中使用Redis做缓存，应该如何配置？需要添加哪些依赖？",
+  "category": "技术问题",
+  "bounty": 10
+}
+
+
+### 💬 问答-3: 获取问题列表（游客可访问）
+GET {{baseUrl}}/question/list?page=1&pageSize=10
+
+
+### 💬 问答-4: 获取问题列表（按分类筛选）
+GET {{baseUrl}}/question/list?category=技术问题&page=1&pageSize=10
+
+
+### 💬 问答-5: 搜索问题
+GET {{baseUrl}}/question/list?keyword=数据结构&page=1&pageSize=10
+
+
+### 💬 问答-6: 获取问题详情
+GET {{baseUrl}}/question/1
+Authorization: Bearer {{resourceToken}}
+
+
+### 💬 问答-7: 回答问题（注册另一个用户来回答）
+# @name questionAnswerer
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "question_answerer",
+  "password": "123456",
+  "nickname": "热心回答者",
+  "email": "answerer@campuslink.com",
+  "phone": "13922000001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+
+### 💬 问答-8: 回答问题
+# @name postAnswer
+POST {{baseUrl}}/question/1/answer
+Authorization: Bearer {{resourceToken}}
+Content-Type: application/json
+
+{
+  "content": "学习数据结构与算法，我推荐以下步骤：\n1. 先学习基础的数据结构，如数组、链表、栈、队列\n2. 然后学习树、图等复杂数据结构\n3. 最后学习各种算法，如排序、搜索、动态规划等\n\n推荐资源：\n- 《算法导论》\n- LeetCode刷题\n- 可视化算法网站 visualgo.net"
+}
+
+
+### 💬 问答-9: 获取问题的所有答案（游客可访问）
+GET {{baseUrl}}/question/1/answers
+
+
+### 💬 问答-10: 点赞问题
+POST {{baseUrl}}/question/1/like
+Authorization: Bearer {{resourceToken}}
+
+
+### 💬 问答-11: 取消点赞问题
+DELETE {{baseUrl}}/question/1/like
+Authorization: Bearer {{resourceToken}}
+
+
+### 💬 问答-12: 点赞答案
+POST {{baseUrl}}/question/answer/1/like
+Authorization: Bearer {{resourceToken}}
+
+
+### 💬 问答-13: 取消点赞答案
+DELETE {{baseUrl}}/question/answer/1/like
+Authorization: Bearer {{resourceToken}}
+
+
+### 💬 问答-14: 采纳答案（只有提问者可以采纳）
+POST {{baseUrl}}/question/1/accept/1
+Authorization: Bearer {{resourceToken}}
+
+
+####################
+# 任务模块测试
+####################
+
+### 📋 任务-0: 注册测试用户（用于任务模块测试）
+# @name taskTestRegister
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "ta1sk_test_user",
+  "password": "123456",
+  "nickname": "任务测试用户",
+  "email": "task_tet@campuslink.com",
+  "phone": "13733000000",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 📋 任务-1: 发布任务
+# @name publishTask
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{resourceToken}}
+Content-Type: application/json
+
+{
+  "title": "帮忙取快递 - 顺丰快递",
+  "content": "我在上课不方便去拿快递，希望有人帮我取一下，地点在学校北门顺丰驿站，取货码1234",
+  "taskType": "errand",
+  "rewardPoints": 5,
+  "location": "学校北门顺丰驿站",
+  "deadline": "2025-11-09T18:00:00"
+}
+
+
+### 📋 任务-2: 获取任务列表（所有用户可访问）
+GET {{baseUrl}}/task/list?page=1&pageSize=10
+
+
+### 📋 任务-3: 获取任务列表（按类型筛选）
+GET {{baseUrl}}/task/list?taskType=errand&page=1&pageSize=10
+
+
+### 📋 任务-4: 获取任务列表（按状态筛选 - 待接单）
+GET {{baseUrl}}/task/list?status=0&page=1&pageSize=10
+
+
+### 📋 任务-5: 获取任务详情
+GET {{baseUrl}}/task/1
+Authorization: Bearer {{resourceToken}}
+
+
+### 📋 任务-6: 注册接单者
+# @name taskAccepter
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "task_accepter",
+  "password": "123456",
+  "nickname": "热心接单者",
+  "email": "accepter@campuslink.com",
+  "phone": "13933000001",
+  "schoolId": 1,
+  "role": "student"
+}
+
+
+### 📋 任务-7: 接单
+POST {{baseUrl}}/task/1/accept
+Authorization: Bearer {{resourceToken}}
+
+
+### 📋 任务-8: 完成任务（只有发布者可以标记完成）
+POST {{baseUrl}}/task/1/complete
+Authorization: Bearer {{resourceToken}}
+
+
+### 📋 任务-9: 获取我发布的任务
+GET {{baseUrl}}/task/my/published?page=1&pageSize=10
+Authorization: Bearer {{resourceToken}}
+
+
+### 📋 任务-10: 获取我接受的任务
+GET {{baseUrl}}/task/my/accepted?page=1&pageSize=10
+Authorization: Bearer {{resourceToken}}
+
+
+### 📋 任务-11: 发布另一个任务用于取消测试
+# @name publishTask2
+POST {{baseUrl}}/task/publish
+Authorization: Bearer {{resourceToken}}
+Content-Type: application/json
+
+{
+  "title": "代签到 - 英语课",
+  "content": "明天上午10点英语课帮忙签个到，教室在A栋201",
+  "taskType": "sign",
+  "rewardPoints": 3,
+  "location": "A栋201教室"
+}
+
+
+### 📋 任务-12: 取消任务（只有发布者可以取消）
+POST {{baseUrl}}/task/2/cancel
+Authorization: Bearer {{resourceToken}}

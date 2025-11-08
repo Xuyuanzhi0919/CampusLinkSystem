@@ -10,7 +10,10 @@
       "Bash(npm run dev:h5:*)",
       "Bash(mvn spring-boot:run:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(timeout 5 tail:*)",
+      "Bash(mvn clean:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": [],
     "ask": []

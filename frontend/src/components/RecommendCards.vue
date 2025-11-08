@@ -17,9 +17,10 @@
         class="card-item"
         @click="handleCardClick(item)"
       >
-        <!-- 类型图标 -->
+        <!-- 类型标签 -->
         <view class="type-badge" :class="'type-' + item.type">
           <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
+          <text class="type-label">{{ getTypeLabel(item.type) }}</text>
         </view>
 
         <!-- 内容 -->
@@ -46,6 +47,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { getRandomAvatar } from '@/config/images'
 
 // 推荐项类型
 interface RecommendItem {
@@ -65,7 +67,7 @@ const items = ref<RecommendItem[]>([
     type: 'resource',
     title: '数据结构课件-完整版',
     description: '包含所有章节的PPT和代码示例',
-    avatar: 'https://via.placeholder.com/80',
+    avatar: getRandomAvatar('male'),
     username: '张同学',
     points: 5,
   },
@@ -74,7 +76,7 @@ const items = ref<RecommendItem[]>([
     type: 'question',
     title: '如何学习算法？',
     description: '求推荐学习路线和资料',
-    avatar: 'https://via.placeholder.com/80',
+    avatar: getRandomAvatar('female'),
     username: '李同学',
     points: 10,
   },
@@ -83,7 +85,7 @@ const items = ref<RecommendItem[]>([
     type: 'task',
     title: '帮忙取快递',
     description: '菜鸟驿站，今天下午',
-    avatar: 'https://via.placeholder.com/80',
+    avatar: getRandomAvatar('male'),
     username: '王同学',
     points: 3,
   },
@@ -92,7 +94,7 @@ const items = ref<RecommendItem[]>([
     type: 'resource',
     title: '高等数学历年真题',
     description: '近5年期末考试真题及答案',
-    avatar: 'https://via.placeholder.com/80',
+    avatar: getRandomAvatar('female'),
     username: '赵同学',
     points: 3,
   },
@@ -108,6 +110,18 @@ const getTypeIcon = (type: string) => {
     task: '🤝',
   }
   return icons[type as keyof typeof icons] || '📄'
+}
+
+/**
+ * 获取类型标签文字
+ */
+const getTypeLabel = (type: string) => {
+  const labels = {
+    resource: '课件',
+    question: '问答',
+    task: '任务',
+  }
+  return labels[type as keyof typeof labels] || '其他'
 }
 
 /**
@@ -146,7 +160,12 @@ const handleCardClick = (item: RecommendItem) => {
 
 <style scoped>
 .recommend-cards {
+  /* 轻卡片容器：白色背景 + 4px圆角 + 轻微阴影 */
+  background: white;
+  border-radius: 8rpx; /* 4px */
   padding: 30rpx;
+  margin: 0 30rpx 20rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); /* 轻微阴影 */
 }
 
 .header {
@@ -167,8 +186,19 @@ const handleCardClick = (item: RecommendItem) => {
   align-items: center;
   gap: 8rpx;
   padding: 8rpx 16rpx;
-  background: #F5F7FA;
+  background: #FFF7E6; /* 从浅灰改为浅橙色背景 */
   border-radius: 20rpx;
+  transition: all 0.2s ease; /* 添加过渡效果 */
+  cursor: pointer;
+}
+
+.refresh-btn:hover {
+  background: #FFE7BA; /* hover时背景加深 */
+  transform: translateY(-2rpx); /* 上浮2px */
+}
+
+.refresh-btn:active {
+  transform: translateY(0); /* 点击时恢复 */
 }
 
 .refresh-icon {
@@ -177,7 +207,8 @@ const handleCardClick = (item: RecommendItem) => {
 
 .refresh-text {
   font-size: 24rpx;
-  color: #409EFF;
+  font-weight: 600; /* 加粗文字 */
+  color: #FF7D00; /* 从青春蓝改为活力橙，更醒目 */
 }
 
 .cards-grid {
@@ -188,43 +219,54 @@ const handleCardClick = (item: RecommendItem) => {
 
 .card-item {
   background: white;
-  border-radius: 12rpx;
-  padding: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  border-radius: 16rpx; /* 从 12rpx 调整为 16rpx (8px) */
+  border: 2rpx solid #E5E7EB; /* 1px 浅灰边框 */
+  padding: 24rpx; /* 从 20rpx 调整为 24rpx，增加内边距 */
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); /* 减轻阴影 */
   display: flex;
   flex-direction: column;
   gap: 16rpx;
   transition: all 0.3s;
+  min-height: 240rpx; /* 设置最小高度，确保卡片等高，视觉更规整 */
 }
 
 .card-item:active {
   transform: scale(0.98);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  border-color: #D1D5DB; /* active 时边框颜色加深 */
 }
 
 .type-badge {
-  width: 56rpx;
-  height: 56rpx;
-  display: flex;
+  padding: 8rpx 16rpx; /* 从固定尺寸改为 padding */
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 12rpx;
+  gap: 6rpx;
+  border-radius: 8rpx;
+  font-size: 22rpx;
+  font-weight: 600;
+  line-height: 1;
 }
 
+/* 课件标签：青春蓝 */
 .type-badge.type-resource {
-  background: linear-gradient(135deg, #409EFF 0%, #66B1FF 100%);
+  background: #E6F4FF; /* 浅蓝背景 */
+  color: #409EFF; /* 蓝色文字 */
 }
 
+/* 问答标签：活力橙 */
 .type-badge.type-question {
-  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
+  background: #FFF7E6; /* 浅橙背景 */
+  color: #FF7D00; /* 橙色文字 */
 }
 
+/* 任务标签：薄荷绿 */
 .type-badge.type-task {
-  background: linear-gradient(135deg, #00B42A 0%, #52C41A 100%);
+  background: #E8F7ED; /* 浅绿背景 */
+  color: #52C41A; /* 绿色文字 */
 }
 
 .type-icon {
-  font-size: 32rpx;
+  font-size: 20rpx;
 }
 
 .card-content {
@@ -235,15 +277,15 @@ const handleCardClick = (item: RecommendItem) => {
 }
 
 .card-title {
-  font-size: 28rpx;
-  font-weight: 500;
+  font-size: 30rpx; /* 从 28rpx 调整为 30rpx，更醒目 */
+  font-weight: 600; /* 从 500 调整为 600，加粗标题 */
   color: #1D2129;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
-  line-height: 1.4;
+  line-height: 1.5; /* 从 1.4 调整为 1.5，增加行高 */
 }
 
 .card-desc {

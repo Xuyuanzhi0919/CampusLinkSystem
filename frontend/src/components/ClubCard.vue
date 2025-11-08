@@ -1,5 +1,5 @@
 <template>
-  <view class="club-card" @click="handleClick">
+  <view class="club-card" :class="{ active: isActive }" @click="handleClick" @touchstart="onTouchStart" @touchend="onTouchEnd">
     <!-- 社团 Logo 和信息 -->
     <view class="card-header">
       <image
@@ -35,6 +35,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import type { ClubItem } from '@/types/club'
 
 // Props
@@ -48,6 +49,25 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   click: [club: ClubItem]
 }>()
+
+// 点击激活状态
+const isActive = ref(false)
+
+/**
+ * 触摸开始
+ */
+const onTouchStart = () => {
+  isActive.value = true
+}
+
+/**
+ * 触摸结束
+ */
+const onTouchEnd = () => {
+  setTimeout(() => {
+    isActive.value = false
+  }, 150)
+}
 
 /**
  * 格式化时间
@@ -89,6 +109,13 @@ const handleClick = () => {
   padding: 24rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.club-card.active {
+  background: #F5F7FA;
+  transform: scale(0.98);
 }
 
 .card-header {

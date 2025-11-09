@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### 手动设置第一个用户的token
-@user1Token =
+@user1Token =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjAsInVzZXJuYW1lIjoiY2x1Yl9jcmVhdG9yXzAwMSIsImlhdCI6MTc2MjYwNDA1NiwiZXhwIjoxNzYyNjExMjU2fQ.kPjMtUinFq_sfLgXXWYLQe0XJXzIQ2q-4AiuX16Gviw
 
 ### 2. 注册第二个测试用户（普通成员）
 # @name user2Register
@@ -38,7 +38,7 @@ Content-Type: application/json
 }
 
 ### 手动设置第二个用户的token
-@user2Token =
+@user2Token =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjEsInVzZXJuYW1lIjoiY2x1Yl9tZW1iZXJfMDAyIiwiaWF0IjoxNzYyNjA0MDY4LCJleHAiOjE3NjI2MTEyNjh9.655btW1ipcO3SPuBXphOGuCb7h4QJ9MftqYg1H9UjhE
 
 ####################
 # 社团管理测试
@@ -92,7 +92,7 @@ Authorization: Bearer {{user1Token}}
 ####################
 
 ### 12. 用户1（社团创始人）创建活动
-POST {{baseUrl}}/activity/club/1/create
+POST {{baseUrl}}/activity/club/4/create
 Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
@@ -175,7 +175,7 @@ POST {{baseUrl}}/club/1/join
 Authorization: Bearer {{user2Token}}
 
 ### 28. 创始人尝试退出社团（应该失败）
-POST {{baseUrl}}/club/1/leave
+POST {{baseUrl}}/club/4/leave
 Authorization: Bearer {{user1Token}}
 
 ### 29. 普通成员尝试创建活动（应该失败）
@@ -215,7 +215,7 @@ Authorization: Bearer {{user2Token}}
 ####################
 
 ### 33. 用户1创建第二个活动（有参与人数限制）
-POST {{baseUrl}}/activity/club/1/create
+POST {{baseUrl}}/activity/club/4/create
 Authorization: Bearer {{user1Token}}
 Content-Type: application/json
 
@@ -249,7 +249,7 @@ Content-Type: application/json
 }
 
 ### 手动设置第三个用户的token
-@user3Token =
+@user3Token =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjIsInVzZXJuYW1lIjoiY2x1Yl9tZW1iZXJfMDAzIiwiaWF0IjoxNzYyNjA0MjM0LCJleHAiOjE3NjI2MTE0MzR9._-pwKjZo9q7-VUgrreZnWB8xU5hQEQTXGHfHUL_8tBA
 
 ### 36. 用户3加入社团
 POST {{baseUrl}}/club/1/join

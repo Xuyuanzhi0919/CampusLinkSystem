@@ -1,0 +1,303 @@
+### 私信模块接口测试
+
+### 变量定义
+@baseUrl = http://localhost:8080
+@token1 =
+@token2 =
+@userId1 = 1
+@userId2 = 2
+
+#####################
+### 1. 发送私信测试
+#####################
+
+### 1.1 发送文本消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "你好,我想和你交流一下课程资料的事情",
+  "msgType": 1
+}
+
+### 1.2 发送图片消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "https://example.com/image.jpg",
+  "msgType": 2
+}
+
+### 1.3 发送文件消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "https://example.com/document.pdf",
+  "msgType": 3
+}
+
+### 1.4 用户2回复消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token2}}
+
+{
+  "receiverId": {{userId1}},
+  "content": "好的,我有一些学习资料可以分享给你",
+  "msgType": 1
+}
+
+### 1.5 继续对话
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "太好了,非常感谢!",
+  "msgType": 1
+}
+
+#####################
+### 2. 获取聊天记录
+#####################
+
+### 2.1 获取与用户2的聊天记录(第1页)
+GET {{baseUrl}}/message/chat/{{userId2}}?page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 2.2 获取与用户2的聊天记录(第2页,测试分页)
+GET {{baseUrl}}/message/chat/{{userId2}}?page=2&pageSize=2
+Authorization: Bearer {{token1}}
+
+### 2.3 用户2获取与用户1的聊天记录
+GET {{baseUrl}}/message/chat/{{userId1}}?page=1&pageSize=20
+Authorization: Bearer {{token2}}
+
+#####################
+### 3. 会话列表
+#####################
+
+### 3.1 获取用户1的会话列表
+GET {{baseUrl}}/message/conversations
+Authorization: Bearer {{token1}}
+
+### 3.2 获取用户2的会话列表
+GET {{baseUrl}}/message/conversations
+Authorization: Bearer {{token2}}
+
+#####################
+### 4. 未读消息
+#####################
+
+### 4.1 获取用户1的未读消息总数
+GET {{baseUrl}}/message/unread-count
+Authorization: Bearer {{token1}}
+
+### 4.2 获取用户2的未读消息总数
+GET {{baseUrl}}/message/unread-count
+Authorization: Bearer {{token2}}
+
+#####################
+### 5. 标记已读
+#####################
+
+### 5.1 用户1标记来自用户2的消息为已读
+PUT {{baseUrl}}/message/read/{{userId2}}
+Authorization: Bearer {{token1}}
+
+### 5.2 用户2标记来自用户1的消息为已读
+PUT {{baseUrl}}/message/read/{{userId1}}
+Authorization: Bearer {{token2}}
+
+### 5.3 标记已读后再次查看未读数
+GET {{baseUrl}}/message/unread-count
+Authorization: Bearer {{token1}}
+
+#####################
+### 6. 删除消息
+#####################
+
+### 6.1 删除指定消息(需要先从聊天记录中获取messageId)
+DELETE {{baseUrl}}/message/1
+Authorization: Bearer {{token1}}
+
+#####################
+### 7. 异常情况测试
+#####################
+
+### 7.1 发送消息 - 接收者不存在
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": 99999,
+  "content": "测试消息",
+  "msgType": 1
+}
+
+### 7.2 发送消息 - 给自己发消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId1}},
+  "content": "给自己发消息",
+  "msgType": 1
+}
+
+### 7.3 发送消息 - 内容为空
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "",
+  "msgType": 1
+}
+
+### 7.4 发送消息 - 消息类型无效
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "测试消息",
+  "msgType": 5
+}
+
+### 7.5 删除消息 - 消息不存在
+DELETE {{baseUrl}}/message/99999
+Authorization: Bearer {{token1}}
+
+### 7.6 删除消息 - 无权限删除(删除别人的消息)
+DELETE {{baseUrl}}/message/1
+Authorization: Bearer {{token2}}
+
+### 7.7 未登录访问
+GET {{baseUrl}}/message/conversations
+
+#####################
+### 8. 多用户对话场景
+#####################
+
+### 8.1 用户1给用户3发消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": 3,
+  "content": "你好,用户3",
+  "msgType": 1
+}
+
+### 8.2 用户1给用户4发消息
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": 4,
+  "content": "你好,用户4",
+  "msgType": 1
+}
+
+### 8.3 查看用户1的会话列表(应该有多个会话)
+GET {{baseUrl}}/message/conversations
+Authorization: Bearer {{token1}}
+
+#####################
+### 9. 分页测试
+#####################
+
+### 9.1 发送多条消息以测试分页
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "消息1",
+  "msgType": 1
+}
+
+###
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "消息2",
+  "msgType": 1
+}
+
+###
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "消息3",
+  "msgType": 1
+}
+
+###
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "消息4",
+  "msgType": 1
+}
+
+###
+POST {{baseUrl}}/message/send
+Content-Type: application/json
+Authorization: Bearer {{token1}}
+
+{
+  "receiverId": {{userId2}},
+  "content": "消息5",
+  "msgType": 1
+}
+
+### 9.2 分页查询(pageSize=2)
+GET {{baseUrl}}/message/chat/{{userId2}}?page=1&pageSize=2
+Authorization: Bearer {{token1}}
+
+###
+GET {{baseUrl}}/message/chat/{{userId2}}?page=2&pageSize=2
+Authorization: Bearer {{token1}}
+
+###
+GET {{baseUrl}}/message/chat/{{userId2}}?page=3&pageSize=2
+Authorization: Bearer {{token1}}
+
+#####################
+### 使用说明
+#####################
+
+# 1. 首先需要登录获取token,可以使用auth-test.http中的登录接口
+# 2. 将获取的token填入上面的@token1和@token2变量中
+# 3. 确保数据库中存在对应的用户ID(userId1, userId2等)
+# 4. 按顺序执行测试用例,观察返回结果
+# 5. 某些测试(如删除消息)需要先执行发送消息获取messageId
+# 6. 会话列表会按最后消息时间倒序排列
+# 7. 未读消息数会在标记已读后归零

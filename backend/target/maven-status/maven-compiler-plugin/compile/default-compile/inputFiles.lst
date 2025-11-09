@@ -9,7 +9,9 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controlle
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\AuthController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\ClubController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\HealthController.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\MessageController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\QuestionController.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\ReportController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\ResourceController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\TaskController.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\controller\UserController.java
@@ -21,6 +23,9 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\club\
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\club\ClubResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\club\CreateClubRequest.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\LoginRequest.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\message\ConversationResponse.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\message\MessageResponse.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\message\SendMessageRequest.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\PointsLogVO.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\question\AnswerQuestionRequest.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\question\AnswerResponse.java
@@ -28,6 +33,9 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\quest
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\question\QuestionListResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\question\QuestionResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\RegisterRequest.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\report\CreateReportRequest.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\report\HandleReportRequest.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\report\ReportResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\resource\DownloadResourceResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\resource\ResourceListResponse.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\dto\resource\ResourceResponse.java
@@ -44,8 +52,10 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Ac
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Answer.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Club.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\ClubMember.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Message.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\PointsLog.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Question.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Report.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Resource.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\School.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\entity\Task.java
@@ -57,8 +67,10 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\Ac
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\AnswerMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\ClubMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\ClubMemberMapper.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\MessageMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\PointsLogMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\QuestionMapper.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\ReportMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\ResourceMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\SchoolMapper.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\TaskMapper.java
@@ -66,7 +78,9 @@ F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\mapper\Us
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\middleware\JwtAuthInterceptor.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\ActivityService.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\ClubService.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\MessageService.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\QuestionService.java
+F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\ReportService.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\ResourceService.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\TaskService.java
 F:\Cluade Code Project\CampusLink\backend\src\main\java\com\campuslink\service\UserService.java

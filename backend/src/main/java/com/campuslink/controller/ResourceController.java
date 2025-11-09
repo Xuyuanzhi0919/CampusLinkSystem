@@ -4,6 +4,7 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.resource.*;
 import com.campuslink.service.ResourceService;
+import com.campuslink.common.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -104,6 +105,65 @@ public class ResourceController {
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
                 category, schoolId, q, page, pageSize, "created_at", "desc"
         );
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取待审核资源列表", description = "管理员获取所有待审核的资源")
+    @GetMapping("/pending")
+    public Result<PageResult<ResourceListResponse>> getPendingResources(
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestAttribute("role") String role
+    ) {
+        // 验证管理员权限
+        if (!"teacher".equals(role)) {
+            return Result.error(com.campuslink.common.ResultCode.PERMISSION_DENIED);
+        }
+
+        PageResult<ResourceListResponse> result = resourceService.getPendingResources(page, pageSize);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "审核通过资源", description = "管理员审核通过资源")
+    @PutMapping("/{id}/approve")
+    public Result<Void> approveResource(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @RequestAttribute("role") String role
+    ) {
+        // 验证管理员权限
+        if (!"teacher".equals(role)) {
+            return Result.error(com.campuslink.common.ResultCode.PERMISSION_DENIED);
+        }
+
+        resourceService.approveResource(id);
+        return Result.success("审核通过");
+    }
+
+    @Operation(summary = "拒绝资源", description = "管理员拒绝资源并说明原因")
+    @PutMapping("/{id}/reject")
+    public Result<Void> rejectResource(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Valid @RequestBody ReviewResourceRequest request,
+            @RequestAttribute("role") String role
+    ) {
+        // 验证管理员权限
+        if (!"teacher".equals(role)) {
+            return Result.error(com.campuslink.common.ResultCode.PERMISSION_DENIED);
+        }
+
+        resourceService.rejectResource(id, request.getRejectReason());
+        return Result.success("已拒绝资源");
+    }
+
+    @Operation(summary = "获取我上传的资源列表")
+    @GetMapping("/my")
+    public Result<PageResult<ResourceListResponse>> getMyResources(
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        PageResult<ResourceListResponse> result = resourceService.getMyResources(userId, page, pageSize);
         return Result.success(result);
     }
 }

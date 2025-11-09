@@ -1,0 +1,419 @@
+####################
+# 举报模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册普通测试用户
+# @name reportUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "report_user_001",
+  "password": "123456",
+  "nickname": "举报测试用户",
+  "email": "report_user@test.com",
+  "phone": "13800000010",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 2. 注册管理员测试用户
+# @name reportAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "report_admin_001",
+  "password": "123456",
+  "nickname": "举报管理员",
+  "email": "report_admin@test.com",
+  "phone": "13800000011",
+  "schoolId": 1,
+  "role": "admin"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+# 普通用户token（从步骤1的响应中获取）
+@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjcsInVzZXJuYW1lIjoicmVwb3J0X3VzZXJfMDAxIiwiaWF0IjoxNzYyNjA2ODY3LCJleHAiOjE3NjI2MTQwNjd9.mJyjkjjiZfRsO7K5m2wix7BJTLlQ5oPeIDwqlXBByrY
+# 管理员token（从步骤2的响应中获取）
+@adminToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjI4LCJ1c2VybmFtZSI6InJlcG9ydF9hZG1pbl8wMDEiLCJpYXQiOjE3NjI2MDY4NzksImV4cCI6MTc2MjYxNDA3OX0.eCzoXTzb_637j95MKufL5ug3STvQXqI4L_7VOA0aJqo
+
+####################
+# 创建举报测试
+####################
+
+### 3. 举报帖子 - 垃圾信息
+# @name reportPost
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 1,
+  "reasonType": 1,
+  "description": "这个帖子是广告垃圾信息,请尽快处理",
+  "evidenceImages": "https://example.com/evidence1.jpg,https://example.com/evidence2.jpg"
+}
+
+### 4. 举报评论 - 违规内容
+# @name reportComment
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 2,
+  "targetId": 1,
+  "reasonType": 2,
+  "description": "该评论包含违规内容,涉及敏感话题",
+  "evidenceImages": "https://example.com/evidence3.jpg"
+}
+
+### 5. 举报用户 - 骚扰辱骂
+# @name reportUser
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 3,
+  "targetId": 2,
+  "reasonType": 3,
+  "description": "该用户在私信中对我进行骚扰和辱骂",
+  "evidenceImages": "https://example.com/evidence4.jpg"
+}
+
+### 6. 举报活动 - 侵权
+# @name reportActivity
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 4,
+  "targetId": 1,
+  "reasonType": 4,
+  "description": "该活动未经授权使用了我们社团的名称和logo",
+  "evidenceImages": ""
+}
+
+### 7. 举报其他原因
+# @name reportOther
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 2,
+  "reasonType": 5,
+  "description": "其他原因:该帖子内容与板块主题不符",
+  "evidenceImages": ""
+}
+
+####################
+# 获取举报列表
+####################
+
+### 8. 获取所有举报列表(管理员)
+# @name getAllReports
+GET {{baseUrl}}/report/list?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 9. 按状态筛选 - 待处理
+# @name getPendingReports
+GET {{baseUrl}}/report/list?status=0&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 10. 按状态筛选 - 已处理
+# @name getHandledReports
+GET {{baseUrl}}/report/list?status=1&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 11. 按状态筛选 - 已驳回
+# @name getRejectedReports
+GET {{baseUrl}}/report/list?status=2&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 12. 按举报类型筛选 - 帖子
+# @name getPostReports
+GET {{baseUrl}}/report/list?reportType=1&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 13. 按举报类型筛选 - 评论
+# @name getCommentReports
+GET {{baseUrl}}/report/list?reportType=2&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 14. 按举报类型筛选 - 用户
+# @name getUserReports
+GET {{baseUrl}}/report/list?reportType=3&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 15. 组合筛选 - 待处理的帖子举报
+# @name getPendingPostReports
+GET {{baseUrl}}/report/list?status=0&reportType=1&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+####################
+# 获取我的举报
+####################
+
+### 16. 获取我的举报列表
+# @name getMyReports
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+Authorization: Bearer {{userToken}}
+
+### 17. 获取我的举报列表(第2页)
+# @name getMyReportsPage2
+GET {{baseUrl}}/report/my?page=2&pageSize=10
+Authorization: Bearer {{userToken}}
+
+####################
+# 获取举报详情
+####################
+
+### 18. 获取举报详情(需要先创建举报获取reportId)
+# @name getReportDetail
+GET {{baseUrl}}/report/1
+Authorization: Bearer {{userToken}}
+
+####################
+# 处理举报
+####################
+
+### 19. 处理举报 - 已处理(需要管理员权限)
+# @name handleReportAccept
+PUT {{baseUrl}}/report/1/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": 1,
+  "handleResult": "经核实,该内容确实违反社区规范,已对相关内容进行删除处理,并对发布者进行警告"
+}
+
+### 20. 处理举报 - 已驳回(需要管理员权限)
+# @name handleReportReject
+PUT {{baseUrl}}/report/2/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": 2,
+  "handleResult": "经核实,该内容未发现明显违规,驳回此次举报"
+}
+
+####################
+# 删除举报(撤销)
+####################
+
+### 21. 撤销举报(只能撤销待处理的举报)
+# @name deleteReport
+DELETE {{baseUrl}}/report/3
+Authorization: Bearer {{userToken}}
+
+####################
+# 获取待处理数量
+####################
+
+### 22. 获取待处理举报数量(管理员)
+# @name getPendingCount
+GET {{baseUrl}}/report/pending-count
+Authorization: Bearer {{adminToken}}
+
+####################
+# 异常情况测试
+####################
+
+### 23. 举报不存在的帖子
+# @name reportNonExistPost
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 99999,
+  "reasonType": 1,
+  "description": "测试举报不存在的帖子",
+  "evidenceImages": ""
+}
+
+### 24. 重复举报同一内容
+# @name duplicateReport
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 1,
+  "reasonType": 1,
+  "description": "重复举报测试",
+  "evidenceImages": ""
+}
+
+### 25. 举报类型无效
+# @name invalidReportType
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 10,
+  "targetId": 1,
+  "reasonType": 1,
+  "description": "测试无效的举报类型",
+  "evidenceImages": ""
+}
+
+### 26. 举报原因类型无效
+# @name invalidReasonType
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 1,
+  "reasonType": 10,
+  "description": "测试无效的举报原因",
+  "evidenceImages": ""
+}
+
+### 27. 举报描述为空
+# @name emptyDescription
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 1,
+  "reasonType": 1,
+  "description": "",
+  "evidenceImages": ""
+}
+
+### 28. 处理不存在的举报
+# @name handleNonExistReport
+PUT {{baseUrl}}/report/99999/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": 1,
+  "handleResult": "处理结果"
+}
+
+### 29. 处理已处理过的举报
+# @name handleAlreadyHandled
+PUT {{baseUrl}}/report/1/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": 1,
+  "handleResult": "重复处理测试"
+}
+
+### 30. 删除不存在的举报
+# @name deleteNonExistReport
+DELETE {{baseUrl}}/report/99999
+Authorization: Bearer {{userToken}}
+
+### 31. 删除别人的举报
+# @name deleteOthersReport
+DELETE {{baseUrl}}/report/1
+Authorization: Bearer {{adminToken}}
+
+### 32. 删除已处理的举报
+# @name deleteHandledReport
+DELETE {{baseUrl}}/report/1
+Authorization: Bearer {{userToken}}
+
+### 33. 未登录访问
+# @name accessWithoutAuth
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+
+####################
+# 综合场景测试
+####################
+
+### 34. 场景1: 用户举报违规内容的完整流程 - Step 1: 用户发现违规帖子并举报
+# @name scenario1Step1
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 5,
+  "reasonType": 2,
+  "description": "该帖子包含不当内容,请管理员审核",
+  "evidenceImages": "https://example.com/evidence.jpg"
+}
+
+### 35. 场景1 - Step 2: 用户查看自己的举报记录
+# @name scenario1Step2
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+Authorization: Bearer {{userToken}}
+
+### 36. 场景1 - Step 3: 管理员查看待处理举报
+# @name scenario1Step3
+GET {{baseUrl}}/report/list?status=0&page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 37. 场景1 - Step 4: 管理员查看举报详情
+# @name scenario1Step4
+GET {{baseUrl}}/report/5
+Authorization: Bearer {{adminToken}}
+
+### 38. 场景1 - Step 5: 管理员处理举报
+# @name scenario1Step5
+PUT {{baseUrl}}/report/5/handle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": 1,
+  "handleResult": "已核实并删除违规内容,感谢您的举报"
+}
+
+### 39. 场景1 - Step 6: 用户再次查看举报记录,确认已处理
+# @name scenario1Step6
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+Authorization: Bearer {{userToken}}
+
+### 40. 场景2: 用户撤销举报 - Step 1: 用户举报
+# @name scenario2Step1
+POST {{baseUrl}}/report
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "reportType": 1,
+  "targetId": 6,
+  "reasonType": 5,
+  "description": "误操作举报,准备撤销",
+  "evidenceImages": ""
+}
+
+### 41. 场景2 - Step 2: 查看我的举报,获取reportId
+# @name scenario2Step2
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+Authorization: Bearer {{userToken}}
+
+### 42. 场景2 - Step 3: 撤销举报
+# @name scenario2Step3
+DELETE {{baseUrl}}/report/6
+Authorization: Bearer {{userToken}}
+
+### 43. 场景2 - Step 4: 确认已撤销
+# @name scenario2Step4
+GET {{baseUrl}}/report/my?page=1&pageSize=20
+Authorization: Bearer {{userToken}}

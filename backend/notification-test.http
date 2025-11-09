@@ -1,0 +1,634 @@
+### 通知系统API测试
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 0. 准备测试数据
+
+### 0.1 注册测试用户1
+# @name notifyUser1
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "notify_user_001",
+  "password": "123456",
+  "nickname": "通知测试用户1",
+  "email": "notify001@campus.com",
+  "phone": "13800000021",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.2 注册测试用户2
+# @name notifyUser2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "notify_user_002",
+  "password": "123456",
+  "nickname": "通知测试用户2",
+  "email": "notify002@campus.com",
+  "phone": "13800000022",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.3 注册测试用户3
+# @name notifyUser3
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "notify_user_003",
+  "password": "123456",
+  "nickname": "通知测试用户3",
+  "email": "notify003@campus.com",
+  "phone": "13800000023",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.4 注册管理员用户
+# @name adminUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "notify_admin",
+  "password": "123456",
+  "nickname": "通知管理员",
+  "email": "notifyadmin@campus.com",
+  "phone": "13800000024",
+  "schoolId": 1,
+  "role": "teacher"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+
+# 用户1的token（从步骤0.1的响应中获取）
+@token1 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjksInVzZXJuYW1lIjoibm90aWZ5X3VzZXJfMDAxIiwiaWF0IjoxNzYyNjA3Njc3LCJleHAiOjE3NjI2MTQ4Nzd9.YiwR0bZRYuEv77p5vBsgPJsacXp__gP0Kek0panTDuM
+
+# 用户2的token（从步骤0.2的响应中获取）
+@token2 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MzAsInVzZXJuYW1lIjoibm90aWZ5X3VzZXJfMDAyIiwiaWF0IjoxNzYyNjA3Njk0LCJleHAiOjE3NjI2MTQ4OTR9.o8RzfDOG2y6Ea9WAkNDvCzNDLZdrPCqCYw_ePoOYQDo
+
+# 用户3的token（从步骤0.3的响应中获取）
+@token3 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MzEsInVzZXJuYW1lIjoibm90aWZ5X3VzZXJfMDAzIiwiaWF0IjoxNzYyNjA3NzA1LCJleHAiOjE3NjI2MTQ5MDV9.gEK_dVOKwHApXeiwqaHtdh01fqMp6qUnNxxCAfOSTfQ
+
+# 管理员的token（从步骤0.4的响应中获取）
+@adminToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidGVhY2hlciIsInVzZXJJZCI6MzIsInVzZXJuYW1lIjoibm90aWZ5X2FkbWluIiwiaWF0IjoxNzYyNjA3NzE2LCJleHAiOjE3NjI2MTQ5MTZ9.sbjt598Xofufa1PU7vMlgWy2SAuf68y-MsYT_d5SHNs
+
+### ==================== 1. 发送通知（管理员功能） ====================
+
+### 1.1 管理员发送系统通知给指定用户
+# @name sendToUser
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "系统维护通知",
+  "content": "系统将于今晚22:00-23:00进行维护升级，届时将暂停服务，请提前做好准备。",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### 1.2 管理员发送回答通知
+# @name sendAnswerNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "你的问题有新回答",
+  "content": "用户「通知测试用户2」回答了你的问题「如何学习Spring Boot」",
+  "notifyType": "answer",
+  "relatedType": "question",
+  "relatedId": 1
+}
+
+### 1.3 管理员发送任务通知
+# @name sendTaskNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 2,
+  "title": "新任务分配",
+  "content": "你被分配了新任务「完成图书馆志愿服务」，请在本周五前完成。",
+  "notifyType": "task",
+  "relatedType": "task",
+  "relatedId": 1
+}
+
+### 1.4 管理员发送活动通知
+# @name sendActivityNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "活动即将开始",
+  "content": "你报名的活动「校园马拉松」将于明天上午8:00开始，请准时参加。",
+  "notifyType": "activity",
+  "relatedType": "activity",
+  "relatedId": 1
+}
+
+### 1.5 管理员发送私信通知
+# @name sendMessageNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 2,
+  "title": "你收到了新私信",
+  "content": "用户「通知测试用户1」给你发送了私信",
+  "notifyType": "message",
+  "relatedType": "message",
+  "relatedId": 1
+}
+
+### 1.6 管理员发送举报处理通知
+# @name sendReportNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "举报处理结果",
+  "content": "你举报的内容已经处理完毕，感谢你对平台的监督。",
+  "notifyType": "report",
+  "relatedType": "report",
+  "relatedId": 1
+}
+
+### 1.7 管理员发送社团通知
+# @name sendClubNotify
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 3,
+  "title": "社团活动通知",
+  "content": "计算机协会将于本周六举行技术分享会，欢迎参加。",
+  "notifyType": "club",
+  "relatedType": "club",
+  "relatedId": 1
+}
+
+### 1.8 管理员发送通知给所有用户（群发）
+# @name sendToAll
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": null,
+  "title": "平台公告",
+  "content": "欢迎使用CampusLink平台！我们致力于为高校师生提供便捷的资源互助与问答服务。",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### 1.9 非管理员尝试发送通知（应该失败）
+# @name unauthorizedSend
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{token3}}
+
+{
+  "userId": 2,
+  "title": "测试通知",
+  "content": "这是一条测试通知",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### ==================== 2. 获取通知列表 ====================
+
+### 2.1 获取我的所有通知（第一页）
+# @name getMyNotifications
+GET {{baseUrl}}/notification/my?page=1&pageSize=10
+Authorization: Bearer {{token1}}
+
+### 2.2 获取我的所有通知（第二页）
+# @name getMyNotificationsPage2
+GET {{baseUrl}}/notification/my?page=2&pageSize=5
+Authorization: Bearer {{token1}}
+
+### 2.3 获取我的所有通知（默认分页参数）
+# @name getMyNotificationsDefault
+GET {{baseUrl}}/notification/my
+Authorization: Bearer {{token2}}
+
+### 2.4 用户2获取通知列表
+# @name getUser2Notifications
+GET {{baseUrl}}/notification/my?page=1&pageSize=20
+Authorization: Bearer {{token2}}
+
+### 2.5 用户3获取通知列表
+# @name getUser3Notifications
+GET {{baseUrl}}/notification/my
+Authorization: Bearer {{token3}}
+
+### ==================== 3. 获取未读通知 ====================
+
+### 3.1 获取我的未读通知列表
+# @name getUnreadNotifications
+GET {{baseUrl}}/notification/unread?page=1&pageSize=10
+Authorization: Bearer {{token1}}
+
+### 3.2 获取未读通知（第二页）
+# @name getUnreadPage2
+GET {{baseUrl}}/notification/unread?page=2&pageSize=5
+Authorization: Bearer {{token1}}
+
+### 3.3 用户2获取未读通知
+# @name getUser2Unread
+GET {{baseUrl}}/notification/unread
+Authorization: Bearer {{token2}}
+
+### 3.4 用户3获取未读通知
+# @name getUser3Unread
+GET {{baseUrl}}/notification/unread
+Authorization: Bearer {{token3}}
+
+### ==================== 4. 获取未读通知数量 ====================
+
+### 4.1 用户1获取未读通知数量
+# @name getUnreadCount1
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token1}}
+
+### 4.2 用户2获取未读通知数量
+# @name getUnreadCount2
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token2}}
+
+### 4.3 用户3获取未读通知数量
+# @name getUnreadCount3
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token3}}
+
+### ==================== 5. 标记通知为已读 ====================
+
+### 5.1 标记指定通知为已读（通知ID需要从上面的查询中获取,请先执行步骤2.1获取通知列表）
+# @name markAsRead
+# 注意：请将下面的1替换为从步骤2.1查询结果中获取的实际notificationId
+PUT {{baseUrl}}/notification/1/read
+Authorization: Bearer {{token1}}
+
+### 5.2 标记另一条通知为已读
+# @name markAsRead2
+# 注意：请将下面的2替换为从步骤2.1查询结果中获取的实际notificationId
+PUT {{baseUrl}}/notification/25/read
+Authorization: Bearer {{token1}}
+
+### 5.3 用户2标记通知为已读
+# @name markAsRead3
+PUT {{baseUrl}}/notification/3/read
+Authorization: Bearer {{token2}}
+
+### 5.4 尝试标记不属于自己的通知（应该失败）
+# @name unauthorizedRead
+PUT {{baseUrl}}/notification/1/read
+Authorization: Bearer {{token2}}
+
+### 5.5 标记不存在的通知（应该失败）
+# @name markNonexistent
+PUT {{baseUrl}}/notification/99999/read
+Authorization: Bearer {{token1}}
+
+### ==================== 6. 标记所有通知为已读 ====================
+
+### 6.1 用户1标记所有通知为已读
+# @name markAllAsRead1
+PUT {{baseUrl}}/notification/read-all
+Authorization: Bearer {{token1}}
+
+### 6.2 用户2标记所有通知为已读
+# @name markAllAsRead2
+PUT {{baseUrl}}/notification/read-all
+Authorization: Bearer {{token2}}
+
+### 6.3 用户3标记所有通知为已读
+# @name markAllAsRead3
+PUT {{baseUrl}}/notification/read-all
+Authorization: Bearer {{token3}}
+
+### 6.4 标记所有为已读后再次查询未读数量（应该为0）
+# @name checkUnreadAfterMarkAll
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token1}}
+
+### ==================== 7. 删除通知 ====================
+
+### 7.1 删除指定通知
+# @name deleteNotification
+DELETE {{baseUrl}}/notification/25
+Authorization: Bearer {{token1}}
+
+### 7.2 删除另一条通知
+# @name deleteNotification2
+DELETE {{baseUrl}}/notification/2
+Authorization: Bearer {{token1}}
+
+### 7.3 用户2删除通知
+# @name deleteNotification3
+DELETE {{baseUrl}}/notification/3
+Authorization: Bearer {{token2}}
+
+### 7.4 尝试删除不属于自己的通知（应该失败）
+# @name unauthorizedDelete
+DELETE {{baseUrl}}/notification/4
+Authorization: Bearer {{token2}}
+
+### 7.5 删除不存在的通知（应该失败）
+# @name deleteNonexistent
+DELETE {{baseUrl}}/notification/99999
+Authorization: Bearer {{token1}}
+
+### 7.6 删除后查询通知列表（验证删除成功）
+# @name checkAfterDelete
+GET {{baseUrl}}/notification/my
+Authorization: Bearer {{token1}}
+
+### ==================== 8. 清空已读通知 ====================
+
+### 8.1 用户1清空所有已读通知
+# @name clearRead1
+DELETE {{baseUrl}}/notification/clear-read
+Authorization: Bearer {{token1}}
+
+### 8.2 用户2清空所有已读通知
+# @name clearRead2
+DELETE {{baseUrl}}/notification/clear-read
+Authorization: Bearer {{token2}}
+
+### 8.3 用户3清空所有已读通知
+# @name clearRead3
+DELETE {{baseUrl}}/notification/clear-read
+Authorization: Bearer {{token3}}
+
+### 8.4 清空后查询通知列表（只剩未读通知）
+# @name checkAfterClear
+GET {{baseUrl}}/notification/my
+Authorization: Bearer {{token1}}
+
+### ==================== 9. 综合测试场景 ====================
+
+### 9.1 发送通知 -> 查询未读 -> 标记已读 -> 再次查询
+# Step 1: 发送通知
+# @name scenario1Step1
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "综合测试通知",
+  "content": "这是一条用于测试的通知",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### 9.2 Step 2: 查询未读通知数量
+# @name scenario1Step2
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token1}}
+
+### 9.3 Step 3: 获取未读通知列表
+# @name scenario1Step3
+GET {{baseUrl}}/notification/unread
+Authorization: Bearer {{token1}}
+
+### 9.4 Step 4: 标记所有为已读
+# @name scenario1Step4
+PUT {{baseUrl}}/notification/read-all
+Authorization: Bearer {{token1}}
+
+### 9.5 Step 5: 再次查询未读数量（应该为0）
+# @name scenario1Step5
+GET {{baseUrl}}/notification/unread-count
+Authorization: Bearer {{token1}}
+
+### 9.6 Step 6: 清空已读通知
+# @name scenario1Step6
+DELETE {{baseUrl}}/notification/clear-read
+Authorization: Bearer {{token1}}
+
+### 9.7 Step 7: 查询所有通知（应该为空或很少）
+# @name scenario1Step7
+GET {{baseUrl}}/notification/my
+Authorization: Bearer {{token1}}
+
+### ==================== 10. 批量发送测试 ====================
+
+### 10.1 发送多条通知给用户1
+# @name batchSend1
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "批量测试通知1",
+  "content": "这是第1条批量测试通知",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### 10.2 发送第2条
+# @name batchSend2
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "批量测试通知2",
+  "content": "这是第2条批量测试通知",
+  "notifyType": "answer",
+  "relatedType": "question",
+  "relatedId": 1
+}
+
+### 10.3 发送第3条
+# @name batchSend3
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "批量测试通知3",
+  "content": "这是第3条批量测试通知",
+  "notifyType": "task",
+  "relatedType": "task",
+  "relatedId": 1
+}
+
+### 10.4 发送第4条
+# @name batchSend4
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "批量测试通知4",
+  "content": "这是第4条批量测试通知",
+  "notifyType": "activity",
+  "relatedType": "activity",
+  "relatedId": 1
+}
+
+### 10.5 发送第5条
+# @name batchSend5
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "批量测试通知5",
+  "content": "这是第5条批量测试通知",
+  "notifyType": "message",
+  "relatedType": "message",
+  "relatedId": 1
+}
+
+### 10.6 查询所有通知（应该有5条）
+# @name checkBatchResult
+GET {{baseUrl}}/notification/my?pageSize=20
+Authorization: Bearer {{token1}}
+
+### 10.7 分页查询（每页2条）
+# @name checkBatchPagination
+GET {{baseUrl}}/notification/my?page=1&pageSize=2
+Authorization: Bearer {{token1}}
+
+### ==================== 11. 通知类型测试 ====================
+
+### 11.1 测试所有通知类型 - 系统通知
+# @name typeSystem
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "系统通知类型测试",
+  "content": "测试系统通知类型",
+  "notifyType": "system",
+  "relatedType": null,
+  "relatedId": null
+}
+
+### 11.2 回答通知
+# @name typeAnswer
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "回答通知类型测试",
+  "content": "测试回答通知类型",
+  "notifyType": "answer",
+  "relatedType": "question",
+  "relatedId": 1
+}
+
+### 11.3 任务通知
+# @name typeTask
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "任务通知类型测试",
+  "content": "测试任务通知类型",
+  "notifyType": "task",
+  "relatedType": "task",
+  "relatedId": 1
+}
+
+### 11.4 活动通知
+# @name typeActivity
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "活动通知类型测试",
+  "content": "测试活动通知类型",
+  "notifyType": "activity",
+  "relatedType": "activity",
+  "relatedId": 1
+}
+
+### 11.5 私信通知
+# @name typeMessage
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "私信通知类型测试",
+  "content": "测试私信通知类型",
+  "notifyType": "message",
+  "relatedType": "message",
+  "relatedId": 1
+}
+
+### 11.6 举报通知
+# @name typeReport
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "举报通知类型测试",
+  "content": "测试举报通知类型",
+  "notifyType": "report",
+  "relatedType": "report",
+  "relatedId": 1
+}
+
+### 11.7 社团通知
+# @name typeClub
+POST {{baseUrl}}/notification/send
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": 1,
+  "title": "社团通知类型测试",
+  "content": "测试社团通知类型",
+  "notifyType": "club",
+  "relatedType": "club",
+  "relatedId": 1
+}
+
+### 11.8 查询所有类型通知
+# @name checkAllTypes
+GET {{baseUrl}}/notification/my?pageSize=50
+Authorization: Bearer {{token1}}

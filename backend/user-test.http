@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### 手动设置token（从上面的注册响应中复制）
-@userToken =
+@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjMsInVzZXJuYW1lIjoidXNlcl90ZXN0XzAwMSIsImlhdCI6MTc2MjYwNDc5MSwiZXhwIjoxNzYyNjExOTkxfQ.D_qOKs7r5ZZhPCjnS7hPqqw7CLdMk2SCj1B8JOV6XYg
 
 ####################
 # 个人资料管理
@@ -116,7 +116,7 @@ Content-Type: application/json
 }
 
 ### 设置第二个用户的token
-@userToken2 =
+@userToken2 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjQsInVzZXJuYW1lIjoidXNlcl90ZXN0XzAwMiIsImlhdCI6MTc2MjYwNDg0MywiZXhwIjoxNzYyNjEyMDQzfQ.tkEnbvsiTaB6wXujlzKZUHKU2lnSgGWIfiEfSOo1Fh4
 
 
 ### 11. 第二个用户接单（假设任务ID为上面发布的任务）

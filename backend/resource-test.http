@@ -1,0 +1,660 @@
+### 资源共享模块API测试
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 0. 准备测试数据
+
+### 0.1 注册测试用户1（资源上传者）
+# @name resourceUser1
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "resource_user_001",
+  "password": "123456",
+  "nickname": "资源上传者1",
+  "email": "resource001@campus.com",
+  "phone": "13900000031",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.2 注册测试用户2（资源下载者）
+# @name resourceUser2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "resource_user_002",
+  "password": "123456",
+  "nickname": "资源下载者1",
+  "email": "resource002@campus.com",
+  "phone": "13900000032",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.3 注册测试用户3（另一个下载者）
+# @name resourceUser3
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "resource_user_003",
+  "password": "123456",
+  "nickname": "资源下载者2",
+  "email": "resource003@campus.com",
+  "phone": "13900000033",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 0.4 注册管理员用户（用于审核资源）
+# @name resourceAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "resource_admin",
+  "password": "123456",
+  "nickname": "资源管理员",
+  "email": "resadmin@campus.com",
+  "phone": "13900000034",
+  "schoolId": 1,
+  "role": "teacher"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+
+# 上传者的token（从步骤0.1的响应中获取）
+@uploaderToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MzcsInVzZXJuYW1lIjoicmVzb3VyY2VfdXNlcl8wMDEiLCJpYXQiOjE3NjI2NjQ5NzEsImV4cCI6MTc2MjY3MjE3MX0.y1DBGm3a1SHZk4Kt5uU-oCSXcg_UdCzLQfaCzC8CUu4
+# 下载者1的token（从步骤0.2的响应中获取）
+@downloaderToken1 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MzgsInVzZXJuYW1lIjoicmVzb3VyY2VfdXNlcl8wMDIiLCJpYXQiOjE3NjI2NjQ5ODUsImV4cCI6MTc2MjY3MjE4NX0.OYtfVtDUJdxXRQcPrwyhU6mjB8ipX0E-Mg4P-DxC7Jc
+# 下载者2的token（从步骤0.3的响应中获取）
+@downloaderToken2 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MzksInVzZXJuYW1lIjoicmVzb3VyY2VfdXNlcl8wMDMiLCJpYXQiOjE3NjI2NjUwMDQsImV4cCI6MTc2MjY3MjIwNH0.NvLMsoCJExy4-nn1q2ipzaulFjoy9PI4irYG7dq_t2Q
+# 管理员的token（从步骤0.4的响应中获取）
+@adminToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidGVhY2hlciIsInVzZXJJZCI6NDAsInVzZXJuYW1lIjoicmVzb3VyY2VfYWRtaW4iLCJpYXQiOjE3NjI2NjUwMTYsImV4cCI6MTc2MjY3MjIxNn0.f7N2_5yyn9hJVgE5VeERJ7iMMkSC7stbBJ95ZrfGF4Y
+
+### ==================== 1. 上传资源 ====================
+
+### 1.1 上传PDF课件资源
+# @name uploadPdfResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "数据结构与算法 - 期末复习资料",
+  "description": "包含所有章节的知识点总结、经典例题和历年真题解析。适合期末复习使用。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/data-structure-review.pdf",
+  "fileName": "数据结构期末复习.pdf",
+  "fileSize": 5242880,
+  "fileType": "pdf",
+  "category": "课件",
+  "courseName": "数据结构与算法",
+  "schoolId": 1,
+  "score": 5
+}
+
+### 1.2 上传PPT课件
+# @name uploadPptResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "操作系统 - 进程管理PPT",
+  "description": "操作系统第三章进程管理完整PPT，包含详细的注释和示例代码。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/os-process.pptx",
+  "fileName": "进程管理.pptx",
+  "fileSize": 3145728,
+  "fileType": "pptx",
+  "category": "课件",
+  "courseName": "操作系统",
+  "schoolId": 1,
+  "score": 3
+}
+
+### 1.3 上传试题资源
+# @name uploadExamResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "高等数学 - 2024年期中考试试卷",
+  "description": "2024年春季学期高等数学期中考试真题及详细答案解析。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/math-midterm-2024.pdf",
+  "fileName": "高数期中试卷2024.pdf",
+  "fileSize": 2097152,
+  "fileType": "pdf",
+  "category": "试题",
+  "courseName": "高等数学",
+  "schoolId": 1,
+  "score": 8
+}
+
+### 1.4 上传笔记资源
+# @name uploadNoteResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "计算机网络 - 手写笔记扫描版",
+  "description": "计算机网络课程完整手写笔记，包含各章节重点知识和老师补充内容。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/network-notes.pdf",
+  "fileName": "计网笔记.pdf",
+  "fileSize": 10485760,
+  "fileType": "pdf",
+  "category": "笔记",
+  "courseName": "计算机网络",
+  "schoolId": 1,
+  "score": 10
+}
+
+### 1.5 上传代码资源
+# @name uploadCodeResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "数据库课程设计 - 图书管理系统源码",
+  "description": "完整的图书管理系统项目源码，包含前端、后端和数据库脚本。成绩优秀。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/library-system.zip",
+  "fileName": "图书管理系统.zip",
+  "fileSize": 15728640,
+  "fileType": "zip",
+  "category": "代码",
+  "courseName": "数据库原理",
+  "schoolId": 1,
+  "score": 15
+}
+
+### 1.6 上传Word文档资源
+# @name uploadDocResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "软件工程 - 需求分析模板",
+  "description": "标准的需求分析文档模板，包含所有必需章节和示例内容。",
+  "fileUrl": "https://campuslink-oss.example.com/resources/requirement-template.docx",
+  "fileName": "需求分析模板.docx",
+  "fileSize": 1048576,
+  "fileType": "docx",
+  "category": "其他",
+  "courseName": "软件工程",
+  "schoolId": 1,
+  "score": 2
+}
+
+### 1.7 上传资源（缺少必填字段 - 应该失败）
+# @name uploadInvalidResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "测试资源",
+  "description": "这是一个测试"
+}
+
+### 1.8 上传资源（积分超出范围 - 应该失败）
+# @name uploadOverScoreResource
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "高分资源测试",
+  "description": "测试积分限制",
+  "fileUrl": "https://campuslink-oss.example.com/resources/test.pdf",
+  "fileName": "test.pdf",
+  "fileSize": 1024,
+  "fileType": "pdf",
+  "category": "课件",
+  "courseName": "测试",
+  "score": 25
+}
+
+### ==================== 2. 获取资源列表 ====================
+
+### 2.1 获取所有资源列表（默认分页）
+# @name getAllResources
+GET {{baseUrl}}/resource/list
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.2 获取资源列表（指定分页参数）
+# @name getResourcesWithPagination
+GET {{baseUrl}}/resource/list?page=1&pageSize=5
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.3 按分类筛选 - 课件
+# @name getResourcesByCategory
+GET {{baseUrl}}/resource/list?category=课件&page=1&pageSize=10
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.4 按分类筛选 - 试题
+# @name getExamResources
+GET {{baseUrl}}/resource/list?category=试题
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.5 按分类筛选 - 笔记
+# @name getNoteResources
+GET {{baseUrl}}/resource/list?category=笔记
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.6 按学校筛选
+# @name getResourcesBySchool
+GET {{baseUrl}}/resource/list?schoolId=1
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.7 按下载量排序（降序）
+# @name getResourcesSortedByDownloads
+GET {{baseUrl}}/resource/list?sortBy=downloads&sortOrder=desc
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.8 按积分排序（升序）
+# @name getResourcesSortedByScore
+GET {{baseUrl}}/resource/list?sortBy=score&sortOrder=asc
+Authorization: Bearer {{downloaderToken1}}
+
+### 2.9 组合筛选：课件 + 学校1 + 按时间降序
+# @name getResourcesWithFilters
+GET {{baseUrl}}/resource/list?category=课件&schoolId=1&sortBy=created_at&sortOrder=desc
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 3. 搜索资源 ====================
+
+### 3.1 搜索资源 - 关键词"数据结构"
+# @name searchDataStructure
+GET {{baseUrl}}/resource/search?q=数据结构
+Authorization: Bearer {{downloaderToken1}}
+
+### 3.2 搜索资源 - 关键词"期末"
+# @name searchFinalExam
+GET {{baseUrl}}/resource/search?q=期末
+Authorization: Bearer {{downloaderToken1}}
+
+### 3.3 搜索资源 - 关键词"PPT"
+# @name searchPpt
+GET {{baseUrl}}/resource/search?q=PPT
+Authorization: Bearer {{downloaderToken1}}
+
+### 3.4 搜索 + 分类筛选
+# @name searchWithCategory
+GET {{baseUrl}}/resource/search?q=数据&category=课件
+Authorization: Bearer {{downloaderToken1}}
+
+### 3.5 搜索 + 学校筛选
+# @name searchWithSchool
+GET {{baseUrl}}/resource/search?q=系统&schoolId=1
+Authorization: Bearer {{downloaderToken1}}
+
+### 3.6 搜索不存在的资源
+# @name searchNotFound
+GET {{baseUrl}}/resource/search?q=不存在的资源XYZ123
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 4. 获取资源详情 ====================
+
+### 4.1 获取资源详情（资源ID需要从上面的列表中获取）
+# @name getResourceDetail
+GET {{baseUrl}}/resource/1
+Authorization: Bearer {{downloaderToken1}}
+
+### 4.2 获取另一个资源的详情
+# @name getResourceDetail2
+GET {{baseUrl}}/resource/2
+Authorization: Bearer {{downloaderToken1}}
+
+### 4.3 获取不存在的资源详情（应该失败）
+# @name getResourceNotFound
+GET {{baseUrl}}/resource/99999
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 5. 点赞资源 ====================
+
+### 5.1 点赞资源
+# @name likeResource
+POST {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 5.2 再次点赞同一资源
+# @name likeResourceAgain
+POST {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 5.3 用户2点赞同一资源
+# @name likeResourceByUser2
+POST {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken2}}
+
+### 5.4 点赞另一个资源
+# @name likeResource2
+POST {{baseUrl}}/resource/2/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 5.5 点赞不存在的资源（应该失败）
+# @name likeResourceNotFound
+POST {{baseUrl}}/resource/99999/like
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 6. 取消点赞 ====================
+
+### 6.1 取消点赞
+# @name unlikeResource
+DELETE {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 6.2 再次取消点赞（点赞数不应该变成负数）
+# @name unlikeResourceAgain
+DELETE {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 6.3 取消点赞另一个资源
+# @name unlikeResource2
+DELETE {{baseUrl}}/resource/2/like
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 7. 下载资源 ====================
+
+### 7.1 下载资源（假设用户有足够积分）
+# @name downloadResource
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 7.2 下载另一个资源
+# @name downloadResource2
+POST {{baseUrl}}/resource/2/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 7.3 用户2下载资源
+# @name downloadResourceByUser2
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken2}}
+
+### 7.4 下载高分资源（可能积分不足）
+# @name downloadHighScoreResource
+POST {{baseUrl}}/resource/4/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 7.5 下载不存在的资源（应该失败）
+# @name downloadResourceNotFound
+POST {{baseUrl}}/resource/99999/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 7.6 查看下载后的资源详情（下载次数应该增加）
+# @name checkAfterDownload
+GET {{baseUrl}}/resource/1
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 8. 综合测试场景 ====================
+
+### 8.1 场景1：上传 -> 列表查询 -> 详情查看 -> 点赞 -> 下载
+# Step 1: 上传新资源
+# @name scenario1Step1
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "场景测试资源",
+  "description": "用于综合测试的资源",
+  "fileUrl": "https://campuslink-oss.example.com/resources/test-scenario.pdf",
+  "fileName": "场景测试.pdf",
+  "fileSize": 1024000,
+  "fileType": "pdf",
+  "category": "其他",
+  "courseName": "测试课程",
+  "schoolId": 1,
+  "score": 1
+}
+
+### 8.2 Step 2: 查询资源列表
+# @name scenario1Step2
+GET {{baseUrl}}/resource/list?page=1&pageSize=10
+Authorization: Bearer {{downloaderToken1}}
+
+### 8.3 Step 3: 查看资源详情（使用实际的resourceId）
+# @name scenario1Step3
+GET {{baseUrl}}/resource/1
+Authorization: Bearer {{downloaderToken1}}
+
+### 8.4 Step 4: 点赞资源
+# @name scenario1Step4
+POST {{baseUrl}}/resource/1/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 8.5 Step 5: 下载资源
+# @name scenario1Step5
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 8.6 Step 6: 再次查看详情（验证点赞数和下载数）
+# @name scenario1Step6
+GET {{baseUrl}}/resource/1
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 9. 积分测试 ====================
+
+### 9.1 连续下载多个资源（测试积分扣除）
+# @name multiDownload1
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 9.2 继续下载
+# @name multiDownload2
+POST {{baseUrl}}/resource/2/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 9.3 继续下载
+# @name multiDownload3
+POST {{baseUrl}}/resource/3/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 9.4 下载到积分不足（应该失败）
+# @name downloadInsufficientPoints
+POST {{baseUrl}}/resource/5/download
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 10. 分页测试 ====================
+
+### 10.1 获取第1页（每页2条）
+# @name getPage1
+GET {{baseUrl}}/resource/list?page=1&pageSize=2
+Authorization: Bearer {{downloaderToken1}}
+
+### 10.2 获取第2页
+# @name getPage2
+GET {{baseUrl}}/resource/list?page=2&pageSize=2
+Authorization: Bearer {{downloaderToken1}}
+
+### 10.3 获取第3页
+# @name getPage3
+GET {{baseUrl}}/resource/list?page=3&pageSize=2
+Authorization: Bearer {{downloaderToken1}}
+
+### 10.4 获取超出范围的页码（应该返回空列表）
+# @name getPageOutOfRange
+GET {{baseUrl}}/resource/list?page=100&pageSize=10
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 11. 资源审核（管理员功能） ====================
+
+### 11.1 管理员获取待审核资源列表
+# @name getPendingResources
+GET {{baseUrl}}/resource/pending?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 11.2 普通用户尝试获取待审核列表（应该失败）
+# @name getPendingByNormalUser
+GET {{baseUrl}}/resource/pending
+Authorization: Bearer {{uploaderToken}}
+
+### 11.3 管理员审核通过资源（使用实际的resourceId）
+# @name approveResource1
+PUT {{baseUrl}}/resource/13/approve
+Authorization: Bearer {{adminToken}}
+
+### 11.4 审核通过另一个资源
+# @name approveResource2
+PUT {{baseUrl}}/resource/2/approve
+Authorization: Bearer {{adminToken}}
+
+### 11.5 审核通过第三个资源
+# @name approveResource3
+PUT {{baseUrl}}/resource/3/approve
+Authorization: Bearer {{adminToken}}
+
+### 11.6 管理员拒绝资源
+# @name rejectResource
+PUT {{baseUrl}}/resource/15/reject
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "rejectReason": "资源内容不符合平台规范，包含敏感信息，请修改后重新上传。"
+}
+
+### 11.7 拒绝资源但不提供原因（应该失败）
+# @name rejectWithoutReason
+PUT {{baseUrl}}/resource/14/reject
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "rejectReason": ""
+}
+
+### 11.8 普通用户尝试审核通过（应该失败）
+# @name approveByNormalUser
+PUT {{baseUrl}}/resource/6/approve
+Authorization: Bearer {{uploaderToken}}
+
+### 11.9 重复审核已通过的资源（应该失败）
+# @name approveAgain
+PUT {{baseUrl}}/resource/1/approve
+Authorization: Bearer {{adminToken}}
+
+### 11.10 审核不存在的资源（应该失败）
+# @name approveNotExist
+PUT {{baseUrl}}/resource/99999/approve
+Authorization: Bearer {{adminToken}}
+
+### ==================== 12. 我的上传 ====================
+
+### 12.1 上传者查看自己上传的资源列表
+# @name getMyUploads
+GET {{baseUrl}}/resource/my?page=1&pageSize=20
+Authorization: Bearer {{uploaderToken}}
+
+### 12.2 查看自己的上传（应该看到审核状态）
+# @name getMyUploadsWithStatus
+GET {{baseUrl}}/resource/my
+Authorization: Bearer {{uploaderToken}}
+
+### 12.3 下载者查看自己的上传（应该为空或很少）
+# @name getMyUploadsEmpty
+GET {{baseUrl}}/resource/my
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 13. 审核后的完整流程测试 ====================
+
+### 13.1 上传新资源
+# @name workflow1Upload
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "完整流程测试资源",
+  "description": "用于测试完整审核流程的资源",
+  "fileUrl": "https://campuslink-oss.example.com/resources/workflow-test.pdf",
+  "fileName": "workflow-test.pdf",
+  "fileSize": 2048000,
+  "fileType": "pdf",
+  "category": "其他",
+  "courseName": "测试课程",
+  "schoolId": 1,
+  "score": 3
+}
+
+### 13.2 查看待审核列表（应该包含刚上传的资源）
+# @name workflow2Pending
+GET {{baseUrl}}/resource/pending
+Authorization: Bearer {{adminToken}}
+
+### 13.3 审核通过
+# @name workflow3Approve
+PUT {{baseUrl}}/resource/16/approve
+Authorization: Bearer {{adminToken}}
+
+### 13.4 在公开列表中查询（应该能看到）
+# @name workflow4List
+GET {{baseUrl}}/resource/list?page=1&pageSize=5
+Authorization: Bearer {{downloaderToken1}}
+
+### 13.5 下载该资源
+# @name workflow5Download
+POST {{baseUrl}}/resource/16/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 13.6 点赞该资源
+# @name workflow6Like
+POST {{baseUrl}}/resource/16/like
+Authorization: Bearer {{downloaderToken1}}
+
+### 13.7 查看资源详情（验证下载数和点赞数）
+# @name workflow7Detail
+GET {{baseUrl}}/resource/16
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 14. 拒绝资源的完整流程 ====================
+
+### 14.1 上传待拒绝的资源
+# @name rejectFlow1Upload
+POST {{baseUrl}}/resource/upload
+Content-Type: application/json
+Authorization: Bearer {{uploaderToken}}
+
+{
+  "title": "测试拒绝流程资源",
+  "description": "这个资源将被管理员拒绝",
+  "fileUrl": "https://campuslink-oss.example.com/resources/reject-test.pdf",
+  "fileName": "reject-test.pdf",
+  "fileSize": 1024000,
+  "fileType": "pdf",
+  "category": "其他",
+  "courseName": "测试课程",
+  "schoolId": 1,
+  "score": 2
+}
+
+### 14.2 管理员查看待审核列表
+# @name rejectFlow2Pending
+GET {{baseUrl}}/resource/pending
+Authorization: Bearer {{adminToken}}
+
+### 14.3 管理员拒绝资源
+# @name rejectFlow3Reject
+PUT {{baseUrl}}/resource/17/reject
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "rejectReason": "资源质量不达标，内容过于简单，不具备分享价值。建议补充详细内容后重新提交。"
+}
+
+### 14.4 上传者查看自己的资源（应该看到拒绝状态和原因）
+# @name rejectFlow4MyList
+GET {{baseUrl}}/resource/my
+Authorization: Bearer {{uploaderToken}}
+
+### 14.5 在公开列表中查询（不应该看到被拒绝的资源）
+# @name rejectFlow5PublicList
+GET {{baseUrl}}/resource/list
+Authorization: Bearer {{downloaderToken1}}

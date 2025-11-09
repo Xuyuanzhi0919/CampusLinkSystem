@@ -1,23 +1,44 @@
 <template>
   <view class="function-cards">
     <view class="cards-container">
-      <view
-        v-for="item in functions"
-        :key="item.id"
-        class="function-card"
-        :class="'theme-' + item.theme"
-        @click="handleClick(item)"
-      >
-        <!-- 场景插画背景 -->
-        <view class="card-bg">
-          <text class="bg-emoji">{{ item.emoji }}</text>
-        </view>
+      <!-- 核心功能区 - 大卡片 -->
+      <view class="core-functions">
+        <view
+          v-for="item in coreFunctions"
+          :key="item.id"
+          class="core-card"
+          :class="'core-' + item.theme"
+          @click="handleClick(item)"
+        >
+          <!-- 场景插画 -->
+          <view class="core-illustration">
+            <text class="illustration-emoji">{{ item.illustration }}</text>
+          </view>
 
-        <!-- 卡片内容 -->
-        <view class="card-content">
-          <text class="card-icon">{{ item.icon }}</text>
-          <text class="card-name">{{ item.name }}</text>
-          <text class="card-desc">{{ item.desc }}</text>
+          <!-- 卡片内容 -->
+          <view class="core-content">
+            <text class="core-icon">{{ item.icon }}</text>
+            <text class="core-name">{{ item.name }}</text>
+            <text class="core-desc">{{ item.desc }}</text>
+          </view>
+
+          <!-- 装饰元素 -->
+          <view class="core-decoration">
+            <text class="decoration-emoji">{{ item.emoji }}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 次要功能区 - 小卡片 -->
+      <view class="secondary-functions">
+        <view
+          v-for="item in secondaryFunctions"
+          :key="item.id"
+          class="secondary-card"
+          @click="handleClick(item)"
+        >
+          <text class="secondary-icon">{{ item.icon }}</text>
+          <text class="secondary-name">{{ item.name }}</text>
         </view>
       </view>
     </view>
@@ -32,103 +53,104 @@ const emit = defineEmits<{
   navigate: [path: string]
 }>()
 
-// 功能卡片数据
-interface FunctionItem {
+// 核心功能数据
+interface CoreFunctionItem {
   id: number
   icon: string
   name: string
   desc: string
   path: string
-  theme: 'blue' | 'orange' | 'green' | 'purple'
-  emoji: string // 背景装饰 emoji
+  theme: 'blue' | 'orange'
+  emoji: string // 装饰 emoji
+  illustration: string // 场景插画 emoji
 }
 
-const functions = ref<FunctionItem[]>([
+const coreFunctions = ref<CoreFunctionItem[]>([
   {
     id: 1,
     icon: '📚',
     name: '资料共享',
-    desc: '100万+资源',
+    desc: '100万+课件/试题/笔记',
     path: '/pages/resource/list',
     theme: 'blue',
     emoji: '📖',
+    illustration: '📚',
   },
   {
     id: 2,
     icon: '💡',
     name: '智能问答',
-    desc: 'AI秒速答疑',
+    desc: 'AI秒速答疑 · 24小时在线',
     path: '/pages/question/list',
     theme: 'orange',
     emoji: '🤔',
+    illustration: '🤖',
   },
   {
     id: 3,
     icon: '🤝',
     name: '互助任务',
-    desc: '赚取积分',
+    desc: '帮助他人 · 赚取积分',
     path: '/pages/task/list',
-    theme: 'green',
+    theme: 'blue',
     emoji: '👥',
+    illustration: '💰',
   },
+])
+
+// 次要功能数据
+interface SecondaryFunctionItem {
+  id: number
+  icon: string
+  name: string
+  path: string
+}
+
+const secondaryFunctions = ref<SecondaryFunctionItem[]>([
   {
     id: 4,
     icon: '🎭',
     name: '社团活动',
-    desc: '精彩活动',
     path: '/pages/club/list',
-    theme: 'purple',
-    emoji: '🎉',
   },
   {
     id: 5,
     icon: '📍',
     name: '附近同学',
-    desc: '发现校友',
     path: '/pages/nearby/index',
-    theme: 'blue',
-    emoji: '🗺️',
   },
   {
     id: 6,
     icon: '💰',
     name: '积分商城',
-    desc: '兑换好礼',
     path: '/pages/shop/index',
-    theme: 'orange',
-    emoji: '🎁',
   },
   {
     id: 7,
     icon: '📢',
     name: '校园公告',
-    desc: '最新通知',
     path: '/pages/notice/list',
-    theme: 'green',
-    emoji: '📣',
   },
   {
     id: 8,
     icon: '⭐',
     name: '我的收藏',
-    desc: '收藏内容',
     path: '/pages/user/favorites',
-    theme: 'purple',
-    emoji: '❤️',
   },
 ])
 
 /**
  * 卡片点击
  */
-const handleClick = (item: FunctionItem) => {
+const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   emit('navigate', item.path)
 }
 </script>
 
 <style scoped lang="scss">
+/* ========== 一、功能卡片容器 ========== */
 .function-cards {
-  padding: 40rpx 0;
+  padding: 48rpx 0;
   background: #F5F7FA;
 }
 
@@ -136,112 +158,207 @@ const handleClick = (item: FunctionItem) => {
   max-width: 2400rpx; /* 1200px */
   margin: 0 auto;
   padding: 0 40rpx;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr); /* 4列 */
-  gap: 40rpx; /* 20px */
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
 }
 
-.function-card {
+/* ========== 二、核心功能区 - 大卡片 ========== */
+.core-functions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3列 */
+  gap: 32rpx;
+}
+
+.core-card {
   position: relative;
-  height: 160rpx; /* 80px */
-  border-radius: 32rpx; /* 16px */
+  height: 240rpx; /* 120px - 大卡片 */
+  border-radius: 32rpx;
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
-.function-card:hover {
-  transform: translateY(-4rpx); /* 上浮 2px */
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+.core-card:hover {
+  transform: translateY(-8rpx);
+  box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.15);
 }
 
-.function-card:active {
-  transform: translateY(-2rpx);
+.core-card:active {
+  transform: translateY(-4rpx);
 }
 
-/* 主题色 - 浅色渐变背景 */
-.function-card.theme-blue {
-  background: linear-gradient(135deg, #E6F4FF 0%, #BAE0FF 100%);
+/* 品牌蓝渐变 - 核心功能 */
+.core-card.core-blue {
+  background: linear-gradient(135deg, #2F80ED 0%, #409EFF 100%);
 }
 
-.function-card.theme-orange {
-  background: linear-gradient(135deg, #FFF7E6 0%, #FFE7BA 100%);
+/* 辅助橙渐变 - 次要核心功能 */
+.core-card.core-orange {
+  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
 }
 
-.function-card.theme-green {
-  background: linear-gradient(135deg, #E8F7ED 0%, #C2E7D0 100%);
-}
-
-.function-card.theme-purple {
-  background: linear-gradient(135deg, #F5E6FF 0%, #E0BAFF 100%);
-}
-
-/* 背景装饰 */
-.card-bg {
+/* 场景插画 */
+.core-illustration {
   position: absolute;
-  right: -20rpx;
-  bottom: -20rpx;
+  right: 24rpx;
+  bottom: 24rpx;
+  opacity: 0.25;
+  z-index: 1;
+}
+
+.illustration-emoji {
+  font-size: 160rpx; /* 80px */
+  line-height: 1;
+  filter: drop-shadow(0 4rpx 12rpx rgba(0, 0, 0, 0.15));
+}
+
+/* 卡片内容 */
+.core-content {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  padding: 32rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.core-icon {
+  font-size: 64rpx; /* 32px */
+  line-height: 1;
+  filter: drop-shadow(0 2rpx 8rpx rgba(0, 0, 0, 0.1));
+}
+
+.core-name {
+  font-size: 40rpx; /* 20px */
+  font-weight: 700;
+  color: white;
+  line-height: 1.2;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
+}
+
+.core-desc {
+  font-size: 26rpx; /* 13px */
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.3;
+}
+
+/* 装饰元素 */
+.core-decoration {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
   opacity: 0.2;
   z-index: 1;
 }
 
-.bg-emoji {
-  font-size: 120rpx;
+.decoration-emoji {
+  font-size: 80rpx;
   line-height: 1;
 }
 
-/* 卡片内容 */
-.card-content {
-  position: relative;
-  z-index: 2;
-  height: 100%;
-  padding: 24rpx;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8rpx;
+/* ========== 三、次要功能区 - 小卡片 ========== */
+.secondary-functions {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5列 */
+  gap: 24rpx;
 }
 
-.card-icon {
+.secondary-card {
+  position: relative;
+  height: 120rpx; /* 60px - 小卡片 */
+  background: white;
+  border-radius: 24rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  border: 2rpx solid transparent;
+}
+
+.secondary-card:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.1);
+  border-color: #409EFF;
+}
+
+.secondary-card:active {
+  transform: translateY(-2rpx);
+}
+
+.secondary-icon {
   font-size: 48rpx; /* 24px */
   line-height: 1;
 }
 
-.card-name {
-  font-size: 32rpx; /* 16px */
-  font-weight: 700;
+.secondary-name {
+  font-size: 26rpx; /* 13px */
+  font-weight: 600;
   color: #1D2129;
-  line-height: 1.2;
-}
-
-.card-desc {
-  font-size: 24rpx; /* 12px */
-  color: #86909C;
   line-height: 1;
 }
 
-/* H5 端适配 */
+/* ========== 四、H5 端适配 ========== */
 @media (max-width: 750px) {
+  .function-cards {
+    padding: 32rpx 0;
+  }
+
   .cards-container {
-    grid-template-columns: repeat(2, 1fr); /* 2列 */
-    gap: 20rpx;
+    padding: 0 32rpx;
+    gap: 24rpx;
   }
 
-  .function-card {
-    height: 140rpx;
+  /* 核心功能 - H5 端改为 1 列 */
+  .core-functions {
+    grid-template-columns: 1fr;
+    gap: 24rpx;
   }
 
-  .card-icon {
+  .core-card {
+    height: 200rpx; /* 100px */
+  }
+
+  .core-icon {
+    font-size: 56rpx;
+  }
+
+  .core-name {
+    font-size: 36rpx;
+  }
+
+  .core-desc {
+    font-size: 24rpx;
+  }
+
+  .illustration-emoji {
+    font-size: 120rpx;
+  }
+
+  /* 次要功能 - H5 端改为 3 列 */
+  .secondary-functions {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16rpx;
+  }
+
+  .secondary-card {
+    height: 100rpx;
+  }
+
+  .secondary-icon {
     font-size: 40rpx;
   }
 
-  .card-name {
-    font-size: 28rpx;
-  }
-
-  .card-desc {
-    font-size: 22rpx;
+  .secondary-name {
+    font-size: 24rpx;
   }
 }
 </style>

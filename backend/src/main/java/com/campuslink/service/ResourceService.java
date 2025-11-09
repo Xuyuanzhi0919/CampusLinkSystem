@@ -215,6 +215,105 @@ public class ResourceService {
     }
 
     /**
+     * 获取待审核资源列表（管理员）
+     */
+    public PageResult<ResourceListResponse> getPendingResources(Integer page, Integer pageSize) {
+        Page<Resource> pageObj = new Page<>(page, pageSize);
+
+        LambdaQueryWrapper<Resource> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Resource::getStatus, 0) // 待审核
+                .orderByDesc(Resource::getCreatedAt);
+
+        IPage<Resource> resourcePage = resourceMapper.selectPage(pageObj, queryWrapper);
+
+        List<ResourceListResponse> resourceList = resourcePage.getRecords().stream()
+                .map(this::convertToListResponse)
+                .collect(Collectors.toList());
+
+        return new PageResult<>(
+                resourceList,
+                resourcePage.getTotal(),
+                resourcePage.getCurrent(),
+                resourcePage.getSize(),
+                resourcePage.getPages()
+        );
+    }
+
+    /**
+     * 审核通过资源（管理员）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void approveResource(Long resourceId) {
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            throw new BusinessException(ResultCode.RESOURCE_NOT_FOUND);
+        }
+
+        if (resource.getStatus() != 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "该资源已审核,无法重复审核");
+        }
+
+        resource.setStatus(1); // 审核通过
+        resource.setUpdatedAt(LocalDateTime.now());
+        resourceMapper.updateById(resource);
+    }
+
+    /**
+     * 拒绝资源（管理员）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void rejectResource(Long resourceId, String rejectReason) {
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            throw new BusinessException(ResultCode.RESOURCE_NOT_FOUND);
+        }
+
+        if (resource.getStatus() != 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "该资源已审核,无法重复审核");
+        }
+
+        if (rejectReason == null || rejectReason.trim().isEmpty()) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "拒绝原因不能为空");
+        }
+
+        resource.setStatus(2); // 已拒绝
+        resource.setRejectReason(rejectReason);
+        resource.setUpdatedAt(LocalDateTime.now());
+        resourceMapper.updateById(resource);
+    }
+
+    /**
+     * 获取我上传的资源列表
+     */
+    public PageResult<ResourceListResponse> getMyResources(Long userId, Integer page, Integer pageSize) {
+        Page<Resource> pageObj = new Page<>(page, pageSize);
+
+        LambdaQueryWrapper<Resource> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Resource::getUploaderId, userId)
+                .orderByDesc(Resource::getCreatedAt);
+
+        IPage<Resource> resourcePage = resourceMapper.selectPage(pageObj, queryWrapper);
+
+        List<ResourceListResponse> resourceList = resourcePage.getRecords().stream()
+                .map(resource -> {
+                    ResourceListResponse response = convertToListResponse(resource);
+                    // 对于自己上传的资源,显示审核状态
+                    response.setStatus(resource.getStatus());
+                    response.setRejectReason(resource.getRejectReason());
+                    return response;
+                })
+                .collect(Collectors.toList());
+
+        return new PageResult<>(
+                resourceList,
+                resourcePage.getTotal(),
+                resourcePage.getCurrent(),
+                resourcePage.getSize(),
+                resourcePage.getPages()
+        );
+    }
+
+    /**
      * 转换为列表响应DTO
      */
     private ResourceListResponse convertToListResponse(Resource resource) {

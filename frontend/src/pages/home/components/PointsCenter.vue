@@ -11,60 +11,39 @@
 
     <!-- 内容区（可折叠） -->
     <view v-if="!isCollapsed" class="card-content">
-      <!-- 未登录提示 -->
-      <view v-if="!isLoggedIn" class="login-prompt">
-        <view class="prompt-icon-wrapper">
-          <text class="prompt-icon">🏅</text>
-        </view>
-        <text class="prompt-title">登录后查看积分成长记录</text>
-        <text class="prompt-desc">每日任务、答题奖励、活跃积分一目了然</text>
-        <view class="prompt-btn" @click="goToLogin">
-          <text class="btn-text">立即登录</text>
-        </view>
+      <!-- 积分进度条 -->
+      <view class="points-progress">
+      <view class="progress-header">
+        <text class="current-points">{{ currentPoints }}</text>
+        <text class="points-label">当前积分</text>
       </view>
+      <view class="progress-bar">
+        <view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
+      </view>
+      <text class="progress-tip">距离下一等级还需 {{ nextLevelPoints }} 积分</text>
+    </view>
 
-      <!-- 已登录内容 -->
-      <template v-else>
-        <!-- 积分进度条 -->
-        <view class="points-progress">
-        <view class="progress-header">
-          <text class="current-points">{{ currentPoints }}</text>
-          <text class="points-label">当前积分</text>
-        </view>
-        <view class="progress-bar">
-          <view class="progress-fill" :style="{ width: progressPercent + '%' }"></view>
-        </view>
-        <text class="progress-tip">距离下一等级还需 {{ nextLevelPoints }} 积分</text>
+    <!-- 今日任务列表 -->
+    <view class="task-list">
+      <text class="list-title">今日任务</text>
+      <view
+        v-for="task in tasks"
+        :key="task.id"
+        class="task-item"
+        :class="{ completed: task.completed }"
+        @click="handleTaskClick(task)"
+      >
+        <text class="task-icon">{{ task.icon }}</text>
+        <text class="task-name">{{ task.name }}</text>
+        <text class="task-points">+{{ task.points }}</text>
       </view>
-
-      <!-- 今日任务列表 -->
-      <view class="task-list">
-        <text class="list-title">今日任务</text>
-        <view
-          v-for="task in tasks"
-          :key="task.id"
-          class="task-item"
-          :class="{ completed: task.completed }"
-          @click="handleTaskClick(task)"
-        >
-          <text class="task-icon">{{ task.icon }}</text>
-          <text class="task-name">{{ task.name }}</text>
-          <text class="task-points">+{{ task.points }}</text>
-        </view>
-      </view>
-      </template>
+    </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { getUserProfile } from '@/services/user'
-
-// 用户状态
-const userStore = useUserStore()
-const isLoggedIn = computed(() => userStore.isLoggedIn)
 
 // 折叠状态
 const isCollapsed = ref(true) // 默认折叠
@@ -75,6 +54,7 @@ const isCollapsed = ref(true) // 默认折叠
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
 }
+import { getUserProfile } from '@/services/user'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -112,11 +92,6 @@ const tasks = ref<Task[]>([
  * 加载用户积分数据
  */
 const loadPointsData = async () => {
-  // 未登录不加载
-  if (!isLoggedIn.value) {
-    return
-  }
-
   try {
     const profile = await getUserProfile()
     currentPoints.value = profile?.points || 0
@@ -128,15 +103,6 @@ const loadPointsData = async () => {
   } catch (error) {
     console.error('加载积分数据失败:', error)
   }
-}
-
-/**
- * 跳转登录页
- */
-const goToLogin = () => {
-  uni.navigateTo({
-    url: '/pages/auth/login'
-  })
 }
 
 /**
@@ -220,8 +186,6 @@ onMounted(() => {
   margin-bottom: 0;
   cursor: pointer;
   user-select: none;
-  position: relative;
-  z-index: 10;
 
   .collapsed & {
     margin-bottom: 0;
@@ -385,120 +349,6 @@ onMounted(() => {
   font-weight: 600;
   color: #FF7D00;
   line-height: 1;
-}
-
-/* 登录提示 */
-.login-prompt {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 56rpx 32rpx;
-  gap: 20rpx;
-  background: linear-gradient(145deg, #E8F0FF 0%, #FFFFFF 100%);
-  border-radius: 16rpx;
-  position: relative;
-  overflow: hidden;
-}
-
-/* 背景装饰波纹 */
-.login-prompt::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200rpx;
-  height: 200rpx;
-  background: radial-gradient(circle, rgba(46, 124, 246, 0.08) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.login-prompt::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -10%;
-  width: 160rpx;
-  height: 160rpx;
-  background: radial-gradient(circle, rgba(108, 92, 231, 0.06) 0%, transparent 70%);
-  border-radius: 50%;
-}
-
-.prompt-icon-wrapper {
-  position: relative;
-  z-index: 1;
-  width: 96rpx;
-  height: 96rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, rgba(46, 124, 246, 0.12) 0%, rgba(108, 92, 231, 0.12) 100%);
-  border-radius: 50%;
-  margin-bottom: 8rpx;
-}
-
-.prompt-icon {
-  font-size: 64rpx;
-  line-height: 1;
-  animation: rotateGently 3s ease-in-out infinite;
-}
-
-@keyframes rotateGently {
-  0%, 100% {
-    transform: rotate(-5deg) scale(1);
-  }
-  50% {
-    transform: rotate(5deg) scale(1.05);
-  }
-}
-
-.prompt-title {
-  position: relative;
-  z-index: 1;
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1D2129;
-  line-height: 1.4;
-  letter-spacing: 0.5rpx;
-}
-
-.prompt-desc {
-  position: relative;
-  z-index: 1;
-  font-size: 26rpx;
-  color: #4E5969;
-  line-height: 1.6;
-  text-align: center;
-  max-width: 400rpx;
-}
-
-.prompt-btn {
-  position: relative;
-  z-index: 1;
-  margin-top: 8rpx;
-  padding: 18rpx 56rpx;
-  background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
-  border-radius: 24rpx;
-  box-shadow: 0 6rpx 16rpx rgba(46, 124, 246, 0.3);
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.prompt-btn:hover {
-  transform: translateY(-3rpx);
-  box-shadow: 0 10rpx 24rpx rgba(46, 124, 246, 0.4);
-}
-
-.prompt-btn:active {
-  transform: translateY(-1rpx);
-}
-
-.btn-text {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: white;
-  line-height: 1;
-  letter-spacing: 1rpx;
 }
 </style>
 

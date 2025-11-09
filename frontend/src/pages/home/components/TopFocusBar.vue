@@ -33,9 +33,9 @@
         </view>
       </view>
 
-      <!-- 第二行：主内容区（左右分栏）-->
+      <!-- 第二行：主内容区（搜索框居中）-->
       <view class="main-content-area">
-        <!-- 左侧：搜索栏 -->
+        <!-- 搜索栏 -->
         <view class="search-section">
           <view class="search-box">
           <!-- 搜索图标 -->
@@ -95,42 +95,6 @@
           </view>
         </view>
         </view>
-
-        <!-- 右侧：快捷入口卡片 -->
-        <view class="quick-entry-cards">
-          <view
-            v-for="item in quickEntries"
-            :key="item.id"
-            class="quick-card"
-            :class="'quick-card-' + item.theme"
-            @click="handleQuickEntry(item)"
-          >
-            <text class="quick-icon">{{ item.icon }}</text>
-            <view class="quick-info">
-              <text class="quick-title">{{ item.title }}</text>
-              <text class="quick-count">{{ item.count }}</text>
-            </view>
-            <text class="quick-arrow">→</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 第三行：底部数据栏 -->
-      <view class="bottom-stats-bar">
-        <view class="stat-item">
-          <text class="stat-icon">👥</text>
-          <text class="stat-text">{{ userCount }}万用户</text>
-        </view>
-        <text class="stat-divider">·</text>
-        <view class="stat-item">
-          <text class="stat-icon">📚</text>
-          <text class="stat-text">{{ resourceCount }}万资源</text>
-        </view>
-        <text class="stat-divider">·</text>
-        <view class="stat-item">
-          <text class="stat-icon">⏰</text>
-          <text class="stat-text">24小时在线答疑</text>
-        </view>
       </view>
     </view>
 
@@ -180,25 +144,7 @@ const emit = defineEmits<{
 const searchKeyword = ref('')
 const showHotTags = ref(false)
 const hotTags = ref(['高数课件', '四六级真题', '数据结构', '考研资料'])
-const userCount = ref(100) // 默认100万，可从后端获取
-const resourceCount = ref(500) // 默认500万资源
 const isVoiceActive = ref(false) // 语音搜索激活状态
-
-// 快捷入口数据
-interface QuickEntry {
-  id: number
-  icon: string
-  title: string
-  count: string
-  theme: string
-  path: string
-}
-
-const quickEntries = ref<QuickEntry[]>([
-  { id: 1, icon: '📚', title: '今日推荐', count: '128 条新内容', theme: 'blue', path: '/pages/resource/index' },
-  { id: 2, icon: '💡', title: '热门问答', count: '56 个待解答', theme: 'orange', path: '/pages/question/index' },
-  { id: 3, icon: '🎯', title: '紧急任务', count: '23 个高悬赏', theme: 'green', path: '/pages/task/index' }
-])
 
 /**
  * 登录
@@ -230,13 +176,6 @@ const handlePublish = () => {
       }
     }
   })
-}
-
-/**
- * 快捷入口点击
- */
-const handleQuickEntry = (item: QuickEntry) => {
-  uni.navigateTo({ url: item.path })
 }
 
 
@@ -381,26 +320,17 @@ const stopVoiceRecognition = () => {
 </script>
 
 <style scoped lang="scss">
-/* ========== 一、顶部背景容器（方案 B：左右分栏式）========== */
+/* 文档规范：顶部（导航+搜索）- 浅蓝渐变 #EAF2FF → #F8FAFF */
 .top-focus-bar {
   position: relative;
   width: 100%;
   height: 480rpx; /* 240px - 方案 B 标准高度 */
-  /* 浅蓝渐变（非饱和亮蓝）*/
-  background: linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%);
+  /* 文档规范：浅蓝渐变，保持品牌氛围，浅亮轻盈 */
+  background: linear-gradient(180deg, #EAF2FF 0%, #F8FAFF 100%);
   overflow: hidden;
   z-index: 1;
 
-  /* 下边界加 1px 分隔线 */
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 1px;
-    background: rgba(0, 0, 0, 0.06);
-  }
+  /* 下边界加 1px 分隔线（已移除，由过渡带承担）*/
 }
 
 /* ========== 二、背景装饰层（文档优化：插画弱化透明到 12-16%）========== */
@@ -465,19 +395,19 @@ const stopVoiceRecognition = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 120rpx; /* 60px */
-  padding-top: 24rpx;
+  height: 80rpx; /* 40px - 减小高度 */
+  padding-top: 16rpx;
 }
 
 /* 品牌标识 */
 .brand-section {
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 2rpx;
 }
 
 .brand-logo {
-  font-size: 48rpx; /* 24px */
+  font-size: 40rpx; /* 20px - 减小字号 */
   font-weight: 700;
   color: var(--cl-primary, #2563EB);
   line-height: 1;
@@ -485,7 +415,7 @@ const stopVoiceRecognition = () => {
 }
 
 .brand-slogan {
-  font-size: 24rpx; /* 12px */
+  font-size: 22rpx; /* 11px - 减小字号 */
   font-weight: 500;
   color: var(--cl-gray-600, #64748B);
   line-height: 1;
@@ -499,7 +429,7 @@ const stopVoiceRecognition = () => {
 }
 
 .action-btn {
-  padding: 12rpx 24rpx;
+  padding: 10rpx 20rpx; /* 减小内边距 */
   background: rgba(255, 255, 255, 0.8);
   backdrop-filter: blur(8px);
   border-radius: 20rpx; /* 10px */
@@ -545,31 +475,32 @@ const stopVoiceRecognition = () => {
 }
 
 .action-btn-text {
-  font-size: 28rpx; /* 14px */
+  font-size: 26rpx; /* 13px - 减小字号 */
   font-weight: 500;
   color: var(--cl-gray-700, #475569);
   line-height: 1;
 }
 
 .action-btn-icon {
-  font-size: 28rpx;
+  font-size: 26rpx; /* 减小字号 */
   line-height: 1;
 }
 
-/* ========== 五、主内容区（第二行：左右分栏）========== */
+/* ========== 五、主内容区（第二行：搜索框居中）========== */
 .main-content-area {
   display: flex;
   align-items: center;
-  gap: 32rpx;
-  height: 240rpx; /* 120px */
-  margin-top: 16rpx;
+  justify-content: center;
+  flex: 1; /* 占据剩余空间 */
+  margin-top: 0; /* 移除上边距 */
 }
 
-/* 左侧：搜索栏（60%）*/
+/* 搜索栏（居中）*/
 .search-section {
-  flex: 6;
   display: flex;
   align-items: center;
+  max-width: 1400rpx; /* 最大宽度 700px */
+  width: 70%; /* 占据 70% 宽度 */
 }
 
 .search-box {
@@ -749,120 +680,6 @@ const stopVoiceRecognition = () => {
   animation-delay: 0.75s;
 }
 
-/* ========== 六、右侧快捷入口卡片（35%）========== */
-.quick-entry-cards {
-  flex: 3.5;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.quick-card {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 20rpx;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border-radius: var(--radius-card, 12px);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
-}
-
-.quick-card:hover {
-  background: rgba(255, 255, 255, 0.95);
-  transform: translateX(4rpx);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.quick-icon {
-  font-size: 40rpx; /* 20px */
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.quick-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-
-.quick-title {
-  font-size: 28rpx; /* 14px */
-  font-weight: 600;
-  color: var(--cl-gray-900, #0F172A);
-  line-height: 1;
-}
-
-.quick-count {
-  font-size: 22rpx; /* 11px */
-  font-weight: 400;
-  color: var(--cl-gray-500, #94A3B8);
-  line-height: 1;
-}
-
-.quick-arrow {
-  font-size: 28rpx;
-  color: var(--cl-gray-400, #CBD5E1);
-  line-height: 1;
-  flex-shrink: 0;
-  transition: all var(--transition-hover, 150ms ease);
-}
-
-.quick-card:hover .quick-arrow {
-  color: var(--cl-primary, #2563EB);
-  transform: translateX(4rpx);
-}
-
-/* 不同主题的卡片 */
-.quick-card-blue:hover {
-  border-color: rgba(37, 99, 235, 0.2);
-}
-
-.quick-card-orange:hover {
-  border-color: rgba(245, 158, 11, 0.2);
-}
-
-.quick-card-green:hover {
-  border-color: rgba(22, 163, 74, 0.2);
-}
-
-/* ========== 七、底部数据栏（第三行）========== */
-.bottom-stats-bar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 24rpx;
-  height: 80rpx; /* 40px */
-  padding-bottom: 16rpx;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.stat-icon {
-  font-size: 28rpx;
-  line-height: 1;
-}
-
-.stat-text {
-  font-size: 24rpx; /* 12px */
-  font-weight: 500;
-  color: var(--cl-gray-600, #64748B);
-  line-height: 1;
-}
-
-.stat-divider {
-  font-size: 24rpx;
-  color: var(--cl-gray-400, #CBD5E1);
-  line-height: 1;
-}
-
 /* 语音脉冲动画 */
 @keyframes voice-pulse {
   0%, 100% {
@@ -902,32 +719,32 @@ const stopVoiceRecognition = () => {
   pointer-events: none;
 }
 
-/* 左侧校园建筑图标 */
+/* 左侧校园建筑图标 - 文档规范：透明度 12-16% */
 .campus-building {
   position: absolute;
   left: 5%;
   bottom: 12%;
   width: 120rpx;
   height: 160rpx;
-  opacity: 0.85;
+  opacity: 0.14; /* 文档规范：14% */
   animation: float-building 6s ease-in-out infinite;
 }
 
-/* 右侧主体插画 - 手持手机的学生 */
+/* 右侧主体插画 - 手持手机的学生 - 文档规范：透明度 12-16% */
 .student-illustration {
   position: absolute;
   right: 6%;
   bottom: 8%;
   width: 300rpx;
   height: 300rpx;
-  opacity: 0.9;
+  opacity: 0.16; /* 文档规范：16% */
   animation: float-student 4s ease-in-out infinite;
 }
 
-/* 装饰元素 */
+/* 装饰元素 - 文档规范：透明度 ≤10% */
 .decoration-element {
   position: absolute;
-  opacity: 0.7;
+  opacity: 0.10; /* 文档规范：10% */
   animation: float-decoration 5s ease-in-out infinite;
 }
 
@@ -1200,50 +1017,9 @@ const stopVoiceRecognition = () => {
     height: 200rpx;
   }
 
-  /* 方案 B 响应式：快捷入口卡片 */
-  .quick-entry-cards {
-    width: 100%;
-    flex-direction: row;
-    gap: 8rpx;
-  }
-
-  .quick-card {
-    flex: 1;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 12rpx;
-  }
-
-  .quick-icon {
-    font-size: 32rpx;
-  }
-
-  .quick-title {
-    font-size: 24rpx;
-  }
-
-  .quick-count {
-    font-size: 20rpx;
-  }
-
-  .quick-arrow {
-    display: none;
-  }
-
-  /* 底部数据栏 */
-  .bottom-stats-bar {
-    height: 60rpx;
-    gap: 16rpx;
-    padding-bottom: 12rpx;
-  }
-
-  .stat-text {
-    font-size: 20rpx;
-  }
-
-  .stat-icon {
-    font-size: 24rpx;
+  /* 搜索框居中 */
+  .search-section {
+    width: 90%; /* 移动端占据 90% 宽度 */
   }
 }
 </style>

@@ -141,17 +141,18 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+/* 文档规范：白卡 + 阴影 0 2px 12px + 边框 #EEF1F6 */
 .club-activity {
-  background: white;
-  border: 2rpx solid #E5E6EB;
-  border-radius: 24rpx;
+  background: #FFFFFF; /* 文档规范：白卡 */
+  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  border-radius: 32rpx; /* 文档规范：16px */
   padding: 32rpx;
   height: auto;
-  min-height: 80rpx;
+  min-height: 480rpx; /* 文档规范：最小 240px */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
+  transition: all var(--transition-hover, 150ms ease);
   position: relative;
   overflow: hidden;
 
@@ -159,29 +160,15 @@ onMounted(() => {
   &.collapsed {
     padding: 24rpx 32rpx;
     height: 80rpx;
+    min-height: auto;
   }
 }
 
-.club-activity::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 169, 64, 0.03) 0%, rgba(255, 182, 75, 0.03) 100%);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
+/* 文档规范：移除渐变背景，只保留 Hover 阴影增强 */
 .club-activity:hover {
   transform: translateY(-4rpx);
-  box-shadow: 0 12rpx 32rpx rgba(255, 169, 64, 0.12);
-  border-color: #FFA940;
-}
-
-.club-activity:hover::before {
-  opacity: 1;
+  box-shadow: 0 12rpx 32rpx rgba(245, 158, 11, 0.12);
+  border-color: var(--cl-accent-orange, #F59E0B);
 }
 
 /* 卡片头部 */

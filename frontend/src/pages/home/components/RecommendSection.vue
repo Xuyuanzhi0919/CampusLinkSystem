@@ -3,7 +3,7 @@
     <!-- 标题栏 -->
     <view class="section-header">
       <text class="section-title">为你推荐</text>
-      
+
       <!-- 筛选标签 -->
       <view class="filter-tags">
         <text
@@ -15,12 +15,6 @@
         >
           {{ tab.name }}
         </text>
-      </view>
-
-      <!-- 换一批按钮 -->
-      <view class="refresh-btn" @click="handleRefresh">
-        <text class="refresh-icon" :class="{ rotating: isRefreshing }">🔄</text>
-        <text class="refresh-text">换一批</text>
       </view>
     </view>
 
@@ -35,12 +29,13 @@
         />
       </template>
 
-      <!-- 有数据：显示卡片（显示前 6 条，2×3 网格） -->
+      <!-- 有数据：显示卡片（显示前 6 条，2×3 网格）- 文档规范：stagger 30ms -->
       <template v-else-if="currentList.length > 0">
         <view
-          v-for="item in displayList"
+          v-for="(item, index) in displayList"
           :key="item.id"
           class="recommend-card"
+          :style="{ animationDelay: `${index * 30}ms` }"
           @click="handleItemClick(item)"
         >
           <!-- 类型标签 -->
@@ -53,7 +48,7 @@
           <text class="card-title">{{ item.title }}</text>
           <text class="card-intro">{{ item.intro }}</text>
 
-          <!-- 资源信息（差异化显示）-->
+          <!-- 资源信息（差异化显示）- 文档规范：统一线性图标 -->
           <view class="card-meta">
             <view class="meta-item">
               <text class="meta-icon">👤</text>
@@ -62,42 +57,49 @@
 
             <!-- 课件：显示下载数 -->
             <view v-if="item.type === 'resource'" class="meta-item">
-              <text class="meta-icon">📥</text>
-              <text class="meta-text">{{ item.downloads || 0 }} 下载</text>
+              <text class="meta-icon">↓</text>
+              <text class="meta-text">{{ item.downloads || 0 }}</text>
             </view>
 
-            <!-- 问答：显示浏览数 + 回答数 -->
+            <!-- 问答：显示浏览数 · 回答数 -->
             <template v-else-if="item.type === 'question'">
               <view class="meta-item">
                 <text class="meta-icon">👁</text>
-                <text class="meta-text">{{ item.views || 0 }} 浏览</text>
+                <text class="meta-text">{{ item.views || 0 }}</text>
               </view>
+              <text class="meta-dot">·</text>
               <view class="meta-item">
                 <text class="meta-icon">💬</text>
-                <text class="meta-text">{{ item.answers || 0 }} 回答</text>
+                <text class="meta-text">{{ item.answers || 0 }}</text>
               </view>
             </template>
 
-            <!-- 任务：显示积分 + 截止时间 -->
+            <!-- 任务：显示积分 · 截止时间 -->
             <template v-else-if="item.type === 'task'">
               <view class="meta-item meta-highlight">
-                <text class="meta-icon">💰</text>
-                <text class="meta-text">{{ item.points || 10 }} 积分</text>
+                <text class="meta-icon">¥</text>
+                <text class="meta-text">{{ item.points || 10 }}</text>
               </view>
+              <text v-if="item.deadline" class="meta-dot">·</text>
               <view v-if="item.deadline" class="meta-item meta-urgent">
-                <text class="meta-icon">⏰</text>
+                <text class="meta-icon">⏱</text>
                 <text class="meta-text">{{ item.deadline }}</text>
               </view>
             </template>
           </view>
 
-          <!-- 操作按钮 -->
+          <!-- 操作按钮（合并成一个分组）- 文档规范：线性图标 -->
           <view class="card-actions">
-            <view class="action-btn" @click.stop="handleCollect(item)">
-              <text class="action-icon">{{ item.collected ? '❤️' : '🤍' }}</text>
-            </view>
-            <view class="action-btn" @click.stop="handleDownload(item)">
-              <text class="action-icon">📥</text>
+            <view class="action-group">
+              <view class="action-btn" @click.stop="handleCollect(item)">
+                <text class="action-icon">{{ item.collected ? '♥' : '♡' }}</text>
+                <text class="action-label">{{ item.collected ? '已收藏' : '收藏' }}</text>
+              </view>
+              <view class="action-divider"></view>
+              <view class="action-btn" @click.stop="handleLike(item)">
+                <text class="action-icon">↑</text>
+                <text class="action-label">{{ item.likes || 0 }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -115,12 +117,23 @@
       </template>
     </view>
 
-    <!-- 查看更多按钮 -->
-    <ViewMoreButton
-      v-if="!isLoading && currentList.length > 6"
-      text="查看全部推荐"
-      @click="viewAllRecommendations"
-    />
+    <!-- 文档规范：换一批/查看全部条 - 浅蓝底 #EEF2FF，圆角 12 -->
+    <view v-if="!isLoading && currentList.length > 0" class="action-bar">
+      <!-- 换一批按钮 -->
+      <view class="action-btn refresh-btn" @click="handleRefresh">
+        <text class="action-icon refresh-icon" :class="{ rotating: isRefreshing }">🔄</text>
+        <text class="action-text">换一批</text>
+      </view>
+
+      <!-- 分隔线 -->
+      <view class="action-divider"></view>
+
+      <!-- 查看全部按钮 -->
+      <view class="action-btn view-all-btn" @click="viewAllRecommendations">
+        <text class="action-text">查看全部</text>
+        <text class="action-icon">→</text>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -267,10 +280,16 @@ const handleCollect = (item: any) => {
 }
 
 /**
- * 下载
+ * 点赞
  */
-const handleDownload = (item: any) => {
-  uni.showToast({ title: '下载中...', icon: 'loading' })
+const handleLike = (item: any) => {
+  if (!item.likes) item.likes = 0
+  item.liked = !item.liked
+  item.likes += item.liked ? 1 : -1
+  uni.showToast({
+    title: item.liked ? '已点赞' : '已取消点赞',
+    icon: 'success',
+  })
 }
 
 /**
@@ -354,11 +373,12 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+/* 文档规范：主内容区无独立背景，使用全局淡灰背景 */
 .recommend-section {
-  background: white;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  background: transparent; /* 文档规范：透明背景，使用全局淡灰 */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
   transition: all 0.2s ease;
   animation: fadeInUp 0.4s ease-out;
 }
@@ -448,24 +468,34 @@ onMounted(() => {
   }
 }
 
-/* 换一批按钮 - 浅色描边圆角设计 */
-.refresh-btn {
+/* 文档规范：换一批/查看全部条 - 浅蓝底 #EEF2FF，圆角 12 */
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-top: 32rpx; /* 与卡片列表间距 */
+  padding: 16rpx 24rpx;
+  background: #EEF2FF; /* 文档规范：浅蓝底 */
+  border-radius: 24rpx; /* 文档规范：圆角 12px */
+  transition: all var(--transition-hover, 150ms ease);
+}
+
+.action-btn {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 10rpx 20rpx;
-  background: white;
-  color: var(--cl-primary, #3B82F6);
-  border: 1px solid var(--cl-gray-200, #EAEAEA);
-  border-radius: 999rpx;
+  padding: 12rpx 24rpx;
+  background: transparent;
+  color: var(--cl-primary, #2563EB);
+  border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
   font-weight: 500;
 
   &:hover {
-    background: var(--cl-gray-50, #F8FAFC);
-    border-color: var(--cl-primary, #3B82F6);
-    transform: translateY(-2rpx);
+    background: rgba(37, 99, 235, 0.1);
+    border-radius: 16rpx;
   }
 
   &:active {
@@ -473,18 +503,30 @@ onMounted(() => {
   }
 }
 
-.refresh-icon {
+.action-icon {
   font-size: 28rpx;
   line-height: 1;
-  transition: transform 0.3s ease;
-
-  /* 旋转动画 - 方案 A 规范 */
-  &.rotating {
-    animation: rotate360 0.5s ease-in-out;
-  }
+  transition: transform var(--transition-hover, 150ms ease);
 }
 
-/* 旋转刷新图标动画 */
+.action-text {
+  font-size: 28rpx; /* 14px */
+  font-weight: 500;
+  line-height: 1;
+}
+
+.action-divider {
+  width: 1px;
+  height: 32rpx; /* 16px */
+  background: var(--cl-gray-300, #D1D5DB);
+  margin: 0 16rpx;
+}
+
+/* 旋转动画 */
+.refresh-icon.rotating {
+  animation: rotate360 0.5s ease-in-out;
+}
+
 @keyframes rotate360 {
   0% {
     transform: rotate(0deg);
@@ -492,12 +534,6 @@ onMounted(() => {
   100% {
     transform: rotate(360deg);
   }
-}
-
-.refresh-text {
-  font-size: 26rpx;
-  font-weight: 600;
-  line-height: 1;
 }
 
 /* 推荐列表 - 2×3 网格布局（专业级优化）*/
@@ -517,32 +553,33 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
+/* 文档规范：卡片阴影强化 - 0 2px 12px rgba(0,0,0,0.05) + 边框 #EEF1F6 */
 .recommend-card {
   position: relative;
-  padding: 40rpx 48rpx; /* 内边距增加到 20px 24px，更有高级感 */
+  padding: 32rpx; /* 内边距 16px */
   background: #FFFFFF; /* 纯白卡片 */
-  border: 1rpx solid var(--cl-gray-200, #EAEAEA);
-  border-radius: 24rpx; /* 圆角从 16rpx 调为 24rpx（12px）*/
+  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  border-radius: 24rpx; /* 圆角 12px */
   cursor: pointer;
-  transition: all 0.25s ease; /* 250ms 过渡，更流畅 */
-  min-height: 320rpx; /* 160-180px，动态自适应 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 阴影轻一点 */
+  transition: all var(--transition-hover, 150ms ease);
+  min-height: 336rpx; /* 168px - 文档规范最小高度 */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0; /* 移除 gap，改用 margin 控制间距 */
+  gap: 16rpx; /* 统一间距 8px */
 
-  /* 淡入动画 */
-  animation: fadeInCard 0.3s ease-out both;
+  /* 淡入动画（stagger 30ms）*/
+  animation: fadeInCard 240ms ease-out both;
 
-  /* Hover 状态 - 专业级交互感（增强版）*/
+  /* Hover 状态 - 文档规范 */
   &:hover {
-    transform: translateY(-8rpx); /* 浮起 4px */
-    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.12); /* 柔光阴影（主题色）*/
-    border-color: var(--cl-primary, #3B82F6); /* 边框变主题色 */
+    transform: translateY(-6rpx); /* translateY(-3px) */
+    box-shadow: 0 16rpx 48rpx rgba(37, 99, 235, 0.08); /* 蓝柔影 */
+    border-color: var(--cl-primary, #2563EB); /* 边框变主色 1px */
 
     .card-title {
-      color: #2563EB; /* 标题变深蓝色 */
+      color: var(--cl-primary, #2563EB); /* 标题主色高亮 */
     }
 
     .type-tag {
@@ -550,25 +587,15 @@ onMounted(() => {
     }
   }
 
-  /* Active 状态 - 微动画 */
+  /* Active 状态 */
   &:active {
-    transform: translateY(-4rpx) scale(0.98);
-    transition: all 0.15s ease;
+    transform: translateY(-3rpx) scale(0.98);
+    transition: all var(--transition-hover, 150ms ease);
   }
 }
 
-/* 卡片背景色差异化（根据类型）*/
-.recommend-card:has(.type-resource) {
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%); /* 课件 - 微蓝渐变 */
-}
-
-.recommend-card:has(.type-question) {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FFFBEB 100%); /* 问答 - 微黄渐变 */
-}
-
-.recommend-card:has(.type-task) {
-  background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); /* 任务 - 微绿渐变 */
-}
+/* 文档规范：移除卡片背景渐变，统一使用纯白卡 */
+/* 已在 .recommend-card 中统一设置 background: #FFFFFF */
 
 /* 卡片淡入动画 */
 @keyframes fadeInCard {
@@ -582,35 +609,34 @@ onMounted(() => {
   }
 }
 
-/* 类型标签 - 专业级优化（饱满配色 + 图标增强）*/
+/* 类型标签 - 文档规范（浅底 + 8px 圆角，色板统一）*/
 .type-tag {
   display: inline-flex;
   align-items: center;
   gap: 8rpx; /* 图标与文字间距 */
-  padding: 6rpx 16rpx; /* 内边距增加，更饱满 */
-  border-radius: 12rpx; /* 圆角增大 */
+  padding: 8rpx 16rpx; /* 内边距 */
+  border-radius: 16rpx; /* 8px 圆角 */
   font-size: 24rpx; /* 12px */
-  font-weight: 600; /* 加粗，增强识别 */
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  margin-bottom: 16rpx; /* 与标题拉开距离 */
 
-  /* 课件 - 冷蓝系（统一基调）*/
+  /* 课件 - 文档规范色板 */
   &.type-resource {
     background: #E0F2FE; /* 浅蓝 */
     color: #3B82F6; /* 主题蓝 */
   }
 
-  /* 问答 - 暖黄系（统一基调）*/
+  /* 问答 - 文档规范色板 */
   &.type-question {
     background: #FEF3C7; /* 浅黄 */
     color: #F59E0B; /* 暖黄 */
   }
 
-  /* 任务 - 清绿系（统一基调）*/
+  /* 任务 - 文档规范色板 */
   &.type-task {
     background: #DCFCE7; /* 浅绿 */
-    color: #22C55E; /* 清绿 */
+    color: #16A34A; /* 清绿 */
   }
 }
 
@@ -623,69 +649,67 @@ onMounted(() => {
   line-height: 1;
 }
 
-.type-icon {
-  font-size: 20rpx;
-  line-height: 1;
-}
-
-.type-text {
-  line-height: 1;
-}
-
-/* 卡片标题 - 专业级优化（信息权重强化）*/
+/* 卡片标题 - 文档规范（16-18/600，颜色 #0F172A）*/
 .card-title {
-  font-size: 34rpx; /* 17px - 略放大 */
-  font-weight: 600; /* 600 加粗，增强视觉焦点 */
-  color: #0F172A; /* 深灰蓝 */
+  font-size: 32rpx; /* 16px - 文档规范 */
+  font-weight: 600;
+  color: #0F172A; /* 文档规范颜色 */
   line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2; /* 最多两行 */
   -webkit-box-orient: vertical;
-  transition: color 0.2s;
-  margin-bottom: 8rpx; /* 与描述拉开距离 */
+  transition: color var(--transition-hover, 150ms ease);
 }
 
 .card-intro {
-  font-size: 24rpx; /* 12px - 副信息 */
-  color: #6B7280; /* 灰度 80%，减淡处理 */
-  line-height: 1.6; /* 行距增大，更舒适 */
+  font-size: 28rpx; /* 14px - 文档规范 14/400 */
+  font-weight: 400;
+  color: #64748B; /* 文档规范颜色 */
+  line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 1; /* 只显示 1 行，节省空间 */
+  -webkit-line-clamp: 2; /* 描述行数最多 2 行 */
   -webkit-box-orient: vertical;
-  margin-bottom: 12rpx; /* 与底部信息拉开距离 */
 }
 
-/* 资源信息（专业级优化）*/
+/* 资源信息 - 文档规范（统一灰 500，图标线性 1.5px）*/
 .card-meta {
   display: flex;
-  flex-wrap: wrap; /* 允许换行 */
-  gap: 16rpx 24rpx; /* 行间距 16rpx，列间距 24rpx */
+  flex-wrap: wrap;
+  gap: 16rpx 24rpx;
   margin-top: auto; /* 推到底部 */
-  padding-top: 16rpx; /* 与上方内容分隔 */
-  border-top: 1rpx solid rgba(0, 0, 0, 0.04); /* 轻微分隔线 */
+  padding-top: 16rpx;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 8rpx;
 }
 
 .meta-icon {
-  font-size: 22rpx;
+  font-size: 24rpx; /* 12px */
   line-height: 1;
-  opacity: 0.7;
+  opacity: 0.6; /* 图标线性风格 */
 }
 
 .meta-text {
   font-size: 24rpx; /* 12px */
-  color: #64748B; /* 副文本色 */
+  color: var(--cl-gray-500, #94A3B8); /* 统一灰 500 */
   line-height: 1;
-  font-weight: 500;
+  font-weight: 400;
+}
+
+/* 分隔符 - 文档规范：统一使用 "·" */
+.meta-dot {
+  font-size: 24rpx;
+  color: var(--cl-gray-400, #CBD5E1);
+  line-height: 1;
+  margin: 0 4rpx;
 }
 
 /* 高亮元信息（积分）*/
@@ -695,7 +719,7 @@ onMounted(() => {
   }
 
   .meta-text {
-    color: #F59E0B; /* 暖黄色 */
+    color: var(--cl-accent-orange, #F59E0B); /* 暖黄色 */
     font-weight: 600;
   }
 }
@@ -712,51 +736,76 @@ onMounted(() => {
   }
 }
 
-/* 操作按钮（专业级优化）*/
+/* 操作按钮 - 文档规范（合并成一个分组，减少噪点）*/
 .card-actions {
   display: flex;
-  gap: 12rpx;
-  margin-top: 16rpx; /* 与元信息分隔 */
+  margin-top: 16rpx;
+}
+
+.action-group {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  background: var(--cl-gray-50, #F8FAFC);
+  border-radius: 16rpx; /* 8px */
+  padding: 4rpx;
+  border: 1px solid var(--cl-gray-200, #E5E7EB);
 }
 
 .action-btn {
-  width: 56rpx;
-  height: 56rpx;
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.03); /* 更轻的背景 */
-  border-radius: 12rpx;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  background: transparent;
+  border-radius: 12rpx; /* 6px */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
 
   &:hover {
-    background: rgba(59, 130, 246, 0.1); /* 主题色背景 */
-    transform: translateY(-2rpx);
+    background: white;
+    transform: translateY(-1rpx);
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.95);
   }
+}
+
+.action-divider {
+  width: 1px;
+  height: 24rpx; /* 12px */
+  background: var(--cl-gray-200, #E5E7EB);
 }
 
 .action-icon {
-  font-size: 28rpx;
+  font-size: 24rpx; /* 12px */
   line-height: 1;
 }
 
-/* H5 端适配 */
-/* ========== 响应式适配（方案 A）========== */
+.action-label {
+  font-size: 22rpx; /* 11px */
+  font-weight: 500;
+  color: var(--cl-gray-600, #64748B);
+  line-height: 1;
+}
 
-/* 窄屏（< 960px）：右侧折叠到下方，左侧改单列 */
+/* ========== 响应式适配 - 文档规范 ========== */
+
+/* <960：网格改单列 + 4 条展示 */
 @media (max-width: 960px) {
   .recommend-list {
-    grid-template-columns: 1fr; /* 单列布局 */
+    grid-template-columns: 1fr; /* 文档规范：单列布局 */
   }
 
-  /* 只显示 4 条 */
+  /* 文档规范：只显示 4 条 */
   .recommend-card:nth-child(n+5) {
     display: none;
+  }
+
+  /* 文档规范：查看全部变为满宽胶囊按钮 */
+  .action-bar {
+    border-radius: 999rpx; /* 胶囊按钮 */
   }
 }
 
@@ -764,7 +813,7 @@ onMounted(() => {
 @media (max-width: 750px) {
   .recommend-list {
     grid-template-columns: 1fr;
-    gap: 16rpx;
+    gap: 24rpx;
   }
 
   .section-header {
@@ -779,6 +828,12 @@ onMounted(() => {
 
   .recommend-card {
     min-height: 280rpx;
+  }
+
+  /* 移动端：操作栏满宽 */
+  .action-bar {
+    width: 100%;
+    border-radius: 999rpx;
   }
 }
 </style>

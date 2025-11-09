@@ -1,6 +1,6 @@
 <template>
   <view class="hot-ranking-panel">
-    <!-- 切换标签 -->
+    <!-- 切换标签（文档优化：粗 3px 主色滑块）-->
     <view class="tab-bar">
       <text
         v-for="(tab, index) in tabs"
@@ -11,6 +11,8 @@
       >
         {{ tab.name }}
       </text>
+      <!-- 滑块指示器 -->
+      <view class="tab-indicator" :style="{ transform: `translateX(${currentTab * 100}%)` }"></view>
     </view>
 
     <!-- 榜单列表 -->
@@ -316,17 +318,18 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+/* 文档规范：右侧栏白卡 + 强化阴影 */
 .hot-ranking-panel {
-  background: var(--cl-surface, #FFFFFF);
-  border-radius: 20rpx;
-  padding: 32rpx;
-  box-shadow: var(--shadow-1, 0 2px 8px rgba(0, 0, 0, 0.04));
-  transition: all 0.2s ease;
-  animation: fadeInUp 0.4s ease-out 0.1s both;
-  border: 1rpx solid var(--cl-gray-200, #EAEAEA);
+  background: #FFFFFF; /* 文档规范：白卡 */
+  border-radius: 24rpx; /* 12px */
+  padding: 40rpx 48rpx; /* 文档规范：内边距 20-24px */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
+  transition: all var(--transition-hover, 150ms ease);
+  animation: fadeInUp 240ms ease-out both;
+  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
 
   &:hover {
-    box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.08));
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
   }
 }
 
@@ -341,46 +344,46 @@ onMounted(() => {
   }
 }
 
-/* 切换标签 - 方案 A 规范（底部滑动条动画）*/
+/* 切换标签 - 文档规范（粗 3px 主色滑块，切换动效 200ms）*/
 .tab-bar {
   position: relative;
   display: flex;
   gap: 32rpx;
   margin-bottom: 32rpx;
   padding-bottom: 20rpx;
-  border-bottom: 1rpx solid var(--cl-gray-200, #EAEAEA);
+  border-bottom: 1px solid var(--cl-gray-200, #E5E7EB);
 }
 
 .tab-item {
   position: relative;
-  font-size: 28rpx; /* 14px - 正文规范 */
+  font-size: 28rpx; /* 14px */
   color: var(--cl-gray-600, #64748B);
-  padding-bottom: 8rpx;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 200ms ease; /* 文档规范：200ms */
   font-weight: 500;
+  flex: 1;
+  text-align: center;
 
   &:hover {
-    color: var(--cl-primary, #3B82F6);
+    color: var(--cl-primary, #2563EB);
   }
 
   &.active {
-    color: var(--cl-primary, #3B82F6);
+    color: var(--cl-primary, #2563EB);
     font-weight: 600;
-
-    /* 底部滑动条 - 250ms ease-out */
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      bottom: -20rpx;
-      width: 100%;
-      height: 3rpx;
-      background: var(--cl-primary, #3B82F6);
-      border-radius: 2rpx;
-      transition: all 0.25s ease-out; /* 平滑滑动 */
-    }
   }
+}
+
+/* 滑块指示器 - 文档规范：粗 3px */
+.tab-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: calc(100% / 3); /* 三个 Tab，每个占 1/3 */
+  height: 6rpx; /* 3px - 文档规范 */
+  background: var(--cl-primary, #2563EB);
+  border-radius: 3rpx;
+  transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1); /* 文档规范：200ms 切换动效 */
 }
 
 /* 榜单列表 */
@@ -398,25 +401,26 @@ onMounted(() => {
   padding: 16rpx;
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
   position: relative;
+  min-height: 112rpx; /* 文档规范：条目高度 56px */
 
-  /* Hover 背景微动效（专业级优化）*/
+  /* Hover 背景微动效 */
   &:hover {
-    background: rgba(59, 130, 246, 0.05); /* 主题色背景过渡 */
-    transform: translateX(6rpx); /* 右移 3px */
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 轻微阴影 */
+    background: rgba(37, 99, 235, 0.05);
+    transform: translateX(6rpx);
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
 
     .item-title {
-      color: #2563EB; /* 标题变深蓝色 */
+      color: var(--cl-primary, #2563EB);
     }
 
     .rank-number {
-      transform: scale(1.1); /* 排名数字放大 */
+      transform: scale(1.1);
     }
 
     .quick-btn {
-      transform: translateY(-2rpx) scale(1.05); /* 按钮浮起 + 放大 */
+      transform: translateY(-2rpx) scale(1.05);
     }
   }
 
@@ -425,54 +429,42 @@ onMounted(() => {
   }
 }
 
-/* 排名序号（专业级优化 - 彩色渐变圆形）*/
+/* 排名胶囊 - 文档规范（1 蓝、2 橙、3 绿，深色文字）*/
 .rank-number {
-  width: 56rpx; /* 从 48rpx 增加到 56rpx */
-  height: 56rpx;
+  min-width: 48rpx; /* 24px */
+  height: 48rpx; /* 24px */
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%; /* 改为圆形 */
+  border-radius: 24rpx; /* 胶囊形状 */
   flex-shrink: 0;
-  background: #F5F6FA;
-  transition: all 0.2s ease;
-  position: relative;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); /* 轻微阴影 */
+  background: var(--cl-gray-100, #F1F5F9);
+  transition: all var(--transition-hover, 150ms ease);
+  padding: 0 12rpx;
 }
 
-/* 第1名：彩色渐变圆形 - 蓝色 */
+/* 第1名：蓝色胶囊 - 文档规范 */
 .rank-number.rank-1 {
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* 蓝色光晕 */
+  background: #DBEAFE; /* 浅蓝 */
+  color: #1E40AF; /* 深蓝文字 */
 }
 
-/* 第2名：彩色渐变圆形 - 橙色 */
+/* 第2名：橙色胶囊 - 文档规范 */
 .rank-number.rank-2 {
-  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3); /* 橙色光晕 */
+  background: #FED7AA; /* 浅橙 */
+  color: #C2410C; /* 深橙文字 */
 }
 
-/* 第3名：彩色渐变圆形 - 绿色 */
+/* 第3名：绿色胶囊 - 文档规范 */
 .rank-number.rank-3 {
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  color: white;
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); /* 绿色光晕 */
+  background: #BBF7D0; /* 浅绿 */
+  color: #15803D; /* 深绿文字 */
 }
 
 .rank-text {
-  font-size: 26rpx; /* 从 24rpx 增加到 26rpx */
-  font-weight: 700; /* 从 600 增加到 700 */
-  color: var(--cl-gray-600, #64748B);
+  font-size: 24rpx; /* 12px */
+  font-weight: 600;
   line-height: 1;
-}
-
-.rank-number.rank-1 .rank-text,
-.rank-number.rank-2 .rank-text,
-.rank-number.rank-3 .rank-text {
-  color: white;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 文字阴影，增强可读性 */
 }
 
 /* 内容信息 */
@@ -495,6 +487,7 @@ onMounted(() => {
   transition: color 0.2s;
 }
 
+/* 补充行 - 文档规范："8 回答 · 203 浏览" */
 .item-meta {
   display: flex;
   align-items: center;
@@ -502,49 +495,49 @@ onMounted(() => {
 }
 
 .meta-text {
-  font-size: 24rpx; /* 12px */
-  color: var(--cl-gray-600, #64748B);
+  font-size: 22rpx; /* 11px - 更小的字号 */
+  color: var(--cl-gray-500, #94A3B8); /* 统一灰 500 */
   line-height: 1;
+  font-weight: 400;
 }
 
 .meta-dot {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: var(--cl-gray-400, #CBD5E1);
   line-height: 1;
 }
 
-/* 快速操作按钮（专业级优化 - 高对比度橙色圆角按钮）*/
+/* "答"按钮 - 文档规范（高度 28px）*/
 .quick-btn {
-  width: 88rpx; /* 从 80rpx 增加到 88rpx（44px）*/
-  height: 56rpx; /* 从 48rpx 增加到 56rpx（28px）*/
+  min-width: 64rpx; /* 32px */
+  height: 56rpx; /* 28px - 文档规范 */
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%); /* 高对比度橙色渐变 */
-  border-radius: 28rpx; /* 圆角增大 */
+  background: var(--cl-primary, #2563EB);
+  border-radius: 28rpx; /* 胶囊形状 */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.25); /* 橙色阴影 */
+  padding: 0 16rpx;
 
-  /* Hover 时亮一点 + 浮起 */
+  /* Hover 时浮起 */
   &:hover {
-    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); /* 更亮的橙色 */
-    transform: translateY(-4rpx); /* 浮起 2px */
-    box-shadow: 0 4px 12px rgba(251, 146, 60, 0.35); /* 阴影增强 */
+    background: #1D4ED8; /* 深蓝 */
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.25);
   }
 
   &:active {
-    transform: translateY(-2rpx) scale(0.95);
+    transform: translateY(-1rpx) scale(0.95);
   }
 }
 
 .quick-text {
-  font-size: 26rpx; /* 从 24rpx 增加到 26rpx */
-  font-weight: 700; /* 从 600 增加到 700 */
+  font-size: 24rpx; /* 12px */
+  font-weight: 600;
   color: white;
   line-height: 1;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 文字阴影 */
 }
 </style>
 

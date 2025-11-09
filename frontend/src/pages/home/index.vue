@@ -6,6 +6,9 @@
     <!-- 核心功能区 -->
     <FunctionCards @navigate="handleNavigate" />
 
+    <!-- 过渡带：文档规范 - 柔和过渡顶部氛围区到主内容 -->
+    <view class="transition-band"></view>
+
     <!-- 个性化内容区 -->
     <view class="content-section">
       <view class="content-container">
@@ -32,10 +35,18 @@
     </view>
 
     <!-- PC端悬浮导航 -->
-    <PCFloatingNav />
+    <PCFloatingNav @show-auth="showAuthModal" />
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar />
+
+    <!-- 登录/注册弹窗 -->
+    <AuthModal
+      :visible="authModalVisible"
+      :default-mode="authMode"
+      @update:visible="authModalVisible = $event"
+      @success="handleAuthSuccess"
+    />
   </view>
 </template>
 
@@ -50,6 +61,33 @@ import CampusNotice from './components/CampusNotice.vue'
 import ClubActivity from './components/ClubActivity.vue'
 import PCFloatingNav from '@/components/PCFloatingNav.vue'
 import CustomTabBar from '@/components/CustomTabBar.vue'
+import AuthModal from '@/components/AuthModal.vue'
+
+// 认证弹窗
+const authModalVisible = ref(false)
+const authMode = ref<'login' | 'register'>('login')
+
+/**
+ * 显示认证弹窗
+ */
+const showAuthModal = (mode: 'login' | 'register' = 'login') => {
+  console.log('showAuthModal called with mode:', mode)
+  authMode.value = mode
+  authModalVisible.value = true
+  console.log('authModalVisible set to:', authModalVisible.value)
+}
+
+/**
+ * 认证成功
+ */
+const handleAuthSuccess = () => {
+  console.log('Authentication success!')
+  uni.showToast({
+    title: '登录成功',
+    icon: 'success'
+  })
+  // 可以在这里刷新页面数据
+}
 
 /**
  * 搜索处理
@@ -157,13 +195,13 @@ const handleActivityClick = (activity: any) => {
 </script>
 
 <style scoped lang="scss">
+/* 文档规范：建立灰阶梯度，形成"由光到影的节奏" */
 .home-new {
   min-height: 100vh;
-  /* 纸质感背景 - 校园笔记本风格 */
-  background: var(--cl-bg, #FAFAFA);
+  background: #F7F9FC; /* 文档规范：淡灰背景，提升卡片阴影存在感 */
   position: relative;
 
-  /* 极浅纹理（可选 - 模拟纸张质感）*/
+  /* 轻氛围插画（文档规范：透明度 ≤ 6%，分布在左右两边）*/
   &::before {
     content: '';
     position: fixed;
@@ -172,95 +210,139 @@ const handleActivityClick = (activity: any) => {
     right: 0;
     bottom: 0;
     background:
-      radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.015) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(251, 146, 60, 0.015) 0%, transparent 50%);
+      radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+      radial-gradient(circle at 85% 75%, rgba(251, 146, 60, 0.04) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
-/* 个性化内容区（专业级优化）*/
-.content-section {
-  padding: 64rpx 0; /* 从 48rpx 增加到 64rpx，增加呼吸感 */
+/* 文档规范：过渡带 - 柔和过渡顶部氛围区到主内容 */
+.transition-band {
+  height: 96rpx; /* 48px */
+  background: linear-gradient(180deg, #F8FAFF 0%, #F9FAFB 100%);
+  border-top: 1px solid rgba(0, 0, 0, 0.03);
   position: relative;
   z-index: 1;
-  background: #FFFFFF; /* 纯白背景，提亮内容区 */
 }
 
-.content-container {
-  max-width: 2400rpx; /* 1200px */
-  margin: 0 auto;
-  padding: 0 48rpx;
-  display: flex;
-  gap: 40rpx; /* 从 32rpx 增加到 40rpx（20px），增加间距 */
+/* 文档规范：主内容区 - 淡灰背景 #F7F9FC */
+.content-section {
+  padding: 96rpx 0; /* 文档规范：顶部功能卡 → 为你推荐：48px */
+  position: relative;
+  z-index: 1;
+  background: transparent; /* 使用全局淡灰背景 */
+}
 
-  /* 响应式：< 960px 时改为垂直布局 */
+/* 文档规范：响应式布局 + 左右留白 80px（超宽屏时限制最大宽度 1280px）*/
+.content-container {
+  max-width: 2560rpx; /* 1280px - 文档规范：超宽屏时限制最大宽度 */
+  margin: 0 auto;
+  padding: 0 160rpx; /* 文档规范：主内容左右留白 80px */
+  display: flex;
+  gap: 40rpx; /* 2% 间距 */
+
+  /* 中等屏幕：减小左右留白 */
+  @media (max-width: 1440px) {
+    padding: 0 96rpx; /* 48px */
+  }
+
+  /* 小屏幕：进一步减小左右留白 */
+  @media (max-width: 1024px) {
+    padding: 0 48rpx; /* 24px */
+  }
+
+  /* ≥1280：左 68% / 右 30% / 中间间距 2% */
+  @media (min-width: 1280px) {
+    gap: 48rpx; /* 2% */
+  }
+
+  /* 1024–1279：右栏收窄 */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    gap: 32rpx;
+  }
+
+  /* <960：右栏下沉为分页模块 */
   @media (max-width: 960px) {
     flex-direction: column;
-    gap: 48rpx; /* 移动端垂直间距更大 */
+    gap: 48rpx;
   }
 }
 
 .recommend-area {
-  flex: 68; /* 68% - 主内容区 */
-  min-width: 0; /* 防止 flex 子元素溢出 */
-
-  /* 响应式：< 960px 时占满宽度 */
-  @media (max-width: 960px) {
-    flex: 1;
-  }
-}
-
-.ranking-area {
-  flex: 30; /* 30% - 侧栏引导区（从 28% 调整到 30%，增强视觉权重）*/
+  flex: 68; /* 文档规范：68% - 主内容区 */
   min-width: 0;
-  background: #F8FAFB; /* 浅灰背景面板，形成区域对比 */
-  border-radius: 24rpx; /* 圆角 */
-  padding: 40rpx; /* 内边距 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); /* 轻微阴影，增加立体感 */
 
-  /* 响应式：< 960px 时折叠到下方 */
+  /* <960：占满宽度 */
   @media (max-width: 960px) {
     flex: 1;
-    order: 2; /* 移到下方 */
-    background: transparent; /* 移动端去掉背景 */
-    padding: 0;
-    box-shadow: none;
   }
 }
 
-/* 辅助信息区（专业级优化 - 添加分割线）*/
+/* 文档规范：右侧栏无独立背景，由内部卡片提供白卡背景 */
+.ranking-area {
+  flex: 30; /* 文档规范：30% - 侧栏引导区 */
+  min-width: 0;
+  background: transparent; /* 文档规范：透明背景，使用全局淡灰 */
+  border-radius: 0;
+  padding: 0;
+  box-shadow: none;
+
+  /* 1024–1279：右栏收窄，条目改为 4 条 */
+  @media (min-width: 1024px) and (max-width: 1279px) {
+    flex: 28;
+  }
+
+  /* <960：右栏下沉为分页模块 */
+  @media (max-width: 960px) {
+    flex: 1;
+    order: 2;
+  }
+}
+
+/* 文档规范：底部模块区 - 略深灰 #F3F5F8，视觉收口 */
 .auxiliary-section {
-  padding: 64rpx 0 80rpx; /* 从 48rpx 增加到 64rpx */
+  padding: 128rpx 0 160rpx; /* 文档规范：为你推荐 → 底部积分中心：64px */
   position: relative;
   z-index: 1;
-  background: #FAFAFA; /* 浅灰背景，与主内容区分隔 */
+  background: #F2F4F7; /* 文档规范：略深灰底，视觉收口 */
 
-  /* 顶部分割线 */
+  /* 文档规范：上边界线 #E2E4E8，让视觉重心自然下沉 */
   &::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%; /* 90% 宽度 */
-    height: 1rpx;
-    background: linear-gradient(90deg, transparent 0%, #E5E7EB 50%, transparent 100%);
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #E2E4E8;
   }
 }
 
 .auxiliary-container {
-  max-width: 2400rpx; /* 1200px */
+  max-width: 2560rpx; /* 1280px - 文档规范：超宽屏时限制最大宽度 */
   margin: 0 auto;
-  padding: 0 48rpx;
+  padding: 0 160rpx; /* 文档规范：主内容左右留白 80px */
   display: flex;
-  gap: 48rpx; /* 从 32rpx 增加到 48rpx，增加间距 */
+  gap: 32rpx; /* 文档规范：卡片间距 16px */
+
+  /* 中等屏幕：减小左右留白 */
+  @media (max-width: 1440px) {
+    padding: 0 96rpx; /* 48px */
+  }
+
+  /* 小屏幕：进一步减小左右留白 */
+  @media (max-width: 1024px) {
+    padding: 0 48rpx; /* 24px */
+  }
 }
 
+/* 文档规范：三卡同宽同高（最小 240），圆角 16 */
 .auxiliary-card {
   flex: 1;
   min-width: 0;
-  animation: fadeInUp 0.4s ease-out both;
+  min-height: 480rpx; /* 文档规范：最小 240px */
+  animation: fadeInUp 240ms ease-out both; /* 文档规范：入场 240ms */
 }
 
 .auxiliary-card:nth-child(1) {

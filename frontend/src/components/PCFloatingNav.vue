@@ -45,23 +45,47 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+
+// Emits
+const emit = defineEmits<{
+  (e: 'show-auth', mode: 'login' | 'register'): void
+}>()
+
+// Store
+const userStore = useUserStore()
 
 // 导航项配置
 interface NavItem {
   key: string
   label: string
   icon: string
-  path: string
+  path?: string
+  action?: string
+  requireAuth?: boolean
 }
 
 // 使用 Unicode 符号代替 emoji
-const navItems: NavItem[] = [
+const baseNavItems: NavItem[] = [
   { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index' },
   { key: 'resource', label: '资源库', icon: '◈', path: '/pages/resource/index' },
   { key: 'question', label: '问答', icon: '◉', path: '/pages/question/index' },
-  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index' },
+  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index', requireAuth: true },
 ]
+
+// 根据登录状态动态添加登录/注册按钮
+const navItems = computed(() => {
+  if (userStore.isLoggedIn) {
+    return baseNavItems
+  } else {
+    return [
+      ...baseNavItems.filter(item => !item.requireAuth),
+      { key: 'login', label: '登录', icon: '→', action: 'login' },
+      { key: 'register', label: '注册', icon: '+', action: 'register' },
+    ]
+  }
+})
 
 // 状态
 const isExpanded = ref(false)
@@ -102,6 +126,32 @@ const closeMenu = () => {
  * 导航到指定页面
  */
 const navigateTo = (item: NavItem) => {
+  console.log('navigateTo called with item:', item)
+  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
+
+  // 如果是动作按钮（登录/注册）
+  if (item.action) {
+    console.log('Triggering action:', item.action)
+    if (item.action === 'login') {
+      emit('show-auth', 'login')
+    } else if (item.action === 'register') {
+      emit('show-auth', 'register')
+    }
+    isExpanded.value = false
+    return
+  }
+
+  // 如果需要登录但未登录
+  if (item.requireAuth && !userStore.isLoggedIn) {
+    console.log('Require auth, showing login modal')
+    emit('show-auth', 'login')
+    isExpanded.value = false
+    return
+  }
+
+  // 普通导航
+  if (!item.path) return
+
   // 如果是 tabBar 页面，使用 switchTab
   const tabBarPages = [
     '/pages/home/index',
@@ -197,13 +247,13 @@ onUnmounted(() => {
 /* ========== 容器 ========== */
 .floating-nav {
   position: fixed;
-  right: 20px;
-  bottom: 20px;
+  right: 16px; /* 文档规范：离右边 16 */
+  bottom: 16px; /* 文档规范：离下边 16 */
   z-index: 9999;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* 隐藏状态 */
+  /* 隐藏状态 - 文档规范：滚动隐藏、上滑出现 */
   &.hidden {
     transform: translateY(100px);
     opacity: 0;
@@ -216,28 +266,28 @@ onUnmounted(() => {
   }
 }
 
-/* ========== 遮罩层 ========== */
+/* ========== 遮罩层 - 文档规范：rgba(14,19,32,.18) ========== */
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(11, 17, 27, 0.18);
+  background: rgba(14, 19, 32, 0.18); /* 文档规范 */
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: -1;
 
   @media (prefers-color-scheme: dark) {
-    background: rgba(11, 17, 27, 0.15);
+    background: rgba(14, 19, 32, 0.25);
   }
 }
 
-/* ========== Speed Dial 菜单项容器 ========== */
+/* ========== Speed Dial 菜单项容器 - 文档规范：向上弹出 ========== */
 .speed-dial-items {
   position: absolute;
   right: 0;
   bottom: 72px; /* FAB 56px + 间距 16px */
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px; /* 间距增加 */
 }
 
 /* ========== Speed Dial 单项 ========== */
@@ -315,37 +365,37 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 }
 
-/* ========== 主悬浮按钮 FAB ========== */
+/* ========== 主悬浮按钮 FAB - 文档规范 ========== */
 .main-fab {
-  width: 56px;
+  width: 56px; /* 文档规范：直径 56 */
   height: 56px;
-  min-width: 48px;
-  min-height: 48px;
+  min-width: 56px;
+  min-height: 56px;
   border-radius: 50%;
   position: relative;
 
-  /* 主色背景 + 渐变光晕 */
-  background: radial-gradient(circle at center, var(--cl-primary, #2E7CF6) 0%, var(--cl-primary, #2E7CF6) 70%, transparent 100%);
+  /* 主色背景 */
+  background: var(--cl-primary, #2563EB);
 
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 
-  box-shadow: 0 4px 14px rgba(46, 124, 246, 0.25);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
 
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1); /* 文档规范：200ms */
 
-  /* 焦点环 */
+  /* 焦点环 - 文档规范：2px 主色 35% 透明 */
   &:focus-visible {
-    outline: 2px solid rgba(46, 124, 246, 0.35);
+    outline: 2px solid rgba(37, 99, 235, 0.35);
     outline-offset: 2px;
   }
 
   /* 悬停态 */
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 18px rgba(46, 124, 246, 0.35);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
     filter: brightness(0.95);
   }
 

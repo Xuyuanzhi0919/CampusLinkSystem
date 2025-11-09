@@ -39,20 +39,25 @@ const handleClick = () => {
   justify-content: center;
   gap: 8rpx;
   padding: 18rpx 32rpx;
-  margin: 48rpx 0 0 0; /* 从 20rpx 增加到 48rpx，增加上间距 */
-  /* 导航引导条样式 - 柔和版本 */
-  background: var(--cl-primary-50, #EFF6FF);
-  border: 1px solid var(--cl-primary-200, #BFDBFE);
-  border-radius: 12rpx;
+  margin: 48rpx 0 0 0;
+  /* 文档规范：描边主色、Hover 渐入主色填充 */
+  background: transparent;
+  border: 1px solid var(--cl-primary, #2563EB);
+  border-radius: 24rpx; /* 12px */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
   position: relative;
   overflow: hidden;
 
   &:hover {
-    background: var(--cl-primary-100, #DBEAFE);
-    border-color: var(--cl-primary, #3B82F6);
+    background: var(--cl-primary, #2563EB); /* Hover 渐入主色填充 */
+    border-color: var(--cl-primary, #2563EB);
     transform: translateY(-2rpx);
+
+    .btn-text,
+    .btn-icon {
+      color: white; /* 文字变白色 */
+    }
 
     .btn-icon {
       transform: translateX(4rpx);
@@ -71,18 +76,18 @@ const handleClick = () => {
 }
 
 .btn-text {
-  font-size: 28rpx;
-  color: var(--cl-primary, #3B82F6);
+  font-size: 28rpx; /* 14px */
+  color: var(--cl-primary, #2563EB);
   font-weight: 500;
   line-height: 1;
+  transition: color var(--transition-hover, 150ms ease);
 }
 
 .btn-icon {
-  font-size: 28rpx;
-  color: var(--cl-primary, #3B82F6);
+  font-size: 28rpx; /* 14px */
+  color: var(--cl-primary, #2563EB);
   line-height: 1;
-  /* 箭头平滑滑动 6px - 方案 A 规范 */
-  transition: transform 0.25s ease;
+  transition: all var(--transition-hover, 150ms ease);
 }
 
 .view-more-btn:hover .btn-icon {

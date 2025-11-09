@@ -318,18 +318,18 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：右侧栏白卡 + 强化阴影 */
+/* 企业级优化：右侧栏白卡 + 强化阴影对比度 */
 .hot-ranking-panel {
-  background: #FFFFFF; /* 文档规范：白卡 */
+  background: #FFFFFF; /* 纯白卡 */
   border-radius: 24rpx; /* 12px */
-  padding: 40rpx 48rpx; /* 文档规范：内边距 20-24px */
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
+  padding: 40rpx 48rpx; /* 内边距 20-24px */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
   transition: all var(--transition-hover, 150ms ease);
   animation: fadeInUp 240ms ease-out both;
-  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  border: 1px solid #EEF1F6; /* 浅灰边框 */
 
   &:hover {
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
   }
 }
 

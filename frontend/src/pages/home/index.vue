@@ -35,18 +35,10 @@
     </view>
 
     <!-- PC端悬浮导航 -->
-    <PCFloatingNav @show-auth="showAuthModal" />
+    <PCFloatingNav />
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar />
-
-    <!-- 登录/注册弹窗 -->
-    <AuthModal
-      :visible="authModalVisible"
-      :default-mode="authMode"
-      @update:visible="authModalVisible = $event"
-      @success="handleAuthSuccess"
-    />
   </view>
 </template>
 
@@ -61,33 +53,6 @@ import CampusNotice from './components/CampusNotice.vue'
 import ClubActivity from './components/ClubActivity.vue'
 import PCFloatingNav from '@/components/PCFloatingNav.vue'
 import CustomTabBar from '@/components/CustomTabBar.vue'
-import AuthModal from '@/components/AuthModal.vue'
-
-// 认证弹窗
-const authModalVisible = ref(false)
-const authMode = ref<'login' | 'register'>('login')
-
-/**
- * 显示认证弹窗
- */
-const showAuthModal = (mode: 'login' | 'register' = 'login') => {
-  console.log('showAuthModal called with mode:', mode)
-  authMode.value = mode
-  authModalVisible.value = true
-  console.log('authModalVisible set to:', authModalVisible.value)
-}
-
-/**
- * 认证成功
- */
-const handleAuthSuccess = () => {
-  console.log('Authentication success!')
-  uni.showToast({
-    title: '登录成功',
-    icon: 'success'
-  })
-  // 可以在这里刷新页面数据
-}
 
 /**
  * 搜索处理
@@ -195,13 +160,13 @@ const handleActivityClick = (activity: any) => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：建立灰阶梯度，形成"由光到影的节奏" */
+/* 企业级视觉优化：统一色温，建立光感层次 */
 .home-new {
   min-height: 100vh;
-  background: #F7F9FC; /* 文档规范：淡灰背景，提升卡片阴影存在感 */
+  background: #FBFCFE; /* 极浅灰白（而非纯白），提升卡片对比度 */
   position: relative;
 
-  /* 轻氛围插画（文档规范：透明度 ≤ 6%，分布在左右两边）*/
+  /* 轻氛围插画（透明度降至 8-12%，增强融合度）*/
   &::before {
     content: '';
     position: fixed;
@@ -210,20 +175,23 @@ const handleActivityClick = (activity: any) => {
     right: 0;
     bottom: 0;
     background:
-      radial-gradient(circle at 15% 25%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
-      radial-gradient(circle at 85% 75%, rgba(251, 146, 60, 0.04) 0%, transparent 50%);
+      radial-gradient(circle at 15% 25%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 85% 75%, rgba(245, 158, 11, 0.10) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
-/* 文档规范：过渡带 - 柔和过渡顶部氛围区到主内容 */
+/* 企业级优化：半透明柔光带（呼吸层），高度 120-160px */
 .transition-band {
-  height: 96rpx; /* 48px */
-  background: linear-gradient(180deg, #F8FAFF 0%, #F9FAFB 100%);
-  border-top: 1px solid rgba(0, 0, 0, 0.03);
+  height: 240rpx; /* 120px - 增加高度，形成自然过渡 */
+  background: linear-gradient(180deg, rgba(232, 240, 255, 0.8) 0%, rgba(251, 252, 254, 1) 100%);
+  border-top: none; /* 移除硬边界线 */
   position: relative;
   z-index: 1;
+
+  /* 底部柔光阴影，增强光线坠落感 */
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.04);
 }
 
 /* 文档规范：主内容区 - 淡灰背景 #F7F9FC */
@@ -300,22 +268,34 @@ const handleActivityClick = (activity: any) => {
   }
 }
 
-/* 文档规范：底部模块区 - 略深灰 #F3F5F8，视觉收口 */
+/* 企业级优化：底部收口区（平衡层），加深并带冷调 */
 .auxiliary-section {
-  padding: 128rpx 0 160rpx; /* 文档规范：为你推荐 → 底部积分中心：64px */
+  padding: 128rpx 0 160rpx; /* 64px 顶部间距 */
   position: relative;
   z-index: 1;
-  background: #F2F4F7; /* 文档规范：略深灰底，视觉收口 */
+  background: #F3F5F8; /* 加深灰底，冷调收口 */
 
-  /* 文档规范：上边界线 #E2E4E8，让视觉重心自然下沉 */
+  /* 顶部渐变带：形成柔和过渡，压稳底部 */
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
+    height: 160rpx; /* 80px 渐变带高度 */
+    background: linear-gradient(0deg, rgba(243, 245, 248, 1) 0%, rgba(249, 250, 251, 0.8) 80%, rgba(251, 252, 254, 0) 100%);
+    pointer-events: none;
+  }
+
+  /* 顶部边界线 */
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 1px;
-    background: #E2E4E8;
+    background: #E5E7EB;
   }
 }
 

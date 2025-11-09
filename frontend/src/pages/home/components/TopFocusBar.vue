@@ -320,20 +320,21 @@ const stopVoiceRecognition = () => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：顶部（导航+搜索）- 浅蓝渐变 #EAF2FF → #F8FAFF */
+/* 企业级优化：顶部品牌氛围层 - 更柔和的浅天蓝渐变 */
 .top-focus-bar {
   position: relative;
   width: 100%;
   height: 480rpx; /* 240px - 方案 B 标准高度 */
-  /* 文档规范：浅蓝渐变，保持品牌氛围，浅亮轻盈 */
-  background: linear-gradient(180deg, #EAF2FF 0%, #F8FAFF 100%);
+  /* 更柔和的浅天蓝渐变，形成自然光线坠落感 */
+  background: linear-gradient(180deg, #E8F0FF 0%, #F5F8FF 100%);
   overflow: hidden;
   z-index: 1;
 
-  /* 下边界加 1px 分隔线（已移除，由过渡带承担）*/
+  /* 底部柔光阴影，让内容区更沉稳 */
+  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.04);
 }
 
-/* ========== 二、背景装饰层（文档优化：插画弱化透明到 12-16%）========== */
+/* 企业级优化：背景装饰层（透明度降至 8-12%，增强融合度）*/
 .bg-decoration-layer {
   position: absolute;
   top: 0;
@@ -344,36 +345,36 @@ const stopVoiceRecognition = () => {
   pointer-events: none;
 }
 
-/* 装饰圆形 1 - 左上角（透明度降低到 12%）*/
+/* 装饰圆形 1 - 左上角（透明度降至 8%）*/
 .bg-circle-1 {
   position: absolute;
   top: -100rpx;
   left: 10%;
   width: 400rpx;
   height: 400rpx;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.08) 0%, transparent 70%);
   border-radius: 50%;
 }
 
-/* 装饰圆形 2 - 右下角（透明度降低到 14%）*/
+/* 装饰圆形 2 - 右下角（透明度降至 10%）*/
 .bg-circle-2 {
   position: absolute;
   bottom: -80rpx;
   right: 15%;
   width: 300rpx;
   height: 300rpx;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.10) 0%, transparent 70%);
   border-radius: 50%;
 }
 
-/* 波浪形装饰（透明度降低到 10%）*/
+/* 波浪形装饰（透明度降至 6%）*/
 .bg-wave {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 80rpx;
-  background: rgba(37, 99, 235, 0.10);
+  background: rgba(37, 99, 235, 0.06);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
 
@@ -719,32 +720,34 @@ const stopVoiceRecognition = () => {
   pointer-events: none;
 }
 
-/* 左侧校园建筑图标 - 文档规范：透明度 12-16% */
+/* 企业级优化：左侧校园建筑图标 - 透明度降至 8-12% */
 .campus-building {
   position: absolute;
   left: 5%;
   bottom: 12%;
   width: 120rpx;
   height: 160rpx;
-  opacity: 0.14; /* 文档规范：14% */
+  opacity: 0.10; /* 降至 10%，增强融合度 */
   animation: float-building 6s ease-in-out infinite;
+  filter: blur(1rpx); /* 添加轻微模糊，使之不显突兀 */
 }
 
-/* 右侧主体插画 - 手持手机的学生 - 文档规范：透明度 12-16% */
+/* 企业级优化：右侧主体插画 - 手持手机的学生 - 透明度降至 8-12% */
 .student-illustration {
   position: absolute;
   right: 6%;
   bottom: 8%;
   width: 300rpx;
   height: 300rpx;
-  opacity: 0.16; /* 文档规范：16% */
+  opacity: 0.12; /* 降至 12%，增强融合度 */
   animation: float-student 4s ease-in-out infinite;
+  filter: blur(1rpx); /* 添加轻微模糊，使之不显突兀 */
 }
 
-/* 装饰元素 - 文档规范：透明度 ≤10% */
+/* 企业级优化：装饰元素 - 透明度降至 6-8% */
 .decoration-element {
   position: absolute;
-  opacity: 0.10; /* 文档规范：10% */
+  opacity: 0.08; /* 降至 8%，增强融合度 */
   animation: float-decoration 5s ease-in-out infinite;
 }
 

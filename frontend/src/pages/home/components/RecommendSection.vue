@@ -553,17 +553,17 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-/* 文档规范：卡片阴影强化 - 0 2px 12px rgba(0,0,0,0.05) + 边框 #EEF1F6 */
+/* 企业级优化：卡片阴影强化 - 提升对比度 */
 .recommend-card {
   position: relative;
   padding: 32rpx; /* 内边距 16px */
   background: #FFFFFF; /* 纯白卡片 */
-  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  border: 1px solid #EEF1F6; /* 浅灰边框 */
   border-radius: 24rpx; /* 圆角 12px */
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
-  min-height: 336rpx; /* 168px - 文档规范最小高度 */
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
+  min-height: 336rpx; /* 168px - 最小高度 */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
   overflow: hidden;
   display: flex;
   flex-direction: column;

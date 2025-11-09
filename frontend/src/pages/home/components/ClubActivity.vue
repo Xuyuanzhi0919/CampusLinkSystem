@@ -141,17 +141,17 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：白卡 + 阴影 0 2px 12px + 边框 #EEF1F6 */
+/* 企业级优化：白卡 + 强化阴影对比度 */
 .club-activity {
-  background: #FFFFFF; /* 文档规范：白卡 */
-  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
-  border-radius: 32rpx; /* 文档规范：16px */
+  background: #FFFFFF; /* 纯白卡 */
+  border: 1px solid #EEF1F6; /* 浅灰边框 */
+  border-radius: 32rpx; /* 16px */
   padding: 32rpx;
   height: auto;
-  min-height: 480rpx; /* 文档规范：最小 240px */
+  min-height: 480rpx; /* 最小 240px */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
   transition: all var(--transition-hover, 150ms ease);
   position: relative;
   overflow: hidden;

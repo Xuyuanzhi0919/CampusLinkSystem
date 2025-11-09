@@ -45,47 +45,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-
-// Emits
-const emit = defineEmits<{
-  (e: 'show-auth', mode: 'login' | 'register'): void
-}>()
-
-// Store
-const userStore = useUserStore()
+import { ref, onMounted, onUnmounted } from 'vue'
 
 // 导航项配置
 interface NavItem {
   key: string
   label: string
   icon: string
-  path?: string
-  action?: string
-  requireAuth?: boolean
+  path: string
 }
 
 // 使用 Unicode 符号代替 emoji
-const baseNavItems: NavItem[] = [
+const navItems: NavItem[] = [
   { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index' },
   { key: 'resource', label: '资源库', icon: '◈', path: '/pages/resource/index' },
   { key: 'question', label: '问答', icon: '◉', path: '/pages/question/index' },
-  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index', requireAuth: true },
+  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index' },
 ]
-
-// 根据登录状态动态添加登录/注册按钮
-const navItems = computed(() => {
-  if (userStore.isLoggedIn) {
-    return baseNavItems
-  } else {
-    return [
-      ...baseNavItems.filter(item => !item.requireAuth),
-      { key: 'login', label: '登录', icon: '→', action: 'login' },
-      { key: 'register', label: '注册', icon: '+', action: 'register' },
-    ]
-  }
-})
 
 // 状态
 const isExpanded = ref(false)
@@ -126,32 +102,6 @@ const closeMenu = () => {
  * 导航到指定页面
  */
 const navigateTo = (item: NavItem) => {
-  console.log('navigateTo called with item:', item)
-  console.log('userStore.isLoggedIn:', userStore.isLoggedIn)
-
-  // 如果是动作按钮（登录/注册）
-  if (item.action) {
-    console.log('Triggering action:', item.action)
-    if (item.action === 'login') {
-      emit('show-auth', 'login')
-    } else if (item.action === 'register') {
-      emit('show-auth', 'register')
-    }
-    isExpanded.value = false
-    return
-  }
-
-  // 如果需要登录但未登录
-  if (item.requireAuth && !userStore.isLoggedIn) {
-    console.log('Require auth, showing login modal')
-    emit('show-auth', 'login')
-    isExpanded.value = false
-    return
-  }
-
-  // 普通导航
-  if (!item.path) return
-
   // 如果是 tabBar 页面，使用 switchTab
   const tabBarPages = [
     '/pages/home/index',

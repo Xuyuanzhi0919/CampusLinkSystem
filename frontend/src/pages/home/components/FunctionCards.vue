@@ -152,10 +152,10 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：功能卡区域 - 白卡 + 灰背景衔接带 #F9FAFB */
+/* 企业级优化：功能卡区域 - 透明背景，使用全局极浅灰白 */
 .function-cards {
   padding: 48rpx 0;
-  background: #F9FAFB; /* 文档规范：灰背景衔接带 */
+  background: transparent; /* 使用全局 #FBFCFE 背景 */
   animation: fadeIn 0.3s ease-out;
 }
 
@@ -194,7 +194,7 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   gap: 32rpx;
 }
 
-/* 文档规范：卡片阴影强化 - 0 2px 12px rgba(0,0,0,0.05) + 边框 #EEF1F6 */
+/* 企业级优化：卡片阴影强化对比度 */
 .core-card {
   position: relative;
   height: 320rpx; /* 160px - 增加呼吸感 */
@@ -202,15 +202,14 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   overflow: hidden;
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.05); /* 文档规范：0 2px 12px */
-  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  border: 1px solid #EEF1F6; /* 浅灰边框 */
 }
 
-/* 文档规范：移除 Hover 渐变背景，只保留阴影增强 */
 /* Hover 状态：translateY(-3px)，阴影 0 8px 20px */
 .core-card:hover {
   transform: translateY(-6rpx); /* -3px */
-  box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.08); /* 0 8px 20px */
+  box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.06); /* 强化 Hover 阴影 */
 }
 
 /* Active 状态：内阴影轻微压入 */
@@ -341,12 +340,12 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   border-radius: 24rpx;
 }
 
-/* 文档规范：胶囊按钮 - 白卡 + 阴影强化 */
+/* 企业级优化：胶囊按钮 - 白卡 + 强化阴影对比度 */
 .secondary-card {
   position: relative;
-  height: 88rpx; /* 44px - 文档规范 */
+  height: 88rpx; /* 44px */
   padding: 0 24rpx; /* 左右内边距 12px */
-  background: #FFFFFF; /* 文档规范：白卡 */
+  background: #FFFFFF; /* 白卡 */
   border-radius: 20rpx; /* 胶囊按钮圆角 10px */
   display: flex;
   flex-direction: row; /* 横向排列 */
@@ -355,15 +354,15 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   gap: 16rpx; /* 图标与文案间距 8px */
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.05); /* 文档规范：阴影强化 */
-  border: 1px solid #EEF1F6; /* 文档规范：浅灰边框 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  border: 1px solid #EEF1F6; /* 浅灰边框 */
   overflow: hidden;
 }
 
-/* 文档规范：移除 Hover 渐变背景，只保留阴影增强 */
+/* Hover 状态：微浮起 + 阴影增强 */
 .secondary-card:hover {
   transform: translateY(-2rpx); /* 微浮起 */
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.12);
+  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.10);
   border-color: var(--cl-primary, #2563EB);
 }
 

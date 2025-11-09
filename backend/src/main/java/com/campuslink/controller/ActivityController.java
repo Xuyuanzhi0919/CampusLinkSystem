@@ -7,8 +7,8 @@ import com.campuslink.dto.activity.ActivityResponse;
 import com.campuslink.dto.activity.CreateActivityRequest;
 import com.campuslink.service.ActivityService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +29,8 @@ public class ActivityController {
     public Result<Long> createActivity(
             @PathVariable Long clubId,
             @Valid @RequestBody CreateActivityRequest request,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         Long activityId = activityService.createActivity(userId, clubId, request);
         return Result.success("创建成功", activityId);
     }
@@ -42,9 +41,8 @@ public class ActivityController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long clubId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId);
         return Result.success(result);
     }
@@ -53,9 +51,8 @@ public class ActivityController {
     @GetMapping("/{activityId}")
     public Result<ActivityResponse> getActivityDetail(
             @PathVariable Long activityId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         ActivityResponse activityResponse = activityService.getActivityDetail(activityId, userId);
         return Result.success(activityResponse);
     }
@@ -64,9 +61,8 @@ public class ActivityController {
     @PostMapping("/{activityId}/join")
     public Result<Void> joinActivity(
             @PathVariable Long activityId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         activityService.joinActivity(activityId, userId);
         return Result.success("报名成功");
     }
@@ -75,9 +71,8 @@ public class ActivityController {
     @PostMapping("/{activityId}/cancel")
     public Result<Void> cancelJoin(
             @PathVariable Long activityId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         activityService.cancelJoin(activityId, userId);
         return Result.success("取消成功");
     }
@@ -86,9 +81,8 @@ public class ActivityController {
     @PostMapping("/{activityId}/signin")
     public Result<Void> signIn(
             @PathVariable Long activityId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         activityService.signIn(activityId, userId);
         return Result.success("签到成功");
     }
@@ -109,9 +103,8 @@ public class ActivityController {
     public Result<PageResult<ActivityResponse>> getMyActivities(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         PageResult<ActivityResponse> result = activityService.getMyActivities(userId, page, pageSize);
         return Result.success(result);
     }

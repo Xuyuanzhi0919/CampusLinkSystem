@@ -1,9 +1,7 @@
 package com.campuslink.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
+
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -63,6 +61,6 @@ public class Comment {
     /**
      * 创建时间
      */
-    @TableField("created_at")
+    @TableField(value = "created_at", fill = FieldFill.INSERT)
     private LocalDateTime createdAt;
 }

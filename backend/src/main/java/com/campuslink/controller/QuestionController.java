@@ -7,7 +7,6 @@ import com.campuslink.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -29,9 +28,8 @@ public class QuestionController {
     @PostMapping("/ask")
     public Result<Map<String, Long>> askQuestion(
             @Valid @RequestBody AskQuestionRequest request,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         Long questionId = questionService.askQuestion(userId, request);
         return Result.success("提问成功", Map.of("questionId", questionId));
     }
@@ -67,9 +65,8 @@ public class QuestionController {
     public Result<Map<String, Long>> answerQuestion(
             @Parameter(description = "问题ID") @PathVariable Long id,
             @Valid @RequestBody AnswerQuestionRequest request,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         Long answerId = questionService.answerQuestion(userId, id, request);
         return Result.success("回答成功", Map.of("answerId", answerId));
     }
@@ -88,9 +85,8 @@ public class QuestionController {
     public Result<Void> acceptAnswer(
             @Parameter(description = "问题ID") @PathVariable Long questionId,
             @Parameter(description = "答案ID") @PathVariable Long answerId,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         questionService.acceptAnswer(userId, questionId, answerId);
         return Result.success("采纳成功", null);
     }

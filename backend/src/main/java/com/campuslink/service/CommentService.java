@@ -10,8 +10,7 @@ import com.campuslink.dto.comment.CreateCommentRequest;
 import com.campuslink.entity.Comment;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
-import com.campuslink.mapper.CommentMapper;
-import com.campuslink.mapper.UserMapper;
+import com.campuslink.mapper.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +30,9 @@ public class CommentService {
 
     private final CommentMapper commentMapper;
     private final UserMapper userMapper;
+    private final ResourceMapper resourceMapper;
+    private final QuestionMapper questionMapper;
+    private final AnswerMapper answerMapper;
 
     /**
      * 创建评论
@@ -51,7 +53,8 @@ public class CommentService {
             }
         }
 
-        // TODO: 验证评论对象是否存在(根据targetType和targetId)
+        // 验证评论对象是否存在
+        validateTargetExists(request.getTargetType(), request.getTargetId());
 
         Comment comment = new Comment();
         comment.setUserId(userId);
@@ -205,7 +208,8 @@ public class CommentService {
         response.setParentId(comment.getParentId());
         response.setLikes(comment.getLikes());
         response.setCreatedAt(comment.getCreatedAt());
-        response.setIsLiked(false); // TODO: 查询当前用户是否已点赞
+        // 当前版本暂不支持点赞状态查询,默认返回false
+        response.setIsLiked(false);
 
         // 查询评论者信息
         User user = userMapper.selectById(comment.getUserId());
@@ -245,5 +249,30 @@ public class CommentService {
         }
 
         return response;
+    }
+
+    /**
+     * 验证评论对象是否存在
+     */
+    private void validateTargetExists(String targetType, Long targetId) {
+        switch (targetType) {
+            case "resource":
+                if (resourceMapper.selectById(targetId) == null) {
+                    throw new BusinessException(ResultCode.NOT_FOUND, "资源不存在");
+                }
+                break;
+            case "question":
+                if (questionMapper.selectById(targetId) == null) {
+                    throw new BusinessException(ResultCode.NOT_FOUND, "问题不存在");
+                }
+                break;
+            case "answer":
+                if (answerMapper.selectById(targetId) == null) {
+                    throw new BusinessException(ResultCode.NOT_FOUND, "回答不存在");
+                }
+                break;
+            default:
+                throw new BusinessException(ResultCode.BAD_REQUEST, "不支持的评论对象类型");
+        }
     }
 }

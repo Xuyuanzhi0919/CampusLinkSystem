@@ -20,9 +20,6 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        System.out.println("====== JWT拦截器被调用 ======");
-        System.out.println("请求路径: " + request.getRequestURI());
-
         // 放行 OPTIONS 请求
         if ("OPTIONS".equals(request.getMethod())) {
             return true;
@@ -30,9 +27,9 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
 
         // 获取 Token
         String token = getTokenFromRequest(request);
-        System.out.println("提取到的token: " + (token != null ? token.substring(0, Math.min(20, token.length())) + "..." : "null"));
 
         if (token == null || token.isEmpty()) {
+            log.warn("请求未携带Token - URI: {}", request.getRequestURI());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":401,\"message\":\"未授权，请先登录\"}");
@@ -42,6 +39,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
         try {
             // 验证 Token
             if (!jwtUtil.validateToken(token)) {
+                log.warn("Token无效 - URI: {}", request.getRequestURI());
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.setContentType("application/json;charset=UTF-8");
                 response.getWriter().write("{\"code\":401,\"message\":\"Token无效\"}");
@@ -53,8 +51,8 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             String username = jwtUtil.getUsernameFromToken(token);
             String role = jwtUtil.getRoleFromToken(token);
 
-            System.out.println("提取的用户信息 - userId: " + userId + ", username: " + username + ", role: " + role);
-            log.info("从Token中提取的用户信息 - userId: {}, username: {}, role: {}", userId, username, role);
+            log.debug("用户认证成功 - userId: {}, username: {}, role: {}, URI: {}",
+                userId, username, role, request.getRequestURI());
 
             request.setAttribute("userId", userId);
             request.setAttribute("username", username);
@@ -63,7 +61,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             return true;
 
         } catch (Exception e) {
-            log.error("Token验证失败: {}", e.getMessage(), e);
+            log.error("Token验证失败 - URI: {}, 错误: {}", request.getRequestURI(), e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"code\":401,\"message\":\"Token验证失败\"}");

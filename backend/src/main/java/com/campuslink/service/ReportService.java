@@ -33,6 +33,7 @@ public class ReportService {
     private final ReportMapper reportMapper;
     private final UserMapper userMapper;
     private final ActivityMapper activityMapper;
+    private final CommentMapper commentMapper;
 
     // 举报类型映射
     private static final Map<Integer, String> REPORT_TYPE_MAP = new HashMap<>();
@@ -230,13 +231,12 @@ public class ReportService {
 
         switch (reportType) {
             case 1: // 帖子
-                // TODO: 等PostMapper实现后再添加验证
+                // 帖子功能暂未实现,先跳过验证
                 exists = true;
                 targetName = "帖子";
                 break;
             case 2: // 评论
-                // TODO: 等CommentMapper实现后再添加验证
-                exists = true;
+                exists = commentMapper.selectById(targetId) != null;
                 targetName = "评论";
                 break;
             case 3: // 用户
@@ -295,10 +295,13 @@ public class ReportService {
         try {
             switch (reportType) {
                 case 1: // 帖子
-                    // TODO: 等PostMapper实现后再添加
+                    // 帖子功能暂未实现
                     return "帖子ID: " + targetId;
                 case 2: // 评论
-                    // TODO: 等CommentMapper实现后再添加
+                    Comment comment = commentMapper.selectById(targetId);
+                    if (comment != null) {
+                        return truncate(comment.getContent(), 50);
+                    }
                     return "评论ID: " + targetId;
                 case 3: // 用户
                     User user = userMapper.selectById(targetId);

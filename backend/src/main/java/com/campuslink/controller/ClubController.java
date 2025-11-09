@@ -7,8 +7,8 @@ import com.campuslink.dto.club.ClubResponse;
 import com.campuslink.dto.club.CreateClubRequest;
 import com.campuslink.service.ClubService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -28,9 +28,8 @@ public class ClubController {
     @PostMapping("/create")
     public Result<Long> createClub(
             @Valid @RequestBody CreateClubRequest request,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         Long clubId = clubService.createClub(userId, request);
         return Result.success("创建成功", clubId);
     }
@@ -40,9 +39,8 @@ public class ClubController {
     public Result<PageResult<ClubResponse>> getClubList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize);
         return Result.success(result);
     }
@@ -51,9 +49,8 @@ public class ClubController {
     @GetMapping("/{clubId}")
     public Result<ClubResponse> getClubDetail(
             @PathVariable Long clubId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         ClubResponse clubResponse = clubService.getClubDetail(clubId, userId);
         return Result.success(clubResponse);
     }
@@ -62,9 +59,8 @@ public class ClubController {
     @PostMapping("/{clubId}/join")
     public Result<Void> joinClub(
             @PathVariable Long clubId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         clubService.joinClub(clubId, userId);
         return Result.success("加入成功");
     }
@@ -73,9 +69,8 @@ public class ClubController {
     @PostMapping("/{clubId}/leave")
     public Result<Void> leaveClub(
             @PathVariable Long clubId,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         clubService.leaveClub(clubId, userId);
         return Result.success("退出成功");
     }
@@ -96,9 +91,8 @@ public class ClubController {
     public Result<PageResult<ClubResponse>> getMyClubs(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            HttpServletRequest request
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) request.getAttribute("userId");
         PageResult<ClubResponse> result = clubService.getMyClubs(userId, page, pageSize);
         return Result.success(result);
     }

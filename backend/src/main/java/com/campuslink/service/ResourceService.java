@@ -7,9 +7,11 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.resource.*;
 import com.campuslink.entity.Resource;
+import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.ResourceMapper;
+import com.campuslink.mapper.SchoolMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class ResourceService {
     private final ResourceMapper resourceMapper;
     private final UserMapper userMapper;
+    private final SchoolMapper schoolMapper;
     private final DownloadLogService downloadLogService;
 
     /**
@@ -380,8 +383,16 @@ public class ResourceService {
             response.setUploaderAvatar(uploader.getAvatarUrl());
         }
 
-        // TODO: 查询学校名称
-        // TODO: 查询当前用户是否已下载、是否已点赞
+        // 查询学校名称
+        if (resource.getSchoolId() != null) {
+            School school = schoolMapper.selectById(resource.getSchoolId());
+            if (school != null) {
+                response.setSchoolName(school.getSchoolName());
+            }
+        }
+
+        // 当前版本暂不支持下载状态和点赞状态查询,默认返回false
+        // 后续可通过查询download_log表和like表来实现
         response.setIsDownloaded(false);
         response.setIsLiked(false);
 

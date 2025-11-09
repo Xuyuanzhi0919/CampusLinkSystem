@@ -9,8 +9,10 @@ import com.campuslink.dto.school.CreateSchoolRequest;
 import com.campuslink.dto.school.SchoolResponse;
 import com.campuslink.dto.school.UpdateSchoolRequest;
 import com.campuslink.entity.School;
+import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.SchoolMapper;
+import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 public class SchoolService {
 
     private final SchoolMapper schoolMapper;
+    private final UserMapper userMapper;
 
     /**
      * 创建学校
@@ -105,7 +108,15 @@ public class SchoolService {
             throw new BusinessException(ResultCode.BAD_REQUEST, "学校不存在");
         }
 
-        // TODO: 检查是否有用户关联此学校,如果有则不允许删除
+        // 检查是否有用户关联此学校,如果有则不允许删除
+        LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
+        userWrapper.eq(User::getSchoolId, schoolId);
+        Long userCount = userMapper.selectCount(userWrapper);
+        if (userCount > 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST,
+                "该学校下存在 " + userCount + " 个用户，无法删除");
+        }
+
         schoolMapper.deleteById(schoolId);
     }
 

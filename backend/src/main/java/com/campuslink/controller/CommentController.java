@@ -8,7 +8,6 @@ import com.campuslink.service.CommentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -33,9 +32,8 @@ public class CommentController {
     @PostMapping
     public Result<Map<String, Long>> createComment(
             @Valid @RequestBody CreateCommentRequest request,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         Long commentId = commentService.createComment(userId, request);
         return Result.success("评论成功", Map.of("commentId", commentId));
     }
@@ -47,9 +45,8 @@ public class CommentController {
     @DeleteMapping("/{id}")
     public Result<Void> deleteComment(
             @Parameter(description = "评论ID") @PathVariable Long id,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         commentService.deleteComment(id, userId);
         return Result.success("删除成功");
     }
@@ -93,9 +90,8 @@ public class CommentController {
     public Result<PageResult<CommentResponse>> getMyComments(
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
-            HttpServletRequest httpRequest
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Long userId = (Long) httpRequest.getAttribute("userId");
         PageResult<CommentResponse> result = commentService.getUserComments(userId, page, pageSize);
         return Result.success(result);
     }

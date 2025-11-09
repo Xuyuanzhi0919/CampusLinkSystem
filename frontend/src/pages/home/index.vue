@@ -30,6 +30,12 @@
         <ClubActivity class="auxiliary-card" @activity-click="handleActivityClick" />
       </view>
     </view>
+
+    <!-- PC端悬浮导航 -->
+    <PCFloatingNav />
+
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar />
   </view>
 </template>
 
@@ -42,6 +48,8 @@ import HotRankingPanel from './components/HotRankingPanel.vue'
 import PointsCenter from './components/PointsCenter.vue'
 import CampusNotice from './components/CampusNotice.vue'
 import ClubActivity from './components/ClubActivity.vue'
+import PCFloatingNav from '@/components/PCFloatingNav.vue'
+import CustomTabBar from '@/components/CustomTabBar.vue'
 
 /**
  * 搜索处理
@@ -151,13 +159,31 @@ const handleActivityClick = (activity: any) => {
 <style scoped lang="scss">
 .home-new {
   min-height: 100vh;
-  background: #F5F6FA;
+  /* 品牌渐变背景 - AI 风格 */
+  background: linear-gradient(180deg, #F8FAFF 0%, #EEF3FF 100%);
+  position: relative;
+
+  /* 微光纹理（可选） */
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(46, 124, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(108, 92, 231, 0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
 /* 个性化内容区 */
 .content-section {
   padding: 48rpx 0;
-  background: #F5F6FA;
+  position: relative;
+  z-index: 1;
 }
 
 .content-container {
@@ -165,23 +191,24 @@ const handleActivityClick = (activity: any) => {
   margin: 0 auto;
   padding: 0 48rpx;
   display: flex;
-  gap: 32rpx;
+  gap: 32rpx; /* 保持 24-32px 间距 */
 }
 
 .recommend-area {
-  flex: 7;
+  flex: 7; /* 70% 比例 */
   min-width: 0; /* 防止 flex 子元素溢出 */
 }
 
 .ranking-area {
-  flex: 3;
+  flex: 3; /* 30% 比例 */
   min-width: 0;
 }
 
 /* 辅助信息区 */
 .auxiliary-section {
   padding: 48rpx 0 80rpx;
-  background: #F5F6FA;
+  position: relative;
+  z-index: 1;
 }
 
 .auxiliary-container {
@@ -239,7 +266,7 @@ const handleActivityClick = (activity: any) => {
   }
 
   .auxiliary-section {
-    padding: 32rpx 0 60rpx;
+    padding: 32rpx 0 40rpx; /* 减少底部内边距，因为已有底部导航栏 */
   }
 
   .auxiliary-container {

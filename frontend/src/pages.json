@@ -7,6 +7,41 @@
 				"navigationStyle": "custom",
 				"navigationBarTextStyle": "white"
 			}
+		},
+		{
+			"path": "pages/resource/index",
+			"style": {
+				"navigationBarTitleText": "资源库",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/question/index",
+			"style": {
+				"navigationBarTitleText": "问答社区",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/user/index",
+			"style": {
+				"navigationBarTitleText": "个人中心",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/recommend/index",
+			"style": {
+				"navigationBarTitleText": "全部推荐",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/question/ranking",
+			"style": {
+				"navigationBarTitleText": "热门问答榜",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {
@@ -14,5 +49,32 @@
 		"navigationBarTitleText": "CampusLink",
 		"navigationBarBackgroundColor": "#FFFFFF",
 		"backgroundColor": "#F5F5F5"
+	},
+	"tabBar": {
+		"color": "#666666",
+		"selectedColor": "#409EFF",
+		"backgroundColor": "#FFFFFF",
+		"borderStyle": "black",
+		"fontSize": "10px",
+		"iconWidth": "24px",
+		"height": "50px",
+		"list": [
+			{
+				"pagePath": "pages/home/index",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/resource/index",
+				"text": "资源"
+			},
+			{
+				"pagePath": "pages/question/index",
+				"text": "问答"
+			},
+			{
+				"pagePath": "pages/user/index",
+				"text": "我的"
+			}
+		]
 	}
 }

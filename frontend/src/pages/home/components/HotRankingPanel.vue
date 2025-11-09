@@ -133,7 +133,20 @@ const getQuickText = (tabIndex: number) => {
   background: white;
   border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  animation: fadeInUp 0.4s ease-out 0.1s both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 切换标签 */
@@ -142,20 +155,24 @@ const getQuickText = (tabIndex: number) => {
   gap: 32rpx;
   margin-bottom: 32rpx;
   padding-bottom: 24rpx;
-  border-bottom: 2rpx solid #F2F3F5;
+  border-bottom: 2rpx solid #E5E6EB;
 }
 
 .tab-item {
   position: relative;
-  font-size: 28rpx; /* 14px */
+  font-size: 28rpx; /* 14px - 正文规范 */
   color: #86909C;
   padding-bottom: 8rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+}
+
+.tab-item:hover {
+  color: #FFA940;
 }
 
 .tab-item.active {
-  color: #FF7D00;
+  color: #FFA940;
   font-weight: 600;
 }
 
@@ -166,8 +183,19 @@ const getQuickText = (tabIndex: number) => {
   right: 0;
   bottom: 0;
   height: 4rpx;
-  background: #FF7D00;
+  background: linear-gradient(90deg, #FFA940 0%, #FFB64B 100%);
   border-radius: 2rpx;
+  box-shadow: 0 2rpx 8rpx rgba(255, 169, 64, 0.3);
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* 榜单列表 */
@@ -184,11 +212,12 @@ const getQuickText = (tabIndex: number) => {
   padding: 16rpx;
   border-radius: 16rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .ranking-item:hover {
-  background: #F5F7FA;
+  background: #F5F6FA;
+  transform: translateX(4rpx);
 }
 
 /* 排名序号 */
@@ -200,42 +229,41 @@ const getQuickText = (tabIndex: number) => {
   justify-content: center;
   border-radius: 12rpx;
   flex-shrink: 0;
+  background: #F5F6FA;
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-/* 第1名：橙色背景 */
+/* 第1名：橙色渐变 + 光晕 */
 .rank-number.rank-1 {
-  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
+  background: linear-gradient(135deg, #FFA940 0%, #FFB64B 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 169, 64, 0.3);
 }
 
-/* 第2名：浅灰背景 */
+/* 第2名：蓝色渐变 */
 .rank-number.rank-2 {
-  background: #F2F3F5;
+  background: linear-gradient(135deg, #1E5FFF 0%, #5A7FFF 100%);
+  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.2);
 }
 
-/* 第3名：浅灰背景 */
+/* 第3名：绿色渐变 */
 .rank-number.rank-3 {
-  background: #F2F3F5;
-}
-
-/* 其他：浅灰背景 */
-.rank-number {
-  background: #F2F3F5;
+  background: linear-gradient(135deg, #52C41A 0%, #73D13D 100%);
+  box-shadow: 0 4rpx 12rpx rgba(82, 196, 26, 0.2);
 }
 
 .rank-text {
   font-size: 24rpx;
   font-weight: 700;
-  color: white;
+  color: #86909C;
   line-height: 1;
 }
 
-.rank-number.rank-1 .rank-text {
-  color: white;
-}
-
+.rank-number.rank-1 .rank-text,
 .rank-number.rank-2 .rank-text,
 .rank-number.rank-3 .rank-text {
-  color: #86909C;
+  color: white;
+  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
 }
 
 /* 内容信息 */

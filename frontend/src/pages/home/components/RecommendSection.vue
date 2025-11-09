@@ -225,7 +225,20 @@ const getTypeName = (type: string) => {
   background: white;
   border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 标题栏 */
@@ -235,13 +248,13 @@ const getTypeName = (type: string) => {
   gap: 32rpx;
   margin-bottom: 32rpx;
   padding-bottom: 24rpx;
-  border-bottom: 2rpx solid #F2F3F5;
+  border-bottom: 2rpx solid #E5E6EB;
 }
 
 .section-title {
-  font-size: 36rpx; /* 18px */
+  font-size: 40rpx; /* 20px - 标题规范 */
   font-weight: 700;
-  color: #1D2129;
+  color: #1D1D1F;
   line-height: 1;
 }
 
@@ -253,18 +266,37 @@ const getTypeName = (type: string) => {
 }
 
 .filter-tag {
-  font-size: 28rpx; /* 14px */
+  font-size: 28rpx; /* 14px - 正文规范 */
   color: #86909C;
   padding: 12rpx 24rpx;
   border-radius: 16rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+  position: relative;
+  background: transparent;
+}
+
+.filter-tag:hover {
+  color: #FFA940;
+  background: rgba(255, 169, 64, 0.08);
 }
 
 .filter-tag.active {
-  color: #FF7D00;
-  background: #FFF7E6;
+  color: white;
+  background: linear-gradient(135deg, #FFA940 0%, #FFB64B 100%);
   font-weight: 600;
+  box-shadow: 0 4rpx 12rpx rgba(255, 169, 64, 0.25);
+}
+
+.filter-tag.active::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16rpx;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
 }
 
 /* 换一批按钮 */
@@ -273,9 +305,9 @@ const getTypeName = (type: string) => {
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 24rpx;
-  color: #FF7D00;
+  color: #FFA940;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .refresh-btn:active {
@@ -307,27 +339,52 @@ const getTypeName = (type: string) => {
   line-height: 1;
 }
 
-/* 推荐列表 */
+/* 推荐列表 - 双栏瀑布流布局 */
 .recommend-list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32rpx;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24rpx;
+  column-gap: 32rpx;
 }
 
 .recommend-card {
   position: relative;
   padding: 24rpx;
   background: white;
-  border: 2rpx solid #E5E7EB;
+  border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   min-height: 240rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+  overflow: hidden;
+}
+
+.recommend-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 24rpx;
+  padding: 2rpx;
+  background: linear-gradient(135deg, #1E5FFF, #5A7FFF);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .recommend-card:hover {
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
-  border-color: #409EFF;
+  transform: translateY(-8rpx);
+  box-shadow: 0 16rpx 48rpx rgba(30, 95, 255, 0.15);
+  border-color: transparent;
+}
+
+.recommend-card:hover::before {
+  opacity: 1;
 }
 
 /* 类型标签 */
@@ -343,13 +400,13 @@ const getTypeName = (type: string) => {
 }
 
 .type-tag.type-resource {
-  background: #E6F4FF;
-  color: #409EFF;
+  background: #E6F0FF;
+  color: #1E5FFF;
 }
 
 .type-tag.type-question {
   background: #FFF7E6;
-  color: #FF7D00;
+  color: #FFA940;
 }
 
 .type-tag.type-task {
@@ -369,9 +426,9 @@ const getTypeName = (type: string) => {
 /* 卡片内容 */
 .card-title {
   display: block;
-  font-size: 32rpx; /* 16px */
-  font-weight: 600;
-  color: #1D2129;
+  font-size: 32rpx; /* 16px - 副标题规范 */
+  font-weight: 700;
+  color: #1D1D1F;
   line-height: 1.5;
   margin-bottom: 12rpx;
   overflow: hidden;
@@ -383,8 +440,8 @@ const getTypeName = (type: string) => {
 
 .card-intro {
   display: block;
-  font-size: 28rpx; /* 14px */
-  color: #86909C;
+  font-size: 28rpx; /* 14px - 正文规范 */
+  color: #4E5969;
   line-height: 1.5;
   margin-bottom: 16rpx;
   overflow: hidden;

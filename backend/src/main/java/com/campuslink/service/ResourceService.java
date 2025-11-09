@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 public class ResourceService {
     private final ResourceMapper resourceMapper;
     private final UserMapper userMapper;
+    private final DownloadLogService downloadLogService;
 
     /**
      * 上传资源
@@ -154,30 +155,41 @@ public class ResourceService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 检查积分是否足够
-        if (user.getPoints() < resource.getScore()) {
-            throw new BusinessException(ResultCode.INSUFFICIENT_POINTS);
-        }
+        // 检查是否已下载过
+        boolean hasDownloaded = downloadLogService.hasDownloaded(userId, resourceId);
 
-        // 扣除积分
-        user.setPoints(user.getPoints() - resource.getScore());
-        userMapper.updateById(user);
+        int pointsCost = 0;
+        if (!hasDownloaded) {
+            // 首次下载,需要扣积分
+            // 检查积分是否足够
+            if (user.getPoints() < resource.getScore()) {
+                throw new BusinessException(ResultCode.INSUFFICIENT_POINTS);
+            }
 
-        // 增加下载次数
-        resource.setDownloads(resource.getDownloads() + 1);
-        resourceMapper.updateById(resource);
+            // 扣除积分
+            user.setPoints(user.getPoints() - resource.getScore());
+            userMapper.updateById(user);
+            pointsCost = resource.getScore();
 
-        // 给上传者增加积分
-        User uploader = userMapper.selectById(resource.getUploaderId());
-        if (uploader != null) {
-            uploader.setPoints(uploader.getPoints() + resource.getScore());
-            userMapper.updateById(uploader);
+            // 增加下载次数
+            resource.setDownloads(resource.getDownloads() + 1);
+            resourceMapper.updateById(resource);
+
+            // 给上传者增加积分
+            User uploader = userMapper.selectById(resource.getUploaderId());
+            if (uploader != null) {
+                uploader.setPoints(uploader.getPoints() + resource.getScore());
+                userMapper.updateById(uploader);
+            }
+
+            // 记录下载日志
+            downloadLogService.recordDownload(userId, resourceId, pointsCost);
         }
 
         // 返回下载链接
         return new DownloadResourceResponse(
                 resource.getFileUrl(),
-                resource.getScore(),
+                pointsCost,
                 user.getPoints()
         );
     }

@@ -151,21 +151,21 @@ const handleActivityClick = (activity: any) => {
 <style scoped lang="scss">
 .home-new {
   min-height: 100vh;
-  background: #F5F7FA;
+  background: #F5F6FA;
 }
 
 /* 个性化内容区 */
 .content-section {
-  padding: 40rpx 0;
-  background: #F5F7FA;
+  padding: 48rpx 0;
+  background: #F5F6FA;
 }
 
 .content-container {
   max-width: 2400rpx; /* 1200px */
   margin: 0 auto;
-  padding: 0 40rpx;
+  padding: 0 48rpx;
   display: flex;
-  gap: 40rpx;
+  gap: 32rpx;
 }
 
 .recommend-area {
@@ -180,26 +180,56 @@ const handleActivityClick = (activity: any) => {
 
 /* 辅助信息区 */
 .auxiliary-section {
-  padding: 40rpx 0 80rpx;
-  background: #F5F7FA;
+  padding: 48rpx 0 80rpx;
+  background: #F5F6FA;
 }
 
 .auxiliary-container {
   max-width: 2400rpx; /* 1200px */
   margin: 0 auto;
-  padding: 0 40rpx;
+  padding: 0 48rpx;
   display: flex;
-  gap: 40rpx;
+  gap: 32rpx;
 }
 
 .auxiliary-card {
   flex: 1;
   min-width: 0;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.auxiliary-card:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.auxiliary-card:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.auxiliary-card:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* H5 端适配 */
 @media (max-width: 750px) {
+  .content-section {
+    padding: 32rpx 0;
+  }
+
   .content-container {
+    max-width: 100%; /* 移动端充分利用屏幕宽度 */
+    padding: 0 24rpx; /* 减小内边距 */
     flex-direction: column;
   }
 
@@ -208,7 +238,13 @@ const handleActivityClick = (activity: any) => {
     flex: 1;
   }
 
+  .auxiliary-section {
+    padding: 32rpx 0 60rpx;
+  }
+
   .auxiliary-container {
+    max-width: 100%; /* 移动端充分利用屏幕宽度 */
+    padding: 0 24rpx; /* 减小内边距 */
     flex-direction: column;
   }
 }

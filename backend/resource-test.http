@@ -658,3 +658,77 @@ Authorization: Bearer {{uploaderToken}}
 # @name rejectFlow5PublicList
 GET {{baseUrl}}/resource/list
 Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 15. 下载历史和记录 ====================
+
+### 15.1 第一次下载资源（需要扣积分）
+# @name firstDownload
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 15.2 再次下载同一资源（不应该再扣积分）
+# @name secondDownload
+POST {{baseUrl}}/resource/1/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 15.3 下载另一个资源
+# @name downloadAnother
+POST {{baseUrl}}/resource/2/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 15.4 查看我的下载历史
+# @name getMyDownloadHistory
+GET {{baseUrl}}/resource/download-history?page=1&pageSize=10
+Authorization: Bearer {{downloaderToken1}}
+
+### 15.5 查看我的下载历史（第2页）
+# @name getMyDownloadHistoryPage2
+GET {{baseUrl}}/resource/download-history?page=2&pageSize=5
+Authorization: Bearer {{downloaderToken1}}
+
+### 15.6 用户2查看下载历史
+# @name getUser2DownloadHistory
+GET {{baseUrl}}/resource/download-history
+Authorization: Bearer {{downloaderToken2}}
+
+### 15.7 管理员查看资源1的所有下载记录
+# @name getResourceDownloadLogs
+GET {{baseUrl}}/resource/1/download-logs?page=1&pageSize=20
+Authorization: Bearer {{adminToken}}
+
+### 15.8 管理员查看资源2的下载记录
+# @name getResource2DownloadLogs
+GET {{baseUrl}}/resource/2/download-logs
+Authorization: Bearer {{adminToken}}
+
+### 15.9 普通用户尝试查看资源下载记录（应该失败）
+# @name getResourceLogsUnauthorized
+GET {{baseUrl}}/resource/1/download-logs
+Authorization: Bearer {{downloaderToken1}}
+
+### ==================== 16. 重复下载测试 ====================
+
+### 16.1 用户1下载资源3（首次）
+# @name repeatTest1
+POST {{baseUrl}}/resource/3/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 16.2 查看积分变化
+# @name checkPoints1
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{downloaderToken1}}
+
+### 16.3 再次下载资源3（不应该扣积分）
+# @name repeatTest2
+POST {{baseUrl}}/resource/3/download
+Authorization: Bearer {{downloaderToken1}}
+
+### 16.4 再次查看积分（应该没有变化）
+# @name checkPoints2
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{downloaderToken1}}
+
+### 16.5 查看下载历史（应该只有一条记录）
+# @name checkDownloadHistory
+GET {{baseUrl}}/resource/download-history
+Authorization: Bearer {{downloaderToken1}}

@@ -383,7 +383,7 @@ onMounted(() => {
   position: relative;
   width: 100%;
   height: 440rpx; /* PC端 220px */
-  background: linear-gradient(90deg, #2F80ED 0%, #409EFF 50%, #5DAFFF 100%);
+  background: linear-gradient(180deg, #1E5FFF 0%, #5A7FFF 100%);
   overflow: hidden;
   z-index: 1;
 }
@@ -546,7 +546,21 @@ onMounted(() => {
   align-items: center;
   padding: 0 24rpx;
   gap: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+  border: 2rpx solid transparent;
+}
+
+.search-box:hover {
+  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.15);
+  transform: translateY(-2rpx);
+  border-color: rgba(30, 95, 255, 0.2);
+}
+
+.search-box:focus-within {
+  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.2);
+  border-color: #1E5FFF;
+  transform: translateY(-2rpx);
 }
 
 /* 搜索图标 */
@@ -587,17 +601,17 @@ onMounted(() => {
 .hot-tag {
   font-size: 24rpx; /* 12px */
   font-weight: 500;
-  color: #409EFF;
+  color: #1E5FFF;
   padding: 8rpx 16rpx;
-  background: #E6F4FF;
+  background: #E6F0FF;
   border-radius: 16rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 
 .hot-tag:hover {
-  background: #409EFF;
+  background: #1E5FFF;
   color: white;
   transform: scale(1.05);
 }
@@ -609,16 +623,18 @@ onMounted(() => {
 /* 蓝色搜索按钮 */
 .search-btn-blue {
   padding: 14rpx 32rpx; /* 调整为14rpx，使高度与语音按钮一致（14*2 + 28 = 56rpx） */
-  background: #409EFF;
+  background: #1E5FFF;
   border-radius: 40rpx; /* 20px */
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.25);
 }
 
 .search-btn-blue:hover {
-  background: #2F80ED;
-  transform: scale(1.02);
+  background: #1650E6;
+  transform: scale(1.03);
+  box-shadow: 0 6rpx 16rpx rgba(30, 95, 255, 0.35);
 }
 
 .search-btn-blue:active {
@@ -724,7 +740,7 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* 个人信息按钮 */
+/* 个人信息按钮 - 圆形卡片悬浮样式 */
 .user-info-btn {
   display: flex;
   align-items: center;
@@ -734,18 +750,20 @@ onMounted(() => {
   backdrop-filter: blur(10rpx);
   border-radius: 40rpx;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   border: 1rpx solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 }
 
 .user-info-btn:hover {
   background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  transform: translateY(-4rpx);
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .user-info-btn:active {
-  transform: translateY(0);
+  transform: translateY(-2rpx);
 }
 
 /* 用户头像 */
@@ -808,16 +826,17 @@ onMounted(() => {
   gap: 12rpx;
   width: 240rpx; /* 120px */
   height: 88rpx; /* 44px */
-  background: #FF7D00;
+  background: linear-gradient(90deg, #FFB64B 0%, #FF8C00 100%);
   border-radius: 48rpx; /* 24px */
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4rpx 12rpx rgba(255, 125, 0, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 6rpx 20rpx rgba(255, 140, 0, 0.35);
 }
 
 .cta-btn-primary:hover {
-  background: #E67000;
-  transform: scale(1.05);
+  background: linear-gradient(90deg, #FFA940 0%, #E67000 100%);
+  transform: scale(1.03);
+  box-shadow: 0 8rpx 28rpx rgba(255, 140, 0, 0.45);
 }
 
 .cta-btn-primary:active {
@@ -941,143 +960,189 @@ onMounted(() => {
   }
 }
 
-/* ========== 九、H5 端适配 ========== */
+/* ========== 九、H5 端适配 - 方案二：分层优化 ========== */
 @media (max-width: 750px) {
-  /* 顶部容器高度调整 */
+  /* 顶部容器高度调整 - 从 360rpx 减少到 280rpx */
   .top-focus-bar {
-    height: 360rpx; /* H5端 180px */
+    height: 280rpx; /* H5端 140px - 节省 40px 空间 */
   }
 
-  /* 内容容器调整 */
+  /* 内容容器调整 - 减少间距 */
   .focus-container {
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-    gap: 24rpx;
-    padding: 32rpx 40rpx;
+    gap: 16rpx; /* 从 24rpx 减少到 16rpx */
+    padding: 24rpx 24rpx; /* 从 32rpx 减少到 24rpx */
   }
 
   /* 品牌区域 - H5 端简化显示 */
   .brand-section {
     flex-direction: row;
     justify-content: center;
-    gap: 24rpx;
+    gap: 16rpx; /* 减少间距 */
+    align-items: center;
   }
 
-  .school-logo {
-    display: none; /* H5 端隐藏校园标识 */
+  /* 隐藏校徽和学校名 */
+  .school-identity {
+    display: none; /* 完全隐藏校园标识 */
   }
 
+  /* 品牌Logo区域优化 */
+  .brand-logo-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0; /* 移除间距 */
+  }
+
+  .logo-row {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
+
+  /* 缩小品牌名字号 */
   .brand-logo {
-    font-size: 48rpx; /* 24px */
+    font-size: 40rpx; /* 从 48rpx 减小到 40rpx (20px) */
+    font-weight: 700;
   }
 
-  .brand-subtitle {
-    display: none; /* H5 端隐藏副标题 */
+  /* 缩小"校园muule"标签 */
+  .campus-muule {
+    font-size: 20rpx; /* 10px - 更小更紧凑 */
+    padding: 4rpx 8rpx;
   }
 
-  /* 搜索区域 */
+  /* 隐藏副标题 */
+  .brand-slogan {
+    display: none; /* 隐藏"100万大学生的互助学习圈" */
+  }
+
+  /* 搜索区域 - 优化高度 */
   .search-section {
     max-width: 100%;
   }
 
   .search-box {
-    height: 72rpx; /* 36px */
-    padding: 0 20rpx;
-    gap: 12rpx;
+    height: 64rpx; /* 从 72rpx 减少到 64rpx (32px) */
+    padding: 0 16rpx; /* 减少内边距 */
+    gap: 10rpx; /* 减少间距 */
   }
 
   .search-icon {
-    font-size: 28rpx;
+    font-size: 26rpx; /* 略微缩小 */
   }
 
   .search-input {
-    font-size: 26rpx;
+    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
   }
 
   .search-btn-blue {
-    padding: 11rpx 24rpx; /* 调整为11rpx，使高度与语音按钮一致（11*2 + 26 = 48rpx） */
+    padding: 10rpx 20rpx; /* 减小按钮尺寸 */
   }
 
   .search-btn-text {
-    font-size: 26rpx;
+    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
   }
 
   .voice-search-btn {
-    width: 48rpx;
-    height: 48rpx;
+    width: 44rpx; /* 从 48rpx 减小到 44rpx */
+    height: 44rpx;
   }
 
   .voice-icon {
-    width: 24rpx;
-    height: 24rpx;
+    width: 22rpx; /* 从 24rpx 减小到 22rpx */
+    height: 22rpx;
   }
 
   .voice-ripple {
-    width: 48rpx;
-    height: 48rpx;
+    width: 44rpx;
+    height: 44rpx;
   }
 
-  /* 右侧区域 */
+  /* 右侧区域 - 改为横向紧凑布局 */
   .right-section {
-    gap: 16rpx;
-    flex-direction: column;
-    align-items: stretch;
+    gap: 12rpx; /* 减少间距 */
+    flex-direction: row; /* 改为横向布局 */
+    align-items: center;
+    justify-content: space-between;
   }
 
-  /* 个人信息按钮 - H5 端简化 */
+  /* 个人信息按钮 - 横向紧凑布局 */
   .user-info-btn {
-    padding: 6rpx 16rpx;
-    gap: 12rpx;
+    padding: 4rpx 12rpx; /* 减小内边距 */
+    gap: 8rpx; /* 减少间距 */
+    flex: 1; /* 占据剩余空间 */
+    min-width: 0; /* 允许收缩 */
   }
 
   .user-avatar,
   .user-avatar-placeholder {
-    width: 48rpx;
-    height: 48rpx;
+    width: 40rpx; /* 从 48rpx 减小到 40rpx */
+    height: 40rpx;
+    flex-shrink: 0; /* 不收缩 */
   }
 
   .avatar-text {
-    font-size: 24rpx;
+    font-size: 20rpx; /* 从 24rpx 减小到 20rpx */
+  }
+
+  .user-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2rpx; /* 减少间距 */
+    min-width: 0; /* 允许收缩 */
   }
 
   .user-nickname {
-    font-size: 26rpx;
-    max-width: 100rpx;
+    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
+    max-width: 80rpx; /* 从 100rpx 减小到 80rpx */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .user-points {
-    font-size: 20rpx;
+    font-size: 20rpx; /* 保持不变 */
   }
 
-  /* CTA 按钮 */
+  /* CTA 按钮 - 改为紧凑样式 */
   .cta-btn-primary {
-    width: 100%;
-    height: 64rpx;
+    width: auto; /* 从 100% 改为自适应 */
+    height: 48rpx; /* 从 64rpx 减小到 48rpx */
+    padding: 0 20rpx; /* 添加左右内边距 */
+    flex-shrink: 0; /* 不收缩 */
   }
 
   .cta-btn-text,
   .cta-arrow {
-    font-size: 26rpx;
+    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
   }
 
-  /* 插画元素 - H5 端缩小 */
+  /* 插画元素 - H5 端进一步缩小以适应更小的容器 */
+  .illustration-layer {
+    height: 280rpx; /* 与容器高度一致 */
+  }
+
   .campus-building {
-    width: 80rpx;
-    height: 100rpx;
-    left: 3%;
-    bottom: 10%;
-  }
-
-  .student-illustration {
-    width: 180rpx;
-    height: 180rpx;
-    right: 4%;
+    width: 60rpx; /* 从 80rpx 减小到 60rpx */
+    height: 80rpx; /* 从 100rpx 减小到 80rpx */
+    left: 2%;
     bottom: 8%;
   }
 
+  .student-illustration {
+    width: 140rpx; /* 从 180rpx 减小到 140rpx */
+    height: 140rpx;
+    right: 3%;
+    bottom: 6%;
+  }
+
   .decoration-element {
-    opacity: 0.5;
+    opacity: 0.4; /* 从 0.5 减小到 0.4，更淡化 */
+    transform: scale(0.8); /* 缩小装饰元素 */
   }
 
   .decoration-book {

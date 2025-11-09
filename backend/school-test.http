@@ -1,0 +1,403 @@
+### 学校管理模块API测试
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 0. 准备测试数据
+
+### 0.1 注册管理员用户
+# @name schoolAdmin
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "school_admin",
+  "password": "123456",
+  "nickname": "学校管理员",
+  "email": "schooladmin@campus.com",
+  "phone": "13900000041",
+  "schoolId": 1,
+  "role": "teacher"
+}
+
+### 0.2 注册普通用户
+# @name normalUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "school_user_001",
+  "password": "123456",
+  "nickname": "普通用户",
+  "email": "schooluser@campus.com",
+  "phone": "13900000042",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+
+# 管理员token（从步骤0.1的响应中获取）
+@adminToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoidGVhY2hlciIsInVzZXJJZCI6NDEsInVzZXJuYW1lIjoic2Nob29sX2FkbWluIiwiaWF0IjoxNzYyNjY2NjEyLCJleHAiOjE3NjI2NzM4MTJ9.Ar_LduJqmfj0Pv-b0L5oTljjlo96kO79f9BMYLWZ9xw
+
+# 普通用户token（从步骤0.2的响应中获取）
+@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDIsInVzZXJuYW1lIjoic2Nob29sX3VzZXJfMDAxIiwiaWF0IjoxNzYyNjY2NjIxLCJleHAiOjE3NjI2NzM4MjF9.ooG_xzkj4Hn_vYC7Tx0sb9cgfKkaEAfZ6ALHzIR2_HU
+
+### ==================== 1. 创建学校（管理员功能） ====================
+
+### 1.1 创建学校 - 北京大学
+# @name createPKU
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "北京大学",
+  "province": "北京市",
+  "city": "北京市",
+  "address": "北京市海淀区颐和园路5号",
+  "logoUrl": "https://www.pku.edu.cn/logo.png"
+}
+
+### 1.2 创建学校 - 清华大学
+# @name createTHU
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "清华大学",
+  "province": "北京市",
+  "city": "北京市",
+  "address": "北京市海淀区清华园1号",
+  "logoUrl": "https://www.tsinghua.edu.cn/logo.png"
+}
+
+### 1.3 创建学校 - 复旦大学
+# @name createFDU
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "复旦大学",
+  "province": "上海市",
+  "city": "上海市",
+  "address": "上海市杨浦区邯郸路220号",
+  "logoUrl": "https://www.fudan.edu.cn/logo.png"
+}
+
+### 1.4 创建学校 - 浙江大学
+# @name createZJU
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "浙江大学",
+  "province": "浙江省",
+  "city": "杭州市",
+  "address": "浙江省杭州市西湖区余杭塘路866号",
+  "logoUrl": "https://www.zju.edu.cn/logo.png"
+}
+
+### 1.5 创建学校 - 中国科学技术大学
+# @name createUSTC
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "中国科学技术大学",
+  "province": "安徽省",
+  "city": "合肥市",
+  "address": "安徽省合肥市包河区金寨路96号",
+  "logoUrl": "https://www.ustc.edu.cn/logo.png"
+}
+
+### 1.6 创建学校（缺少必填字段 - 应该失败）
+# @name createInvalid
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "测试学校"
+}
+
+### 1.7 创建重名学校（应该失败）
+# @name createDuplicate
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "北京大学",
+  "province": "北京市",
+  "city": "北京市",
+  "address": "测试地址"
+}
+
+### 1.8 普通用户尝试创建学校（应该失败）
+# @name createByNormalUser
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "schoolName": "测试学校",
+  "province": "北京市",
+  "city": "北京市"
+}
+
+### ==================== 2. 查询学校 ====================
+
+### 2.1 获取学校详情
+# @name getSchoolDetail
+GET {{baseUrl}}/school/1
+Authorization: Bearer {{userToken}}
+
+### 2.2 获取不存在的学校（应该失败）
+# @name getSchoolNotFound
+GET {{baseUrl}}/school/99999
+Authorization: Bearer {{userToken}}
+
+### 2.3 获取所有学校列表（不分页）
+# @name getAllSchools
+GET {{baseUrl}}/school/all
+Authorization: Bearer {{userToken}}
+
+### 2.4 获取学校列表（分页）
+# @name getSchoolListPage1
+GET {{baseUrl}}/school/list?page=1&pageSize=10
+Authorization: Bearer {{userToken}}
+
+### 2.5 获取学校列表（第2页）
+# @name getSchoolListPage2
+GET {{baseUrl}}/school/list?page=2&pageSize=2
+Authorization: Bearer {{userToken}}
+
+### 2.6 按省份筛选 - 北京市
+# @name getSchoolsByProvinceFilter
+GET {{baseUrl}}/school/list?province=北京市
+Authorization: Bearer {{userToken}}
+
+### 2.7 按城市筛选 - 上海市
+# @name getSchoolsByCityFilter
+GET {{baseUrl}}/school/list?city=上海市
+Authorization: Bearer {{userToken}}
+
+### 2.8 按关键词搜索 - "大学"
+# @name searchSchools
+GET {{baseUrl}}/school/list?keyword=大学
+Authorization: Bearer {{userToken}}
+
+### 2.9 按关键词搜索 - "科技"
+# @name searchSchoolsKeyword
+GET {{baseUrl}}/school/list?keyword=科技
+Authorization: Bearer {{userToken}}
+
+### 2.10 按状态筛选 - 正常状态
+# @name getSchoolsByStatus
+GET {{baseUrl}}/school/list?status=1
+Authorization: Bearer {{userToken}}
+
+### 2.11 组合筛选 - 北京市 + 关键词
+# @name getSchoolsWithFilters
+GET {{baseUrl}}/school/list?province=北京市&keyword=大学
+Authorization: Bearer {{userToken}}
+
+### ==================== 3. 按省份/城市获取学校 ====================
+
+### 3.1 按省份获取学校列表 - 北京市
+# @name getSchoolsByProvince
+GET {{baseUrl}}/school/by-province?province=北京市
+Authorization: Bearer {{userToken}}
+
+### 3.2 按省份获取学校列表 - 浙江省
+# @name getSchoolsByProvinceZJ
+GET {{baseUrl}}/school/by-province?province=浙江省
+Authorization: Bearer {{userToken}}
+
+### 3.3 按城市获取学校列表 - 北京市
+# @name getSchoolsByCity
+GET {{baseUrl}}/school/by-city?city=北京市
+Authorization: Bearer {{userToken}}
+
+### 3.4 按城市获取学校列表 - 杭州市
+# @name getSchoolsByCityHZ
+GET {{baseUrl}}/school/by-city?city=杭州市
+Authorization: Bearer {{userToken}}
+
+### 3.5 查询不存在的省份
+# @name getSchoolsByInvalidProvince
+GET {{baseUrl}}/school/by-province?province=不存在的省份
+Authorization: Bearer {{userToken}}
+
+### ==================== 4. 更新学校（管理员功能） ====================
+
+### 4.1 更新学校基本信息
+# @name updateSchool
+PUT {{baseUrl}}/school/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "北京大学(更新)",
+  "address": "北京市海淀区颐和园路5号(新地址)"
+}
+
+### 4.2 更新学校Logo
+# @name updateSchoolLogo
+PUT {{baseUrl}}/school/2
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "logoUrl": "https://www.tsinghua.edu.cn/new-logo.png"
+}
+
+### 4.3 更新学校状态为禁用
+# @name disableSchool
+PUT {{baseUrl}}/school/3
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": 0
+}
+
+### 4.4 更新学校状态为正常
+# @name enableSchool
+PUT {{baseUrl}}/school/3
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "status": 1
+}
+
+### 4.5 普通用户尝试更新学校（应该失败）
+# @name updateByNormalUser
+PUT {{baseUrl}}/school/1
+Content-Type: application/json
+Authorization: Bearer {{userToken}}
+
+{
+  "schoolName": "测试更新"
+}
+
+### 4.6 更新不存在的学校（应该失败）
+# @name updateNotExist
+PUT {{baseUrl}}/school/99999
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "测试"
+}
+
+### 4.7 更新学校名称为已存在的名称（应该失败）
+# @name updateToDuplicateName
+PUT {{baseUrl}}/school/1
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "清华大学"
+}
+
+### ==================== 5. 删除学校（管理员功能） ====================
+
+### 5.1 删除学校
+# @name deleteSchool
+DELETE {{baseUrl}}/school/5
+Authorization: Bearer {{adminToken}}
+
+### 5.2 普通用户尝试删除学校（应该失败）
+# @name deleteByNormalUser
+DELETE {{baseUrl}}/school/4
+Authorization: Bearer {{userToken}}
+
+### 5.3 删除不存在的学校（应该失败）
+# @name deleteNotExist
+DELETE {{baseUrl}}/school/99999
+Authorization: Bearer {{adminToken}}
+
+### 5.4 删除后查询（应该失败）
+# @name getDeletedSchool
+GET {{baseUrl}}/school/5
+Authorization: Bearer {{userToken}}
+
+### ==================== 6. 综合测试场景 ====================
+
+### 6.1 创建新学校
+# @name scenario1Create
+POST {{baseUrl}}/school
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "schoolName": "南京大学",
+  "province": "江苏省",
+  "city": "南京市",
+  "address": "江苏省南京市栖霞区仙林大道163号",
+  "logoUrl": "https://www.nju.edu.cn/logo.png"
+}
+
+### 6.2 查询刚创建的学校详情
+# @name scenario2GetDetail
+GET {{baseUrl}}/school/6
+Authorization: Bearer {{userToken}}
+
+### 6.3 更新学校信息
+# @name scenario3Update
+PUT {{baseUrl}}/school/6
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "address": "江苏省南京市栖霞区仙林大道163号(鼓楼校区)",
+  "logoUrl": "https://www.nju.edu.cn/new-logo.png"
+}
+
+### 6.4 再次查询验证更新
+# @name scenario4Verify
+GET {{baseUrl}}/school/6
+Authorization: Bearer {{userToken}}
+
+### 6.5 按省份查询（应该包含刚创建的学校）
+# @name scenario5QueryByProvince
+GET {{baseUrl}}/school/by-province?province=江苏省
+Authorization: Bearer {{userToken}}
+
+### 6.6 搜索关键词（应该能找到）
+# @name scenario6Search
+GET {{baseUrl}}/school/list?keyword=南京
+Authorization: Bearer {{userToken}}
+
+### ==================== 7. 数据统计测试 ====================
+
+### 7.1 获取所有学校总数
+# @name getAllSchoolsCount
+GET {{baseUrl}}/school/list?page=1&pageSize=100
+Authorization: Bearer {{userToken}}
+
+### 7.2 获取各省份学校数量 - 北京市
+# @name getBeijingSchools
+GET {{baseUrl}}/school/by-province?province=北京市
+Authorization: Bearer {{userToken}}
+
+### 7.3 获取各省份学校数量 - 上海市
+# @name getShanghaiSchools
+GET {{baseUrl}}/school/by-province?province=上海市
+Authorization: Bearer {{userToken}}
+
+### 7.4 获取各省份学校数量 - 浙江省
+# @name getZhejiangSchools
+GET {{baseUrl}}/school/by-province?province=浙江省
+Authorization: Bearer {{userToken}}
+
+### 7.5 获取各省份学校数量 - 江苏省
+# @name getJiangsuSchools
+GET {{baseUrl}}/school/by-province?province=江苏省
+Authorization: Bearer {{userToken}}

@@ -1,0 +1,534 @@
+####################
+# 系统配置模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册管理员用户
+# @name adminUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "config_admin",
+  "password": "123456",
+  "nickname": "配置管理员",
+  "email": "configadmin@campus.com",
+  "phone": "13900000051",
+  "schoolId": 1,
+  "role": "admin"
+}
+
+### 2. 注册普通用户（用于测试权限）
+# @name normalUser
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "config_user",
+  "password": "123456",
+  "nickname": "普通用户",
+  "email": "configuser@campus.com",
+  "phone": "13900000052",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+# 管理员的token（从步骤1的响应中获取）
+@adminToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjQ2LCJ1c2VybmFtZSI6ImNvbmZpZ19hZG1pbiIsImlhdCI6MTc2MjY2OTA3MCwiZXhwIjoxNzYyNjc2MjcwfQ.CYaHWnfMsqk_kzV7hDgOinqWX4HWQEKnXwV-CvWtNW0
+# 普通用户的token（从步骤2的响应中获取）
+@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDcsInVzZXJuYW1lIjoiY29uZmlnX3VzZXIiLCJpYXQiOjE3NjI2NjkwODQsImV4cCI6MTc2MjY3NjI4NH0.r1zyvWZ4E5hBp5awyvGYBVmvpcdNl_JmpaG58q20J_k
+
+####################
+# 创建配置测试
+####################
+
+### 3. 管理员创建配置 - 系统名称
+# @name createConfig1
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "system.name",
+  "configValue": "CampusLink 校园资源共享平台",
+  "description": "系统名称配置"
+}
+
+### 4. 管理员创建配置 - 每日签到积分
+# @name createConfig2
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "points.daily_signin1",
+  "configValue": "10",
+  "description": "每日签到获得的积分数"
+}
+
+### 5. 管理员创建配置 - 上传资源积分
+# @name createConfig3
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "points.upload_resource",
+  "configValue": "10",
+  "description": "上传资源获得的积分数"
+}
+
+### 6. 管理员创建配置 - 下载资源积分
+# @name createConfig4
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "points.download_resource",
+  "configValue": "5",
+  "description": "下载资源消耗的积分数"
+}
+
+### 7. 管理员创建配置 - 最大文件大小
+# @name createConfig5
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "upload.max_file_size",
+  "configValue": "104857600",
+  "description": "上传文件最大大小（字节），默认100MB"
+}
+
+### 8. 管理员创建配置 - 允许的文件类型
+# @name createConfig6
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "upload.allowed_file_types",
+  "configValue": "pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,png",
+  "description": "允许上传的文件类型"
+}
+
+####################
+# 异常情况测试
+####################
+
+### 9. 创建配置 - 重复的配置键（应失败）
+# @name createDuplicateKey
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "system.name",
+  "configValue": "重复配置",
+  "description": "这是重复的配置键"
+}
+
+### 10. 创建配置 - 缺少必填字段（应失败）
+# @name createMissingField
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "test.config"
+}
+
+### 11. 创建配置 - 配置键为空（应失败）
+# @name createEmptyKey
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "",
+  "configValue": "测试值",
+  "description": "空配置键"
+}
+
+### 12. 普通用户创建配置（应失败 - 权限不足）
+# @name createByNormalUser
+POST {{baseUrl}}/config
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "configKey": "test.unauthorized",
+  "configValue": "测试值",
+  "description": "普通用户尝试创建配置"
+}
+
+### 13. 未登录创建配置（应失败）
+# @name createWithoutAuth
+POST {{baseUrl}}/config
+Content-Type: application/json
+
+{
+  "configKey": "test.noauth",
+  "configValue": "测试值",
+  "description": "未登录创建配置"
+}
+
+####################
+# 获取配置测试
+####################
+
+### 14. 获取配置详情 - system.name
+# @name getConfig1
+GET {{baseUrl}}/config/system.name
+Authorization: Bearer {{adminToken}}
+
+### 15. 获取配置详情 - points.daily_signin
+# @name getConfig2
+GET {{baseUrl}}/config/points.daily_signin
+Authorization: Bearer {{adminToken}}
+
+### 16. 普通用户获取配置详情（应成功）
+# @name getConfigByUser
+GET {{baseUrl}}/config/system.name
+Authorization: Bearer {{userToken}}
+
+### 17. 获取不存在的配置（应失败）
+# @name getConfigNotFound
+GET {{baseUrl}}/config/not.exist.key
+Authorization: Bearer {{adminToken}}
+
+### 18. 获取配置值 - system.name
+# @name getConfigValue1
+GET {{baseUrl}}/config/system.name/value
+Authorization: Bearer {{adminToken}}
+
+### 19. 获取配置值 - points.daily_signin
+# @name getConfigValue2
+GET {{baseUrl}}/config/points.daily_signin/value
+Authorization: Bearer {{userToken}}
+
+### 20. 获取不存在配置的值（应返回空字符串）
+# @name getConfigValueNotFound
+GET {{baseUrl}}/config/not.exist.key/value
+Authorization: Bearer {{adminToken}}
+
+####################
+# 获取配置列表
+####################
+
+### 21. 管理员获取所有配置列表
+# @name getAllConfigs
+GET {{baseUrl}}/config/list
+Authorization: Bearer {{adminToken}}
+
+### 22. 普通用户获取配置列表（应失败 - 权限不足）
+# @name getAllConfigsByUser
+GET {{baseUrl}}/config/list
+Authorization: Bearer {{userToken}}
+
+### 23. 按前缀搜索配置 - points
+# @name searchConfigsPoints
+GET {{baseUrl}}/config/search?prefix=points
+Authorization: Bearer {{adminToken}}
+
+### 24. 按前缀搜索配置 - upload
+# @name searchConfigsUpload
+GET {{baseUrl}}/config/search?prefix=upload
+Authorization: Bearer {{adminToken}}
+
+### 25. 按前缀搜索配置 - system
+# @name searchConfigsSystem
+GET {{baseUrl}}/config/search?prefix=system
+Authorization: Bearer {{adminToken}}
+
+### 26. 搜索不存在的前缀（应返回空列表）
+# @name searchConfigsNotFound
+GET {{baseUrl}}/config/search?prefix=notexist
+Authorization: Bearer {{adminToken}}
+
+### 27. 普通用户搜索配置（应失败 - 权限不足）
+# @name searchConfigsByUser
+GET {{baseUrl}}/config/search?prefix=points
+Authorization: Bearer {{userToken}}
+
+####################
+# 更新配置测试
+####################
+
+### 28. 管理员更新配置 - system.name
+# @name updateConfig1
+PUT {{baseUrl}}/config/system.name
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configValue": "CampusLink v2.0 校园资源共享平台",
+  "description": "系统名称配置（已更新）"
+}
+
+### 29. 管理员更新配置 - points.daily_signin
+# @name updateConfig2
+PUT {{baseUrl}}/config/points.daily_signin
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configValue": "15",
+  "description": "每日签到获得的积分数（已调整）"
+}
+
+### 30. 验证更新结果
+# @name checkUpdate
+GET {{baseUrl}}/config/system.name
+Authorization: Bearer {{adminToken}}
+
+### 31. 更新不存在的配置（应失败）
+# @name updateConfigNotFound
+PUT {{baseUrl}}/config/not.exist.key
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configValue": "新值",
+  "description": "更新不存在的配置"
+}
+
+### 32. 普通用户更新配置（应失败 - 权限不足）
+# @name updateConfigByUser
+PUT {{baseUrl}}/config/system.name
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "configValue": "非法修改",
+  "description": "普通用户尝试修改"
+}
+
+### 33. 更新配置 - 缺少必填字段（应失败）
+# @name updateConfigMissingField
+PUT {{baseUrl}}/config/system.name
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "description": "只有描述"
+}
+
+####################
+# 批量设置配置
+####################
+
+### 34. 批量设置配置（创建+更新）
+# @name batchSetConfigs
+POST {{baseUrl}}/config/batch
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+[
+  {
+    "configKey": "email.smtp_host",
+    "configValue": "smtp.example.com",
+    "description": "SMTP服务器地址"
+  },
+  {
+    "configKey": "email.smtp_port",
+    "configValue": "587",
+    "description": "SMTP服务器端口"
+  },
+  {
+    "configKey": "system.name",
+    "configValue": "CampusLink 校园平台",
+    "description": "系统名称（批量更新）"
+  }
+]
+
+### 35. 验证批量设置结果
+# @name checkBatchSet
+GET {{baseUrl}}/config/list
+Authorization: Bearer {{adminToken}}
+
+### 36. 搜索新创建的email配置
+# @name searchEmailConfigs
+GET {{baseUrl}}/config/search?prefix=email
+Authorization: Bearer {{adminToken}}
+
+### 37. 普通用户批量设置（应失败 - 权限不足）
+# @name batchSetByUser
+POST {{baseUrl}}/config/batch
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+[
+  {
+    "configKey": "test.key",
+    "configValue": "test value",
+    "description": "测试"
+  }
+]
+
+####################
+# 删除配置测试
+####################
+
+### 38. 管理员删除配置 - email.smtp_host
+# @name deleteConfig1
+DELETE {{baseUrl}}/config/email.smtp_host
+Authorization: Bearer {{adminToken}}
+
+### 39. 验证删除结果（应不存在）
+# @name checkDelete
+GET {{baseUrl}}/config/email.smtp_host
+Authorization: Bearer {{adminToken}}
+
+### 40. 删除不存在的配置（应失败）
+# @name deleteConfigNotFound
+DELETE {{baseUrl}}/config/not.exist.key
+Authorization: Bearer {{adminToken}}
+
+### 41. 重复删除已删除的配置（应失败）
+# @name deleteConfigAgain
+DELETE {{baseUrl}}/config/email.smtp_host
+Authorization: Bearer {{adminToken}}
+
+### 42. 普通用户删除配置（应失败 - 权限不足）
+# @name deleteConfigByUser
+DELETE {{baseUrl}}/config/system.name
+Authorization: Bearer {{userToken}}
+
+####################
+# 综合场景测试
+####################
+
+### 43. 场景：配置积分系统
+# @name scenarioPoints1
+POST {{baseUrl}}/config/batch
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+[
+  {
+    "configKey": "points.answer_question",
+    "configValue": "5",
+    "description": "回答问题获得的积分"
+  },
+  {
+    "configKey": "points.answer_adopted",
+    "configValue": "20",
+    "description": "回答被采纳获得的积分"
+  },
+  {
+    "configKey": "points.publish_task",
+    "configValue": "0",
+    "description": "发布任务消耗的积分"
+  }
+]
+
+### 44. 查看所有积分相关配置
+# @name scenarioPoints2
+GET {{baseUrl}}/config/search?prefix=points
+Authorization: Bearer {{adminToken}}
+
+### 45. 调整积分配置
+# @name scenarioPoints3
+PUT {{baseUrl}}/config/points.answer_adopted
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configValue": "30",
+  "description": "回答被采纳获得的积分（已提高奖励）"
+}
+
+### 46. 场景：配置文件上传限制
+# @name scenarioUpload1
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "upload.image_max_size",
+  "configValue": "5242880",
+  "description": "图片上传最大大小（5MB）"
+}
+
+### 47. 更新文件大小限制
+# @name scenarioUpload2
+PUT {{baseUrl}}/config/upload.max_file_size
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configValue": "209715200",
+  "description": "上传文件最大大小（字节），调整为200MB"
+}
+
+### 48. 查看所有上传相关配置
+# @name scenarioUpload3
+GET {{baseUrl}}/config/search?prefix=upload
+Authorization: Bearer {{adminToken}}
+
+####################
+# 边界测试
+####################
+
+### 49. 创建配置 - 配置键最大长度（100字符）
+# @name createMaxKeyLength
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
+  "configValue": "测试值",
+  "description": "100字符的配置键"
+}
+
+### 50. 创建配置 - 描述最大长度（500字符）
+# @name createMaxDescLength
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "test.max_desc",
+  "configValue": "测试值",
+  "description": "这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制这是一段很长的描述用于测试字数限制"
+}
+
+### 51. 创建配置 - 配置值很长（TEXT类型，无限制）
+# @name createLongValue
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "test.long_value",
+  "configValue": "这是一段很长很长的配置值，可以包含大量文本内容，因为数据库字段类型是TEXT，理论上可以存储非常长的内容。这是一段很长很长的配置值，可以包含大量文本内容，因为数据库字段类型是TEXT，理论上可以存储非常长的内容。这是一段很长很长的配置值，可以包含大量文本内容，因为数据库字段类型是TEXT，理论上可以存储非常长的内容。这是一段很长很长的配置值，可以包含大量文本内容，因为数据库字段类型是TEXT，理论上可以存储非常长的内容。",
+  "description": "测试长配置值"
+}
+
+### 52. 创建配置 - JSON格式的配置值
+# @name createJsonValue
+POST {{baseUrl}}/config
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "configKey": "test.json_config",
+  "configValue": "{\"feature1\": true, \"feature2\": false, \"maxCount\": 100}",
+  "description": "JSON格式的配置"
+}
+
+### 53. 搜索 - 空前缀（应返回所有配置）
+# @name searchEmptyPrefix
+GET {{baseUrl}}/config/search?prefix=
+Authorization: Bearer {{adminToken}}
+
+### 54. 最终获取所有配置列表
+# @name finalGetAll
+GET {{baseUrl}}/config/list
+Authorization: Bearer {{adminToken}}

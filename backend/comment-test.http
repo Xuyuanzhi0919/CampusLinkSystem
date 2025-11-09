@@ -1,0 +1,573 @@
+####################
+# 评论模块测试
+####################
+
+@baseUrl = http://localhost:8080/api/v1
+
+### 1. 注册测试用户1（评论者1）
+# @name commentUser1
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "comment_user_001",
+  "password": "123456",
+  "nickname": "评论测试用户1",
+  "email": "comment001@campus.com",
+  "phone": "13900830041",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 2. 注册测试用户2（评论者2）
+# @name commentUser2
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "comment_user_002",
+  "password": "123456",
+  "nickname": "评论测试用户2",
+  "email": "comment002@campus.com",
+  "phone": "13900020042",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 3. 注册测试用户3（评论者3）
+# @name commentUser3
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "comment_user_003",
+  "password": "123456",
+  "nickname": "评论测试用户3",
+  "email": "comment003@campus.com",
+  "phone": "13900100043",
+  "schoolId": 1,
+  "role": "student"
+}
+
+### 手动设置token（从上面的注册响应中复制）
+# 用户1的token（从步骤1的响应中获取）
+@token1 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDMsInVzZXJuYW1lIjoiY29tbWVudF91c2VyXzAwMSIsImlhdCI6MTc2MjY2ODM1MCwiZXhwIjoxNzYyNjc1NTUwfQ.JRO0d6tidxWp1tKYsntzmMnBc8Cj_2xCfmHATI3Ac1A
+# 用户2的token（从步骤2的响应中获取）
+@token2 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDQsInVzZXJuYW1lIjoiY29tbWVudF91c2VyXzAwMiIsImlhdCI6MTc2MjY2ODM3MCwiZXhwIjoxNzYyNjc1NTcwfQ.y6X4T5Jh-4GlKPxkLWL5HRUp57nlXfH4a5JKsm0zTRc
+# 用户3的token（从步骤3的响应中获取）
+@token3 =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDUsInVzZXJuYW1lIjoiY29tbWVudF91c2VyXzAwMyIsImlhdCI6MTc2MjY2ODM4NSwiZXhwIjoxNzYyNjc1NTg1fQ.OxnVUIj4LFhJfTtOXMeopfTWuq3UcKXR_egRGiTto24
+
+####################
+# 创建评论测试
+####################
+
+### 4. 用户1对资源发表评论（顶级评论）
+# @name createComment1
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "这个资源非常有用，帮助我通过了考试！感谢分享。"
+}
+
+### 5. 用户2对同一资源发表评论
+# @name createComment2
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "同意楼上，这个资料整理得很详细，值得下载！"
+}
+
+### 6. 用户1回复用户2的评论（嵌套回复）
+# @name createReply1
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "是的，我也觉得整理得很好，特别是重点部分标注得很清楚。",
+  "parentId": 2
+}
+
+### 7. 用户3也来回复用户2的评论
+# @name createReply2
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token3}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "确实不错，我已经下载了，很实用！",
+  "parentId": 2
+}
+
+### 8. 用户2对问题发表评论
+# @name createComment3
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "targetType": "question",
+  "targetId": 1,
+  "content": "这个问题我也遇到过，建议先检查一下配置文件。"
+}
+
+### 9. 用户1对回答发表评论
+# @name createComment4
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "answer",
+  "targetId": 1,
+  "content": "这个回答很详细，解决了我的疑惑！"
+}
+
+### 10. 用户3对活动发表评论
+# @name createComment5
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token3}}
+Content-Type: application/json
+
+{
+  "targetType": "activity",
+  "targetId": 1,
+  "content": "这个活动很有意思，期待参加！"
+}
+
+####################
+# 异常情况测试
+####################
+
+### 11. 创建评论 - 无效的父评论ID（应失败）
+# @name createInvalidParent
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "这是一个无效的回复",
+  "parentId": 999999
+}
+
+### 12. 创建评论 - 缺少必填字段（应失败）
+# @name createMissingField
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1
+}
+
+### 13. 创建评论 - 内容为空（应失败）
+# @name createEmptyContent
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": ""
+}
+
+### 14. 创建评论 - 内容超长（应失败 - 超过1000字符）
+# @name createOverLengthContent
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "01234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789这是一段超过1000字符限制的测试内容用于验证Bean Validation注解是否正确生效END"
+}
+
+### 15. 未登录创建评论（应失败）
+# @name createWithoutAuth
+POST {{baseUrl}}/comment
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "未登录的评论"
+}
+
+####################
+# 获取评论列表
+####################
+
+### 16. 获取资源的评论列表（包含嵌套回复）
+# @name getResourceComments
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 17. 获取资源的评论列表 - 分页测试
+# @name getResourceCommentsPage2
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=2&pageSize=2
+Authorization: Bearer {{token1}}
+
+### 18. 获取问题的评论列表
+# @name getQuestionComments
+GET {{baseUrl}}/comment/list?targetType=question&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token2}}
+
+### 19. 获取回答的评论列表
+# @name getAnswerComments
+GET {{baseUrl}}/comment/list?targetType=answer&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 20. 获取活动的评论列表
+# @name getActivityComments
+GET {{baseUrl}}/comment/list?targetType=activity&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token3}}
+
+### 21. 获取不存在对象的评论列表（应返回空列表）
+# @name getCommentsNotFound
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=999999&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+####################
+# 获取用户评论
+####################
+
+### 22. 获取用户1的所有评论
+# @name getUser1Comments
+GET {{baseUrl}}/comment/user/45?page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 23. 获取用户2的所有评论
+# @name getUser2Comments
+GET {{baseUrl}}/comment/user/2?page=1&pageSize=20
+Authorization: Bearer {{token2}}
+
+### 24. 获取用户3的所有评论
+# @name getUser3Comments
+GET {{baseUrl}}/comment/user/3?page=1&pageSize=20
+Authorization: Bearer {{token3}}
+
+### 25. 获取我的评论列表（用户1）
+# @name getMyComments1
+GET {{baseUrl}}/comment/my?page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 26. 获取我的评论列表（用户2）
+# @name getMyComments2
+GET {{baseUrl}}/comment/my?page=1&pageSize=20
+Authorization: Bearer {{token2}}
+
+### 27. 未登录获取我的评论（应失败）
+# @name getMyCommentsWithoutAuth
+GET {{baseUrl}}/comment/my?page=1&pageSize=20
+
+####################
+# 评论点赞测试
+####################
+
+### 28. 用户2点赞评论1
+# @name likeComment1
+POST {{baseUrl}}/comment/1/like
+Authorization: Bearer {{token2}}
+
+### 29. 用户1点赞评论2
+# @name likeComment2
+POST {{baseUrl}}/comment/2/like
+Authorization: Bearer {{token1}}
+
+### 30. 用户3也点赞评论1
+# @name likeComment1ByUser3
+POST {{baseUrl}}/comment/1/like
+Authorization: Bearer {{token3}}
+
+### 31. 重复点赞（应增加点赞数）
+# @name likeCommentAgain
+POST {{baseUrl}}/comment/1/like
+Authorization: Bearer {{token2}}
+
+### 32. 点赞不存在的评论（应失败）
+# @name likeCommentNotFound
+POST {{baseUrl}}/comment/999999/like
+Authorization: Bearer {{token1}}
+
+### 33. 未登录点赞（应失败）
+# @name likeCommentWithoutAuth
+POST {{baseUrl}}/comment/1/like
+
+####################
+# 取消点赞测试
+####################
+
+### 34. 用户2取消点赞评论1
+# @name unlikeComment1
+DELETE {{baseUrl}}/comment/1/like
+Authorization: Bearer {{token2}}
+
+### 35. 用户1取消点赞评论2
+# @name unlikeComment2
+DELETE {{baseUrl}}/comment/2/like
+Authorization: Bearer {{token1}}
+
+### 36. 取消点赞 - 点赞数为0时（应返回0）
+# @name unlikeCommentZero
+DELETE {{baseUrl}}/comment/5/like
+Authorization: Bearer {{token2}}
+
+### 37. 取消点赞不存在的评论（应失败）
+# @name unlikeCommentNotFound
+DELETE {{baseUrl}}/comment/999999/like
+Authorization: Bearer {{token1}}
+
+### 38. 未登录取消点赞（应失败）
+# @name unlikeCommentWithoutAuth
+DELETE {{baseUrl}}/comment/1/like
+
+####################
+# 评论统计测试
+####################
+
+### 39. 获取资源的评论数量
+# @name getResourceCommentCount
+GET {{baseUrl}}/comment/count?targetType=resource&targetId=1
+Authorization: Bearer {{token1}}
+
+### 40. 获取问题的评论数量
+# @name getQuestionCommentCount
+GET {{baseUrl}}/comment/count?targetType=question&targetId=1
+Authorization: Bearer {{token2}}
+
+### 41. 获取回答的评论数量
+# @name getAnswerCommentCount
+GET {{baseUrl}}/comment/count?targetType=answer&targetId=1
+Authorization: Bearer {{token1}}
+
+### 42. 获取活动的评论数量
+# @name getActivityCommentCount
+GET {{baseUrl}}/comment/count?targetType=activity&targetId=1
+Authorization: Bearer {{token3}}
+
+### 43. 获取不存在对象的评论数量（应返回0）
+# @name getCommentCountNotFound
+GET {{baseUrl}}/comment/count?targetType=resource&targetId=999999
+Authorization: Bearer {{token1}}
+
+### 44. 获取评论数量 - 缺少targetType（应失败）
+# @name getCommentCountMissingType
+GET {{baseUrl}}/comment/count?targetId=1
+Authorization: Bearer {{token1}}
+
+### 45. 获取评论数量 - 缺少targetId（应失败）
+# @name getCommentCountMissingId
+GET {{baseUrl}}/comment/count?targetType=resource
+Authorization: Bearer {{token1}}
+
+####################
+# 评论删除测试
+####################
+
+### 46. 用户1删除自己的评论
+# @name deleteComment1
+DELETE {{baseUrl}}/comment/1
+Authorization: Bearer {{token1}}
+
+### 47. 验证删除后的评论列表（评论1应不可见）
+# @name checkAfterDelete
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 48. 验证删除后的评论数量（应减少1）
+# @name checkCountAfterDelete
+GET {{baseUrl}}/comment/count?targetType=resource&targetId=1
+Authorization: Bearer {{token1}}
+
+### 49. 用户1尝试删除用户2的评论（应失败 - 权限不足）
+# @name deleteOtherUserComment
+DELETE {{baseUrl}}/comment/2
+Authorization: Bearer {{token1}}
+
+### 50. 删除不存在的评论（应失败）
+# @name deleteCommentNotFound
+DELETE {{baseUrl}}/comment/999999
+Authorization: Bearer {{token1}}
+
+### 51. 重复删除已删除的评论（应失败）
+# @name deleteCommentAgain
+DELETE {{baseUrl}}/comment/1
+Authorization: Bearer {{token1}}
+
+### 52. 未登录删除评论（应失败）
+# @name deleteCommentWithoutAuth
+DELETE {{baseUrl}}/comment/2
+
+####################
+# 复杂场景测试
+####################
+
+### 53. 创建深层嵌套回复（多层对话）
+# @name createDeepReply1
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "补充一下，还有另一个重点章节也很重要。",
+  "parentId": 3
+}
+
+### 54. 用户3也参与深层对话
+# @name createDeepReply2
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token3}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "同意，那个章节的确很关键，考试必考。",
+  "parentId": 3
+}
+
+### 55. 查看嵌套回复结构
+# @name checkNestedStructure
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 56. 批量创建评论 - 消息1
+# @name batchCreate1
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "activity",
+  "targetId": 2,
+  "content": "这个社团活动很赞！"
+}
+
+### 57. 批量创建评论 - 消息2
+# @name batchCreate2
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token2}}
+Content-Type: application/json
+
+{
+  "targetType": "activity",
+  "targetId": 2,
+  "content": "活动时间是什么时候？"
+}
+
+### 58. 批量创建评论 - 消息3
+# @name batchCreate3
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token3}}
+Content-Type: application/json
+
+{
+  "targetType": "activity",
+  "targetId": 2,
+  "content": "地点在哪里呢？需要报名吗？"
+}
+
+### 59. 查看批量创建后的评论列表
+# @name checkBatchCreated
+GET {{baseUrl}}/comment/list?targetType=activity&targetId=2&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 60. 删除有回复的父评论
+# @name deleteParentComment
+DELETE {{baseUrl}}/comment/2
+Authorization: Bearer {{token2}}
+
+### 61. 验证父评论删除后，回复是否还存在
+# @name checkRepliesAfterParentDeleted
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 62. 尝试回复已删除的评论（应失败）
+# @name replyToDeletedComment
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 1,
+  "content": "尝试回复已删除的评论",
+  "parentId": 1
+}
+
+####################
+# 边界和分页测试
+####################
+
+### 63. 创建最小长度内容的评论（1个字符）
+# @name createMinLength
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 2,
+  "content": "好"
+}
+
+### 64. 创建接近最大长度的评论（约999个字符）
+# @name createMaxLength
+POST {{baseUrl}}/comment
+Authorization: Bearer {{token1}}
+Content-Type: application/json
+
+{
+  "targetType": "resource",
+  "targetId": 2,
+  "content": "这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。这是一段很长的评论内容，用于测试字数限制。测试结束"
+}
+
+### 65. 分页查询 - 第1页（pageSize=3）
+# @name getPagination1
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=3
+Authorization: Bearer {{token1}}
+
+### 66. 分页查询 - 第2页
+# @name getPagination2
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=2&pageSize=3
+Authorization: Bearer {{token1}}
+
+### 67. 获取大分页（page=100，超出范围）
+# @name getPageOutOfRange
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=100&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 68. 获取超大pageSize（pageSize=1000）
+# @name getLargePageSize
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=1000
+Authorization: Bearer {{token1}}
+
+### 69. 负数page测试（应返回第一页或失败）
+# @name getNegativePage
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=-1&pageSize=20
+Authorization: Bearer {{token1}}
+
+### 70. 零pageSize测试（应失败或使用默认值）
+# @name getZeroPageSize
+GET {{baseUrl}}/comment/list?targetType=resource&targetId=1&page=1&pageSize=0
+Authorization: Bearer {{token1}}

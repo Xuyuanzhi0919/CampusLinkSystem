@@ -113,12 +113,38 @@ const handleNoticeClick = (notice: Notice) => {
 <style scoped lang="scss">
 .campus-notice {
   background: white;
-  border: 2rpx solid #E5E7EB;
+  border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
   height: 400rpx;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.campus-notice::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(30, 95, 255, 0.03) 0%, rgba(82, 196, 26, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.campus-notice:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.12);
+  border-color: #1E5FFF;
+}
+
+.campus-notice:hover::before {
+  opacity: 1;
 }
 
 /* 卡片头部 */
@@ -130,17 +156,22 @@ const handleNoticeClick = (notice: Notice) => {
 }
 
 .card-title {
-  font-size: 32rpx; /* 16px */
+  font-size: 32rpx; /* 16px - 副标题规范 */
   font-weight: 700;
-  color: #1D2129;
+  color: #1D1D1F;
   line-height: 1;
 }
 
 .more-link {
   font-size: 24rpx;
-  color: #409EFF;
+  color: #1E5FFF;
   cursor: pointer;
   line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.more-link:hover {
+  color: #5A7FFF;
 }
 
 /* 公告列表 */
@@ -156,12 +187,13 @@ const handleNoticeClick = (notice: Notice) => {
   padding: 16rpx;
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   margin-bottom: 12rpx;
 }
 
 .notice-item:hover {
-  background: #F5F7FA;
+  background: #F5F6FA;
+  transform: translateX(4rpx);
 }
 
 /* 头像 */
@@ -171,7 +203,7 @@ const handleNoticeClick = (notice: Notice) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #E6F4FF 0%, #BAE0FF 100%);
+  background: linear-gradient(135deg, #E6F0FF 0%, #C7DDFF 100%);
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -191,8 +223,9 @@ const handleNoticeClick = (notice: Notice) => {
 }
 
 .notice-title {
-  font-size: 28rpx; /* 14px */
-  color: #1D2129;
+  font-size: 28rpx; /* 14px - 正文规范 */
+  color: #1D1D1F;
+  font-weight: 500;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;

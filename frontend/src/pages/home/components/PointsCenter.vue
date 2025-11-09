@@ -97,12 +97,38 @@ const handleTaskClick = (task: Task) => {
 <style scoped lang="scss">
 .points-center {
   background: white;
-  border: 2rpx solid #E5E7EB;
+  border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
   height: 400rpx;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.points-center::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(30, 95, 255, 0.03) 0%, rgba(255, 169, 64, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.points-center:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.12);
+  border-color: #1E5FFF;
+}
+
+.points-center:hover::before {
+  opacity: 1;
 }
 
 /* 卡片头部 */
@@ -114,24 +140,29 @@ const handleTaskClick = (task: Task) => {
 }
 
 .card-title {
-  font-size: 32rpx; /* 16px */
+  font-size: 32rpx; /* 16px - 副标题规范 */
   font-weight: 700;
-  color: #1D2129;
+  color: #1D1D1F;
   line-height: 1;
 }
 
 .more-link {
   font-size: 24rpx;
-  color: #409EFF;
+  color: #1E5FFF;
   cursor: pointer;
   line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.more-link:hover {
+  color: #5A7FFF;
 }
 
 /* 积分进度条 */
 .points-progress {
   margin-bottom: 24rpx;
   padding: 24rpx;
-  background: linear-gradient(135deg, #E6F4FF 0%, #BAE0FF 100%);
+  background: linear-gradient(135deg, #E6F0FF 0%, #C7DDFF 100%);
   border-radius: 16rpx;
 }
 
@@ -145,7 +176,7 @@ const handleTaskClick = (task: Task) => {
 .current-points {
   font-size: 48rpx; /* 24px */
   font-weight: 700;
-  color: #409EFF;
+  color: #1E5FFF;
   line-height: 1;
 }
 
@@ -166,14 +197,14 @@ const handleTaskClick = (task: Task) => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #409EFF 0%, #FF7D00 100%);
+  background: linear-gradient(90deg, #1E5FFF 0%, #FFA940 100%);
   border-radius: 8rpx;
   transition: width 0.5s ease;
 }
 
 .progress-tip {
   font-size: 22rpx;
-  color: #409EFF;
+  color: #1E5FFF;
   line-height: 1;
 }
 

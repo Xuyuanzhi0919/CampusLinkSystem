@@ -3,7 +3,9 @@ package com.campuslink.controller;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.resource.*;
+import com.campuslink.dto.download.DownloadLogResponse;
 import com.campuslink.service.ResourceService;
+import com.campuslink.service.DownloadLogService;
 import com.campuslink.common.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -24,6 +26,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ResourceController {
     private final ResourceService resourceService;
+    private final DownloadLogService downloadLogService;
 
     @Operation(summary = "上传资源")
     @PostMapping("/upload")
@@ -164,6 +167,35 @@ public class ResourceController {
     ) {
         Long userId = (Long) httpRequest.getAttribute("userId");
         PageResult<ResourceListResponse> result = resourceService.getMyResources(userId, page, pageSize);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取我的下载历史")
+    @GetMapping("/download-history")
+    public Result<PageResult<DownloadLogResponse>> getMyDownloadHistory(
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        PageResult<DownloadLogResponse> result = downloadLogService.getMyDownloadHistory(userId, page, pageSize);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "获取资源的下载记录", description = "管理员查看资源的所有下载记录")
+    @GetMapping("/{id}/download-logs")
+    public Result<PageResult<DownloadLogResponse>> getResourceDownloadHistory(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @RequestAttribute("role") String role
+    ) {
+        // 验证管理员权限
+        if (!"teacher".equals(role) && !"admin".equals(role)) {
+            return Result.error(ResultCode.PERMISSION_DENIED);
+        }
+
+        PageResult<DownloadLogResponse> result = downloadLogService.getResourceDownloadHistory(id, page, pageSize);
         return Result.success(result);
     }
 }

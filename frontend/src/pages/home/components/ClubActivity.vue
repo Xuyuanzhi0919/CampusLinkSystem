@@ -124,12 +124,38 @@ const handleSignup = (activity: Activity) => {
 <style scoped lang="scss">
 .club-activity {
   background: white;
-  border: 2rpx solid #E5E7EB;
+  border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
   height: 400rpx;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.club-activity::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 169, 64, 0.03) 0%, rgba(255, 182, 75, 0.03) 100%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.club-activity:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 32rpx rgba(255, 169, 64, 0.12);
+  border-color: #FFA940;
+}
+
+.club-activity:hover::before {
+  opacity: 1;
 }
 
 /* 卡片头部 */
@@ -141,17 +167,22 @@ const handleSignup = (activity: Activity) => {
 }
 
 .card-title {
-  font-size: 32rpx; /* 16px */
+  font-size: 32rpx; /* 16px - 副标题规范 */
   font-weight: 700;
-  color: #1D2129;
+  color: #1D1D1F;
   line-height: 1;
 }
 
 .more-link {
   font-size: 24rpx;
-  color: #409EFF;
+  color: #1E5FFF;
   cursor: pointer;
   line-height: 1;
+  transition: all 0.2s ease;
+}
+
+.more-link:hover {
+  color: #5A7FFF;
 }
 
 /* 横向滚动 */
@@ -172,11 +203,11 @@ const handleSignup = (activity: Activity) => {
   flex-direction: column;
   width: 240rpx; /* 120px */
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
 }
 
 .activity-card:hover {
-  transform: translateY(-4rpx);
+  transform: translateY(-8rpx);
 }
 
 /* 活动海报 */
@@ -221,9 +252,9 @@ const handleSignup = (activity: Activity) => {
 }
 
 .activity-name {
-  font-size: 28rpx; /* 14px */
+  font-size: 28rpx; /* 14px - 正文规范 */
   font-weight: 600;
-  color: #1D2129;
+  color: #1D1D1F;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -243,10 +274,16 @@ const handleSignup = (activity: Activity) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
+  background: linear-gradient(135deg, #FFA940 0%, #FFB64B 100%);
   border-radius: 28rpx;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
+  box-shadow: 0 4rpx 12rpx rgba(255, 169, 64, 0.3);
+}
+
+.signup-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6rpx 16rpx rgba(255, 169, 64, 0.4);
 }
 
 .signup-btn:active {

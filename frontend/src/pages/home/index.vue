@@ -159,11 +159,11 @@ const handleActivityClick = (activity: any) => {
 <style scoped lang="scss">
 .home-new {
   min-height: 100vh;
-  /* 品牌渐变背景 - AI 风格 */
-  background: linear-gradient(180deg, #F8FAFF 0%, #EEF3FF 100%);
+  /* 纸质感背景 - 校园笔记本风格 */
+  background: var(--cl-bg, #FAFAFA);
   position: relative;
 
-  /* 微光纹理（可选） */
+  /* 极浅纹理（可选 - 模拟纸张质感）*/
   &::before {
     content: '';
     position: fixed;
@@ -172,18 +172,19 @@ const handleActivityClick = (activity: any) => {
     right: 0;
     bottom: 0;
     background:
-      radial-gradient(circle at 20% 30%, rgba(46, 124, 246, 0.03) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(108, 92, 231, 0.03) 0%, transparent 50%);
+      radial-gradient(circle at 20% 30%, rgba(59, 130, 246, 0.015) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(251, 146, 60, 0.015) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
 }
 
-/* 个性化内容区 */
+/* 个性化内容区（专业级优化）*/
 .content-section {
-  padding: 48rpx 0;
+  padding: 64rpx 0; /* 从 48rpx 增加到 64rpx，增加呼吸感 */
   position: relative;
   z-index: 1;
+  background: #FFFFFF; /* 纯白背景，提亮内容区 */
 }
 
 .content-container {
@@ -191,24 +192,61 @@ const handleActivityClick = (activity: any) => {
   margin: 0 auto;
   padding: 0 48rpx;
   display: flex;
-  gap: 32rpx; /* 保持 24-32px 间距 */
+  gap: 40rpx; /* 从 32rpx 增加到 40rpx（20px），增加间距 */
+
+  /* 响应式：< 960px 时改为垂直布局 */
+  @media (max-width: 960px) {
+    flex-direction: column;
+    gap: 48rpx; /* 移动端垂直间距更大 */
+  }
 }
 
 .recommend-area {
-  flex: 7; /* 70% 比例 */
+  flex: 68; /* 68% - 主内容区 */
   min-width: 0; /* 防止 flex 子元素溢出 */
+
+  /* 响应式：< 960px 时占满宽度 */
+  @media (max-width: 960px) {
+    flex: 1;
+  }
 }
 
 .ranking-area {
-  flex: 3; /* 30% 比例 */
+  flex: 30; /* 30% - 侧栏引导区（从 28% 调整到 30%，增强视觉权重）*/
   min-width: 0;
+  background: #F8FAFB; /* 浅灰背景面板，形成区域对比 */
+  border-radius: 24rpx; /* 圆角 */
+  padding: 40rpx; /* 内边距 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); /* 轻微阴影，增加立体感 */
+
+  /* 响应式：< 960px 时折叠到下方 */
+  @media (max-width: 960px) {
+    flex: 1;
+    order: 2; /* 移到下方 */
+    background: transparent; /* 移动端去掉背景 */
+    padding: 0;
+    box-shadow: none;
+  }
 }
 
-/* 辅助信息区 */
+/* 辅助信息区（专业级优化 - 添加分割线）*/
 .auxiliary-section {
-  padding: 48rpx 0 80rpx;
+  padding: 64rpx 0 80rpx; /* 从 48rpx 增加到 64rpx */
   position: relative;
   z-index: 1;
+  background: #FAFAFA; /* 浅灰背景，与主内容区分隔 */
+
+  /* 顶部分割线 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%; /* 90% 宽度 */
+    height: 1rpx;
+    background: linear-gradient(90deg, transparent 0%, #E5E7EB 50%, transparent 100%);
+  }
 }
 
 .auxiliary-container {
@@ -216,7 +254,7 @@ const handleActivityClick = (activity: any) => {
   margin: 0 auto;
   padding: 0 48rpx;
   display: flex;
-  gap: 32rpx;
+  gap: 48rpx; /* 从 32rpx 增加到 48rpx，增加间距 */
 }
 
 .auxiliary-card {

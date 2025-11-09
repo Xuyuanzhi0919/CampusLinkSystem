@@ -35,7 +35,7 @@
         />
       </template>
 
-      <!-- 有数据：显示卡片（仅显示前 3 条） -->
+      <!-- 有数据：显示卡片（显示前 6 条，2×3 网格） -->
       <template v-else-if="currentList.length > 0">
         <view
           v-for="item in displayList"
@@ -53,16 +53,42 @@
           <text class="card-title">{{ item.title }}</text>
           <text class="card-intro">{{ item.intro }}</text>
 
-          <!-- 资源信息 -->
+          <!-- 资源信息（差异化显示）-->
           <view class="card-meta">
             <view class="meta-item">
               <text class="meta-icon">👤</text>
               <text class="meta-text">{{ item.author }}</text>
             </view>
-            <view class="meta-item">
+
+            <!-- 课件：显示下载数 -->
+            <view v-if="item.type === 'resource'" class="meta-item">
               <text class="meta-icon">📥</text>
-              <text class="meta-text">{{ item.downloads || item.views }}</text>
+              <text class="meta-text">{{ item.downloads || 0 }} 下载</text>
             </view>
+
+            <!-- 问答：显示浏览数 + 回答数 -->
+            <template v-else-if="item.type === 'question'">
+              <view class="meta-item">
+                <text class="meta-icon">👁</text>
+                <text class="meta-text">{{ item.views || 0 }} 浏览</text>
+              </view>
+              <view class="meta-item">
+                <text class="meta-icon">💬</text>
+                <text class="meta-text">{{ item.answers || 0 }} 回答</text>
+              </view>
+            </template>
+
+            <!-- 任务：显示积分 + 截止时间 -->
+            <template v-else-if="item.type === 'task'">
+              <view class="meta-item meta-highlight">
+                <text class="meta-icon">💰</text>
+                <text class="meta-text">{{ item.points || 10 }} 积分</text>
+              </view>
+              <view v-if="item.deadline" class="meta-item meta-urgent">
+                <text class="meta-icon">⏰</text>
+                <text class="meta-text">{{ item.deadline }}</text>
+              </view>
+            </template>
           </view>
 
           <!-- 操作按钮 -->
@@ -91,7 +117,7 @@
 
     <!-- 查看更多按钮 -->
     <ViewMoreButton
-      v-if="!isLoading && currentList.length > 3"
+      v-if="!isLoading && currentList.length > 6"
       text="查看全部推荐"
       @click="viewAllRecommendations"
     />
@@ -134,9 +160,9 @@ const currentList = computed(() => {
   return allList.value.filter((item) => item.type === type)
 })
 
-// 显示列表（仅显示前 3 条）
+// 显示列表（显示前 6 条 - 2×3 网格）
 const displayList = computed(() => {
-  return currentList.value.slice(0, 3)
+  return currentList.value.slice(0, 6)
 })
 
 /**
@@ -165,7 +191,7 @@ const loadRecommendData = async () => {
       collected: item.isLiked || false,
     }))
 
-    // 转换问答数据
+    // 转换问答数据（增加回答数）
     const questions = (questionRes?.list || questionRes?.records || []).map((item: any) => ({
       id: item.questionId,
       type: 'question',
@@ -173,17 +199,19 @@ const loadRecommendData = async () => {
       intro: item.content?.substring(0, 50) || '',
       author: item.askerName || '匿名',
       views: item.viewCount || 0,
+      answers: item.answerCount || 0, // 回答数
       collected: false,
     }))
 
-    // 转换任务数据
+    // 转换任务数据（增加积分和截止时间）
     const tasks = (taskRes?.list || taskRes?.records || []).map((item: any) => ({
       id: item.taskId,
       type: 'task',
       title: item.title,
       intro: item.description || '',
       author: item.publisherName || '匿名',
-      downloads: 0,
+      points: item.reward || 10, // 积分
+      deadline: item.deadline ? formatDeadline(item.deadline) : '', // 截止时间
       collected: false,
     }))
 
@@ -205,13 +233,19 @@ const switchTab = (index: number) => {
 }
 
 /**
- * 换一批
+ * 换一批 - 带旋转动画 + 淡入淡出过渡
  */
 const handleRefresh = async () => {
+  if (isRefreshing.value) return
+
   isRefreshing.value = true
-  await loadRecommendData()
-  isRefreshing.value = false
-  uni.showToast({ title: '已刷新', icon: 'success' })
+
+  // 延迟 300ms 让旋转动画完成
+  setTimeout(async () => {
+    await loadRecommendData()
+    isRefreshing.value = false
+    uni.showToast({ title: '已刷新', icon: 'success', duration: 1500 })
+  }, 300)
 }
 
 /**
@@ -237,6 +271,22 @@ const handleCollect = (item: any) => {
  */
 const handleDownload = (item: any) => {
   uni.showToast({ title: '下载中...', icon: 'loading' })
+}
+
+/**
+ * 格式化截止时间
+ */
+const formatDeadline = (deadline: string) => {
+  const now = new Date()
+  const end = new Date(deadline)
+  const diff = end.getTime() - now.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days < 0) return '已截止'
+  if (days === 0) return '今天截止'
+  if (days === 1) return '明天截止'
+  if (days <= 3) return `${days}天后`
+  return `${days}天后`
 }
 
 /**
@@ -333,43 +383,38 @@ onMounted(() => {
   padding-bottom: 24rpx;
   position: relative;
 
-  /* 品牌渐变底线 */
+  /* 柔和底线 - 校园笔记本风格 */
   &::after {
     content: '';
     position: absolute;
     left: 0;
     bottom: 0;
-    width: 120rpx;
-    height: 4rpx;
-    background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
+    width: 80rpx;
+    height: 3rpx;
+    background: var(--cl-primary, #3B82F6);
     border-radius: 2rpx;
-    box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.3);
   }
 }
 
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
-  font-weight: 700;
-  /* 渐变文字 */
-  background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-weight: 600; /* 减少到 600，更柔和 */
+  color: var(--cl-gray-900, #1E293B); /* 深灰蓝，非纯黑 */
   line-height: 1;
   position: relative;
+  padding-left: 20rpx; /* 为左侧竖线留空间 */
 
-  /* 微光效果 */
+  /* 左侧蓝色竖线（视觉焦点增强）*/
   &::before {
     content: '';
     position: absolute;
-    top: -4rpx;
-    left: -4rpx;
-    right: -4rpx;
-    bottom: -4rpx;
-    background: linear-gradient(135deg, rgba(46, 124, 246, 0.1), rgba(108, 92, 231, 0.1));
-    filter: blur(8rpx);
-    opacity: 0.5;
-    z-index: -1;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6rpx; /* 3px 宽度 */
+    height: 32rpx; /* 16px 高度 */
+    background: linear-gradient(180deg, var(--cl-primary, #3B82F6) 0%, rgba(59, 130, 246, 0.6) 100%);
+    border-radius: 3rpx;
   }
 }
 
@@ -382,99 +427,45 @@ onMounted(() => {
 
 .filter-tag {
   font-size: 28rpx; /* 14px - 正文规范 */
-  color: #86909C;
-  padding: 12rpx 24rpx;
-  border-radius: 16rpx;
+  color: var(--cl-gray-600, #64748B);
+  padding: 10rpx 20rpx;
+  border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   background: transparent;
+  font-weight: 500;
 
   &:hover {
-    color: #2E7CF6;
-    background: rgba(46, 124, 246, 0.08);
-    transform: translateY(-2rpx);
+    color: var(--cl-primary, #3B82F6);
+    background: var(--cl-gray-100, #F1F5F9);
   }
 
   &.active {
-    color: white;
-    background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
+    color: var(--cl-primary, #3B82F6);
+    background: var(--cl-primary-100, #DBEAFE);
     font-weight: 600;
-    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.3);
-
-    /* 发光效果 */
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      border-radius: 16rpx;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
-    }
-
-    /* 底部光线 */
-    &::after {
-      content: '';
-      position: absolute;
-      left: 50%;
-      bottom: -8rpx;
-      transform: translateX(-50%);
-      width: 60%;
-      height: 3rpx;
-      background: linear-gradient(90deg, transparent, #2E7CF6, transparent);
-      border-radius: 2rpx;
-      animation: glow 2s ease-in-out infinite;
-    }
   }
 }
 
-@keyframes glow {
-  0%, 100% {
-    opacity: 0.5;
-    box-shadow: 0 0 8rpx rgba(46, 124, 246, 0.3);
-  }
-  50% {
-    opacity: 1;
-    box-shadow: 0 0 16rpx rgba(46, 124, 246, 0.6);
-  }
-}
-
-/* 换一批按钮 - 渐变 Capsule 设计 */
+/* 换一批按钮 - 浅色描边圆角设计 */
 .refresh-btn {
   display: flex;
   align-items: center;
   gap: 8rpx;
   padding: 10rpx 20rpx;
-  background: linear-gradient(90deg, #2E7CF6, #6C5CE7);
-  color: white;
+  background: white;
+  color: var(--cl-primary, #3B82F6);
+  border: 1px solid var(--cl-gray-200, #EAEAEA);
   border-radius: 999rpx;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.25);
-  position: relative;
-  overflow: hidden;
-
-  /* 光泽效果 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    transition: left 0.5s;
-  }
+  transition: all 0.2s ease;
+  font-weight: 500;
 
   &:hover {
+    background: var(--cl-gray-50, #F8FAFC);
+    border-color: var(--cl-primary, #3B82F6);
     transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 16rpx rgba(46, 124, 246, 0.35);
-
-    &::before {
-      left: 100%;
-    }
   }
 
   &:active {
@@ -485,36 +476,40 @@ onMounted(() => {
 .refresh-icon {
   font-size: 28rpx;
   line-height: 1;
-  transition: transform 0.5s;
+  transition: transform 0.3s ease;
 
+  /* 旋转动画 - 方案 A 规范 */
   &.rotating {
-    animation: rotate 0.5s linear;
+    animation: rotate360 0.5s ease-in-out;
   }
 }
 
-@keyframes rotate {
-  from {
+/* 旋转刷新图标动画 */
+@keyframes rotate360 {
+  0% {
     transform: rotate(0deg);
   }
-  to {
+  100% {
     transform: rotate(360deg);
   }
 }
 
 .refresh-text {
   font-size: 26rpx;
-  font-weight: 500;
   font-weight: 600;
   line-height: 1;
 }
 
-/* 推荐列表 - 双栏瀑布流布局 */
+/* 推荐列表 - 2×3 网格布局（专业级优化）*/
 .recommend-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24rpx;
-  column-gap: 32rpx;
+  grid-template-columns: repeat(2, 1fr); /* 2 列 */
+  gap: 40rpx; /* 行间距增加到 40rpx（20px），增加呼吸感 */
+  column-gap: 32rpx; /* 列间距 */
   min-height: 400rpx;
+
+  /* 内容交叉淡入淡出过渡 */
+  transition: opacity 0.3s ease;
 }
 
 /* 空状态容器 */
@@ -524,84 +519,108 @@ onMounted(() => {
 
 .recommend-card {
   position: relative;
-  padding: 32rpx;
-  background: #FFFFFF;
-  border: 1rpx solid rgba(229, 230, 235, 0.6);
-  border-radius: 24rpx;
+  padding: 40rpx 48rpx; /* 内边距增加到 20px 24px，更有高级感 */
+  background: #FFFFFF; /* 纯白卡片 */
+  border: 1rpx solid var(--cl-gray-200, #EAEAEA);
+  border-radius: 24rpx; /* 圆角从 16rpx 调为 24rpx（12px）*/
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 240rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.25s ease; /* 250ms 过渡，更流畅 */
+  min-height: 320rpx; /* 160-180px，动态自适应 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 阴影轻一点 */
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 移除 gap，改用 margin 控制间距 */
 
-  /* 微光背景 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(46, 124, 246, 0.02), rgba(108, 92, 231, 0.02));
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
+  /* 淡入动画 */
+  animation: fadeInCard 0.3s ease-out both;
 
-  /* Hover 状态 */
+  /* Hover 状态 - 专业级交互感（增强版）*/
   &:hover {
-    transform: translateY(-4rpx);
-    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.08);
-    border-color: rgba(46, 124, 246, 0.2);
-
-    &::before {
-      opacity: 1;
-    }
+    transform: translateY(-8rpx); /* 浮起 4px */
+    box-shadow: 0 12px 32px rgba(59, 130, 246, 0.12); /* 柔光阴影（主题色）*/
+    border-color: var(--cl-primary, #3B82F6); /* 边框变主题色 */
 
     .card-title {
-      color: #2E7CF6;
+      color: #2563EB; /* 标题变深蓝色 */
     }
 
     .type-tag {
-      transform: scale(1.05);
+      transform: scale(1.05); /* 标签轻微放大 */
     }
   }
 
-  /* Active 状态 */
+  /* Active 状态 - 微动画 */
   &:active {
-    transform: translateY(-2rpx) scale(0.98);
+    transform: translateY(-4rpx) scale(0.98);
+    transition: all 0.15s ease;
   }
 }
 
-/* 类型标签 - 统一 Capsule 样式 */
+/* 卡片背景色差异化（根据类型）*/
+.recommend-card:has(.type-resource) {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%); /* 课件 - 微蓝渐变 */
+}
+
+.recommend-card:has(.type-question) {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFBEB 100%); /* 问答 - 微黄渐变 */
+}
+
+.recommend-card:has(.type-task) {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF4 100%); /* 任务 - 微绿渐变 */
+}
+
+/* 卡片淡入动画 */
+@keyframes fadeInCard {
+  from {
+    opacity: 0;
+    transform: translateY(10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 类型标签 - 专业级优化（饱满配色 + 图标增强）*/
 .type-tag {
   display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
-  margin-bottom: 16rpx;
-  font-size: 22rpx;
-  font-weight: 500;
+  gap: 8rpx; /* 图标与文字间距 */
+  padding: 6rpx 16rpx; /* 内边距增加，更饱满 */
+  border-radius: 12rpx; /* 圆角增大 */
+  font-size: 24rpx; /* 12px */
+  font-weight: 600; /* 加粗，增强识别 */
   transition: all 0.2s;
+  flex-shrink: 0;
+  margin-bottom: 16rpx; /* 与标题拉开距离 */
 
-  /* 统一品牌色系 */
-  background: rgba(46, 124, 246, 0.08);
-  color: #2E7CF6;
-
+  /* 课件 - 冷蓝系（统一基调）*/
   &.type-resource {
-    background: rgba(46, 124, 246, 0.08);
-    color: #2E7CF6;
+    background: #E0F2FE; /* 浅蓝 */
+    color: #3B82F6; /* 主题蓝 */
   }
 
+  /* 问答 - 暖黄系（统一基调）*/
   &.type-question {
-    background: rgba(108, 92, 231, 0.08);
-    color: #6C5CE7;
+    background: #FEF3C7; /* 浅黄 */
+    color: #F59E0B; /* 暖黄 */
   }
 
+  /* 任务 - 清绿系（统一基调）*/
   &.type-task {
-    background: rgba(14, 165, 233, 0.08);
-    color: #0EA5E9;
+    background: #DCFCE7; /* 浅绿 */
+    color: #22C55E; /* 清绿 */
   }
+}
+
+.type-icon {
+  font-size: 24rpx; /* 图标大小 */
+  line-height: 1;
+}
+
+.type-text {
+  line-height: 1;
 }
 
 .type-icon {
@@ -613,40 +632,41 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 卡片内容 - 强化标题层级 */
+/* 卡片标题 - 专业级优化（信息权重强化）*/
 .card-title {
-  display: block;
-  font-size: 34rpx; /* 17px - 比正文大 2px */
-  font-weight: 600; /* 加粗到 600 */
-  color: #1D1D1F;
+  font-size: 34rpx; /* 17px - 略放大 */
+  font-weight: 600; /* 600 加粗，增强视觉焦点 */
+  color: #0F172A; /* 深灰蓝 */
   line-height: 1.5;
-  margin-bottom: 12rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 2; /* 最多两行 */
   -webkit-box-orient: vertical;
   transition: color 0.2s;
+  margin-bottom: 8rpx; /* 与描述拉开距离 */
 }
 
 .card-intro {
-  display: block;
-  font-size: 28rpx; /* 14px - 正文规范 */
-  color: #4E5969;
-  line-height: 1.5;
-  margin-bottom: 16rpx;
+  font-size: 24rpx; /* 12px - 副信息 */
+  color: #6B7280; /* 灰度 80%，减淡处理 */
+  line-height: 1.6; /* 行距增大，更舒适 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1; /* 只显示 1 行，节省空间 */
   -webkit-box-orient: vertical;
+  margin-bottom: 12rpx; /* 与底部信息拉开距离 */
 }
 
-/* 资源信息 */
+/* 资源信息（专业级优化）*/
 .card-meta {
   display: flex;
-  gap: 24rpx;
-  margin-bottom: 16rpx;
+  flex-wrap: wrap; /* 允许换行 */
+  gap: 16rpx 24rpx; /* 行间距 16rpx，列间距 24rpx */
+  margin-top: auto; /* 推到底部 */
+  padding-top: 16rpx; /* 与上方内容分隔 */
+  border-top: 1rpx solid rgba(0, 0, 0, 0.04); /* 轻微分隔线 */
 }
 
 .meta-item {
@@ -656,20 +676,47 @@ onMounted(() => {
 }
 
 .meta-icon {
-  font-size: 20rpx;
+  font-size: 22rpx;
   line-height: 1;
+  opacity: 0.7;
 }
 
 .meta-text {
   font-size: 24rpx; /* 12px */
-  color: #86909C;
+  color: #64748B; /* 副文本色 */
   line-height: 1;
+  font-weight: 500;
 }
 
-/* 操作按钮 */
+/* 高亮元信息（积分）*/
+.meta-item.meta-highlight {
+  .meta-icon {
+    opacity: 1;
+  }
+
+  .meta-text {
+    color: #F59E0B; /* 暖黄色 */
+    font-weight: 600;
+  }
+}
+
+/* 紧急元信息（截止时间）*/
+.meta-item.meta-urgent {
+  .meta-icon {
+    opacity: 1;
+  }
+
+  .meta-text {
+    color: #EF4444; /* 红色 */
+    font-weight: 600;
+  }
+}
+
+/* 操作按钮（专业级优化）*/
 .card-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
+  margin-top: 16rpx; /* 与元信息分隔 */
 }
 
 .action-btn {
@@ -678,14 +725,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #F5F7FA;
+  background: rgba(0, 0, 0, 0.03); /* 更轻的背景 */
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.3s;
-}
+  transition: all 0.2s ease;
 
-.action-btn:active {
-  transform: scale(0.9);
+  &:hover {
+    background: rgba(59, 130, 246, 0.1); /* 主题色背景 */
+    transform: translateY(-2rpx);
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
 }
 
 .action-icon {
@@ -694,18 +746,39 @@ onMounted(() => {
 }
 
 /* H5 端适配 */
+/* ========== 响应式适配（方案 A）========== */
+
+/* 窄屏（< 960px）：右侧折叠到下方，左侧改单列 */
+@media (max-width: 960px) {
+  .recommend-list {
+    grid-template-columns: 1fr; /* 单列布局 */
+  }
+
+  /* 只显示 4 条 */
+  .recommend-card:nth-child(n+5) {
+    display: none;
+  }
+}
+
+/* 移动端（< 750px）*/
 @media (max-width: 750px) {
   .recommend-list {
     grid-template-columns: 1fr;
+    gap: 16rpx;
   }
 
   .section-header {
     flex-wrap: wrap;
+    gap: 12rpx;
   }
 
   .filter-tags {
     order: 3;
     width: 100%;
+  }
+
+  .recommend-card {
+    min-height: 280rpx;
   }
 }
 </style>

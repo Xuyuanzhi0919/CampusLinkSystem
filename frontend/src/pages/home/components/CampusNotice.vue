@@ -11,7 +11,20 @@
 
     <!-- 公告列表（可折叠） -->
     <view v-if="!isCollapsed" class="card-content">
-      <view class="notice-list">
+      <!-- 未登录提示 -->
+      <view v-if="!isLoggedIn" class="login-prompt">
+        <view class="prompt-icon-wrapper">
+          <text class="prompt-icon">📢</text>
+        </view>
+        <text class="prompt-title">登录后即可获取校园实时通知</text>
+        <text class="prompt-desc">考试安排、放假通知、讲座活动不错过</text>
+        <view class="prompt-btn" @click="goToLogin">
+          <text class="btn-text">立即登录</text>
+        </view>
+      </view>
+
+      <!-- 已登录内容 -->
+      <view v-else class="notice-list">
       <view
         v-for="notice in notices"
         :key="notice.id"
@@ -41,7 +54,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user'
+import { getMyNotifications } from '@/services/notification'
+
+// 用户状态
+const userStore = useUserStore()
+const isLoggedIn = computed(() => userStore.isLoggedIn)
 
 // 折叠状态
 const isCollapsed = ref(true) // 默认折叠
@@ -52,7 +71,6 @@ const isCollapsed = ref(true) // 默认折叠
 const toggleCollapse = () => {
   isCollapsed.value = !isCollapsed.value
 }
-import { getMyNotifications } from '@/services/notification'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -105,6 +123,11 @@ const getNoticeIcon = (type: string) => {
  * 加载校园公告数据
  */
 const loadNoticeData = async () => {
+  // 未登录不加载
+  if (!isLoggedIn.value) {
+    return
+  }
+
   try {
     const res = await getMyNotifications({ type: 'system', page: 1, pageSize: 5 })
     const list = res?.list || res?.records || []
@@ -120,6 +143,15 @@ const loadNoticeData = async () => {
     console.error('加载校园公告失败:', error)
     notices.value = []
   }
+}
+
+/**
+ * 跳转登录页
+ */
+const goToLogin = () => {
+  uni.navigateTo({
+    url: '/pages/auth/login'
+  })
 }
 
 /**
@@ -199,6 +231,8 @@ onMounted(() => {
   margin-bottom: 0;
   cursor: pointer;
   user-select: none;
+  position: relative;
+  z-index: 10;
 }
 
 .header-left {
@@ -344,6 +378,128 @@ onMounted(() => {
   color: #FF4D4F;
   font-weight: 600;
   line-height: 1;
+}
+
+/* 登录提示 */
+.login-prompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56rpx 32rpx;
+  gap: 20rpx;
+  background: linear-gradient(155deg, #FFF5F5 0%, #FFFFFF 50%, #FEF3E8 100%);
+  border-radius: 16rpx;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 底部粉色条纹装饰 */
+.login-prompt::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx;
+  background: linear-gradient(90deg, #FF6B9D 0%, #FFA940 50%, #FF6B9D 100%);
+  opacity: 0.3;
+}
+
+/* 背景光晕 */
+.login-prompt::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240rpx;
+  height: 240rpx;
+  background: radial-gradient(circle, rgba(255, 107, 157, 0.08) 0%, transparent 70%);
+  border-radius: 50%;
+}
+
+.prompt-icon-wrapper {
+  position: relative;
+  z-index: 1;
+  width: 96rpx;
+  height: 96rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(255, 107, 157, 0.15) 0%, rgba(255, 169, 64, 0.15) 100%);
+  border-radius: 50%;
+  margin-bottom: 8rpx;
+}
+
+.prompt-icon {
+  font-size: 64rpx;
+  line-height: 1;
+  animation: shake 2s ease-in-out infinite;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  10%, 30% {
+    transform: rotate(-5deg);
+  }
+  20%, 40% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(0deg);
+  }
+}
+
+.prompt-title {
+  position: relative;
+  z-index: 1;
+  font-size: 32rpx;
+  font-weight: 700;
+  color: #1D2129;
+  line-height: 1.4;
+  letter-spacing: 0.5rpx;
+}
+
+.prompt-desc {
+  position: relative;
+  z-index: 1;
+  font-size: 26rpx;
+  color: #4E5969;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 400rpx;
+}
+
+.prompt-btn {
+  position: relative;
+  z-index: 1;
+  margin-top: 8rpx;
+  padding: 18rpx 56rpx;
+  background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
+  border-radius: 24rpx;
+  box-shadow: 0 6rpx 16rpx rgba(46, 124, 246, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.prompt-btn:hover {
+  transform: translateY(-3rpx);
+  box-shadow: 0 10rpx 24rpx rgba(46, 124, 246, 0.4);
+}
+
+.prompt-btn:active {
+  transform: translateY(-1rpx);
+}
+
+.btn-text {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+  letter-spacing: 1rpx;
 }
 </style>
 

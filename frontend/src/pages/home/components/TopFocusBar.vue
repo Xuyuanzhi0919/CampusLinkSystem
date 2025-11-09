@@ -10,48 +10,34 @@
 
     <!-- 内容容器 -->
     <view class="focus-container">
-      <!-- 第一行：品牌标识区 + 用户头像 -->
-      <view class="top-row">
+      <!-- 第一行：顶部导航栏 -->
+      <view class="top-nav-bar">
         <!-- 左侧：品牌标识 -->
         <view class="brand-section">
-          <!-- 校园标识 + 校徽 -->
-          <view class="school-identity">
-            <image
-              v-if="schoolInfo?.logoUrl"
-              :src="schoolInfo.logoUrl"
-              class="school-logo-img"
-              mode="aspectFit"
-            />
-            <view v-else class="school-badge">🏛️</view>
-            <text class="school-name">{{ schoolInfo?.schoolName || '未设置学校' }}</text>
-          </view>
-          <!-- CampusLink Logo + Slogan -->
-          <view class="brand-logo-wrapper">
-            <view class="logo-row">
-              <text class="brand-logo">CampusLink</text>
-              <text class="campus-muule">校园 muule</text>
-            </view>
-            <text class="brand-slogan">{{ userCount }}万大学生的互助学习圈</text>
-          </view>
+          <text class="brand-logo">CampusLink</text>
+          <text class="brand-slogan">校园互助学习圈</text>
         </view>
 
-        <!-- 右侧：仅保留用户头像 -->
-        <view class="user-avatar-section" @click="handleUserClick">
-          <image
-            v-if="userInfo?.avatar"
-            :src="userInfo.avatar"
-            class="user-avatar"
-            mode="aspectFill"
-          />
-          <view v-else class="user-avatar-placeholder">
-            <text class="avatar-text">{{ userInfo?.nickname?.charAt(0) || '?' }}</text>
+        <!-- 右侧：操作按钮 -->
+        <view class="action-buttons">
+          <view class="action-btn" @click="handleLogin">
+            <text class="action-btn-text">登录</text>
+          </view>
+          <view class="action-btn action-btn-primary" @click="handleRegister">
+            <text class="action-btn-text">注册</text>
+          </view>
+          <view class="action-btn action-btn-publish" @click="handlePublish">
+            <text class="action-btn-icon">✨</text>
+            <text class="action-btn-text">发布</text>
           </view>
         </view>
       </view>
 
-      <!-- 第二行：搜索栏（独占一行） -->
-      <view class="search-section">
-        <view class="search-box">
+      <!-- 第二行：主内容区（左右分栏）-->
+      <view class="main-content-area">
+        <!-- 左侧：搜索栏 -->
+        <view class="search-section">
+          <view class="search-box">
           <!-- 搜索图标 -->
           <text class="search-icon">🔍</text>
           <!-- 搜索输入框 -->
@@ -108,10 +94,47 @@
             <view v-if="isVoiceActive" class="voice-ripple voice-ripple-2"></view>
           </view>
         </view>
+        </view>
+
+        <!-- 右侧：快捷入口卡片 -->
+        <view class="quick-entry-cards">
+          <view
+            v-for="item in quickEntries"
+            :key="item.id"
+            class="quick-card"
+            :class="'quick-card-' + item.theme"
+            @click="handleQuickEntry(item)"
+          >
+            <text class="quick-icon">{{ item.icon }}</text>
+            <view class="quick-info">
+              <text class="quick-title">{{ item.title }}</text>
+              <text class="quick-count">{{ item.count }}</text>
+            </view>
+            <text class="quick-arrow">→</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 第三行：底部数据栏 -->
+      <view class="bottom-stats-bar">
+        <view class="stat-item">
+          <text class="stat-icon">👥</text>
+          <text class="stat-text">{{ userCount }}万用户</text>
+        </view>
+        <text class="stat-divider">·</text>
+        <view class="stat-item">
+          <text class="stat-icon">📚</text>
+          <text class="stat-text">{{ resourceCount }}万资源</text>
+        </view>
+        <text class="stat-divider">·</text>
+        <view class="stat-item">
+          <text class="stat-icon">⏰</text>
+          <text class="stat-text">24小时在线答疑</text>
+        </view>
       </view>
     </view>
 
-    <!-- 插画元素层 -->
+    <!-- 插画元素层（保留但降低透明度）-->
     <view class="illustration-layer">
       <!-- 左侧校园建筑图标 -->
       <view class="campus-building">
@@ -141,9 +164,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useUserStore } from '@/stores/user'
-import { useAppStore } from '@/stores/app'
+import { ref } from 'vue'
 import CampusBuilding from '@/components/illustrations/CampusBuilding.vue'
 import StudentWithPhone from '@/components/illustrations/StudentWithPhone.vue'
 import DecorativeElements from '@/components/illustrations/DecorativeElements.vue'
@@ -155,50 +176,69 @@ const emit = defineEmits<{
   aiAnswer: []
 }>()
 
-// Stores
-const userStore = useUserStore()
-const appStore = useAppStore()
-
 // 数据
 const searchKeyword = ref('')
 const showHotTags = ref(false)
 const hotTags = ref(['高数课件', '四六级真题', '数据结构', '考研资料'])
 const userCount = ref(100) // 默认100万，可从后端获取
+const resourceCount = ref(500) // 默认500万资源
 const isVoiceActive = ref(false) // 语音搜索激活状态
 
-// 计算属性 - 学校信息
-const schoolInfo = computed(() => {
-  // 优先从用户信息获取学校名称
-  if (userStore.userInfo?.schoolName) {
-    return {
-      schoolName: userStore.userInfo.schoolName,
-      logoUrl: '', // 可以从后端获取学校 logo
-    }
-  }
-  // 其次从应用状态获取
-  const currentSchool = appStore.getCurrentSchool()
-  if (currentSchool) {
-    return {
-      schoolName: currentSchool.schoolName,
-      logoUrl: '', // 可以从后端获取学校 logo
-    }
-  }
-  // 默认值
-  return {
-    schoolName: '未设置学校',
-    logoUrl: '',
-  }
-})
+// 快捷入口数据
+interface QuickEntry {
+  id: number
+  icon: string
+  title: string
+  count: string
+  theme: string
+  path: string
+}
+
+const quickEntries = ref<QuickEntry[]>([
+  { id: 1, icon: '📚', title: '今日推荐', count: '128 条新内容', theme: 'blue', path: '/pages/resource/index' },
+  { id: 2, icon: '💡', title: '热门问答', count: '56 个待解答', theme: 'orange', path: '/pages/question/index' },
+  { id: 3, icon: '🎯', title: '紧急任务', count: '23 个高悬赏', theme: 'green', path: '/pages/task/index' }
+])
 
 /**
- * 初始化
+ * 登录
  */
-onMounted(() => {
-  // 初始化用户信息
-  userStore.init()
-  // 可以在这里调用 API 获取用户数量
-  // getUserCount().then(count => userCount.value = count)
-})
+const handleLogin = () => {
+  uni.navigateTo({ url: '/pages/auth/login' })
+}
+
+/**
+ * 注册
+ */
+const handleRegister = () => {
+  uni.navigateTo({ url: '/pages/auth/register' })
+}
+
+/**
+ * 发布
+ */
+const handlePublish = () => {
+  uni.showActionSheet({
+    itemList: ['发布资源', '提出问题', '发布任务'],
+    success: (res) => {
+      if (res.tapIndex === 0) {
+        uni.navigateTo({ url: '/pages/resource/publish' })
+      } else if (res.tapIndex === 1) {
+        uni.navigateTo({ url: '/pages/question/publish' })
+      } else if (res.tapIndex === 2) {
+        uni.navigateTo({ url: '/pages/task/publish' })
+      }
+    }
+  })
+}
+
+/**
+ * 快捷入口点击
+ */
+const handleQuickEntry = (item: QuickEntry) => {
+  uni.navigateTo({ url: item.path })
+}
+
 
 /**
  * 搜索处理
@@ -337,48 +377,33 @@ const stopVoiceRecognition = () => {
   // #endif
 }
 
-/**
- * 上传资料
- */
-const handleUpload = () => {
-  emit('upload')
-}
 
-/**
- * 点击个人信息
- */
-const handleUserClick = () => {
-  if (!userStore.isLoggedIn) {
-    // 未登录，跳转到登录页
-    uni.navigateTo({
-      url: '/pages/auth/login',
-    })
-  } else {
-    // 已登录，跳转到个人中心
-    uni.navigateTo({
-      url: '/pages/user/profile',
-    })
-  }
-}
-
-// 组件挂载时初始化用户信息
-onMounted(() => {
-  userStore.init()
-})
 </script>
 
 <style scoped lang="scss">
-/* ========== 一、顶部背景容器 ========== */
+/* ========== 一、顶部背景容器（方案 B：左右分栏式）========== */
 .top-focus-bar {
   position: relative;
   width: 100%;
-  height: 440rpx; /* PC端 220px */
-  background: linear-gradient(180deg, #1E5FFF 0%, #5A7FFF 100%);
+  height: 480rpx; /* 240px - 方案 B 标准高度 */
+  /* 浅蓝渐变（非饱和亮蓝）*/
+  background: linear-gradient(180deg, #EFF6FF 0%, #DBEAFE 100%);
   overflow: hidden;
   z-index: 1;
+
+  /* 下边界加 1px 分隔线 */
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(0, 0, 0, 0.06);
+  }
 }
 
-/* ========== 二、背景装饰层 ========== */
+/* ========== 二、背景装饰层（文档优化：插画弱化透明到 12-16%）========== */
 .bg-decoration-layer {
   position: absolute;
   top: 0;
@@ -389,40 +414,40 @@ onMounted(() => {
   pointer-events: none;
 }
 
-/* 装饰圆形 1 - 左上角 */
+/* 装饰圆形 1 - 左上角（透明度降低到 12%）*/
 .bg-circle-1 {
   position: absolute;
   top: -100rpx;
   left: 10%;
   width: 400rpx;
   height: 400rpx;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0%, transparent 70%);
   border-radius: 50%;
 }
 
-/* 装饰圆形 2 - 右下角 */
+/* 装饰圆形 2 - 右下角（透明度降低到 14%）*/
 .bg-circle-2 {
   position: absolute;
   bottom: -80rpx;
   right: 15%;
   width: 300rpx;
   height: 300rpx;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.14) 0%, transparent 70%);
   border-radius: 50%;
 }
 
-/* 波浪形装饰 */
+/* 波浪形装饰（透明度降低到 10%）*/
 .bg-wave {
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 80rpx;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(37, 99, 235, 0.10);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
 
-/* ========== 三、内容容器 ========== */
+/* ========== 三、内容容器（方案 B：三层结构）========== */
 .focus-container {
   position: relative;
   max-width: 2400rpx; /* 1200px */
@@ -430,126 +455,153 @@ onMounted(() => {
   margin: 0 auto;
   padding: 0 60rpx;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   justify-content: space-between;
-  gap: 40rpx;
   z-index: 2;
 }
 
-/* ========== 四、品牌标识区 ========== */
+/* ========== 四、顶部导航栏（第一行）========== */
+.top-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 120rpx; /* 60px */
+  padding-top: 24rpx;
+}
+
+/* 品牌标识 */
 .brand-section {
   display: flex;
-  align-items: center;
-  gap: 32rpx;
-  flex-shrink: 0;
-}
-
-/* 校园身份标识 */
-.school-identity {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 24rpx;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 24rpx;
-  backdrop-filter: blur(8rpx);
-}
-
-.school-logo-img {
-  width: 48rpx;
-  height: 48rpx;
-  border-radius: 50%;
-  background: white;
-}
-
-.school-badge {
-  font-size: 32rpx;
-  line-height: 1;
-}
-
-.school-name {
-  font-size: 28rpx; /* 14px */
-  font-weight: 600;
-  color: white;
-  line-height: 1;
-  max-width: 200rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* CampusLink Logo + Slogan */
-.brand-logo-wrapper {
-  display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: 4rpx;
 }
 
-.logo-row {
+.brand-logo {
+  font-size: 48rpx; /* 24px */
+  font-weight: 700;
+  color: var(--cl-primary, #2563EB);
+  line-height: 1;
+  letter-spacing: 1rpx;
+}
+
+.brand-slogan {
+  font-size: 24rpx; /* 12px */
+  font-weight: 500;
+  color: var(--cl-gray-600, #64748B);
+  line-height: 1;
+}
+
+/* 操作按钮组 */
+.action-buttons {
   display: flex;
   align-items: center;
   gap: 16rpx;
 }
 
-.brand-logo {
-  font-size: 64rpx; /* 32px */
-  font-weight: 700;
-  color: white;
-  line-height: 1;
-  letter-spacing: 1rpx;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
-}
-
-.campus-muule {
-  font-size: 24rpx; /* 12px */
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  padding: 6rpx 12rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12rpx;
-  line-height: 1;
-}
-
-.brand-slogan {
-  font-size: 26rpx; /* 13px */
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.95);
-  line-height: 1;
-  letter-spacing: 0.5rpx;
-}
-
-/* ========== 五、搜索栏 ========== */
-.search-section {
-  flex: 1;
+.action-btn {
+  padding: 12rpx 24rpx;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 20rpx; /* 10px */
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all var(--transition-hover, 150ms ease);
   display: flex;
-  justify-content: center;
-  max-width: 1400rpx; /* 70% 宽度占比 */
+  align-items: center;
+  gap: 8rpx;
+}
+
+.action-btn:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2rpx);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.action-btn-primary {
+  background: var(--cl-primary, #2563EB);
+  border-color: var(--cl-primary, #2563EB);
+}
+
+.action-btn-primary .action-btn-text {
+  color: white;
+}
+
+.action-btn-primary:hover {
+  background: var(--cl-primary-700, #1D4ED8);
+}
+
+.action-btn-publish {
+  background: linear-gradient(135deg, var(--cl-accent-purple, #6C5CE7) 0%, var(--cl-primary, #2563EB) 100%);
+  border: none;
+  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.25);
+}
+
+.action-btn-publish .action-btn-text {
+  color: white;
+}
+
+.action-btn-publish:hover {
+  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.35);
+}
+
+.action-btn-text {
+  font-size: 28rpx; /* 14px */
+  font-weight: 500;
+  color: var(--cl-gray-700, #475569);
+  line-height: 1;
+}
+
+.action-btn-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+/* ========== 五、主内容区（第二行：左右分栏）========== */
+.main-content-area {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  height: 240rpx; /* 120px */
+  margin-top: 16rpx;
+}
+
+/* 左侧：搜索栏（60%）*/
+.search-section {
+  flex: 6;
+  display: flex;
+  align-items: center;
 }
 
 .search-box {
   position: relative;
   width: 100%;
   height: 80rpx; /* 40px */
-  background: white;
-  border-radius: 40rpx; /* 20px */
+  /* 半透明玻璃效果（文档规范）*/
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 32rpx; /* 16px - 文档规范 */
   display: flex;
   align-items: center;
   padding: 0 24rpx;
   gap: 16rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
-  transition: all 0.2s ease;
-  border: 2rpx solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-hover, 150ms ease);
+  /* 描边（文档规范）*/
+  border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .search-box:hover {
-  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.15);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transform: translateY(-2rpx);
-  border-color: rgba(30, 95, 255, 0.2);
+  border-color: rgba(37, 99, 235, 0.2);
 }
 
 .search-box:focus-within {
-  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.2);
-  border-color: #1E5FFF;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  border-color: var(--cl-primary, #2563EB);
   transform: translateY(-2rpx);
 }
 
@@ -610,21 +662,21 @@ onMounted(() => {
   transform: scale(0.95);
 }
 
-/* 蓝色搜索按钮 */
+/* 蓝色搜索按钮（文档规范：按钮蓝 #2563EB）*/
 .search-btn-blue {
   padding: 14rpx 32rpx; /* 调整为14rpx，使高度与语音按钮一致（14*2 + 28 = 56rpx） */
-  background: #1E5FFF;
+  background: var(--cl-primary, #2563EB);
   border-radius: 40rpx; /* 20px */
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.25);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .search-btn-blue:hover {
-  background: #1650E6;
+  background: var(--cl-primary-700, #1D4ED8);
   transform: scale(1.03);
-  box-shadow: 0 6rpx 16rpx rgba(30, 95, 255, 0.35);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
 }
 
 .search-btn-blue:active {
@@ -638,20 +690,21 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 橙色语音搜索按钮 */
+/* 橙色语音搜索按钮（文档规范：语音橙降饱和）*/
 .voice-search-btn {
   position: relative;
   width: 56rpx;
   height: 56rpx;
-  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
+  /* 降饱和的橙色 */
+  background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba(255, 125, 0, 0.3);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
   overflow: visible;
 }
 
@@ -696,6 +749,120 @@ onMounted(() => {
   animation-delay: 0.75s;
 }
 
+/* ========== 六、右侧快捷入口卡片（35%）========== */
+.quick-entry-cards {
+  flex: 3.5;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.quick-card {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx 20rpx;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: var(--radius-card, 12px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: all var(--transition-hover, 150ms ease);
+}
+
+.quick-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateX(4rpx);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quick-icon {
+  font-size: 40rpx; /* 20px */
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.quick-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.quick-title {
+  font-size: 28rpx; /* 14px */
+  font-weight: 600;
+  color: var(--cl-gray-900, #0F172A);
+  line-height: 1;
+}
+
+.quick-count {
+  font-size: 22rpx; /* 11px */
+  font-weight: 400;
+  color: var(--cl-gray-500, #94A3B8);
+  line-height: 1;
+}
+
+.quick-arrow {
+  font-size: 28rpx;
+  color: var(--cl-gray-400, #CBD5E1);
+  line-height: 1;
+  flex-shrink: 0;
+  transition: all var(--transition-hover, 150ms ease);
+}
+
+.quick-card:hover .quick-arrow {
+  color: var(--cl-primary, #2563EB);
+  transform: translateX(4rpx);
+}
+
+/* 不同主题的卡片 */
+.quick-card-blue:hover {
+  border-color: rgba(37, 99, 235, 0.2);
+}
+
+.quick-card-orange:hover {
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.quick-card-green:hover {
+  border-color: rgba(22, 163, 74, 0.2);
+}
+
+/* ========== 七、底部数据栏（第三行）========== */
+.bottom-stats-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx;
+  height: 80rpx; /* 40px */
+  padding-bottom: 16rpx;
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.stat-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.stat-text {
+  font-size: 24rpx; /* 12px */
+  font-weight: 500;
+  color: var(--cl-gray-600, #64748B);
+  line-height: 1;
+}
+
+.stat-divider {
+  font-size: 24rpx;
+  color: var(--cl-gray-400, #CBD5E1);
+  line-height: 1;
+}
+
 /* 语音脉冲动画 */
 @keyframes voice-pulse {
   0%, 100% {
@@ -722,130 +889,7 @@ onMounted(() => {
   }
 }
 
-/* ========== 六、右侧区域（个人信息 + CTA） ========== */
-.right-section {
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  flex-shrink: 0;
-}
 
-/* 个人信息按钮 - 圆形卡片悬浮样式 */
-.user-info-btn {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-  padding: 8rpx 20rpx;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10rpx);
-  border-radius: 40rpx;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1rpx solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-}
-
-.user-info-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: translateY(-4rpx);
-  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-}
-
-.user-info-btn:active {
-  transform: translateY(-2rpx);
-}
-
-/* 用户头像 */
-.user-avatar {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-}
-
-.user-avatar-placeholder {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #409EFF 0%, #5DAFFF 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2rpx solid rgba(255, 255, 255, 0.3);
-  flex-shrink: 0;
-}
-
-.avatar-text {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: white;
-  line-height: 1;
-}
-
-/* 用户文字信息 */
-.user-text {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-
-.user-nickname {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: white;
-  line-height: 1.2;
-  max-width: 120rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-points {
-  font-size: 22rpx;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1;
-}
-
-.cta-btn-primary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  width: 240rpx; /* 120px */
-  height: 88rpx; /* 44px */
-  background: linear-gradient(90deg, #FFB64B 0%, #FF8C00 100%);
-  border-radius: 48rpx; /* 24px */
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 6rpx 20rpx rgba(255, 140, 0, 0.35);
-}
-
-.cta-btn-primary:hover {
-  background: linear-gradient(90deg, #FFA940 0%, #E67000 100%);
-  transform: scale(1.03);
-  box-shadow: 0 8rpx 28rpx rgba(255, 140, 0, 0.45);
-}
-
-.cta-btn-primary:active {
-  transform: scale(0.98);
-}
-
-.cta-btn-text {
-  font-size: 32rpx; /* 16px */
-  font-weight: 700;
-  color: white;
-  line-height: 1;
-}
-
-.cta-arrow {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: white;
-  line-height: 1;
-}
 
 /* ========== 七、插画元素层 ========== */
 .illustration-layer {
@@ -987,10 +1031,7 @@ onMounted(() => {
     min-width: 0; /* 允许收缩 */
   }
 
-  /* 隐藏校徽和学校名 */
-  .school-identity {
-    display: none; /* 完全隐藏校园标识 */
-  }
+
 
   /* 品牌Logo区域优化 */
   .brand-logo-wrapper {
@@ -1025,31 +1066,7 @@ onMounted(() => {
     display: none; /* 隐藏"100万大学生的互助学习圈" */
   }
 
-  /* 用户头像区域 - 右对齐 */
-  .user-avatar-section {
-    flex-shrink: 0; /* 不收缩 */
-    cursor: pointer;
-  }
 
-  .user-avatar,
-  .user-avatar-placeholder {
-    width: 56rpx; /* 28px */
-    height: 56rpx;
-    border-radius: 50%;
-    border: 2rpx solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-  }
-
-  .user-avatar-section:active .user-avatar,
-  .user-avatar-section:active .user-avatar-placeholder {
-    transform: scale(0.9);
-  }
-
-  .avatar-text {
-    font-size: 24rpx;
-    color: #ffffff;
-    font-weight: 600;
-  }
 
   /* 第二行：搜索框独占 */
   .search-section {
@@ -1170,15 +1187,7 @@ onMounted(() => {
     bottom: 18%;
   }
 
-  /* 学校 logo */
-  .school-logo-img {
-    width: 40rpx;
-    height: 40rpx;
-  }
 
-  .school-name {
-    max-width: 150rpx;
-  }
 
   /* 背景装饰缩小 */
   .bg-circle-1 {
@@ -1189,6 +1198,52 @@ onMounted(() => {
   .bg-circle-2 {
     width: 200rpx;
     height: 200rpx;
+  }
+
+  /* 方案 B 响应式：快捷入口卡片 */
+  .quick-entry-cards {
+    width: 100%;
+    flex-direction: row;
+    gap: 8rpx;
+  }
+
+  .quick-card {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 12rpx;
+  }
+
+  .quick-icon {
+    font-size: 32rpx;
+  }
+
+  .quick-title {
+    font-size: 24rpx;
+  }
+
+  .quick-count {
+    font-size: 20rpx;
+  }
+
+  .quick-arrow {
+    display: none;
+  }
+
+  /* 底部数据栏 */
+  .bottom-stats-bar {
+    height: 60rpx;
+    gap: 16rpx;
+    padding-bottom: 12rpx;
+  }
+
+  .stat-text {
+    font-size: 20rpx;
+  }
+
+  .stat-icon {
+    font-size: 24rpx;
   }
 }
 </style>

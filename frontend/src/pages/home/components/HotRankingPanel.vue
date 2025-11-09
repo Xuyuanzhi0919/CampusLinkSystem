@@ -37,13 +37,30 @@
             <text class="rank-text">{{ index + 1 }}</text>
           </view>
 
-          <!-- 内容信息 -->
+          <!-- 内容信息（增加统计信息）-->
           <view class="item-content">
             <text class="item-title">{{ item.title }}</text>
             <view class="item-meta">
-              <text class="meta-text">{{ item.views || item.downloads }} {{ item.views ? '浏览' : '下载' }}</text>
-              <text class="meta-dot">·</text>
-              <text class="meta-text">{{ item.answers || item.score }} {{ item.answers ? '回答' : '积分' }}</text>
+              <!-- 问答：显示回答数 + 浏览数 -->
+              <template v-if="currentTab === 0">
+                <text class="meta-text">{{ item.answers || 0 }} 回答</text>
+                <text class="meta-dot">·</text>
+                <text class="meta-text">{{ item.views || 0 }} 浏览</text>
+              </template>
+
+              <!-- 资料：显示下载数 + 评分 -->
+              <template v-else-if="currentTab === 1">
+                <text class="meta-text">{{ item.downloads || 0 }} 下载</text>
+                <text class="meta-dot">·</text>
+                <text class="meta-text">{{ item.score || 0 }} 积分</text>
+              </template>
+
+              <!-- 任务：显示积分 + 截止时间 -->
+              <template v-else>
+                <text class="meta-text">{{ item.reward || 0 }} 积分</text>
+                <text class="meta-dot">·</text>
+                <text class="meta-text">{{ item.deadline || '长期有效' }}</text>
+              </template>
             </view>
           </view>
 
@@ -300,16 +317,16 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .hot-ranking-panel {
-  background: #FFFFFF;
-  border-radius: 24rpx;
+  background: var(--cl-surface, #FFFFFF);
+  border-radius: 20rpx;
   padding: 32rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-1, 0 2px 8px rgba(0, 0, 0, 0.04));
+  transition: all 0.2s ease;
   animation: fadeInUp 0.4s ease-out 0.1s both;
-  border: 1rpx solid rgba(229, 230, 235, 0.6);
+  border: 1rpx solid var(--cl-gray-200, #EAEAEA);
 
   &:hover {
-    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.08);
+    box-shadow: var(--shadow-hover, 0 4px 12px rgba(0, 0, 0, 0.08));
   }
 }
 
@@ -324,70 +341,45 @@ onMounted(() => {
   }
 }
 
-/* 切换标签 - 品牌渐变设计 */
+/* 切换标签 - 方案 A 规范（底部滑动条动画）*/
 .tab-bar {
+  position: relative;
   display: flex;
   gap: 32rpx;
   margin-bottom: 32rpx;
-  padding-bottom: 24rpx;
-  position: relative;
-
-  /* 品牌渐变底线 */
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 80rpx;
-    height: 3rpx;
-    background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
-    border-radius: 2rpx;
-    box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.3);
-  }
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid var(--cl-gray-200, #EAEAEA);
 }
 
 .tab-item {
   position: relative;
   font-size: 28rpx; /* 14px - 正文规范 */
-  color: #86909C;
+  color: var(--cl-gray-600, #64748B);
   padding-bottom: 8rpx;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.2s ease;
+  font-weight: 500;
 
   &:hover {
-    color: #2E7CF6;
-    transform: translateY(-2rpx);
+    color: var(--cl-primary, #3B82F6);
   }
 
   &.active {
-    color: #2E7CF6;
+    color: var(--cl-primary, #3B82F6);
     font-weight: 600;
 
-    /* 圆角条 + 发光阴影 */
+    /* 底部滑动条 - 250ms ease-out */
     &::after {
       content: '';
       position: absolute;
-      left: 50%;
-      bottom: -24rpx;
-      transform: translateX(-50%);
-      width: 24rpx;
+      left: 0;
+      bottom: -20rpx;
+      width: 100%;
       height: 3rpx;
-      background: linear-gradient(90deg, #2E7CF6, #6C5CE7);
+      background: var(--cl-primary, #3B82F6);
       border-radius: 2rpx;
-      box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.4);
-      animation: slideIn 0.25s ease-out;
+      transition: all 0.25s ease-out; /* 平滑滑动 */
     }
-  }
-}
-
-@keyframes slideIn {
-  from {
-    transform: translateX(-50%) scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) scaleX(1);
-    opacity: 1;
   }
 }
 
@@ -404,83 +396,75 @@ onMounted(() => {
   align-items: center;
   gap: 20rpx;
   padding: 16rpx;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
 
-  /* 微光背景 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(46, 124, 246, 0.03), rgba(108, 92, 231, 0.03));
-    border-radius: 16rpx;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
+  /* Hover 背景微动效（专业级优化）*/
   &:hover {
-    background: rgba(46, 124, 246, 0.04);
-    transform: translateX(4rpx);
-
-    &::before {
-      opacity: 1;
-    }
+    background: rgba(59, 130, 246, 0.05); /* 主题色背景过渡 */
+    transform: translateX(6rpx); /* 右移 3px */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); /* 轻微阴影 */
 
     .item-title {
-      color: #2E7CF6;
+      color: #2563EB; /* 标题变深蓝色 */
     }
 
     .rank-number {
-      transform: scale(1.1);
+      transform: scale(1.1); /* 排名数字放大 */
+    }
+
+    .quick-btn {
+      transform: translateY(-2rpx) scale(1.05); /* 按钮浮起 + 放大 */
     }
   }
 
   &:active {
-    transform: translateX(2rpx) scale(0.98);
+    transform: translateX(3rpx) scale(0.98);
   }
 }
 
-/* 排名序号 */
+/* 排名序号（专业级优化 - 彩色渐变圆形）*/
 .rank-number {
-  width: 48rpx;
-  height: 48rpx;
+  width: 56rpx; /* 从 48rpx 增加到 56rpx */
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12rpx;
+  border-radius: 50%; /* 改为圆形 */
   flex-shrink: 0;
   background: #F5F6FA;
   transition: all 0.2s ease;
   position: relative;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06); /* 轻微阴影 */
 }
 
-/* 第1名：品牌主色渐变 + 光晕 */
+/* 第1名：彩色渐变圆形 - 蓝色 */
 .rank-number.rank-1 {
-  background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
-  box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.4);
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); /* 蓝色光晕 */
 }
 
-/* 第2名：辅助色渐变 */
+/* 第2名：彩色渐变圆形 - 橙色 */
 .rank-number.rank-2 {
-  background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
-  box-shadow: 0 4rpx 12rpx rgba(14, 165, 233, 0.3);
+  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(251, 146, 60, 0.3); /* 橙色光晕 */
 }
 
-/* 第3名：成功色渐变 */
+/* 第3名：彩色渐变圆形 - 绿色 */
 .rank-number.rank-3 {
-  background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-  box-shadow: 0 4rpx 12rpx rgba(22, 163, 74, 0.3);
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); /* 绿色光晕 */
 }
 
 .rank-text {
-  font-size: 24rpx;
-  font-weight: 700;
-  color: #86909C;
+  font-size: 26rpx; /* 从 24rpx 增加到 26rpx */
+  font-weight: 700; /* 从 600 增加到 700 */
+  color: var(--cl-gray-600, #64748B);
   line-height: 1;
 }
 
@@ -488,7 +472,7 @@ onMounted(() => {
 .rank-number.rank-2 .rank-text,
 .rank-number.rank-3 .rank-text {
   color: white;
-  text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.1);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 文字阴影，增强可读性 */
 }
 
 /* 内容信息 */
@@ -502,11 +486,13 @@ onMounted(() => {
 
 .item-title {
   font-size: 28rpx; /* 14px */
-  color: #1D2129;
+  color: var(--cl-gray-900, #1E293B);
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .item-meta {
@@ -517,39 +503,48 @@ onMounted(() => {
 
 .meta-text {
   font-size: 24rpx; /* 12px */
-  color: #86909C;
+  color: var(--cl-gray-600, #64748B);
   line-height: 1;
 }
 
 .meta-dot {
   font-size: 24rpx;
-  color: #C9CDD4;
+  color: var(--cl-gray-400, #CBD5E1);
   line-height: 1;
 }
 
-/* 快速操作按钮 */
+/* 快速操作按钮（专业级优化 - 高对比度橙色圆角按钮）*/
 .quick-btn {
-  width: 80rpx; /* 40px */
-  height: 48rpx; /* 24px */
+  width: 88rpx; /* 从 80rpx 增加到 88rpx（44px）*/
+  height: 56rpx; /* 从 48rpx 增加到 56rpx（28px）*/
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%);
-  border-radius: 24rpx;
+  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%); /* 高对比度橙色渐变 */
+  border-radius: 28rpx; /* 圆角增大 */
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s ease;
   flex-shrink: 0;
-}
+  box-shadow: 0 2px 8px rgba(251, 146, 60, 0.25); /* 橙色阴影 */
 
-.quick-btn:active {
-  transform: scale(0.95);
+  /* Hover 时亮一点 + 浮起 */
+  &:hover {
+    background: linear-gradient(135deg, #F97316 0%, #EA580C 100%); /* 更亮的橙色 */
+    transform: translateY(-4rpx); /* 浮起 2px */
+    box-shadow: 0 4px 12px rgba(251, 146, 60, 0.35); /* 阴影增强 */
+  }
+
+  &:active {
+    transform: translateY(-2rpx) scale(0.95);
+  }
 }
 
 .quick-text {
-  font-size: 24rpx;
-  font-weight: 600;
+  font-size: 26rpx; /* 从 24rpx 增加到 26rpx */
+  font-weight: 700; /* 从 600 增加到 700 */
   color: white;
   line-height: 1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* 文字阴影 */
 }
 </style>
 

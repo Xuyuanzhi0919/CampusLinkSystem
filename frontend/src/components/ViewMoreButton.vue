@@ -38,39 +38,21 @@ const handleClick = () => {
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  padding: 20rpx 32rpx;
-  margin: 24rpx 0;
-  /* 导航引导条样式 */
-  background: rgba(46, 124, 246, 0.05);
-  border: 1px solid rgba(46, 124, 246, 0.15);
+  padding: 18rpx 32rpx;
+  margin: 48rpx 0 0 0; /* 从 20rpx 增加到 48rpx，增加上间距 */
+  /* 导航引导条样式 - 柔和版本 */
+  background: var(--cl-primary-50, #EFF6FF);
+  border: 1px solid var(--cl-primary-200, #BFDBFE);
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.08);
-
-  /* 光泽效果 */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(46, 124, 246, 0.15), transparent);
-    transition: left 0.5s;
-  }
 
   &:hover {
-    background: rgba(46, 124, 246, 0.08);
-    border-color: #2E7CF6;
+    background: var(--cl-primary-100, #DBEAFE);
+    border-color: var(--cl-primary, #3B82F6);
     transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.2);
-
-    &::before {
-      left: 100%;
-    }
 
     .btn-icon {
       transform: translateX(4rpx);
@@ -90,24 +72,21 @@ const handleClick = () => {
 
 .btn-text {
   font-size: 28rpx;
-  color: #2E7CF6;
+  color: var(--cl-primary, #3B82F6);
   font-weight: 500;
   line-height: 1;
-  position: relative;
-  z-index: 1;
 }
 
 .btn-icon {
   font-size: 28rpx;
-  color: #2E7CF6;
+  color: var(--cl-primary, #3B82F6);
   line-height: 1;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  z-index: 1;
+  /* 箭头平滑滑动 6px - 方案 A 规范 */
+  transition: transform 0.25s ease;
 }
 
 .view-more-btn:hover .btn-icon {
-  transform: translateX(4rpx);
+  transform: translateX(12rpx); /* 6px 右移 */
 }
 
 /* 深色模式 */

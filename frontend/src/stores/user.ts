@@ -44,23 +44,6 @@ export const useUserStore = defineStore('user', () => {
       const storedUserInfo = uni.getStorageSync(config.userInfoKey)
       if (storedUserInfo) {
         userInfo.value = JSON.parse(storedUserInfo)
-      } else if (process.env.NODE_ENV === 'development') {
-        // 开发模式下设置模拟数据
-        userInfo.value = {
-          userId: 1,
-          username: 'test_user',
-          nickname: '测试用户',
-          avatar: 'https://via.placeholder.com/100',
-          email: 'test@campuslink.com',
-          phone: '13800138000',
-          studentId: '2021001',
-          schoolId: 1,
-          schoolName: '清华大学',
-          major: '计算机科学与技术',
-          grade: 2021,
-          points: 1000,
-          role: 'user',
-        }
       }
     } catch (error) {
       console.error('初始化用户信息失败:', error)

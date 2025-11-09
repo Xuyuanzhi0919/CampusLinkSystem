@@ -10,30 +10,46 @@
 
     <!-- 内容容器 -->
     <view class="focus-container">
-      <!-- 左侧：品牌标识区 -->
-      <view class="brand-section">
-        <!-- 校园标识 + 校徽 -->
-        <view class="school-identity">
-          <image
-            v-if="schoolInfo?.logoUrl"
-            :src="schoolInfo.logoUrl"
-            class="school-logo-img"
-            mode="aspectFit"
-          />
-          <view v-else class="school-badge">🏛️</view>
-          <text class="school-name">{{ schoolInfo?.schoolName || '未设置学校' }}</text>
-        </view>
-        <!-- CampusLink Logo + Slogan -->
-        <view class="brand-logo-wrapper">
-          <view class="logo-row">
-            <text class="brand-logo">CampusLink</text>
-            <text class="campus-muule">校园 muule</text>
+      <!-- 第一行：品牌标识区 + 用户头像 -->
+      <view class="top-row">
+        <!-- 左侧：品牌标识 -->
+        <view class="brand-section">
+          <!-- 校园标识 + 校徽 -->
+          <view class="school-identity">
+            <image
+              v-if="schoolInfo?.logoUrl"
+              :src="schoolInfo.logoUrl"
+              class="school-logo-img"
+              mode="aspectFit"
+            />
+            <view v-else class="school-badge">🏛️</view>
+            <text class="school-name">{{ schoolInfo?.schoolName || '未设置学校' }}</text>
           </view>
-          <text class="brand-slogan">{{ userCount }}万大学生的互助学习圈</text>
+          <!-- CampusLink Logo + Slogan -->
+          <view class="brand-logo-wrapper">
+            <view class="logo-row">
+              <text class="brand-logo">CampusLink</text>
+              <text class="campus-muule">校园 muule</text>
+            </view>
+            <text class="brand-slogan">{{ userCount }}万大学生的互助学习圈</text>
+          </view>
+        </view>
+
+        <!-- 右侧：仅保留用户头像 -->
+        <view class="user-avatar-section" @click="handleUserClick">
+          <image
+            v-if="userInfo?.avatar"
+            :src="userInfo.avatar"
+            class="user-avatar"
+            mode="aspectFill"
+          />
+          <view v-else class="user-avatar-placeholder">
+            <text class="avatar-text">{{ userInfo?.nickname?.charAt(0) || '?' }}</text>
+          </view>
         </view>
       </view>
 
-      <!-- 中间：搜索栏（居中） -->
+      <!-- 第二行：搜索栏（独占一行） -->
       <view class="search-section">
         <view class="search-box">
           <!-- 搜索图标 -->
@@ -91,32 +107,6 @@
             <view v-if="isVoiceActive" class="voice-ripple"></view>
             <view v-if="isVoiceActive" class="voice-ripple voice-ripple-2"></view>
           </view>
-        </view>
-      </view>
-
-      <!-- 右侧：个人信息 + CTA 按钮 -->
-      <view class="right-section">
-        <!-- 个人信息按钮 -->
-        <view class="user-info-btn" @click="handleUserClick">
-          <image
-            v-if="userInfo?.avatar"
-            :src="userInfo.avatar"
-            class="user-avatar"
-            mode="aspectFill"
-          />
-          <view v-else class="user-avatar-placeholder">
-            <text class="avatar-text">{{ userInfo?.nickname?.charAt(0) || '?' }}</text>
-          </view>
-          <view class="user-text">
-            <text class="user-nickname">{{ userInfo?.nickname || '未登录' }}</text>
-            <text class="user-points">{{ userInfo?.points || 0 }} 积分</text>
-          </view>
-        </view>
-
-        <!-- CTA 按钮 -->
-        <view class="cta-btn-primary" @click="handleUpload">
-          <text class="cta-btn-text">上传资料</text>
-          <text class="cta-arrow">→</text>
         </view>
       </view>
     </view>
@@ -960,28 +950,41 @@ onMounted(() => {
   }
 }
 
-/* ========== 九、H5 端适配 - 方案二：分层优化 ========== */
+/* ========== 九、H5 端适配 - 极简两行布局 + 底部导航栏 ========== */
 @media (max-width: 750px) {
-  /* 顶部容器高度调整 - 从 360rpx 减少到 280rpx */
+  /* 顶部容器高度调整 - 进一步减少 */
   .top-focus-bar {
-    height: 280rpx; /* H5端 140px - 节省 40px 空间 */
+    height: 240rpx; /* H5端 120px - 极简两行布局 */
   }
 
-  /* 内容容器调整 - 减少间距 */
+  /* 内容容器调整 - 两行布局 */
   .focus-container {
+    display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-    gap: 16rpx; /* 从 24rpx 减少到 16rpx */
-    padding: 24rpx 24rpx; /* 从 32rpx 减少到 24rpx */
+    gap: 10rpx; /* 两行之间的间距 */
+    padding: 16rpx 24rpx; /* 减少上下内边距 */
   }
 
-  /* 品牌区域 - H5 端简化显示 */
-  .brand-section {
+  /* 第一行：品牌 + 用户头像 */
+  .top-row {
+    display: flex;
     flex-direction: row;
-    justify-content: center;
-    gap: 16rpx; /* 减少间距 */
+    justify-content: space-between; /* 左右分布 */
     align-items: center;
+    gap: 16rpx;
+    height: 56rpx; /* 固定高度 */
+  }
+
+  /* 品牌区域 - 左对齐 */
+  .brand-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12rpx;
+    flex: 1; /* 占据剩余空间 */
+    min-width: 0; /* 允许收缩 */
   }
 
   /* 隐藏校徽和学校名 */
@@ -992,9 +995,9 @@ onMounted(() => {
   /* 品牌Logo区域优化 */
   .brand-logo-wrapper {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* 横向排列 */
     align-items: center;
-    gap: 0; /* 移除间距 */
+    gap: 12rpx;
   }
 
   .logo-row {
@@ -1003,16 +1006,18 @@ onMounted(() => {
     gap: 12rpx;
   }
 
-  /* 缩小品牌名字号 */
+  /* 品牌名字号 */
   .brand-logo {
-    font-size: 40rpx; /* 从 48rpx 减小到 40rpx (20px) */
+    font-size: 36rpx; /* 18px */
     font-weight: 700;
+    line-height: 1.2;
   }
 
-  /* 缩小"校园muule"标签 */
+  /* "校园muule"标签 */
   .campus-muule {
-    font-size: 20rpx; /* 10px - 更小更紧凑 */
+    font-size: 20rpx; /* 10px */
     padding: 4rpx 8rpx;
+    line-height: 1;
   }
 
   /* 隐藏副标题 */
@@ -1020,40 +1025,71 @@ onMounted(() => {
     display: none; /* 隐藏"100万大学生的互助学习圈" */
   }
 
-  /* 搜索区域 - 优化高度 */
-  .search-section {
-    max-width: 100%;
+  /* 用户头像区域 - 右对齐 */
+  .user-avatar-section {
+    flex-shrink: 0; /* 不收缩 */
+    cursor: pointer;
   }
 
+  .user-avatar,
+  .user-avatar-placeholder {
+    width: 56rpx; /* 28px */
+    height: 56rpx;
+    border-radius: 50%;
+    border: 2rpx solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+  }
+
+  .user-avatar-section:active .user-avatar,
+  .user-avatar-section:active .user-avatar-placeholder {
+    transform: scale(0.9);
+  }
+
+  .avatar-text {
+    font-size: 24rpx;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  /* 第二行：搜索框独占 */
+  .search-section {
+    display: flex;
+    align-items: center;
+    width: 100%; /* 占满整行 */
+  }
+
+  /* 搜索框样式 */
   .search-box {
-    height: 64rpx; /* 从 72rpx 减少到 64rpx (32px) */
-    padding: 0 16rpx; /* 减少内边距 */
-    gap: 10rpx; /* 减少间距 */
+    height: 60rpx; /* 30px - 搜索框高度 */
+    padding: 0 16rpx;
+    gap: 10rpx;
+    width: 100%; /* 占满整行 */
   }
 
   .search-icon {
-    font-size: 26rpx; /* 略微缩小 */
+    font-size: 26rpx;
   }
 
   .search-input {
-    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
+    font-size: 24rpx;
+    flex: 1; /* 占据剩余空间 */
   }
 
   .search-btn-blue {
-    padding: 10rpx 20rpx; /* 减小按钮尺寸 */
+    padding: 10rpx 18rpx;
   }
 
   .search-btn-text {
-    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
+    font-size: 22rpx;
   }
 
   .voice-search-btn {
-    width: 44rpx; /* 从 48rpx 减小到 44rpx */
+    width: 44rpx;
     height: 44rpx;
   }
 
   .voice-icon {
-    width: 22rpx; /* 从 24rpx 减小到 22rpx */
+    width: 22rpx;
     height: 22rpx;
   }
 
@@ -1062,87 +1098,48 @@ onMounted(() => {
     height: 44rpx;
   }
 
-  /* 右侧区域 - 改为横向紧凑布局 */
-  .right-section {
-    gap: 12rpx; /* 减少间距 */
-    flex-direction: row; /* 改为横向布局 */
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  /* 个人信息按钮 - 横向紧凑布局 */
-  .user-info-btn {
-    padding: 4rpx 12rpx; /* 减小内边距 */
-    gap: 8rpx; /* 减少间距 */
-    flex: 1; /* 占据剩余空间 */
-    min-width: 0; /* 允许收缩 */
-  }
-
-  .user-avatar,
-  .user-avatar-placeholder {
-    width: 40rpx; /* 从 48rpx 减小到 40rpx */
-    height: 40rpx;
-    flex-shrink: 0; /* 不收缩 */
-  }
-
-  .avatar-text {
-    font-size: 20rpx; /* 从 24rpx 减小到 20rpx */
-  }
-
-  .user-text {
-    display: flex;
-    flex-direction: column;
-    gap: 2rpx; /* 减少间距 */
-    min-width: 0; /* 允许收缩 */
-  }
-
-  .user-nickname {
-    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
-    max-width: 80rpx; /* 从 100rpx 减小到 80rpx */
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .user-points {
-    font-size: 20rpx; /* 保持不变 */
-  }
-
-  /* CTA 按钮 - 改为紧凑样式 */
-  .cta-btn-primary {
-    width: auto; /* 从 100% 改为自适应 */
-    height: 48rpx; /* 从 64rpx 减小到 48rpx */
-    padding: 0 20rpx; /* 添加左右内边距 */
-    flex-shrink: 0; /* 不收缩 */
-  }
-
-  .cta-btn-text,
-  .cta-arrow {
-    font-size: 24rpx; /* 从 26rpx 减小到 24rpx */
-  }
-
-  /* 插画元素 - H5 端进一步缩小以适应更小的容器 */
+  /* 插画元素 - H5 端适配 240rpx 高度 */
   .illustration-layer {
-    height: 280rpx; /* 与容器高度一致 */
+    height: 240rpx; /* 与容器高度一致 */
   }
 
   .campus-building {
-    width: 60rpx; /* 从 80rpx 减小到 60rpx */
-    height: 80rpx; /* 从 100rpx 减小到 80rpx */
+    width: 60rpx; /* 30px */
+    height: 75rpx; /* 37.5px */
     left: 2%;
-    bottom: 8%;
+    bottom: 12%;
   }
 
   .student-illustration {
-    width: 140rpx; /* 从 180rpx 减小到 140rpx */
-    height: 140rpx;
+    width: 130rpx; /* 65px */
+    height: 130rpx;
     right: 3%;
-    bottom: 6%;
+    bottom: 10%;
   }
 
   .decoration-element {
-    opacity: 0.4; /* 从 0.5 减小到 0.4，更淡化 */
-    transform: scale(0.8); /* 缩小装饰元素 */
+    opacity: 0.4; /* 更淡化 */
+    transform: scale(0.75); /* 进一步缩小装饰元素 */
+  }
+
+  .decoration-book {
+    top: 18%;
+    left: 18%;
+  }
+
+  .decoration-bulb {
+    top: 22%;
+    right: 22%;
+  }
+
+  .decoration-pencil {
+    bottom: 28%;
+    left: 28%;
+  }
+
+  .decoration-cap {
+    bottom: 24%;
+    right: 18%;
   }
 
   .decoration-book {

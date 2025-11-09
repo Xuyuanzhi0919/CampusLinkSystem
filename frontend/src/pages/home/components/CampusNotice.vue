@@ -1,13 +1,17 @@
 <template>
-  <view class="campus-notice">
-    <!-- 标题 -->
-    <view class="card-header">
-      <text class="card-title">校园公告</text>
-      <text class="more-link" @click="goToNoticeList">更多 →</text>
+  <view class="campus-notice" :class="{ collapsed: isCollapsed }">
+    <!-- 标题（可折叠） -->
+    <view class="card-header" @click="toggleCollapse">
+      <view class="header-left">
+        <text class="card-title">校园公告</text>
+        <text v-if="isCollapsed && notices.length > 0" class="notice-badge">{{ notices.length }} 条</text>
+      </view>
+      <text class="toggle-icon">{{ isCollapsed ? '▼' : '▲' }}</text>
     </view>
 
-    <!-- 公告列表 -->
-    <view class="notice-list">
+    <!-- 公告列表（可折叠） -->
+    <view v-if="!isCollapsed" class="card-content">
+      <view class="notice-list">
       <view
         v-for="notice in notices"
         :key="notice.id"
@@ -32,11 +36,23 @@
         </view>
       </view>
     </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+
+// 折叠状态
+const isCollapsed = ref(true) // 默认折叠
+
+/**
+ * 切换折叠状态
+ */
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+import { getMyNotifications } from '@/services/notification'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -52,43 +68,59 @@ interface Notice {
   important: boolean
 }
 
-const notices = ref<Notice[]>([
-  {
-    id: 1,
-    icon: '📢',
-    title: '关于2024年寒假放假安排的通知',
-    time: '2小时前',
-    important: true,
-  },
-  {
-    id: 2,
-    icon: '📚',
-    title: '图书馆开放时间调整通知',
-    time: '5小时前',
-    important: false,
-  },
-  {
-    id: 3,
-    icon: '🎓',
-    title: '2024届毕业生就业指导讲座',
-    time: '昨天',
-    important: true,
-  },
-  {
-    id: 4,
-    icon: '🏃',
-    title: '校园运动会报名开始啦',
-    time: '2天前',
-    important: false,
-  },
-  {
-    id: 5,
-    icon: '💡',
-    title: '创新创业大赛通知',
-    time: '3天前',
-    important: false,
-  },
-])
+const notices = ref<Notice[]>([])
+
+/**
+ * 格式化时间
+ */
+const formatTime = (dateStr: string) => {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+
+  if (hours < 1) return '刚刚'
+  if (hours < 24) return `${hours}小时前`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return '昨天'
+  if (days < 7) return `${days}天前`
+  return date.toLocaleDateString()
+}
+
+/**
+ * 获取通知图标
+ */
+const getNoticeIcon = (type: string) => {
+  const icons: Record<string, string> = {
+    'system': '📢',
+    'resource': '📚',
+    'activity': '🎓',
+    'task': '🤝',
+    'default': '💡'
+  }
+  return icons[type] || icons.default
+}
+
+/**
+ * 加载校园公告数据
+ */
+const loadNoticeData = async () => {
+  try {
+    const res = await getMyNotifications({ type: 'system', page: 1, pageSize: 5 })
+    const list = res?.list || res?.records || []
+
+    notices.value = list.map((item: any) => ({
+      id: item.notificationId,
+      icon: getNoticeIcon(item.type),
+      title: item.title,
+      time: formatTime(item.createdAt),
+      important: item.type === 'system' || item.priority === 'high'
+    }))
+  } catch (error) {
+    console.error('加载校园公告失败:', error)
+    notices.value = []
+  }
+}
 
 /**
  * 查看更多公告
@@ -108,6 +140,11 @@ const goToNoticeList = () => {
 const handleNoticeClick = (notice: Notice) => {
   emit('noticeClick', notice)
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadNoticeData()
+})
 </script>
 
 <style scoped lang="scss">
@@ -116,13 +153,20 @@ const handleNoticeClick = (notice: Notice) => {
   border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
-  height: 400rpx;
+  height: auto;
+  min-height: 80rpx;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+
+  /* 折叠态 */
+  &.collapsed {
+    padding: 24rpx 32rpx;
+    height: 80rpx;
+  }
 }
 
 .campus-notice::before {
@@ -152,7 +196,46 @@ const handleNoticeClick = (notice: Notice) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.notice-badge {
+  font-size: 24rpx;
+  color: #F59E0B;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 12rpx;
+}
+
+.toggle-icon {
+  font-size: 24rpx;
+  color: #8F959E;
+  transition: transform 0.3s;
+}
+
+.card-content {
+  margin-top: 24rpx;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-title {

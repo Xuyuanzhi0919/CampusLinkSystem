@@ -1,13 +1,17 @@
 <template>
-  <view class="club-activity">
-    <!-- 标题 -->
-    <view class="card-header">
-      <text class="card-title">社团动态</text>
-      <text class="more-link" @click="goToActivityList">更多 →</text>
+  <view class="club-activity" :class="{ collapsed: isCollapsed }">
+    <!-- 标题（可折叠） -->
+    <view class="card-header" @click="toggleCollapse">
+      <view class="header-left">
+        <text class="card-title">社团动态</text>
+        <text v-if="isCollapsed && activities.length > 0" class="activity-badge">{{ activities.length }} 个活动</text>
+      </view>
+      <text class="toggle-icon">{{ isCollapsed ? '▼' : '▲' }}</text>
     </view>
 
-    <!-- 活动横向滚动 -->
-    <scroll-view class="activity-scroll" scroll-x>
+    <!-- 活动横向滚动（可折叠） -->
+    <view v-if="!isCollapsed" class="card-content">
+      <scroll-view class="activity-scroll" scroll-x>
       <view class="activity-container">
         <view
           v-for="activity in activities"
@@ -37,12 +41,23 @@
         </view>
       </view>
     </scroll-view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { ACTIVITY_POSTERS } from '@/config/images'
+import { ref, onMounted } from 'vue'
+
+// 折叠状态
+const isCollapsed = ref(true) // 默认折叠
+
+/**
+ * 切换折叠状态
+ */
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+import { getActivityList, joinActivity } from '@/services/activity'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -58,36 +73,28 @@ interface Activity {
   remainingSlots: number
 }
 
-const activities = ref<Activity[]>([
-  {
-    id: 1,
-    name: '校园歌手大赛',
-    poster: ACTIVITY_POSTERS.music,
-    clubName: '音乐社',
-    remainingSlots: 22,
-  },
-  {
-    id: 2,
-    name: '编程马拉松',
-    poster: ACTIVITY_POSTERS.coding,
-    clubName: '计算机协会',
-    remainingSlots: 14,
-  },
-  {
-    id: 3,
-    name: '篮球友谊赛',
-    poster: ACTIVITY_POSTERS.basketball,
-    clubName: '篮球社',
-    remainingSlots: 16,
-  },
-  {
-    id: 4,
-    name: '摄影展览',
-    poster: ACTIVITY_POSTERS.photography,
-    clubName: '摄影社',
-    remainingSlots: 3,
-  },
-])
+const activities = ref<Activity[]>([])
+
+/**
+ * 加载活动数据
+ */
+const loadActivityData = async () => {
+  try {
+    const res = await getActivityList({ page: 1, pageSize: 6, status: 0 })
+    const list = res?.list || res?.records || []
+
+    activities.value = list.map((item: any) => ({
+      id: item.activityId,
+      name: item.title,
+      poster: item.poster || 'https://picsum.photos/240/180?random=' + item.activityId,
+      clubName: item.clubName || '社团',
+      remainingSlots: (item.maxParticipants || 50) - (item.currentParticipants || 0)
+    }))
+  } catch (error) {
+    console.error('加载活动数据失败:', error)
+    activities.value = []
+  }
+}
 
 /**
  * 查看更多活动
@@ -111,14 +118,26 @@ const handleActivityClick = (activity: Activity) => {
 /**
  * 报名
  */
-const handleSignup = (activity: Activity) => {
+const handleSignup = async (activity: Activity) => {
   if (activity.remainingSlots === 0) {
     uni.showToast({ title: '名额已满', icon: 'none' })
     return
   }
-  uni.showToast({ title: '报名成功', icon: 'success' })
-  activity.remainingSlots--
+
+  try {
+    await joinActivity(activity.id)
+    uni.showToast({ title: '报名成功', icon: 'success' })
+    activity.remainingSlots--
+  } catch (error) {
+    console.error('报名失败:', error)
+    uni.showToast({ title: '报名失败', icon: 'error' })
+  }
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadActivityData()
+})
 </script>
 
 <style scoped lang="scss">
@@ -127,13 +146,20 @@ const handleSignup = (activity: Activity) => {
   border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
-  height: 400rpx;
+  height: auto;
+  min-height: 80rpx;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+
+  /* 折叠态 */
+  &.collapsed {
+    padding: 24rpx 32rpx;
+    height: 80rpx;
+  }
 }
 
 .club-activity::before {
@@ -163,7 +189,46 @@ const handleSignup = (activity: Activity) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.activity-badge {
+  font-size: 24rpx;
+  color: #FFA940;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  background: rgba(255, 169, 64, 0.1);
+  border-radius: 12rpx;
+}
+
+.toggle-icon {
+  font-size: 24rpx;
+  color: #8F959E;
+  transition: transform 0.3s;
+}
+
+.card-content {
+  margin-top: 24rpx;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .card-title {

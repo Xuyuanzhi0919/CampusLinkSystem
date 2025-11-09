@@ -26,50 +26,86 @@
 
     <!-- 推荐卡片列表 -->
     <view class="recommend-list">
-      <view
-        v-for="item in currentList"
-        :key="item.id"
-        class="recommend-card"
-        @click="handleItemClick(item)"
-      >
-        <!-- 类型标签 -->
-        <view class="type-tag" :class="'type-' + item.type">
-          <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
-          <text class="type-text">{{ getTypeName(item.type) }}</text>
-        </view>
+      <!-- 加载中：骨架屏 -->
+      <template v-if="isLoading">
+        <SkeletonCard
+          v-for="i in 6"
+          :key="'skeleton-' + i"
+          layout="recommend"
+        />
+      </template>
 
-        <!-- 卡片内容 -->
-        <text class="card-title">{{ item.title }}</text>
-        <text class="card-intro">{{ item.intro }}</text>
-
-        <!-- 资源信息 -->
-        <view class="card-meta">
-          <view class="meta-item">
-            <text class="meta-icon">👤</text>
-            <text class="meta-text">{{ item.author }}</text>
+      <!-- 有数据：显示卡片（仅显示前 3 条） -->
+      <template v-else-if="currentList.length > 0">
+        <view
+          v-for="item in displayList"
+          :key="item.id"
+          class="recommend-card"
+          @click="handleItemClick(item)"
+        >
+          <!-- 类型标签 -->
+          <view class="type-tag" :class="'type-' + item.type">
+            <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
+            <text class="type-text">{{ getTypeName(item.type) }}</text>
           </view>
-          <view class="meta-item">
-            <text class="meta-icon">📥</text>
-            <text class="meta-text">{{ item.downloads || item.views }}</text>
+
+          <!-- 卡片内容 -->
+          <text class="card-title">{{ item.title }}</text>
+          <text class="card-intro">{{ item.intro }}</text>
+
+          <!-- 资源信息 -->
+          <view class="card-meta">
+            <view class="meta-item">
+              <text class="meta-icon">👤</text>
+              <text class="meta-text">{{ item.author }}</text>
+            </view>
+            <view class="meta-item">
+              <text class="meta-icon">📥</text>
+              <text class="meta-text">{{ item.downloads || item.views }}</text>
+            </view>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view class="card-actions">
+            <view class="action-btn" @click.stop="handleCollect(item)">
+              <text class="action-icon">{{ item.collected ? '❤️' : '🤍' }}</text>
+            </view>
+            <view class="action-btn" @click.stop="handleDownload(item)">
+              <text class="action-icon">📥</text>
+            </view>
           </view>
         </view>
+      </template>
 
-        <!-- 操作按钮 -->
-        <view class="card-actions">
-          <view class="action-btn" @click.stop="handleCollect(item)">
-            <text class="action-icon">{{ item.collected ? '❤️' : '🤍' }}</text>
-          </view>
-          <view class="action-btn" @click.stop="handleDownload(item)">
-            <text class="action-icon">📥</text>
-          </view>
+      <!-- 无数据：空状态 -->
+      <template v-else>
+        <view class="empty-wrapper">
+          <EmptyState
+            :type="currentTab === 0 ? 'empty' : 'filter'"
+            @action="handleRefresh"
+            @recommendation-click="handleRecommendationClick"
+          />
         </view>
-      </view>
+      </template>
     </view>
+
+    <!-- 查看更多按钮 -->
+    <ViewMoreButton
+      v-if="!isLoading && currentList.length > 3"
+      text="查看全部推荐"
+      @click="viewAllRecommendations"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import ViewMoreButton from '@/components/ViewMoreButton.vue'
+import { getResourceList } from '@/services/resource'
+import { getQuestionList } from '@/services/question'
+import { getTaskList } from '@/services/task'
+import EmptyState from '@/components/EmptyState.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -86,64 +122,10 @@ const tabs = [
 
 const currentTab = ref(0)
 const isRefreshing = ref(false)
+const isLoading = ref(false)
 
-// 模拟数据
-const allList = ref([
-  {
-    id: 1,
-    type: 'resource',
-    title: '数据结构与算法完整笔记',
-    intro: '涵盖所有常见数据结构和算法，配有详细图解和代码实现',
-    author: '计算机学院',
-    downloads: 2340,
-    collected: false,
-  },
-  {
-    id: 2,
-    type: 'question',
-    title: '如何高效学习高等数学？',
-    intro: '分享我从60分到95分的学习方法和技巧',
-    author: '数学系学霸',
-    views: 1520,
-    collected: true,
-  },
-  {
-    id: 3,
-    type: 'task',
-    title: '帮忙取快递（菜鸟驿站）',
-    intro: '今天下午3点前，酬劳5积分',
-    author: '张同学',
-    downloads: 0,
-    collected: false,
-  },
-  {
-    id: 4,
-    type: 'resource',
-    title: '英语四级高频词汇表',
-    intro: '精选1000个高频词汇，附例句和记忆技巧',
-    author: '外语学院',
-    downloads: 1890,
-    collected: false,
-  },
-  {
-    id: 5,
-    type: 'question',
-    title: '考研应该如何准备？',
-    intro: '985学长的考研经验分享，从择校到复试全流程',
-    author: '研究生学长',
-    views: 980,
-    collected: false,
-  },
-  {
-    id: 6,
-    type: 'resource',
-    title: '计算机网络课件PPT',
-    intro: '完整的计算机网络课程PPT，包含所有章节',
-    author: '网络工程',
-    downloads: 1560,
-    collected: true,
-  },
-])
+// 数据列表
+const allList = ref<any[]>([])
 
 // 当前列表（根据 Tab 筛选）
 const currentList = computed(() => {
@@ -151,6 +133,69 @@ const currentList = computed(() => {
   const type = tabs[currentTab.value].key
   return allList.value.filter((item) => item.type === type)
 })
+
+// 显示列表（仅显示前 3 条）
+const displayList = computed(() => {
+  return currentList.value.slice(0, 3)
+})
+
+/**
+ * 加载推荐数据
+ */
+const loadRecommendData = async () => {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  try {
+    // 并行请求三个接口
+    const [resourceRes, questionRes, taskRes] = await Promise.all([
+      getResourceList({ page: 1, pageSize: 6, sortBy: 'downloads', sortOrder: 'desc' }),
+      getQuestionList({ page: 1, pageSize: 6, sortBy: 'created_at', sortOrder: 'desc' }),
+      getTaskList({ page: 1, pageSize: 6, status: 0 }) // 只获取待接单的任务
+    ])
+
+    // 转换资源数据 (后端返回的是 list 而不是 records)
+    const resources = (resourceRes?.list || resourceRes?.records || []).map((item: any) => ({
+      id: item.resourceId,
+      type: 'resource',
+      title: item.title,
+      intro: item.description || '',
+      author: item.uploaderName || '匿名',
+      downloads: item.downloads || 0,
+      collected: item.isLiked || false,
+    }))
+
+    // 转换问答数据
+    const questions = (questionRes?.list || questionRes?.records || []).map((item: any) => ({
+      id: item.questionId,
+      type: 'question',
+      title: item.title,
+      intro: item.content?.substring(0, 50) || '',
+      author: item.askerName || '匿名',
+      views: item.viewCount || 0,
+      collected: false,
+    }))
+
+    // 转换任务数据
+    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any) => ({
+      id: item.taskId,
+      type: 'task',
+      title: item.title,
+      intro: item.description || '',
+      author: item.publisherName || '匿名',
+      downloads: 0,
+      collected: false,
+    }))
+
+    // 合并并随机排序
+    allList.value = [...resources, ...questions, ...tasks].sort(() => Math.random() - 0.5)
+  } catch (error) {
+    console.error('加载推荐数据失败:', error)
+    allList.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
 
 /**
  * 切换 Tab
@@ -162,12 +207,11 @@ const switchTab = (index: number) => {
 /**
  * 换一批
  */
-const handleRefresh = () => {
+const handleRefresh = async () => {
   isRefreshing.value = true
-  setTimeout(() => {
-    isRefreshing.value = false
-    uni.showToast({ title: '已刷新', icon: 'success' })
-  }, 500)
+  await loadRecommendData()
+  isRefreshing.value = false
+  uni.showToast({ title: '已刷新', icon: 'success' })
 }
 
 /**
@@ -218,6 +262,45 @@ const getTypeName = (type: string) => {
   }
   return names[type] || '其他'
 }
+
+/**
+ * 处理推荐点击
+ */
+const handleRecommendationClick = (item: any) => {
+  console.log('推荐点击:', item)
+
+  // 根据推荐类型执行不同操作
+  const actionMap: Record<string, () => void> = {
+    '浏览热门资源': () => switchTab(1),
+    '查看问答社区': () => switchTab(2),
+    '发现任务': () => switchTab(3),
+    '重置筛选': () => switchTab(0),
+    '查看全部': () => switchTab(0),
+    '换个条件试试': () => handleRefresh()
+  }
+
+  const action = actionMap[item.text]
+  if (action) {
+    action()
+  } else {
+    uni.showToast({ title: item.text, icon: 'none' })
+  }
+}
+
+/**
+ * 查看全部推荐
+ */
+const viewAllRecommendations = () => {
+  // TODO: 跳转到推荐列表页面
+  uni.navigateTo({
+    url: '/pages/recommend/index?tab=' + currentTab.value
+  })
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadRecommendData()
+})
 </script>
 
 <style scoped lang="scss">
@@ -248,14 +331,46 @@ const getTypeName = (type: string) => {
   gap: 32rpx;
   margin-bottom: 32rpx;
   padding-bottom: 24rpx;
-  border-bottom: 2rpx solid #E5E6EB;
+  position: relative;
+
+  /* 品牌渐变底线 */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 120rpx;
+    height: 4rpx;
+    background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
+    border-radius: 2rpx;
+    box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.3);
+  }
 }
 
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
   font-weight: 700;
-  color: #1D1D1F;
+  /* 渐变文字 */
+  background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   line-height: 1;
+  position: relative;
+
+  /* 微光效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -4rpx;
+    left: -4rpx;
+    right: -4rpx;
+    bottom: -4rpx;
+    background: linear-gradient(135deg, rgba(46, 124, 246, 0.1), rgba(108, 92, 231, 0.1));
+    filter: blur(8rpx);
+    opacity: 0.5;
+    z-index: -1;
+  }
 }
 
 /* 筛选标签 */
@@ -271,57 +386,110 @@ const getTypeName = (type: string) => {
   padding: 12rpx 24rpx;
   border-radius: 16rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   background: transparent;
+
+  &:hover {
+    color: #2E7CF6;
+    background: rgba(46, 124, 246, 0.08);
+    transform: translateY(-2rpx);
+  }
+
+  &.active {
+    color: white;
+    background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
+    font-weight: 600;
+    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.3);
+
+    /* 发光效果 */
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 16rpx;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0) 100%);
+    }
+
+    /* 底部光线 */
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -8rpx;
+      transform: translateX(-50%);
+      width: 60%;
+      height: 3rpx;
+      background: linear-gradient(90deg, transparent, #2E7CF6, transparent);
+      border-radius: 2rpx;
+      animation: glow 2s ease-in-out infinite;
+    }
+  }
 }
 
-.filter-tag:hover {
-  color: #FFA940;
-  background: rgba(255, 169, 64, 0.08);
+@keyframes glow {
+  0%, 100% {
+    opacity: 0.5;
+    box-shadow: 0 0 8rpx rgba(46, 124, 246, 0.3);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 16rpx rgba(46, 124, 246, 0.6);
+  }
 }
 
-.filter-tag.active {
-  color: white;
-  background: linear-gradient(135deg, #FFA940 0%, #FFB64B 100%);
-  font-weight: 600;
-  box-shadow: 0 4rpx 12rpx rgba(255, 169, 64, 0.25);
-}
-
-.filter-tag.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 16rpx;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
-}
-
-/* 换一批按钮 */
+/* 换一批按钮 - 渐变 Capsule 设计 */
 .refresh-btn {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  padding: 12rpx 24rpx;
-  color: #FFA940;
+  padding: 10rpx 20rpx;
+  background: linear-gradient(90deg, #2E7CF6, #6C5CE7);
+  color: white;
+  border-radius: 999rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.25);
+  position: relative;
+  overflow: hidden;
 
-.refresh-btn:active {
-  opacity: 0.7;
+  /* 光泽效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s;
+  }
+
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 6rpx 16rpx rgba(46, 124, 246, 0.35);
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .refresh-icon {
   font-size: 28rpx;
   line-height: 1;
   transition: transform 0.5s;
-}
 
-.refresh-icon.rotating {
-  animation: rotate 0.5s linear;
+  &.rotating {
+    animation: rotate 0.5s linear;
+  }
 }
 
 @keyframes rotate {
@@ -334,7 +502,8 @@ const getTypeName = (type: string) => {
 }
 
 .refresh-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
+  font-weight: 500;
   font-weight: 600;
   line-height: 1;
 }
@@ -345,73 +514,94 @@ const getTypeName = (type: string) => {
   grid-template-columns: repeat(2, 1fr);
   gap: 24rpx;
   column-gap: 32rpx;
+  min-height: 400rpx;
+}
+
+/* 空状态容器 */
+.empty-wrapper {
+  grid-column: 1 / -1;
 }
 
 .recommend-card {
   position: relative;
-  padding: 24rpx;
-  background: white;
-  border: 2rpx solid #E5E6EB;
+  padding: 32rpx;
+  background: #FFFFFF;
+  border: 1rpx solid rgba(229, 230, 235, 0.6);
   border-radius: 24rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 240rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   overflow: hidden;
+
+  /* 微光背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(46, 124, 246, 0.02), rgba(108, 92, 231, 0.02));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Hover 状态 */
+  &:hover {
+    transform: translateY(-4rpx);
+    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.08);
+    border-color: rgba(46, 124, 246, 0.2);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .card-title {
+      color: #2E7CF6;
+    }
+
+    .type-tag {
+      transform: scale(1.05);
+    }
+  }
+
+  /* Active 状态 */
+  &:active {
+    transform: translateY(-2rpx) scale(0.98);
+  }
 }
 
-.recommend-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  border-radius: 24rpx;
-  padding: 2rpx;
-  background: linear-gradient(135deg, #1E5FFF, #5A7FFF);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.recommend-card:hover {
-  transform: translateY(-8rpx);
-  box-shadow: 0 16rpx 48rpx rgba(30, 95, 255, 0.15);
-  border-color: transparent;
-}
-
-.recommend-card:hover::before {
-  opacity: 1;
-}
-
-/* 类型标签 */
+/* 类型标签 - 统一 Capsule 样式 */
 .type-tag {
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
   margin-bottom: 16rpx;
   font-size: 22rpx;
-  font-weight: 600;
-}
+  font-weight: 500;
+  transition: all 0.2s;
 
-.type-tag.type-resource {
-  background: #E6F0FF;
-  color: #1E5FFF;
-}
+  /* 统一品牌色系 */
+  background: rgba(46, 124, 246, 0.08);
+  color: #2E7CF6;
 
-.type-tag.type-question {
-  background: #FFF7E6;
-  color: #FFA940;
-}
+  &.type-resource {
+    background: rgba(46, 124, 246, 0.08);
+    color: #2E7CF6;
+  }
 
-.type-tag.type-task {
-  background: #E8F7ED;
-  color: #52C41A;
+  &.type-question {
+    background: rgba(108, 92, 231, 0.08);
+    color: #6C5CE7;
+  }
+
+  &.type-task {
+    background: rgba(14, 165, 233, 0.08);
+    color: #0EA5E9;
+  }
 }
 
 .type-icon {
@@ -423,11 +613,11 @@ const getTypeName = (type: string) => {
   line-height: 1;
 }
 
-/* 卡片内容 */
+/* 卡片内容 - 强化标题层级 */
 .card-title {
   display: block;
-  font-size: 32rpx; /* 16px - 副标题规范 */
-  font-weight: 700;
+  font-size: 34rpx; /* 17px - 比正文大 2px */
+  font-weight: 600; /* 加粗到 600 */
   color: #1D1D1F;
   line-height: 1.5;
   margin-bottom: 12rpx;
@@ -436,6 +626,7 @@ const getTypeName = (type: string) => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  transition: color 0.2s;
 }
 
 .card-intro {

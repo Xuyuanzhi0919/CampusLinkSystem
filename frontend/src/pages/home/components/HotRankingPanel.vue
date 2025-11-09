@@ -15,38 +15,74 @@
 
     <!-- 榜单列表 -->
     <view class="ranking-list">
-      <view
-        v-for="(item, index) in currentList"
-        :key="item.id"
-        class="ranking-item"
-        @click="handleItemClick(item)"
-      >
-        <!-- 排名序号 -->
-        <view class="rank-number" :class="'rank-' + (index + 1)">
-          <text class="rank-text">{{ index + 1 }}</text>
-        </view>
+      <!-- 加载中：骨架屏 -->
+      <template v-if="isLoading">
+        <SkeletonCard
+          v-for="i in 5"
+          :key="'skeleton-' + i"
+          layout="ranking"
+        />
+      </template>
 
-        <!-- 内容信息 -->
-        <view class="item-content">
-          <text class="item-title">{{ item.title }}</text>
-          <view class="item-meta">
-            <text class="meta-text">{{ item.views || item.downloads }} {{ item.views ? '浏览' : '下载' }}</text>
-            <text class="meta-dot">·</text>
-            <text class="meta-text">{{ item.answers || item.score }} {{ item.answers ? '回答' : '积分' }}</text>
+      <!-- 有数据：显示榜单（仅显示前 3 条） -->
+      <template v-else-if="currentList.length > 0">
+        <view
+          v-for="(item, index) in displayList"
+          :key="item.id"
+          class="ranking-item"
+          @click="handleItemClick(item)"
+        >
+          <!-- 排名序号 -->
+          <view class="rank-number" :class="'rank-' + (index + 1)">
+            <text class="rank-text">{{ index + 1 }}</text>
+          </view>
+
+          <!-- 内容信息 -->
+          <view class="item-content">
+            <text class="item-title">{{ item.title }}</text>
+            <view class="item-meta">
+              <text class="meta-text">{{ item.views || item.downloads }} {{ item.views ? '浏览' : '下载' }}</text>
+              <text class="meta-dot">·</text>
+              <text class="meta-text">{{ item.answers || item.score }} {{ item.answers ? '回答' : '积分' }}</text>
+            </view>
+          </view>
+
+          <!-- 快速操作按钮 -->
+          <view class="quick-btn" @click.stop="handleQuickAction(item)">
+            <text class="quick-text">{{ getQuickText(currentTab) }}</text>
           </view>
         </view>
+      </template>
 
-        <!-- 快速操作按钮 -->
-        <view class="quick-btn" @click.stop="handleQuickAction(item)">
-          <text class="quick-text">{{ getQuickText(currentTab) }}</text>
-        </view>
-      </view>
+      <!-- 无数据：空状态 -->
+      <template v-else>
+        <EmptyState
+          type="create"
+          :title="getEmptyTitle()"
+          :description="getEmptyDescription()"
+          @action="loadData"
+          @recommendation-click="handleRecommendationClick"
+        />
+      </template>
     </view>
+
+    <!-- 查看更多按钮 -->
+    <ViewMoreButton
+      v-if="!isLoading && currentList.length > 3"
+      text="查看完整榜单"
+      @click="viewFullRanking"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
+import { getResourceList } from '@/services/resource'
+import { getQuestionList } from '@/services/question'
+import { getTaskList } from '@/services/task'
+import EmptyState from '@/components/EmptyState.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
+import ViewMoreButton from '@/components/ViewMoreButton.vue'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -61,31 +97,12 @@ const tabs = [
 ]
 
 const currentTab = ref(0)
+const isLoading = ref(false)
 
-// 模拟数据
-const questionList = ref([
-  { id: 1, title: '如何学习数据结构与算法？', views: 1520, answers: 23, type: 'question' },
-  { id: 2, title: '大学生如何提高编程能力？', views: 1230, answers: 18, type: 'question' },
-  { id: 3, title: '考研数学如何复习？', views: 980, answers: 15, type: 'question' },
-  { id: 4, title: '英语四级如何备考？', views: 856, answers: 12, type: 'question' },
-  { id: 5, title: '如何平衡学习和社团活动？', views: 720, answers: 10, type: 'question' },
-])
-
-const resourceList = ref([
-  { id: 1, title: '数据结构课件-完整版', downloads: 2340, score: 5, type: 'resource' },
-  { id: 2, title: '高等数学历年真题', downloads: 1890, score: 3, type: 'resource' },
-  { id: 3, title: '计算机网络笔记', downloads: 1560, score: 2, type: 'resource' },
-  { id: 4, title: '操作系统期末复习资料', downloads: 1230, score: 4, type: 'resource' },
-  { id: 5, title: '英语四级词汇表', downloads: 980, score: 1, type: 'resource' },
-])
-
-const taskList = ref([
-  { id: 1, title: '帮忙取快递（菜鸟驿站）', views: 0, score: 5, type: 'task' },
-  { id: 2, title: '代打印资料（图书馆）', views: 0, score: 3, type: 'task' },
-  { id: 3, title: '帮忙占座（自习室）', views: 0, score: 2, type: 'task' },
-  { id: 4, title: '代取外卖（宿舍楼下）', views: 0, score: 4, type: 'task' },
-  { id: 5, title: '帮忙送文件（教学楼）', views: 0, score: 3, type: 'task' },
-])
+// 数据列表
+const questionList = ref<any[]>([])
+const resourceList = ref<any[]>([])
+const taskList = ref<any[]>([])
 
 // 当前列表
 const currentList = computed(() => {
@@ -93,6 +110,91 @@ const currentList = computed(() => {
   if (currentTab.value === 1) return resourceList.value
   return taskList.value
 })
+
+// 显示列表（仅显示前 3 条）
+const displayList = computed(() => {
+  return currentList.value.slice(0, 3)
+})
+
+/**
+ * 加载热门问答
+ */
+const loadQuestions = async () => {
+  try {
+    const res = await getQuestionList({ page: 1, pageSize: 5, sortBy: 'created_at', sortOrder: 'desc' })
+    const list = res?.list || res?.records || []
+    questionList.value = list.map((item: any) => ({
+      id: item.questionId,
+      title: item.title,
+      views: item.viewCount || 0,
+      answers: item.answerCount || 0,
+      type: 'question'
+    }))
+  } catch (error) {
+    console.error('加载热门问答失败:', error)
+    questionList.value = []
+  }
+}
+
+/**
+ * 加载精选资料
+ */
+const loadResources = async () => {
+  try {
+    const res = await getResourceList({ page: 1, pageSize: 5, sortBy: 'downloads', sortOrder: 'desc' })
+    const list = res?.list || res?.records || []
+    resourceList.value = list.map((item: any, index: number) => ({
+      id: item.resourceId,
+      title: item.title,
+      downloads: item.downloads || 0,
+      score: 5 - index, // 根据排名给分
+      type: 'resource'
+    }))
+  } catch (error) {
+    console.error('加载精选资料失败:', error)
+    resourceList.value = []
+  }
+}
+
+/**
+ * 加载紧急任务
+ */
+const loadTasks = async () => {
+  try {
+    const res = await getTaskList({ page: 1, pageSize: 5, status: 0 }) // 只获取待接单的任务
+    const list = res?.list || res?.records || []
+    taskList.value = list.map((item: any, index: number) => ({
+      id: item.taskId,
+      title: item.title,
+      views: 0,
+      score: item.reward || (5 - index),
+      type: 'task'
+    }))
+  } catch (error) {
+    console.error('加载紧急任务失败:', error)
+    taskList.value = []
+  }
+}
+
+/**
+ * 根据当前 Tab 加载数据
+ */
+const loadData = async () => {
+  if (isLoading.value) return
+
+  isLoading.value = true
+  try {
+    if (currentTab.value === 0 && questionList.value.length === 0) {
+      await loadQuestions()
+    } else if (currentTab.value === 1 && resourceList.value.length === 0) {
+      await loadResources()
+    } else if (currentTab.value === 2 && taskList.value.length === 0) {
+      await loadTasks()
+    }
+  } finally {
+    isLoading.value = false
+  }
+}
 
 /**
  * 切换 Tab
@@ -126,16 +228,89 @@ const getQuickText = (tabIndex: number) => {
   const texts = ['答', '载', '抢']
   return texts[tabIndex]
 }
+
+/**
+ * 获取空状态标题
+ */
+const getEmptyTitle = () => {
+  const titles = ['暂无热门问答', '暂无精选资料', '暂无紧急任务']
+  return titles[currentTab.value]
+}
+
+/**
+ * 获取空状态描述
+ */
+const getEmptyDescription = () => {
+  const descriptions = [
+    '快来提出第一个问题吧',
+    '快来上传第一份资料吧',
+    '快来发布第一个任务吧'
+  ]
+  return descriptions[currentTab.value]
+}
+
+/**
+ * 处理推荐点击
+ */
+const handleRecommendationClick = (item: any) => {
+  console.log('推荐点击:', item)
+
+  // 根据推荐类型执行不同操作
+  const actions: Record<string, string> = {
+    '上传资料': '/pages/resource/upload',
+    '提个问题': '/pages/question/create',
+    '发布任务': '/pages/task/create'
+  }
+
+  const path = actions[item.text]
+  if (path) {
+    uni.navigateTo({ url: path })
+  } else {
+    uni.showToast({ title: item.text, icon: 'none' })
+  }
+}
+
+/**
+ * 查看完整榜单
+ */
+const viewFullRanking = () => {
+  // TODO: 跳转到榜单页面
+  const pages: Record<number, string> = {
+    0: '/pages/question/ranking',
+    1: '/pages/resource/ranking',
+    2: '/pages/task/ranking'
+  }
+
+  const url = pages[currentTab.value]
+  if (url) {
+    uni.navigateTo({ url })
+  }
+}
+
+// 监听 Tab 变化
+watch(currentTab, () => {
+  loadData()
+})
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <style scoped lang="scss">
 .hot-ranking-panel {
-  background: white;
+  background: #FFFFFF;
   border-radius: 24rpx;
   padding: 32rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   animation: fadeInUp 0.4s ease-out 0.1s both;
+  border: 1rpx solid rgba(229, 230, 235, 0.6);
+
+  &:hover {
+    box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.08);
+  }
 }
 
 @keyframes fadeInUp {
@@ -149,13 +324,26 @@ const getQuickText = (tabIndex: number) => {
   }
 }
 
-/* 切换标签 */
+/* 切换标签 - 品牌渐变设计 */
 .tab-bar {
   display: flex;
   gap: 32rpx;
   margin-bottom: 32rpx;
   padding-bottom: 24rpx;
-  border-bottom: 2rpx solid #E5E6EB;
+  position: relative;
+
+  /* 品牌渐变底线 */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 80rpx;
+    height: 3rpx;
+    background: linear-gradient(90deg, #2E7CF6 0%, #6C5CE7 100%);
+    border-radius: 2rpx;
+    box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.3);
+  }
 }
 
 .tab-item {
@@ -164,37 +352,42 @@ const getQuickText = (tabIndex: number) => {
   color: #86909C;
   padding-bottom: 8rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-.tab-item:hover {
-  color: #FFA940;
-}
+  &:hover {
+    color: #2E7CF6;
+    transform: translateY(-2rpx);
+  }
 
-.tab-item.active {
-  color: #FFA940;
-  font-weight: 600;
-}
+  &.active {
+    color: #2E7CF6;
+    font-weight: 600;
 
-.tab-item.active::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 4rpx;
-  background: linear-gradient(90deg, #FFA940 0%, #FFB64B 100%);
-  border-radius: 2rpx;
-  box-shadow: 0 2rpx 8rpx rgba(255, 169, 64, 0.3);
-  animation: slideIn 0.2s ease-out;
+    /* 圆角条 + 发光阴影 */
+    &::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      bottom: -24rpx;
+      transform: translateX(-50%);
+      width: 24rpx;
+      height: 3rpx;
+      background: linear-gradient(90deg, #2E7CF6, #6C5CE7);
+      border-radius: 2rpx;
+      box-shadow: 0 2rpx 8rpx rgba(46, 124, 246, 0.4);
+      animation: slideIn 0.25s ease-out;
+    }
+  }
 }
 
 @keyframes slideIn {
   from {
-    transform: scaleX(0);
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
   }
   to {
-    transform: scaleX(1);
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
   }
 }
 
@@ -203,6 +396,7 @@ const getQuickText = (tabIndex: number) => {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+  min-height: 400rpx;
 }
 
 .ranking-item {
@@ -212,12 +406,43 @@ const getQuickText = (tabIndex: number) => {
   padding: 16rpx;
   border-radius: 16rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
-}
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 
-.ranking-item:hover {
-  background: #F5F6FA;
-  transform: translateX(4rpx);
+  /* 微光背景 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(46, 124, 246, 0.03), rgba(108, 92, 231, 0.03));
+    border-radius: 16rpx;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  &:hover {
+    background: rgba(46, 124, 246, 0.04);
+    transform: translateX(4rpx);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .item-title {
+      color: #2E7CF6;
+    }
+
+    .rank-number {
+      transform: scale(1.1);
+    }
+  }
+
+  &:active {
+    transform: translateX(2rpx) scale(0.98);
+  }
 }
 
 /* 排名序号 */
@@ -234,22 +459,22 @@ const getQuickText = (tabIndex: number) => {
   position: relative;
 }
 
-/* 第1名：橙色渐变 + 光晕 */
+/* 第1名：品牌主色渐变 + 光晕 */
 .rank-number.rank-1 {
-  background: linear-gradient(135deg, #FFA940 0%, #FFB64B 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 169, 64, 0.3);
+  background: linear-gradient(135deg, #2E7CF6 0%, #6C5CE7 100%);
+  box-shadow: 0 4rpx 12rpx rgba(46, 124, 246, 0.4);
 }
 
-/* 第2名：蓝色渐变 */
+/* 第2名：辅助色渐变 */
 .rank-number.rank-2 {
-  background: linear-gradient(135deg, #1E5FFF 0%, #5A7FFF 100%);
-  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.2);
+  background: linear-gradient(135deg, #0EA5E9 0%, #06B6D4 100%);
+  box-shadow: 0 4rpx 12rpx rgba(14, 165, 233, 0.3);
 }
 
-/* 第3名：绿色渐变 */
+/* 第3名：成功色渐变 */
 .rank-number.rank-3 {
-  background: linear-gradient(135deg, #52C41A 0%, #73D13D 100%);
-  box-shadow: 0 4rpx 12rpx rgba(82, 196, 26, 0.2);
+  background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
+  box-shadow: 0 4rpx 12rpx rgba(22, 163, 74, 0.3);
 }
 
 .rank-text {

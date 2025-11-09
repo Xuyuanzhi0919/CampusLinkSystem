@@ -1,13 +1,18 @@
 <template>
-  <view class="points-center">
-    <!-- 标题 -->
-    <view class="card-header">
-      <text class="card-title">积分中心</text>
-      <text class="more-link" @click="goToPoints">查看详情 →</text>
+  <view class="points-center" :class="{ collapsed: isCollapsed }">
+    <!-- 标题（可折叠） -->
+    <view class="card-header" @click="toggleCollapse">
+      <view class="header-left">
+        <text class="card-title">积分中心</text>
+        <text v-if="isCollapsed" class="points-badge">{{ currentPoints }} 积分</text>
+      </view>
+      <text class="toggle-icon">{{ isCollapsed ? '▼' : '▲' }}</text>
     </view>
 
-    <!-- 积分进度条 -->
-    <view class="points-progress">
+    <!-- 内容区（可折叠） -->
+    <view v-if="!isCollapsed" class="card-content">
+      <!-- 积分进度条 -->
+      <view class="points-progress">
       <view class="progress-header">
         <text class="current-points">{{ currentPoints }}</text>
         <text class="points-label">当前积分</text>
@@ -33,11 +38,23 @@
         <text class="task-points">+{{ task.points }}</text>
       </view>
     </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+
+// 折叠状态
+const isCollapsed = ref(true) // 默认折叠
+
+/**
+ * 切换折叠状态
+ */
+const toggleCollapse = () => {
+  isCollapsed.value = !isCollapsed.value
+}
+import { getUserProfile } from '@/services/user'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -45,12 +62,13 @@ const emit = defineEmits<{
 }>()
 
 // 数据
-const currentPoints = ref(680)
-const nextLevelPoints = ref(320) // 距离1000积分还需320
+const currentPoints = ref(0)
+const nextLevelPoints = ref(0)
 
 // 进度百分比
 const progressPercent = computed(() => {
   const total = currentPoints.value + nextLevelPoints.value
+  if (total === 0) return 0
   return (currentPoints.value / total) * 100
 })
 
@@ -64,11 +82,28 @@ interface Task {
 }
 
 const tasks = ref<Task[]>([
-  { id: 1, icon: '✅', name: '每日签到', points: 2, completed: true },
+  { id: 1, icon: '✅', name: '每日签到', points: 2, completed: false },
   { id: 2, icon: '📚', name: '上传资料', points: 10, completed: false },
   { id: 3, icon: '💡', name: '回答问题', points: 5, completed: false },
   { id: 4, icon: '🤝', name: '完成任务', points: 8, completed: false },
 ])
+
+/**
+ * 加载用户积分数据
+ */
+const loadPointsData = async () => {
+  try {
+    const profile = await getUserProfile()
+    currentPoints.value = profile?.points || 0
+
+    // 根据当前积分计算下一等级所需积分
+    const levels = [100, 500, 1000, 2000, 5000]
+    const nextLevel = levels.find(l => l > currentPoints.value) || 10000
+    nextLevelPoints.value = nextLevel - currentPoints.value
+  } catch (error) {
+    console.error('加载积分数据失败:', error)
+  }
+}
 
 /**
  * 查看积分详情
@@ -92,6 +127,11 @@ const handleTaskClick = (task: Task) => {
   }
   emit('taskClick', task)
 }
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadPointsData()
+})
 </script>
 
 <style scoped lang="scss">
@@ -100,13 +140,20 @@ const handleTaskClick = (task: Task) => {
   border: 2rpx solid #E5E6EB;
   border-radius: 24rpx;
   padding: 32rpx;
-  height: 400rpx;
+  height: auto;
+  min-height: 80rpx;
   display: flex;
   flex-direction: column;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+
+  /* 折叠态 */
+  &.collapsed {
+    padding: 24rpx 32rpx;
+    height: 80rpx;
+  }
 }
 
 .points-center::before {
@@ -136,7 +183,19 @@ const handleTaskClick = (task: Task) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24rpx;
+  margin-bottom: 0;
+  cursor: pointer;
+  user-select: none;
+
+  .collapsed & {
+    margin-bottom: 0;
+  }
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
 .card-title {
@@ -144,6 +203,37 @@ const handleTaskClick = (task: Task) => {
   font-weight: 700;
   color: #1D1D1F;
   line-height: 1;
+}
+
+.points-badge {
+  font-size: 24rpx;
+  color: #667eea;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: 12rpx;
+}
+
+.toggle-icon {
+  font-size: 24rpx;
+  color: #8F959E;
+  transition: transform 0.3s;
+}
+
+.card-content {
+  margin-top: 24rpx;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .more-link {

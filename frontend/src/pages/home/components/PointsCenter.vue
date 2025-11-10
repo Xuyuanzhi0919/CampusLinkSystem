@@ -135,26 +135,39 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 企业级优化：白卡 + 强化阴影对比度 */
+/* 企业级重构：白卡 - 0 4px 16px rgba(0,0,0,0.04) + fade-up 入场动画 */
 .points-center {
   background: #FFFFFF; /* 纯白卡 */
   border: 1px solid #EEF1F6; /* 浅灰边框 */
   border-radius: 32rpx; /* 16px */
-  padding: 32rpx;
+  padding: 48rpx; /* 24px - 增加内边距，呼吸感更强 */
   height: auto;
   min-height: 480rpx; /* 最小 240px */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04); /* 0 4px 16px - 让卡片"浮起来" */
   transition: all var(--transition-hover, 150ms ease);
   position: relative;
   overflow: hidden;
+  animation: fadeInUp 400ms ease-out both; /* fade-up 入场动画 */
 
   /* 折叠态 */
   &.collapsed {
-    padding: 24rpx 32rpx;
-    height: 80rpx;
+    padding: 24rpx 48rpx; /* 保持左右内边距 */
+    height: 96rpx; /* 48px - 增加高度 */
     min-height: auto;
+  }
+}
+
+/* fade-up 入场动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx); /* 20px */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -189,7 +202,22 @@ onMounted(() => {
   font-size: 32rpx; /* 16px - 副标题规范 */
   font-weight: 700;
   color: #1D1D1F;
-  line-height: 1;
+  line-height: 1.6; /* 优化行高 */
+  position: relative;
+  padding-left: 20rpx; /* 为左侧条带留空间 */
+
+  /* 优化：增加蓝色条带 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6rpx; /* 3px */
+    height: 32rpx; /* 16px */
+    background: var(--cl-primary, #2563EB); /* 蓝色 */
+    border-radius: 3rpx;
+  }
 }
 
 .points-badge {
@@ -235,10 +263,10 @@ onMounted(() => {
   color: #5A7FFF;
 }
 
-/* 积分进度条 */
+/* 积分进度条 - 增加间距 */
 .points-progress {
-  margin-bottom: 24rpx;
-  padding: 24rpx;
+  margin-bottom: 32rpx; /* 16px - 增加间距 */
+  padding: 32rpx; /* 16px - 增加内边距 */
   background: linear-gradient(135deg, #E6F0FF 0%, #C7DDFF 100%);
   border-radius: 16rpx;
 }
@@ -297,7 +325,7 @@ onMounted(() => {
   font-weight: 600;
   color: #1D2129;
   margin-bottom: 16rpx;
-  line-height: 1;
+  line-height: 1.6; /* 优化行高 */
 }
 
 .task-item {
@@ -328,7 +356,7 @@ onMounted(() => {
   flex: 1;
   font-size: 28rpx;
   color: #1D2129;
-  line-height: 1;
+  line-height: 1.6; /* 优化行高 */
 }
 
 .task-points {

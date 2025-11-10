@@ -148,26 +148,40 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 企业级优化：白卡 + 强化阴影对比度 */
+/* 企业级重构：白卡 - 0 4px 16px rgba(0,0,0,0.04) + fade-up 入场动画 */
 .campus-notice {
   background: #FFFFFF; /* 纯白卡 */
   border: 1px solid #EEF1F6; /* 浅灰边框 */
   border-radius: 32rpx; /* 16px */
-  padding: 32rpx;
+  padding: 48rpx; /* 24px - 增加内边距，呼吸感更强 */
   height: auto;
   min-height: 480rpx; /* 最小 240px */
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04); /* 0 4px 16px - 让卡片"浮起来" */
   transition: all var(--transition-hover, 150ms ease);
   position: relative;
   overflow: hidden;
+  animation: fadeInUp 450ms ease-out both; /* fade-up 入场动画，延迟 50ms */
+  animation-delay: 50ms;
 
   /* 折叠态 */
   &.collapsed {
-    padding: 24rpx 32rpx;
-    height: 80rpx;
+    padding: 24rpx 48rpx; /* 保持左右内边距 */
+    height: 96rpx; /* 48px - 增加高度 */
     min-height: auto;
+  }
+}
+
+/* fade-up 入场动画 */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx); /* 20px */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -229,7 +243,22 @@ onMounted(() => {
   font-size: 32rpx; /* 16px - 副标题规范 */
   font-weight: 700;
   color: #1D1D1F;
-  line-height: 1;
+  line-height: 1.6; /* 优化行高 */
+  position: relative;
+  padding-left: 20rpx; /* 为左侧条带留空间 */
+
+  /* 优化：增加橙色条带 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6rpx; /* 3px */
+    height: 32rpx; /* 16px */
+    background: #F59E0B; /* 橙色 */
+    border-radius: 3rpx;
+  }
 }
 
 .more-link {

@@ -191,10 +191,10 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 .core-functions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr; /* 等宽卡片 */
-  gap: 32rpx;
+  gap: 24rpx; /* 12px - 缩小间距，让整体更凝聚 */
 }
 
-/* 企业级优化：卡片阴影强化对比度 */
+/* 企业级重构：核心功能卡片 - 浮层阴影 + 玻璃拟态 */
 .core-card {
   position: relative;
   height: 320rpx; /* 160px - 增加呼吸感 */
@@ -202,30 +202,55 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   overflow: hidden;
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
-  border: 1px solid #EEF1F6; /* 浅灰边框 */
+  /* 优化：外阴影 0 6px 12px rgba(0,0,0,0.04) */
+  box-shadow:
+    0 12rpx 24rpx rgba(0, 0, 0, 0.04), /* 外阴影 */
+    inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.5); /* 内渐变白 */
+  border: 1px solid rgba(255, 255, 255, 0.8); /* 玻璃拟态边框 */
+  /* 优化：玻璃拟态半透明底 */
+  backdrop-filter: blur(30rpx); /* 边缘模糊 15px */
+  -webkit-backdrop-filter: blur(30rpx);
 }
 
-/* Hover 状态：translateY(-3px)，阴影 0 8px 20px */
+/* Hover 状态：上浮 2px + 阴影变深 - 优化规范 */
 .core-card:hover {
-  transform: translateY(-6rpx); /* -3px */
-  box-shadow: 0 16rpx 40rpx rgba(0, 0, 0, 0.06); /* 强化 Hover 阴影 */
+  transform: translateY(-4rpx); /* 上浮 2px */
+  /* 优化：阴影变深 */
+  box-shadow:
+    0 16rpx 32rpx rgba(0, 0, 0, 0.08), /* 阴影变深 */
+    inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.6); /* 内渐变白 */
+  filter: brightness(1.05); /* 亮度增加 5% */
 }
 
-/* Active 状态：内阴影轻微压入 */
+/* 蓝色卡片悬浮时的柔光发亮 */
+.core-card.core-blue:hover {
+  box-shadow:
+    0 16rpx 48rpx rgba(37, 99, 235, 0.25), /* 蓝色光晕 */
+    inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.6);
+}
+
+/* 橙色卡片悬浮时的柔光发亮 */
+.core-card.core-orange:hover {
+  box-shadow:
+    0 16rpx 48rpx rgba(251, 191, 36, 0.25), /* 黄色光晕 */
+    inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.6);
+}
+
+/* Active 状态：轻微缩小 */
 .core-card:active {
-  transform: translateY(-3rpx);
-  box-shadow: inset 0 0 8rpx rgba(0, 0, 0, 0.1); /* 内阴影压入 */
+  transform: scale(0.98);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
 }
 
-/* 浅底 + 强主色 - 蓝色主题（资料共享 / 互助任务）*/
+/* 优化：三卡片配色优化，增强视觉节奏 */
+/* 资料共享：蓝色渐变 #EAF3FF → #F2F8FF */
 .core-card.core-blue {
-  background: #EAF2FF; /* 浅底 */
+  background: linear-gradient(135deg, #EAF3FF 0%, #F2F8FF 100%);
 }
 
-/* 浅底 + 强主色 - 橙色主题（智能问答）*/
+/* 智能问答：黄色渐变 #FFF4D7 → #FFF9E7（主视觉焦点）*/
 .core-card.core-orange {
-  background: #FFF6DC; /* 浅底 */
+  background: linear-gradient(135deg, #FFF4D7 0%, #FFF9E7 100%);
 }
 
 /* 场景插画（线性/双色矢量风格，透明度 18-22%）*/
@@ -261,9 +286,9 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   gap: 32rpx; /* 图标与文字距离 16-20px */
 }
 
-/* 图标尺寸：32px，底部与标题基线对齐 */
+/* 图标尺寸：优化 - 放大 20%（32px → 38.4px）*/
 .core-icon {
-  font-size: 64rpx; /* 32px */
+  font-size: 76rpx; /* 38px - 放大 20% */
   line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.08));
@@ -279,7 +304,7 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 .text-block {
   display: flex;
   flex-direction: column;
-  gap: 20rpx; /* 标题与副标题间距 10-12px */
+  gap: 24rpx; /* 优化：增加行高，整体更"呼吸感" */
 }
 
 /* 标题：20px / 700 / #0F172A */
@@ -330,21 +355,24 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   filter: grayscale(0.5); /* 降低饱和度 */
 }
 
-/* ========== 三、次要功能区 - 快捷入口条（文档优化）========== */
+/* ========== 三、次要功能区 - 快捷入口条（优化）========== */
 .secondary-functions {
   display: flex;
   flex-wrap: wrap;
   gap: 24rpx; /* 等间距 12px */
-  padding: 32rpx 48rpx; /* 放在浅底条上 */
-  background: #F5F7FB; /* 浅底条背景 */
+  padding: 40rpx 48rpx; /* 优化：增加上下内边距 */
+  /* 优化：浅灰底区块 #F8FAFC */
+  background: #F8FAFC;
   border-radius: 24rpx;
+  /* 优化：增加轻微阴影 */
+  box-shadow: inset 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
 }
 
-/* 企业级优化：胶囊按钮 - 白卡 + 强化阴影对比度 */
+/* 企业级重构：胶囊按钮 - 优化 padding 阴影 */
 .secondary-card {
   position: relative;
   height: 88rpx; /* 44px */
-  padding: 0 24rpx; /* 左右内边距 12px */
+  padding: 0 28rpx; /* 优化：增加左右内边距（12px → 14px）*/
   background: #FFFFFF; /* 白卡 */
   border-radius: 20rpx; /* 胶囊按钮圆角 10px */
   display: flex;
@@ -354,20 +382,23 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   gap: 16rpx; /* 图标与文案间距 8px */
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  /* 优化：6px 的 padding 阴影 */
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
   border: 1px solid #EEF1F6; /* 浅灰边框 */
   overflow: hidden;
 }
 
-/* Hover 状态：微浮起 + 阴影增强 */
+/* Hover 状态：优化 - 上浮 2px + 背景变亮 5% */
 .secondary-card:hover {
-  transform: translateY(-2rpx); /* 微浮起 */
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.10);
+  transform: translateY(-4rpx); /* 上浮 2px */
+  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.12);
   border-color: var(--cl-primary, #2563EB);
+  /* 优化：背景变亮 5% */
+  background: #FAFBFC;
 }
 
 .secondary-card:active {
-  transform: translateY(-1rpx);
+  transform: translateY(-2rpx);
 }
 
 .secondary-icon {

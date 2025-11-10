@@ -2,7 +2,10 @@
   <view class="recommend-section">
     <!-- 标题栏 -->
     <view class="section-header">
-      <text class="section-title">为你推荐</text>
+      <view class="title-wrapper">
+        <text class="section-title">为你推荐</text>
+        <text class="section-subtitle">小编精选 · 根据你的学习兴趣推荐</text>
+      </view>
 
       <!-- 筛选标签 -->
       <view class="filter-tags">
@@ -373,12 +376,13 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 文档规范：主内容区无独立背景，使用全局淡灰背景 */
+/* 优化：为「为你推荐」区添加统一背景层（浅灰 #F8FAFC），让其独立于顶部 */
 .recommend-section {
-  background: transparent; /* 文档规范：透明背景，使用全局淡灰 */
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
+  background: #F8FAFC; /* 浅灰背景 */
+  border-radius: 24rpx; /* 12px */
+  padding: 48rpx; /* 24px */
+  /* 优化：增加轻微阴影 */
+  box-shadow: inset 0 2rpx 8rpx rgba(0, 0, 0, 0.02);
   transition: all 0.2s ease;
   animation: fadeInUp 0.4s ease-out;
 }
@@ -416,6 +420,13 @@ onMounted(() => {
   }
 }
 
+/* 标题包装器 */
+.title-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx; /* 标题与副标题间距 */
+}
+
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
   font-weight: 600; /* 减少到 600，更柔和 */
@@ -436,6 +447,15 @@ onMounted(() => {
     background: linear-gradient(180deg, var(--cl-primary, #3B82F6) 0%, rgba(59, 130, 246, 0.6) 100%);
     border-radius: 3rpx;
   }
+}
+
+/* 副标题说明文字 */
+.section-subtitle {
+  font-size: 24rpx; /* 12px */
+  font-weight: 400;
+  color: var(--cl-gray-500, #94A3B8); /* 浅灰色 */
+  line-height: 1.5;
+  padding-left: 20rpx; /* 与标题对齐 */
 }
 
 /* 筛选标签 */
@@ -540,7 +560,7 @@ onMounted(() => {
 .recommend-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr); /* 2 列 */
-  gap: 40rpx; /* 行间距增加到 40rpx（20px），增加呼吸感 */
+  gap: 48rpx; /* 行间距拉大到 48rpx（24px），让板块呼吸更自然 */
   column-gap: 32rpx; /* 列间距 */
   min-height: 400rpx;
 
@@ -553,7 +573,7 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-/* 企业级优化：卡片阴影强化 - 提升对比度 */
+/* 企业级重构：卡片阴影 - 优化外阴影（0 4px 20px rgba(0,0,0,0.04)）*/
 .recommend-card {
   position: relative;
   padding: 32rpx; /* 内边距 16px */
@@ -563,7 +583,8 @@ onMounted(() => {
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
   min-height: 336rpx; /* 168px - 最小高度 */
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  /* 优化：增加外阴影（0 4px 20px rgba(0,0,0,0.04)）*/
+  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -575,7 +596,8 @@ onMounted(() => {
   /* Hover 状态 - 文档规范 */
   &:hover {
     transform: translateY(-6rpx); /* translateY(-3px) */
-    box-shadow: 0 16rpx 48rpx rgba(37, 99, 235, 0.08); /* 蓝柔影 */
+    /* 优化：hover 阴影变深 */
+    box-shadow: 0 16rpx 56rpx rgba(37, 99, 235, 0.10); /* 蓝柔影 */
     border-color: var(--cl-primary, #2563EB); /* 边框变主色 1px */
 
     .card-title {
@@ -654,7 +676,7 @@ onMounted(() => {
   font-size: 32rpx; /* 16px - 文档规范 */
   font-weight: 600;
   color: #0F172A; /* 文档规范颜色 */
-  line-height: 1.5;
+  line-height: 1.6; /* 提升行高至 1.6 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;

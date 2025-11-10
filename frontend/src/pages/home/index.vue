@@ -6,9 +6,6 @@
     <!-- 核心功能区 -->
     <FunctionCards @navigate="handleNavigate" />
 
-    <!-- 过渡带：文档规范 - 柔和过渡顶部氛围区到主内容 -->
-    <view class="transition-band"></view>
-
     <!-- 个性化内容区 -->
     <view class="content-section">
       <view class="content-container">
@@ -31,6 +28,15 @@
 
         <!-- 社团动态 -->
         <ClubActivity class="auxiliary-card" @activity-click="handleActivityClick" />
+      </view>
+
+      <!-- 优化：版权栏作为视觉收尾 -->
+      <view class="footer-copyright">
+        <text class="copyright-text">CampusLink ©2025</text>
+        <text class="footer-divider">|</text>
+        <text class="footer-link" @click="handleHelpCenter">帮助中心</text>
+        <text class="footer-divider">|</text>
+        <text class="footer-link" @click="handleFeedback">意见反馈</text>
       </view>
     </view>
 
@@ -157,49 +163,47 @@ const handleActivityClick = (activity: any) => {
     },
   })
 }
+
+/**
+ * 帮助中心
+ */
+const handleHelpCenter = () => {
+  uni.navigateTo({
+    url: '/pages/help/index',
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    },
+  })
+}
+
+/**
+ * 意见反馈
+ */
+const handleFeedback = () => {
+  uni.navigateTo({
+    url: '/pages/feedback/index',
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    },
+  })
+}
 </script>
 
 <style scoped lang="scss">
-/* 企业级视觉优化：统一色温，建立光感层次 */
+/* 企业级背景重构：参考图风格 - 纯白背景 */
 .home-new {
   min-height: 100vh;
-  background: #FBFCFE; /* 极浅灰白（而非纯白），提升卡片对比度 */
+  /* 参考图风格：纯白背景 */
+  background: #FFFFFF;
   position: relative;
-
-  /* 轻氛围插画（透明度降至 8-12%，增强融合度）*/
-  &::before {
-    content: '';
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background:
-      radial-gradient(circle at 15% 25%, rgba(37, 99, 235, 0.08) 0%, transparent 50%),
-      radial-gradient(circle at 85% 75%, rgba(245, 158, 11, 0.10) 0%, transparent 50%);
-    pointer-events: none;
-    z-index: 0;
-  }
 }
 
-/* 企业级优化：半透明柔光带（呼吸层），高度 120-160px */
-.transition-band {
-  height: 240rpx; /* 120px - 增加高度，形成自然过渡 */
-  background: linear-gradient(180deg, rgba(232, 240, 255, 0.8) 0%, rgba(251, 252, 254, 1) 100%);
-  border-top: none; /* 移除硬边界线 */
-  position: relative;
-  z-index: 1;
-
-  /* 底部柔光阴影，增强光线坠落感 */
-  box-shadow: 0 16rpx 48rpx rgba(0, 0, 0, 0.04);
-}
-
-/* 文档规范：主内容区 - 淡灰背景 #F7F9FC */
+/* 企业级优化：主内容区 - 简洁设计 */
 .content-section {
-  padding: 96rpx 0; /* 文档规范：顶部功能卡 → 为你推荐：48px */
+  padding: 60rpx 0 160rpx; /* 上下留白，形成呼吸感 */
   position: relative;
   z-index: 1;
-  background: transparent; /* 使用全局淡灰背景 */
+  background: transparent; /* 使用全局背景 */
 }
 
 /* 文档规范：响应式布局 + 左右留白 80px（超宽屏时限制最大宽度 1280px）*/
@@ -268,34 +272,23 @@ const handleActivityClick = (activity: any) => {
   }
 }
 
-/* 企业级优化：底部收口区（平衡层），加深并带冷调 */
+/* 企业级优化：第三层 - 底部衔接与收口（结构稳定层）*/
 .auxiliary-section {
   padding: 128rpx 0 160rpx; /* 64px 顶部间距 */
   position: relative;
   z-index: 1;
-  background: #F3F5F8; /* 加深灰底，冷调收口 */
+  /* 优化：统一浅灰背景 #F8FAFC，与上方自然衔接 */
+  background: #F8FAFC;
 
-  /* 顶部渐变带：形成柔和过渡，压稳底部 */
+  /* 顶部分隔线 */
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 160rpx; /* 80px 渐变带高度 */
-    background: linear-gradient(0deg, rgba(243, 245, 248, 1) 0%, rgba(249, 250, 251, 0.8) 80%, rgba(251, 252, 254, 0) 100%);
-    pointer-events: none;
-  }
-
-  /* 顶部边界线 */
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
     height: 1px;
-    background: #E5E7EB;
+    background: rgba(0, 0, 0, 0.06);
   }
 }
 
@@ -304,7 +297,7 @@ const handleActivityClick = (activity: any) => {
   margin: 0 auto;
   padding: 0 160rpx; /* 文档规范：主内容左右留白 80px */
   display: flex;
-  gap: 32rpx; /* 文档规范：卡片间距 16px */
+  gap: 48rpx; /* 24px - 增加卡片间距，呼吸感更强 */
 
   /* 中等屏幕：减小左右留白 */
   @media (max-width: 1440px) {
@@ -346,6 +339,42 @@ const handleActivityClick = (activity: any) => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 优化：版权栏样式 */
+.footer-copyright {
+  max-width: 2560rpx; /* 1280px */
+  margin: 80rpx auto 0; /* 顶部间距 40px */
+  padding: 48rpx 160rpx; /* 内边距 24px 80px */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24rpx; /* 12px */
+  border-top: 1px solid rgba(0, 0, 0, 0.06); /* 顶部分割线 */
+  background: transparent; /* 透明背景，继承父级背景 */
+}
+
+.copyright-text {
+  font-size: 24rpx; /* 12px */
+  color: #94A3B8; /* 灰色 */
+  line-height: 1.5;
+}
+
+.footer-divider {
+  font-size: 24rpx;
+  color: #CBD5E1; /* 更浅的灰色 */
+}
+
+.footer-link {
+  font-size: 24rpx;
+  color: #64748B; /* 灰色 */
+  line-height: 1.5;
+  cursor: pointer;
+  transition: color 150ms ease;
+}
+
+.footer-link:hover {
+  color: var(--cl-primary, #2563EB); /* hover 变蓝 */
 }
 
 /* H5 端适配 */

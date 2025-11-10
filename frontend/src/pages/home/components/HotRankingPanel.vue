@@ -318,18 +318,19 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* 企业级优化：右侧栏白卡 + 强化阴影对比度 */
+/* 企业级重构：右侧栏 - 优化为蓝色卡片结构 */
 .hot-ranking-panel {
-  background: #FFFFFF; /* 纯白卡 */
+  background: #FFFFFF; /* 白色背景 */
   border-radius: 24rpx; /* 12px */
-  padding: 40rpx 48rpx; /* 内边距 20-24px */
-  box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04); /* 强化阴影对比度 */
+  padding: 0; /* 移除内边距，由子元素控制 */
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04); /* 0 4px 16px - 让卡片"浮起来" */
   transition: all var(--transition-hover, 150ms ease);
   animation: fadeInUp 240ms ease-out both;
-  border: 1px solid #EEF1F6; /* 浅灰边框 */
+  border: 1px solid rgba(37, 99, 235, 0.08); /* 浅蓝边框 */
+  overflow: hidden; /* 隐藏溢出，让圆角生效 */
 
   &:hover {
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.06);
+    box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.08);
   }
 }
 
@@ -344,20 +345,25 @@ onMounted(() => {
   }
 }
 
-/* 切换标签 - 文档规范（粗 3px 主色滑块，切换动效 200ms）*/
+/* 切换标签 - 优化：标题栏纯蓝底白字 */
 .tab-bar {
   position: relative;
   display: flex;
+  /* 优化：纯蓝底 */
+  background: var(--cl-primary, #2563EB);
+  padding: 32rpx 48rpx; /* 内边距 16-24px */
+  border-radius: 24rpx 24rpx 0 0; /* 顶部圆角 */
   gap: 32rpx;
-  margin-bottom: 32rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 1px solid var(--cl-gray-200, #E5E7EB);
+  margin-bottom: 0; /* 移除底部边距 */
+  padding-bottom: 32rpx; /* 增加底部内边距 */
+  border-bottom: none; /* 移除底部边框 */
 }
 
 .tab-item {
   position: relative;
   font-size: 28rpx; /* 14px */
-  color: var(--cl-gray-600, #64748B);
+  /* 优化：白色文字 */
+  color: rgba(255, 255, 255, 0.7);
   cursor: pointer;
   transition: color 200ms ease; /* 文档规范：200ms */
   font-weight: 500;
@@ -365,51 +371,55 @@ onMounted(() => {
   text-align: center;
 
   &:hover {
-    color: var(--cl-primary, #2563EB);
+    color: rgba(255, 255, 255, 0.9);
   }
 
   &.active {
-    color: var(--cl-primary, #2563EB);
+    color: #FFFFFF; /* 纯白 */
     font-weight: 600;
   }
 }
 
-/* 滑块指示器 - 文档规范：粗 3px */
+/* 滑块指示器 - 优化：白色滑块 */
 .tab-indicator {
   position: absolute;
   left: 0;
   bottom: 0;
   width: calc(100% / 3); /* 三个 Tab，每个占 1/3 */
   height: 6rpx; /* 3px - 文档规范 */
-  background: var(--cl-primary, #2563EB);
+  background: #FFFFFF; /* 白色滑块 */
   border-radius: 3rpx;
   transition: transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1); /* 文档规范：200ms 切换动效 */
 }
 
-/* 榜单列表 */
+/* 榜单列表 - 优化：白底内容区 */
 .ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 24rpx; /* 12px - 增加间距，呼吸感更强 */
   min-height: 400rpx;
+  padding: 40rpx 48rpx; /* 内边距 20-24px */
+  background: #FFFFFF; /* 白底 */
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
   gap: 20rpx;
-  padding: 16rpx;
-  border-radius: 12rpx;
+  padding: 24rpx; /* 增加内边距 */
+  border-radius: 16rpx; /* 8px - 更圆润 */
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
   position: relative;
   min-height: 112rpx; /* 文档规范：条目高度 56px */
+  background: #FFFFFF; /* 白色卡片 - 参考图风格 */
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); /* 轻微阴影 */
 
   /* Hover 背景微动效 */
   &:hover {
-    background: rgba(37, 99, 235, 0.05);
-    transform: translateX(6rpx);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+    background: #FFFFFF;
+    transform: translateY(-4rpx); /* 向上浮起 */
+    box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.12); /* 蓝色阴影 */
 
     .item-title {
       color: var(--cl-primary, #2563EB);
@@ -417,6 +427,7 @@ onMounted(() => {
 
     .rank-number {
       transform: scale(1.1);
+      box-shadow: 0 6rpx 16rpx rgba(37, 99, 235, 0.35); /* 增强阴影 */
     }
 
     .quick-btn {
@@ -425,46 +436,37 @@ onMounted(() => {
   }
 
   &:active {
-    transform: translateX(3rpx) scale(0.98);
+    transform: translateY(-2rpx) scale(0.98);
   }
 }
 
-/* 排名胶囊 - 文档规范（1 蓝、2 橙、3 绿，深色文字）*/
+/* 排名圆形数字 - 参考图风格（蓝色圆形）*/
 .rank-number {
-  min-width: 48rpx; /* 24px */
-  height: 48rpx; /* 24px */
+  min-width: 56rpx; /* 28px - 圆形 */
+  height: 56rpx; /* 28px */
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx; /* 胶囊形状 */
+  border-radius: 50%; /* 圆形 */
   flex-shrink: 0;
-  background: var(--cl-gray-100, #F1F5F9);
+  background: #2563EB; /* 蓝色背景 - 参考图风格 */
   transition: all var(--transition-hover, 150ms ease);
-  padding: 0 12rpx;
+  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.25); /* 蓝色阴影 */
 }
 
-/* 第1名：蓝色胶囊 - 文档规范 */
-.rank-number.rank-1 {
-  background: #DBEAFE; /* 浅蓝 */
-  color: #1E40AF; /* 深蓝文字 */
-}
-
-/* 第2名：橙色胶囊 - 文档规范 */
-.rank-number.rank-2 {
-  background: #FED7AA; /* 浅橙 */
-  color: #C2410C; /* 深橙文字 */
-}
-
-/* 第3名：绿色胶囊 - 文档规范 */
+/* 所有排名统一蓝色圆形 - 参考图风格 */
+.rank-number.rank-1,
+.rank-number.rank-2,
 .rank-number.rank-3 {
-  background: #BBF7D0; /* 浅绿 */
-  color: #15803D; /* 深绿文字 */
+  background: #2563EB; /* 统一蓝色 */
+  color: #FFFFFF; /* 白色文字 */
 }
 
 .rank-text {
-  font-size: 24rpx; /* 12px */
-  font-weight: 600;
+  font-size: 28rpx; /* 14px - 稍大一点 */
+  font-weight: 700; /* 加粗 */
   line-height: 1;
+  color: #FFFFFF; /* 白色文字 */
 }
 
 /* 内容信息 */

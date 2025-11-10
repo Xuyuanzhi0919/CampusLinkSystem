@@ -101,10 +101,13 @@
             </template>
           </view>
 
-          <!-- 优化：Hover 浮层 - "查看详情" -->
+          <!-- 优化：Hover 浮层 - 综合方案 A + B + C -->
           <view class="card-overlay">
-            <text class="overlay-text">查看详情</text>
-            <text class="overlay-icon">→</text>
+            <!-- 方案 B：白色气泡按钮 -->
+            <view class="overlay-button">
+              <text class="overlay-text">查看详情</text>
+              <text class="overlay-icon">→</text>
+            </view>
           </view>
 
           <!-- 优化：底部渐变装饰条 -->
@@ -964,40 +967,78 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 优化：Hover 浮层 - "查看详情" */
+/* 精修：Hover 浮层 - 柔化蓝色 + 毛玻璃效果 */
 .card-overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(37, 99, 235, 0.95); /* 蓝色半透明 */
+  inset: 0; /* 简写 top/right/bottom/left: 0 */
+  /* 精修：降低蓝色浓度，从 0.9/0.8 降到 0.85/0.75 */
+  background: linear-gradient(180deg,
+    rgba(59, 130, 246, 0.85) 0%,
+    rgba(37, 99, 235, 0.75) 100%
+  );
+  /* 精修：添加毛玻璃效果，增强高端感 */
+  backdrop-filter: blur(12rpx); /* 6px */
+  border-radius: 24rpx; /* 12px - 与卡片圆角一致 */
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12rpx; /* 6px */
   opacity: 0;
-  transition: opacity 0.3s ease;
+  /* 从下到上浮现 */
+  transform: translateY(20rpx); /* 10px */
+  /* 精修：统一过渡时间为 0.4s */
+  transition: all 0.4s ease;
   pointer-events: none;
   z-index: 3;
 }
 
 .recommend-card:hover .card-overlay {
   opacity: 1;
+  transform: translateY(0); /* 上浮到原位 */
+  pointer-events: auto; /* hover 时可点击 */
+}
+
+/* 精修：白色气泡按钮 - 轻轻呼吸，增强高端感 */
+.overlay-button {
+  display: flex;
+  align-items: center;
+  gap: 12rpx; /* 6px */
+  background: #FFFFFF; /* 白色背景 */
+  color: var(--cl-primary, #2563EB); /* 蓝色文字 */
+  border-radius: 9999rpx; /* 完全圆角 */
+  padding: 16rpx 32rpx; /* 8px 16px */
+  font-weight: 600;
+  /* 精修：增强白色柔光阴影 */
+  box-shadow: 0 8rpx 24rpx rgba(255, 255, 255, 0.4);
+  /* 精修：统一过渡时间为 0.25s */
+  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  cursor: pointer;
+
+  /* 精修：按钮独立 hover 效果 - 轻轻呼吸 */
+  &:hover {
+    background: #EFF6FF; /* 浅蓝背景 */
+    transform: scale(1.06); /* 精修：从 1.05 增加到 1.06 */
+    box-shadow: 0 10rpx 28rpx rgba(255, 255, 255, 0.5); /* 阴影加深 */
+  }
+
+  &:active {
+    transform: scale(0.98); /* 按下缩小 */
+  }
 }
 
 .overlay-text {
   font-size: 32rpx; /* 16px */
   font-weight: 600;
-  color: #FFFFFF;
+  color: var(--cl-primary, #2563EB); /* 蓝色文字 */
   line-height: 1;
 }
 
 .overlay-icon {
   font-size: 32rpx; /* 16px */
-  color: #FFFFFF;
+  color: var(--cl-primary, #2563EB); /* 蓝色箭头 */
   line-height: 1;
-  animation: arrowBounce 1s ease-in-out infinite;
+  /* 优化：箭头动画更柔和 */
+  animation: arrowBounce 1.5s ease-in-out infinite;
 }
 
 @keyframes arrowBounce {
@@ -1005,7 +1046,7 @@ onMounted(() => {
     transform: translateX(0);
   }
   50% {
-    transform: translateX(8rpx);
+    transform: translateX(6rpx); /* 3px - 减小移动距离 */
   }
 }
 

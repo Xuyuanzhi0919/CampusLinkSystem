@@ -468,14 +468,20 @@ onMounted(() => {
   gap: 8rpx; /* 标题与副标题间距 */
 }
 
-/* 优化：标题 - 增强字重和视觉锚点 */
+/* 优化：标题 - 增强字重和视觉锚点 + 渐变文字 */
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
   font-weight: 700; /* 优化：增强到 700，更突出 */
-  color: var(--cl-gray-900, #1E293B); /* 深灰蓝，非纯黑 */
+  /* 精修：渐变文字效果 - 从深蓝到亮蓝 */
+  background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 50%, #60A5FA 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   line-height: 1;
   position: relative;
   padding-left: 24rpx; /* 优化：增加左侧间距，为色条留更多空间 */
+  /* 精修：轻微文字阴影，增强立体感 */
+  filter: drop-shadow(0 2rpx 4rpx rgba(59, 130, 246, 0.1));
 
   /* 优化：左侧淡蓝渐变底条装饰线 */
   &::before {
@@ -488,6 +494,18 @@ onMounted(() => {
     height: 40rpx; /* 20px 高度 */
     background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%); /* 蓝色渐变 */
     border-radius: 4rpx; /* 圆角 */
+    /* 精修：装饰条呼吸动画 */
+    animation: pulse 2s ease-in-out infinite;
+  }
+}
+
+/* 装饰条呼吸动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
   }
 }
 
@@ -532,6 +550,31 @@ onMounted(() => {
     color: var(--cl-primary, #3B82F6);
     background: var(--cl-primary-100, #DBEAFE);
     font-weight: 600;
+
+    /* 精修：激活状态添加底部渐变条 */
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, #2563EB 0%, #60A5FA 100%);
+      border-radius: 1px;
+      animation: slideIn 0.3s ease-out;
+    }
+  }
+}
+
+/* 渐变条滑入动画 */
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: scaleX(1);
+    opacity: 1;
   }
 }
 
@@ -608,8 +651,8 @@ onMounted(() => {
   display: grid;
   /* 优化：响应式网格 - 3列（大屏）、2列（中屏）、1列（手机）*/
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 48rpx; /* 24px - 行间距 */
-  column-gap: 48rpx; /* 24px - 列间距，统一为 24px */
+  gap: 40rpx; /* 精修：桌面端从 48rpx (24px) 优化为 40rpx (20px) */
+  column-gap: 40rpx; /* 精修：列间距统一为 20px，提升信息密度 */
   min-height: 400rpx;
 
   /* 内容交叉淡入淡出过渡 */
@@ -624,7 +667,7 @@ onMounted(() => {
 
   @media (max-width: 960px) {
     grid-template-columns: 1fr; /* 小屏：1列 */
-    gap: 32rpx;
+    gap: 48rpx; /* 精修：移动端保持 48rpx (24px)，避免拥挤 */
   }
 }
 
@@ -641,10 +684,10 @@ onMounted(() => {
   border: 1px solid #EEF1F6; /* 浅灰边框 */
   border-radius: 24rpx; /* 圆角 12px */
   cursor: pointer;
-  transition: all 0.2s ease; /* 优化：过渡时间从 150ms 增加到 200ms */
+  transition: all 0.25s ease; /* 精修：统一过渡时间为 0.25s */
   min-height: 336rpx; /* 168px - 最小高度 */
-  /* 优化：增强阴影（0 4px 12px rgba(0,0,0,0.05)）*/
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  /* 精修：柔和的默认阴影，统一使用 rgba(0,0,0,0.04) */
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.04);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -653,15 +696,19 @@ onMounted(() => {
   /* 淡入动画（stagger 30ms）*/
   animation: fadeInCard 240ms ease-out both;
 
-  /* 优化：Hover 状态 - 上浮 4px，蓝色柔光边框 */
+  /* 精修：Hover 状态 - 上浮 4px，柔和蓝色阴影 */
   &:hover {
     transform: translateY(-8rpx); /* 优化：从 -6rpx 增加到 -8rpx (4px) */
-    /* 优化：hover 阴影变深，蓝色柔光 */
-    box-shadow: 0 16rpx 40rpx rgba(30, 64, 175, 0.15);
+    /* 精修：使用更柔和的蓝色阴影，从 rgba(30,64,175,0.15) 优化为 rgba(59,130,246,0.12) */
+    box-shadow: 0 12rpx 32rpx rgba(59, 130, 246, 0.12);
     border-color: var(--cl-primary, #2563EB); /* 边框变主色 */
 
     .card-title {
-      color: var(--cl-primary, #2563EB); /* 标题主色高亮 */
+      /* 精修：标题渐变色呼应主题色 */
+      background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
 
     .type-tag {
@@ -739,26 +786,26 @@ onMounted(() => {
   flex: 1;
 }
 
-/* 优化：一级 - 卡片标题（黑体）*/
+/* 精修：一级 - 卡片标题（加粗 + 紧凑行距）*/
 .card-title {
   font-size: 32rpx; /* 16px */
-  font-weight: 600; /* 黑体 */
+  font-weight: 700; /* 精修：从 600 增强到 700，更突出 */
   color: #0F172A; /* 深色 */
-  line-height: 1.6;
+  line-height: 1.5; /* 精修：从 1.6 缩小到 1.5，更紧凑 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2; /* 最多两行 */
   -webkit-box-orient: vertical;
-  transition: color var(--transition-hover, 150ms ease);
+  transition: all var(--transition-hover, 250ms ease);
 }
 
-/* 优化：二级 - 卡片摘要（灰度中等）*/
+/* 精修：二级 - 卡片摘要（灰度中等 + 紧凑行距）*/
 .card-intro {
   font-size: 28rpx; /* 14px */
   font-weight: 400;
   color: #64748B; /* 灰度中等 */
-  line-height: 1.6;
+  line-height: 1.4; /* 精修：从 1.6 缩小到 1.4，提升信息密度 */
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -971,10 +1018,10 @@ onMounted(() => {
 .card-overlay {
   position: absolute;
   inset: 0; /* 简写 top/right/bottom/left: 0 */
-  /* 精修：降低蓝色浓度，从 0.9/0.8 降到 0.85/0.75 */
+  /* 精修：进一步柔化蓝色，避免压制白色按钮 */
   background: linear-gradient(180deg,
-    rgba(59, 130, 246, 0.85) 0%,
-    rgba(37, 99, 235, 0.75) 100%
+    rgba(59, 130, 246, 0.82) 0%,
+    rgba(37, 99, 235, 0.70) 100%
   );
   /* 精修：添加毛玻璃效果，增强高端感 */
   backdrop-filter: blur(12rpx); /* 6px */
@@ -990,6 +1037,14 @@ onMounted(() => {
   transition: all 0.4s ease;
   pointer-events: none;
   z-index: 3;
+
+  /* 精修：低端设备降级方案（不支持 backdrop-filter 时使用更深的纯色）*/
+  @supports not (backdrop-filter: blur(12rpx)) {
+    background: linear-gradient(180deg,
+      rgba(59, 130, 246, 0.92) 0%,
+      rgba(37, 99, 235, 0.88) 100%
+    );
+  }
 }
 
 .recommend-card:hover .card-overlay {
@@ -1010,19 +1065,35 @@ onMounted(() => {
   font-weight: 600;
   /* 精修：增强白色柔光阴影 */
   box-shadow: 0 8rpx 24rpx rgba(255, 255, 255, 0.4);
-  /* 精修：统一过渡时间为 0.25s */
-  transition: transform 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
+  /* 精修：统一过渡时间为 0.25s，添加弹性缓动 */
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              background 0.25s ease,
+              box-shadow 0.25s ease;
   cursor: pointer;
+  /* 精修：轻微呼吸动画 */
+  animation: breathe 2s ease-in-out infinite;
 
   /* 精修：按钮独立 hover 效果 - 轻轻呼吸 */
   &:hover {
     background: #EFF6FF; /* 浅蓝背景 */
-    transform: scale(1.06); /* 精修：从 1.05 增加到 1.06 */
-    box-shadow: 0 10rpx 28rpx rgba(255, 255, 255, 0.5); /* 阴影加深 */
+    transform: scale(1.08); /* 精修：从 1.06 增加到 1.08，更明显 */
+    box-shadow: 0 12rpx 32rpx rgba(255, 255, 255, 0.6); /* 阴影加深 */
+    animation: none; /* hover 时暂停呼吸动画 */
   }
 
   &:active {
-    transform: scale(0.98); /* 按下缩小 */
+    transform: scale(0.96); /* 精修：从 0.98 改为 0.96，更明显的按压感 */
+    transition: transform 0.1s ease; /* 按压时快速响应 */
+  }
+}
+
+/* 按钮呼吸动画 */
+@keyframes breathe {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
   }
 }
 

@@ -91,6 +91,52 @@
       text="查看完整榜单"
       @click="viewFullRanking"
     />
+
+    <!-- 优化：模块分割线 -->
+    <view class="module-divider"></view>
+
+    <!-- 优化：热门标签模块 -->
+    <view class="hot-tags-card">
+      <view class="card-header">
+        <text class="card-icon">🔥</text>
+        <text class="card-title">热门标签</text>
+      </view>
+      <view class="tags-list">
+        <text
+          v-for="tag in hotTags"
+          :key="tag"
+          class="tag-item"
+          @click="handleTagClick(tag)"
+        >
+          {{ tag }}
+        </text>
+      </view>
+    </view>
+
+    <!-- 优化：模块分割线 -->
+    <view class="module-divider"></view>
+
+    <!-- 优化：今日活跃模块 -->
+    <view class="today-active-card">
+      <view class="card-header">
+        <text class="card-icon">📅</text>
+        <text class="card-title">今日活跃</text>
+      </view>
+      <view class="stats-list">
+        <view class="stat-item">
+          <text class="stat-label">活跃用户</text>
+          <text class="stat-value">{{ todayStats.activeUsers }}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">新增问答</text>
+          <text class="stat-value">{{ todayStats.newQuestions }}</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-label">资源上传</text>
+          <text class="stat-value">{{ todayStats.newResources }}</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -99,6 +145,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { getResourceList } from '@/services/resource'
 import { getQuestionList } from '@/services/question'
 import { getTaskList } from '@/services/task'
+import { getHotTags } from '@/services/tag'
+import type { TagItem } from '@/services/tag'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 import ViewMoreButton from '@/components/ViewMoreButton.vue'
@@ -122,6 +170,17 @@ const isLoading = ref(false)
 const questionList = ref<any[]>([])
 const resourceList = ref<any[]>([])
 const taskList = ref<any[]>([])
+
+// 优化：热门标签数据（从API动态获取）
+const hotTags = ref<string[]>([])
+const isLoadingTags = ref(false)
+
+// 优化：今日活跃数据
+const todayStats = ref({
+  activeUsers: 1234,
+  newQuestions: 89,
+  newResources: 56
+})
 
 // 当前列表
 const currentList = computed(() => {
@@ -306,6 +365,64 @@ const viewFullRanking = () => {
   }
 }
 
+/**
+ * 加载热门标签
+ */
+const loadHotTags = async () => {
+  if (isLoadingTags.value) return
+
+  isLoadingTags.value = true
+  try {
+    const res = await getHotTags({ limit: 8 })
+    if (res && Array.isArray(res)) {
+      // 提取displayName字段
+      hotTags.value = res.map((tag: TagItem) => tag.displayName)
+    } else {
+      // 如果API失败，使用默认标签
+      hotTags.value = [
+        '#考研资料',
+        '#学习打卡',
+        '#AI问答',
+        '#Python基础',
+        '#数据结构',
+        '#英语四六级',
+        '#算法刷题',
+        '#前端开发'
+      ]
+    }
+  } catch (error) {
+    console.error('加载热门标签失败:', error)
+    // 使用默认标签
+    hotTags.value = [
+      '#考研资料',
+      '#学习打卡',
+      '#AI问答',
+      '#Python基础',
+      '#数据结构',
+      '#英语四六级',
+      '#算法刷题',
+      '#前端开发'
+    ]
+  } finally {
+    isLoadingTags.value = false
+  }
+}
+
+/**
+ * 优化：处理标签点击
+ */
+const handleTagClick = (tag: string) => {
+  console.log('标签点击:', tag)
+  // 移除 # 号，跳转到搜索页面
+  const keyword = tag.replace('#', '')
+  uni.navigateTo({
+    url: `/pages/search/result?keyword=${encodeURIComponent(keyword)}`,
+    fail: () => {
+      uni.showToast({ title: `搜索 ${keyword}`, icon: 'none' })
+    }
+  })
+}
+
 // 监听 Tab 变化
 watch(currentTab, () => {
   loadData()
@@ -314,6 +431,7 @@ watch(currentTab, () => {
 // 组件挂载时加载数据
 onMounted(() => {
   loadData()
+  loadHotTags()
 })
 </script>
 
@@ -540,6 +658,136 @@ onMounted(() => {
   font-weight: 600;
   color: white;
   line-height: 1;
+}
+
+/* ========== 优化：新增模块样式 ========== */
+
+/* 模块分割线 */
+.module-divider {
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    #E2E8F0 20%,
+    #E2E8F0 80%,
+    transparent 100%
+  );
+  margin: 32rpx 0; /* 16px 上下间距 */
+}
+
+/* 热门标签卡片 */
+.hot-tags-card {
+  background: #FFFFFF;
+  border-radius: 16rpx; /* 8px */
+  padding: 24rpx; /* 12px */
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+    transform: translateY(-2rpx);
+  }
+}
+
+/* 今日活跃卡片 */
+.today-active-card {
+  background: #FFFFFF;
+  border-radius: 16rpx; /* 8px */
+  padding: 24rpx; /* 12px */
+  transition: all 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04);
+    transform: translateY(-2rpx);
+  }
+}
+
+/* 卡片头部 */
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12rpx; /* 6px */
+  margin-bottom: 20rpx; /* 10px */
+}
+
+.card-icon {
+  font-size: 32rpx; /* 16px */
+  line-height: 1;
+}
+
+.card-title {
+  font-size: 28rpx; /* 14px */
+  font-weight: 600;
+  color: var(--cl-gray-900, #1E293B);
+  line-height: 1;
+}
+
+/* 标签列表 */
+.tags-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx; /* 6px */
+}
+
+.tag-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 10rpx 20rpx; /* 5px 10px */
+  background: #F0F9FF; /* 浅蓝背景 */
+  color: var(--cl-primary, #2563EB); /* 品牌蓝 */
+  font-size: 24rpx; /* 12px */
+  font-weight: 500;
+  border-radius: 20rpx; /* 10px - 胶囊形状 */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+
+  &:hover {
+    background: var(--cl-primary, #2563EB);
+    color: #FFFFFF;
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+  }
+}
+
+/* 统计列表 */
+.stats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx; /* 8px */
+}
+
+.stat-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx; /* 8px */
+  background: #F8FAFC; /* 浅灰背景 */
+  border-radius: 12rpx; /* 6px */
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #F0F9FF; /* hover 时变浅蓝 */
+    transform: translateX(4rpx);
+  }
+}
+
+.stat-label {
+  font-size: 24rpx; /* 12px */
+  color: var(--cl-gray-600, #64748B);
+  line-height: 1;
+  font-weight: 400;
+}
+
+.stat-value {
+  font-size: 32rpx; /* 16px */
+  font-weight: 700;
+  color: var(--cl-primary, #2563EB); /* 品牌蓝 */
+  line-height: 1;
+  /* 优化：添加数字动画效果 */
+  font-variant-numeric: tabular-nums;
 }
 </style>
 

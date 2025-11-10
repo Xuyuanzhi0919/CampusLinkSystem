@@ -2111,7 +2111,88 @@ X-API-Key: {api_key}
 
 ---
 
-## 十一、WebSocket实时通信
+## 十一、标签管理模块
+
+### 1. 获取热门标签列表
+**接口**：`GET /tag/hot`
+
+**请求参数**：
+
+| 参数 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| limit | number | 20 | 返回数量，最大50 |
+
+**响应**：
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "tagId": 1,
+      "tagName": "考研资料",
+      "displayName": "#考研资料",
+      "useCount": 120,
+      "category": "学习",
+      "description": "考研相关的资料和经验分享"
+    },
+    {
+      "tagId": 2,
+      "tagName": "学习打卡",
+      "displayName": "#学习打卡",
+      "useCount": 95,
+      "category": "学习",
+      "description": "记录和分享学习进度"
+    }
+  ]
+}
+```
+
+---
+
+### 2. 根据分类获取热门标签
+**接口**：`GET /tag/hot/category`
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| category | string | 是 | 标签分类：学习/生活/技术/娱乐 |
+| limit | number | 否 | 返回数量，默认10，最大50 |
+
+**响应**：同获取热门标签列表
+
+---
+
+### 3. 搜索标签
+**接口**：`GET /tag/search`
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| keyword | string | 是 | 搜索关键词 |
+| limit | number | 否 | 返回数量，默认10，最大30 |
+
+**响应**：同获取热门标签列表
+
+---
+
+### 4. 获取目标对象的标签
+**接口**：`GET /tag/target`
+
+**请求参数**：
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| targetType | string | 是 | 目标类型：question/resource/task |
+| targetId | number | 是 | 目标ID |
+
+**响应**：同获取热门标签列表
+
+---
+
+## 十二、WebSocket实时通信
 
 ### 1. 连接地址
 ```
@@ -2199,7 +2280,7 @@ wss://api.campuslink.com/ws
 
 ---
 
-## 十二、接口限流规则
+## 十三、接口限流规则
 
 | 接口类型 | 限流规则 | 说明 |
 |---------|---------|------|
@@ -2215,7 +2296,7 @@ wss://api.campuslink.com/ws
 
 ---
 
-## 十三、接口安全
+## 十四、接口安全
 
 ### 1. HTTPS加密
 所有接口必须使用HTTPS协议，确保数据传输安全。
@@ -2250,7 +2331,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十四、接口测试工具推荐
+## 十五、接口测试工具推荐
 
 1. **Postman**：接口调试
 2. **Apifox**：接口文档+测试
@@ -2259,7 +2340,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十五、接口版本管理
+## 十六、接口版本管理
 
 ### 版本策略
 - URL路径版本：`/api/v1/`, `/api/v2/`
@@ -2273,7 +2354,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十六、错误处理最佳实践
+## 十七、错误处理最佳实践
 
 1. **统一错误格式**：所有错误响应使用统一格式
 2. **详细错误信息**：开发环境返回详细错误，生产环境返回友好提示
@@ -2358,4 +2439,10 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 - POST /ai/answer
 - POST /ai/similar
 
-**总计：56个REST API接口 + 1个WebSocket接口**
+### 标签管理（4个）
+- GET /tag/hot
+- GET /tag/hot/category
+- GET /tag/search
+- GET /tag/target
+
+**总计：60个REST API接口 + 1个WebSocket接口**

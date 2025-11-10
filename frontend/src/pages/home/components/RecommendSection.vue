@@ -1,13 +1,13 @@
 <template>
   <view class="recommend-section">
-    <!-- 标题栏 -->
+    <!-- 优化：标题栏 - 增强视觉层级和导航感 -->
     <view class="section-header">
       <view class="title-wrapper">
         <text class="section-title">为你推荐</text>
         <text class="section-subtitle">小编精选 · 根据你的学习兴趣推荐</text>
       </view>
 
-      <!-- 筛选标签 -->
+      <!-- 优化：筛选标签 - 添加 hover 底边条效果 -->
       <view class="filter-tags">
         <text
           v-for="(tab, index) in tabs"
@@ -32,7 +32,7 @@
         />
       </template>
 
-      <!-- 有数据：显示卡片（显示前 6 条，2×3 网格）- 文档规范：stagger 30ms -->
+      <!-- 优化：显示卡片（显示前 6 条，响应式网格）- stagger 30ms -->
       <template v-else-if="currentList.length > 0">
         <view
           v-for="(item, index) in displayList"
@@ -41,17 +41,27 @@
           :style="{ animationDelay: `${index * 30}ms` }"
           @click="handleItemClick(item)"
         >
-          <!-- 类型标签 -->
+          <!-- 优化：右上角徽标（热门/截止中）-->
+          <view v-if="item.badge" class="card-badge" :class="'badge-' + item.badge.type">
+            <text class="badge-icon">{{ item.badge.icon }}</text>
+            <text class="badge-text">{{ item.badge.text }}</text>
+          </view>
+
+          <!-- 优化：类型标签 - 增强视觉锚点 -->
           <view class="type-tag" :class="'type-' + item.type">
             <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
             <text class="type-text">{{ getTypeName(item.type) }}</text>
           </view>
 
-          <!-- 卡片内容 -->
-          <text class="card-title">{{ item.title }}</text>
-          <text class="card-intro">{{ item.intro }}</text>
+          <!-- 优化：卡片内容 - 分层结构 -->
+          <view class="card-content">
+            <!-- 一级：标题（黑体）-->
+            <text class="card-title">{{ item.title }}</text>
+            <!-- 二级：摘要（灰度中等）-->
+            <text class="card-intro">{{ item.intro }}</text>
+          </view>
 
-          <!-- 资源信息（差异化显示）- 文档规范：统一线性图标 -->
+          <!-- 优化：三级 Meta 信息（灰度最轻）- 统一线性图标 -->
           <view class="card-meta">
             <view class="meta-item">
               <text class="meta-icon">👤</text>
@@ -91,6 +101,15 @@
             </template>
           </view>
 
+          <!-- 优化：Hover 浮层 - "查看详情" -->
+          <view class="card-overlay">
+            <text class="overlay-text">查看详情</text>
+            <text class="overlay-icon">→</text>
+          </view>
+
+          <!-- 优化：底部渐变装饰条 -->
+          <view class="card-gradient-bar"></view>
+
           <!-- 操作按钮（合并成一个分组）- 文档规范：线性图标 -->
           <view class="card-actions">
             <view class="action-group">
@@ -120,9 +139,9 @@
       </template>
     </view>
 
-    <!-- 文档规范：换一批/查看全部条 - 浅蓝底 #EEF2FF，圆角 12 -->
+    <!-- 优化：换一批/查看全部条 - 淡蓝底 #F1F5FF，增强存在感 -->
     <view v-if="!isLoading && currentList.length > 0" class="action-bar">
-      <!-- 换一批按钮 -->
+      <!-- 优化：换一批按钮 - 添加刷新图标 -->
       <view class="action-btn refresh-btn" @click="handleRefresh">
         <text class="action-icon refresh-icon" :class="{ rotating: isRefreshing }">🔄</text>
         <text class="action-text">换一批</text>
@@ -131,10 +150,10 @@
       <!-- 分隔线 -->
       <view class="action-divider"></view>
 
-      <!-- 查看全部按钮 -->
+      <!-- 优化：查看全部按钮 - 深蓝 + 箭头 -->
       <view class="action-btn view-all-btn" @click="viewAllRecommendations">
         <text class="action-text">查看全部</text>
-        <text class="action-icon">→</text>
+        <text class="action-icon arrow-icon">→</text>
       </view>
     </view>
   </view>
@@ -196,8 +215,8 @@ const loadRecommendData = async () => {
       getTaskList({ page: 1, pageSize: 6, status: 0 }) // 只获取待接单的任务
     ])
 
-    // 转换资源数据 (后端返回的是 list 而不是 records)
-    const resources = (resourceRes?.list || resourceRes?.records || []).map((item: any) => ({
+    // 优化：转换资源数据 - 添加徽标信息
+    const resources = (resourceRes?.list || resourceRes?.records || []).map((item: any, index: number) => ({
       id: item.resourceId,
       type: 'resource',
       title: item.title,
@@ -205,10 +224,12 @@ const loadRecommendData = async () => {
       author: item.uploaderName || '匿名',
       downloads: item.downloads || 0,
       collected: item.isLiked || false,
+      // 优化：添加徽标（热门资源）
+      badge: (item.downloads || 0) > 100 ? { type: 'hot', icon: '🔥', text: '热门' } : null,
     }))
 
-    // 转换问答数据（增加回答数）
-    const questions = (questionRes?.list || questionRes?.records || []).map((item: any) => ({
+    // 优化：转换问答数据 - 添加徽标信息
+    const questions = (questionRes?.list || questionRes?.records || []).map((item: any, index: number) => ({
       id: item.questionId,
       type: 'question',
       title: item.title,
@@ -217,10 +238,12 @@ const loadRecommendData = async () => {
       views: item.viewCount || 0,
       answers: item.answerCount || 0, // 回答数
       collected: false,
+      // 优化：添加徽标（热门问答）
+      badge: (item.viewCount || 0) > 200 ? { type: 'hot', icon: '🔥', text: '热门' } : null,
     }))
 
-    // 转换任务数据（增加积分和截止时间）
-    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any) => ({
+    // 优化：转换任务数据 - 添加徽标信息
+    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any, index: number) => ({
       id: item.taskId,
       type: 'task',
       title: item.title,
@@ -229,6 +252,8 @@ const loadRecommendData = async () => {
       points: item.reward || 10, // 积分
       deadline: item.deadline ? formatDeadline(item.deadline) : '', // 截止时间
       collected: false,
+      // 优化：添加徽标（截止中）
+      badge: item.deadline && isDeadlineSoon(item.deadline) ? { type: 'urgent', icon: '⏳', text: '截止中' } : null,
     }))
 
     // 合并并随机排序
@@ -312,13 +337,24 @@ const formatDeadline = (deadline: string) => {
 }
 
 /**
- * 获取类型图标
+ * 优化：判断是否即将截止（3天内）
+ */
+const isDeadlineSoon = (deadline: string) => {
+  const now = new Date()
+  const end = new Date(deadline)
+  const diff = end.getTime() - now.getTime()
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  return days >= 0 && days <= 3
+}
+
+/**
+ * 优化：获取类型图标 - 更新为新的图标
  */
 const getTypeIcon = (type: string) => {
   const icons: Record<string, string> = {
-    resource: '📚',
-    question: '💡',
-    task: '🤝',
+    resource: '📘', // 课程 - 蓝色书本
+    question: '💡', // 问答 - 灯泡
+    task: '💼',     // 任务 - 公文包
   }
   return icons[type] || '📄'
 }
@@ -429,39 +465,40 @@ onMounted(() => {
   gap: 8rpx; /* 标题与副标题间距 */
 }
 
-/* 优化：标题 - 增强左侧色条，增强视觉锚点 */
+/* 优化：标题 - 增强字重和视觉锚点 */
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
-  font-weight: 600; /* 减少到 600，更柔和 */
+  font-weight: 700; /* 优化：增强到 700，更突出 */
   color: var(--cl-gray-900, #1E293B); /* 深灰蓝，非纯黑 */
   line-height: 1;
   position: relative;
   padding-left: 24rpx; /* 优化：增加左侧间距，为色条留更多空间 */
 
-  /* 优化：左侧蓝色色条 - 增强视觉锚点 */
+  /* 优化：左侧淡蓝渐变底条装饰线 */
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 50%;
     transform: translateY(-50%);
-    width: 6rpx; /* 3px 宽度 */
-    height: 40rpx; /* 20px 高度 - 增大高度 */
-    background: var(--cl-primary, #2563EB); /* 使用品牌蓝 */
-    border-radius: 3rpx;
+    width: 8rpx; /* 4px 宽度 - 增大宽度 */
+    height: 40rpx; /* 20px 高度 */
+    background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%); /* 蓝色渐变 */
+    border-radius: 4rpx; /* 圆角 */
   }
 }
 
-/* 副标题说明文字 */
+/* 优化：副标题 - 淡化灰度，字距稍加宽 */
 .section-subtitle {
   font-size: 24rpx; /* 12px */
   font-weight: 400;
-  color: var(--cl-gray-500, #94A3B8); /* 浅灰色 */
+  color: #94A3B8; /* 优化：更淡的灰度 */
   line-height: 1.5;
   padding-left: 24rpx; /* 与标题对齐 */
+  letter-spacing: 0.5rpx; /* 优化：字距稍加宽 */
 }
 
-/* 筛选标签 */
+/* 优化：筛选标签 - 增强导航感 */
 .filter-tags {
   flex: 1;
   display: flex;
@@ -474,14 +511,18 @@ onMounted(() => {
   padding: 10rpx 20rpx;
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s ease; /* 优化：延长过渡时间 */
   position: relative;
   background: transparent;
   font-weight: 500;
+  /* 优化：添加底边条（默认透明）*/
+  border-bottom: 2px solid transparent;
 
+  /* 优化：hover 时添加轻柔底边条（2px 蓝色）*/
   &:hover {
-    color: var(--cl-primary, #3B82F6);
+    color: var(--cl-primary, #2563EB);
     background: var(--cl-gray-100, #F1F5F9);
+    border-bottom-color: #2563EB; /* 蓝色底边条 */
   }
 
   &.active {
@@ -559,16 +600,29 @@ onMounted(() => {
   }
 }
 
-/* 推荐列表 - 2×3 网格布局（专业级优化）*/
+/* 优化：推荐列表 - 响应式网格布局 */
 .recommend-list {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 列 */
-  gap: 48rpx; /* 行间距拉大到 48rpx（24px），让板块呼吸更自然 */
-  column-gap: 32rpx; /* 列间距 */
+  /* 优化：响应式网格 - 3列（大屏）、2列（中屏）、1列（手机）*/
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 48rpx; /* 24px - 行间距 */
+  column-gap: 48rpx; /* 24px - 列间距，统一为 24px */
   min-height: 400rpx;
 
   /* 内容交叉淡入淡出过渡 */
   transition: opacity 0.3s ease;
+
+  /* 响应式断点 */
+  @media (max-width: 1440px) {
+    grid-template-columns: repeat(2, 1fr); /* 中屏：2列 */
+    gap: 40rpx;
+    column-gap: 32rpx;
+  }
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr; /* 小屏：1列 */
+    gap: 32rpx;
+  }
 }
 
 /* 空状态容器 */
@@ -634,34 +688,34 @@ onMounted(() => {
   }
 }
 
-/* 类型标签 - 文档规范（浅底 + 8px 圆角，色板统一）*/
+/* 优化：类型标签 - 增强视觉锚点，饱和柔和的浅色底 */
 .type-tag {
   display: inline-flex;
   align-items: center;
   gap: 8rpx; /* 图标与文字间距 */
-  padding: 8rpx 16rpx; /* 内边距 */
+  padding: 4rpx 16rpx; /* 2px 8px - 优化内边距 */
   border-radius: 16rpx; /* 8px 圆角 */
   font-size: 24rpx; /* 12px */
   font-weight: 600;
   transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
 
-  /* 课件 - 文档规范色板 */
+  /* 优化：课程 - 浅蓝底 + 深蓝字 + 📘 图标 */
   &.type-resource {
     background: #E0F2FE; /* 浅蓝 */
-    color: #3B82F6; /* 主题蓝 */
+    color: #2563EB; /* 深蓝 */
   }
 
-  /* 问答 - 文档规范色板 */
+  /* 优化：问答 - 浅黄底 + 深黄字 + 💡 图标 */
   &.type-question {
-    background: #FEF3C7; /* 浅黄 */
-    color: #F59E0B; /* 暖黄 */
+    background: #FEF9C3; /* 浅黄 */
+    color: #CA8A04; /* 深黄 */
   }
 
-  /* 任务 - 文档规范色板 */
+  /* 优化：任务 - 浅绿底 + 深绿字 + 💼 图标 */
   &.type-task {
-    background: #DCFCE7; /* 浅绿 */
-    color: #16A34A; /* 清绿 */
+    background: #E8F9E9; /* 浅绿 */
+    color: #16A34A; /* 深绿 */
   }
 }
 
@@ -674,12 +728,20 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 卡片标题 - 文档规范（16-18/600，颜色 #0F172A）*/
+/* 优化：卡片内容包装器 - 分层结构 */
+.card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx; /* 6px - 标题与摘要间距 */
+  flex: 1;
+}
+
+/* 优化：一级 - 卡片标题（黑体）*/
 .card-title {
-  font-size: 32rpx; /* 16px - 文档规范 */
-  font-weight: 600;
-  color: #0F172A; /* 文档规范颜色 */
-  line-height: 1.6; /* 提升行高至 1.6 */
+  font-size: 32rpx; /* 16px */
+  font-weight: 600; /* 黑体 */
+  color: #0F172A; /* 深色 */
+  line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -688,19 +750,20 @@ onMounted(() => {
   transition: color var(--transition-hover, 150ms ease);
 }
 
+/* 优化：二级 - 卡片摘要（灰度中等）*/
 .card-intro {
-  font-size: 28rpx; /* 14px - 文档规范 14/400 */
+  font-size: 28rpx; /* 14px */
   font-weight: 400;
-  color: #64748B; /* 文档规范颜色 */
+  color: #64748B; /* 灰度中等 */
   line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
-  -webkit-line-clamp: 2; /* 描述行数最多 2 行 */
+  -webkit-line-clamp: 2; /* 最多 2 行 */
   -webkit-box-orient: vertical;
 }
 
-/* 资源信息 - 文档规范（统一灰 500，图标线性 1.5px）*/
+/* 优化：三级 - Meta 信息（灰度最轻）*/
 .card-meta {
   display: flex;
   flex-wrap: wrap;
@@ -859,6 +922,127 @@ onMounted(() => {
   .action-bar {
     width: 100%;
     border-radius: 999rpx;
+  }
+}
+
+/* ========== 优化：新增样式 ========== */
+
+/* 优化：右上角徽标（热门/截止中）*/
+.card-badge {
+  position: absolute;
+  top: 16rpx; /* 8px */
+  right: 16rpx; /* 8px */
+  display: flex;
+  align-items: center;
+  gap: 6rpx; /* 3px */
+  padding: 6rpx 12rpx; /* 3px 6px */
+  border-radius: 12rpx; /* 6px */
+  font-size: 20rpx; /* 10px */
+  font-weight: 600;
+  z-index: 2;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+
+  /* 热门徽标 */
+  &.badge-hot {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); /* 黄色渐变 */
+    color: #CA8A04; /* 深黄 */
+  }
+
+  /* 截止中徽标 */
+  &.badge-urgent {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); /* 红色渐变 */
+    color: #DC2626; /* 深红 */
+  }
+}
+
+.badge-icon {
+  font-size: 20rpx; /* 10px */
+  line-height: 1;
+}
+
+.badge-text {
+  line-height: 1;
+}
+
+/* 优化：Hover 浮层 - "查看详情" */
+.card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(37, 99, 235, 0.95); /* 蓝色半透明 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx; /* 6px */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.recommend-card:hover .card-overlay {
+  opacity: 1;
+}
+
+.overlay-text {
+  font-size: 32rpx; /* 16px */
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.overlay-icon {
+  font-size: 32rpx; /* 16px */
+  color: #FFFFFF;
+  line-height: 1;
+  animation: arrowBounce 1s ease-in-out infinite;
+}
+
+@keyframes arrowBounce {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(8rpx);
+  }
+}
+
+/* 优化：底部渐变装饰条 */
+.card-gradient-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6rpx; /* 3px */
+  background: linear-gradient(90deg, #3B82F6 0%, transparent 100%); /* 蓝色渐变 */
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.recommend-card:hover .card-gradient-bar {
+  opacity: 1;
+}
+
+/* 优化：底部操作栏 - 淡蓝底 #F1F5FF，增强存在感 */
+.action-bar {
+  background: #F1F5FF; /* 优化：从 #EEF2FF 改为 #F1F5FF */
+}
+
+/* 优化：查看全部按钮 - 深蓝 + 箭头动画 */
+.view-all-btn {
+  .action-text {
+    color: var(--cl-primary, #2563EB);
+    font-weight: 500;
+  }
+
+  .arrow-icon {
+    transition: transform 0.3s ease;
+  }
+
+  &:hover .arrow-icon {
+    transform: translateX(6rpx); /* 箭头向右移动 */
   }
 }
 </style>

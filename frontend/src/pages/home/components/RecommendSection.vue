@@ -398,7 +398,7 @@ onMounted(() => {
   }
 }
 
-/* 标题栏 */
+/* 优化：标题栏 - 增加底部分割线，增强栏目感 */
 .section-header {
   display: flex;
   align-items: center;
@@ -406,9 +406,11 @@ onMounted(() => {
   margin-bottom: 32rpx;
   padding-bottom: 24rpx;
   position: relative;
+  /* 优化：添加底部分割线 */
+  border-bottom: 1px solid #E2E8F0;
 
-  /* 柔和底线 - 校园笔记本风格 */
-  &::after {
+  /* 优化：移除原有的底线装饰，改用完整的分割线 */
+  /* &::after {
     content: '';
     position: absolute;
     left: 0;
@@ -417,7 +419,7 @@ onMounted(() => {
     height: 3rpx;
     background: var(--cl-primary, #3B82F6);
     border-radius: 2rpx;
-  }
+  } */
 }
 
 /* 标题包装器 */
@@ -427,15 +429,16 @@ onMounted(() => {
   gap: 8rpx; /* 标题与副标题间距 */
 }
 
+/* 优化：标题 - 增强左侧色条，增强视觉锚点 */
 .section-title {
   font-size: 40rpx; /* 20px - 标题规范 */
   font-weight: 600; /* 减少到 600，更柔和 */
   color: var(--cl-gray-900, #1E293B); /* 深灰蓝，非纯黑 */
   line-height: 1;
   position: relative;
-  padding-left: 20rpx; /* 为左侧竖线留空间 */
+  padding-left: 24rpx; /* 优化：增加左侧间距，为色条留更多空间 */
 
-  /* 左侧蓝色竖线（视觉焦点增强）*/
+  /* 优化：左侧蓝色色条 - 增强视觉锚点 */
   &::before {
     content: '';
     position: absolute;
@@ -443,8 +446,8 @@ onMounted(() => {
     top: 50%;
     transform: translateY(-50%);
     width: 6rpx; /* 3px 宽度 */
-    height: 32rpx; /* 16px 高度 */
-    background: linear-gradient(180deg, var(--cl-primary, #3B82F6) 0%, rgba(59, 130, 246, 0.6) 100%);
+    height: 40rpx; /* 20px 高度 - 增大高度 */
+    background: var(--cl-primary, #2563EB); /* 使用品牌蓝 */
     border-radius: 3rpx;
   }
 }
@@ -455,7 +458,7 @@ onMounted(() => {
   font-weight: 400;
   color: var(--cl-gray-500, #94A3B8); /* 浅灰色 */
   line-height: 1.5;
-  padding-left: 20rpx; /* 与标题对齐 */
+  padding-left: 24rpx; /* 与标题对齐 */
 }
 
 /* 筛选标签 */
@@ -573,7 +576,7 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-/* 企业级重构：卡片阴影 - 优化外阴影（0 4px 20px rgba(0,0,0,0.04)）*/
+/* 优化：卡片阴影 - 增强层次感，让内容"浮"起来 */
 .recommend-card {
   position: relative;
   padding: 32rpx; /* 内边距 16px */
@@ -581,10 +584,10 @@ onMounted(() => {
   border: 1px solid #EEF1F6; /* 浅灰边框 */
   border-radius: 24rpx; /* 圆角 12px */
   cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
+  transition: all 0.2s ease; /* 优化：过渡时间从 150ms 增加到 200ms */
   min-height: 336rpx; /* 168px - 最小高度 */
-  /* 优化：增加外阴影（0 4px 20px rgba(0,0,0,0.04)）*/
-  box-shadow: 0 8rpx 40rpx rgba(0, 0, 0, 0.04);
+  /* 优化：增强阴影（0 4px 12px rgba(0,0,0,0.05)）*/
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -593,12 +596,12 @@ onMounted(() => {
   /* 淡入动画（stagger 30ms）*/
   animation: fadeInCard 240ms ease-out both;
 
-  /* Hover 状态 - 文档规范 */
+  /* 优化：Hover 状态 - 上浮 4px，蓝色柔光边框 */
   &:hover {
-    transform: translateY(-6rpx); /* translateY(-3px) */
-    /* 优化：hover 阴影变深 */
-    box-shadow: 0 16rpx 56rpx rgba(37, 99, 235, 0.10); /* 蓝柔影 */
-    border-color: var(--cl-primary, #2563EB); /* 边框变主色 1px */
+    transform: translateY(-8rpx); /* 优化：从 -6rpx 增加到 -8rpx (4px) */
+    /* 优化：hover 阴影变深，蓝色柔光 */
+    box-shadow: 0 16rpx 40rpx rgba(30, 64, 175, 0.15);
+    border-color: var(--cl-primary, #2563EB); /* 边框变主色 */
 
     .card-title {
       color: var(--cl-primary, #2563EB); /* 标题主色高亮 */
@@ -611,8 +614,8 @@ onMounted(() => {
 
   /* Active 状态 */
   &:active {
-    transform: translateY(-3rpx) scale(0.98);
-    transition: all var(--transition-hover, 150ms ease);
+    transform: translateY(-4rpx) scale(0.98);
+    transition: all 0.2s ease;
   }
 }
 

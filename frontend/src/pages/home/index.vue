@@ -241,8 +241,9 @@ const handleFeedback = () => {
   }
 }
 
+/* 优化：左侧主内容区 - 调整比例为 70% */
 .recommend-area {
-  flex: 68; /* 文档规范：68% - 主内容区 */
+  flex: 70; /* 优化：从 68% 调整为 70% - 主内容区 */
   min-width: 0;
 
   /* <960：占满宽度 */
@@ -251,14 +252,16 @@ const handleFeedback = () => {
   }
 }
 
-/* 文档规范：右侧栏无独立背景，由内部卡片提供白卡背景 */
+/* 优化：右侧栏 - 添加淡灰背景，增强存在感 */
 .ranking-area {
-  flex: 30; /* 文档规范：30% - 侧栏引导区 */
+  flex: 30; /* 保持 30% - 侧栏引导区 */
   min-width: 0;
-  background: transparent; /* 文档规范：透明背景，使用全局淡灰 */
-  border-radius: 0;
-  padding: 0;
-  box-shadow: none;
+  /* 优化：添加淡灰背景 #F9FBFF，增强模块感 */
+  background: #F9FBFF;
+  border-radius: 24rpx; /* 12px - 圆角 */
+  padding: 32rpx; /* 16px - 内边距 */
+  /* 优化：添加轻微阴影，增强层次感 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.03);
 
   /* 1024–1279：右栏收窄，条目改为 4 条 */
   @media (min-width: 1024px) and (max-width: 1279px) {
@@ -269,6 +272,9 @@ const handleFeedback = () => {
   @media (max-width: 960px) {
     flex: 1;
     order: 2;
+    background: transparent; /* 移动端恢复透明背景 */
+    padding: 0;
+    box-shadow: none;
   }
 }
 

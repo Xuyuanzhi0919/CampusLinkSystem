@@ -35,65 +35,76 @@
 
       <!-- 第二行：主内容区（搜索框居中）-->
       <view class="main-content-area">
-        <!-- 搜索栏 -->
+        <!-- 搜索栏 - 优化：垂直布局（搜索框 + 提示文字）-->
         <view class="search-section">
-          <view class="search-box">
-          <!-- 搜索图标 -->
-          <text class="search-icon">🔍</text>
-          <!-- 搜索输入框 -->
-          <input
-            class="search-input"
-            type="text"
-            v-model="searchKeyword"
-            placeholder="搜课件/问问题/找活动"
-            @confirm="handleSearch"
-            @focus="showHotTags = true"
-            @blur="handleBlur"
-          />
-          <!-- 热门搜索标签 -->
-          <view v-if="showHotTags && !searchKeyword" class="hot-tags">
-            <text
-              v-for="tag in hotTags"
-              :key="tag"
-              class="hot-tag"
-              @click="handleTagClick(tag)"
-            >
-              {{ tag }}
-            </text>
-          </view>
-          <!-- 搜索按钮 -->
-          <view class="search-btn-blue" @click="handleSearch">
-            <text class="search-btn-text">搜索</text>
-          </view>
-          <!-- 语音搜索按钮 -->
-          <view
-            class="voice-search-btn"
-            :class="{ 'voice-active': isVoiceActive }"
-            @click="handleVoiceSearch"
-            @touchstart="handleVoiceTouchStart"
-            @touchend="handleVoiceTouchEnd"
-          >
-            <svg
-              class="voice-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <!-- 麦克风图标 -->
-              <path
-                d="M12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14Z"
-                fill="white"
+          <!-- 搜索框容器 -->
+          <view class="search-box-wrapper">
+            <view class="search-box">
+              <!-- 搜索图标 -->
+              <text class="search-icon">🔍</text>
+              <!-- 搜索输入框 -->
+              <input
+                class="search-input"
+                type="text"
+                v-model="searchKeyword"
+                placeholder="搜课件/问问题/找活动"
+                @confirm="handleSearch"
+                @focus="showHotTags = true"
+                @blur="handleBlur"
               />
-              <path
-                d="M17 11C17 13.76 14.76 16 12 16C9.24 16 7 13.76 7 11H5C5 14.53 7.61 17.43 11 17.92V21H13V17.92C16.39 17.43 19 14.53 19 11H17Z"
-                fill="white"
-              />
-            </svg>
-            <!-- 语音波纹效果 -->
-            <view v-if="isVoiceActive" class="voice-ripple"></view>
-            <view v-if="isVoiceActive" class="voice-ripple voice-ripple-2"></view>
+              <!-- 热门搜索标签 -->
+              <view v-if="showHotTags && !searchKeyword" class="hot-tags">
+                <text
+                  v-for="tag in hotTags"
+                  :key="tag"
+                  class="hot-tag"
+                  @click="handleTagClick(tag)"
+                >
+                  {{ tag }}
+                </text>
+              </view>
+              <!-- 优化：语音搜索按钮 - 移到搜索框内部 -->
+              <view
+                class="voice-search-btn-inline"
+                :class="{ 'voice-active': isVoiceActive }"
+                @click="handleVoiceSearch"
+                @touchstart="handleVoiceTouchStart"
+                @touchend="handleVoiceTouchEnd"
+              >
+                <svg
+                  class="voice-icon-inline"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <!-- 麦克风图标 -->
+                  <path
+                    d="M12 14C13.66 14 15 12.66 15 11V5C15 3.34 13.66 2 12 2C10.34 2 9 3.34 9 5V11C9 12.66 10.34 14 12 14Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M17 11C17 13.76 14.76 16 12 16C9.24 16 7 13.76 7 11H5C5 14.53 7.61 17.43 11 17.92V21H13V17.92C16.39 17.43 19 14.53 19 11H17Z"
+                    fill="currentColor"
+                  />
+                </svg>
+                <!-- 语音波纹效果 -->
+                <view v-if="isVoiceActive" class="voice-ripple-inline"></view>
+                <view v-if="isVoiceActive" class="voice-ripple-inline voice-ripple-2"></view>
+              </view>
+              <!-- 优化：搜索按钮 - 改为橙色圆角矩形按钮 -->
+              <view class="search-btn-primary" @click="handleSearch">
+                <text class="search-btn-text">搜索</text>
+              </view>
+            </view>
+            <!-- 优化：搜索框下方提示文字 -->
+            <view class="search-tips">
+              <text class="search-tip-item">超500万大学资源</text>
+              <text class="search-tip-divider">·</text>
+              <text class="search-tip-item">24小时AI问答</text>
+              <text class="search-tip-divider">·</text>
+              <text class="search-tip-item">校迅捷答即时配</text>
+            </view>
           </view>
-        </view>
         </view>
       </view>
     </view>
@@ -441,88 +452,91 @@ const stopVoiceRecognition = () => {
 }
 
 .brand-logo {
-  font-size: 40rpx; /* 20px - 减小字号 */
+  font-size: 48rpx; /* 24px - 增大字号，增强品牌识别 */
   font-weight: 700;
   color: var(--cl-primary, #2563EB);
-  line-height: 1;
+  line-height: 1.2;
   letter-spacing: 1rpx;
+  /* 优化：增加文字阴影，增强立体感 */
+  text-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.15);
 }
 
 .brand-slogan {
-  font-size: 22rpx; /* 11px - 减小字号 */
+  font-size: 24rpx; /* 12px - 增大字号 */
   font-weight: 500;
   color: var(--cl-gray-600, #64748B);
-  line-height: 1;
+  line-height: 1.2;
+  /* 优化：增加轻微透明度 */
+  opacity: 0.9;
 }
 
-/* 操作按钮组 */
+/* 操作按钮组 - 优化：增强视觉层次 */
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  /* 优化：右上角半透明圆角背景 */
-  padding: 12rpx 20rpx;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(12px);
-  border-radius: 32rpx; /* 16px */
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  gap: 20rpx; /* 增大间距 */
+  /* 优化：移除背景容器，让按钮更突出 */
+  padding: 0;
 }
 
 .action-btn {
-  padding: 10rpx 20rpx; /* 减小内边距 */
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(8px);
-  border-radius: 20rpx; /* 10px */
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 16rpx 32rpx; /* 增大内边距 */
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border-radius: 28rpx; /* 14px - 更圆润 */
+  border: 2px solid transparent;
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
   display: flex;
   align-items: center;
   gap: 8rpx;
+  /* 优化：增加阴影 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
-/* 优化：次操作按钮（登录/注册）- 透明背景 + 蓝色描边 */
+/* 优化：次操作按钮（登录/注册）- 白色背景 + 蓝色描边 */
 .action-btn-secondary {
-  background: rgba(255, 255, 255, 0.3); /* 透明背景 */
-  border: 1px solid var(--cl-primary, #2563EB); /* 蓝色描边 */
+  background: rgba(255, 255, 255, 0.95); /* 白色背景 */
+  border: 2px solid var(--cl-primary, #2563EB); /* 蓝色描边 */
 }
 
 .action-btn-secondary .action-btn-text {
   color: var(--cl-primary, #2563EB); /* 蓝色文字 */
-  font-size: 28rpx; /* 14px */
+  font-size: 30rpx; /* 15px - 增大 */
+  font-weight: 600;
 }
 
 .action-btn-secondary:hover {
-  background: rgba(37, 99, 235, 0.1); /* 轻微蓝色背景 */
+  background: rgba(37, 99, 235, 0.08); /* 轻微蓝色背景 */
   border-color: var(--cl-primary, #2563EB);
   transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.15);
+  box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.2);
 }
 
-/* 优化：主操作按钮（发布）- 主色实心按钮 + 微光渐变 */
+/* 优化：主操作按钮（发布）- 蓝色实心按钮 + 渐变 */
 .action-btn-primary {
-  background: var(--cl-primary, #2563EB); /* 主色实心 */
+  background: linear-gradient(135deg, var(--cl-primary, #2563EB) 0%, #3B82F6 100%); /* 蓝色渐变 */
   border: none;
-  /* 优化：增加阴影 */
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.3);
+  /* 优化：增强阴影 */
+  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.35);
 }
 
 .action-btn-primary .action-btn-text {
   color: #FFFFFF; /* 白色文字 */
-  font-size: 30rpx; /* 15px - 稍大 */
+  font-size: 30rpx; /* 15px */
   font-weight: 600;
 }
 
 .action-btn-primary .action-btn-icon {
   color: #FFFFFF;
+  font-size: 28rpx;
 }
 
 .action-btn-primary:hover {
-  /* 优化：微光渐变 */
-  background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-  transform: translateY(-2rpx);
-  box-shadow: 0 12rpx 32rpx rgba(37, 99, 235, 0.4);
+  /* 优化：hover 时渐变更亮 */
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  transform: translateY(-2rpx) scale(1.03);
+  box-shadow: 0 12rpx 32rpx rgba(37, 99, 235, 0.45);
 }
 
 .action-btn-text {
@@ -546,63 +560,75 @@ const stopVoiceRecognition = () => {
   margin-top: 0; /* 移除上边距 */
 }
 
-/* 搜索栏（居中）*/
+/* 搜索栏（居中）- 优化：垂直布局 */
 .search-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
   max-width: 1400rpx; /* 最大宽度 700px */
   width: 70%; /* 占据 70% 宽度 */
+  gap: 20rpx; /* 搜索框与提示文字的间距 */
 }
 
+/* 搜索框包装器 - 优化：增大间距，增强呼吸感 */
+.search-box-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 100rpx; /* 50px - 从 20rpx 增加到 100rpx，增强呼吸感 */
+}
+
+/* 搜索框 - 优化：增大尺寸 */
 .search-box {
   position: relative;
   width: 100%;
-  height: 80rpx; /* 40px */
+  height: 100rpx; /* 50px - 增大高度 */
   /* 半透明玻璃效果（文档规范）*/
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 32rpx; /* 16px - 文档规范 */
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 50rpx; /* 25px - 更圆润 */
   display: flex;
   align-items: center;
-  padding: 0 24rpx;
+  padding: 0 32rpx;
   gap: 16rpx;
-  /* 优化：柔和阴影（模糊 12px，透明度 10%）*/
-  box-shadow: 0 6rpx 24rpx rgba(0, 0, 0, 0.10);
+  /* 优化：增强阴影（模糊 16px，透明度 12%）*/
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
   transition: all var(--transition-hover, 150ms ease);
   /* 描边（文档规范）*/
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  border: 2px solid rgba(255, 255, 255, 0.8);
 }
 
 .search-box:hover {
-  background: rgba(255, 255, 255, 0.85);
+  background: rgba(255, 255, 255, 0.92);
   /* 优化：hover 时阴影加深 */
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
-  transform: translateY(-2rpx);
-  border-color: rgba(37, 99, 235, 0.2);
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
+  transform: translateY(-4rpx);
+  border-color: rgba(37, 99, 235, 0.3);
 }
 
 .search-box:focus-within {
-  background: rgba(255, 255, 255, 0.95);
-  /* 优化：聚焦时放大 1.03、发光蓝边 */
-  box-shadow: 0 8rpx 40rpx rgba(37, 99, 235, 0.20), 0 0 0 4rpx rgba(37, 99, 235, 0.10);
+  background: rgba(255, 255, 255, 0.98);
+  /* 优化：聚焦时放大 1.02、发光蓝边 */
+  box-shadow: 0 12rpx 48rpx rgba(37, 99, 235, 0.25), 0 0 0 4rpx rgba(37, 99, 235, 0.12);
   border-color: var(--cl-primary, #2563EB);
-  transform: translateY(-2rpx) scale(1.03);
+  transform: translateY(-4rpx) scale(1.02);
 }
 
-/* 搜索图标 */
+/* 搜索图标 - 优化：增大尺寸 */
 .search-icon {
-  font-size: 32rpx;
+  font-size: 40rpx; /* 20px - 增大 */
   line-height: 1;
-  color: #86909C;
+  color: var(--cl-primary, #2563EB); /* 改为品牌蓝 */
   flex-shrink: 0;
 }
 
-/* 搜索输入框 */
+/* 搜索输入框 - 优化：增大字号 */
 .search-input {
   flex: 1;
   height: 100%;
-  font-size: 28rpx; /* 14px */
+  font-size: 32rpx; /* 16px - 增大 */
   color: #1D2129;
   border: none;
   outline: none;
@@ -611,7 +637,7 @@ const stopVoiceRecognition = () => {
 
 .search-input::placeholder {
   color: #C9CDD4; /* 浅灰色 */
-  font-size: 28rpx;
+  font-size: 32rpx; /* 16px - 增大 */
 }
 
 /* 热门搜索标签 */
@@ -647,41 +673,47 @@ const stopVoiceRecognition = () => {
   transform: scale(0.95);
 }
 
-/* 蓝色搜索按钮（文档规范：按钮蓝 #2563EB）*/
-.search-btn-blue {
-  padding: 14rpx 32rpx; /* 调整为14rpx，使高度与语音按钮一致（14*2 + 28 = 56rpx） */
-  background: var(--cl-primary, #2563EB);
-  border-radius: 40rpx; /* 20px */
+/* 优化：搜索按钮 - 橙色圆角矩形按钮 */
+.search-btn-primary {
+  position: relative;
+  height: 68rpx; /* 34px */
+  padding: 0 40rpx; /* 左右内边距 */
+  background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%); /* 橙色渐变 */
+  border-radius: 34rpx; /* 17px - 圆角 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+  box-shadow: 0 6rpx 20rpx rgba(245, 158, 11, 0.3);
+  border: none;
 }
 
-.search-btn-blue:hover {
-  background: var(--cl-primary-700, #1D4ED8);
-  transform: scale(1.03);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+.search-btn-primary:hover {
+  background: linear-gradient(135deg, #E67000 0%, #FF9020 100%);
+  transform: translateY(-2rpx) scale(1.05);
+  box-shadow: 0 8rpx 28rpx rgba(245, 158, 11, 0.4);
 }
 
-.search-btn-blue:active {
-  transform: scale(0.98);
+.search-btn-primary:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .search-btn-text {
-  font-size: 28rpx;
+  font-size: 32rpx; /* 16px */
   font-weight: 600;
-  color: white;
+  color: #FFFFFF;
   line-height: 1;
+  letter-spacing: 1rpx;
 }
 
-/* 橙色语音搜索按钮（文档规范：语音橙降饱和）*/
-.voice-search-btn {
+/* 优化：语音搜索按钮 - 内联样式（在搜索框内部）*/
+.voice-search-btn-inline {
   position: relative;
-  width: 56rpx;
-  height: 56rpx;
-  /* 降饱和的橙色 */
-  background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%);
+  width: 48rpx; /* 24px - 较小尺寸 */
+  height: 48rpx;
+  background: transparent;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -689,74 +721,116 @@ const stopVoiceRecognition = () => {
   cursor: pointer;
   transition: all var(--transition-hover, 150ms ease);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
   overflow: visible;
 }
 
-.voice-search-btn:hover {
-  background: linear-gradient(135deg, #E67000 0%, #FF9020 100%);
-  transform: scale(1.08);
-  box-shadow: 0 4rpx 16rpx rgba(255, 125, 0, 0.4);
+.voice-search-btn-inline:hover {
+  background: rgba(245, 158, 11, 0.1);
+  transform: scale(1.1);
 }
 
-.voice-search-btn:active {
-  transform: scale(0.92);
+.voice-search-btn-inline:active {
+  transform: scale(0.95);
 }
 
 /* 语音激活状态 */
-.voice-search-btn.voice-active {
-  background: linear-gradient(135deg, #FF4D4F 0%, #FF7875 100%);
-  animation: voice-pulse 1.5s ease-in-out infinite;
+.voice-search-btn-inline.voice-active {
+  background: rgba(245, 158, 11, 0.2);
+  animation: voice-pulse-inline 1.5s ease-in-out infinite;
 }
 
-.voice-icon {
-  width: 28rpx;
+/* 优化：语音图标 - 内联样式 */
+.voice-icon-inline {
+  width: 28rpx; /* 14px */
   height: 28rpx;
+  color: var(--cl-warning, #F59E0B); /* 橙色 */
   position: relative;
   z-index: 2;
 }
 
-/* 语音波纹效果 */
-.voice-ripple {
+.voice-search-btn-inline.voice-active .voice-icon-inline {
+  color: #FF4D4F; /* 激活时变红 */
+}
+
+/* 语音波纹效果 - 内联样式 */
+.voice-ripple-inline {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 56rpx;
-  height: 56rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
-  border: 2rpx solid #FF7D00;
+  border: 2rpx solid #F59E0B;
   opacity: 0.6;
-  animation: ripple 1.5s ease-out infinite;
+  animation: ripple-inline 1.5s ease-out infinite;
 }
 
-.voice-ripple-2 {
+.voice-ripple-inline.voice-ripple-2 {
   animation-delay: 0.75s;
 }
 
-/* 语音脉冲动画 */
-@keyframes voice-pulse {
+/* 语音脉冲动画 - 内联样式 */
+@keyframes voice-pulse-inline {
   0%, 100% {
     transform: scale(1);
-    box-shadow: 0 2rpx 8rpx rgba(255, 77, 79, 0.3);
+    background: rgba(245, 158, 11, 0.2);
   }
   50% {
     transform: scale(1.1);
-    box-shadow: 0 4rpx 20rpx rgba(255, 77, 79, 0.5);
+    background: rgba(245, 158, 11, 0.3);
   }
 }
 
-/* 波纹扩散动画 */
-@keyframes ripple {
+/* 波纹扩散动画 - 内联样式 */
+@keyframes ripple-inline {
   0% {
-    width: 56rpx;
-    height: 56rpx;
+    width: 40rpx;
+    height: 40rpx;
     opacity: 0.6;
   }
   100% {
-    width: 120rpx;
-    height: 120rpx;
+    width: 80rpx;
+    height: 80rpx;
     opacity: 0;
+  }
+}
+
+/* 优化：搜索框下方提示文字 - 增强层次感和呼吸感 */
+.search-tips {
+  display: flex;
+  align-items: center;
+  gap: 16rpx; /* 8px - 增大间距 */
+  font-size: 28rpx; /* 14px - 保持清晰可读 */
+  color: var(--cl-gray-500, #94A3B8); /* 降低灰度，减弱视觉权重 */
+  line-height: 48rpx; /* 24px - 增大行高，增强呼吸感 */
+  /* 优化：添加淡入动画 */
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out 0.3s forwards; /* 延迟 0.3s 后淡入 */
+}
+
+.search-tip-item {
+  font-weight: 400; /* 从 500 降低到 400，更轻盈 */
+  color: var(--cl-gray-500, #94A3B8); /* 降低灰度 */
+  /* 优化：添加轻微透明度 */
+  opacity: 0.9;
+}
+
+.search-tip-divider {
+  color: var(--cl-gray-400, #CBD5E1); /* 更浅的灰色 */
+  font-weight: 300; /* 更细 */
+  opacity: 0.7; /* 降低透明度 */
+}
+
+/* 淡入向上动画 */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20rpx); /* 从下方 10px 处开始 */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

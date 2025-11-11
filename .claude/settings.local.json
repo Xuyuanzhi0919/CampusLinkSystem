@@ -16,7 +16,8 @@
       "Bash(mvn compile:*)",
       "mcp__ide__getDiagnostics",
       "Bash(mkdir:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(mysql:*)"
     ],
     "deny": [],
     "ask": []

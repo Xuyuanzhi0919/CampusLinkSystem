@@ -2192,7 +2192,70 @@ X-API-Key: {api_key}
 
 ---
 
-## 十二、WebSocket实时通信
+## 十二、统计数据模块
+
+### 1. 获取今日活跃统计
+**接口**：`GET /stats/today`
+
+**无需登录，游客可访问**
+
+**响应**：
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "activeUsers": 1234,
+    "newQuestions": 89,
+    "newResources": 56,
+    "newTasks": 23,
+    "activityParticipants": 45
+  }
+}
+```
+
+#### 字段说明
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| activeUsers | number | 今日活跃用户数（登录过的用户） |
+| newQuestions | number | 今日新增问答数 |
+| newResources | number | 今日资源上传数 |
+| newTasks | number | 今日新增任务数 |
+| activityParticipants | number | 今日活动参与数 |
+
+**特性**：
+- 使用缓存，10分钟过期
+- 统计范围：当天00:00:00 至 23:59:59
+- 无需登录即可访问
+
+---
+
+### 2. 获取平台总体统计
+**接口**：`GET /stats/total`
+
+**无需登录，游客可访问**
+
+**响应**：
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "activeUsers": 15234,
+    "newQuestions": 8956,
+    "newResources": 5678,
+    "newTasks": 2345,
+    "activityParticipants": 0
+  }
+}
+```
+
+#### 字段说明
+同今日活跃统计，但返回平台所有数据的累计总数
+
+---
+
+## 十三、WebSocket实时通信
 
 ### 1. 连接地址
 ```
@@ -2280,7 +2343,7 @@ wss://api.campuslink.com/ws
 
 ---
 
-## 十三、接口限流规则
+## 十四、接口限流规则
 
 | 接口类型 | 限流规则 | 说明 |
 |---------|---------|------|
@@ -2296,7 +2359,7 @@ wss://api.campuslink.com/ws
 
 ---
 
-## 十四、接口安全
+## 十五、接口安全
 
 ### 1. HTTPS加密
 所有接口必须使用HTTPS协议，确保数据传输安全。
@@ -2331,7 +2394,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十五、接口测试工具推荐
+## 十六、接口测试工具推荐
 
 1. **Postman**：接口调试
 2. **Apifox**：接口文档+测试
@@ -2340,7 +2403,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十六、接口版本管理
+## 十七、接口版本管理
 
 ### 版本策略
 - URL路径版本：`/api/v1/`, `/api/v2/`
@@ -2354,7 +2417,7 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 
 ---
 
-## 十七、错误处理最佳实践
+## 十八、错误处理最佳实践
 
 1. **统一错误格式**：所有错误响应使用统一格式
 2. **详细错误信息**：开发环境返回详细错误，生产环境返回友好提示
@@ -2445,4 +2508,8 @@ sign = Base64(HmacSHA256(sortedQuery + "\n" + timestamp + "\n" + nonce, client_s
 - GET /tag/search
 - GET /tag/target
 
-**总计：60个REST API接口 + 1个WebSocket接口**
+### 统计数据（2个）
+- GET /stats/today
+- GET /stats/total
+
+**总计：62个REST API接口 + 1个WebSocket接口**

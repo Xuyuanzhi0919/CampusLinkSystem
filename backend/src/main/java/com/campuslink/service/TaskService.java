@@ -4,13 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
+import com.campuslink.dto.report.CreateReportRequest;
 import com.campuslink.dto.task.*;
 import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Task;
+import com.campuslink.entity.TaskLog;
+import com.campuslink.entity.TaskRating;
 import com.campuslink.entity.User;
+import com.campuslink.enums.TaskStatus;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.PointsLogMapper;
+import com.campuslink.mapper.TaskLogMapper;
 import com.campuslink.mapper.TaskMapper;
+import com.campuslink.mapper.TaskRatingMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,7 +24,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 任务服务
@@ -29,6 +38,10 @@ public class TaskService {
     private final TaskMapper taskMapper;
     private final UserMapper userMapper;
     private final PointsLogMapper pointsLogMapper;
+    private final FavoriteService favoriteService;
+    private final ReportService reportService;
+    private final TaskLogMapper taskLogMapper;
+    private final TaskRatingMapper taskRatingMapper;
 
     /**
      * 发布任务
@@ -144,7 +157,7 @@ public class TaskService {
     /**
      * 获取任务详情
      */
-    public TaskResponse getTaskById(Long taskId) {
+    public TaskResponse getTaskById(Long taskId, Long userId) {
         Task task = taskMapper.selectById(taskId);
         if (task == null) {
             throw new BusinessException(ResultCode.TASK_NOT_FOUND);
@@ -182,6 +195,14 @@ public class TaskService {
             }
         }
 
+        // 查询当前用户是否收藏了该任务
+        if (userId != null) {
+            boolean isFavorited = favoriteService.isFavorited(userId, "task", taskId);
+            response.setIsFavorited(isFavorited);
+        } else {
+            response.setIsFavorited(false);
+        }
+
         return response;
     }
 
@@ -211,11 +232,16 @@ public class TaskService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 更新任务状态
+        // 更新任务状态为已接取
         task.setAccepterId(userId);
-        task.setStatus(1); // 进行中
+        task.setStatus(TaskStatus.ACCEPTED.getCode()); // 已接取
+        task.setAcceptedAt(LocalDateTime.now()); // 记录接单时间
         task.setUpdatedAt(LocalDateTime.now());
         taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(taskId, userId, "accept", TaskStatus.ACTIVE.getCode(),
+            TaskStatus.ACCEPTED.getCode(), "用户接取任务");
     }
 
     /**
@@ -421,5 +447,458 @@ public class TaskService {
         pointsLog.setRelatedId(relatedId);
         pointsLog.setCreatedAt(LocalDateTime.now());
         pointsLogMapper.insert(pointsLog);
+    }
+
+    /**
+     * 删除任务
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteTask(Long taskId, Long userId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 只有发布者可以删除任务
+        if (!task.getPublisherId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED);
+        }
+
+        // 只能删除待接单或已取消的任务
+        if (task.getStatus() != 0 && task.getStatus() != 3) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "只能删除待接单或已取消的任务");
+        }
+
+        // 如果是待接单状态,退还积分
+        if (task.getStatus() == 0) {
+            User publisher = userMapper.selectById(task.getPublisherId());
+            if (publisher != null) {
+                Integer oldPoints = publisher.getPoints();
+                publisher.setPoints(oldPoints + task.getRewardPoints());
+                userMapper.updateById(publisher);
+
+                // 记录积分日志
+                recordPointsLog(
+                        publisher.getUId(),
+                        task.getRewardPoints(),
+                        publisher.getPoints(),
+                        "删除任务退还积分：" + task.getTitle(),
+                        "task",
+                        task.getTid()
+                );
+            }
+        }
+
+        // 删除任务
+        taskMapper.deleteById(taskId);
+    }
+
+    /**
+     * 获取相似任务推荐
+     */
+    public List<TaskListResponse> getSimilarTasks(Long taskId, Integer limit) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 查询相同类型的任务,排除当前任务
+        LambdaQueryWrapper<Task> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Task::getTaskType, task.getTaskType())
+                .ne(Task::getTid, taskId)
+                .eq(Task::getStatus, 0) // 只推荐待接单的任务
+                .orderByDesc(Task::getCreatedAt)
+                .last("LIMIT " + limit);
+
+        List<Task> tasks = taskMapper.selectList(wrapper);
+
+        // 转换为响应对象
+        return tasks.stream().map(t -> {
+            TaskListResponse response = new TaskListResponse();
+            response.setTid(t.getTid());
+            response.setTitle(t.getTitle());
+            response.setTaskType(t.getTaskType());
+            response.setRewardPoints(t.getRewardPoints());
+            response.setLocation(t.getLocation());
+            response.setDeadline(t.getDeadline());
+            response.setStatus(t.getStatus());
+            response.setCreatedAt(t.getCreatedAt());
+
+            // 获取发布者昵称
+            User publisher = userMapper.selectById(t.getPublisherId());
+            if (publisher != null) {
+                response.setPublisherNickname(publisher.getNickname());
+            }
+
+            return response;
+        }).collect(Collectors.toList());
+    }
+
+    /**
+     * 获取发布者联系方式
+     */
+    public Map<String, Object> getPublisherContact(Long taskId, Long userId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        User publisher = userMapper.selectById(task.getPublisherId());
+        if (publisher == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 返回发布者信息
+        Map<String, Object> result = new HashMap<>();
+        result.put("chatId", "task_" + taskId + "_" + userId); // 私信会话ID
+
+        Map<String, Object> publisherInfo = new HashMap<>();
+        publisherInfo.put("userId", publisher.getUId());
+        publisherInfo.put("nickname", publisher.getNickname());
+        publisherInfo.put("avatar", publisher.getAvatarUrl());
+
+        result.put("publisherInfo", publisherInfo);
+
+        return result;
+    }
+
+    /**
+     * 收藏任务
+     */
+    public void favoriteTask(Long taskId, Long userId) {
+        // 检查任务是否存在
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        favoriteService.addFavorite(userId, "task", taskId);
+    }
+
+    /**
+     * 取消收藏任务
+     */
+    public void unfavoriteTask(Long taskId, Long userId) {
+        favoriteService.removeFavorite(userId, "task", taskId);
+    }
+
+    /**
+     * 举报任务
+     */
+    public Long reportTask(Long taskId, Long userId, Map<String, String> reportData) {
+        // 检查任务是否存在
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 创建举报请求
+        CreateReportRequest request = new CreateReportRequest();
+        request.setReportType(4); // 任务举报类型为4
+        request.setTargetId(taskId);
+        request.setReasonType(Integer.parseInt(reportData.getOrDefault("reasonType", "5"))); // 默认为"其他"
+        request.setDescription(reportData.getOrDefault("description", ""));
+
+        return reportService.createReport(userId, request);
+    }
+
+    /**
+     * 提交任务结果
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void submitTaskResult(Long taskId, Long userId, SubmitTaskResultRequest request) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 检查是否是接单者
+        if (task.getAccepterId() == null || !task.getAccepterId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED.getCode(), "只有接单者可以提交结果");
+        }
+
+        // 检查任务状态(只有进行中的任务可以提交结果)
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (currentStatus != TaskStatus.IN_PROGRESS) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "当前任务状态不允许提交结果,任务状态: " + currentStatus.getName());
+        }
+
+        // 检查状态转换是否合法
+        if (!currentStatus.canTransitionTo(TaskStatus.SUBMITTED)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "不允许从状态 " + currentStatus.getName() + " 转换到 " + TaskStatus.SUBMITTED.getName());
+        }
+
+        // 更新任务信息
+        task.setResultDescription(request.getDescription());
+        if (request.getAttachments() != null && !request.getAttachments().isEmpty()) {
+            // 将附件列表转换为JSON字符串存储
+            task.setResultAttachments(String.join(",", request.getAttachments()));
+        }
+        task.setStatus(TaskStatus.SUBMITTED.getCode());
+        task.setSubmittedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(taskId, userId, "submit", currentStatus.getCode(),
+            TaskStatus.SUBMITTED.getCode(), "执行者提交任务结果");
+
+        // TODO: 发送通知给发布者审核
+    }
+
+    /**
+     * 确认任务完成(发布者审核结果)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void confirmTaskCompletion(Long taskId, Long userId, ConfirmTaskRequest request) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 检查是否是发布者
+        if (!task.getPublisherId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED.getCode(), "只有发布者可以确认任务完成");
+        }
+
+        // 检查任务状态(只有待确认的任务可以审核)
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (currentStatus != TaskStatus.SUBMITTED) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "当前任务状态不允许确认,任务状态: " + currentStatus.getName());
+        }
+
+        if (request.getApproved()) {
+            // 批准完成 - 发放积分
+            confirmApproved(task, userId, request.getFeedback());
+        } else {
+            // 拒绝 - 要求重新提交
+            confirmRejected(task, userId, request.getFeedback());
+        }
+    }
+
+    /**
+     * 批准任务完成
+     */
+    private void confirmApproved(Task task, Long publisherId, String feedback) {
+        // 检查状态转换
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (!currentStatus.canTransitionTo(TaskStatus.COMPLETED)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "不允许从状态 " + currentStatus.getName() + " 转换到 " + TaskStatus.COMPLETED.getName());
+        }
+
+        // 发放积分给接单者
+        User accepter = userMapper.selectById(task.getAccepterId());
+        if (accepter == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        Integer oldPoints = accepter.getPoints();
+        accepter.setPoints(oldPoints + task.getRewardPoints());
+        userMapper.updateById(accepter);
+
+        // 记录积分日志
+        recordPointsLog(
+            accepter.getUId(),
+            task.getRewardPoints(),
+            accepter.getPoints(),
+            "完成任务获得积分：" + task.getTitle(),
+            "task",
+            task.getTid()
+        );
+
+        // 更新任务状态
+        task.setStatus(TaskStatus.COMPLETED.getCode());
+        task.setCompletedAt(LocalDateTime.now());
+        task.setRejectionReason(null); // 清空拒绝原因
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(task.getTid(), publisherId, "confirm", currentStatus.getCode(),
+            TaskStatus.COMPLETED.getCode(),
+            "发布者确认任务完成" + (feedback != null ? ", 反馈: " + feedback : ""));
+
+        // TODO: 发送通知给接单者
+    }
+
+    /**
+     * 拒绝任务结果
+     */
+    private void confirmRejected(Task task, Long publisherId, String feedback) {
+        if (feedback == null || feedback.trim().isEmpty()) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "拒绝时必须提供反馈意见");
+        }
+
+        // 检查状态转换
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (!currentStatus.canTransitionTo(TaskStatus.IN_PROGRESS)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "不允许从状态 " + currentStatus.getName() + " 转换回 " + TaskStatus.IN_PROGRESS.getName());
+        }
+
+        // 更新任务状态为进行中,要求重新提交
+        task.setStatus(TaskStatus.IN_PROGRESS.getCode());
+        task.setRejectionReason(feedback);
+        task.setResultDescription(null);
+        task.setResultAttachments(null);
+        task.setSubmittedAt(null);
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(task.getTid(), publisherId, "reject", currentStatus.getCode(),
+            TaskStatus.IN_PROGRESS.getCode(), "发布者拒绝结果并要求重新提交: " + feedback);
+
+        // TODO: 发送通知给接单者
+    }
+
+    /**
+     * 开始执行任务(接单者开始工作)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void startTask(Long taskId, Long userId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 检查是否是接单者
+        if (task.getAccepterId() == null || !task.getAccepterId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED.getCode(), "只有接单者可以开始任务");
+        }
+
+        // 检查任务状态(只有已接取的任务可以开始)
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (currentStatus != TaskStatus.ACCEPTED) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "当前任务状态不允许开始,任务状态: " + currentStatus.getName());
+        }
+
+        // 检查状态转换
+        if (!currentStatus.canTransitionTo(TaskStatus.IN_PROGRESS)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "不允许从状态 " + currentStatus.getName() + " 转换到 " + TaskStatus.IN_PROGRESS.getName());
+        }
+
+        // 更新任务状态
+        task.setStatus(TaskStatus.IN_PROGRESS.getCode());
+        task.setStartedAt(LocalDateTime.now());
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(taskId, userId, "start", currentStatus.getCode(),
+            TaskStatus.IN_PROGRESS.getCode(), "接单者开始执行任务");
+    }
+
+    /**
+     * 记录任务操作日志
+     */
+    private void recordTaskLog(Long taskId, Long userId, String action,
+                               Integer oldStatus, Integer newStatus, String remark) {
+        TaskLog log = new TaskLog();
+        log.setTaskId(taskId);
+        log.setUserId(userId);
+        log.setAction(action);
+        log.setOldStatus(oldStatus);
+        log.setNewStatus(newStatus);
+        log.setRemark(remark);
+        log.setCreatedAt(LocalDateTime.now());
+        taskLogMapper.insert(log);
+    }
+
+    /**
+     * 创建任务评价
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public Long createTaskRating(Long taskId, Long userId, CreateRatingRequest request) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 检查任务是否已完成
+        if (task.getStatus() != TaskStatus.COMPLETED.getCode()) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "只有已完成的任务才能评价");
+        }
+
+        // 确定评价者和被评价者
+        Long ratedId;
+        if (task.getPublisherId().equals(userId)) {
+            // 发布者评价接单者
+            ratedId = task.getAccepterId();
+        } else if (task.getAccepterId() != null && task.getAccepterId().equals(userId)) {
+            // 接单者评价发布者
+            ratedId = task.getPublisherId();
+        } else {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED.getCode(),
+                "只有任务的发布者或接单者可以互相评价");
+        }
+
+        // 检查是否已经评价过
+        LambdaQueryWrapper<TaskRating> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskRating::getTaskId, taskId)
+               .eq(TaskRating::getRaterId, userId);
+        if (taskRatingMapper.selectCount(wrapper) > 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "您已经评价过该任务了");
+        }
+
+        // 创建评价记录
+        TaskRating rating = new TaskRating();
+        rating.setTaskId(taskId);
+        rating.setRaterId(userId);
+        rating.setRatedId(ratedId);
+        rating.setRating(request.getRating());
+        rating.setComment(request.getComment());
+        if (request.getTags() != null && !request.getTags().isEmpty()) {
+            rating.setTags(String.join(",", request.getTags()));
+        }
+        rating.setCreatedAt(LocalDateTime.now());
+        taskRatingMapper.insert(rating);
+
+        // 更新被评价者的信用分
+        updateUserCreditScore(ratedId);
+
+        return rating.getRatingId();
+    }
+
+    /**
+     * 更新用户信用分
+     */
+    private void updateUserCreditScore(Long userId) {
+        Double avgRating = taskRatingMapper.getAverageRating(userId);
+        Long ratingCount = taskRatingMapper.getRatingCount(userId);
+
+        User user = userMapper.selectById(userId);
+        if (user != null && avgRating != null) {
+            // 更新用户信用分和评价次数
+            user.setCreditScore(avgRating);
+            user.setRatingCount(ratingCount.intValue());
+            userMapper.updateById(user);
+        }
+    }
+
+    /**
+     * 获取任务操作日志
+     */
+    public List<TaskLog> getTaskLogs(Long taskId) {
+        LambdaQueryWrapper<TaskLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskLog::getTaskId, taskId)
+               .orderByDesc(TaskLog::getCreatedAt);
+        return taskLogMapper.selectList(wrapper);
+    }
+
+    /**
+     * 获取任务评价列表
+     */
+    public List<TaskRating> getTaskRatings(Long taskId) {
+        LambdaQueryWrapper<TaskRating> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TaskRating::getTaskId, taskId)
+               .orderByDesc(TaskRating::getCreatedAt);
+        return taskRatingMapper.selectList(wrapper);
     }
 }

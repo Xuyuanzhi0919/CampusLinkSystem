@@ -41,13 +41,16 @@
           :style="{ animationDelay: `${index * 30}ms` }"
           @click="handleItemClick(item)"
         >
+          <!-- 重构：顶部色条（根据类型自动着色）-->
+          <view class="card-top-bar" :class="'bar-' + item.type"></view>
+
           <!-- 优化：右上角徽标（热门/截止中）-->
           <view v-if="item.badge" class="card-badge" :class="'badge-' + item.badge.type">
             <text class="badge-icon">{{ item.badge.icon }}</text>
             <text class="badge-text">{{ item.badge.text }}</text>
           </view>
 
-          <!-- 优化：类型标签 - 增强视觉锚点 -->
+          <!-- 重构：类型标签 - 去掉背景色，仅保留图标+文字 -->
           <view class="type-tag" :class="'type-' + item.type">
             <text class="type-icon">{{ getTypeIcon(item.type) }}</text>
             <text class="type-text">{{ getTypeName(item.type) }}</text>
@@ -101,17 +104,10 @@
             </template>
           </view>
 
-          <!-- 优化：Hover 浮层 - 综合方案 A + B + C -->
-          <view class="card-overlay">
-            <!-- 方案 B：白色气泡按钮 -->
-            <view class="overlay-button">
-              <text class="overlay-text">查看详情</text>
-              <text class="overlay-icon">→</text>
-            </view>
+          <!-- 重构：移除浮层，卡片整体可点击，hover 时显示箭头提示 -->
+          <view class="card-click-indicator">
+            <text class="indicator-arrow">→</text>
           </view>
-
-          <!-- 优化：底部渐变装饰条 -->
-          <view class="card-gradient-bar"></view>
 
           <!-- 操作按钮（合并成一个分组）- 文档规范：线性图标 -->
           <view class="card-actions">
@@ -144,9 +140,9 @@
 
     <!-- 优化：换一批/查看全部条 - 淡蓝底 #F1F5FF，增强存在感 -->
     <view v-if="!isLoading && currentList.length > 0" class="action-bar">
-      <!-- 优化：换一批按钮 - 添加刷新图标 -->
+      <!-- 精修：换一批按钮 - 精美旋转图标 -->
       <view class="action-btn refresh-btn" @click="handleRefresh">
-        <text class="action-icon refresh-icon" :class="{ rotating: isRefreshing }">🔄</text>
+        <text class="action-icon refresh-icon" :class="{ rotating: isRefreshing }">↻</text>
         <text class="action-text">换一批</text>
       </view>
 
@@ -246,18 +242,20 @@ const loadRecommendData = async () => {
     }))
 
     // 优化：转换任务数据 - 添加徽标信息
-    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any, index: number) => ({
-      id: item.taskId,
-      type: 'task',
-      title: item.title,
-      intro: item.description || '',
-      author: item.publisherName || '匿名',
-      points: item.reward || 10, // 积分
-      deadline: item.deadline ? formatDeadline(item.deadline) : '', // 截止时间
-      collected: false,
-      // 优化：添加徽标（截止中）
-      badge: item.deadline && isDeadlineSoon(item.deadline) ? { type: 'urgent', icon: '⏳', text: '截止中' } : null,
-    }))
+    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any, index: number) => {
+      return {
+        id: item.tid || item.taskId, // 修复:使用 tid 字段
+        type: 'task',
+        title: item.title,
+        intro: item.description || '', // 使用 description 字段
+        author: item.publisherNickname || item.publisherName || '匿名', // 修复:使用 publisherNickname
+        points: item.rewardPoints || 10,
+        deadline: item.deadline ? formatDeadline(item.deadline) : '', // 截止时间
+        collected: false,
+        // 优化：添加徽标（截止中）
+        badge: item.deadline && isDeadlineSoon(item.deadline) ? { type: 'urgent', icon: '⏳', text: '截止中' } : null,
+      }
+    })
 
     // 合并并随机排序
     allList.value = [...resources, ...questions, ...tasks].sort(() => Math.random() - 0.5)
@@ -600,16 +598,21 @@ onMounted(() => {
   color: var(--cl-primary, #2563EB);
   border: none;
   cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
+  /* 精修：统一过渡时间，添加弹性缓动 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
+  border-radius: 16rpx; /* 精修：预设圆角 */
 
   &:hover {
-    background: rgba(37, 99, 235, 0.1);
-    border-radius: 16rpx;
+    /* 精修：hover 背景更深，与底栏区分 */
+    background: #E0EDFF;
+    /* 精修：轻微放大，增强交互感 */
+    transform: scale(1.02);
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
+    transition: transform 0.1s ease;
   }
 }
 
@@ -632,9 +635,31 @@ onMounted(() => {
   margin: 0 16rpx;
 }
 
-/* 旋转动画 */
-.refresh-icon.rotating {
-  animation: rotate360 0.5s ease-in-out;
+/* 精修：刷新按钮特殊样式 */
+.refresh-btn {
+  position: relative;
+
+  /* 精修：hover 时刷新图标旋转 */
+  &:hover .refresh-icon {
+    transform: rotate(180deg);
+  }
+}
+
+/* 精修：刷新图标过渡 */
+.refresh-icon {
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-block;
+  /* 精修：增强图标视觉效果 */
+  font-size: 32rpx; /* 稍大一点，16px */
+  font-weight: 600;
+  color: var(--cl-primary, #2563EB);
+  /* 精修：轻微阴影，增强立体感 */
+  text-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+
+  /* 精修：刷新中的旋转动画 */
+  &.rotating {
+    animation: rotate360 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
 }
 
 @keyframes rotate360 {
@@ -646,14 +671,16 @@ onMounted(() => {
   }
 }
 
-/* 优化：推荐列表 - 响应式网格布局 */
+/* 精修：推荐列表 - 响应式网格布局 + 呼吸感间距 */
 .recommend-list {
   display: grid;
   /* 优化：响应式网格 - 3列（大屏）、2列（中屏）、1列（手机）*/
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 40rpx; /* 精修：桌面端从 48rpx (24px) 优化为 40rpx (20px) */
-  column-gap: 40rpx; /* 精修：列间距统一为 20px，提升信息密度 */
+  gap: 48rpx; /* 精修：行间距 24px，增强呼吸感 */
+  column-gap: 40rpx; /* 精修：列间距 20px，保持紧凑 */
   min-height: 400rpx;
+  /* 精修：增加顶部间距，与标题区分 */
+  margin-top: 32rpx;
 
   /* 内容交叉淡入淡出过渡 */
   transition: opacity 0.3s ease;
@@ -676,19 +703,19 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-/* 优化：卡片阴影 - 增强层次感，让内容"浮"起来 */
+/* 重构：卡片 - 整体可点击，hover 轻微上浮+光感边框 */
 .recommend-card {
   position: relative;
   padding: 32rpx; /* 内边距 16px */
   background: #FFFFFF; /* 纯白卡片 */
-  border: 1px solid #EEF1F6; /* 浅灰边框 */
+  border: 1px solid transparent; /* 重构：默认透明边框，为 hover 留空间 */
   border-radius: 24rpx; /* 圆角 12px */
   cursor: pointer;
-  transition: all 0.25s ease; /* 精修：统一过渡时间为 0.25s */
+  transition: all 0.25s ease; /* 统一过渡时间为 0.25s */
   min-height: 336rpx; /* 168px - 最小高度 */
-  /* 精修：柔和的默认阴影，统一使用 rgba(0,0,0,0.04) */
-  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.04);
-  overflow: hidden;
+  /* 重构：统一阴影标准 - 0 4px 10px rgba(0,0,0,0.05) */
+  box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.05);
+  overflow: visible; /* 重构：允许色条溢出 */
   display: flex;
   flex-direction: column;
   gap: 16rpx; /* 统一间距 8px */
@@ -696,12 +723,13 @@ onMounted(() => {
   /* 淡入动画（stagger 30ms）*/
   animation: fadeInCard 240ms ease-out both;
 
-  /* 精修：Hover 状态 - 上浮 4px，柔和蓝色阴影 */
+  /* 重构：Hover 状态 - 上浮 4px + 光感渐变边框 */
   &:hover {
-    transform: translateY(-8rpx); /* 优化：从 -6rpx 增加到 -8rpx (4px) */
-    /* 精修：使用更柔和的蓝色阴影，从 rgba(30,64,175,0.15) 优化为 rgba(59,130,246,0.12) */
-    box-shadow: 0 12rpx 32rpx rgba(59, 130, 246, 0.12);
-    border-color: var(--cl-primary, #2563EB); /* 边框变主色 */
+    transform: translateY(-8rpx); /* 上浮 4px */
+    /* 重构：hover 阴影标准 - 0 8px 24px rgba(59,130,246,0.08) */
+    box-shadow: 0 16rpx 48rpx rgba(59, 130, 246, 0.08);
+    /* 重构：光感边框 - 半透明蓝色 */
+    border-color: rgba(59, 130, 246, 0.25);
 
     .card-title {
       /* 精修：标题渐变色呼应主题色 */
@@ -711,15 +739,22 @@ onMounted(() => {
       -webkit-text-fill-color: transparent;
     }
 
-    .type-tag {
-      transform: scale(1.05); /* 标签轻微放大 */
+    /* 重构：hover 时显示箭头指示器 */
+    .card-click-indicator {
+      opacity: 1;
+      transform: translateY(-50%) translateX(0); /* 修复：保持垂直居中 */
+    }
+
+    /* 重构：顶部色条加深 */
+    .card-top-bar {
+      opacity: 1;
     }
   }
 
   /* Active 状态 */
   &:active {
     transform: translateY(-4rpx) scale(0.98);
-    transition: all 0.2s ease;
+    transition: all 0.15s ease;
   }
 }
 
@@ -738,34 +773,58 @@ onMounted(() => {
   }
 }
 
-/* 优化：类型标签 - 增强视觉锚点，饱和柔和的浅色底 */
+/* 精修：顶部色条 - 6px 高度，柔化色彩，统一亮度 */
+.card-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 12rpx; /* 精修：从 8rpx (4px) 增加到 12rpx (6px) */
+  border-radius: 24rpx 24rpx 0 0; /* 顶部圆角与卡片一致 */
+  opacity: 0.8; /* 默认半透明 */
+  transition: opacity 0.25s ease;
+  z-index: 1;
+
+  /* 精修：课件 - 柔和蓝色（亮度 70%）*/
+  &.bar-resource {
+    background: #60A5FA; /* 从 #3B82F6 柔化 */
+  }
+
+  /* 精修：问答 - 柔和橙色（亮度 73%）*/
+  &.bar-question {
+    background: #FDBA74; /* 从 #F59E0B 柔化 */
+  }
+
+  /* 精修：任务 - 柔和绿色（亮度 68%）*/
+  &.bar-task {
+    background: #4ADE80; /* 从 #22C55E 柔化 */
+  }
+}
+
+/* 精修：类型标签 - 去掉背景色，颜色与色条同步 */
 .type-tag {
   display: inline-flex;
   align-items: center;
   gap: 8rpx; /* 图标与文字间距 */
-  padding: 4rpx 16rpx; /* 2px 8px - 优化内边距 */
-  border-radius: 16rpx; /* 8px 圆角 */
+  padding: 0; /* 重构：去掉内边距 */
   font-size: 24rpx; /* 12px */
-  font-weight: 600;
-  transition: all var(--transition-hover, 150ms ease);
+  font-weight: 500; /* 重构：从 600 降到 500 */
+  transition: all 0.25s ease;
   flex-shrink: 0;
 
-  /* 优化：课程 - 浅蓝底 + 深蓝字 + 📘 图标 */
+  /* 精修：课程 - 柔和蓝色，与色条同步 */
   &.type-resource {
-    background: #E0F2FE; /* 浅蓝 */
-    color: #2563EB; /* 深蓝 */
+    color: #60A5FA; /* 精修：从 #3B82F6 柔化 */
   }
 
-  /* 优化：问答 - 浅黄底 + 深黄字 + 💡 图标 */
+  /* 精修：问答 - 柔和橙色，与色条同步 */
   &.type-question {
-    background: #FEF9C3; /* 浅黄 */
-    color: #CA8A04; /* 深黄 */
+    color: #FDBA74; /* 精修：从 #F59E0B 柔化 */
   }
 
-  /* 优化：任务 - 浅绿底 + 深绿字 + 💼 图标 */
+  /* 精修：任务 - 柔和绿色，与色条同步 */
   &.type-task {
-    background: #E8F9E9; /* 浅绿 */
-    color: #16A34A; /* 深绿 */
+    color: #4ADE80; /* 精修：从 #22C55E 柔化 */
   }
 }
 
@@ -776,6 +835,33 @@ onMounted(() => {
 
 .type-text {
   line-height: 1;
+}
+
+/* 重构：点击指示器（左侧与标题对齐）*/
+.card-click-indicator {
+  position: absolute;
+  /* 修复：改为左侧定位，与卡片标题垂直对齐 */
+  top: 50%;
+  transform: translateY(-50%) translateX(-8rpx);
+  right: 32rpx;
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.08);
+  border-radius: 50%;
+  opacity: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  z-index: 5; /* 修复：降低层级，避免遮挡徽标 */
+}
+
+.indicator-arrow {
+  font-size: 32rpx;
+  color: #3B82F6;
+  line-height: 1;
+  font-weight: 600;
 }
 
 /* 优化：卡片内容包装器 - 分层结构 */
@@ -1014,128 +1100,7 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 精修：Hover 浮层 - 柔化蓝色 + 毛玻璃效果 */
-.card-overlay {
-  position: absolute;
-  inset: 0; /* 简写 top/right/bottom/left: 0 */
-  /* 精修：进一步柔化蓝色，避免压制白色按钮 */
-  background: linear-gradient(180deg,
-    rgba(59, 130, 246, 0.82) 0%,
-    rgba(37, 99, 235, 0.70) 100%
-  );
-  /* 精修：添加毛玻璃效果，增强高端感 */
-  backdrop-filter: blur(12rpx); /* 6px */
-  border-radius: 24rpx; /* 12px - 与卡片圆角一致 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx; /* 6px */
-  opacity: 0;
-  /* 从下到上浮现 */
-  transform: translateY(20rpx); /* 10px */
-  /* 精修：统一过渡时间为 0.4s */
-  transition: all 0.4s ease;
-  pointer-events: none;
-  z-index: 3;
-
-  /* 精修：低端设备降级方案（不支持 backdrop-filter 时使用更深的纯色）*/
-  @supports not (backdrop-filter: blur(12rpx)) {
-    background: linear-gradient(180deg,
-      rgba(59, 130, 246, 0.92) 0%,
-      rgba(37, 99, 235, 0.88) 100%
-    );
-  }
-}
-
-.recommend-card:hover .card-overlay {
-  opacity: 1;
-  transform: translateY(0); /* 上浮到原位 */
-  pointer-events: auto; /* hover 时可点击 */
-}
-
-/* 精修：白色气泡按钮 - 轻轻呼吸，增强高端感 */
-.overlay-button {
-  display: flex;
-  align-items: center;
-  gap: 12rpx; /* 6px */
-  background: #FFFFFF; /* 白色背景 */
-  color: var(--cl-primary, #2563EB); /* 蓝色文字 */
-  border-radius: 9999rpx; /* 完全圆角 */
-  padding: 16rpx 32rpx; /* 8px 16px */
-  font-weight: 600;
-  /* 精修：增强白色柔光阴影 */
-  box-shadow: 0 8rpx 24rpx rgba(255, 255, 255, 0.4);
-  /* 精修：统一过渡时间为 0.25s，添加弹性缓动 */
-  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-              background 0.25s ease,
-              box-shadow 0.25s ease;
-  cursor: pointer;
-  /* 精修：轻微呼吸动画 */
-  animation: breathe 2s ease-in-out infinite;
-
-  /* 精修：按钮独立 hover 效果 - 轻轻呼吸 */
-  &:hover {
-    background: #EFF6FF; /* 浅蓝背景 */
-    transform: scale(1.08); /* 精修：从 1.06 增加到 1.08，更明显 */
-    box-shadow: 0 12rpx 32rpx rgba(255, 255, 255, 0.6); /* 阴影加深 */
-    animation: none; /* hover 时暂停呼吸动画 */
-  }
-
-  &:active {
-    transform: scale(0.96); /* 精修：从 0.98 改为 0.96，更明显的按压感 */
-    transition: transform 0.1s ease; /* 按压时快速响应 */
-  }
-}
-
-/* 按钮呼吸动画 */
-@keyframes breathe {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
-.overlay-text {
-  font-size: 32rpx; /* 16px */
-  font-weight: 600;
-  color: var(--cl-primary, #2563EB); /* 蓝色文字 */
-  line-height: 1;
-}
-
-.overlay-icon {
-  font-size: 32rpx; /* 16px */
-  color: var(--cl-primary, #2563EB); /* 蓝色箭头 */
-  line-height: 1;
-  /* 优化：箭头动画更柔和 */
-  animation: arrowBounce 1.5s ease-in-out infinite;
-}
-
-@keyframes arrowBounce {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  50% {
-    transform: translateX(6rpx); /* 3px - 减小移动距离 */
-  }
-}
-
-/* 优化：底部渐变装饰条 */
-.card-gradient-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 6rpx; /* 3px */
-  background: linear-gradient(90deg, #3B82F6 0%, transparent 100%); /* 蓝色渐变 */
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.recommend-card:hover .card-gradient-bar {
-  opacity: 1;
-}
+/* 重构：移除原有的浮层样式，已被点击指示器替代 */
 
 /* 优化：底部操作栏 - 淡蓝底 #F1F5FF，增强存在感 */
 .action-bar {

@@ -87,10 +87,11 @@ class Request {
 
     // 业务错误
     if (res.code !== 200 && res.code !== 201 && res.code !== 204) {
-      uni.showToast({
-        title: res.message || '请求失败',
-        icon: 'none',
-      })
+      // 不在这里自动显示Toast，让调用方自己处理
+      // uni.showToast({
+      //   title: res.message || '请求失败',
+      //   icon: 'none',
+      // })
       return Promise.reject(new Error(res.message))
     }
 

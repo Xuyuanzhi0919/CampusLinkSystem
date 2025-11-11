@@ -37,6 +37,10 @@ public class WebConfig implements WebMvcConfigurer {
                         "/question/list",      // 问题列表（游客可浏览）
                         "/question/*/answers", // 问题答案列表（游客可浏览）
                         "/task/list",          // 任务列表（游客可浏览）
+                        "/tag/hot",            // 热门标签（游客可浏览）
+                        "/tag/hot/category",   // 分类热门标签（游客可浏览）
+                        "/tag/search",         // 搜索标签（游客可浏览）
+                        "/stats/today",        // 今日活跃统计（游客可浏览）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",
                         "/v3/api-docs/**",

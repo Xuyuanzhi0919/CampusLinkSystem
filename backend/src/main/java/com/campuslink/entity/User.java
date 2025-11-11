@@ -86,6 +86,18 @@ public class User {
     private Integer level;
 
     /**
+     * 信用评分(0.0-5.0)
+     */
+    @TableField("credit_score")
+    private Double creditScore;
+
+    /**
+     * 被评价次数
+     */
+    @TableField("rating_count")
+    private Integer ratingCount;
+
+    /**
      * 账号状态：0-禁用，1-正常
      */
     private Integer status;

@@ -42,6 +42,13 @@
 				"navigationBarTitleText": "热门问答榜",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/task/detail",
+			"style": {
+				"navigationBarTitleText": "任务详情",
+				"navigationStyle": "custom"
+			}
 		}
 	],
 	"globalStyle": {

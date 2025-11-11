@@ -101,7 +101,28 @@
         <text class="card-icon">🔥</text>
         <text class="card-title">热门标签</text>
       </view>
-      <view class="tags-list">
+
+      <!-- 加载中状态 -->
+      <view v-if="isLoadingTags" class="tags-loading">
+        <text class="loading-text">加载中...</text>
+      </view>
+
+      <!-- 错误状态 -->
+      <view v-else-if="tagsError" class="tags-error">
+        <text class="error-icon">⚠️</text>
+        <text class="error-text">{{ tagsError }}</text>
+        <text class="retry-btn" @click="loadHotTags">点击重试</text>
+      </view>
+
+      <!-- 空状态 -->
+      <view v-else-if="hotTags.length === 0" class="tags-empty">
+        <text class="empty-icon">🏷️</text>
+        <text class="empty-text">暂无热门标签</text>
+        <text class="empty-hint">快来发布第一个标签吧</text>
+      </view>
+
+      <!-- 正常数据展示 -->
+      <view v-else class="tags-list">
         <text
           v-for="tag in hotTags"
           :key="tag"
@@ -122,7 +143,21 @@
         <text class="card-icon">📅</text>
         <text class="card-title">今日活跃</text>
       </view>
-      <view class="stats-list">
+
+      <!-- 加载中状态 -->
+      <view v-if="isLoadingStats" class="stats-loading">
+        <text class="loading-text">加载中...</text>
+      </view>
+
+      <!-- 错误状态 -->
+      <view v-else-if="statsError" class="stats-error">
+        <text class="error-icon">⚠️</text>
+        <text class="error-text">{{ statsError }}</text>
+        <text class="retry-btn" @click="loadTodayStats">点击重试</text>
+      </view>
+
+      <!-- 正常数据展示 -->
+      <view v-else class="stats-list">
         <view class="stat-item">
           <text class="stat-label">活跃用户</text>
           <text class="stat-value">{{ todayStats.activeUsers }}</text>
@@ -146,7 +181,9 @@ import { getResourceList } from '@/services/resource'
 import { getQuestionList } from '@/services/question'
 import { getTaskList } from '@/services/task'
 import { getHotTags } from '@/services/tag'
+import { getTodayStats } from '@/services/stats'
 import type { TagItem } from '@/services/tag'
+import type { TodayStatsResponse } from '@/services/stats'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 import ViewMoreButton from '@/components/ViewMoreButton.vue'
@@ -174,13 +211,16 @@ const taskList = ref<any[]>([])
 // 优化：热门标签数据（从API动态获取）
 const hotTags = ref<string[]>([])
 const isLoadingTags = ref(false)
+const tagsError = ref<string>('')  // 标签加载错误信息
 
-// 优化：今日活跃数据
+// 优化：今日活跃数据（从API动态获取）
 const todayStats = ref({
-  activeUsers: 1234,
-  newQuestions: 89,
-  newResources: 56
+  activeUsers: 0,
+  newQuestions: 0,
+  newResources: 0
 })
+const isLoadingStats = ref(false)
+const statsError = ref<string>('')  // 统计加载错误信息
 
 // 当前列表
 const currentList = computed(() => {
@@ -372,39 +412,72 @@ const loadHotTags = async () => {
   if (isLoadingTags.value) return
 
   isLoadingTags.value = true
+  tagsError.value = ''  // 清空之前的错误
+
   try {
     const res = await getHotTags({ limit: 8 })
     if (res && Array.isArray(res)) {
       // 提取displayName字段
       hotTags.value = res.map((tag: TagItem) => tag.displayName)
+
+      // 如果返回空数组，不设置错误，让UI显示空状态
+      if (hotTags.value.length === 0) {
+        console.log('热门标签数据为空')
+      }
     } else {
-      // 如果API失败，使用默认标签
-      hotTags.value = [
-        '#考研资料',
-        '#学习打卡',
-        '#AI问答',
-        '#Python基础',
-        '#数据结构',
-        '#英语四六级',
-        '#算法刷题',
-        '#前端开发'
-      ]
+      // API返回格式错误
+      tagsError.value = '数据格式错误'
+      hotTags.value = []
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('加载热门标签失败:', error)
-    // 使用默认标签
-    hotTags.value = [
-      '#考研资料',
-      '#学习打卡',
-      '#AI问答',
-      '#Python基础',
-      '#数据结构',
-      '#英语四六级',
-      '#算法刷题',
-      '#前端开发'
-    ]
+    // 设置友好的错误提示
+    if (error.message?.includes('Network')) {
+      tagsError.value = '网络连接失败，请检查网络后重试'
+    } else if (error.message?.includes('timeout')) {
+      tagsError.value = '请求超时，请稍后重试'
+    } else {
+      tagsError.value = '加载失败，请稍后重试'
+    }
+    hotTags.value = []
   } finally {
     isLoadingTags.value = false
+  }
+}
+
+/**
+ * 加载今日活跃统计
+ */
+const loadTodayStats = async () => {
+  if (isLoadingStats.value) return
+
+  isLoadingStats.value = true
+  statsError.value = ''  // 清空之前的错误
+
+  try {
+    const res = await getTodayStats()
+    if (res) {
+      todayStats.value = {
+        activeUsers: res.activeUsers || 0,
+        newQuestions: res.newQuestions || 0,
+        newResources: res.newResources || 0
+      }
+    } else {
+      // API返回格式错误
+      statsError.value = '数据格式错误'
+    }
+  } catch (error: any) {
+    console.error('加载今日活跃统计失败:', error)
+    // 设置友好的错误提示
+    if (error.message?.includes('Network')) {
+      statsError.value = '网络连接失败'
+    } else if (error.message?.includes('timeout')) {
+      statsError.value = '请求超时'
+    } else {
+      statsError.value = '加载失败'
+    }
+  } finally {
+    isLoadingStats.value = false
   }
 }
 
@@ -432,6 +505,7 @@ watch(currentTab, () => {
 onMounted(() => {
   loadData()
   loadHotTags()
+  loadTodayStats()
 })
 </script>
 
@@ -788,6 +862,128 @@ onMounted(() => {
   line-height: 1;
   /* 优化：添加数字动画效果 */
   font-variant-numeric: tabular-nums;
+}
+
+/* ========== 标签加载状态样式 ========== */
+
+/* 加载中状态 */
+.tags-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 0;
+  min-height: 120rpx;
+}
+
+.loading-text {
+  font-size: 24rpx;
+  color: var(--cl-gray-500, #94A3B8);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* 错误状态 */
+.tags-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 20rpx;
+  min-height: 120rpx;
+  gap: 12rpx;
+}
+
+.error-icon {
+  font-size: 40rpx;
+  line-height: 1;
+}
+
+.error-text {
+  font-size: 24rpx;
+  color: var(--cl-gray-600, #64748B);
+  line-height: 1.4;
+  text-align: center;
+}
+
+.retry-btn {
+  font-size: 24rpx;
+  color: var(--cl-primary, #2563EB);
+  padding: 8rpx 20rpx;
+  border-radius: 12rpx;
+  background: #F0F9FF;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8rpx;
+
+  &:hover {
+    background: var(--cl-primary, #2563EB);
+    color: #FFFFFF;
+    transform: translateY(-2rpx);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+  }
+}
+
+/* 空状态 */
+.tags-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 20rpx;
+  min-height: 120rpx;
+  gap: 8rpx;
+}
+
+.empty-icon {
+  font-size: 48rpx;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 26rpx;
+  color: var(--cl-gray-600, #64748B);
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.empty-hint {
+  font-size: 22rpx;
+  color: var(--cl-gray-500, #94A3B8);
+  line-height: 1.4;
+}
+
+/* ========== 统计加载状态样式 ========== */
+
+/* 统计加载中 */
+.stats-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx 0;
+  min-height: 120rpx;
+}
+
+/* 统计错误状态 */
+.stats-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32rpx 20rpx;
+  min-height: 120rpx;
+  gap: 12rpx;
 }
 </style>
 

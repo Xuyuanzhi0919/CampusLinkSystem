@@ -93,4 +93,19 @@ public class TaskResponse {
      * 完成时间
      */
     private LocalDateTime completedAt;
+
+    /**
+     * 图片URL列表
+     */
+    private String[] images;
+
+    /**
+     * 浏览次数
+     */
+    private Integer viewCount;
+
+    /**
+     * 当前用户是否已收藏
+     */
+    private Boolean isFavorited;
 }

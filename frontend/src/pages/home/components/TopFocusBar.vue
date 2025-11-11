@@ -21,16 +21,44 @@
 
         <!-- 右侧：操作按钮 - 优化：合并登录/注册，升级发布按钮 -->
         <view class="action-buttons">
-          <!-- 登录/注册（次操作 - Secondary）-->
-          <view class="action-btn action-btn-secondary" @click="handleLoginRegister">
+          <!-- 登录/注册按钮（未登录时显示）-->
+          <view
+            v-if="showLoginButton"
+            class="action-btn action-btn-secondary login-btn-fade"
+            :class="{ 'btn-fade-out': !showLoginButton }"
+            @click="handleLoginRegister"
+          >
             <text class="action-btn-text">登录 / 注册</text>
           </view>
+
+          <!-- 用户头像按钮（登录后显示）-->
+          <view
+            v-if="showAvatarButton"
+            class="avatar-wrapper avatar-fade"
+            :class="{ 'btn-fade-in': showAvatarButton }"
+          >
+            <UserAvatar
+              :avatar-url="userInfo.avatar"
+              :nickname="userInfo.nickname"
+              :is-active="showUserMenu"
+              @click="handleAvatarClick"
+            />
+          </view>
+
           <!-- 发布（主操作 - Primary）-->
           <view class="action-btn action-btn-primary" @click="handlePublish">
             <text class="action-btn-icon">✨</text>
             <text class="action-btn-text">发布</text>
           </view>
         </view>
+
+        <!-- 用户下拉菜单 -->
+        <UserDropdownMenu
+          :visible="showUserMenu"
+          :user-info="userInfo"
+          @update:visible="showUserMenu = $event"
+          @menu-click="handleMenuClick"
+        />
       </view>
 
       <!-- 第二行：主内容区（搜索框居中）-->
@@ -139,16 +167,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import CampusBuilding from '@/components/illustrations/CampusBuilding.vue'
 import StudentWithPhone from '@/components/illustrations/StudentWithPhone.vue'
 import DecorativeElements from '@/components/illustrations/DecorativeElements.vue'
+import UserAvatar from '@/components/UserAvatar.vue'
+import UserDropdownMenu from '@/components/UserDropdownMenu.vue'
+import config from '@/config'
 
 // Props & Emits
 const emit = defineEmits<{
   search: [keyword: string]
   upload: []
   aiAnswer: []
+  login: []
 }>()
 
 // 数据
@@ -157,12 +189,233 @@ const showHotTags = ref(false)
 const hotTags = ref(['高数课件', '四六级真题', '数据结构', '考研资料'])
 const isVoiceActive = ref(false) // 语音搜索激活状态
 
+// 用户登录状态
+const isLoggedIn = ref(false)
+const showUserMenu = ref(false)
+const userInfo = ref({
+  nickname: '',
+  email: '',
+  phone: '',
+  avatar: ''
+})
+
+// 按钮淡入淡出状态
+const showLoginButton = ref(true)
+const showAvatarButton = ref(false)
+
+// 检查登录状态
+const checkLoginStatus = () => {
+  const token = uni.getStorageSync(config.tokenKey)
+  const userInfoStr = uni.getStorageSync(config.userInfoKey)
+
+  if (token && userInfoStr) {
+    try {
+      const parsedUserInfo = JSON.parse(userInfoStr)
+      userInfo.value = {
+        nickname: parsedUserInfo.nickname || '用户',
+        email: parsedUserInfo.email || '',
+        phone: parsedUserInfo.phone || '',
+        avatar: parsedUserInfo.avatar || ''
+      }
+      isLoggedIn.value = true
+
+      // 动画：登录按钮淡出，头像按钮淡入
+      showLoginButton.value = false
+      setTimeout(() => {
+        showAvatarButton.value = true
+      }, 200)
+    } catch (error) {
+      console.error('解析用户信息失败:', error)
+      isLoggedIn.value = false
+    }
+  } else {
+    isLoggedIn.value = false
+    showLoginButton.value = true
+    showAvatarButton.value = false
+  }
+}
+
+// 组件挂载时检查登录状态
+onMounted(() => {
+  checkLoginStatus()
+})
+
+// 点击头像
+const handleAvatarClick = () => {
+  showUserMenu.value = !showUserMenu.value
+}
+
+// 菜单项点击
+const handleMenuClick = (menuId: string) => {
+  switch (menuId) {
+    case 'profile':
+      uni.navigateTo({
+        url: '/pages/user/profile',
+        fail: () => {
+          uni.showToast({ title: '功能开发中', icon: 'none' })
+        }
+      })
+      break
+    case 'favorites':
+      uni.navigateTo({
+        url: '/pages/user/favorites',
+        fail: () => {
+          uni.showToast({ title: '功能开发中', icon: 'none' })
+        }
+      })
+      break
+    case 'settings':
+      uni.navigateTo({
+        url: '/pages/user/settings',
+        fail: () => {
+          uni.showToast({ title: '功能开发中', icon: 'none' })
+        }
+      })
+      break
+    case 'logout':
+      handleLogout()
+      break
+  }
+}
+
+// 退出登录
+const handleLogout = () => {
+  // 清除本地存储
+  uni.removeStorageSync(config.tokenKey)
+  uni.removeStorageSync(config.refreshTokenKey)
+  uni.removeStorageSync(config.userInfoKey)
+
+  // 显示提示
+  showWelcomeToast('已安全退出,期待下次再见!', 'info')
+
+  // 动画：头像按钮淡出，登录按钮淡入
+  showAvatarButton.value = false
+  setTimeout(() => {
+    showLoginButton.value = true
+    isLoggedIn.value = false
+    userInfo.value = {
+      nickname: '',
+      email: '',
+      phone: '',
+      avatar: ''
+    }
+  }, 300)
+}
+
+// 显示欢迎提示（产品级轻量气泡 - CampusLink品牌调性）
+const showWelcomeToast = (message: string, type: 'success' | 'info' = 'success') => {
+  // #ifdef H5
+  const toastDiv = document.createElement('div')
+
+  // 精细化配色：更轻盈的背景 + 品牌蓝灰调和 + 精美图标
+  const typeConfig = {
+    success: {
+      bg: 'rgba(209, 250, 229, 0.55)', // 优化：降低不透明度到55%
+      textColor: '#14532d', // 优化：更深的绿色文字
+      icon: '🎉', // 优化：改用庆祝图标，更欢迎
+      glowColor: 'rgba(34, 197, 94, 0.25)' // 柔和绿光
+    },
+    info: {
+      bg: 'rgba(239, 246, 255, 0.55)', // 优化：降低不透明度到55%
+      textColor: '#1E3A8A', // 深蓝文字
+      icon: '👋', // 优化：改用挥手图标，更友好
+      glowColor: 'rgba(59, 130, 246, 0.25)' // 柔和蓝光
+    }
+  }
+
+  const cfg = typeConfig[type]
+
+  // 轻量化结构：单个图标 + 文字（移除重复图标）
+  toastDiv.innerHTML = `
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span class="toast-icon" style="
+        font-size: 16px;
+        line-height: 1;
+        flex-shrink: 0;
+        animation: iconPulse 1.5s ease-in-out infinite;
+        filter: drop-shadow(0 0 4px ${cfg.glowColor});
+      ">${cfg.icon}</span>
+      <span style="
+        font-size: 14px;
+        font-weight: 500;
+        color: ${cfg.textColor};
+        line-height: 1.4;
+        letter-spacing: 0.3px;
+      ">${message}</span>
+    </div>
+  `
+
+  // 优化：更轻盈的样式 - 减小padding，降低阴影，提高位置（远离弹窗）
+  toastDiv.style.cssText = `
+    position: fixed;
+    top: 60px;
+    left: 50%;
+    transform: translate(-50%, -10px) scale(0.98);
+    background: ${cfg.bg};
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 8px 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.35s ease-out;
+    pointer-events: none;
+  `
+
+  // 添加图标脉动动画样式
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes iconPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.1); opacity: 0.85; }
+    }
+  `
+  document.head.appendChild(style)
+
+  document.body.appendChild(toastDiv)
+
+  // 入场动画：柔和淡入 + 微缩放 + 光晕显现
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      toastDiv.style.opacity = '1'
+      toastDiv.style.transform = 'translate(-50%, 0) scale(1)'
+      toastDiv.style.boxShadow = `0 4px 12px rgba(0, 0, 0, 0.08), 0 0 12px ${cfg.glowColor}`
+    })
+  })
+
+  // 停留2.5秒后上滑淡出
+  setTimeout(() => {
+    toastDiv.style.opacity = '0'
+    toastDiv.style.transform = 'translate(-50%, -8px) scale(0.98)'
+    toastDiv.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)'
+
+    setTimeout(() => {
+      if (document.body.contains(toastDiv)) {
+        document.body.removeChild(toastDiv)
+      }
+      if (document.head.contains(style)) {
+        document.head.removeChild(style)
+      }
+    }, 300)
+  }, 2500)
+  // #endif
+
+  // #ifndef H5
+  uni.showToast({
+    title: message,
+    icon: 'none',
+    duration: 2500
+  })
+  // #endif
+}
+
 /**
  * 登录/注册（优化：合并入口，打开统一弹窗）
  */
 const handleLoginRegister = () => {
-  // TODO: 打开登录/注册弹窗（Tab切换式设计）
-  uni.navigateTo({ url: '/pages/auth/login' })
+  // 触发父组件的登录事件，打开登录弹窗
+  emit('login')
 }
 
 /**
@@ -321,7 +574,10 @@ const stopVoiceRecognition = () => {
   // #endif
 }
 
-
+// 暴露方法给父组件
+defineExpose({
+  checkLoginStatus
+})
 </script>
 
 <style scoped lang="scss">
@@ -549,6 +805,50 @@ const stopVoiceRecognition = () => {
 .action-btn-icon {
   font-size: 26rpx; /* 减小字号 */
   line-height: 1;
+}
+
+/* 淡入淡出动画 */
+.login-btn-fade {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.btn-fade-out {
+  animation: fadeOut 0.3s ease-in-out;
+}
+
+.avatar-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-fade {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.btn-fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10rpx);
+  }
 }
 
 /* ========== 五、主内容区（第二行：搜索框居中）========== */

@@ -91,4 +91,40 @@ public class Task {
      */
     @TableField("completed_at")
     private LocalDateTime completedAt;
+
+    /**
+     * 执行者提交的结果描述
+     */
+    @TableField("result_description")
+    private String resultDescription;
+
+    /**
+     * 结果附件URL列表
+     */
+    @TableField("result_attachments")
+    private String resultAttachments;
+
+    /**
+     * 提交结果时间
+     */
+    @TableField("submitted_at")
+    private LocalDateTime submittedAt;
+
+    /**
+     * 发布者拒绝原因
+     */
+    @TableField("rejection_reason")
+    private String rejectionReason;
+
+    /**
+     * 接单时间
+     */
+    @TableField("accepted_at")
+    private LocalDateTime acceptedAt;
+
+    /**
+     * 开始执行时间
+     */
+    @TableField("started_at")
+    private LocalDateTime startedAt;
 }

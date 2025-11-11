@@ -1,8 +1,8 @@
 # CampusLink API 前端对接文档
 
-> 📅 更新时间：2025-11-09
+> 📅 更新时间：2025-11-11
 > 🔗 基础URL：`http://localhost:8080`
-> 📝 文档版本：v1.0
+> 📝 文档版本：v1.1 (新增任务详情页扩展接口 + 收藏模块)
 
 ## 📋 目录
 
@@ -14,12 +14,13 @@
 - [6. 任务模块 (Task)](#6-任务模块-task)
 - [7. 社团模块 (Club)](#7-社团模块-club)
 - [8. 活动模块 (Activity)](#8-活动模块-activity)
-- [9. 评论模块 (Comment)](#9-评论模块-comment)
-- [10. 私信模块 (Message)](#10-私信模块-message)
-- [11. 通知模块 (Notification)](#11-通知模块-notification)
-- [12. 举报模块 (Report)](#12-举报模块-report)
-- [13. 学校模块 (School)](#13-学校模块-school)
-- [14. 系统配置 (SystemConfig)](#14-系统配置-systemconfig)
+- [9. 收藏模块 (Favorite) 🆕](#9-收藏模块-favorite)
+- [10. 评论模块 (Comment)](#10-评论模块-comment)
+- [11. 私信模块 (Message)](#11-私信模块-message)
+- [12. 通知模块 (Notification)](#12-通知模块-notification)
+- [13. 举报模块 (Report)](#13-举报模块-report)
+- [14. 学校模块 (School)](#14-学校模块-school)
+- [15. 系统配置 (SystemConfig)](#15-系统配置-systemconfig)
 
 ---
 
@@ -843,6 +844,377 @@ Authorization: Bearer {refreshToken}
 **请求参数**: 同上
 **响应示例**: 同任务列表
 
+### 6.9 删除任务 🆕
+
+**接口**: `DELETE /task/{id}`
+**认证**: 需要
+
+**说明**: 只有发布者可以删除任务,且只能删除待接单或已取消的任务。删除待接单状态的任务会退还悬赏积分。
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "任务已删除",
+  "data": null
+}
+```
+
+### 6.10 获取相似任务推荐 🆕
+
+**接口**: `GET /task/{id}/similar`
+**认证**: 需要
+
+**请求参数**:
+| 参数 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| limit | Integer | 否 | 5 | 推荐数量 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "taskId": 2,
+      "title": "帮忙取快递",
+      "description": "需要帮忙取快递...",
+      "taskType": "help",
+      "reward": 5,
+      "status": 0,
+      "deadline": "2024-01-11T18:00:00",
+      "publisherName": "用户A",
+      "createdAt": "2024-01-02T10:00:00"
+    }
+  ]
+}
+```
+
+### 6.11 联系发布者 🆕
+
+**接口**: `POST /task/{id}/contact`
+**认证**: 需要
+
+**说明**: 获取任务发布者信息,用于建立私信会话
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "chatId": "task_1_123",
+    "publisherInfo": {
+      "userId": 5,
+      "nickname": "赵六",
+      "avatar": "https://example.com/avatar.jpg"
+    }
+  }
+}
+```
+
+### 6.12 收藏任务 🆕
+
+**接口**: `POST /task/{id}/favorite`
+**认证**: 需要
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "收藏成功",
+  "data": null
+}
+```
+
+### 6.13 取消收藏任务 🆕
+
+**接口**: `DELETE /task/{id}/favorite`
+**认证**: 需要
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "取消收藏成功",
+  "data": null
+}
+```
+
+### 6.14 举报任务 🆕
+
+**接口**: `POST /task/{id}/report`
+**认证**: 需要
+
+**请求参数**:
+```json
+{
+  "reasonType": "1",
+  "description": "该任务包含虚假信息"
+}
+```
+
+**举报原因类型**:
+- `1` - 垃圾广告
+- `2` - 不当内容
+- `3` - 侵权投诉
+- `4` - 虚假信息
+- `5` - 其他
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "举报成功",
+  "data": {
+    "reportId": 10
+  }
+}
+```
+
+### 6.15 任务评论（使用通用评论接口）
+
+任务的评论功能使用通用评论接口,详见 [评论模块](#10-评论模块-comment)
+
+**获取任务评论**:
+```javascript
+GET /comment/list?targetType=task&targetId={taskId}&page=1&pageSize=20
+```
+
+**发表任务评论**:
+```javascript
+POST /comment
+{
+  "targetType": "task",
+  "targetId": 1,
+  "content": "这个任务很有意思",
+  "parentId": null
+}
+```
+
+### 6.16 开始执行任务 🆕
+
+**接口**: `POST /task/{id}/start`
+**认证**: 需要
+
+**说明**: 接单者开始执行任务,状态从"已接取"变为"进行中"
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "任务已开始",
+  "data": null
+}
+```
+
+### 6.17 提交任务结果 🆕
+
+**接口**: `POST /task/{id}/submit`
+**认证**: 需要
+
+**说明**: 接单者提交任务执行结果,等待发布者确认
+
+**请求参数**:
+```json
+{
+  "description": "任务已完成,附件为完成截图和相关文件",
+  "attachments": [
+    "https://oss.example.com/result1.jpg",
+    "https://oss.example.com/result2.pdf"
+  ]
+}
+```
+
+**字段说明**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| description | String | 是 | 结果描述(10-1000字符) |
+| attachments | Array | 否 | 结果附件URL列表 |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "结果已提交,等待发布者确认",
+  "data": null
+}
+```
+
+### 6.18 确认任务完成 🆕
+
+**接口**: `POST /task/{id}/confirm`
+**认证**: 需要
+
+**说明**: 发布者审核接单者提交的结果,批准则完成任务并发放积分,拒绝则要求重新提交
+
+**请求参数**:
+```json
+{
+  "approved": true,
+  "feedback": "完成得很好,感谢!"
+}
+```
+
+**字段说明**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| approved | Boolean | 是 | true-批准完成, false-拒绝要求重做 |
+| feedback | String | 否 | 反馈意见(拒绝时必填,最多500字符) |
+
+**响应示例(批准)**:
+```json
+{
+  "code": 200,
+  "message": "任务已确认完成",
+  "data": null
+}
+```
+
+**响应示例(拒绝)**:
+```json
+{
+  "code": 200,
+  "message": "已要求重新提交",
+  "data": null
+}
+```
+
+### 6.19 创建任务评价 🆕
+
+**接口**: `POST /task/{id}/rating`
+**认证**: 需要
+
+**说明**: 任务完成后,发布者和接单者可以互相评价
+
+**请求参数**:
+```json
+{
+  "rating": 5,
+  "comment": "非常准时高效,沟通顺畅,值得信赖!",
+  "tags": ["准时", "高效", "友好"]
+}
+```
+
+**字段说明**:
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| rating | Integer | 是 | 评分(1-5星) |
+| comment | String | 否 | 评价内容(10-500字符) |
+| tags | Array | 否 | 评价标签 |
+
+**常用评价标签**:
+- 正面: `准时`, `高效`, `友好`, `专业`, `认真`, `守信`
+- 负面: `迟到`, `敷衍`, `态度差`, `不守信`
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "评价成功",
+  "data": {
+    "ratingId": 25
+  }
+}
+```
+
+### 6.20 获取任务操作日志 🆕
+
+**接口**: `GET /task/{id}/logs`
+**认证**: 需要
+
+**说明**: 获取任务的所有操作记录,包括接单、开始、提交、确认等
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "logId": 101,
+      "taskId": 1,
+      "userId": 48,
+      "action": "accept",
+      "oldStatus": 0,
+      "newStatus": 1,
+      "remark": "用户接取任务",
+      "createdAt": "2025-11-11T10:00:00"
+    },
+    {
+      "logId": 102,
+      "taskId": 1,
+      "userId": 48,
+      "action": "start",
+      "oldStatus": 1,
+      "newStatus": 2,
+      "remark": "接单者开始执行任务",
+      "createdAt": "2025-11-11T10:30:00"
+    },
+    {
+      "logId": 103,
+      "taskId": 1,
+      "userId": 48,
+      "action": "submit",
+      "oldStatus": 2,
+      "newStatus": 3,
+      "remark": "执行者提交任务结果",
+      "createdAt": "2025-11-11T15:00:00"
+    }
+  ]
+}
+```
+
+**操作类型说明**:
+| action | 说明 |
+|--------|------|
+| publish | 发布任务 |
+| accept | 接取任务 |
+| start | 开始执行 |
+| submit | 提交结果 |
+| confirm | 确认完成 |
+| reject | 拒绝结果 |
+| cancel | 取消任务 |
+| expire | 任务超时 |
+
+### 6.21 获取任务评价列表 🆕
+
+**接口**: `GET /task/{id}/ratings`
+**认证**: 需要
+
+**说明**: 获取任务相关的评价记录(发布者对接单者的评价,或接单者对发布者的评价)
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": [
+    {
+      "ratingId": 25,
+      "taskId": 1,
+      "raterId": 3,
+      "ratedId": 48,
+      "rating": 5,
+      "comment": "非常准时高效,沟通顺畅,值得信赖!",
+      "tags": "准时,高效,友好",
+      "createdAt": "2025-11-11T16:00:00"
+    },
+    {
+      "ratingId": 26,
+      "taskId": 1,
+      "raterId": 48,
+      "ratedId": 3,
+      "rating": 5,
+      "comment": "发布者描述清晰,确认及时,很好的合作体验!",
+      "tags": "守信,友好,及时",
+      "createdAt": "2025-11-11T16:05:00"
+    }
+  ]
+}
+```
+
 ---
 
 ## 7. 社团模块 (Club)
@@ -1188,9 +1560,100 @@ Authorization: Bearer {refreshToken}
 
 ---
 
-## 9. 评论模块 (Comment)
+## 9. 收藏模块 (Favorite) 🆕
 
-### 9.1 创建评论
+### 9.1 添加收藏
+
+**接口**: `POST /favorite/{targetType}/{targetId}`
+**认证**: 需要
+
+**路径参数**:
+| 参数 | 类型 | 说明 |
+|------|------|------|
+| targetType | String | 对象类型: task/resource/question |
+| targetId | Long | 对象ID |
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "收藏成功",
+  "data": null
+}
+```
+
+### 10.2 取消收藏
+
+**接口**: `DELETE /favorite/{targetType}/{targetId}`
+**认证**: 需要
+
+**路径参数**: 同添加收藏
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "取消收藏成功",
+  "data": null
+}
+```
+
+### 10.3 检查是否已收藏
+
+**接口**: `GET /favorite/check/{targetType}/{targetId}`
+**认证**: 需要
+
+**路径参数**: 同添加收藏
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "isFavorited": true
+  }
+}
+```
+
+### 10.4 获取收藏数
+
+**接口**: `GET /favorite/count/{targetType}/{targetId}`
+**认证**: 不需要
+
+**路径参数**: 同添加收藏
+
+**响应示例**:
+```json
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "count": 128
+  }
+}
+```
+
+**使用示例**:
+```javascript
+// 收藏任务
+POST /favorite/task/1
+
+// 取消收藏资源
+DELETE /favorite/resource/5
+
+// 检查是否收藏了问题
+GET /favorite/check/question/10
+
+// 获取任务的收藏数
+GET /favorite/count/task/1
+```
+
+---
+
+## 10. 评论模块 (Comment)
+
+### 10.1 创建评论
 
 **接口**: `POST /comment`
 **认证**: 需要
@@ -1222,7 +1685,7 @@ Authorization: Bearer {refreshToken}
 }
 ```
 
-### 9.2 删除评论
+### 10.2 删除评论
 
 **接口**: `DELETE /comment/{id}`
 **认证**: 需要
@@ -1236,7 +1699,7 @@ Authorization: Bearer {refreshToken}
 }
 ```
 
-### 9.3 获取评论列表
+### 10.3 获取评论列表
 
 **接口**: `GET /comment/list`
 **认证**: 需要
@@ -1295,7 +1758,7 @@ Authorization: Bearer {refreshToken}
 }
 ```
 
-### 9.4 获取用户评论
+### 10.4 获取用户评论
 
 **接口**: `GET /comment/user/{userId}`
 **认证**: 需要
@@ -1303,7 +1766,7 @@ Authorization: Bearer {refreshToken}
 
 **响应示例**: 同评论列表
 
-### 9.5 获取我的评论
+### 10.5 获取我的评论
 
 **接口**: `GET /comment/my`
 **认证**: 需要
@@ -1311,7 +1774,7 @@ Authorization: Bearer {refreshToken}
 
 **响应示例**: 同评论列表
 
-### 9.6 点赞评论
+### 10.6 点赞评论
 
 **接口**: `POST /comment/{id}/like`
 **认证**: 需要
@@ -1327,7 +1790,7 @@ Authorization: Bearer {refreshToken}
 }
 ```
 
-### 9.7 取消点赞
+### 10.7 取消点赞
 
 **接口**: `DELETE /comment/{id}/like`
 **认证**: 需要
@@ -1343,7 +1806,7 @@ Authorization: Bearer {refreshToken}
 }
 ```
 
-### 9.8 获取评论数量
+### 10.8 获取评论数量
 
 **接口**: `GET /comment/count`
 **认证**: 需要
@@ -2126,4 +2589,24 @@ password: 123456
 
 **文档维护**: 如发现文档有误或需要补充，请联系后端开发团队。
 
-**最后更新**: 2025-11-09
+**最后更新**: 2025-11-11
+
+---
+
+## 更新日志
+
+### v1.1 (2025-11-11)
+- ✨ 新增任务模块7个扩展接口:
+  - `DELETE /task/{id}` - 删除任务
+  - `GET /task/{id}/similar` - 相似任务推荐
+  - `POST /task/{id}/contact` - 联系发布者
+  - `POST /task/{id}/favorite` - 收藏任务
+  - `DELETE /task/{id}/favorite` - 取消收藏任务
+  - `POST /task/{id}/report` - 举报任务
+  - 任务评论(使用通用评论接口)
+- ✨ 新增收藏模块(Favorite),支持收藏任务/资源/问题
+- 📝 完善TaskResponse,增加images/viewCount/isFavorited字段
+
+### v1.0 (2025-11-09)
+- 🎉 初始版本发布
+- 包含认证、用户、资源、问答、任务、社团、活动、评论、私信、通知、举报、学校等12个模块

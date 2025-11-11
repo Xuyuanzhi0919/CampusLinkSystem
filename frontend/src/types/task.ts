@@ -29,13 +29,41 @@ export interface TaskItem {
   createdAt: string
 }
 
+// 任务附件
+export interface TaskAttachment {
+  name: string
+  url: string
+  type?: string
+  size?: number
+}
+
+// 任务评论
+export interface TaskComment {
+  id: number
+  taskId: number
+  userId: number
+  username: string
+  avatar: string
+  content: string
+  time: string
+  likes: number
+  createdAt: string
+}
+
 // 任务详情
 export interface TaskDetail extends TaskItem {
   publisherPhone?: string
+  publisherVerified?: boolean
   accepterId?: number
   accepterName?: string
   accepterAvatar?: string
   images?: string[]
+  attachments?: TaskAttachment[]
+  comments?: TaskComment[]
+  viewCount?: number
+  favoriteCount?: number
+  acceptCount?: number
+  description?: string
 }
 
 // 任务列表查询参数

@@ -31,6 +31,17 @@
             <text class="action-btn-text">登录 / 注册</text>
           </view>
 
+          <!-- 签到按钮（登录后显示）-->
+          <view
+            v-if="showAvatarButton"
+            class="check-in-btn"
+            :class="{ 'checked-in': isCheckedIn }"
+            @click="handleCheckIn"
+          >
+            <text class="check-in-icon">{{ isCheckedIn ? '✓' : '📅' }}</text>
+            <text class="check-in-text">{{ isCheckedIn ? '已签到' : '签到' }}</text>
+          </view>
+
           <!-- 用户头像按钮（登录后显示）-->
           <view
             v-if="showAvatarButton"
@@ -163,6 +174,14 @@
         <DecorativeElements type="graduation-cap" color="#5CADFF" :width="90" :height="90" />
       </view>
     </view>
+
+    <!-- 积分动画 -->
+    <PointsAnimation
+      :points="pointsValue"
+      :visible="showPointsAnimation"
+      :position="pointsPosition"
+      @complete="showPointsAnimation = false"
+    />
   </view>
 </template>
 
@@ -173,6 +192,7 @@ import StudentWithPhone from '@/components/illustrations/StudentWithPhone.vue'
 import DecorativeElements from '@/components/illustrations/DecorativeElements.vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from '@/components/UserDropdownMenu.vue'
+import PointsAnimation from '@/components/PointsAnimation.vue'
 import config from '@/config'
 
 // Props & Emits
@@ -202,6 +222,14 @@ const userInfo = ref({
 // 按钮淡入淡出状态
 const showLoginButton = ref(true)
 const showAvatarButton = ref(false)
+
+// 签到状态
+const isCheckedIn = ref(false)
+
+// 积分动画状态
+const showPointsAnimation = ref(false)
+const pointsValue = ref(0)
+const pointsPosition = ref({ x: 0, y: 0 })
 
 // 检查登录状态
 const checkLoginStatus = () => {
@@ -235,9 +263,141 @@ const checkLoginStatus = () => {
   }
 }
 
-// 组件挂载时检查登录状态
+// 检查今日是否已签到
+const checkTodayCheckIn = () => {
+  const lastCheckInDate = uni.getStorageSync('lastCheckInDate')
+  const today = new Date().toDateString()
+  isCheckedIn.value = lastCheckInDate === today
+}
+
+// 签到处理
+const handleCheckIn = (event: any) => {
+  if (isCheckedIn.value) {
+    uni.showToast({ title: '今日已签到', icon: 'none' })
+    return
+  }
+
+  // 执行签到
+  const today = new Date().toDateString()
+  uni.setStorageSync('lastCheckInDate', today)
+  isCheckedIn.value = true
+
+  // 显示签到成功提示（精美动画）
+  showCheckInSuccess()
+
+  // 显示积分动画
+  // #ifdef H5
+  const rect = event.target.getBoundingClientRect()
+  pointsPosition.value = {
+    x: rect.left + rect.width / 2,
+    y: rect.top + rect.height / 2
+  }
+  // #endif
+
+  // #ifndef H5
+  pointsPosition.value = {
+    x: uni.getSystemInfoSync().windowWidth / 2,
+    y: 200
+  }
+  // #endif
+
+  pointsValue.value = 10
+  showPointsAnimation.value = true
+}
+
+// 显示签到成功提示
+const showCheckInSuccess = () => {
+  // #ifdef H5
+  const toastDiv = document.createElement('div')
+
+  toastDiv.innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
+      <div class="check-in-icon-big" style="
+        font-size: 48px;
+        line-height: 1;
+        animation: bounceIn 0.6s ease-out;
+      ">✓</div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="
+          font-size: 18px;
+          font-weight: 600;
+          color: #10B981;
+          line-height: 1.4;
+        ">签到成功！</span>
+        <span style="
+          font-size: 14px;
+          font-weight: 500;
+          color: #6B7280;
+          line-height: 1.4;
+        ">获得 10 积分</span>
+      </div>
+    </div>
+  `
+
+  toastDiv.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: #FFFFFF;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: 32px 48px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    opacity: 0;
+    transition: all 0.3s ease-out;
+    pointer-events: none;
+  `
+
+  const style = document.createElement('style')
+  style.textContent = `
+    @keyframes bounceIn {
+      0% { transform: scale(0); opacity: 0; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+  `
+  document.head.appendChild(style)
+
+  document.body.appendChild(toastDiv)
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      toastDiv.style.opacity = '1'
+      toastDiv.style.transform = 'translate(-50%, -50%) scale(1)'
+    })
+  })
+
+  setTimeout(() => {
+    toastDiv.style.opacity = '0'
+    toastDiv.style.transform = 'translate(-50%, -50%) scale(0.9)'
+
+    setTimeout(() => {
+      if (document.body.contains(toastDiv)) {
+        document.body.removeChild(toastDiv)
+      }
+      if (document.head.contains(style)) {
+        document.head.removeChild(style)
+      }
+    }, 300)
+  }, 2000)
+  // #endif
+
+  // #ifndef H5
+  uni.showToast({
+    title: '签到成功！+10积分',
+    icon: 'success',
+    duration: 2000
+  })
+  // #endif
+}
+
+// 组件挂载时检查登录状态和签到状态
 onMounted(() => {
   checkLoginStatus()
+  checkTodayCheckIn()
 })
 
 // 点击头像
@@ -581,11 +741,11 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-/* 企业级重构：第一层 - 品牌渐变区（顶部背景）- 优化：径向渐变增强纵深 */
+/* 企业级重构：第一层 - 品牌渐变区（顶部背景）- 优化：缩减高度增强紧凑感 */
 .top-focus-bar {
   position: relative;
   width: 100%;
-  height: 800rpx; /* 400px - 延伸至导航下方，覆盖更多区域 */
+  height: 640rpx; /* 320px - 优化：从800rpx减小到640rpx，减少20% */
   /* 优化：径向渐变，从中心向外扩散，增强纵深感 */
   background:
     radial-gradient(ellipse at 50% 0%, #E8F1FF 0%, transparent 70%),
@@ -599,8 +759,8 @@ defineExpose({
   overflow: visible; /* 允许内容溢出，实现自然过渡 */
   z-index: 1;
 
-  /* 增加轻微底部阴影，增强纵深感 */
-  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.06);
+  /* 优化：增强阴影，提升浮层感 */
+  box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.08);
 }
 
 /* 企业级重构：几何线条、模糊圆点、光晕装饰（10% 不透明度）*/
@@ -851,6 +1011,76 @@ defineExpose({
   }
 }
 
+/* ========== 签到按钮样式 ========== */
+.check-in-btn {
+  position: relative;
+  height: 64rpx; /* 32px */
+  padding: 0 24rpx;
+  background: linear-gradient(135deg, #10B981 0%, #34D399 100%); /* 绿色渐变 */
+  border-radius: 32rpx; /* 胶囊形状 */
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  cursor: pointer;
+  transition: all var(--transition-hover, 150ms ease);
+  box-shadow: 0 6rpx 20rpx rgba(16, 185, 129, 0.3);
+  border: none;
+  overflow: hidden;
+
+  /* 动画：淡入 */
+  animation: fadeIn 0.3s ease-in-out;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    transform: translateY(-2rpx) scale(1.05);
+    box-shadow: 0 8rpx 28rpx rgba(16, 185, 129, 0.4);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+  }
+
+  /* 已签到状态 */
+  &.checked-in {
+    background: linear-gradient(135deg, #9CA3AF 0%, #D1D5DB 100%); /* 灰色渐变 */
+    box-shadow: 0 4rpx 12rpx rgba(156, 163, 175, 0.2);
+    cursor: default;
+
+    &:hover {
+      transform: none;
+      box-shadow: 0 4rpx 12rpx rgba(156, 163, 175, 0.2);
+    }
+  }
+}
+
+.check-in-icon {
+  font-size: 28rpx; /* 14px */
+  line-height: 1;
+  color: #FFFFFF;
+}
+
+.check-in-text {
+  font-size: 28rpx; /* 14px */
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
 /* ========== 五、主内容区（第二行：搜索框居中）========== */
 .main-content-area {
   display: flex;
@@ -879,41 +1109,41 @@ defineExpose({
   gap: 100rpx; /* 50px - 从 20rpx 增加到 100rpx，增强呼吸感 */
 }
 
-/* 搜索框 - 优化：增大尺寸 */
+/* 搜索框 - 优化：适中尺寸 + 增强阴影 */
 .search-box {
   position: relative;
   width: 100%;
-  height: 100rpx; /* 50px - 增大高度 */
+  height: 92rpx; /* 46px - 优化：从100rpx减小到92rpx */
   /* 半透明玻璃效果（文档规范）*/
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-radius: 50rpx; /* 25px - 更圆润 */
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 46rpx; /* 23px - 匹配高度的一半 */
   display: flex;
   align-items: center;
-  padding: 0 32rpx;
-  gap: 16rpx;
-  /* 优化：增强阴影（模糊 16px，透明度 12%）*/
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  padding: 0 28rpx;
+  gap: 14rpx;
+  /* 优化：柔和阴影，增强浮层感 */
+  box-shadow: 0 10rpx 36rpx rgba(0, 0, 0, 0.10);
   transition: all var(--transition-hover, 150ms ease);
   /* 描边（文档规范）*/
-  border: 2px solid rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(255, 255, 255, 0.9);
 }
 
 .search-box:hover {
-  background: rgba(255, 255, 255, 0.92);
-  /* 优化：hover 时阴影加深 */
-  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.15);
-  transform: translateY(-4rpx);
-  border-color: rgba(37, 99, 235, 0.3);
+  background: rgba(255, 255, 255, 0.95);
+  /* 优化：hover 时阴影更深 */
+  box-shadow: 0 14rpx 44rpx rgba(0, 0, 0, 0.14);
+  transform: translateY(-3rpx);
+  border-color: rgba(37, 99, 235, 0.4);
 }
 
 .search-box:focus-within {
   background: rgba(255, 255, 255, 0.98);
-  /* 优化：聚焦时放大 1.02、发光蓝边 */
-  box-shadow: 0 12rpx 48rpx rgba(37, 99, 235, 0.25), 0 0 0 4rpx rgba(37, 99, 235, 0.12);
+  /* 优化：聚焦时发光蓝边 */
+  box-shadow: 0 14rpx 48rpx rgba(37, 99, 235, 0.28), 0 0 0 4rpx rgba(37, 99, 235, 0.15);
   border-color: var(--cl-primary, #2563EB);
-  transform: translateY(-4rpx) scale(1.02);
+  transform: translateY(-3rpx) scale(1.01);
 }
 
 /* 搜索图标 - 优化：增大尺寸 */
@@ -1096,30 +1326,30 @@ defineExpose({
   }
 }
 
-/* 优化：搜索框下方提示文字 - 增强层次感和呼吸感 */
+/* 优化：搜索框下方提示文字 - 更精简轻盈 */
 .search-tips {
   display: flex;
   align-items: center;
-  gap: 16rpx; /* 8px - 增大间距 */
-  font-size: 28rpx; /* 14px - 保持清晰可读 */
+  gap: 12rpx; /* 6px - 优化：减小间距，更紧凑 */
+  font-size: 24rpx; /* 12px - 优化：从28rpx减小到24rpx */
   color: var(--cl-gray-500, #94A3B8); /* 降低灰度，减弱视觉权重 */
-  line-height: 48rpx; /* 24px - 增大行高，增强呼吸感 */
+  line-height: 40rpx; /* 20px - 优化：减小行高 */
   /* 优化：添加淡入动画 */
   opacity: 0;
   animation: fadeInUp 0.6s ease-out 0.3s forwards; /* 延迟 0.3s 后淡入 */
 }
 
 .search-tip-item {
-  font-weight: 400; /* 从 500 降低到 400，更轻盈 */
-  color: var(--cl-gray-500, #94A3B8); /* 降低灰度 */
+  font-weight: 400;
+  color: var(--cl-gray-500, #94A3B8);
   /* 优化：添加轻微透明度 */
-  opacity: 0.9;
+  opacity: 0.85;
 }
 
 .search-tip-divider {
-  color: var(--cl-gray-400, #CBD5E1); /* 更浅的灰色 */
-  font-weight: 300; /* 更细 */
-  opacity: 0.7; /* 降低透明度 */
+  color: var(--cl-gray-400, #CBD5E1);
+  font-weight: 300;
+  opacity: 0.6; /* 优化：进一步降低透明度 */
 }
 
 /* 淡入向上动画 */
@@ -1243,9 +1473,9 @@ defineExpose({
 
 /* ========== 九、H5 端适配 - 极简两行布局 + 底部导航栏 ========== */
 @media (max-width: 750px) {
-  /* 顶部容器高度调整 - 进一步减少 */
+  /* 顶部容器高度调整 - 优化：进一步缩减 */
   .top-focus-bar {
-    height: 240rpx; /* H5端 120px - 极简两行布局 */
+    height: 200rpx; /* H5端 100px - 优化：从240rpx减小到200rpx */
   }
 
   /* 内容容器调整 - 两行布局 */

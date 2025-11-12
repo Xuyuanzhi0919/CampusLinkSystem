@@ -17,7 +17,13 @@
       "mcp__ide__getDiagnostics",
       "Bash(mkdir:*)",
       "Bash(git push:*)",
-      "Bash(mysql:*)"
+      "Bash(mysql:*)",
+      "Bash(dir:*)",
+      "Bash(nul)",
+      "Bash(del \"f:\\Cluade Code Project\\CampusLink\\frontend\\USER_CENTER_IMPLEMENTATION.md\")",
+      "Bash(git rm:*)",
+      "Bash(npm run dev:mp-weixin:*)",
+      "Bash(if exist nul del nul)"
     ],
     "deny": [],
     "ask": []

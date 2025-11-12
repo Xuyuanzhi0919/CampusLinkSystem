@@ -16,10 +16,18 @@
     <view class="content-section">
       <view class="content-container">
         <!-- 左侧：为你推荐 -->
-        <RecommendSection class="recommend-area" @item-click="handleRecommendClick" />
+        <RecommendSection
+          ref="recommendSectionRef"
+          class="recommend-area"
+          @item-click="handleRecommendClick"
+        />
 
         <!-- 右侧：热门榜单 -->
-        <HotRankingPanel class="ranking-area" @item-click="handleRankingClick" />
+        <HotRankingPanel
+          ref="hotRankingPanelRef"
+          class="ranking-area"
+          @item-click="handleRankingClick"
+        />
       </view>
     </view>
 
@@ -68,11 +76,22 @@
       @register-success="handleRegisterSuccess"
       @go-to-login="handleSwitchToLogin"
     />
+
+    <!-- 快速返回顶部按钮 -->
+    <view
+      v-if="showBackToTop"
+      class="back-to-top-btn"
+      @click="scrollToTop"
+    >
+      <text class="back-to-top-icon">↑</text>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
+import { onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
 import TopFocusBar from './components/TopFocusBar.vue'
 import FunctionCards from './components/FunctionCards.vue'
 import RecommendSection from './components/RecommendSection.vue'
@@ -91,8 +110,23 @@ const showLoginModal = ref(false)
 // 注册弹窗状态
 const showRegisterModal = ref(false)
 
-// TopFocusBar 引用
-const topFocusBarRef = ref(null)
+// TopFocusBar 引用 - 添加类型声明
+type TopFocusBarInstance = ComponentPublicInstance & {
+  checkLoginStatus: () => void
+}
+const topFocusBarRef = ref<TopFocusBarInstance | null>(null)
+
+// 返回顶部按钮状态
+const showBackToTop = ref(false)
+let scrollTimer: any = null
+
+// 推荐区域和榜单区域引用
+const recommendSectionRef = ref<any>(null)
+const hotRankingPanelRef = ref<any>(null)
+
+// 加载更多状态
+const isLoadingMore = ref(false)
+const hasMoreData = ref(true)
 
 // 显示欢迎提示（产品级轻量气泡 - CampusLink品牌调性）
 const showWelcomeToast = (message: string) => {
@@ -383,6 +417,127 @@ const handleForgotPassword = () => {
     },
   })
 }
+
+/**
+ * 处理页面滚动（监听显示返回顶部按钮）
+ */
+const handlePageScroll = () => {
+  // #ifdef H5
+  if (scrollTimer) clearTimeout(scrollTimer)
+
+  scrollTimer = setTimeout(() => {
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
+    showBackToTop.value = scrollTop > 300
+  }, 100)
+  // #endif
+
+  // #ifndef H5
+  uni.createSelectorQuery().selectViewport().scrollOffset((res: any) => {
+    showBackToTop.value = res.scrollTop > 300
+  }).exec()
+  // #endif
+}
+
+/**
+ * 返回顶部
+ */
+const scrollToTop = () => {
+  // #ifdef H5
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  })
+  // #endif
+
+  // #ifndef H5
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  })
+  // #endif
+}
+
+// 组件挂载时监听滚动事件
+onMounted(() => {
+  // #ifdef H5
+  window.addEventListener('scroll', handlePageScroll)
+  // #endif
+
+  // #ifndef H5
+  // uni-app 中使用 onPageScroll 生命周期
+  // #endif
+})
+
+// 组件卸载时移除监听
+onUnmounted(() => {
+  // #ifdef H5
+  window.removeEventListener('scroll', handlePageScroll)
+  if (scrollTimer) clearTimeout(scrollTimer)
+  // #endif
+})
+
+/**
+ * 下拉刷新
+ */
+onPullDownRefresh(() => {
+  console.log('下拉刷新触发')
+
+  // 刷新推荐区域数据
+  if (recommendSectionRef.value && typeof recommendSectionRef.value.loadRecommendData === 'function') {
+    recommendSectionRef.value.loadRecommendData()
+  }
+
+  // 刷新榜单数据
+  if (hotRankingPanelRef.value && typeof hotRankingPanelRef.value.loadData === 'function') {
+    hotRankingPanelRef.value.loadData()
+  }
+
+  // 延迟停止下拉刷新动画
+  setTimeout(() => {
+    uni.stopPullDownRefresh()
+    uni.showToast({
+      title: '刷新成功',
+      icon: 'success',
+      duration: 1500
+    })
+  }, 1000)
+})
+
+/**
+ * 上滑加载更多
+ */
+onReachBottom(() => {
+  if (isLoadingMore.value || !hasMoreData.value) {
+    return
+  }
+
+  console.log('触底加载更多')
+  isLoadingMore.value = true
+
+  // 模拟加载更多数据
+  setTimeout(() => {
+    // TODO: 实际项目中这里应该调用接口加载更多数据
+    isLoadingMore.value = false
+
+    // 模拟：假设加载3次后没有更多数据
+    const loadCount = parseInt(uni.getStorageSync('loadMoreCount') || '0')
+    if (loadCount >= 2) {
+      hasMoreData.value = false
+      uni.showToast({
+        title: '没有更多内容了',
+        icon: 'none',
+        duration: 1500
+      })
+    } else {
+      uni.setStorageSync('loadMoreCount', String(loadCount + 1))
+      uni.showToast({
+        title: '加载成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+  }, 1000)
+})
 </script>
 
 <style scoped lang="scss">
@@ -396,7 +551,7 @@ const handleForgotPassword = () => {
 
 /* 企业级优化：主内容区 - 简洁设计 */
 .content-section {
-  padding: 60rpx 0 160rpx; /* 上下留白，形成呼吸感 */
+  padding: 48rpx 0 120rpx; /* 优化：减小上下留白，从60rpx/160rpx改为48rpx/120rpx */
   position: relative;
   z-index: 1;
   background: transparent; /* 使用全局背景 */
@@ -476,7 +631,7 @@ const handleForgotPassword = () => {
 
 /* 企业级优化：第三层 - 底部衔接与收口（结构稳定层）*/
 .auxiliary-section {
-  padding: 128rpx 0 160rpx; /* 64px 顶部间距 */
+  padding: 80rpx 0 120rpx; /* 优化：减小内边距，从128rpx/160rpx改为80rpx/120rpx */
   position: relative;
   z-index: 1;
   /* 优化：统一浅灰背景 #F8FAFC，与上方自然衔接 */
@@ -579,16 +734,78 @@ const handleForgotPassword = () => {
   color: var(--cl-primary, #2563EB); /* hover 变蓝 */
 }
 
-/* H5 端适配 */
+/* ========== 返回顶部按钮 ========== */
+.back-to-top-btn {
+  position: fixed;
+  right: 40rpx; /* 20px */
+  bottom: 120rpx; /* 60px - 避开底部导航栏 */
+  width: 96rpx; /* 48px */
+  height: 96rpx; /* 48px */
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 999;
+  /* 阴影 */
+  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.4);
+  /* 动画 */
+  animation: fadeInUp 0.3s ease-out, float 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-4rpx) scale(1.1);
+    box-shadow: 0 12rpx 32rpx rgba(59, 130, 246, 0.5);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.95);
+  }
+}
+
+.back-to-top-icon {
+  font-size: 48rpx; /* 24px */
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+/* 浮动动画 */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8rpx);
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .back-to-top-btn {
+    width: 80rpx; /* 40px */
+    height: 80rpx; /* 40px */
+    right: 32rpx; /* 16px */
+    bottom: 160rpx; /* 80px - 避开底部导航栏 */
+  }
+
+  .back-to-top-icon {
+    font-size: 40rpx; /* 20px */
+  }
+}
+
+/* H5 端适配 - 优化留白和间距 */
 @media (max-width: 750px) {
   .content-section {
-    padding: 32rpx 0;
+    padding: 24rpx 0; /* 优化：从32rpx减小到24rpx */
   }
 
   .content-container {
     max-width: 100%; /* 移动端充分利用屏幕宽度 */
-    padding: 0 24rpx; /* 减小内边距 */
+    padding: 0 32rpx; /* 优化：从24rpx增加到32rpx，增强呼吸感 */
     flex-direction: column;
+    gap: 32rpx; /* 优化：增加卡片间距 */
   }
 
   .recommend-area,
@@ -597,13 +814,14 @@ const handleForgotPassword = () => {
   }
 
   .auxiliary-section {
-    padding: 32rpx 0 40rpx; /* 减少底部内边距，因为已有底部导航栏 */
+    padding: 40rpx 0 80rpx; /* 优化：增加底部留白，为底部导航栏预留空间 */
   }
 
   .auxiliary-container {
     max-width: 100%; /* 移动端充分利用屏幕宽度 */
-    padding: 0 24rpx; /* 减小内边距 */
+    padding: 0 32rpx; /* 优化：从24rpx增加到32rpx */
     flex-direction: column;
+    gap: 32rpx; /* 优化：增加卡片间距 */
   }
 }
 </style>

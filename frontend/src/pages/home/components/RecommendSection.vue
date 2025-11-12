@@ -38,8 +38,15 @@
           v-for="(item, index) in displayList"
           :key="item.id"
           class="recommend-card"
-          :style="{ animationDelay: `${index * 30}ms` }"
+          :class="{ 'swiping': swipingCardIndex === index }"
+          :style="{
+            animationDelay: `${index * 30}ms`,
+            transform: swipingCardIndex === index ? `translateX(${swipeOffset}px)` : 'translateX(0)'
+          }"
           @click="handleItemClick(item)"
+          @touchstart="handleTouchStart($event, index)"
+          @touchmove="handleTouchMove($event, index)"
+          @touchend="handleTouchEnd($event, index)"
         >
           <!-- 重构：顶部色条（根据类型自动着色）-->
           <view class="card-top-bar" :class="'bar-' + item.type"></view>
@@ -160,7 +167,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import ViewMoreButton from '@/components/ViewMoreButton.vue'
 import { getResourceList } from '@/services/resource'
 import { getQuestionList } from '@/services/question'
 import { getTaskList } from '@/services/task'
@@ -186,6 +192,13 @@ const isLoading = ref(false)
 
 // 数据列表
 const allList = ref<any[]>([])
+
+// 滑动相关状态
+const swipingCardIndex = ref<number | null>(null)
+const swipeOffset = ref(0)
+const touchStartX = ref(0)
+const touchStartY = ref(0)
+const isSwiping = ref(false)
 
 // 当前列表（根据 Tab 筛选）
 const currentList = computed(() => {
@@ -215,7 +228,7 @@ const loadRecommendData = async () => {
     ])
 
     // 优化：转换资源数据 - 添加徽标信息
-    const resources = (resourceRes?.list || resourceRes?.records || []).map((item: any, index: number) => ({
+    const resources = (resourceRes?.list || []).map((item: any) => ({
       id: item.resourceId,
       type: 'resource',
       title: item.title,
@@ -228,7 +241,7 @@ const loadRecommendData = async () => {
     }))
 
     // 优化：转换问答数据 - 添加徽标信息
-    const questions = (questionRes?.list || questionRes?.records || []).map((item: any, index: number) => ({
+    const questions = (questionRes?.list || []).map((item: any) => ({
       id: item.questionId,
       type: 'question',
       title: item.title,
@@ -242,7 +255,7 @@ const loadRecommendData = async () => {
     }))
 
     // 优化：转换任务数据 - 添加徽标信息
-    const tasks = (taskRes?.list || taskRes?.records || []).map((item: any, index: number) => {
+    const tasks = (taskRes?.list || []).map((item: any) => {
       return {
         id: item.tid || item.taskId, // 修复:使用 tid 字段
         type: 'task',
@@ -403,6 +416,108 @@ const viewAllRecommendations = () => {
   // TODO: 跳转到推荐列表页面
   uni.navigateTo({
     url: '/pages/recommend/index?tab=' + currentTab.value
+  })
+}
+
+/**
+ * 触摸开始 - 记录起始位置
+ */
+const handleTouchStart = (event: any, index: number) => {
+  const touch = event.touches[0]
+  touchStartX.value = touch.clientX
+  touchStartY.value = touch.clientY
+  swipingCardIndex.value = index
+  isSwiping.value = false
+}
+
+/**
+ * 触摸移动 - 实时更新偏移量
+ */
+const handleTouchMove = (event: any, index: number) => {
+  if (swipingCardIndex.value !== index) return
+
+  const touch = event.touches[0]
+  const deltaX = touch.clientX - touchStartX.value
+  const deltaY = touch.clientY - touchStartY.value
+
+  // 判断是否为横向滑动（横向位移大于纵向位移）
+  if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+    isSwiping.value = true
+    swipeOffset.value = deltaX
+
+    // 阻止页面滚动
+    event.preventDefault()
+  }
+}
+
+/**
+ * 触摸结束 - 判断是否触发切换
+ */
+const handleTouchEnd = (_event: any, index: number) => {
+  if (swipingCardIndex.value !== index) return
+
+  const SWIPE_THRESHOLD = 100 // 滑动阈值（像素）
+  const offset = swipeOffset.value
+
+  // 判断是否达到切换阈值
+  if (Math.abs(offset) > SWIPE_THRESHOLD && isSwiping.value) {
+    // 滑动距离足够，执行切换动画
+    if (offset > 0) {
+      // 向右滑动 - 显示上一个内容
+      handleSwipeToNextContent(index, 'prev')
+    } else {
+      // 向左滑动 - 显示下一个内容
+      handleSwipeToNextContent(index, 'next')
+    }
+  } else {
+    // 滑动距离不足，恢复原位
+    swipeOffset.value = 0
+  }
+
+  // 重置状态
+  setTimeout(() => {
+    swipingCardIndex.value = null
+    isSwiping.value = false
+  }, 300)
+}
+
+/**
+ * 切换到下一个/上一个内容
+ */
+const handleSwipeToNextContent = (currentIndex: number, direction: 'prev' | 'next') => {
+  const currentItem = displayList.value[currentIndex]
+  const currentListItems = currentList.value
+  const currentItemIndex = currentListItems.findIndex(item => item.id === currentItem.id)
+
+  let targetIndex: number
+  if (direction === 'next') {
+    targetIndex = (currentItemIndex + 1) % currentListItems.length
+  } else {
+    targetIndex = (currentItemIndex - 1 + currentListItems.length) % currentListItems.length
+  }
+
+  const targetItem = currentListItems[targetIndex]
+
+  // 执行滑出动画
+  const exitOffset = direction === 'next' ? -500 : 500
+  swipeOffset.value = exitOffset
+
+  // 延迟替换内容
+  setTimeout(() => {
+    // 替换当前位置的内容
+    allList.value = allList.value.map(item =>
+      item.id === currentItem.id ? targetItem : item
+    )
+
+    // 重置偏移
+    swipeOffset.value = 0
+  }, 250)
+
+  // 显示提示
+  uni.showToast({
+    title: direction === 'next' ? '下一个' : '上一个',
+    icon: 'none',
+    duration: 800
   })
 }
 
@@ -722,6 +837,13 @@ onMounted(() => {
 
   /* 淡入动画（stagger 30ms）*/
   animation: fadeInCard 240ms ease-out both;
+
+  /* 滑动状态 - 禁用过渡以实现实时跟手效果 */
+  &.swiping {
+    transition: none;
+    box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.12);
+    opacity: 0.9;
+  }
 
   /* 重构：Hover 状态 - 上浮 4px + 光感渐变边框 */
   &:hover {

@@ -1,408 +1,310 @@
 <template>
   <view class="task-detail-page">
-    <!-- 顶部导航区 -->
-    <view class="top-nav">
-      <view class="nav-left" @click="handleBack">
-        <text class="back-icon">←</text>
-        <text class="back-text">返回</text>
+    <!-- 任务详情头部 -->
+    <TaskDetailHeader
+      v-if="taskData"
+      :title="taskData.title"
+      :status="taskData.status"
+      :category="taskData.taskType"
+      :is-favorited="taskData.isFavorited"
+      :publisher-name="taskData.publisherName"
+      :publisher-avatar="taskData.publisherAvatar"
+      :publisher-verified="taskData.publisherVerified"
+      :publish-time="taskData.createdAt"
+      @back="handleBack"
+      @favorite="handleFavorite"
+      @share="handleShare"
+    />
+
+    <!-- H5首屏摘要栏 -->
+    <view class="h5-summary-bar" v-if="taskData">
+      <view class="summary-item">
+        <text class="summary-icon">📍</text>
+        <text class="summary-text">{{ taskData.location || '无地点' }}</text>
       </view>
-      <view class="nav-right">
-        <view class="favorite-btn" :class="{ 'favoriting': isFavoriting }" @click="handleFavorite">
-          <text class="favorite-icon" v-if="!isFavoriting">{{ isFavorited ? '⭐' : '☆' }}</text>
-          <view class="favorite-loading-spinner" v-else></view>
-        </view>
-        <view class="share-btn" @click="handleShare">
-          <text class="share-icon">📤</text>
-        </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="summary-icon">💎</text>
+        <text class="summary-text">{{ taskData.rewardPoints }}积分</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-item">
+        <text class="summary-icon">⏰</text>
+        <text class="summary-text">{{ formatShortTime(taskData.deadline) }}</text>
       </view>
     </view>
 
-    <!-- 主内容区 - PC端双栏布局 -->
-    <view class="page-container">
-      <scroll-view class="content-area" scroll-y>
-      <!-- 加载状态 -->
-      <view v-if="isLoading" class="loading-container">
-        <view class="loading-spinner"></view>
-        <text class="loading-text">加载中...</text>
-      </view>
-
-      <!-- 错误状态 -->
-      <view v-else-if="loadError" class="error-container">
-        <text class="error-icon">⚠️</text>
-        <text class="error-text">{{ loadError }}</text>
-        <view class="retry-btn" @click="handleRetry">
-          <text>重试</text>
-        </view>
-      </view>
-
-      <!-- 内容区 -->
-      <view v-else>
-      <!-- 任务标题区 -->
-      <view class="title-section animate-item" :class="{ 'animate-in': pageLoaded }" style="animation-delay: 0.1s">
-        <view class="task-title-wrapper">
-          <text class="task-title">{{ taskData.title }}</text>
-          <view
-            class="status-badge-large"
-            :class="['status-' + taskData.status, { 'status-pulse': taskData.status === 0 || taskData.status === 1 }]"
-          >
-            <text class="status-icon">{{ getStatusIcon(taskData.status) }}</text>
-            <text class="status-text">{{ getStatusText(taskData.status) }}</text>
-          </view>
-        </view>
-
-        <!-- 任务状态进度条 -->
-        <!-- 模块化设计：TaskProgress - 任务进度条（修复逻辑） -->
-        <!-- TaskStatus: 0=待接单, 1=进行中, 2=已完成, 3=已取消 -->
-        <view class="task-progress-bar">
-          <!-- 阶段1: 发布（始终完成） -->
-          <view class="progress-step completed">
-            <view class="step-dot"></view>
-            <text class="step-label">发布</text>
-          </view>
-          <view class="progress-line" :class="{ 'active': taskData.status >= 0 }"></view>
-
-          <!-- 阶段2: 待接单（status=0时当前，status>0时完成） -->
-          <view class="progress-step" :class="{ 'completed': taskData.status > 0, 'current': taskData.status === 0 }">
-            <view class="step-dot"></view>
-            <text class="step-label">待接单</text>
-          </view>
-          <view class="progress-line" :class="{ 'active': taskData.status >= 1 }"></view>
-
-          <!-- 阶段3: 进行中（status=1时当前，status>=2时完成） -->
-          <view class="progress-step" :class="{ 'completed': taskData.status >= 2, 'current': taskData.status === 1 }">
-            <view class="step-dot"></view>
-            <text class="step-label">进行中</text>
-          </view>
-          <view class="progress-line" :class="{ 'active': taskData.status >= 2 }"></view>
-
-          <!-- 阶段4: 已完成（status=2时完成和当前） -->
-          <view class="progress-step" :class="{ 'completed': taskData.status === 2, 'current': taskData.status === 2 }">
-            <view class="step-dot"></view>
-            <text class="step-label">已完成</text>
-          </view>
-        </view>
-
-        <view class="task-meta">
-          <view class="task-type-badge" :style="{ borderColor: getTaskTypeInfo(taskData.taskType).color + '40' }">
-            <text class="type-icon">{{ getTaskTypeInfo(taskData.taskType).icon }}</text>
-            <text class="type-text" :style="{ color: getTaskTypeInfo(taskData.taskType).color }">
-              {{ getTaskTypeInfo(taskData.taskType).name }}
-            </text>
-          </view>
-          <text class="meta-divider">·</text>
-          <view class="meta-item">
-            <text class="meta-label">由</text>
-            <text class="meta-publisher">@{{ taskData.publisherName }}</text>
-            <text class="meta-label">发布</text>
-          </view>
-          <text class="meta-divider">·</text>
-          <text class="meta-time">{{ taskData.createdAt }}</text>
-        </view>
-      </view>
-
-      <!-- 任务内容卡片 -->
-      <view class="info-card animate-item" :class="{ 'animate-in': pageLoaded }" style="animation-delay: 0.2s">
-        <!-- 任务描述 -->
-        <view class="info-section section-description">
-          <view class="section-header">
-            <text class="section-icon">📝</text>
-            <text class="section-title">任务描述</text>
-          </view>
-          <view class="section-content">
-            <text class="description-text">{{ taskData.description }}</text>
-          </view>
-        </view>
-
-        <!-- 任务酬金 -->
-        <view class="info-section reward-section">
-          <view class="section-header">
-            <text class="section-icon">💎</text>
-            <text class="section-title">任务酬金</text>
-          </view>
-          <view class="section-content">
-            <text class="reward-amount">{{ taskData.rewardPoints }}</text>
-            <text class="reward-unit">积分</text>
-          </view>
-        </view>
-
-        <!-- 地点 -->
-        <view class="info-section section-location" v-if="taskData.location">
-          <view class="section-header">
-            <text class="section-icon">📍</text>
-            <text class="section-title">地点</text>
-          </view>
-          <view class="section-content">
-            <text class="location-text">{{ taskData.location }}</text>
-          </view>
-        </view>
-
-        <!-- 截止时间 -->
-        <view class="info-section section-deadline">
-          <view class="section-header">
-            <text class="section-icon">⏰</text>
-            <text class="section-title">截止时间</text>
-          </view>
-          <view class="section-content">
-            <view class="deadline-wrapper">
-              <text class="deadline-text" :class="getDeadlineClass()">
-                {{ formatDeadline(taskData.deadline) }}
-              </text>
-              <view v-if="deadlineCountdown && !isExpired" class="countdown-badge" :class="getCountdownClass()">
-                <text class="countdown-text">{{ deadlineCountdown }}</text>
+    <!-- 页面内容 -->
+    <view class="page-content" v-if="taskData">
+      <!-- PC端双栏布局 -->
+      <view class="content-container">
+        <!-- 左侧主内容区 -->
+        <view class="main-content">
+          <!-- 企业级任务概览面板 (Task Summary Panel) -->
+          <view class="task-summary-panel">
+            <!-- 第一行:标题 + 状态徽章 + 快捷操作 -->
+            <view class="panel-row-primary">
+              <view class="title-section-new">
+                <text class="task-title-enterprise">{{ taskData.title }}</text>
+                <view class="status-badge-primary" :class="`status-${taskData.status}`">
+                  <view class="status-dot-pulse" v-if="taskData.status === 0 || taskData.status === 1"></view>
+                  <text class="status-text-badge">{{ getStatusText(taskData.status) }}</text>
+                </view>
+              </view>
+              <view class="quick-actions-inline">
+                <view class="quick-btn" :class="{ 'active': taskData.isFavorited }" @click="handleFavorite">
+                  <text class="quick-icon-sm">{{ taskData.isFavorited ? '★' : '☆' }}</text>
+                </view>
+                <view class="quick-btn" @click="handleShare">
+                  <text class="quick-icon-sm">🔗</text>
+                </view>
               </view>
             </view>
-          </view>
-        </view>
 
-        <!-- 附件 -->
-        <view class="info-section section-attachments" v-if="taskData.attachments && taskData.attachments.length">
-          <view class="section-header">
-            <text class="section-icon">📎</text>
-            <text class="section-title">附件</text>
-            <text class="attachment-count">{{ taskData.attachments.length }} 个文件</text>
-          </view>
-          <view class="section-content">
-            <view
-              v-for="(file, index) in taskData.attachments"
-              :key="index"
-              class="attachment-item"
-              @click="handlePreviewFile(file)"
-            >
-              <text class="file-icon">{{ getFileIcon(file.name) }}</text>
-              <view class="file-info">
-                <text class="file-name">{{ file.name }}</text>
-                <text class="file-size" v-if="file.size">{{ formatFileSize(file.size) }}</text>
+            <!-- 第二行:元数据网格 (4列布局) -->
+            <view class="panel-row-metadata">
+              <!-- 任务报酬 (强调) -->
+              <view class="meta-col meta-reward-highlight">
+                <text class="meta-icon-large">💎</text>
+                <view class="meta-content-col">
+                  <text class="meta-label-subtle">任务报酬</text>
+                  <view class="reward-value-row">
+                    <text class="reward-amount-primary">{{ taskData.rewardPoints }}</text>
+                    <text class="reward-unit-sm">积分</text>
+                  </view>
+                </view>
               </view>
-              <text class="preview-icon">→</text>
-            </view>
-          </view>
-        </view>
 
-        <!-- 发布者信息 -->
-        <view class="info-section publisher-section">
-          <view class="section-header">
-            <text class="section-icon">👨‍💼</text>
-            <text class="section-title">发布者</text>
-          </view>
-          <view class="section-content">
-            <view class="publisher-info">
+              <!-- 截止时间 -->
+              <view class="meta-col">
+                <text class="meta-icon-std">⏰</text>
+                <view class="meta-content-col">
+                  <text class="meta-label-subtle">截止时间</text>
+                  <text class="meta-value-primary">{{ formatShortTime(taskData.deadline) }}</text>
+                </view>
+              </view>
+
+              <!-- 任务地点 -->
+              <view class="meta-col" v-if="taskData.location">
+                <text class="meta-icon-std">📍</text>
+                <view class="meta-content-col">
+                  <text class="meta-label-subtle">任务地点</text>
+                  <text class="meta-value-primary">{{ taskData.location }}</text>
+                </view>
+              </view>
+
+              <!-- 发布时间 -->
+              <view class="meta-col">
+                <text class="meta-icon-std">📅</text>
+                <view class="meta-content-col">
+                  <text class="meta-label-subtle">发布时间</text>
+                  <text class="meta-value-primary">{{ formatPublishTime(taskData.createdAt) }}</text>
+                </view>
+              </view>
+            </view>
+
+            <!-- 第三行:发布者信息 -->
+            <view class="panel-row-publisher">
               <image
-                class="publisher-avatar"
+                class="publisher-avatar-sm"
                 :src="taskData.publisherAvatar || '/static/default-avatar.png'"
                 mode="aspectFill"
               />
-              <view class="publisher-details">
+              <view class="publisher-info-inline">
                 <view class="publisher-name-row">
-                  <text class="publisher-name">{{ taskData.publisherName }}</text>
-                  <text class="verified-badge" v-if="taskData.publisherVerified">✓</text>
-                </view>
-                <text class="publisher-username">@{{ taskData.publisherName }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 任务交流/评论区 -->
-      <view class="comment-section animate-item" :class="{ 'animate-in': pageLoaded }" style="animation-delay: 0.3s">
-        <view class="comment-header">
-          <text class="comment-title">任务交流</text>
-          <text class="comment-count">({{ comments.length }})</text>
-        </view>
-        <view class="comment-hint">
-          <text class="hint-icon">💭</text>
-          <text class="hint-text">想帮忙？留言告诉TA吧！</text>
-        </view>
-
-        <!-- 评论列表 -->
-        <view class="comment-list" v-if="comments.length">
-          <view
-            v-for="(comment, index) in comments"
-            :key="comment.id"
-            class="comment-item"
-          >
-            <view class="comment-left">
-              <image class="comment-avatar" :src="comment.avatar" mode="aspectFill" />
-              <view class="floor-number">{{ comments.length - index }}楼</view>
-            </view>
-            <view class="comment-bubble">
-              <view class="comment-header-row">
-                <view class="user-info">
-                  <text class="comment-username">{{ comment.username }}</text>
-                  <view v-if="isPublisher(comment.userId)" class="host-badge">
-                    <text class="badge-text">楼主</text>
+                  <text class="publisher-name-text">{{ taskData.publisherName }}</text>
+                  <view class="verified-badge-sm" v-if="taskData.publisherVerified">
+                    <text class="verified-icon-sm">✓</text>
                   </view>
                 </view>
-                <text class="comment-time">{{ comment.time }}</text>
+                <text class="publisher-meta-text">发布者</text>
               </view>
-              <text class="comment-content">{{ comment.content }}</text>
-              <view class="comment-actions">
-                <view class="action-btn" @click="handleLikeComment(comment.id)">
-                  <text class="action-icon">❤️</text>
-                  <text class="action-text">{{ comment.likes || '' }}</text>
+            </view>
+          </view>
+
+          <!-- 任务摘要信息 -->
+          <TaskSummary
+            :description="taskData.description"
+            :reward-points="taskData.rewardPoints"
+            :location="taskData.location"
+            :deadline="taskData.deadline"
+            :category="taskData.taskType"
+            :task-details="{
+              difficulty: 3,
+              estimatedTime: '约30分钟',
+              requirements: '需要携带学生证',
+              contactMethod: '站内私信'
+            }"
+          />
+
+          <!-- 附件模块（占位符） -->
+          <view class="module-placeholder" v-if="taskData.attachments && taskData.attachments.length > 0">
+            <view class="placeholder-header">
+              <text class="placeholder-icon">📎</text>
+              <text class="placeholder-title">任务附件</text>
+            </view>
+            <view class="placeholder-content">
+              <view
+                v-for="(file, index) in taskData.attachments"
+                :key="index"
+                class="file-item"
+              >
+                <text class="file-icon">📄</text>
+                <text class="file-name">附件 {{ index + 1 }}</text>
+                <text class="file-hint">（功能开发中）</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 评论区（占位符） -->
+          <view class="module-placeholder comments-section">
+            <view class="placeholder-header">
+              <text class="placeholder-icon">💬</text>
+              <text class="placeholder-title">任务交流</text>
+              <text class="comment-count">({{ commentCount }})</text>
+            </view>
+            <view class="placeholder-content">
+              <view class="empty-comments">
+                <text class="empty-icon">📭</text>
+                <text class="empty-text">暂无评论，抢先发表你的看法吧</text>
+              </view>
+              <view class="comment-input-wrapper">
+                <input
+                  class="comment-input"
+                  placeholder="友善交流，理性评论..."
+                  disabled
+                />
+                <text class="input-hint">（评论功能开发中）</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 右侧边栏（PC端） -->
+        <view class="sidebar-content">
+          <!-- 1. PC端主操作卡片（强化） -->
+          <view class="sidebar-card primary-action-card">
+            <!-- 顶部辅助操作图标条 -->
+            <view class="quick-actions-bar">
+              <view class="quick-action-item" :class="{ 'active': taskData.isFavorited }" @click="handleFavorite">
+                <text class="quick-icon">{{ taskData.isFavorited ? '★' : '☆' }}</text>
+                <text class="quick-label">收藏</text>
+              </view>
+              <view class="quick-action-item" @click="handleShare">
+                <text class="quick-icon">🔗</text>
+                <text class="quick-label">分享</text>
+              </view>
+              <view class="quick-action-item" @click="handleReport">
+                <text class="quick-icon">⚠️</text>
+                <text class="quick-label">举报</text>
+              </view>
+            </view>
+
+            <!-- 主操作按钮 -->
+            <view
+              class="primary-action-btn-enhanced"
+              :class="{ 'btn-disabled': !canAccept }"
+              @click="handleAccept"
+            >
+              <view class="btn-content">
+                <text class="btn-icon">⚡</text>
+                <text class="btn-text">{{ getActionText() }}</text>
+              </view>
+            </view>
+
+            <!-- 联系按钮 -->
+            <view class="secondary-actions-row">
+              <view class="secondary-action-btn" @click="handleContact">
+                <text class="secondary-icon">💬</text>
+                <text class="secondary-text">联系发布者</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 2. 安全提示卡片（优化版） -->
+          <view class="sidebar-card notice-card">
+            <view class="sidebar-card-header notice-header">
+              <view class="header-left">
+                <text class="header-icon">🔔</text>
+                <text class="header-title">安全提示</text>
+              </view>
+            </view>
+            <view class="sidebar-card-content">
+              <view class="notice-items-enhanced">
+                <view class="notice-item-row">
+                  <text class="notice-emoji">⚠️</text>
+                  <text class="notice-short-text">仅平台内交易</text>
+                </view>
+                <view class="notice-item-row">
+                  <text class="notice-emoji">🚫</text>
+                  <text class="notice-short-text">警惕低价诱骗</text>
+                </view>
+                <view class="notice-item-row">
+                  <text class="notice-emoji">🔒</text>
+                  <text class="notice-short-text">保护个人信息</text>
+                </view>
+                <view class="notice-item-row">
+                  <text class="notice-emoji">💬</text>
+                  <text class="notice-short-text">问题联系客服</text>
                 </view>
               </view>
             </view>
           </view>
-        </view>
 
-        <!-- 空状态 -->
-        <view class="empty-comment" v-else>
-          <text class="empty-icon">💬</text>
-          <text class="empty-title">暂无留言</text>
-          <text class="empty-text">快来抢个沙发，和发布者聊聊吧～</text>
-        </view>
-
-        <!-- 评论输入框（移动端固定） -->
-        <view class="comment-input-container">
-          <view class="comment-input-wrapper">
-            <input
-              class="comment-input"
-              v-model="commentText"
-              placeholder="💭 说点什么吧，友善交流～"
-              :adjust-position="true"
-              :focus="commentInputFocused"
-              @focus="commentInputFocused = true"
-              @blur="commentInputFocused = false"
-            />
-            <view class="send-btn" :class="{ 'send-btn-active': commentText }" @click="handleSendComment">
-              <text class="send-icon" v-if="!commentText">📨</text>
-              <text class="send-text" v-else>{{ isSendingComment ? '发送中...' : '发送' }}</text>
+          <!-- 3. 任务数据（弱化为Chips） -->
+          <view class="metrics-chips">
+            <view class="metric-chip">
+              <text class="chip-icon">👁️</text>
+              <text class="chip-text">{{ taskData.viewCount || 0 }}</text>
             </view>
-          </view>
-        </view>
-      </view>
-
-      <!-- 底部占位，防止被操作栏遮挡 -->
-      <view class="bottom-placeholder"></view>
-      </view>
-    </scroll-view>
-
-    <!-- PC端侧边栏 -->
-    <view class="sidebar-area">
-      <!-- 任务信息卡片 -->
-      <view class="sidebar-info-card">
-        <view class="card-section">
-          <view class="section-title-row">
-            <text class="section-title-icon">📊</text>
-            <text class="section-title">任务数据</text>
-          </view>
-          <view class="stats-grid">
-            <view class="stat-box stat-box-views">
-              <text class="stat-icon">💙</text>
-              <view class="stat-info">
-                <text class="stat-number">{{ taskData.viewCount || 17 }}</text>
-                <text class="stat-name">浏览</text>
-              </view>
+            <view class="metric-chip">
+              <text class="chip-icon">⭐</text>
+              <text class="chip-text">{{ taskData.favoriteCount || 0 }}</text>
             </view>
-            <view class="stat-box stat-box-favorites">
-              <text class="stat-icon">💗</text>
-              <view class="stat-info">
-                <text class="stat-number">{{ taskData.favoriteCount || 12 }}</text>
-                <text class="stat-name">收藏</text>
-              </view>
-            </view>
-            <view class="stat-box stat-box-accepts">
-              <text class="stat-icon">⚡</text>
-              <view class="stat-info">
-                <text class="stat-number">{{ taskData.acceptCount || 3 }}</text>
-                <text class="stat-name">接单</text>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <view class="card-divider"></view>
-
-        <view class="card-section">
-          <view class="section-title-row">
-            <text class="section-title-icon">📌</text>
-            <text class="section-title">快速操作</text>
-          </view>
-          <view class="quick-actions">
-            <view class="quick-action-btn" :class="{ 'active': isFavorited }" @click="handleFavorite">
-              <text class="action-icon">{{ isFavorited ? '⭐' : '☆' }}</text>
-              <text class="action-label">{{ isFavorited ? '已收藏' : '收藏任务' }}</text>
-            </view>
-            <view class="quick-action-btn" @click="handleShare">
-              <text class="action-icon">📤</text>
-              <text class="action-label">分享任务</text>
-            </view>
-          </view>
-        </view>
-
-        <view class="card-divider"></view>
-
-        <!-- 企业级标准：安全提示卡 -->
-        <view class="card-section safety-tips-section">
-          <view class="safety-tips-card">
-            <view class="safety-icon-wrapper">
-              <text class="safety-icon">🛡️</text>
-            </view>
-            <view class="safety-content">
-              <text class="safety-title">CampusLink 提醒：</text>
-              <text class="safety-text">请勿线下转账或泄露隐私信息</text>
+            <view class="metric-chip">
+              <text class="chip-icon">🤝</text>
+              <text class="chip-text">{{ taskData.acceptCount || 0 }}</text>
             </view>
           </view>
         </view>
       </view>
     </view>
+
+    <!-- 加载状态 -->
+    <view class="loading-container" v-if="isLoading">
+      <view class="loading-spinner"></view>
+      <text class="loading-text">加载中...</text>
     </view>
 
-    <!-- 底部固定操作栏（移动端） -->
-    <view class="action-bar mobile-only">
-      <view class="action-buttons">
-        <view class="contact-btn" @click="handleContact">
-          <text class="btn-icon">📞</text>
+    <!-- 错误状态 -->
+    <view class="error-container" v-if="loadError && !isLoading">
+      <text class="error-icon">😔</text>
+      <text class="error-text">{{ loadError }}</text>
+      <view class="retry-button" @click="loadTaskDetail">
+        <text class="retry-text">重新加载</text>
+      </view>
+    </view>
+
+    <!-- H5底部操作栏 -->
+    <view class="action-bar" v-if="taskData">
+      <view class="action-bar-left">
+        <view class="status-info">
+          <text class="status-label">状态：</text>
+          <text class="status-text" :class="'status-' + taskData.status">
+            {{ getStatusText(taskData.status) }}
+          </text>
+        </view>
+      </view>
+      <view class="action-bar-right">
+        <view class="action-bar-btn secondary" @click="handleContact">
           <text class="btn-text">联系发布者</text>
         </view>
         <view
-          class="main-cta-btn"
-          :class="[getActionButtonClass(), { 'btn-loading': isAccepting || isCompleting }]"
-          @click="handleAcceptTask"
+          class="action-bar-btn primary"
+          :class="{ 'btn-disabled': !canAccept }"
+          @click="handleAccept"
         >
-          <view class="btn-loading-spinner" v-if="isAccepting || isCompleting"></view>
-          <text class="btn-text" v-if="!(isAccepting || isCompleting)">{{ getActionButtonText() }}</text>
-          <text class="btn-text" v-else>{{ isAccepting ? '接取中...' : '提交中...' }}</text>
-          <text class="btn-emoji" v-if="taskData.status === 0 || taskData.status === 1">🚀</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 联系发布者弹窗 -->
-    <view v-if="showContactSheet" class="contact-sheet-overlay" @click="showContactSheet = false">
-      <view class="contact-sheet" @click.stop>
-        <view class="sheet-header">
-          <text class="sheet-title">联系发布者</text>
-          <view class="close-btn" @click="showContactSheet = false">
-            <text>✕</text>
-          </view>
-        </view>
-        <view class="contact-options">
-          <view class="contact-option" @click="handleContactIM">
-            <text class="option-icon">💬</text>
-            <view class="option-info">
-              <text class="option-title">站内私信</text>
-              <text class="option-desc">通过平台消息沟通</text>
-            </view>
-            <text class="option-arrow">→</text>
-          </view>
-          <view class="contact-option" @click="handleContactPhone">
-            <text class="option-icon">📱</text>
-            <view class="option-info">
-              <text class="option-title">电话联系</text>
-              <text class="option-desc">拨打发布者电话</text>
-            </view>
-            <text class="option-arrow">→</text>
-          </view>
-          <view class="contact-option" @click="handleCopyWechat">
-            <text class="option-icon">📋</text>
-            <view class="option-info">
-              <text class="option-title">复制微信号</text>
-              <text class="option-desc">添加微信好友</text>
-            </view>
-            <text class="option-arrow">→</text>
-          </view>
+          <text class="btn-text">{{ getActionText() }}</text>
         </view>
       </view>
     </view>
@@ -410,254 +312,179 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import type { TaskDetail, TaskComment, TaskStatus } from '@/types/task'
-import {
-  getTaskDetail,
-  acceptTask,
-  completeTask,
-  getTaskComments,
-  createComment,
-  likeComment,
-  favoriteTask,
-  unfavoriteTask
-} from '@/services/task'
+import { ref, computed, onMounted } from 'vue'
+import TaskDetailHeader from '@/components/task/TaskDetailHeader.vue'
+import TaskSummary from '@/components/task/TaskSummary.vue'
+import { getTaskDetail, favoriteTask, unfavoriteTask, acceptTask } from '@/services/task'
 
-// 任务数据
-const taskData = ref<TaskDetail>({
-  taskId: 0,
-  publisherId: 0,
-  title: '',
-  content: '',
-  description: '',
-  taskType: 'help',
-  rewardPoints: 0,
-  location: '',
-  deadline: '',
-  createdAt: '',
-  status: 0 as TaskStatus,
-  publisherName: '',
-  publisherAvatar: '',
-  publisherVerified: false,
-  attachments: []
-})
-
-// 加载状态
-const isLoading = ref(true)
+// 页面数据
+const taskData = ref<any>(null)
+const isLoading = ref(false)
 const loadError = ref('')
+const commentCount = ref(0)
 
-// 操作状态
-const isAccepting = ref(false) // 接单中
-const isCompleting = ref(false) // 完成任务中
-const isFavorited = ref(false) // 是否已收藏
-const isFavoriting = ref(false) // 收藏操作中
+// 任务ID（从路由参数获取）
+const taskId = ref('')
 
-// 评论数据
-const comments = ref<TaskComment[]>([])
-const isLoadingComments = ref(false) // 评论加载中
-const isSendingComment = ref(false) // 发送评论中
-
-// 评论输入
-const commentText = ref('')
-const commentInputFocused = ref(false)
-
-// 页面加载动画
-const pageLoaded = ref(false)
-
-// 联系发布者弹窗
-const showContactSheet = ref(false)
-
-// 倒计时相关
-const deadlineCountdown = ref('')
-const isExpired = ref(false)
-const timeLeft = ref(0) // 剩余毫秒数
-
-// 计算是否紧急
-const isUrgent = computed(() => {
-  const deadline = new Date(taskData.value.deadline)
-  const now = new Date()
-  const diff = deadline.getTime() - now.getTime()
-  const oneHour = 60 * 60 * 1000
-  return diff > 0 && diff < oneHour
+// 是否可以接单
+const canAccept = computed(() => {
+  if (!taskData.value) return false
+  return taskData.value.status === 0 // 待接单状态
 })
 
-// 更新倒计时
-const updateCountdown = () => {
-  const deadline = new Date(taskData.value.deadline)
-  const now = new Date()
-  const diff = deadline.getTime() - now.getTime()
-
-  timeLeft.value = diff
-
-  if (diff <= 0) {
-    isExpired.value = true
-    deadlineCountdown.value = ''
-    return
-  }
-
-  isExpired.value = false
-
-  const hour = 60 * 60 * 1000
-  const day = 24 * hour
-
-  if (diff < hour) {
-    // 小于1小时,显示分钟
-    const minutes = Math.floor(diff / (60 * 1000))
-    deadlineCountdown.value = `${minutes}分钟后截止`
-  } else if (diff < day) {
-    // 小于24小时,显示小时
-    const hours = Math.floor(diff / hour)
-    deadlineCountdown.value = `${hours}小时后截止`
-  } else {
-    // 大于24小时,显示天数
-    const days = Math.floor(diff / day)
-    deadlineCountdown.value = `${days}天后截止`
-  }
-}
-
-// 获取截止时间样式类
-const getDeadlineClass = () => {
-  if (isExpired.value) return 'deadline-expired'
-
-  const hour = 60 * 60 * 1000
-  const day = 24 * hour
-
-  if (timeLeft.value < 2 * hour) return 'deadline-critical'
-  if (timeLeft.value < day) return 'deadline-urgent'
-  return ''
-}
-
-// 获取倒计时徽章样式类
-const getCountdownClass = () => {
-  const hour = 60 * 60 * 1000
-  const day = 24 * hour
-
-  if (timeLeft.value < 2 * hour) return 'countdown-critical'
-  if (timeLeft.value < day) return 'countdown-urgent'
-  return 'countdown-normal'
-}
-
-// 判断是否是楼主(发布者)
-const isPublisher = (userId: number) => {
-  return userId === taskData.value.publisherId
-}
-
-// 获取状态文本
-const getStatusText = (status: number) => {
-  const map: Record<number, string> = {
+// 获取任务状态文本
+const getStatusText = (status: number): string => {
+  const statusMap: Record<number, string> = {
     0: '待接单',
     1: '进行中',
     2: '已完成',
-    3: '已截止'
+    3: '已取消'
   }
-  return map[status] || '未知'
+  return statusMap[status] || '未知'
 }
 
-// 获取状态图标
-const getStatusIcon = (status: number) => {
-  const iconMap: Record<number, string> = {
-    0: '🎯',
-    1: '⚡',
-    2: '🎉',
-    3: '🔒'
+// 获取分类颜色
+const getCategoryColor = (category: string): string => {
+  const colors: Record<string, string> = {
+    '跑腿代办': 'linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)',
+    '资源共享': 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+    '互助帮忙': 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+    '其他': 'linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)'
   }
-  return iconMap[status] || ''
+  return colors[category] || colors['其他']
 }
 
-// 获取任务类型信息
-const getTaskTypeInfo = (type: string) => {
-  const typeMap: Record<string, { icon: string; name: string; color: string }> = {
-    errand: { icon: '🚴', name: '跑腿代办', color: '#3B82F6' },
-    share: { icon: '📖', name: '资源共享', color: '#10B981' },
-    help: { icon: '💪', name: '互助帮忙', color: '#F59E0B' },
-    other: { icon: '✨', name: '其他', color: '#8B5CF6' }
-  }
-  return typeMap[type] || { icon: '📋', name: '任务', color: '#64748B' }
-}
+// 获取操作按钮文本
+const getActionText = (): string => {
+  if (!taskData.value) return '加载中'
 
-// 格式化截止时间
-const formatDeadline = (deadline: string) => {
-  const date = new Date(deadline)
-  const now = new Date()
-  const diff = date.getTime() - now.getTime()
-
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-
-  if (diff < 0) {
-    return '已截止'
-  } else if (diff < hour) {
-    const minutes = Math.floor(diff / minute)
-    return `${minutes}分钟后截止 ⚠️`
-  } else if (diff < day) {
-    const hours = Math.floor(diff / hour)
-    return `今天 ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')} 截止`
-  } else {
-    return `${deadline.split(' ')[0]} ${deadline.split(' ')[1].slice(0, 5)} 截止`
+  switch (taskData.value.status) {
+    case 0:
+      return '立即接取'
+    case 1:
+      return '进行中'
+    case 2:
+      return '已完成'
+    case 3:
+      return '已取消'
+    default:
+      return '未知状态'
   }
 }
 
-// 根据文件名获取文件图标
-const getFileIcon = (fileName: string) => {
-  const ext = fileName.split('.').pop()?.toLowerCase()
-  const iconMap: Record<string, string> = {
-    pdf: '📕',
-    doc: '📘',
-    docx: '📘',
-    xls: '📗',
-    xlsx: '📗',
-    ppt: '📙',
-    pptx: '📙',
-    txt: '📄',
-    jpg: '🖼️',
-    jpeg: '🖼️',
-    png: '🖼️',
-    gif: '🖼️',
-    zip: '📦',
-    rar: '📦',
-    '7z': '📦',
+// 格式化简短时间
+const formatShortTime = (time: string): string => {
+  if (!time) return ''
+  const date = new Date(time)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const hour = date.getHours().toString().padStart(2, '0')
+  const minute = date.getMinutes().toString().padStart(2, '0')
+  return `${month}月${day}日 ${hour}:${minute}`
+}
+
+// 格式化发布时间（相对时间）
+const formatPublishTime = (time: string): string => {
+  if (!time) return ''
+  const now = new Date().getTime()
+  const publishTime = new Date(time).getTime()
+  const diff = now - publishTime
+  const minutes = Math.floor(diff / (1000 * 60))
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (days < 7) return `${days}天前`
+
+  const date = new Date(time)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  return `${month}月${day}日`
+}
+
+// 加载任务详情
+const loadTaskDetail = async () => {
+  if (!taskId.value) {
+    loadError.value = '任务ID不存在'
+    return
   }
-  return iconMap[ext || ''] || '📄'
-}
 
-// 格式化文件大小
-const formatFileSize = (bytes: number) => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
-}
+  isLoading.value = true
+  loadError.value = ''
 
-// 获取操作按钮样式
-const getActionButtonClass = () => {
-  const status = taskData.value.status
-  if (status === 0) return 'btn-available'
-  if (status === 1) return 'btn-in-progress'
-  if (status === 2) return 'btn-completed'
-  return 'btn-disabled'
-}
+  try {
+    const response = await getTaskDetail(Number(taskId.value))
 
-// 获取操作按钮文字
-const getActionButtonText = () => {
-  const status = taskData.value.status
-  if (status === 0) return '立即接取'
-  if (status === 1) return '标记完成'
-  if (status === 2) return '已完成 ✓'
-  return '已截止'
+    // 字段映射（兼容后端字段）
+    taskData.value = {
+      taskId: response.tid || response.taskId,
+      title: response.title,
+      description: response.content || response.description,
+      rewardPoints: response.rewardPoints || response.reward,
+      status: response.status,
+      deadline: response.deadline,
+      location: response.location,
+      taskType: response.taskType || 'run',
+      publisherId: response.publisherId,
+      publisherName: response.publisherNickname || response.publisherName,
+      publisherAvatar: response.publisherAvatar,
+      publisherVerified: response.publisherVerified || false,
+      createdAt: response.createdAt || response.publishTime,
+      viewCount: response.viewCount || 0,
+      favoriteCount: response.favoriteCount || 0,
+      acceptCount: response.acceptCount || 0,
+      publishCount: response.publishCount || 0,
+      isFavorited: response.isFavorited || false,
+      attachments: response.images || response.attachments || []
+    }
+
+    console.log('任务详情加载成功:', taskData.value)
+  } catch (error: any) {
+    console.error('加载任务详情失败:', error)
+    loadError.value = error.message || '加载失败，请稍后重试'
+    uni.showToast({
+      title: '加载失败',
+      icon: 'none'
+    })
+  } finally {
+    isLoading.value = false
+  }
 }
 
 // 返回
 const handleBack = () => {
-  // 获取页面栈
-  const pages = getCurrentPages()
+  console.log('返回上一页')
+}
 
-  // 如果页面栈大于1,说明有上一页,直接返回
-  if (pages.length > 1) {
-    uni.navigateBack()
-  } else {
-    // 否则跳转到首页
-    uni.switchTab({
-      url: '/pages/home/index'
+// 收藏/取消收藏
+const handleFavorite = async () => {
+  if (!taskData.value) return
+
+  try {
+    if (taskData.value.isFavorited) {
+      await unfavoriteTask(taskData.value.taskId)
+      taskData.value.isFavorited = false
+      taskData.value.favoriteCount = Math.max(0, taskData.value.favoriteCount - 1)
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'success'
+      })
+    } else {
+      await favoriteTask(taskData.value.taskId)
+      taskData.value.isFavorited = true
+      taskData.value.favoriteCount++
+      uni.showToast({
+        title: '收藏成功',
+        icon: 'success'
+      })
+    }
+  } catch (error) {
+    console.error('收藏操作失败:', error)
+    uni.showToast({
+      title: '操作失败',
+      icon: 'none'
     })
   }
 }
@@ -670,1830 +497,484 @@ const handleShare = () => {
   })
 }
 
-// 收藏/取消收藏
-const handleFavorite = async () => {
-  // 防止重复操作
-  if (isFavoriting.value) {
-    return
-  }
-
-  try {
-    isFavoriting.value = true
-
-    if (isFavorited.value) {
-      // 取消收藏
-      await unfavoriteTask(taskData.value.taskId)
-
-      isFavorited.value = false
-
-      // 更新收藏数
-      if (taskData.value.favoriteCount && taskData.value.favoriteCount > 0) {
-        taskData.value.favoriteCount--
-      }
-
-      uni.showToast({
-        title: '已取消收藏',
-        icon: 'success'
-      })
-
-      console.log('取消收藏成功:', taskData.value.taskId)
-    } else {
-      // 收藏
-      await favoriteTask(taskData.value.taskId)
-
-      isFavorited.value = true
-
-      // 更新收藏数
-      taskData.value.favoriteCount = (taskData.value.favoriteCount || 0) + 1
-
-      uni.showToast({
-        title: '收藏成功',
-        icon: 'success'
-      })
-
-      console.log('收藏成功:', taskData.value.taskId)
-    }
-  } catch (error: any) {
-    console.error('收藏操作失败:', error)
-
-    const errorMsg = error.message || '操作失败，请稍后重试'
-    uni.showToast({
-      title: errorMsg,
-      icon: 'none',
-      duration: 2000
-    })
-  } finally {
-    isFavoriting.value = false
-  }
-}
-
-// 预览文件
-const handlePreviewFile = (file: any) => {
+// 举报
+const handleReport = () => {
   uni.showToast({
-    title: '文件预览功能开发中',
+    title: '举报功能开发中',
     icon: 'none'
   })
-}
-
-// 点赞评论
-const handleLikeComment = async (commentId: number) => {
-  const comment = comments.value.find(c => c.id === commentId)
-  if (!comment) {
-    return
-  }
-
-  try {
-    // 调用点赞API
-    await likeComment(commentId)
-
-    // 乐观更新本地数据
-    comment.likes = (comment.likes || 0) + 1
-
-    console.log('点赞成功:', commentId)
-  } catch (error: any) {
-    console.error('点赞失败:', error)
-
-    // 点赞失败时显示提示
-    uni.showToast({
-      title: error.message || '点赞失败',
-      icon: 'none',
-      duration: 1500
-    })
-  }
-}
-
-// 发送评论
-const handleSendComment = async () => {
-  if (!commentText.value.trim()) {
-    uni.showToast({
-      title: '请输入评论内容',
-      icon: 'none'
-    })
-    return
-  }
-
-  // 防止重复提交
-  if (isSendingComment.value) {
-    return
-  }
-
-  const content = commentText.value.trim()
-
-  try {
-    isSendingComment.value = true
-
-    // 调用评论API
-    const result = await createComment(taskData.value.taskId, content)
-
-    // 清空输入框
-    commentText.value = ''
-
-    // 添加评论到列表顶部(乐观更新)
-    comments.value.unshift({
-      id: result.commentId,
-      taskId: taskData.value.taskId,
-      userId: 0, // 当前用户ID
-      username: '我',
-      avatar: '/static/default-avatar.png',
-      content: content,
-      time: '刚刚',
-      createdAt: new Date().toISOString(),
-      likes: 0
-    })
-
-    uni.showToast({
-      title: '评论成功',
-      icon: 'success'
-    })
-
-    console.log('评论发表成功:', result.commentId)
-  } catch (error: any) {
-    console.error('发表评论失败:', error)
-
-    const errorMsg = error.message || '发表评论失败，请稍后重试'
-    uni.showToast({
-      title: errorMsg,
-      icon: 'none',
-      duration: 2000
-    })
-  } finally {
-    isSendingComment.value = false
-  }
 }
 
 // 联系发布者
 const handleContact = () => {
-  showContactSheet.value = true
-}
-
-// 站内私信
-const handleContactIM = () => {
-  showContactSheet.value = false
   uni.showToast({
-    title: '私信功能开发中',
+    title: '联系功能开发中',
     icon: 'none'
   })
 }
 
-// 电话联系
-const handleContactPhone = () => {
-  showContactSheet.value = false
-  if (taskData.value.publisherPhone) {
-    uni.makePhoneCall({
-      phoneNumber: taskData.value.publisherPhone
-    })
-  } else {
-    uni.showToast({
-      title: '发布者未提供电话',
-      icon: 'none'
-    })
-  }
-}
+// 接单
+const handleAccept = async () => {
+  if (!canAccept.value) return
 
-// 复制微信号
-const handleCopyWechat = () => {
-  showContactSheet.value = false
-  uni.setClipboardData({
-    data: '微信号复制功能开发中',
-    success: () => {
-      uni.showToast({
-        title: '已复制到剪贴板',
-        icon: 'success'
-      })
+  uni.showModal({
+    title: '确认接单',
+    content: `确认接取这个任务吗？任务酬金：${taskData.value.rewardPoints}积分`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await acceptTask(taskData.value.taskId)
+          uni.showToast({
+            title: '接单成功',
+            icon: 'success'
+          })
+          // 重新加载任务详情
+          await loadTaskDetail()
+        } catch (error: any) {
+          console.error('接单失败:', error)
+          uni.showToast({
+            title: error.message || '接单失败',
+            icon: 'none'
+          })
+        }
+      }
     }
   })
 }
 
-// 接取任务或完成任务(根据状态判断)
-const handleAcceptTask = async () => {
-  const status = taskData.value.status
-
-  // 状态0: 接取任务
-  if (status === 0) {
-    // 防止重复操作
-    if (isAccepting.value) {
-      return
-    }
-
-    // 显示确认对话框
-    uni.showModal({
-      title: '确认接取',
-      content: `确认接取此任务吗？\n悬赏积分: ${taskData.value.rewardPoints}`,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            isAccepting.value = true
-
-            // 调用接单API
-            await acceptTask(taskData.value.taskId)
-
-            // 更新本地状态
-            taskData.value.status = 1
-
-            uni.showToast({
-              title: '接取成功',
-              icon: 'success'
-            })
-
-            console.log('任务接取成功:', taskData.value.taskId)
-          } catch (error: any) {
-            console.error('接取任务失败:', error)
-
-            // 显示错误信息
-            const errorMsg = error.message || '接取任务失败，请稍后重试'
-            uni.showToast({
-              title: errorMsg,
-              icon: 'none',
-              duration: 2000
-            })
-          } finally {
-            isAccepting.value = false
-          }
-        }
-      }
-    })
-  }
-  // 状态1: 完成任务
-  else if (status === 1) {
-    // 防止重复操作
-    if (isCompleting.value) {
-      return
-    }
-
-    // 显示确认对话框
-    uni.showModal({
-      title: '确认完成',
-      content: `确认已完成此任务吗？\n完成后将获得 ${taskData.value.rewardPoints} 积分`,
-      success: async (res) => {
-        if (res.confirm) {
-          try {
-            isCompleting.value = true
-
-            // 调用完成任务API
-            await completeTask(taskData.value.taskId)
-
-            // 更新本地状态
-            taskData.value.status = 2
-
-            uni.showToast({
-              title: '任务已完成',
-              icon: 'success'
-            })
-
-            console.log('任务完成成功:', taskData.value.taskId)
-          } catch (error: any) {
-            console.error('完成任务失败:', error)
-
-            // 显示错误信息
-            const errorMsg = error.message || '完成任务失败，请稍后重试'
-            uni.showToast({
-              title: errorMsg,
-              icon: 'none',
-              duration: 2000
-            })
-          } finally {
-            isCompleting.value = false
-          }
-        }
-      }
-    })
-  }
-  // 其他状态: 不允许操作
-  else {
-    uni.showToast({
-      title: status === 2 ? '任务已完成' : '任务已取消',
-      icon: 'none'
-    })
-  }
-}
-
-// 重试加载
-const handleRetry = () => {
-  // 重新挂载页面，触发数据加载
+// 页面加载
+onMounted(() => {
+  // 获取路由参数
   const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const options = currentPage.$page?.options || currentPage.options || {}
-  const taskId = options.taskId
+  const currentPage = pages[pages.length - 1] as any
+  taskId.value = currentPage.options?.id || currentPage.options?.taskId || ''
 
-  if (taskId) {
-    loadTaskDetail(Number(taskId))
-  }
-}
-
-// 加载任务详情
-const loadTaskDetail = async (taskId: number) => {
-  try {
-    isLoading.value = true
-    loadError.value = ''
-
-    const detail = await getTaskDetail(taskId) as any
-
-    taskData.value = {
-      taskId: detail.tid || detail.taskId, // 后端返回的是 tid
-      publisherId: detail.publisherId,
-      title: detail.title,
-      content: detail.description || detail.content || '',
-      description: detail.description || detail.content || '',
-      taskType: detail.taskType,
-      rewardPoints: detail.rewardPoints || detail.reward || 0, // 后端返回 rewardPoints
-      location: detail.location || '',
-      deadline: detail.deadline,
-      createdAt: detail.createdAt,
-      status: detail.status,
-      publisherName: detail.publisherNickname || detail.publisherName, // 后端返回 publisherNickname
-      publisherAvatar: detail.publisherAvatar || '/static/default-avatar.png',
-      publisherVerified: false,
-      attachments: detail.attachments || [],
-      viewCount: detail.viewCount || 0,
-      favoriteCount: detail.favoriteCount || 0,
-      images: detail.images || []
-    }
-
-    // 设置收藏状态
-    isFavorited.value = detail.isFavorited || false
-
-    console.log('任务详情加载成功:', taskData.value)
-    console.log('收藏状态:', isFavorited.value)
-
-    // 加载成功后,加载评论列表
-    loadComments(taskId)
-  } catch (error: any) {
-    console.error('加载任务详情失败:', error)
-    loadError.value = error.message || '加载任务详情失败'
-
-    uni.showToast({
-      title: '加载失败',
-      icon: 'none'
-    })
-  } finally {
-    isLoading.value = false
-  }
-}
-
-// 加载评论列表
-const loadComments = async (taskId: number) => {
-  try {
-    isLoadingComments.value = true
-
-    const result = await getTaskComments(taskId, { page: 1, pageSize: 50 })
-
-    // 映射评论数据
-    comments.value = (result.list || []).map((comment: any) => ({
-      id: comment.commentId || comment.id,
-      taskId: comment.taskId,
-      userId: comment.userId,
-      username: comment.username || comment.nickname || '匿名用户',
-      avatar: comment.avatar || '/static/default-avatar.png',
-      content: comment.content,
-      time: formatCommentTime(comment.createdAt),
-      createdAt: comment.createdAt,
-      likes: comment.likes || 0
-    }))
-
-    console.log('评论加载成功:', comments.value.length, '条')
-  } catch (error: any) {
-    console.error('加载评论失败:', error)
-    // 评论加载失败不影响主流程,只显示空列表
-  } finally {
-    isLoadingComments.value = false
-  }
-}
-
-// 格式化评论时间
-const formatCommentTime = (timeStr: string) => {
-  const time = new Date(timeStr)
-  const now = new Date()
-  const diff = now.getTime() - time.getTime()
-
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-
-  if (diff < minute) {
-    return '刚刚'
-  } else if (diff < hour) {
-    return `${Math.floor(diff / minute)}分钟前`
-  } else if (diff < day) {
-    return `${Math.floor(diff / hour)}小时前`
-  } else if (diff < 7 * day) {
-    return `${Math.floor(diff / day)}天前`
+  if (taskId.value) {
+    loadTaskDetail()
   } else {
-    const month = time.getMonth() + 1
-    const date = time.getDate()
-    return `${month}月${date}日`
+    loadError.value = '缺少任务ID参数'
   }
-}
-
-/**
- * 页面加载时获取任务详情
- */
-onMounted(async () => {
-  // 获取 URL 参数中的任务 ID
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const options = currentPage.$page?.options || currentPage.options || {}
-  const taskId = options.taskId
-
-  if (taskId) {
-    await loadTaskDetail(Number(taskId))
-  } else {
-    console.warn('未传入任务 ID')
-    loadError.value = '未传入任务ID'
-    isLoading.value = false
-  }
-
-  // 触发页面加载动画
-  setTimeout(() => {
-    pageLoaded.value = true
-  }, 100)
-
-  // 初始化倒计时
-  updateCountdown()
-
-  // 每分钟更新倒计时
-  const countdownInterval = setInterval(() => {
-    updateCountdown()
-  }, 60000) // 60秒更新一次
-
-  // 页面卸载时清除定时器
-  onUnmounted(() => {
-    if (countdownInterval) {
-      clearInterval(countdownInterval)
-    }
-  })
 })
 </script>
 
-<style scoped lang="scss">
-/* 页面容器 */
+<style lang="scss" scoped>
+/* ============================================
+   企业级设计令牌系统 (Design Tokens)
+   文档要求: 建立统一的颜色、字号、间距体系
+   ============================================ */
+
+/* 主色系 (Primary Colors) */
+$color-primary: #2F6AFF;        // 交互蓝
+$color-primary-light: #3B82F6;
+$color-primary-dark: #1E40AF;
+
+/* 强调色 (Accent Colors) */
+$color-accent-gold: #FFB020;    // 奖励/提醒
+$color-accent-orange: #F59E0B;
+
+/* 状态色 (Status Colors) */
+$color-success: #22C55E;         // 成功/完成
+$color-warning: #F59E0B;         // 警告/进行中
+$color-error: #EF4444;           // 错误/失败
+$color-info: #3B82F6;            // 信息/待处理
+
+/* 中性色 (Neutral Colors) */
+$color-text-primary: #111827;    // 主要文本
+$color-text-secondary: #4B5563;  // 次要文本
+$color-text-tertiary: #9CA3AF;   // 辅助文本
+$color-border: #E5E7EB;          // 边框
+$color-bg-primary: #FFFFFF;      // 主背景
+$color-bg-secondary: #F9FAFB;    // 次背景
+$color-bg-tertiary: #F3F4F6;     // 三级背景
+
+/* 字号体系 (Typography Scale) */
+$font-size-h1: 44rpx;            // 主标题 (20-24px)
+$font-size-h2: 36rpx;            // 次标题 (16-18px)
+$font-size-h3: 30rpx;            // 三级标题
+$font-size-body: 28rpx;          // 正文 (14px)
+$font-size-caption: 24rpx;       // 说明文字 (12px)
+$font-size-small: 20rpx;         // 小字
+
+/* 间距体系 (Spacing Scale) */
+$spacing-xs: 8rpx;
+$spacing-sm: 12rpx;
+$spacing-md: 16rpx;
+$spacing-lg: 24rpx;
+$spacing-xl: 32rpx;
+$spacing-2xl: 40rpx;
+$spacing-3xl: 48rpx;
+
+/* 圆角体系 (Border Radius) */
+$radius-sm: 8rpx;
+$radius-md: 12rpx;
+$radius-lg: 16rpx;
+$radius-xl: 20rpx;
+$radius-full: 50%;
+
+/* 阴影体系 (Shadow Scale) */
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-md: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+
+/* 过渡动画 (Transitions) */
+$transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+$transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
 .task-detail-page {
   min-height: 100vh;
   background: linear-gradient(180deg, #F9FBFF 0%, #FFFFFF 100%);
-  position: relative;
+  padding-bottom: 120rpx; // 为底部操作栏留出空间
 }
 
-/* PC端双栏布局容器 */
-.page-container {
-  display: flex;
-  gap: 32rpx;
-  max-width: 1400rpx;
-  margin: 0 auto;
-  padding: 0 32rpx;
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    padding: 0;
-  }
-}
-
-/* 移动端专属样式 */
-.mobile-only {
-  @media (min-width: 769px) {
-    display: none !important;
-  }
-}
-
-/* 页面加载动画 */
-.animate-item {
-  opacity: 0;
-  transform: translateY(40rpx);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &.animate-in {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 顶部导航 */
-.top-nav {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 88rpx;
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(24rpx);
-  -webkit-backdrop-filter: blur(24rpx);
-  border-bottom: 1rpx solid rgba(226, 232, 240, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 32rpx;
-  z-index: 100;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    opacity: 0.7;
-  }
-}
-
-.back-icon {
-  font-size: 36rpx;
-  color: #3B82F6;
-  line-height: 1;
-}
-
-.back-text {
-  font-size: 28rpx;
-  color: #3B82F6;
-  font-weight: 500;
-}
-
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.favorite-btn {
-  width: 64rpx;
-  height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(245, 158, 11, 0.1);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background: rgba(245, 158, 11, 0.15);
-    transform: scale(1.05);
-  }
-
-  &:active {
-    background: rgba(245, 158, 11, 0.2);
-    transform: scale(0.95);
-  }
-
-  &.favoriting {
-    pointer-events: none;
-  }
-}
-
-.favorite-icon {
-  font-size: 32rpx;
-  line-height: 1;
-  transition: transform 0.3s ease;
-}
-
-.favorite-loading-spinner {
-  width: 24rpx;
-  height: 24rpx;
-  border: 2rpx solid rgba(245, 158, 11, 0.3);
-  border-top-color: #F59E0B;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.share-btn {
-  width: 64rpx;
-  height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    background: rgba(59, 130, 246, 0.2);
-    transform: scale(0.95);
-  }
-}
-
-.share-icon {
-  font-size: 32rpx;
-  line-height: 1;
-}
-
-/* 模块化设计：主内容区 TaskDetailMain - 68%标准布局 */
-.content-area {
-  flex: 1;
-  max-width: 68%; /* 模块化标准：68/32布局比例 */
-  height: calc(100vh - 88rpx - 120rpx);
-  padding: 32rpx 40rpx;
-
-  @media (max-width: 768px) {
-    max-width: 100%;
-    height: calc(100vh - 88rpx - 160rpx);
-    padding: 16rpx;
-  }
-}
-
-/* 模块化设计：侧边栏 TaskSidebar - 32%辅助信息区 */
-.sidebar-area {
-  width: 32%; /* 模块化标准：32%辅助信息区 */
-  flex-shrink: 0;
-  padding: 32rpx 0;
-
-  @media (max-width: 768px) {
-    display: none;
-  }
-}
-
-/* 侧边栏信息卡片 - 优化：添加渐变背景增强视觉权重 */
-.sidebar-info-card {
-  background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%); /* 优化：浅蓝渐变 */
-  border-radius: 20rpx;
-  padding: 28rpx; /* 优化：略微缩小padding */
-  box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.1); /* 优化：蓝色阴影 */
-  border: 2rpx solid rgba(59, 130, 246, 0.15); /* 优化：蓝色边框 */
-  position: sticky;
-  top: 120rpx;
-}
-
-.card-section {
-  margin-bottom: 0;
-}
-
-.section-title-row {
-  margin-bottom: 20rpx;
-}
-
-.section-title-icon {
-  font-size: 24rpx;
-  margin-right: 8rpx;
-}
-
-/* 模块化设计：卡片标题字体规范 */
-.section-title {
-  font-size: 28rpx; /* 企业标准：14px = 28rpx 次级标题 */
-  font-weight: 600;
-  color: #1E293B;
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.card-divider {
-  height: 1rpx;
-  background: linear-gradient(90deg, rgba(226, 232, 240, 0.3) 0%, rgba(226, 232, 240, 0.8) 50%, rgba(226, 232, 240, 0.3) 100%);
-  margin: 28rpx 0;
-}
-
-/* 数据统计网格 */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16rpx;
-}
-
-.stat-box {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  padding: 20rpx 12rpx;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.85) 100%);
-  border-radius: 14rpx;
-  border: 1rpx solid rgba(226, 232, 240, 0.5);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.05) 100%);
-    transform: translateY(-4rpx);
-    box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
-  }
-}
-
-.stat-icon {
-  font-size: 32rpx;
-  line-height: 1;
-}
-
-.stat-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4rpx;
-}
-
-.stat-number {
-  font-size: 36rpx;
-  font-weight: 800;
-  color: #1E293B;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
-  line-height: 1;
-}
-
-/* 模块化设计：TaskSidebar - 次要文字规范 */
-.stat-name {
-  font-size: 26rpx; /* 企业标准：13px = 26rpx 次要文字 */
-  color: #94A3B8; /* 企业标准：次要文字色 */
-  font-weight: 400;
-}
-
-/* 参考图样式：不同数据类型使用不同颜色 */
-.stat-box-views {
-  .stat-number {
-    color: #3B82F6; /* 蓝色 */
-  }
-}
-
-.stat-box-favorites {
-  .stat-number {
-    color: #EC4899; /* 粉色 */
-  }
-}
-
-.stat-box-accepts {
-  .stat-number {
-    color: #F59E0B; /* 橙色 */
-  }
-}
-
-/* 快速操作按钮 */
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.quick-action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10rpx;
-  padding: 18rpx 24rpx;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9) 0%, rgba(241, 245, 249, 0.85) 100%);
-  border: 2rpx solid rgba(226, 232, 240, 0.6);
-  border-radius: 14rpx;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &:hover {
-    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-    border-color: #3B82F6;
-    transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.3);
-
-    .action-icon {
-      transform: scale(1.15);
-    }
-
-    .action-label {
-      color: #FFFFFF;
-    }
-  }
-
-  &:active {
-    transform: scale(0.97);
-  }
-
-  &.active {
-    background: linear-gradient(135deg, #F59E0B 0%, #EAB308 100%);
-    border-color: #F59E0B;
-
-    &:hover {
-      background: linear-gradient(135deg, #EAB308 0%, #FCD34D 100%);
-    }
-
-    .action-label {
-      color: #FFFFFF;
-    }
-  }
-}
-
-.action-icon {
-  font-size: 28rpx;
-  line-height: 1;
-  transition: transform 0.3s ease;
-}
-
-.action-label {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #475569;
-  transition: color 0.3s ease;
-}
-
-/* 安全提示卡 - 企业级标准：淡黄背景+浅橙边框 */
-.safety-tips-section {
-  margin-top: 24rpx;
-}
-
-.safety-tips-card {
-  display: flex;
-  gap: 16rpx;
-  padding: 20rpx;
-  background: linear-gradient(135deg, #FFF7E6 0%, #FFFBEB 100%); /* 淡黄渐变背景 */
-  border: 2rpx solid #FED7AA; /* 浅橙边框 */
-  border-radius: 12rpx;
-  box-shadow: 0 4rpx 12rpx rgba(251, 146, 60, 0.08);
-  transition: all 0.3s ease;
-
-  &:hover {
-    box-shadow: 0 6rpx 16rpx rgba(251, 146, 60, 0.12);
-    transform: translateY(-2rpx);
-  }
-}
-
-.safety-icon-wrapper {
-  flex-shrink: 0;
-  width: 44rpx;
-  height: 44rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
-  border-radius: 50%;
-  box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.3);
-}
-
-.safety-icon {
-  font-size: 26rpx;
-  filter: brightness(1.1);
-}
-
-.safety-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
-}
-
-.safety-title {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #92400E; /* 深棕色标题 */
-  letter-spacing: 0.5rpx;
-}
-
-.safety-text {
-  font-size: 24rpx;
-  color: #78350F; /* 棕色文本 */
-  line-height: 1.6;
-  opacity: 0.9;
-}
-
-/* 标题区 */
-.title-section {
-  margin-bottom: 24px;
-}
-
-.task-title-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-  gap: 20rpx;
-}
-
-/* 模块化设计：TaskHeader - 标题字体规范 */
-.task-title {
-  flex: 1;
-  font-size: 44rpx; /* 企业标准：22px = 44rpx */
-  font-weight: 700; /* 企业标准：标题加粗 */
-  color: #1E293B; /* 企业标准：标题色 */
-  line-height: 1.4;
-  letter-spacing: -0.5rpx;
-}
-
-/* 大号状态徽标 */
-.status-badge-large {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 10rpx 20rpx;
-  border-radius: 24rpx;
-  font-size: 26rpx;
-  font-weight: 700;
-  flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-
-  &.status-0 {
-    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-    color: #FFFFFF;
-  }
-
-  &.status-1 {
-    background: linear-gradient(135deg, #1E90FF 0%, #4DA3FF 100%);
-    color: #FFFFFF;
-  }
-
-  &.status-2 {
-    background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-    color: #FFFFFF;
-  }
-
-  &.status-3 {
-    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
-    color: #FFFFFF;
-  }
-
-  &.status-pulse {
-    animation: statusPulse 2s ease-in-out infinite;
-  }
-
-  .status-icon {
-    font-size: 24rpx;
-  }
-}
-
-/* 任务状态进度条 - 优化：移动端更紧凑 */
-.task-progress-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20rpx; /* 优化：从24rpx减少到20rpx */
-  padding: 20rpx 24rpx; /* 优化：减小padding */
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.95) 0%, rgba(241, 245, 249, 0.9) 100%);
-  border-radius: 16rpx;
-  border: 2rpx solid rgba(226, 232, 240, 0.6);
-
-  @media (max-width: 768px) {
-    padding: 16rpx 20rpx; /* 移动端进一步缩小 */
-    margin-bottom: 16rpx;
-  }
-}
-
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8rpx;
-  position: relative;
-  flex: 0 0 auto;
-
-  &.active .step-dot {
-    background: #E5E7EB;
-    border-color: #D1D5DB;
-  }
-
-  &.completed .step-dot {
-    background: linear-gradient(135deg, #16A34A 0%, #22C55E 100%);
-    border-color: #16A34A;
-    box-shadow: 0 0 0 4rpx rgba(22, 163, 74, 0.15);
-  }
-
-  &.current .step-dot {
-    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-    border-color: #3B82F6;
-    box-shadow: 0 0 0 6rpx rgba(59, 130, 246, 0.2);
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  &.completed .step-label {
-    color: #16A34A;
-    font-weight: 600;
-  }
-
-  &.current .step-label {
-    color: #3B82F6;
-    font-weight: 700;
-  }
-}
-
-.step-dot {
-  width: 24rpx;
-  height: 24rpx;
-  border-radius: 50%;
-  background: #F3F4F6;
-  border: 3rpx solid #E5E7EB;
-  transition: all 0.3s ease;
-}
-
-.step-label {
-  font-size: 22rpx;
-  color: #94A3B8;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: all 0.3s ease;
-}
-
-.progress-line {
-  flex: 1;
-  height: 3rpx;
-  background: #E5E7EB;
-  margin: 0 12rpx;
-  position: relative;
-  top: -16rpx;
-  transition: all 0.3s ease;
-
-  &.active {
-    background: linear-gradient(90deg, #16A34A 0%, #22C55E 100%);
-  }
-}
-
-.task-meta {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  font-size: 26rpx;
-  color: #64748B;
-}
-
-.task-type-badge {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 6rpx 14rpx;
-  border-radius: 20rpx;
-  border: 1.5rpx solid;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(8rpx);
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
-  }
-}
-
-.type-icon {
-  font-size: 22rpx;
-  line-height: 1;
-}
-
-.type-text {
-  font-size: 24rpx;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.meta-label {
-  color: #94A3B8;
-}
-
-.meta-publisher {
-  color: #3B82F6;
-  font-weight: 500;
-}
-
-.meta-divider {
-  color: #CBD5E1;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  font-size: 24rpx;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  position: relative;
-
-  /* 状态0: 待接单 - 蓝色 */
-  &.status-0 {
-    background: rgba(59, 130, 246, 0.12);
-    color: #3B82F6;
-    border: 2rpx solid rgba(59, 130, 246, 0.25);
-    box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.15);
-  }
-
-  /* 状态1: 进行中 - 道奇蓝 */
-  &.status-1 {
-    background: rgba(30, 144, 255, 0.12);
-    color: #1E90FF;
-    border: 2rpx solid rgba(30, 144, 255, 0.25);
-    box-shadow: 0 2rpx 8rpx rgba(30, 144, 255, 0.15);
-  }
-
-  /* 状态2: 已完成 - 绿色 */
-  &.status-2 {
-    background: rgba(22, 163, 74, 0.12);
-    color: #16A34A;
-    border: 2rpx solid rgba(22, 163, 74, 0.25);
-    box-shadow: 0 2rpx 8rpx rgba(22, 163, 74, 0.15);
-  }
-
-  /* 状态3: 已截止 - 红色 */
-  &.status-3 {
-    background: rgba(239, 68, 68, 0.12);
-    color: #EF4444;
-    border: 2rpx solid rgba(239, 68, 68, 0.25);
-    box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.15);
-  }
-
-  &.status-pulse {
-    animation: statusPulse 2s ease-in-out infinite;
-  }
-}
-
-.status-icon {
-  font-size: 20rpx;
-  line-height: 1;
-  animation: statusIconBounce 2s ease-in-out infinite;
-}
-
-.status-dot {
-  width: 10rpx;
-  height: 10rpx;
-  border-radius: 50%;
-  flex-shrink: 0;
-
-  .status-0 & {
-    background: #22C55E;
-    box-shadow: 0 0 8rpx rgba(34, 197, 94, 0.6);
-    animation: dotPulse 2s ease-in-out infinite;
-  }
-
-  .status-1 & {
-    background: #F59E0B;
-    box-shadow: 0 0 8rpx rgba(245, 158, 11, 0.6);
-    animation: dotPulse 2s ease-in-out infinite;
-  }
-}
-
-.status-text {
-  line-height: 1;
-}
-
-@keyframes statusPulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.02);
-  }
-}
-
-@keyframes dotPulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-}
-
-@keyframes statusIconBounce {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-2rpx) scale(1.1);
-  }
-}
-
-/* 信息卡片 - 优化：移动端减小间距 */
-.info-card {
+/* H5首屏摘要栏 */
+.h5-summary-bar {
+  display: none; // PC端隐藏
   background: #FFFFFF;
-  border-radius: 16px;
-  padding: 20px 24px; /* 优化：从28px减小到24px */
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.04);
-  margin-bottom: 24px; /* 优化：从32px减小到24px */
-  border: 1rpx solid rgba(226, 232, 240, 0.6);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  @media (max-width: 768px) {
-    padding: 16px 20px; /* 移动端进一步缩小 */
-    margin-bottom: 16px; /* 移动端卡片间距更紧凑 */
-    border-radius: 12px;
-  }
-}
-
-.info-section {
-  padding: 0;
-  margin-bottom: 16px; /* 优化：从20px减小到16px */
-  position: relative;
-  transition: all 0.2s ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:hover {
-    background: rgba(248, 250, 252, 0.4);
-    border-radius: 12rpx;
-    margin-left: -16rpx;
-    margin-right: -16rpx;
-    padding-left: 16rpx;
-    padding-right: 16rpx;
-  }
-
-  @media (max-width: 768px) {
-    margin-bottom: 12px; /* 移动端更紧凑 */
-  }
-}
-
-// 任务描述区域 - 距离标题区12px
-.info-section:first-child {
-  margin-bottom: 12px;
-}
-
-// 酬金区域 - 距离描述区20px
-.reward-section {
-  margin-bottom: 20px;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
-  padding: 12rpx 16rpx;
-  margin: 0 -16rpx 16rpx;
-  background: linear-gradient(90deg, #F8FAFF 0%, #FFFFFF 100%);
-  border-radius: 8rpx;
-}
-
-.section-icon {
-  font-size: 32rpx;
-  line-height: 1;
-}
-
-.section-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #334155;
-}
-
-.section-content {
-  padding-left: 44rpx;
-}
-
-/* 模块化设计：TaskInfo - 正文字体规范 */
-.description-text {
-  font-size: 30rpx; /* 企业标准：15px = 30rpx 正文 */
-  color: #475569; /* 企业标准：正文色 */
-  line-height: 1.7;
-  font-weight: 400;
-}
-
-/* 企业级标准：任务描述区 - 蓝色左边条强化视觉焦点 */
-.info-section:first-child {
-  position: relative;
-  padding-left: 20rpx;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6rpx;
-    background: linear-gradient(180deg, #3B82F6 0%, #60A5FA 100%);
-    border-radius: 3rpx;
-    box-shadow: 0 0 12rpx rgba(59, 130, 246, 0.3);
-  }
-
-  .section-header {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0) 100%);
-  }
-}
-
-/* 企业级标准：地点和时间区域样式优化 */
-.section-location,
-.section-deadline {
-  .section-header {
-    background: linear-gradient(90deg, rgba(248, 250, 252, 0.6) 0%, rgba(255, 255, 255, 0) 100%);
-  }
-}
-
-/* PC端：地点和时间并排显示 */
-@media (min-width: 769px) {
-  .info-card {
-    .section-location,
-    .section-deadline {
-      display: inline-block;
-      width: calc(50% - 8px);
-      vertical-align: top;
-    }
-
-    .section-location {
-      margin-right: 16px;
-    }
-  }
-}
-
-.reward-section {
-  padding: 32rpx;
-  margin: 0 -16rpx 32rpx;
-  background: linear-gradient(135deg, #FFF9E6 0%, #FFF2CC 100%);
-  border-radius: 20rpx;
-  border: 3rpx solid #F59E0B;
-  box-shadow:
-    0 8rpx 24rpx rgba(245, 158, 11, 0.2),
-    0 0 0 1rpx rgba(245, 158, 11, 0.1) inset,
-    0 2rpx 8rpx rgba(245, 158, 11, 0.15) inset;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-
-  // 右上角发光效果
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50rpx;
-    right: -50rpx;
-    width: 200rpx;
-    height: 200rpx;
-    background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, rgba(251, 191, 36, 0.1) 40%, transparent 70%);
-    pointer-events: none;
-    animation: glow-pulse 3s ease-in-out infinite;
-  }
-
-  // 左下角装饰光
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -30rpx;
-    left: -30rpx;
-    width: 150rpx;
-    height: 150rpx;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-4rpx) scale(1.01);
-    box-shadow:
-      0 16rpx 40rpx rgba(245, 158, 11, 0.3),
-      0 0 0 1rpx rgba(245, 158, 11, 0.15) inset,
-      0 4rpx 12rpx rgba(245, 158, 11, 0.2) inset;
-    border-color: #D97706;
-  }
-
-  .section-header {
-    margin: 0 0 20rpx 0;
-    padding: 0;
-    background: transparent;
-    position: relative;
-    z-index: 1;
-  }
-
-  .section-icon {
-    font-size: 40rpx;
-    filter: drop-shadow(0 2rpx 4rpx rgba(245, 158, 11, 0.3));
-  }
-
-  .section-title {
-    color: #92400E;
-    font-weight: 800;
-    font-size: 30rpx;
-    text-shadow: 0 1rpx 2rpx rgba(245, 158, 11, 0.1);
-  }
-
-  .section-content {
-    display: flex;
-    align-items: baseline;
-    gap: 12rpx;
-    padding-left: 0;
-    position: relative;
-    z-index: 1;
-  }
-}
-
-@keyframes glow-pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
-}
-
-// 任务描述区域 - 蓝色主题
-.section-description {
-  padding: 20rpx 24rpx;
-  margin: 0 -16rpx 24rpx;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 197, 253, 0.02) 100%);
-  border-left: 6rpx solid #3B82F6;
-  border-radius: 0 12rpx 12rpx 0;
-  position: relative;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6rpx;
-    height: 60%;
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0) 0%, #3B82F6 50%, rgba(59, 130, 246, 0) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.06) 0%, rgba(147, 197, 253, 0.04) 100%);
-    transform: translateX(4rpx);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  .section-header {
-    background: transparent;
-    margin: 0 0 16rpx 0;
-    padding: 0;
-  }
-
-  .section-icon {
-    font-size: 36rpx;
-  }
-
-  .section-title {
-    color: #1E40AF;
-    font-weight: 700;
-  }
-}
-
-// 地点区域 - 绿色主题
-.section-location {
-  padding: 20rpx 24rpx;
-  margin: 0 -16rpx 24rpx;
-  background: linear-gradient(135deg, rgba(22, 163, 74, 0.03) 0%, rgba(134, 239, 172, 0.02) 100%);
-  border-left: 6rpx solid #16A34A;
-  border-radius: 0 12rpx 12rpx 0;
-  position: relative;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6rpx;
-    height: 60%;
-    background: linear-gradient(180deg, rgba(22, 163, 74, 0) 0%, #16A34A 50%, rgba(22, 163, 74, 0) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(22, 163, 74, 0.06) 0%, rgba(134, 239, 172, 0.04) 100%);
-    transform: translateX(4rpx);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  .section-header {
-    background: transparent;
-    margin: 0 0 16rpx 0;
-    padding: 0;
-  }
-
-  .section-icon {
-    font-size: 36rpx;
-  }
-
-  .section-title {
-    color: #15803D;
-    font-weight: 700;
-  }
-
-  .location-text {
-    font-size: 30rpx;
-    color: #065F46;
-    font-weight: 500;
-  }
-}
-
-// 截止时间区域 - 橙色主题
-.section-deadline {
-  padding: 20rpx 24rpx;
-  margin: 0 -16rpx 24rpx;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.03) 0%, rgba(253, 230, 138, 0.02) 100%);
-  border-left: 6rpx solid #F59E0B;
-  border-radius: 0 12rpx 12rpx 0;
-  position: relative;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6rpx;
-    height: 60%;
-    background: linear-gradient(180deg, rgba(245, 158, 11, 0) 0%, #F59E0B 50%, rgba(245, 158, 11, 0) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.06) 0%, rgba(253, 230, 138, 0.04) 100%);
-    transform: translateX(4rpx);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  .section-header {
-    background: transparent;
-    margin: 0 0 16rpx 0;
-    padding: 0;
-  }
-
-  .section-icon {
-    font-size: 36rpx;
-  }
-
-  .section-title {
-    color: #92400E;
-    font-weight: 700;
-  }
-}
-
-// 附件区域 - 紫色主题
-.section-attachments {
-  padding: 20rpx 24rpx;
-  margin: 0 -16rpx 24rpx;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.03) 0%, rgba(216, 180, 254, 0.02) 100%);
-  border-left: 6rpx solid #9333EA;
-  border-radius: 0 12rpx 12rpx 0;
-  position: relative;
-  transition: all 0.3s ease;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6rpx;
-    height: 60%;
-    background: linear-gradient(180deg, rgba(147, 51, 234, 0) 0%, #9333EA 50%, rgba(147, 51, 234, 0) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(147, 51, 234, 0.06) 0%, rgba(216, 180, 254, 0.04) 100%);
-    transform: translateX(4rpx);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  .section-header {
-    background: transparent;
-    margin: 0 0 16rpx 0;
-    padding: 0;
-  }
-
-  .section-icon {
-    font-size: 36rpx;
-  }
-
-  .section-title {
-    color: #6B21A8;
-    font-weight: 700;
-  }
-
-  .section-content {
-    padding-left: 0;
-  }
-}
-
-/* P0优化：增大酬金视觉权重 - 参考图标准 */
-.reward-amount {
-  font-size: 96rpx; /* P0优化：从64rpx增大到96rpx（48px）超大视觉焦点 */
-  font-weight: 900; /* 最粗字重 */
-  color: #D97706;
-  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -2rpx;
-  line-height: 1;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  font-variant-numeric: tabular-nums; /* 数字等宽 */
-}
-
-.reward-unit {
-  font-size: 32rpx; /* 增大单位字号 */
-  color: #92400E;
-  font-weight: 600;
-  margin-left: 12rpx;
-  align-self: flex-end; /* 底部对齐 */
-  margin-bottom: 8rpx; /* 轻微向上偏移 */
-}
-
-.location-text {
-  font-size: 28rpx;
-  color: #64748B;
-}
-
-/* 截止时间容器 */
-.deadline-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  flex-wrap: wrap;
-}
-
-.deadline-text {
-  font-size: 28rpx;
-  color: #64748B;
-  transition: color 0.3s ease;
-
-  &.deadline-urgent {
-    color: #F59E0B;
-    font-weight: 600;
-  }
-
-  &.deadline-critical {
-    color: #EF4444;
-    font-weight: 700;
-    animation: pulse 2s ease-in-out infinite;
-  }
-
-  &.deadline-expired {
-    color: #94A3B8;
-    text-decoration: line-through;
-  }
-}
-
-/* 倒计时徽章 */
-.countdown-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 6rpx 14rpx;
+  padding: 24rpx 24rpx;
+  margin: 0 24rpx;
+  margin-top: 16rpx;
   border-radius: 16rpx;
-  font-size: 22rpx;
-  font-weight: 600;
-  animation: pulse 2s ease-in-out infinite;
-
-  &.countdown-normal {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3B82F6;
-    border: 1rpx solid rgba(59, 130, 246, 0.2);
-  }
-
-  &.countdown-urgent {
-    background: rgba(245, 158, 11, 0.15);
-    color: #F59E0B;
-    border: 1rpx solid rgba(245, 158, 11, 0.3);
-    box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.2);
-  }
-
-  &.countdown-critical {
-    background: rgba(239, 68, 68, 0.15);
-    color: #EF4444;
-    border: 1rpx solid rgba(239, 68, 68, 0.3);
-    box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.25);
-  }
-}
-
-.countdown-text {
-  line-height: 1;
-  white-space: nowrap;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.02);
-  }
-}
-
-.attachment-count {
-  margin-left: auto;
-  font-size: 24rpx;
-  color: #94A3B8;
-  font-weight: 400;
-}
-
-.attachment-item {
-  display: flex;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
   align-items: center;
+  justify-content: space-around;
   gap: 16rpx;
-  padding: 20rpx 24rpx;
-  background: linear-gradient(135deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.85));
-  border-radius: 16rpx;
-  margin-bottom: 12rpx;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1rpx solid rgba(226, 232, 240, 0.5);
-  box-shadow: 0 2rpx 8rpx rgba(100, 116, 139, 0.06);
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &:active {
-    background: linear-gradient(135deg, rgba(226, 232, 240, 0.95), rgba(241, 245, 249, 0.9));
-    transform: translateX(4rpx);
-    box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
-  }
 }
 
-.file-icon {
-  font-size: 40rpx;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.file-info {
+.summary-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
-  min-width: 0;
+  align-items: center;
+  gap: 8rpx;
 }
 
-.file-name {
-  font-size: 28rpx;
-  color: #334155;
+.summary-icon {
+  font-size: 32rpx;
+}
+
+.summary-text {
+  font-size: 22rpx;
+  color: #4B5563;
   font-weight: 500;
+  text-align: center;
+  max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.file-size {
-  font-size: 22rpx;
-  color: #94A3B8;
+.summary-divider {
+  width: 2rpx;
+  height: 48rpx;
+  background: #E5E7EB;
 }
 
-.preview-icon {
-  font-size: 32rpx;
-  color: #3B82F6;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: transform 0.3s ease;
+.page-content {
+  padding-top: 40rpx;
+  padding-bottom: 40rpx;
+  background: linear-gradient(180deg, #FAFBFC 0%, #F5F6F8 100%); // 整体浅灰背景
 }
 
-.attachment-item:active .preview-icon {
-  transform: translateX(4rpx);
-}
-
-.publisher-section {
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.04) 0%, rgba(147, 197, 253, 0.02) 100%);
-  border-radius: 12px;
-  border: 1px solid rgba(59, 130, 246, 0.12);
-  margin-bottom: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.04) 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-  }
-
-  .section-header {
-    margin: 0 0 12px 0;
-    padding: 0;
-    background: transparent;
-  }
-
-  .section-content {
-    padding-left: 0;
-  }
-}
-
-.publisher-info {
+/* PC端双栏布局 (7:5比例) */
+.content-container {
+  max-width: 1440rpx; // 增大最大宽度以适配大屏
+  margin: 0 auto;
   display: flex;
-  align-items: center;
-  gap: 16px;
+  gap: 40rpx; // 减小栏间距,让布局更紧凑
+  padding: 0 48rpx; // 增加左右内边距
 }
 
-.publisher-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: 50%;
-  border: 3rpx solid rgba(59, 130, 246, 0.25);
-  transition: all 0.3s ease;
-
-  .publisher-section:hover & {
-    border-color: rgba(59, 130, 246, 0.4);
-    transform: scale(1.05);
-  }
+.main-content {
+  flex: 7; // 左栏占7份
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx; // 统一模块间距 24rpx
+  min-width: 0; // 防止flex子项溢出
+  background: #FFFFFF; // 左栏纯白底
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); // 减弱阴影
 }
 
-.publisher-details {
+/* ============================================
+   企业级任务概览面板 (Task Summary Panel)
+   ============================================ */
+.task-summary-panel {
+  padding: 32rpx 40rpx;
+  background: linear-gradient(135deg, #F8F9FB 0%, #FFFFFF 100%);
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid #E5E7EB;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* 第一行: 标题 + 状态 + 快捷操作 */
+.panel-row-primary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #F3F4F6;
+}
+
+.title-section-new {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 12rpx;
+}
+
+.task-title-enterprise {
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.3;
+  letter-spacing: -0.5rpx;
+}
+
+.status-badge-primary {
+  display: inline-flex;
+  align-items: center;
   gap: 8rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 20rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  width: fit-content;
+  transition: all 0.3s ease;
+
+  &.status-0 {
+    background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+    color: #1E40AF;
+    border: 2rpx solid #3B82F6;
+  }
+
+  &.status-1 {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    color: #92400E;
+    border: 2rpx solid #F59E0B;
+  }
+
+  &.status-2 {
+    background: linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%);
+    color: #065F46;
+    border: 2rpx solid #10B981;
+  }
+
+  &.status-3 {
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+    color: #6B7280;
+    border: 2rpx solid #9CA3AF;
+  }
+}
+
+.status-dot-pulse {
+  width: 10rpx;
+  height: 10rpx;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.2);
+  }
+}
+
+.status-text-badge {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.quick-actions-inline {
+  display: flex;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.quick-btn {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 12rpx;
+  background: #F9FAFB;
+  border: 2rpx solid #E5E7EB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    background: #F3F4F6;
+    border-color: #D1D5DB;
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border-color: #F59E0B;
+
+    .quick-icon-sm {
+      color: #F59E0B;
+    }
+  }
+}
+
+.quick-icon-sm {
+  font-size: 32rpx;
+  color: #6B7280;
+  transition: color 0.3s ease;
+}
+
+/* 第二行: 元数据网格 */
+.panel-row-metadata {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20rpx;
+  padding-bottom: 24rpx;
+  border-bottom: 2rpx solid #F3F4F6;
+
+  /* 中等屏幕: 2x2网格 */
+  @media screen and (max-width: 1199px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* 小屏幕: 单列 */
+  @media screen and (max-width: 767px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.meta-col {
+  display: flex;
+  gap: 12rpx;
+  align-items: flex-start;
+  padding: 16rpx;
+  background: #FAFBFC;
+  border-radius: 12rpx;
+  border: 1rpx solid #F3F4F6;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #F5F6F8;
+    border-color: #E5E7EB;
+    transform: translateY(-2rpx);
+  }
+}
+
+.meta-reward-highlight {
+  background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+  border: 2rpx solid #FDE68A;
+  box-shadow: 0 2rpx 8rpx rgba(251, 191, 36, 0.15);
+
+  &:hover {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    box-shadow: 0 4rpx 12rpx rgba(251, 191, 36, 0.25);
+  }
+}
+
+.meta-icon-large {
+  font-size: 40rpx;
+  flex-shrink: 0;
+}
+
+.meta-icon-std {
+  font-size: 32rpx;
+  flex-shrink: 0;
+  opacity: 0.8;
+}
+
+.meta-content-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+  min-width: 0;
+}
+
+.meta-label-subtle {
+  font-size: 20rpx;
+  color: #9CA3AF;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5rpx;
+}
+
+.reward-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+}
+
+.reward-amount-primary {
+  font-size: 48rpx;
+  font-weight: 800;
+  line-height: 1;
+  background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.reward-unit-sm {
+  font-size: 22rpx;
+  color: #92400E;
+  font-weight: 600;
+}
+
+.meta-value-primary {
+  font-size: 26rpx;
+  color: #1F2937;
+  font-weight: 600;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* 第三行: 发布者信息 */
+.panel-row-publisher {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.publisher-avatar-sm {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  border: 2rpx solid #E5E7EB;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #3B82F6;
+    transform: scale(1.1);
+    box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.25);
+  }
+}
+
+.publisher-info-inline {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
 }
 
 .publisher-name-row {
@@ -2502,330 +983,404 @@ onMounted(async () => {
   gap: 8rpx;
 }
 
-.publisher-name {
-  font-size: 30rpx;
+.publisher-name-text {
+  font-size: 26rpx;
   font-weight: 600;
-  color: #1E293B;
+  color: #1F2937;
 }
 
-.verified-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32rpx;
-  height: 32rpx;
-  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
-  color: #FFFFFF;
+.verified-badge-sm {
+  width: 28rpx;
+  height: 28rpx;
   border-radius: 50%;
-  font-size: 18rpx;
-  font-weight: 700;
-}
-
-.publisher-username {
-  font-size: 24rpx;
-  color: #94A3B8;
-}
-
-/* 评论区 */
-.comment-section {
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
-  border-radius: 24rpx;
-  padding: 32rpx 32rpx;
-  box-shadow:
-    0 8rpx 24rpx rgba(0, 0, 0, 0.06),
-    0 2rpx 8rpx rgba(59, 130, 246, 0.04);
-  margin-bottom: 32rpx;
-  border: 2rpx solid rgba(59, 130, 246, 0.12);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 6rpx;
-    background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 50%, #3B82F6 100%);
-    background-size: 200% 100%;
-    animation: shimmer 3s linear infinite;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: 200% 0;
-    }
-    100% {
-      background-position: -200% 0;
-    }
-  }
-}
-
-.comment-header {
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  margin-bottom: 24rpx;
-  padding-bottom: 20rpx;
-  border-bottom: 2rpx solid rgba(226, 232, 240, 0.6);
-  position: relative;
+  justify-content: center;
+}
 
-  &::before {
-    content: '💬';
-    font-size: 40rpx;
-    line-height: 1;
-    filter: drop-shadow(0 2rpx 4rpx rgba(59, 130, 246, 0.2));
+.verified-icon-sm {
+  font-size: 16rpx;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+
+.publisher-meta-text {
+  font-size: 20rpx;
+  color: #9CA3AF;
+  font-weight: 500;
+}
+
+.sidebar-content {
+  flex: 5; // 右栏占5份
+  max-width: 480rpx; // 大屏时固定最大宽度
+  min-width: 360rpx; // 最小宽度保证可读性
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx; // 统一模块间距 24rpx
+  position: sticky;
+  top: 80rpx;
+  align-self: flex-start;
+  max-height: calc(100vh - 100rpx);
+  overflow-y: auto;
+  background: #F8FAFD; // 右栏浅灰底
+  border-radius: 24rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.04); // 轻微阴影
+
+  /* 美化滚动条 */
+  &::-webkit-scrollbar {
+    width: 6rpx;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #D1D5DB; // 滚动条颜色调深一点
+    border-radius: 3rpx;
+
+    &:hover {
+      background: #9CA3AF;
+    }
   }
 }
 
-.comment-title {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #1E293B;
-  letter-spacing: -0.5rpx;
+/* 占位符模块 */
+.module-placeholder {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-left: 4rpx solid #8B5CF6;
+}
+
+.placeholder-header {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.placeholder-icon {
+  font-size: 32rpx;
+}
+
+.placeholder-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
 }
 
 .comment-count {
   font-size: 28rpx;
-  color: #3B82F6;
-  font-weight: 600;
-  padding: 4rpx 12rpx;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 197, 253, 0.08) 100%);
-  border-radius: 12rpx;
-  border: 1rpx solid rgba(59, 130, 246, 0.2);
+  color: #9CA3AF;
+  margin-left: 8rpx;
 }
 
-.comment-hint {
+.placeholder-content {
+  padding-left: 48rpx;
+}
+
+/* 附件列表 */
+.file-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 16rpx;
-  margin-bottom: 24px;
-  background: linear-gradient(90deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.05) 100%);
+  gap: 12rpx;
+  padding: 16rpx;
+  background: #F3F4F6;
   border-radius: 12rpx;
-  border-left: 3rpx solid #3B82F6;
+  margin-bottom: 16rpx;
 }
 
-.hint-icon {
+.file-icon {
+  font-size: 32rpx;
+}
+
+.file-name {
+  flex: 1;
+  font-size: 28rpx;
+  color: #1F2937;
+}
+
+.file-hint {
   font-size: 24rpx;
-  line-height: 1;
+  color: #9CA3AF;
 }
 
-.hint-text {
-  font-size: 24rpx;
-  color: #64748B;
+/* 发布者卡片 */
+.publisher-card {
+  border-left-color: #3B82F6;
 }
 
-.comment-list {
-  margin-bottom: 24px;
-}
-
-/* 评论项 - 楼层布局 */
-.comment-item {
+.publisher-preview {
   display: flex;
-  gap: 20rpx;
-  margin-bottom: 24rpx;
-  animation: slideIn 0.3s ease;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  align-items: center;
+  gap: 24rpx;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.publisher-avatar-large {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  background: #F3F4F6;
 }
 
-/* 左侧区域 - 头像和楼层 */
-.comment-left {
+.publisher-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   gap: 8rpx;
-  flex-shrink: 0;
 }
 
-.comment-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 50%;
-  border: 3rpx solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+.publisher-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #1F2937;
+}
+
+.publisher-stats {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.contact-buttons {
+  display: flex;
+  gap: 16rpx;
+}
+
+.contact-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 24rpx;
+  background: #3B82F6;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: all 0.2s;
 
   &:active {
     transform: scale(0.95);
+    background: #2563EB;
   }
 }
 
-.floor-number {
-  font-size: 20rpx;
-  color: #94A3B8;
-  font-weight: 500;
-  padding: 4rpx 8rpx;
-  background: rgba(226, 232, 240, 0.5);
-  border-radius: 8rpx;
-  white-space: nowrap;
-}
-
-/* 气泡容器 */
-.comment-bubble {
-  flex: 1;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
-  border-radius: 18rpx 18rpx 18rpx 4rpx;
-  padding: 24rpx 28rpx;
-  border: 2rpx solid rgba(226, 232, 240, 0.8);
-  box-shadow:
-    0 4rpx 12rpx rgba(100, 116, 139, 0.08),
-    0 1rpx 4rpx rgba(0, 0, 0, 0.04);
-  position: relative;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: -10rpx;
-    top: 20rpx;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 10rpx 10rpx 10rpx 0;
-    border-color: transparent #FFFFFF transparent transparent;
-    filter: drop-shadow(-2rpx 0 2rpx rgba(100, 116, 139, 0.08));
-  }
-
-  &:hover {
-    background: linear-gradient(135deg, #FFFFFF 0%, #EFF6FF 100%);
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow:
-      0 8rpx 20rpx rgba(59, 130, 246, 0.12),
-      0 2rpx 8rpx rgba(59, 130, 246, 0.08);
-    transform: translateX(4rpx) translateY(-2rpx);
-  }
-}
-
-.comment-header-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-}
-
-.comment-username {
-  font-size: 26rpx;
-  font-weight: 600;
-  color: #334155;
-}
-
-/* 楼主标识 */
-.host-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 4rpx 10rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border-radius: 10rpx;
-  box-shadow: 0 2rpx 6rpx rgba(59, 130, 246, 0.25);
-}
-
-.badge-text {
-  font-size: 20rpx;
-  color: #FFFFFF;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.comment-time {
-  font-size: 24rpx;
-  color: #94A3B8;
-}
-
-.comment-content {
+.btn-icon {
   font-size: 28rpx;
-  color: #475569;
-  line-height: 1.7;
-  word-break: break-word;
-  margin-bottom: 12rpx;
 }
 
-.comment-actions {
-  display: flex;
-  gap: 24rpx;
-  margin-top: 8rpx;
-}
-
-.action-btn {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 8rpx 16rpx;
-  border-radius: 16rpx;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  background: rgba(248, 250, 252, 0.8);
-  border: 1rpx solid rgba(226, 232, 240, 0.5);
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.2);
-    transform: translateY(-2rpx);
-
-    .action-icon {
-      transform: scale(1.15);
-    }
-
-    .action-text {
-      color: #3B82F6;
-    }
-  }
-
-  &:active {
-    background: rgba(59, 130, 246, 0.12);
-    transform: scale(0.96);
-  }
-}
-
-.action-icon {
+.btn-text {
   font-size: 26rpx;
-  line-height: 1;
-  transition: transform 0.2s ease;
-}
-
-.action-text {
-  font-size: 24rpx;
-  color: #64748B;
+  color: #FFFFFF;
   font-weight: 500;
-  min-width: 20rpx;
-  text-align: center;
-  transition: color 0.2s ease;
 }
 
-/* 空状态优化 */
-.empty-comment {
+/* 评论区 */
+.comments-section {
+  border-left-color: #10B981;
+}
+
+.empty-comments {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 80rpx 40rpx;
   gap: 16rpx;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.03) 0%, rgba(147, 197, 253, 0.02) 100%);
-  border-radius: 20rpx;
-  margin: 24rpx 0;
-  border: 2rpx dashed rgba(203, 213, 225, 0.5);
+  padding: 64rpx 0;
+}
+
+.empty-icon {
+  font-size: 80rpx;
+}
+
+.empty-text {
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+.comment-input-wrapper {
+  margin-top: 24rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.comment-input {
+  flex: 1;
+  padding: 20rpx 24rpx;
+  background: #F3F4F6;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  color: #9CA3AF;
+}
+
+.input-hint {
+  font-size: 24rpx;
+  color: #F59E0B;
+}
+
+/* 侧边栏卡片 */
+.sidebar-card {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 0;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-left: 3rpx solid #3B82F6;
+  overflow: hidden;
+}
+
+/* 侧边栏卡片头部 */
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 96rpx;
+  padding: 0 32rpx;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-bottom: 2rpx solid #BFDBFE;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
+
+  .header-icon {
+    font-size: 28rpx;
+  }
+
+  .header-title {
+    font-size: 30rpx;
+    font-weight: 600;
+    color: #1E40AF;
+  }
+}
+
+/* 侧边栏卡片内容 */
+.sidebar-card-content {
+  padding: 24rpx 32rpx 32rpx;
+}
+
+/* 不同卡片的颜色 */
+.metrics-card {
+  border-left-color: #10B981;
+
+  .sidebar-card-header {
+    background: linear-gradient(135deg, #ECFDF5 0%, #D1FAE5 100%);
+    border-bottom-color: #A7F3D0;
+
+    .header-title {
+      color: #065F46;
+    }
+  }
+}
+
+.actions-card {
+  border-left-color: #8B5CF6;
+
+  .sidebar-card-header {
+    background: linear-gradient(135deg, #F5F3FF 0%, #EDE9FE 100%);
+    border-bottom-color: #DDD6FE;
+
+    .header-title {
+      color: #5B21B6;
+    }
+  }
+}
+
+.notice-card {
+  border-left-color: #F59E0B;
+
+  .notice-header {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-bottom-color: #FDE68A;
+
+    .header-title {
+      color: #92400E;
+    }
+  }
+}
+
+/* PC端主操作卡片（增强版） */
+.primary-action-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding: 28rpx;
+  background: linear-gradient(135deg, #FFFFFF 0%, #F9FAFB 100%);
+  border-left: 4rpx solid #3B82F6;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-radius: 16rpx;
+}
+
+/* 顶部快捷操作图标条 */
+.quick-actions-bar {
+  display: flex;
+  gap: 8rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 2rpx solid #F3F4F6;
+}
+
+.quick-action-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 8rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2rpx solid transparent;
+
+  &:hover {
+    background: #F3F4F6;
+    transform: translateY(-4rpx);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+
+  &:active {
+    transform: translateY(-2rpx);
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border-color: #F59E0B;
+
+    .quick-icon {
+      color: #F59E0B;
+      transform: scale(1.1);
+    }
+
+    .quick-label {
+      color: #92400E;
+      font-weight: 600;
+    }
+  }
+}
+
+.quick-icon {
+  font-size: 28rpx;
+  transition: all 0.2s;
+}
+
+.quick-label {
+  font-size: 20rpx;
+  color: #6B7280;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.primary-action-btn-enhanced {
+  width: 100%;
+  padding: 32rpx;
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  border-radius: 16rpx;
+  cursor: pointer;
+  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.25);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &::before {
     content: '';
@@ -2834,357 +1389,354 @@ onMounted(async () => {
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(59, 130, 246, 0.03) 0%, transparent 70%);
-    animation: rotate 20s linear infinite;
+    background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s;
   }
 
-  @keyframes rotate {
-    from {
-      transform: rotate(0deg);
+  &:hover {
+    transform: translateY(-4rpx) scale(1.01);
+    box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.3);
+
+    &::before {
+      opacity: 1;
     }
-    to {
-      transform: rotate(360deg);
-    }
-  }
-}
-
-.empty-icon {
-  font-size: 88rpx;
-  opacity: 0.5;
-  line-height: 1;
-  margin-bottom: 12rpx;
-  animation: floatAnimation 3s ease-in-out infinite;
-  position: relative;
-  z-index: 1;
-}
-
-.empty-title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #64748B;
-  margin-bottom: 8rpx;
-  position: relative;
-  z-index: 1;
-}
-
-.empty-text {
-  font-size: 26rpx;
-  color: #94A3B8;
-  line-height: 1.6;
-  text-align: center;
-  max-width: 400rpx;
-  position: relative;
-  z-index: 1;
-}
-
-@keyframes floatAnimation {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-8rpx);
-  }
-}
-
-.comment-input-container {
-  position: sticky;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 24rpx 32rpx;
-  margin: 0 -32rpx -32rpx;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.92));
-  backdrop-filter: blur(24rpx);
-  -webkit-backdrop-filter: blur(24rpx);
-  border-top: 2rpx solid rgba(59, 130, 246, 0.15);
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.04);
-  z-index: 50;
-}
-
-.comment-input-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.comment-input {
-  flex: 1;
-  height: 88rpx;
-  padding: 0 32rpx;
-  background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 100%);
-  border: 2rpx solid rgba(59, 130, 246, 0.2);
-  border-radius: 44rpx;
-  font-size: 28rpx;
-  color: #334155;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.05);
-
-  &:focus {
-    background: #FFFFFF;
-    border-color: rgba(59, 130, 246, 0.6);
-    box-shadow:
-      0 0 0 4rpx rgba(59, 130, 246, 0.12),
-      0 4rpx 12rpx rgba(59, 130, 246, 0.1);
-    transform: translateY(-2rpx);
-  }
-}
-
-.send-btn {
-  min-width: 88rpx;
-  height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 32rpx;
-  background: rgba(203, 213, 225, 0.6);
-  border-radius: 44rpx;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-
-  &.send-btn-active {
-    background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-    box-shadow:
-      0 6rpx 20rpx rgba(59, 130, 246, 0.4),
-      0 0 24rpx rgba(59, 130, 246, 0.15);
-    transform: scale(1.05);
   }
 
   &:active {
-    transform: scale(0.94);
+    transform: translateY(-2rpx) scale(0.98);
+  }
+
+  &.btn-disabled {
+    background: #E5E7EB;
+    box-shadow: none;
+    cursor: not-allowed;
+
+    &:hover {
+      transform: none;
+    }
   }
 }
 
-.send-icon {
+.btn-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+}
+
+.btn-icon {
   font-size: 32rpx;
   line-height: 1;
-  opacity: 0.5;
-}
-
-.send-text {
-  font-size: 28rpx;
-  color: #FFFFFF;
-  font-weight: 500;
-  line-height: 1;
-}
-
-/* 底部占位 - 优化：增加高度防止内容被吸底操作栏遮挡 */
-.bottom-placeholder {
-  height: 140rpx; /* 优化：从40rpx增加到140rpx，确保最后的内容可见 */
-
-  @media (max-width: 768px) {
-    height: 160rpx; /* 移动端需要更多空间 */
-  }
-}
-
-/* 底部操作栏 */
-.action-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
-  backdrop-filter: blur(32rpx);
-  -webkit-backdrop-filter: blur(32rpx);
-  border-top: 1rpx solid rgba(226, 232, 240, 0.6);
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
-  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.08);
-  z-index: 100;
-}
-
-.action-buttons {
-  display: flex;
-  gap: 16rpx;
-  align-items: stretch;
-}
-
-/* 移动端联系按钮 */
-.contact-btn {
   flex-shrink: 0;
-  width: auto;
-  min-width: 140rpx;
-  height: 104rpx;
+}
+
+.btn-text {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.btn-disabled .btn-text {
+  color: #9CA3AF;
+}
+
+.secondary-actions-row {
+  display: flex;
+  gap: 12rpx;
+  align-items: center;
+}
+
+.secondary-action-btn {
+  flex: 1;
+  padding: 18rpx 24rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #3B82F6;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: all 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  background: #FFFFFF;
-  border: 2rpx solid rgba(59, 130, 246, 0.3);
-  border-radius: 24rpx;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  padding: 0 24rpx;
 
   &:hover {
-    transform: translateY(-2rpx) scale(1.02);
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.5);
-    box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.15);
+    background: #EFF6FF;
+    border-color: #2563EB;
+    transform: translateY(-2rpx);
   }
 
   &:active {
-    transform: scale(0.96);
-    background: rgba(59, 130, 246, 0.05);
-  }
-
-  .btn-icon {
-    font-size: 32rpx;
-    line-height: 1;
-    transition: transform 0.3s ease;
-  }
-
-  &:hover .btn-icon {
-    transform: scale(1.1);
-  }
-
-  .btn-text {
-    font-size: 26rpx;
-    font-weight: 500;
-    color: #3B82F6;
-    white-space: nowrap;
+    transform: scale(0.95);
   }
 }
 
-/* 移动端主CTA按钮 */
-.main-cta-btn {
+.secondary-icon {
+  font-size: 24rpx;
+}
+
+.secondary-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #3B82F6;
+}
+
+.action-deadline-chip {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+  border-radius: 12rpx;
+  border: 2rpx solid #EF4444;
+  white-space: nowrap;
+}
+
+.deadline-chip-icon {
+  font-size: 20rpx;
+}
+
+.deadline-chip-text {
+  font-size: 22rpx;
+  color: #991B1B;
+  font-weight: 600;
+}
+
+/* 快捷操作紧凑版 */
+.action-buttons-compact {
+  display: flex;
+  gap: 12rpx;
+}
+
+.action-btn-compact {
   flex: 1;
-  height: 104rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #F3F4F6;
+    transform: translateY(-2rpx);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.action-active {
+    background: #DBEAFE;
+
+    .action-icon-compact,
+    .action-text-compact {
+      color: #3B82F6;
+    }
+  }
+}
+
+.action-icon-compact {
+  font-size: 28rpx;
+  color: #6B7280;
+}
+
+.action-text-compact {
+  font-size: 22rpx;
+  color: #4B5563;
+  font-weight: 500;
+}
+
+/* 任务数据Chips（弱化） */
+.metrics-chips {
+  display: flex;
+  gap: 12rpx;
+  padding: 16rpx 0 0;
+}
+
+.metric-chip {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 24rpx;
+  gap: 8rpx;
+  padding: 12rpx 16rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E7EB;
+}
+
+.chip-icon {
+  font-size: 20rpx;
+  opacity: 0.7;
+}
+
+.chip-text {
+  font-size: 22rpx;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.action-deadline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 16rpx;
+  background: #FEF3C7;
+  border-radius: 12rpx;
+  border: 2rpx solid #FCD34D;
+}
+
+.deadline-icon {
+  font-size: 24rpx;
+}
+
+.deadline-text {
+  font-size: 24rpx;
+  color: #92400E;
+  font-weight: 500;
+}
+
+/* 旧的card-title样式已被sidebar-card-header替代 */
+
+/* 数据统计 */
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.metric-icon {
+  font-size: 32rpx;
+}
+
+.metric-label {
+  flex: 1;
+  font-size: 26rpx;
+  color: #6B7280;
+}
+
+.metric-value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #3B82F6;
+}
+
+/* 快捷操作 */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 18rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  overflow: hidden;
+  transition: all 0.2s;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
+  &:hover {
+    background: #F3F4F6;
   }
 
-  &:active::before {
-    opacity: 1;
+  &:active {
+    background: #E5E7EB;
+    transform: scale(0.98);
   }
 
-  &.btn-available {
-    background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+  &.action-active {
+    background: #EDE9FE;
 
-    &:hover {
-      transform: translateY(-2rpx) scale(1.03);
-      box-shadow: 0 8rpx 28rpx rgba(59, 130, 246, 0.5);
+    .action-icon {
+      color: #8B5CF6;
     }
 
-    &:active {
-      transform: scale(0.97);
-      box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
-    }
-  }
-
-  &.btn-in-progress {
-    background: linear-gradient(90deg, #3B82F6 0%, #60A5FA 100%);
-    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
-    cursor: pointer;
-
-    &:hover {
-      transform: translateY(-2rpx) scale(1.03);
-      box-shadow: 0 8rpx 28rpx rgba(59, 130, 246, 0.5);
-    }
-
-    &:active {
-      transform: scale(0.97);
-      box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.4);
-    }
-  }
-
-  &.btn-completed {
-    background: linear-gradient(90deg, #64748B 0%, #94A3B8 100%);
-    box-shadow: 0 4rpx 14rpx rgba(100, 116, 139, 0.25);
-    cursor: not-allowed;
-  }
-
-  &.btn-disabled {
-    background: linear-gradient(90deg, rgba(203, 213, 225, 0.6), rgba(226, 232, 240, 0.5));
-    box-shadow: 0 2rpx 8rpx rgba(100, 116, 139, 0.1);
-    cursor: not-allowed;
-  }
-
-  .btn-text {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #FFFFFF;
-    text-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.15);
-    position: relative;
-    z-index: 1;
-  }
-
-  .btn-emoji {
-    font-size: 28rpx;
-    margin-left: 8rpx;
-    line-height: 1;
-    position: relative;
-    z-index: 1;
-  }
-
-  &.btn-loading {
-    pointer-events: none;
-
-    .btn-emoji {
-      display: none;
+    .action-text {
+      color: #8B5CF6;
     }
   }
 }
 
-.btn-loading-spinner {
-  width: 32rpx;
-  height: 32rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.3);
-  border-top-color: #FFFFFF;
-  border-radius: 50%;
-  margin-right: 12rpx;
-  animation: spin 0.8s linear infinite;
-  position: relative;
-  z-index: 1;
+.action-icon {
+  font-size: 28rpx;
+  color: #6B7280;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+.action-text {
+  font-size: 26rpx;
+  color: #4B5563;
+  font-weight: 500;
+}
+
+/* 安全提示内容（优化版 - 图标+短句） */
+.notice-items-enhanced {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16rpx;
+}
+
+.notice-item-row {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 14rpx 16rpx;
+  background: #FFFBEB;
+  border-radius: 12rpx;
+  border: 1rpx solid #FDE68A;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #FEF3C7;
+    transform: translateX(4rpx);
   }
 }
 
-/* 加载状态优化 */
+.notice-emoji {
+  font-size: 24rpx;
+  flex-shrink: 0;
+}
+
+.notice-short-text {
+  font-size: 22rpx;
+  color: #92400E;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* 加载状态 */
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 200rpx 40rpx;
-  gap: 28rpx;
+  padding: 120rpx 0;
 }
 
 .loading-spinner {
-  width: 96rpx;
-  height: 96rpx;
-  border: 6rpx solid rgba(59, 130, 246, 0.15);
+  width: 80rpx;
+  height: 80rpx;
+  border: 6rpx solid #E5E7EB;
   border-top-color: #3B82F6;
-  border-right-color: #60A5FA;
   border-radius: 50%;
-  animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
-  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.15);
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
@@ -3194,251 +1746,283 @@ onMounted(async () => {
 }
 
 .loading-text {
+  margin-top: 24rpx;
   font-size: 28rpx;
-  color: #64748B;
-  font-weight: 500;
-  animation: pulse 1.5s ease-in-out infinite;
+  color: #9CA3AF;
 }
 
-/* 错误状态优化 */
+/* 错误状态 */
 .error-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 40rpx;
-  gap: 28rpx;
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    width: 200rpx;
-    height: 200rpx;
-    background: radial-gradient(circle, rgba(239, 68, 68, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    z-index: 0;
-  }
+  padding: 120rpx 0;
+  gap: 24rpx;
 }
 
 .error-icon {
   font-size: 120rpx;
-  line-height: 1;
-  opacity: 0.7;
-  animation: shake 0.5s ease-in-out;
-  position: relative;
-  z-index: 1;
-
-  @keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-10rpx); }
-    75% { transform: translateX(10rpx); }
-  }
 }
 
 .error-text {
   font-size: 28rpx;
-  color: #64748B;
-  text-align: center;
-  max-width: 500rpx;
-  line-height: 1.6;
-  position: relative;
-  z-index: 1;
+  color: #6B7280;
 }
 
-.retry-btn {
-  margin-top: 32rpx;
-  padding: 24rpx 56rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border-radius: 28rpx;
-  box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.35);
+.retry-button {
+  margin-top: 16rpx;
+  padding: 20rpx 48rpx;
+  background: #3B82F6;
+  border-radius: 16rpx;
+  cursor: pointer;
+
+  &:active {
+    background: #2563EB;
+  }
+}
+
+.retry-text {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+/* H5底部操作栏（增强版） */
+.action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98); // 半透明白色
+  padding: 24rpx 32rpx; // 增加上下内边距
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -12rpx 40rpx rgba(0, 0, 0, 0.15), 0 -4rpx 12rpx rgba(0, 0, 0, 0.08); // 增强阴影
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+  z-index: 999;
+  backdrop-filter: blur(20rpx); // 增强毛玻璃效果
+  border-top: 1rpx solid rgba(229, 231, 235, 0.6); // 添加顶部边框
+}
+
+.action-bar-left {
+  flex: 1;
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.status-label {
+  font-size: 24rpx;
+  color: #9CA3AF;
+}
+
+.status-text {
+  font-size: 26rpx;
+  font-weight: 600;
+
+  &.status-0 {
+    color: #3B82F6;
+  }
+
+  &.status-1 {
+    color: #F59E0B;
+  }
+
+  &.status-2 {
+    color: #10B981;
+  }
+
+  &.status-3 {
+    color: #6B7280;
+  }
+}
+
+.action-bar-right {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-bar-btn {
+  padding: 28rpx 40rpx; // 增加内边距,使按钮更高
+  border-radius: 52rpx;
+  font-size: 30rpx; // 增大字号
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  z-index: 1;
-  border: none;
   overflow: hidden;
+  min-height: 105rpx; // 确保最小高度约 56px (105rpx ≈ 56px)
 
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-    transition: left 0.5s;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
   }
 
-  &:hover::before {
-    left: 100%;
+  &:active::before {
+    width: 300rpx;
+    height: 300rpx;
   }
 
-  &:hover {
-    transform: translateY(-3rpx);
-    box-shadow: 0 8rpx 24rpx rgba(59, 130, 246, 0.45);
+  &.secondary {
+    background: #F3F4F6;
+    color: #4B5563;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+    padding: 24rpx 32rpx; // 次要按钮稍小
+
+    &:active {
+      background: #E5E7EB;
+      transform: scale(0.95);
+    }
   }
 
-  &:active {
-    transform: scale(0.96);
-    box-shadow: 0 3rpx 12rpx rgba(59, 130, 246, 0.4);
-  }
-
-  text {
-    font-size: 30rpx;
+  &.primary {
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
     color: #FFFFFF;
-    font-weight: 600;
-    position: relative;
-    z-index: 1;
-  }
-}
+    font-weight: 700; // 加粗字体
+    box-shadow: 0 6rpx 20rpx rgba(59, 130, 246, 0.4); // 增强阴影
+    padding: 30rpx 48rpx; // 主按钮更大的内边距
+    font-size: 32rpx; // 主按钮字号更大
+    letter-spacing: 1rpx; // 字间距
 
-/* 联系发布者弹窗 */
-.contact-sheet-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  z-index: 999;
-  animation: fadeIn 0.25s ease;
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
+    &:active {
+      box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3);
+      transform: scale(0.96);
     }
-    to {
-      opacity: 1;
+
+    &.btn-disabled {
+      background: #9CA3AF;
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+
+      &::before {
+        display: none;
+      }
     }
   }
 }
 
-.contact-sheet {
-  width: 100%;
-  max-width: 100%;
-  background: #FFFFFF;
-  border-radius: 32rpx 32rpx 0 0;
-  padding: 32rpx;
-  padding-bottom: calc(32rpx + env(safe-area-inset-bottom));
-  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.15);
-
-  @media (min-width: 769px) {
-    max-width: 500rpx;
-    border-radius: 24rpx;
-    margin-bottom: 100rpx;
+/* 移动端适配 */
+/* ============================================
+   移动端响应式适配 (≤767px)
+   ============================================ */
+@media screen and (max-width: 767px) {
+  /* 隐藏PC端任务概览面板 */
+  .task-summary-panel {
+    display: none;
   }
 
-  @keyframes slideUp {
-    from {
-      transform: translateY(100%);
-    }
-    to {
-      transform: translateY(0);
-    }
-  }
-}
-
-.sheet-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32rpx;
-  padding-bottom: 24rpx;
-  border-bottom: 1rpx solid rgba(226, 232, 240, 0.6);
-}
-
-.sheet-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1E293B;
-}
-
-.close-btn {
-  width: 48rpx;
-  height: 48rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(226, 232, 240, 0.5);
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active {
-    background: rgba(203, 213, 225, 0.8);
-    transform: scale(0.9);
+  /* 显示H5摘要栏 */
+  .h5-summary-bar {
+    display: flex;
   }
 
-  text {
-    font-size: 28rpx;
-    color: #64748B;
-    line-height: 1;
+  /* 调整布局 */
+  .task-detail-page {
+    padding-bottom: 140rpx;
   }
-}
 
-.contact-options {
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-}
+  /* 移动端卡片优化 */
+  .main-content {
+    padding: 24rpx 16rpx;
+    border-radius: 0;
+    box-shadow: none;
+  }
 
-.contact-option {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-  padding: 24rpx 20rpx;
-  background: rgba(248, 250, 252, 0.8);
-  border-radius: 16rpx;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  border: 2rpx solid rgba(226, 232, 240, 0.4);
+  .sidebar-content {
+    padding: 16rpx;
+  }
 
-  &:active {
-    background: rgba(241, 245, 249, 0.95);
-    transform: translateX(4rpx);
-    border-color: rgba(59, 130, 246, 0.3);
+  .page-content {
+    padding-top: 16rpx;
+  }
+
+  .content-container {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  .main-content {
+    gap: 24rpx; // 紧凑布局
+  }
+
+  .sidebar-content {
+    width: 100%;
+    position: static;
+    padding: 0 24rpx;
+    gap: 20rpx;
+  }
+
+  /* 移动端隐藏主操作卡片（避免与底部操作栏重复） */
+  .primary-action-card {
+    display: none;
+  }
+
+  .action-bar {
+    display: flex;
+  }
+
+  /* 紧凑布局 - 减少内边距 */
+  .task-summary {
+    padding: 0 24rpx;
+  }
+
+  .module-placeholder {
+    margin: 0 24rpx;
+    padding: 24rpx;
+  }
+
+  .sidebar-card {
+    margin: 0;
   }
 }
 
-.option-icon {
-  font-size: 40rpx;
-  line-height: 1;
-  flex-shrink: 0;
+/* 中等屏幕适配 (1024-1439px) */
+@media screen and (min-width: 1024px) and (max-width: 1439px) {
+  .main-content {
+    flex: 8; // 左栏占8份
+  }
+
+  .sidebar-content {
+    flex: 4; // 右栏占4份
+    max-width: 400rpx;
+  }
+
+  .content-container {
+    padding: 0 32rpx; // 中等屏幕减小内边距
+  }
 }
 
-.option-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6rpx;
+/* PC端适配 (≥768px) */
+@media screen and (min-width: 768px) {
+  .h5-summary-bar {
+    display: none;
+  }
+
+  .action-bar {
+    display: none;
+  }
 }
 
-.option-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #334155;
-}
-
-.option-desc {
-  font-size: 24rpx;
-  color: #94A3B8;
-}
-
-.option-arrow {
-  font-size: 32rpx;
-  color: #CBD5E1;
-  line-height: 1;
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
-
-.contact-option:active .option-arrow {
-  transform: translateX(4rpx);
-  color: #3B82F6;
+/* 大屏适配 (≥1440px) */
+@media screen and (min-width: 1440px) {
+  .sidebar-content {
+    max-width: 480rpx; // 大屏固定右栏宽度
+  }
 }
 </style>

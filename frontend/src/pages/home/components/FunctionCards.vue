@@ -64,7 +64,7 @@ interface CoreFunctionItem {
   name: string
   desc: string
   path: string
-  theme: 'blue' | 'orange'
+  theme: 'blue' | 'orange' | 'green'
   emoji: string // 装饰 emoji
   illustration: string // 场景插画 emoji
 }
@@ -96,7 +96,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     name: '互助任务',
     desc: '帮助他人 · 赚取积分',
     path: '/pages/task/list',
-    theme: 'blue',
+    theme: 'green',
     emoji: '👥',
     illustration: '💰',
   },
@@ -232,7 +232,14 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 /* 橙色卡片悬浮时的柔光发亮 */
 .core-card.core-orange:hover {
   box-shadow:
-    0 16rpx 48rpx rgba(251, 191, 36, 0.25), /* 黄色光晕 */
+    0 16rpx 48rpx rgba(251, 191, 36, 0.25), /* 橙黄光晕 */
+    inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.6);
+}
+
+/* 绿色卡片悬浮时的柔光发亮 */
+.core-card.core-green:hover {
+  box-shadow:
+    0 16rpx 48rpx rgba(34, 197, 94, 0.25), /* 绿色光晕 */
     inset 0 -2rpx 8rpx rgba(255, 255, 255, 0.6);
 }
 
@@ -242,15 +249,20 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
 }
 
-/* 优化：三卡片配色优化，增强视觉节奏 */
-/* 资料共享：蓝色渐变 #EAF3FF → #F2F8FF */
+/* 优化：三卡片差异化配色，增强视觉节奏 */
+/* 资料共享：蓝色渐变 #E8F4FF → #F0F8FF */
 .core-card.core-blue {
-  background: linear-gradient(135deg, #EAF3FF 0%, #F2F8FF 100%);
+  background: linear-gradient(135deg, #E8F4FF 0%, #F0F8FF 100%);
 }
 
-/* 智能问答：黄色渐变 #FFF4D7 → #FFF9E7（主视觉焦点）*/
+/* 智能问答：橙黄色渐变 #FFF5E6 → #FFFAF0（主视觉焦点）*/
 .core-card.core-orange {
-  background: linear-gradient(135deg, #FFF4D7 0%, #FFF9E7 100%);
+  background: linear-gradient(135deg, #FFF5E6 0%, #FFFAF0 100%);
+}
+
+/* 互助任务：绿色渐变 #ECFDF5 → #F0FDF9 */
+.core-card.core-green {
+  background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF9 100%);
 }
 
 /* 场景插画（线性/双色矢量风格，透明度 18-22%）*/
@@ -286,9 +298,9 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   gap: 32rpx; /* 图标与文字距离 16-20px */
 }
 
-/* 图标尺寸：优化 - 放大 20%（32px → 38.4px）*/
+/* 图标尺寸：优化 - 适中尺寸（32px）*/
 .core-icon {
-  font-size: 76rpx; /* 38px - 放大 20% */
+  font-size: 64rpx; /* 32px - 优化：从76rpx缩小到64rpx */
   line-height: 1;
   flex-shrink: 0;
   filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.08));
@@ -324,6 +336,11 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 /* 橙色主题标题 Hover 渐变为主色 */
 .core-card.core-orange:hover .core-name {
   color: #78350F; /* 橙色主题主色 */
+}
+
+/* 绿色主题标题 Hover 渐变为主色 */
+.core-card.core-green:hover .core-name {
+  color: #166534; /* 绿色主题主色 */
 }
 
 /* 副标题：14px / 400 / #475569，最多两行省略 */

@@ -69,15 +69,15 @@ withDefaults(defineProps<Props>(), {
 .skeleton-rank,
 .skeleton-btn {
   background: linear-gradient(
-    90deg,
+    110deg,
     #F0F0F0 0%,
-    #F0F0F0 25%,
-    #E8E8E8 50%,
-    #F0F0F0 75%,
+    #F0F0F0 30%,
+    #E0E0E0 50%,
+    #F0F0F0 70%,
     #F0F0F0 100%
   );
-  background-size: 200% 100%;
-  animation: shimmer 1.8s ease-in-out infinite;
+  background-size: 300% 100%;
+  animation: shimmer 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   border-radius: 8rpx;
   position: relative;
   overflow: hidden;
@@ -87,34 +87,39 @@ withDefaults(defineProps<Props>(), {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(
-      90deg,
+      110deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 255, 255, 0.8) 50%,
       transparent 100%
     );
-    animation: shimmerOverlay 2s ease-in-out infinite;
+    animation: shimmerOverlay 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
 }
 
 @keyframes shimmer {
   0% {
-    background-position: 200% 0;
+    background-position: -300% 0;
   }
   100% {
-    background-position: -200% 0;
+    background-position: 300% 0;
   }
 }
 
 @keyframes shimmerOverlay {
   0% {
-    transform: translateX(-100%);
+    left: -100%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
   }
   100% {
-    transform: translateX(100%);
+    left: 100%;
+    opacity: 0;
   }
 }
 
@@ -248,10 +253,10 @@ withDefaults(defineProps<Props>(), {
 /* 深色模式 */
 @media (prefers-color-scheme: dark) {
   .skeleton-card {
-    background: rgba(31, 41, 55, 0.5);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(31, 41, 55, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
   }
-  
+
   .skeleton-tag,
   .skeleton-title,
   .skeleton-text,
@@ -259,8 +264,24 @@ withDefaults(defineProps<Props>(), {
   .skeleton-avatar,
   .skeleton-rank,
   .skeleton-btn {
-    background: linear-gradient(90deg, #2A2A2A 25%, #3A3A3A 50%, #2A2A2A 75%);
-    background-size: 200% 100%;
+    background: linear-gradient(
+      110deg,
+      #2A2A2A 0%,
+      #2A2A2A 30%,
+      #404040 50%,
+      #2A2A2A 70%,
+      #2A2A2A 100%
+    );
+    background-size: 300% 100%;
+
+    &::after {
+      background: linear-gradient(
+        110deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        transparent 100%
+      );
+    }
   }
 }
 </style>

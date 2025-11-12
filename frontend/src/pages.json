@@ -5,7 +5,9 @@
 			"style": {
 				"navigationBarTitleText": "CampusLink",
 				"navigationStyle": "custom",
-				"navigationBarTextStyle": "white"
+				"navigationBarTextStyle": "white",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
 			}
 		},
 		{

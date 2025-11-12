@@ -4,20 +4,25 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-CampusLink 是一个多端统一的高校资源互助与问答平台，支持微信小程序、H5、App 等多端。技术栈：Spring Boot (后端) + uni-app (前端) + MySQL + Redis。
+CampusLink 是一个多端统一的高校资源互助与问答平台，支持微信小程序、H5、App 等多端。技术栈：Spring Boot 3.4 (后端) + uni-app (前端) + MySQL + Redis。
 
-**当前状态**：项目处于初始阶段，已完成详细设计文档和数据库设计，代码实现即将开始。
+**当前状态**：项目核心功能已实现，包含完整的用户认证、资源管理、问答系统、任务系统、社团活动等模块，共 144+ Java 类。前端已实现语音搜索、多端适配等特性。
 
 ## 常用开发命令
 
 ### 后端 (Spring Boot)
 
+**工作目录**：项目根目录
+
 ```bash
-# 启动开发服务器
+# 启动开发服务器（默认端口 8080）
 mvn spring-boot:run
 
 # 编译打包（跳过测试）
 mvn clean package -DskipTests
+
+# 编译（不打包）
+mvn clean compile
 
 # 运行测试
 mvn test
@@ -31,11 +36,14 @@ docker build -t campuslink-backend:latest ./backend
 
 ### 前端 (uni-app)
 
+**工作目录**：`frontend/` 目录
+
 ```bash
 # 安装依赖
+cd frontend
 npm install
 
-# 开发模式 - H5
+# 开发模式 - H5（默认端口 5173）
 npm run dev:h5
 
 # 开发模式 - 微信小程序
@@ -47,8 +55,8 @@ npm run build:h5
 # 构建生产版本 - 微信小程序
 npm run build:mp-weixin
 
-# 运行前端测试
-npm run test
+# TypeScript 类型检查
+npm run type-check
 ```
 
 ### 数据库操作
@@ -113,6 +121,7 @@ docker-compose down
 - 统一请求：`utils/request.ts` 处理 Token、错误、重试
 - 状态管理：Pinia 管理用户信息、缓存数据
 - 图片上传：直传阿里云 OSS（获取签名后客户端直传）
+- 语音搜索：支持 H5 (Web Speech API) 和微信小程序（RecorderManager），详见 [VOICE_SEARCH_OPTIMIZATION.md](frontend/VOICE_SEARCH_OPTIMIZATION.md)
 
 ### 3. 数据库设计 (17 张表)
 
@@ -233,6 +242,30 @@ docker-compose down
 **配置方式**：
 - 本地开发：使用 `.env` 文件或 `application-dev.yml`
 - 生产环境：使用环境变量或配置中心（如 Spring Cloud Config）
+
+## 环境准备
+
+### 首次运行前的准备
+
+1. **数据库配置**：
+   - 确保 MySQL 已安装并运行（推荐 8.0+）
+   - 创建数据库：`CREATE DATABASE campuslink CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
+   - 初始化表结构：`mysql -u root -p campuslink < sql/schema.sql`
+   - 导入初始数据：`mysql -u root -p campuslink < sql/init-data.sql`
+
+2. **Redis 配置**：
+   - 确保 Redis 已安装并运行（推荐 7.0+）
+   - 或使用 Docker：`docker run -d -p 6379:6379 redis:7-alpine`
+
+3. **后端配置**：
+   - 修改 `backend/src/main/resources/application.yml` 中的数据库连接信息
+   - 配置 Redis 连接信息
+   - 配置阿里云 OSS 凭证（文件上传必需）
+   - 配置微信小程序 appid 和 secret（可选）
+
+4. **前端配置**：
+   - 修改 `frontend/src/config.ts` 中的 API 地址
+   - 如需微信小程序开发，配置小程序 appid
 
 ## 开发注意事项
 
@@ -361,9 +394,40 @@ docker-compose down
 2. 客户端连接：`wss://localhost:8080/ws?token={jwt}&type=chat`
 3. 使用工具测试：Postman、wscat、或浏览器 WebSocket API
 
+## 特色功能实现说明
+
+### 语音搜索功能
+
+前端已实现完整的语音搜索功能，包含专业的 SVG 图标、动画效果和多平台支持：
+
+**H5 端**：
+- 使用 Web Speech API 实现实时语音识别
+- 支持主流浏览器（Chrome、Edge、Safari）
+- 识别结果自动填充搜索框并执行搜索
+
+**微信小程序端**：
+- 使用 RecorderManager 录制音频
+- 需要后端提供语音识别 API（推荐：百度/腾讯云/阿里云语音识别服务）
+- 支持最长 60 秒录音
+
+**视觉效果**：
+- 默认状态：橙色渐变背景 + 白色麦克风图标
+- 激活状态：红色渐变 + 脉冲动画 + 波纹扩散效果
+- 响应式适配：PC 端和移动端有不同的尺寸
+
+详细实现文档：[frontend/VOICE_SEARCH_OPTIMIZATION.md](frontend/VOICE_SEARCH_OPTIMIZATION.md)
+
+### 任务状态管理
+
+任务状态使用枚举类 `TaskStatus` 管理，支持状态流转和验证逻辑。关键实现点：
+- 接单操作需要事务保护，防止并发问题
+- 用户不能接自己发布的任务
+- 状态变更时需要记录到 `task_log` 表
+
 ## 参考文档
 
 - [API 接口设计文档](docs/api-design.md) - 完整的 56 个 API 端点说明
 - [数据库设计文档](docs/database-design.md) - 17 张表的详细设计
 - [第三方服务配置](docs/third-party-services.md) - 阿里云、微信等服务申请与配置
 - [SQL 初始化脚本](sql/README.md) - 数据库建表与初始化数据
+- [语音搜索优化文档](frontend/VOICE_SEARCH_OPTIMIZATION.md) - 语音搜索功能实现详情

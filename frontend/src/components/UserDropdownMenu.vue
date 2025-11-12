@@ -18,6 +18,25 @@
       <!-- 分割线 -->
       <view class="menu-divider"></view>
 
+      <!-- 签到按钮（独立区域）-->
+      <view
+        class="check-in-section"
+        :class="{ 'checked-in': isCheckedIn }"
+        @click="handleCheckIn"
+      >
+        <view class="check-in-content">
+          <text class="check-in-icon">{{ isCheckedIn ? '✓' : '📅' }}</text>
+          <view class="check-in-info">
+            <text class="check-in-title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
+            <text class="check-in-desc">{{ isCheckedIn ? '已获得 +10 积分' : '签到可获得 +10 积分' }}</text>
+          </view>
+        </view>
+        <text class="check-in-badge">{{ isCheckedIn ? '已完成' : '去签到' }}</text>
+      </view>
+
+      <!-- 分割线 -->
+      <view class="menu-divider"></view>
+
       <!-- 菜单项列表 -->
       <view class="menu-items">
         <view
@@ -55,14 +74,16 @@ interface MenuItem {
 interface Props {
   visible: boolean
   userInfo: UserInfo
+  isCheckedIn?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   visible: false,
-  userInfo: () => ({})
+  userInfo: () => ({}),
+  isCheckedIn: false
 })
 
-const emit = defineEmits(['update:visible', 'menu-click'])
+const emit = defineEmits(['update:visible', 'menu-click', 'check-in'])
 
 const showAnimation = ref(false)
 
@@ -102,6 +123,13 @@ const handleMaskClick = () => {
 const handleMenuClick = (item: MenuItem) => {
   emit('menu-click', item.id)
   emit('update:visible', false)
+}
+
+// 签到点击
+const handleCheckIn = () => {
+  if (!props.isCheckedIn) {
+    emit('check-in')
+  }
 }
 </script>
 
@@ -228,6 +256,130 @@ const handleMenuClick = (item: MenuItem) => {
   height: 2rpx; /* 1px */
   background: linear-gradient(90deg, transparent 0%, rgba(100, 116, 139, 0.2) 50%, transparent 100%);
   margin-bottom: 16rpx; /* 8px */
+}
+
+/* 签到区域 */
+.check-in-section {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx; /* 14px 12px */
+  margin-bottom: 16rpx; /* 8px */
+  background: linear-gradient(135deg, rgba(255, 125, 0, 0.08), rgba(255, 165, 0, 0.08));
+  border: 2rpx solid rgba(255, 125, 0, 0.2);
+  border-radius: 16rpx; /* 8px */
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  /* 左侧强调条 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6rpx; /* 3px */
+    background: linear-gradient(180deg, #FF7D00, #FFA500);
+    transition: width 0.2s ease;
+  }
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(255, 125, 0, 0.12), rgba(255, 165, 0, 0.12));
+    border-color: rgba(255, 125, 0, 0.3);
+    transform: translateX(4rpx);
+
+    &::before {
+      width: 8rpx; /* 4px */
+    }
+  }
+
+  &:active {
+    transform: translateX(0) scale(0.98);
+  }
+
+  /* 已签到状态 */
+  &.checked-in {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(74, 222, 128, 0.08));
+    border-color: rgba(34, 197, 94, 0.2);
+    cursor: default;
+
+    &::before {
+      background: linear-gradient(180deg, #22C55E, #4ADE80);
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(74, 222, 128, 0.08));
+      transform: none;
+    }
+  }
+}
+
+.check-in-content {
+  display: flex;
+  align-items: center;
+  gap: 20rpx; /* 10px */
+}
+
+.check-in-icon {
+  font-size: 44rpx; /* 22px */
+  line-height: 1;
+  transition: transform 0.2s ease;
+
+  .check-in-section:hover & {
+    transform: scale(1.1);
+  }
+
+  .check-in-section.checked-in & {
+    animation: checkBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+}
+
+@keyframes checkBounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.check-in-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx; /* 2px */
+}
+
+.check-in-title {
+  font-size: 28rpx; /* 14px */
+  font-weight: 600;
+  color: #1E3A8A;
+  line-height: 1.3;
+}
+
+.check-in-desc {
+  font-size: 24rpx; /* 12px */
+  font-weight: 400;
+  color: #64748B;
+  line-height: 1.3;
+  opacity: 0.85;
+}
+
+.check-in-badge {
+  font-size: 24rpx; /* 12px */
+  font-weight: 600;
+  color: #FF7D00;
+  padding: 8rpx 20rpx; /* 4px 10px */
+  background: rgba(255, 125, 0, 0.15);
+  border-radius: 12rpx; /* 6px */
+  transition: all 0.2s ease;
+
+  .check-in-section:hover & {
+    background: rgba(255, 125, 0, 0.2);
+  }
+
+  .check-in-section.checked-in & {
+    color: #22C55E;
+    background: rgba(34, 197, 94, 0.15);
+  }
 }
 
 /* 菜单项列表 */

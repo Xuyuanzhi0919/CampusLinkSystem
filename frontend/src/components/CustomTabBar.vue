@@ -215,7 +215,7 @@ onUnmounted(() => {
   padding: 0 8px;
 }
 
-/* Tab 项 */
+/* Tab 项 - 优化:增强未选中态的透明度 */
 .tab-item {
   flex: 1;
   display: flex;
@@ -228,66 +228,87 @@ onUnmounted(() => {
   position: relative;
   cursor: pointer;
   transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  
+  opacity: 0.6; /* 优化:未选中项降低不透明度到60% */
+
   /* 点击热区 */
   &::before {
     content: '';
     position: absolute;
     inset: -4px;
   }
-  
+
   /* 按下效果 */
   &:active {
     transform: scale(0.95);
   }
-  
-  /* 选中态 */
+
+  /* 优化:选中态 - 增强区分度(阴影+边框+100%不透明度) */
   &.active {
     transform: scale(1.05);
+    opacity: 1; /* 100%不透明度 */
+    /* 添加微妙的阴影增强层次感 */
+    filter: drop-shadow(0 2px 4px rgba(46, 124, 246, 0.15));
   }
 }
 
-/* 选中态背景光晕 - 优化版 */
+/* 优化:选中态背景光晕 - 增加边框和阴影 */
 .tab-glow {
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, rgba(46, 124, 246, 0.08), rgba(108, 92, 231, 0.08));
   border-radius: 12px;
-  /* 添加 AI 感发光 */
-  box-shadow: 0 0 8px rgba(46, 124, 246, 0.25);
+  /* 优化:添加微妙的边框增强边界感 */
+  border: 1px solid rgba(46, 124, 246, 0.2);
+  /* 优化:增强阴影效果 */
+  box-shadow:
+    0 0 8px rgba(46, 124, 246, 0.25),
+    0 2px 8px rgba(46, 124, 246, 0.15);
   /* 平滑过渡 */
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   animation: glowPulse 2s ease-in-out infinite;
 }
 
+/* 优化:增强脉动动画的阴影效果 */
 @keyframes glowPulse {
   0%, 100% {
     opacity: 0.8;
     transform: scale(1);
-    box-shadow: 0 0 8px rgba(46, 124, 246, 0.25);
+    box-shadow:
+      0 0 8px rgba(46, 124, 246, 0.25),
+      0 2px 8px rgba(46, 124, 246, 0.15);
   }
   50% {
     opacity: 1;
     transform: scale(1.02);
-    box-shadow: 0 0 12px rgba(46, 124, 246, 0.35);
+    box-shadow:
+      0 0 12px rgba(46, 124, 246, 0.35),
+      0 4px 12px rgba(46, 124, 246, 0.2);
   }
 }
 
-/* 深色模式光晕 */
+/* 优化:深色模式光晕 - 增加边框和阴影 */
 .dark-mode .tab-glow {
   background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(108, 92, 231, 0.12));
-  box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  box-shadow:
+    0 0 10px rgba(59, 130, 246, 0.3),
+    0 2px 10px rgba(59, 130, 246, 0.2);
 }
 
+/* 优化:深色模式脉动动画 - 增强阴影 */
 .dark-mode .tab-glow {
   @keyframes glowPulseDark {
     0%, 100% {
       opacity: 0.8;
-      box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
+      box-shadow:
+        0 0 10px rgba(59, 130, 246, 0.3),
+        0 2px 10px rgba(59, 130, 246, 0.2);
     }
     50% {
       opacity: 1;
-      box-shadow: 0 0 14px rgba(59, 130, 246, 0.4);
+      box-shadow:
+        0 0 14px rgba(59, 130, 246, 0.4),
+        0 4px 14px rgba(59, 130, 246, 0.25);
     }
   }
   animation: glowPulseDark 2s ease-in-out infinite;

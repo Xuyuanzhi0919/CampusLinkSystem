@@ -633,9 +633,11 @@ onMounted(() => {
 }
 
 /* 优化：筛选标签 - 增强导航感 */
+/* 优化:Web端自动换行布局,避免横向滚动 */
 .filter-tags {
   flex: 1;
   display: flex;
+  flex-wrap: wrap; /* Web端自动换行 */
   gap: 24rpx;
 }
 
@@ -1167,9 +1169,35 @@ onMounted(() => {
     gap: 12rpx;
   }
 
+  /* 优化:移动端横向滚动,显示1/3下一个标签作为滑动提示 */
   .filter-tags {
     order: 3;
     width: 100%;
+    flex-wrap: nowrap; /* 移动端不换行 */
+    overflow-x: auto; /* 允许横向滚动 */
+    -webkit-overflow-scrolling: touch; /* iOS流畅滚动 */
+    padding: 0 0 8rpx 0; /* 为滚动条预留空间 */
+
+    /* 优化:显示1/3的下一个标签作为视觉提示 */
+    /* 通过padding-right实现:假设每个标签约120rpx,显示40rpx的下一个标签 */
+    &::after {
+      content: '';
+      display: block;
+      min-width: 40rpx; /* 显示下一个标签的1/3 */
+      flex-shrink: 0;
+    }
+
+    /* 隐藏滚动条但保持滚动功能 */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    scrollbar-width: none; /* Firefox */
+  }
+
+  /* 移动端标签项不允许收缩 */
+  .filter-tag {
+    flex-shrink: 0;
+    white-space: nowrap;
   }
 
   .recommend-card {

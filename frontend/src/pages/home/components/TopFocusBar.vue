@@ -12,15 +12,16 @@
     <view class="focus-container">
       <!-- 第一行：顶部导航栏 -->
       <view class="top-nav-bar">
-        <!-- 左侧：品牌标识 - 优化：更新品牌副标题 -->
+        <!-- 左侧：品牌标识 -->
         <view class="brand-section">
           <text class="brand-logo">CampusLink</text>
-          <!-- 优化：品牌副标题，强化品牌气质与信任感 -->
-          <text class="brand-slogan">100万大学生互助学习圈</text>
+          <!-- 桌面端显示完整副标题，平板端简化，移动端隐藏 -->
+          <text class="brand-slogan brand-slogan-full">100万大学生互助学习圈</text>
+          <text class="brand-slogan brand-slogan-short">大学生互助圈</text>
         </view>
 
-        <!-- 右侧：操作按钮 - 优化：合并登录/注册，升级发布按钮 -->
-        <view class="action-buttons">
+        <!-- 右侧：操作按钮（桌面端和平板端显示）-->
+        <view class="action-buttons desktop-tablet-only">
           <!-- 登录/注册按钮（未登录时显示）-->
           <view
             v-if="showLoginButton"
@@ -29,17 +30,6 @@
             @click="handleLoginRegister"
           >
             <text class="action-btn-text">登录 / 注册</text>
-          </view>
-
-          <!-- 签到按钮（登录后显示）-->
-          <view
-            v-if="showAvatarButton"
-            class="check-in-btn"
-            :class="{ 'checked-in': isCheckedIn }"
-            @click="handleCheckIn"
-          >
-            <text class="check-in-icon">{{ isCheckedIn ? '✓' : '📅' }}</text>
-            <text class="check-in-text">{{ isCheckedIn ? '已签到' : '签到' }}</text>
           </view>
 
           <!-- 用户头像按钮（登录后显示）-->
@@ -56,25 +46,34 @@
             />
           </view>
 
-          <!-- 发布（主操作 - Primary）-->
+          <!-- 发布按钮（主操作）-->
           <view class="action-btn action-btn-primary" @click="handlePublish">
             <text class="action-btn-icon">✨</text>
             <text class="action-btn-text">发布</text>
           </view>
         </view>
 
+        <!-- 移动端：汉堡菜单图标 -->
+        <view class="mobile-menu-icon mobile-only" @click="toggleMobileMenu">
+          <view class="hamburger-line"></view>
+          <view class="hamburger-line"></view>
+          <view class="hamburger-line"></view>
+        </view>
+
         <!-- 用户下拉菜单 -->
         <UserDropdownMenu
           :visible="showUserMenu"
           :user-info="userInfo"
+          :is-checked-in="isCheckedIn"
           @update:visible="showUserMenu = $event"
           @menu-click="handleMenuClick"
+          @check-in="handleCheckIn"
         />
       </view>
 
       <!-- 第二行：主内容区（搜索框居中）-->
       <view class="main-content-area">
-        <!-- 搜索栏 - 优化：垂直布局（搜索框 + 提示文字）-->
+        <!-- 搜索栏 -->
         <view class="search-section">
           <!-- 搜索框容器 -->
           <view class="search-box-wrapper">
@@ -102,7 +101,7 @@
                   {{ tag }}
                 </text>
               </view>
-              <!-- 优化：语音搜索按钮 - 移到搜索框内部 -->
+              <!-- 语音搜索按钮 -->
               <view
                 class="voice-search-btn-inline"
                 :class="{ 'voice-active': isVoiceActive }"
@@ -130,13 +129,13 @@
                 <view v-if="isVoiceActive" class="voice-ripple-inline"></view>
                 <view v-if="isVoiceActive" class="voice-ripple-inline voice-ripple-2"></view>
               </view>
-              <!-- 优化：搜索按钮 - 改为橙色圆角矩形按钮 -->
+              <!-- 搜索按钮 -->
               <view class="search-btn-primary" @click="handleSearch">
                 <text class="search-btn-text">搜索</text>
               </view>
             </view>
-            <!-- 优化：搜索框下方提示文字 -->
-            <view class="search-tips">
+            <!-- 搜索框下方提示文字（桌面端和平板端显示）-->
+            <view class="search-tips desktop-tablet-only">
               <text class="search-tip-item">超500万大学资源</text>
               <text class="search-tip-divider">·</text>
               <text class="search-tip-item">24小时AI问答</text>
@@ -182,6 +181,79 @@
       :position="pointsPosition"
       @complete="showPointsAnimation = false"
     />
+
+    <!-- 移动端折叠菜单 -->
+    <view v-if="showMobileMenu" class="mobile-menu-overlay" @click="closeMobileMenu">
+      <view class="mobile-menu-panel" @click.stop>
+        <!-- 菜单头部 -->
+        <view class="mobile-menu-header">
+          <text class="mobile-menu-title">菜单</text>
+          <view class="mobile-menu-close" @click="closeMobileMenu">
+            <text class="close-icon">×</text>
+          </view>
+        </view>
+
+        <!-- 菜单内容 -->
+        <view class="mobile-menu-content">
+          <!-- 未登录：显示登录按钮 -->
+          <view v-if="!isLoggedIn" class="mobile-menu-item" @click="handleMobileLogin">
+            <text class="mobile-menu-item-icon">👤</text>
+            <text class="mobile-menu-item-text">登录 / 注册</text>
+          </view>
+
+          <!-- 已登录：显示用户信息和功能 -->
+          <template v-else>
+            <!-- 用户信息卡片 -->
+            <view class="mobile-user-card" @click="handleMobileProfile">
+              <image
+                v-if="userInfo.avatar"
+                class="mobile-user-avatar"
+                :src="userInfo.avatar"
+                mode="aspectFill"
+              />
+              <view v-else class="mobile-user-avatar mobile-user-avatar-default">
+                <text class="avatar-text">{{ userInfo.nickname ? userInfo.nickname[0] : '用' }}</text>
+              </view>
+              <view class="mobile-user-info">
+                <text class="mobile-user-name">{{ userInfo.nickname || '用户' }}</text>
+                <text class="mobile-user-email">{{ userInfo.email || '未设置邮箱' }}</text>
+              </view>
+            </view>
+
+            <!-- 签到 -->
+            <view class="mobile-menu-item" @click="handleCheckIn">
+              <text class="mobile-menu-item-icon">{{ isCheckedIn ? '✓' : '📅' }}</text>
+              <text class="mobile-menu-item-text">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
+              <text v-if="!isCheckedIn" class="mobile-menu-item-badge">+10积分</text>
+            </view>
+
+            <!-- 发布 -->
+            <view class="mobile-menu-item" @click="handleMobilePublish">
+              <text class="mobile-menu-item-icon">✨</text>
+              <text class="mobile-menu-item-text">发布内容</text>
+            </view>
+
+            <!-- 我的收藏 -->
+            <view class="mobile-menu-item" @click="handleMobileFavorites">
+              <text class="mobile-menu-item-icon">⭐</text>
+              <text class="mobile-menu-item-text">我的收藏</text>
+            </view>
+
+            <!-- 设置 -->
+            <view class="mobile-menu-item" @click="handleMobileSettings">
+              <text class="mobile-menu-item-icon">⚙️</text>
+              <text class="mobile-menu-item-text">设置</text>
+            </view>
+
+            <!-- 退出登录 -->
+            <view class="mobile-menu-item mobile-menu-item-danger" @click="handleMobileLogout">
+              <text class="mobile-menu-item-icon">🚪</text>
+              <text class="mobile-menu-item-text">退出登录</text>
+            </view>
+          </template>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -230,6 +302,9 @@ const isCheckedIn = ref(false)
 const showPointsAnimation = ref(false)
 const pointsValue = ref(0)
 const pointsPosition = ref({ x: 0, y: 0 })
+
+// 移动端菜单状态
+const showMobileMenu = ref(false)
 
 // 检查登录状态
 const checkLoginStatus = () => {
@@ -734,6 +809,99 @@ const stopVoiceRecognition = () => {
   // #endif
 }
 
+/**
+ * 移动端菜单控制
+ */
+const toggleMobileMenu = () => {
+  showMobileMenu.value = !showMobileMenu.value
+
+  // 关键修复：菜单打开时阻止页面滚动
+  if (showMobileMenu.value) {
+    // #ifdef H5
+    document.body.style.overflow = 'hidden'
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    // #endif
+  } else {
+    // #ifdef H5
+    document.body.style.overflow = ''
+    document.body.style.position = ''
+    document.body.style.width = ''
+    // #endif
+  }
+}
+
+const closeMobileMenu = () => {
+  showMobileMenu.value = false
+
+  // 关键修复：菜单关闭时恢复页面滚动
+  // #ifdef H5
+  document.body.style.overflow = ''
+  document.body.style.position = ''
+  document.body.style.width = ''
+  // #endif
+}
+
+/**
+ * 移动端菜单操作
+ */
+const handleMobileLogin = () => {
+  closeMobileMenu()
+  handleLoginRegister()
+}
+
+const handleMobileProfile = () => {
+  closeMobileMenu()
+  uni.navigateTo({
+    url: '/pages/user/profile',
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    }
+  })
+}
+
+const handleMobilePublish = () => {
+  closeMobileMenu()
+  handlePublish()
+}
+
+const handleMobileFavorites = () => {
+  closeMobileMenu()
+  uni.navigateTo({
+    url: '/pages/user/favorites',
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    }
+  })
+}
+
+const handleMobileSettings = () => {
+  closeMobileMenu()
+  uni.navigateTo({
+    url: '/pages/user/settings',
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    }
+  })
+}
+
+const handleMobileLogout = () => {
+  // 优化：添加确认弹窗，防止误触
+  uni.showModal({
+    title: '退出登录',
+    content: '确定要退出登录吗？',
+    confirmText: '退出',
+    cancelText: '取消',
+    confirmColor: '#FF4D4F',
+    success: (res) => {
+      if (res.confirm) {
+        closeMobileMenu()
+        handleLogout()
+      }
+    }
+  })
+}
+
 // 暴露方法给父组件
 defineExpose({
   checkLoginStatus
@@ -757,7 +925,7 @@ defineExpose({
       #FFFFFF 100%     /* 底部纯白 */
     );
   overflow: visible; /* 允许内容溢出，实现自然过渡 */
-  z-index: 1;
+  z-index: auto; /* 关键修复：移除固定z-index，避免限制内部移动端菜单的层级 */
 
   /* 优化：增强阴影，提升浮层感 */
   box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.08);
@@ -1011,75 +1179,6 @@ defineExpose({
   }
 }
 
-/* ========== 签到按钮样式 ========== */
-.check-in-btn {
-  position: relative;
-  height: 64rpx; /* 32px */
-  padding: 0 24rpx;
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%); /* 绿色渐变 */
-  border-radius: 32rpx; /* 胶囊形状 */
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
-  box-shadow: 0 6rpx 20rpx rgba(16, 185, 129, 0.3);
-  border: none;
-  overflow: hidden;
-
-  /* 动画：淡入 */
-  animation: fadeIn 0.3s ease-in-out;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  &:hover {
-    transform: translateY(-2rpx) scale(1.05);
-    box-shadow: 0 8rpx 28rpx rgba(16, 185, 129, 0.4);
-
-    &::before {
-      opacity: 1;
-    }
-  }
-
-  &:active {
-    transform: translateY(0) scale(0.98);
-  }
-
-  /* 已签到状态 */
-  &.checked-in {
-    background: linear-gradient(135deg, #9CA3AF 0%, #D1D5DB 100%); /* 灰色渐变 */
-    box-shadow: 0 4rpx 12rpx rgba(156, 163, 175, 0.2);
-    cursor: default;
-
-    &:hover {
-      transform: none;
-      box-shadow: 0 4rpx 12rpx rgba(156, 163, 175, 0.2);
-    }
-  }
-}
-
-.check-in-icon {
-  font-size: 28rpx; /* 14px */
-  line-height: 1;
-  color: #FFFFFF;
-}
-
-.check-in-text {
-  font-size: 28rpx; /* 14px */
-  font-weight: 600;
-  color: #FFFFFF;
-  line-height: 1;
-}
 
 /* ========== 五、主内容区（第二行：搜索框居中）========== */
 .main-content-area {
@@ -1471,216 +1570,483 @@ defineExpose({
   }
 }
 
-/* ========== 九、H5 端适配 - 极简两行布局 + 底部导航栏 ========== */
-@media (max-width: 750px) {
-  /* 顶部容器高度调整 - 优化：进一步缩减 */
+/* ========== 响应式设计 - 三级断点 ========== */
+
+/* 通用工具类：显示/隐藏控制 */
+.desktop-tablet-only {
+  display: flex !important;
+}
+
+.mobile-only {
+  display: none !important;
+}
+
+/* ========== 1. 桌面端（≥1024px）- 默认样式 ========== */
+/* 主要样式已在上方定义，这里是桌面端的默认状态 */
+
+.brand-slogan-full {
+  display: inline; /* 显示完整副标题 */
+}
+
+.brand-slogan-short {
+  display: none; /* 隐藏简化副标题 */
+}
+
+/* ========== 2. 平板端（768px - 1024px）========== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* 顶部容器高度保持不变 */
   .top-focus-bar {
-    height: 200rpx; /* H5端 100px - 优化：从240rpx减小到200rpx */
+    height: 640rpx; /* 320px */
   }
 
-  /* 内容容器调整 - 两行布局 */
+  /* 品牌区域：简化副标题 */
+  .brand-slogan-full {
+    display: none !important; /* 隐藏完整副标题 */
+  }
+
+  .brand-slogan-short {
+    display: inline !important; /* 显示简化副标题 */
+  }
+
+  .brand-logo {
+    font-size: 44rpx; /* 22px - 略微缩小 */
+  }
+
+  .brand-slogan {
+    font-size: 22rpx; /* 11px */
+  }
+
+  /* 操作按钮：缩小尺寸 */
+  .action-btn {
+    padding: 14rpx 28rpx; /* 缩小内边距 */
+  }
+
+  .action-btn-text {
+    font-size: 28rpx; /* 14px */
+  }
+
+  .check-in-btn {
+    height: 60rpx; /* 30px */
+    padding: 0 22rpx;
+  }
+
+  .check-in-icon,
+  .check-in-text {
+    font-size: 26rpx; /* 13px */
+  }
+
+  /* 搜索栏：增加宽度占比 */
+  .search-section {
+    width: 85%; /* 平板端占据 85% 宽度 */
+  }
+
+  .search-box {
+    height: 88rpx; /* 44px - 略微缩小 */
+  }
+
+  .search-input {
+    font-size: 30rpx; /* 15px */
+  }
+
+  .search-btn-primary {
+    height: 64rpx; /* 32px */
+    padding: 0 36rpx;
+  }
+
+  .search-btn-text {
+    font-size: 30rpx; /* 15px */
+  }
+}
+
+/* ========== 3. 移动端（<768px）========== */
+@media (max-width: 768px) {
+  /* 隐藏/显示控制反转 */
+  .desktop-tablet-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  /* 顶部容器高度调整 */
+  .top-focus-bar {
+    height: 180rpx; /* 90px - 优化：进一步缩减 */
+  }
+
+  /* 内容容器调整 */
   .focus-container {
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-    gap: 10rpx; /* 两行之间的间距 */
-    padding: 16rpx 24rpx; /* 减少上下内边距 */
+    gap: 16rpx; /* 两行之间的间距 */
+    padding: 20rpx 32rpx; /* 增加左右内边距 */
   }
 
-  /* 第一行：品牌 + 用户头像 */
-  .top-row {
+  /* 第一行：品牌 + 汉堡菜单 */
+  .top-nav-bar {
     display: flex;
-    flex-direction: row;
-    justify-content: space-between; /* 左右分布 */
+    justify-content: space-between;
     align-items: center;
-    gap: 16rpx;
-    height: 56rpx; /* 固定高度 */
+    height: auto;
+    padding-top: 0;
   }
 
-  /* 品牌区域 - 左对齐 */
+  /* 品牌区域 */
   .brand-section {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 12rpx;
-    flex: 1; /* 占据剩余空间 */
-    min-width: 0; /* 允许收缩 */
+    gap: 0;
+    padding-left: 12rpx; /* 保留左侧分割线空间 */
   }
 
-
-
-  /* 品牌Logo区域优化 */
-  .brand-logo-wrapper {
-    display: flex;
-    flex-direction: row; /* 横向排列 */
-    align-items: center;
-    gap: 12rpx;
-  }
-
-  .logo-row {
-    display: flex;
-    align-items: center;
-    gap: 12rpx;
-  }
-
-  /* 品牌名字号 */
   .brand-logo {
     font-size: 36rpx; /* 18px */
-    font-weight: 700;
-    line-height: 1.2;
   }
 
-  /* "校园muule"标签 */
-  .campus-muule {
-    font-size: 20rpx; /* 10px */
-    padding: 4rpx 8rpx;
-    line-height: 1;
-  }
-
-  /* 隐藏副标题 */
+  /* 隐藏所有副标题 */
   .brand-slogan {
-    display: none; /* 隐藏"100万大学生的互助学习圈" */
+    display: none !important;
   }
 
-
-
-  /* 第二行：搜索框独占 */
-  .search-section {
+  /* 汉堡菜单图标 */
+  .mobile-menu-icon {
+    width: 88rpx; /* 44px - 触摸规范 */
+    height: 88rpx;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    width: 100%; /* 占满整行 */
+    justify-content: center;
+    gap: 10rpx;
+    cursor: pointer;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
   }
 
-  /* 搜索框样式 */
+  .mobile-menu-icon:active {
+    transform: scale(0.95);
+    background: rgba(255, 255, 255, 1);
+  }
+
+  .hamburger-line {
+    width: 40rpx; /* 20px */
+    height: 4rpx; /* 2px */
+    background: var(--cl-primary, #2563EB);
+    border-radius: 2rpx;
+    transition: all 0.3s ease;
+  }
+
+  /* 搜索区域 */
+  .main-content-area {
+    flex: 1;
+    margin-top: 0;
+  }
+
+  .search-section {
+    width: 100%; /* 移动端占满宽度 */
+  }
+
+  .search-box-wrapper {
+    gap: 0; /* 移除提示文字间距 */
+  }
+
   .search-box {
-    height: 60rpx; /* 30px - 搜索框高度 */
-    padding: 0 16rpx;
-    gap: 10rpx;
-    width: 100%; /* 占满整行 */
+    height: 80rpx; /* 40px */
+    padding: 0 20rpx;
+    gap: 12rpx;
   }
 
   .search-icon {
-    font-size: 26rpx;
+    font-size: 32rpx; /* 16px */
   }
 
   .search-input {
-    font-size: 24rpx;
-    flex: 1; /* 占据剩余空间 */
+    font-size: 28rpx; /* 14px */
   }
 
-  .search-btn-blue {
-    padding: 10rpx 18rpx;
+  .search-input::placeholder {
+    font-size: 28rpx;
+  }
+
+  .voice-search-btn-inline {
+    width: 52rpx; /* 26px */
+    height: 52rpx;
+  }
+
+  .voice-icon-inline {
+    width: 32rpx; /* 16px */
+    height: 32rpx;
+  }
+
+  .search-btn-primary {
+    height: 60rpx; /* 30px */
+    padding: 0 32rpx;
   }
 
   .search-btn-text {
-    font-size: 22rpx;
+    font-size: 28rpx; /* 14px */
   }
 
-  .voice-search-btn {
-    width: 44rpx;
-    height: 44rpx;
-  }
-
-  .voice-icon {
-    width: 22rpx;
-    height: 22rpx;
-  }
-
-  .voice-ripple {
-    width: 44rpx;
-    height: 44rpx;
-  }
-
-  /* 插画元素 - H5 端适配 240rpx 高度 */
+  /* 插画元素 - 移动端淡化 */
   .illustration-layer {
-    height: 240rpx; /* 与容器高度一致 */
+    height: 180rpx;
+    opacity: 0.5; /* 整体降低透明度 */
   }
 
   .campus-building {
-    width: 60rpx; /* 30px */
-    height: 75rpx; /* 37.5px */
-    left: 2%;
-    bottom: 12%;
+    width: 80rpx; /* 40px */
+    height: 100rpx; /* 50px */
+    left: 3%;
+    bottom: 15%;
   }
 
   .student-illustration {
-    width: 130rpx; /* 65px */
-    height: 130rpx;
+    width: 150rpx; /* 75px */
+    height: 150rpx;
     right: 3%;
     bottom: 10%;
   }
 
   .decoration-element {
-    opacity: 0.4; /* 更淡化 */
-    transform: scale(0.75); /* 进一步缩小装饰元素 */
+    display: none; /* 移动端完全隐藏装饰元素 */
   }
-
-  .decoration-book {
-    top: 18%;
-    left: 18%;
-  }
-
-  .decoration-bulb {
-    top: 22%;
-    right: 22%;
-  }
-
-  .decoration-pencil {
-    bottom: 28%;
-    left: 28%;
-  }
-
-  .decoration-cap {
-    bottom: 24%;
-    right: 18%;
-  }
-
-  .decoration-book {
-    width: 70rpx;
-    height: 70rpx;
-    left: 12%;
-    top: 10%;
-  }
-
-  .decoration-bulb {
-    width: 70rpx;
-    height: 70rpx;
-    right: 18%;
-    top: 8%;
-  }
-
-  .decoration-pencil {
-    width: 60rpx;
-    height: 60rpx;
-    left: 30%;
-    bottom: 15%;
-  }
-
-  .decoration-cap {
-    width: 65rpx;
-    height: 65rpx;
-    right: 30%;
-    bottom: 18%;
-  }
-
-
 
   /* 背景装饰缩小 */
   .bg-circle-1 {
-    width: 250rpx;
-    height: 250rpx;
+    width: 300rpx;
+    height: 300rpx;
   }
 
   .bg-circle-2 {
-    width: 200rpx;
-    height: 200rpx;
+    width: 250rpx;
+    height: 250rpx;
   }
+}
 
-  /* 搜索框居中 */
-  .search-section {
-    width: 90%; /* 移动端占据 90% 宽度 */
+/* ========== 移动端折叠菜单样式 ========== */
+.mobile-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6); /* 优化：提高遮罩不透明度，增强菜单与主页面区分 */
+  backdrop-filter: blur(8px); /* 优化：增加模糊度 */
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 99999; /* 关键修复：大幅提高层级到99999，确保覆盖所有页面内容（包括"为你推荐"卡片）*/
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  animation: fadeIn 0.3s ease-out;
+  /* 关键修复：阻止触摸穿透 */
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.mobile-menu-panel {
+  width: 560rpx; /* 280px - 70% 屏幕宽度 */
+  max-width: 85%;
+  height: 100vh;
+  background: #FFFFFF;
+  box-shadow: -8rpx 0 32rpx rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideInRight 0.3s ease-out;
+  /* 关键修复：确保菜单独立定位，不影响页面布局 */
+  position: relative;
+  z-index: 100000; /* 关键修复：菜单面板层级设为100000，高于遮罩层 */
+  /* 关键修复：启用硬件加速，优化滑动性能 */
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%) translateZ(0);
+    opacity: 0.8;
   }
+  to {
+    transform: translateX(0) translateZ(0);
+    opacity: 1;
+  }
+}
+
+/* 菜单头部 */
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 40rpx 32rpx;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mobile-menu-title {
+  font-size: 36rpx; /* 18px */
+  font-weight: 700;
+  color: #1D2129;
+}
+
+.mobile-menu-close {
+  width: 88rpx; /* 44px - 优化：扩大触摸区域，符合触摸规范 */
+  height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-close:active {
+  background: rgba(0, 0, 0, 0.12); /* 优化：增强按下反馈 */
+  transform: scale(0.92);
+}
+
+.close-icon {
+  font-size: 56rpx; /* 28px - 优化：增大图标尺寸 */
+  font-weight: 300;
+  color: #4E5969;
+  line-height: 1;
+}
+
+/* 菜单内容 */
+.mobile-menu-content {
+  flex: 1;
+  padding: 32rpx 0;
+  overflow-y: auto;
+}
+
+/* 用户信息卡片 */
+.mobile-user-card {
+  display: flex;
+  align-items: center;
+  gap: 28rpx; /* 优化：增加头像与信息的间距 */
+  padding: 36rpx; /* 优化：增加内边距，增强呼吸感 */
+  margin: 0 24rpx 32rpx;
+  background: linear-gradient(135deg, #E8F0FF 0%, #F5F8FF 100%);
+  border-radius: 24rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2rpx 12rpx rgba(37, 99, 235, 0.08); /* 优化：添加轻微阴影 */
+}
+
+.mobile-user-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.06); /* 优化：按下时减弱阴影 */
+}
+
+.mobile-user-avatar {
+  width: 96rpx; /* 48px */
+  height: 96rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 4rpx solid rgba(255, 255, 255, 0.8); /* 优化：添加白色边框 */
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08); /* 优化：添加阴影，增强层次感 */
+}
+
+.mobile-user-avatar-default {
+  background: var(--cl-primary, #2563EB);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-text {
+  font-size: 40rpx; /* 20px */
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.mobile-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx; /* 优化：增加昵称与邮箱的间距，从 8rpx 调整为 12rpx */
+  flex: 1;
+  min-width: 0;
+}
+
+.mobile-user-name {
+  font-size: 34rpx; /* 17px - 优化：略微增大字号 */
+  font-weight: 600;
+  color: #1D2129;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3; /* 优化：增加行高 */
+}
+
+.mobile-user-email {
+  font-size: 26rpx; /* 13px - 优化：略微增大字号 */
+  color: #86909C;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4; /* 优化：增加行高 */
+}
+
+/* 菜单项 */
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  min-height: 96rpx; /* 48px - 优化：固定最小高度，确保触摸区域充足 */
+  padding: 24rpx 48rpx; /* 优化：调整内边距，使高度为 48px */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.mobile-menu-item:active {
+  background: rgba(0, 0, 0, 0.06); /* 优化：增强按下反馈 */
+}
+
+.mobile-menu-item-icon {
+  font-size: 40rpx; /* 20px */
+  line-height: 1;
+  flex-shrink: 0;
+  width: 40rpx; /* 优化：固定图标宽度，保证对齐 */
+  text-align: center;
+}
+
+.mobile-menu-item-text {
+  font-size: 30rpx; /* 15px */
+  font-weight: 500;
+  color: #1D2129;
+  flex: 1;
+  line-height: 1.5; /* 优化：增加行高，垂直居中对齐 */
+}
+
+.mobile-menu-item-badge {
+  font-size: 24rpx; /* 12px */
+  font-weight: 600;
+  color: #10B981;
+  padding: 6rpx 16rpx; /* 优化：增加内边距，更易识别 */
+  background: rgba(16, 185, 129, 0.12); /* 优化：增加背景不透明度 */
+  border-radius: 14rpx;
+}
+
+/* 优化："退出登录"样式 - 降低冲击感 */
+.mobile-menu-item-danger {
+  background: rgba(255, 77, 79, 0.04); /* 添加浅红色背景 */
+  margin: 16rpx 24rpx 0; /* 增加外边距，与其他选项区分 */
+  border-radius: 16rpx; /* 添加圆角 */
+}
+
+.mobile-menu-item-danger:active {
+  background: rgba(255, 77, 79, 0.08); /* 优化：按下时加深背景 */
+}
+
+.mobile-menu-item-danger .mobile-menu-item-text {
+  color: #FF4D4F;
+}
+
+.mobile-menu-item-danger .mobile-menu-item-icon {
+  opacity: 0.85; /* 优化：略微提高不透明度 */
 }
 </style>
 

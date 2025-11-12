@@ -23,7 +23,8 @@
       "Bash(del \"f:\\Cluade Code Project\\CampusLink\\frontend\\USER_CENTER_IMPLEMENTATION.md\")",
       "Bash(git rm:*)",
       "Bash(npm run dev:mp-weixin:*)",
-      "Bash(if exist nul del nul)"
+      "Bash(if exist nul del nul)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

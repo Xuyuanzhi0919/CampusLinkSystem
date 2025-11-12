@@ -553,7 +553,7 @@ onReachBottom(() => {
 .content-section {
   padding: 48rpx 0 120rpx; /* 优化：减小上下留白，从60rpx/160rpx改为48rpx/120rpx */
   position: relative;
-  z-index: 1;
+  z-index: auto; /* 关键修复：移除固定z-index，避免创建层叠上下文干扰移动端菜单 */
   background: transparent; /* 使用全局背景 */
 }
 
@@ -633,7 +633,7 @@ onReachBottom(() => {
 .auxiliary-section {
   padding: 80rpx 0 120rpx; /* 优化：减小内边距，从128rpx/160rpx改为80rpx/120rpx */
   position: relative;
-  z-index: 1;
+  z-index: auto; /* 关键修复：移除固定z-index，避免创建层叠上下文干扰移动端菜单 */
   /* 优化：统一浅灰背景 #F8FAFC，与上方自然衔接 */
   background: #F8FAFC;
 

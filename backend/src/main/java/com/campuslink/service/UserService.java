@@ -279,6 +279,128 @@ public class UserService {
     }
 
     /**
+     * 获取签到状态
+     */
+    public Boolean getCheckInStatus(Long userId) {
+        // 验证用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 检查今日是否已签到
+        LocalDateTime todayStart = LocalDateTime.now().withHour(0).withMinute(0).withSecond(0).withNano(0);
+        LocalDateTime todayEnd = LocalDateTime.now().withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+        LambdaQueryWrapper<PointsLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PointsLog::getUserId, userId);
+        wrapper.eq(PointsLog::getReason, "每日签到");
+        wrapper.between(PointsLog::getCreatedAt, todayStart, todayEnd);
+        Long count = pointsLogMapper.selectCount(wrapper);
+
+        return count > 0;
+    }
+
+    /**
+     * 每日签到
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public CheckInResponse checkIn(Long userId) {
+        // 验证用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 检查今日是否已签到
+        if (getCheckInStatus(userId)) {
+            // 今日已签到
+            return CheckInResponse.builder()
+                    .success(false)
+                    .message("今日已签到")
+                    .pointsEarned(0)
+                    .totalPoints(user.getPoints())
+                    .consecutiveDays(0)
+                    .checkInTime(LocalDateTime.now())
+                    .build();
+        }
+
+        // 签到奖励积分
+        final int CHECK_IN_POINTS = 10;
+
+        // 更新用户积分
+        user.setPoints(user.getPoints() + CHECK_IN_POINTS);
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        // 记录积分变化
+        PointsLog pointsLog = new PointsLog();
+        pointsLog.setUserId(userId);
+        pointsLog.setPointsChange(CHECK_IN_POINTS);
+        pointsLog.setPointsAfter(user.getPoints());
+        pointsLog.setReason("每日签到");
+        pointsLog.setRelatedType("check_in");
+        pointsLog.setRelatedId(userId);
+        pointsLog.setCreatedAt(LocalDateTime.now());
+        pointsLogMapper.insert(pointsLog);
+
+        // 计算连续签到天数(简化版:只计算最近的连续天数)
+        int consecutiveDays = calculateConsecutiveDays(userId);
+
+        log.info("用户签到成功: userId={}, points={}", userId, user.getPoints());
+
+        return CheckInResponse.builder()
+                .success(true)
+                .message("签到成功!")
+                .pointsEarned(CHECK_IN_POINTS)
+                .totalPoints(user.getPoints())
+                .consecutiveDays(consecutiveDays)
+                .checkInTime(LocalDateTime.now())
+                .build();
+    }
+
+    /**
+     * 计算连续签到天数
+     */
+    private int calculateConsecutiveDays(Long userId) {
+        // 查询最近30天的签到记录
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+
+        LambdaQueryWrapper<PointsLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(PointsLog::getUserId, userId);
+        wrapper.eq(PointsLog::getReason, "每日签到");
+        wrapper.ge(PointsLog::getCreatedAt, thirtyDaysAgo);
+        wrapper.orderByDesc(PointsLog::getCreatedAt);
+
+        List<PointsLog> logs = pointsLogMapper.selectList(wrapper);
+
+        if (logs.isEmpty()) {
+            return 1; // 今天是第一天
+        }
+
+        // 计算连续天数
+        int consecutiveDays = 1;
+        LocalDateTime checkDate = LocalDateTime.now().minusDays(1);
+
+        for (PointsLog log : logs) {
+            LocalDateTime logDate = log.getCreatedAt();
+            LocalDateTime checkDateStart = checkDate.withHour(0).withMinute(0).withSecond(0).withNano(0);
+            LocalDateTime checkDateEnd = checkDate.withHour(23).withMinute(59).withSecond(59).withNano(999999999);
+
+            // 如果当天有签到记录
+            if (logDate.isAfter(checkDateStart) && logDate.isBefore(checkDateEnd)) {
+                consecutiveDays++;
+                checkDate = checkDate.minusDays(1);
+            } else {
+                // 中断了连续签到
+                break;
+            }
+        }
+
+        return consecutiveDays;
+    }
+
+    /**
      * 转换为 VO 对象
      */
     private UserVO convertToVO(User user) {

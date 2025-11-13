@@ -80,12 +80,17 @@ public class ActivityService {
     /**
      * 获取活动列表
      */
-    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize, Long clubId) {
+    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize, Long clubId, Integer status) {
         Page<Activity> activityPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<>();
 
         if (clubId != null) {
             wrapper.eq(Activity::getClubId, clubId);
+        }
+
+        // 如果指定了状态，则过滤
+        if (status != null) {
+            wrapper.eq(Activity::getStatus, status);
         }
 
         wrapper.orderByDesc(Activity::getCreatedAt);

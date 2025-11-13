@@ -22,11 +22,11 @@ public class StatsController {
     private final StatsService statsService;
 
     /**
-     * 获取今日活跃统计
+     * 获取平台数据统计
      * GET /stats/today
      * 无需登录，游客可访问
      */
-    @Operation(summary = "获取今日活跃统计", description = "返回今日活跃用户数、新增问答、资源上传等数据，10分钟缓存")
+    @Operation(summary = "获取平台数据统计", description = "返回注册用户数、今日新增问答、今日资源上传等数据，10分钟缓存")
     @GetMapping("/today")
     public Result<TodayStatsResponse> getTodayStats() {
         TodayStatsResponse stats = statsService.getTodayStats();

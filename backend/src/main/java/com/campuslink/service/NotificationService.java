@@ -115,12 +115,18 @@ public class NotificationService {
     /**
      * 获取我的通知列表
      */
-    public PageResult<NotificationResponse> getMyNotifications(Long userId, Integer page, Integer pageSize) {
+    public PageResult<NotificationResponse> getMyNotifications(Long userId, Integer page, Integer pageSize, String type) {
         Page<Notification> notificationPage = new Page<>(page, pageSize);
 
         LambdaQueryWrapper<Notification> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Notification::getUserId, userId)
-                .orderByDesc(Notification::getCreatedAt);
+        wrapper.eq(Notification::getUserId, userId);
+
+        // 如果指定了类型，则过滤
+        if (type != null && !type.isEmpty()) {
+            wrapper.eq(Notification::getNotifyType, type);
+        }
+
+        wrapper.orderByDesc(Notification::getCreatedAt);
 
         notificationPage = notificationMapper.selectPage(notificationPage, wrapper);
 

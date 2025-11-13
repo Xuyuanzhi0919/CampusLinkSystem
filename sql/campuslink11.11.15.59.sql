@@ -11,7 +11,7 @@
  Target Server Version : 80043 (8.0.43)
  File Encoding         : 65001
 
- Date: 11/11/2025 15:59:39
+ Date: 13/11/2025 17:25:16
 */
 
 SET NAMES utf8mb4;
@@ -123,11 +123,12 @@ CREATE TABLE `club`  (
   INDEX `idx_status`(`status` ASC) USING BTREE,
   CONSTRAINT `fk_club_founder` FOREIGN KEY (`founder_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `fk_club_school` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of club
 -- ----------------------------
+INSERT INTO `club` VALUES (5, '计算机科学协会', '专注于计算机科学技术交流与学习的学生社团', 'https://example.com/club-logo.jpg', 1, 48, 1, 1, '2025-11-13 16:53:40', '2025-11-13 16:53:40');
 
 -- ----------------------------
 -- Table structure for club_member
@@ -144,11 +145,12 @@ CREATE TABLE `club_member`  (
   INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
   CONSTRAINT `fk_club_member_club` FOREIGN KEY (`club_id`) REFERENCES `club` (`club_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `fk_club_member_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 15 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团成员表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '社团成员表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of club_member
 -- ----------------------------
+INSERT INTO `club_member` VALUES (15, 5, 48, 'founder', '2025-11-13 16:53:40');
 
 -- ----------------------------
 -- Table structure for comment
@@ -231,12 +233,12 @@ CREATE TABLE `favorite`  (
   INDEX `idx_target`(`target_type` ASC, `target_id` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
   CONSTRAINT `fk_favorite_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 2 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '收藏表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '收藏表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of favorite
 -- ----------------------------
-INSERT INTO `favorite` VALUES (1, 48, 'task', 2, '2025-11-11 15:49:09');
+INSERT INTO `favorite` VALUES (6, 48, 'task', 2, '2025-11-11 19:53:55');
 
 -- ----------------------------
 -- Table structure for message
@@ -250,11 +252,14 @@ CREATE TABLE `message`  (
   `msg_type` tinyint NOT NULL DEFAULT 1 COMMENT '消息类型：1-文本，2-图片，3-文件',
   `is_read` tinyint NOT NULL DEFAULT 0 COMMENT '是否已读：0-未读，1-已读',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `related_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '关联类型: task/resource/question',
+  `related_id` bigint NULL DEFAULT NULL COMMENT '关联对象ID',
   PRIMARY KEY (`m_id`) USING BTREE,
   INDEX `idx_sender_id`(`sender_id` ASC) USING BTREE,
   INDEX `idx_receiver_id`(`receiver_id` ASC) USING BTREE,
   INDEX `idx_is_read`(`is_read` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
+  INDEX `idx_related`(`related_type` ASC, `related_id` ASC) USING BTREE,
   CONSTRAINT `fk_message_receiver` FOREIGN KEY (`receiver_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
   CONSTRAINT `fk_message_sender` FOREIGN KEY (`sender_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
 ) ENGINE = InnoDB AUTO_INCREMENT = 13 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '私信表' ROW_FORMAT = Dynamic;
@@ -262,17 +267,17 @@ CREATE TABLE `message`  (
 -- ----------------------------
 -- Records of message
 -- ----------------------------
-INSERT INTO `message` VALUES (2, 25, 2, 'https://example.com/image.jpg', 2, 0, '2025-11-08 20:59:24');
-INSERT INTO `message` VALUES (3, 25, 2, 'https://example.com/document.pdf', 3, 0, '2025-11-08 20:59:27');
-INSERT INTO `message` VALUES (4, 26, 1, '好的,我有一些学习资料可以分享给你', 1, 0, '2025-11-08 20:59:30');
-INSERT INTO `message` VALUES (5, 25, 2, '太好了,非常感谢!', 1, 0, '2025-11-08 20:59:32');
-INSERT INTO `message` VALUES (6, 25, 1, '给自己发消息', 1, 0, '2025-11-08 21:00:30');
-INSERT INTO `message` VALUES (7, 25, 3, '你好,用户3', 1, 0, '2025-11-08 21:00:40');
-INSERT INTO `message` VALUES (8, 25, 2, '消息1', 1, 0, '2025-11-08 21:00:51');
-INSERT INTO `message` VALUES (9, 25, 2, '消息2', 1, 0, '2025-11-08 21:00:53');
-INSERT INTO `message` VALUES (10, 25, 2, '消息3', 1, 0, '2025-11-08 21:00:54');
-INSERT INTO `message` VALUES (11, 25, 2, '消息4', 1, 0, '2025-11-08 21:00:55');
-INSERT INTO `message` VALUES (12, 25, 2, '消息5', 1, 0, '2025-11-08 21:00:57');
+INSERT INTO `message` VALUES (2, 25, 2, 'https://example.com/image.jpg', 2, 0, '2025-11-08 20:59:24', NULL, NULL);
+INSERT INTO `message` VALUES (3, 25, 2, 'https://example.com/document.pdf', 3, 0, '2025-11-08 20:59:27', NULL, NULL);
+INSERT INTO `message` VALUES (4, 26, 1, '好的,我有一些学习资料可以分享给你', 1, 0, '2025-11-08 20:59:30', NULL, NULL);
+INSERT INTO `message` VALUES (5, 25, 2, '太好了,非常感谢!', 1, 0, '2025-11-08 20:59:32', NULL, NULL);
+INSERT INTO `message` VALUES (6, 25, 1, '给自己发消息', 1, 0, '2025-11-08 21:00:30', NULL, NULL);
+INSERT INTO `message` VALUES (7, 25, 3, '你好,用户3', 1, 0, '2025-11-08 21:00:40', NULL, NULL);
+INSERT INTO `message` VALUES (8, 25, 2, '消息1', 1, 0, '2025-11-08 21:00:51', NULL, NULL);
+INSERT INTO `message` VALUES (9, 25, 2, '消息2', 1, 0, '2025-11-08 21:00:53', NULL, NULL);
+INSERT INTO `message` VALUES (10, 25, 2, '消息3', 1, 0, '2025-11-08 21:00:54', NULL, NULL);
+INSERT INTO `message` VALUES (11, 25, 2, '消息4', 1, 0, '2025-11-08 21:00:55', NULL, NULL);
+INSERT INTO `message` VALUES (12, 25, 2, '消息5', 1, 0, '2025-11-08 21:00:57', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for notification
@@ -346,7 +351,7 @@ CREATE TABLE `points_log`  (
   INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
   CONSTRAINT `fk_points_log_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 5 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '积分记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '积分记录表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of points_log
@@ -355,6 +360,11 @@ INSERT INTO `points_log` VALUES (1, 23, -10, 90, '发布任务：测试任务 - 
 INSERT INTO `points_log` VALUES (2, 24, 10, 110, '完成任务：测试任务 - 用于验证积分日志', 'task', 7, '2025-11-08 20:27:42');
 INSERT INTO `points_log` VALUES (3, 23, -5, 85, '发布任务：测试任务2 - 用于取消', 'task', 8, '2025-11-08 20:27:53');
 INSERT INTO `points_log` VALUES (4, 23, 5, 90, '取消任务退还积分：测试任务2 - 用于取消', 'task', 8, '2025-11-08 20:27:55');
+INSERT INTO `points_log` VALUES (5, 49, 10, 110, '每日签到', 'check_in', 49, '2025-11-12 21:14:55');
+INSERT INTO `points_log` VALUES (6, 49, 10, 120, '每日签到', 'check_in', 49, '2025-11-13 15:17:28');
+INSERT INTO `points_log` VALUES (7, 48, 10, 110, '每日签到', 'check_in', 48, '2025-11-13 15:18:11');
+INSERT INTO `points_log` VALUES (8, 50, 10, 110, '每日签到', 'check_in', 50, '2025-11-13 15:22:00');
+INSERT INTO `points_log` VALUES (9, 51, 10, 110, '每日签到', 'check_in', 51, '2025-11-13 15:29:46');
 
 -- ----------------------------
 -- Table structure for question
@@ -614,7 +624,7 @@ CREATE TABLE `tag_relation`  (
   UNIQUE INDEX `uk_tag_target`(`tag_id` ASC, `target_type` ASC, `target_id` ASC) USING BTREE,
   INDEX `idx_target`(`target_type` ASC, `target_id` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE
-) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '标签关联表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '标签关联表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of tag_relation
@@ -639,27 +649,93 @@ CREATE TABLE `task`  (
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `completed_at` datetime NULL DEFAULT NULL COMMENT '完成时间',
+  `result_description` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '执行者提交的结果描述',
+  `result_attachments` json NULL COMMENT '结果附件URL列表',
+  `submitted_at` datetime NULL DEFAULT NULL COMMENT '提交结果时间',
+  `rejection_reason` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '发布者拒绝原因',
+  `accepted_at` datetime NULL DEFAULT NULL COMMENT '接单时间',
+  `started_at` datetime NULL DEFAULT NULL COMMENT '开始执行时间',
   PRIMARY KEY (`t_id`) USING BTREE,
   INDEX `idx_publisher_id`(`publisher_id` ASC) USING BTREE,
   INDEX `idx_accepter_id`(`accepter_id` ASC) USING BTREE,
   INDEX `idx_task_type`(`task_type` ASC) USING BTREE,
   INDEX `idx_status`(`status` ASC) USING BTREE,
   INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
+  INDEX `idx_status_deadline`(`status` ASC, `deadline` ASC) USING BTREE,
+  INDEX `idx_accepter_status`(`accepter_id` ASC, `status` ASC) USING BTREE,
   CONSTRAINT `fk_task_accepter` FOREIGN KEY (`accepter_id`) REFERENCES `user` (`u_id`) ON DELETE SET NULL ON UPDATE RESTRICT,
   CONSTRAINT `fk_task_publisher` FOREIGN KEY (`publisher_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 9 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '任务表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 10 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '任务表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of task
 -- ----------------------------
-INSERT INTO `task` VALUES (1, 2, '帮忙取快递', '菜鸟驿站有个快递，帮忙取一下，取件码：1234', 'errand', 5, '菜鸟驿站', '2025-11-09 19:09:44', 19, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:41:36', NULL);
-INSERT INTO `task` VALUES (2, 3, '图书馆借书', '帮忙去图书馆借一本《算法导论》，书号：TP301.6/C73', 'borrow', 8, '图书馆', '2025-11-10 19:09:44', 48, 1, NULL, '2025-11-08 19:09:44', '2025-11-11 15:47:48', NULL);
-INSERT INTO `task` VALUES (3, 5, '代签到', '明天上午第一节课帮忙签到，教室：教学楼A101', 'sign', 3, '教学楼A101', '2025-11-09 19:09:44', NULL, 0, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44', NULL);
-INSERT INTO `task` VALUES (4, 18, '帮忙取快递 - 顺丰快递', '我在上课不方便去拿快递，希望有人帮我取一下，地点在学校北门顺丰驿站，取货码1234', 'errand', 5, '学校北门顺丰驿站', '2025-11-09 18:00:00', 19, 2, NULL, '2025-11-08 19:40:59', '2025-11-08 19:47:05', '2025-11-08 19:47:05');
-INSERT INTO `task` VALUES (5, 18, '代购奶茶 - 蜜雪冰城', '想喝蜜雪冰城的柠檬水，帮忙带一杯，谢谢！', 'purchase', 3, '学校东门蜜雪冰城', '2025-11-08 20:00:00', NULL, 0, NULL, '2025-11-08 19:41:05', '2025-11-08 19:41:05', NULL);
-INSERT INTO `task` VALUES (6, 18, '帮忙打印文件', '需要打印一份文档，大概10页，图书馆打印店即可', 'other', 2, '图书馆一楼打印店', '2025-11-09 12:00:00', NULL, 0, NULL, '2025-11-08 19:41:08', '2025-11-08 19:41:08', NULL);
-INSERT INTO `task` VALUES (7, 23, '测试任务 - 用于验证积分日志', '这是一个测试任务，用于验证积分日志记录功能', 'other', 10, '测试地点', '2025-11-10 18:00:00', 24, 2, NULL, '2025-11-08 20:27:10', '2025-11-08 20:27:42', '2025-11-08 20:27:42');
-INSERT INTO `task` VALUES (8, 23, '测试任务2 - 用于取消', '这个任务将被取消，用于测试退还积分', 'other', 5, '测试地点', '2025-11-10 20:00:00', NULL, 3, NULL, '2025-11-08 20:27:53', '2025-11-08 20:27:55', NULL);
+INSERT INTO `task` VALUES (1, 2, '帮忙取快递', '菜鸟驿站有个快递，帮忙取一下，取件码：1234', 'errand', 5, '菜鸟驿站', '2025-11-09 19:09:44', NULL, 6, NULL, '2025-11-08 19:09:44', '2025-11-11 20:00:00', NULL, NULL, NULL, NULL, NULL, '2025-11-11 18:47:48', NULL);
+INSERT INTO `task` VALUES (2, 3, '图书馆借书', '帮忙去图书馆借一本《算法导论》，书号：TP301.6/C73', 'borrow', 8, '图书馆', '2025-11-10 19:09:44', NULL, 6, NULL, '2025-11-08 19:09:44', '2025-11-11 20:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (3, 5, '代签到', '明天上午第一节课帮忙签到，教室：教学楼A101', 'sign', 3, '教学楼A101', '2025-11-09 19:09:44', NULL, 6, NULL, '2025-11-08 19:09:44', '2025-11-11 20:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (4, 18, '帮忙取快递 - 顺丰快递', '我在上课不方便去拿快递，希望有人帮我取一下，地点在学校北门顺丰驿站，取货码1234', 'errand', 5, '学校北门顺丰驿站', '2025-11-09 18:00:00', 19, 4, NULL, '2025-11-08 19:40:59', '2025-11-11 16:06:24', '2025-11-08 19:47:05', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (5, 18, '代购奶茶 - 蜜雪冰城', '想喝蜜雪冰城的柠檬水，帮忙带一杯，谢谢！', 'purchase', 3, '学校东门蜜雪冰城', '2025-11-08 20:00:00', NULL, 6, NULL, '2025-11-08 19:41:05', '2025-11-11 17:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (6, 18, '帮忙打印文件', '需要打印一份文档，大概10页，图书馆打印店即可', 'other', 2, '图书馆一楼打印店', '2025-11-09 12:00:00', NULL, 6, NULL, '2025-11-08 19:41:08', '2025-11-11 17:00:00', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (7, 23, '测试任务 - 用于验证积分日志', '这是一个测试任务，用于验证积分日志记录功能', 'other', 10, '测试地点', '2025-11-10 18:00:00', 24, 4, NULL, '2025-11-08 20:27:10', '2025-11-11 16:06:24', '2025-11-08 20:27:42', NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (8, 23, '测试任务2 - 用于取消', '这个任务将被取消，用于测试退还积分', 'other', 5, '测试地点', '2025-11-10 20:00:00', NULL, 5, NULL, '2025-11-08 20:27:53', '2025-11-11 16:06:25', NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+INSERT INTO `task` VALUES (9, 1, '代拿校园外卖', '北门快递柜32号', 'other', 110, '北门外卖柜', NULL, 48, 1, NULL, '2025-11-11 20:12:13', '2025-11-13 16:29:11', NULL, NULL, NULL, NULL, NULL, '2025-11-12 15:05:50', NULL);
+
+-- ----------------------------
+-- Table structure for task_log
+-- ----------------------------
+DROP TABLE IF EXISTS `task_log`;
+CREATE TABLE `task_log`  (
+  `log_id` bigint NOT NULL AUTO_INCREMENT COMMENT '日志ID',
+  `task_id` bigint NOT NULL COMMENT '任务ID',
+  `user_id` bigint NOT NULL COMMENT '操作用户ID',
+  `action` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作类型: publish/accept/start/submit/confirm/reject/cancel',
+  `old_status` int NULL DEFAULT NULL COMMENT '操作前状态',
+  `new_status` int NOT NULL COMMENT '操作后状态',
+  `remark` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL COMMENT '备注说明',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '操作时间',
+  PRIMARY KEY (`log_id`) USING BTREE,
+  INDEX `idx_task_id`(`task_id` ASC) USING BTREE,
+  INDEX `idx_user_id`(`user_id` ASC) USING BTREE,
+  INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
+  CONSTRAINT `fk_task_log_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`t_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_task_log_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB AUTO_INCREMENT = 16 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '任务操作日志表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of task_log
+-- ----------------------------
+INSERT INTO `task_log` VALUES (6, 1, 48, 'accept', 0, 1, '用户接取任务', '2025-11-11 17:36:09');
+INSERT INTO `task_log` VALUES (8, 1, 48, 'accept', 0, 1, '用户接取任务', '2025-11-11 18:47:48');
+INSERT INTO `task_log` VALUES (14, 9, 48, 'accept', 0, 1, '用户接取任务', '2025-11-11 20:17:57');
+INSERT INTO `task_log` VALUES (15, 9, 48, 'accept', 0, 1, '用户接取任务', '2025-11-12 15:05:50');
+
+-- ----------------------------
+-- Table structure for task_rating
+-- ----------------------------
+DROP TABLE IF EXISTS `task_rating`;
+CREATE TABLE `task_rating`  (
+  `rating_id` bigint NOT NULL AUTO_INCREMENT COMMENT '评价ID',
+  `task_id` bigint NOT NULL COMMENT '任务ID',
+  `rater_id` bigint NOT NULL COMMENT '评价者ID',
+  `rated_id` bigint NOT NULL COMMENT '被评价者ID',
+  `rating` int NOT NULL COMMENT '评分(1-5)',
+  `comment` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NULL DEFAULT NULL COMMENT '评价内容',
+  `tags` json NULL COMMENT '评价标签(如: [\"准时\", \"高效\", \"友好\"])',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评价时间',
+  PRIMARY KEY (`rating_id`) USING BTREE,
+  UNIQUE INDEX `uk_task_rater`(`task_id` ASC, `rater_id` ASC) USING BTREE,
+  INDEX `idx_rated_id`(`rated_id` ASC) USING BTREE,
+  INDEX `idx_created_at`(`created_at` ASC) USING BTREE,
+  INDEX `fk_task_rating_rater`(`rater_id` ASC) USING BTREE,
+  CONSTRAINT `fk_task_rating_rated` FOREIGN KEY (`rated_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_task_rating_rater` FOREIGN KEY (`rater_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `fk_task_rating_task` FOREIGN KEY (`task_id`) REFERENCES `task` (`t_id`) ON DELETE CASCADE ON UPDATE RESTRICT,
+  CONSTRAINT `chk_rating_value` CHECK (`rating` between 1 and 5)
+) ENGINE = InnoDB CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '任务评价表' ROW_FORMAT = Dynamic;
+
+-- ----------------------------
+-- Records of task_rating
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for user
@@ -680,6 +756,8 @@ CREATE TABLE `user`  (
   `role` enum('student','teacher','admin') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'student' COMMENT '角色',
   `points` int NOT NULL DEFAULT 0 COMMENT '积分',
   `level` int NOT NULL DEFAULT 1 COMMENT '等级',
+  `credit_score` decimal(3, 1) NULL DEFAULT 5.0 COMMENT '信用评分(0.0-5.0)',
+  `rating_count` int NULL DEFAULT 0 COMMENT '被评价次数',
   `status` tinyint NOT NULL DEFAULT 1 COMMENT '状态：0-禁用，1-正常',
   `is_verified` tinyint NOT NULL DEFAULT 0 COMMENT '是否实名认证：0-否，1-是',
   `last_login_time` datetime NULL DEFAULT NULL COMMENT '最后登录时间',
@@ -692,44 +770,47 @@ CREATE TABLE `user`  (
   INDEX `idx_school_id`(`school_id` ASC) USING BTREE,
   INDEX `idx_status`(`status` ASC) USING BTREE,
   CONSTRAINT `fk_user_school` FOREIGN KEY (`school_id`) REFERENCES `school` (`school_id`) ON DELETE SET NULL ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 49 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 52 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = '用户表' ROW_FORMAT = Dynamic;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
-INSERT INTO `user` VALUES (1, 'admin', '系统管理员', 'admin@campuslink.com', '13800000000', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, NULL, NULL, NULL, NULL, 'admin', 10000, 10, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (2, 'zhangsan', '张三', 'zhangsan@example.com', '13800000001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2021001', NULL, '计算机科学与技术', 2021, 'student', 525, 3, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (3, 'lisi', '李四', 'lisi@example.com', '13800000002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2021002', NULL, '软件工程', 2021, 'student', 330, 2, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (4, 'wangwu', '王五', 'wangwu@example.com', '13800000003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2020001', NULL, '电子信息工程', 2020, 'student', 806, 5, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (5, 'zhaoliu', '赵六', 'zhaoliu@example.com', '13800000004', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2022001', NULL, '数据科学与大数据技术', 2022, 'student', 232, 1, 1, 0, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (6, 'sunqi', '孙七', 'sunqi@example.com', '13800000005', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2019001', NULL, '人工智能', 2019, 'student', 1224, 8, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
-INSERT INTO `user` VALUES (18, 'task_publisher_007', '任务发布者', 'publisher@campuslink.com', '13800010005', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 90, 1, 1, 0, NULL, '2025-11-08 19:40:34', '2025-11-08 19:40:34');
-INSERT INTO `user` VALUES (19, 'task_accepter_007', '任务接单者', 'acceter@campuslink.com', '13800000302', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 105, 1, 1, 0, NULL, '2025-11-08 19:40:50', '2025-11-08 19:40:50');
-INSERT INTO `user` VALUES (20, 'club_creator_001', '社团创建者001', 'creator001@campuslink.com', '13900001001', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 20:14:16', '2025-11-08 20:14:16');
-INSERT INTO `user` VALUES (21, 'club_member_002', '社团成员002', 'member002@campuslink.com', '13900001002', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 20:14:28', '2025-11-08 20:14:28');
-INSERT INTO `user` VALUES (22, 'club_member_003', '社团成员003', 'member003@campuslink.com', '13900001003', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 20:17:14', '2025-11-08 20:17:14');
-INSERT INTO `user` VALUES (23, 'user_test_001', '新昵称', 'user001@campuslink.com', '13900000002', 'e10adc3949ba59abbe56e057f20f883e', 'https://example.com/new-avatar.jpg', '2021001001', NULL, '计算机科学与技术', 2021, 'student', 90, 1, 1, 0, NULL, '2025-11-08 20:26:31', '2025-11-08 20:26:52');
-INSERT INTO `user` VALUES (24, 'user_test_002', '测试用户002', 'user002@campuslink.com', '13900000003', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 110, 1, 1, 0, NULL, '2025-11-08 20:27:23', '2025-11-08 20:27:23');
-INSERT INTO `user` VALUES (25, 'message_user_001', '消息测试用户1', 'message_user1@test.com', '13900000001', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 20:58:59', '2025-11-08 20:58:59');
-INSERT INTO `user` VALUES (26, 'message_user_002', '消息测试用户2', 'message_user2@test.com', '13830000002', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 20:59:12', '2025-11-08 20:59:12');
-INSERT INTO `user` VALUES (27, 'report_user_001', '举报测试用户', 'report_user@test.com', '13800000010', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 21:01:07', '2025-11-08 21:01:07');
-INSERT INTO `user` VALUES (28, 'report_admin_001', '举报管理员', 'report_admin@test.com', '13800000011', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'admin', 100, 1, 1, 0, NULL, '2025-11-08 21:01:19', '2025-11-08 21:01:19');
-INSERT INTO `user` VALUES (29, 'notify_user_001', '通知测试用户1', 'notify001@campus.com', '13800000021', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 21:14:37', '2025-11-08 21:14:37');
-INSERT INTO `user` VALUES (30, 'notify_user_002', '通知测试用户2', 'notify002@campus.com', '13800000022', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 21:14:54', '2025-11-08 21:14:54');
-INSERT INTO `user` VALUES (31, 'notify_user_003', '通知测试用户3', 'notify003@campus.com', '13800000023', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-08 21:15:05', '2025-11-08 21:15:05');
-INSERT INTO `user` VALUES (32, 'notify_admin', '通知管理员', 'notifyadmin@campus.com', '13800000024', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 1, 0, NULL, '2025-11-08 21:15:16', '2025-11-08 21:15:16');
-INSERT INTO `user` VALUES (37, 'resource_user_001', '资源上传者1', 'resource001@campus.com', '13900000031', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 103, 1, 1, 0, NULL, '2025-11-09 13:09:31', '2025-11-09 13:09:31');
-INSERT INTO `user` VALUES (38, 'resource_user_002', '资源下载者1', 'resource002@campus.com', '13900000032', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 79, 1, 1, 0, NULL, '2025-11-09 13:09:45', '2025-11-09 13:09:45');
-INSERT INTO `user` VALUES (39, 'resource_user_003', '资源下载者2', 'resource003@campus.com', '13900000033', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 13:10:04', '2025-11-09 13:10:04');
-INSERT INTO `user` VALUES (40, 'resource_admin', '资源管理员', 'resadmin@campus.com', '13900000034', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 1, 0, NULL, '2025-11-09 13:10:16', '2025-11-09 13:10:16');
-INSERT INTO `user` VALUES (41, 'school_admin', '学校管理员', 'schooladmin@campus.com', '13900000041', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 1, 0, NULL, '2025-11-09 13:36:52', '2025-11-09 13:36:52');
-INSERT INTO `user` VALUES (42, 'school_user_001', '普通用户', 'schooluser@campus.com', '13900000042', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 13:37:01', '2025-11-09 13:37:01');
-INSERT INTO `user` VALUES (43, 'comment_user_001', '评论测试用户1', 'comment001@campus.com', '13900030041', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 14:05:50', '2025-11-09 14:05:50');
-INSERT INTO `user` VALUES (44, 'comment_user_002', '评论测试用户2', 'comment002@campus.com', '13900020042', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 14:06:10', '2025-11-09 14:06:10');
-INSERT INTO `user` VALUES (45, 'comment_user_003', '评论测试用户3', 'comment003@campus.com', '13900100043', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 14:06:24', '2025-11-09 14:06:24');
-INSERT INTO `user` VALUES (46, 'config_admin', '配置管理员', 'configadmin@campus.com', '13900000051', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'admin', 100, 1, 1, 0, NULL, '2025-11-09 14:17:50', '2025-11-09 14:17:50');
-INSERT INTO `user` VALUES (47, 'config_user', '普通用户', 'configuser@campus.com', '13900000052', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 1, 0, NULL, '2025-11-09 14:18:04', '2025-11-09 14:18:04');
-INSERT INTO `user` VALUES (48, '2164601212', '2164601212', '2164601212@qq.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 1, 0, '2025-11-11 15:40:31', '2025-11-10 21:03:00', '2025-11-10 21:03:00');
+INSERT INTO `user` VALUES (1, 'admin', '系统管理员', 'admin@campuslink.com', '13800000000', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, NULL, NULL, NULL, NULL, 'admin', 10000, 10, 5.0, 0, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (2, 'zhangsan', '张三', 'zhangsan@example.com', '13800000001', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2021001', NULL, '计算机科学与技术', 2021, 'student', 535, 3, 5.0, 0, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (3, 'lisi', '李四', 'lisi@example.com', '13800000002', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2021002', NULL, '软件工程', 2021, 'student', 346, 2, 5.0, 0, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (4, 'wangwu', '王五', 'wangwu@example.com', '13800000003', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2020001', NULL, '电子信息工程', 2020, 'student', 806, 5, 5.0, 0, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (5, 'zhaoliu', '赵六', 'zhaoliu@example.com', '13800000004', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2022001', NULL, '数据科学与大数据技术', 2022, 'student', 238, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (6, 'sunqi', '孙七', 'sunqi@example.com', '13800000005', '$2a$10$N.zmdr9k7uOCQb376NoUnuTJ8iAt6Z5EHsM8lE9lBOsl7iAt6Z5EH', NULL, '2019001', NULL, '人工智能', 2019, 'student', 1224, 8, 5.0, 0, 1, 1, NULL, '2025-11-08 19:09:44', '2025-11-08 19:09:44');
+INSERT INTO `user` VALUES (18, 'task_publisher_007', '任务发布者', 'publisher@campuslink.com', '13800010005', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 95, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 19:40:34', '2025-11-08 19:40:34');
+INSERT INTO `user` VALUES (19, 'task_accepter_007', '任务接单者', 'acceter@campuslink.com', '13800000302', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 105, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 19:40:50', '2025-11-08 19:40:50');
+INSERT INTO `user` VALUES (20, 'club_creator_001', '社团创建者001', 'creator001@campuslink.com', '13900001001', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:14:16', '2025-11-08 20:14:16');
+INSERT INTO `user` VALUES (21, 'club_member_002', '社团成员002', 'member002@campuslink.com', '13900001002', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:14:28', '2025-11-08 20:14:28');
+INSERT INTO `user` VALUES (22, 'club_member_003', '社团成员003', 'member003@campuslink.com', '13900001003', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:17:14', '2025-11-08 20:17:14');
+INSERT INTO `user` VALUES (23, 'user_test_001', '新昵称', 'user001@campuslink.com', '13900000002', 'e10adc3949ba59abbe56e057f20f883e', 'https://example.com/new-avatar.jpg', '2021001001', NULL, '计算机科学与技术', 2021, 'student', 90, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:26:31', '2025-11-08 20:26:52');
+INSERT INTO `user` VALUES (24, 'user_test_002', '测试用户002', 'user002@campuslink.com', '13900000003', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 110, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:27:23', '2025-11-08 20:27:23');
+INSERT INTO `user` VALUES (25, 'message_user_001', '消息测试用户1', 'message_user1@test.com', '13900000001', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:58:59', '2025-11-08 20:58:59');
+INSERT INTO `user` VALUES (26, 'message_user_002', '消息测试用户2', 'message_user2@test.com', '13830000002', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 20:59:12', '2025-11-08 20:59:12');
+INSERT INTO `user` VALUES (27, 'report_user_001', '举报测试用户', 'report_user@test.com', '13800000010', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:01:07', '2025-11-08 21:01:07');
+INSERT INTO `user` VALUES (28, 'report_admin_001', '举报管理员', 'report_admin@test.com', '13800000011', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'admin', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:01:19', '2025-11-08 21:01:19');
+INSERT INTO `user` VALUES (29, 'notify_user_001', '通知测试用户1', 'notify001@campus.com', '13800000021', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:14:37', '2025-11-08 21:14:37');
+INSERT INTO `user` VALUES (30, 'notify_user_002', '通知测试用户2', 'notify002@campus.com', '13800000022', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:14:54', '2025-11-08 21:14:54');
+INSERT INTO `user` VALUES (31, 'notify_user_003', '通知测试用户3', 'notify003@campus.com', '13800000023', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:15:05', '2025-11-08 21:15:05');
+INSERT INTO `user` VALUES (32, 'notify_admin', '通知管理员', 'notifyadmin@campus.com', '13800000024', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-08 21:15:16', '2025-11-08 21:15:16');
+INSERT INTO `user` VALUES (37, 'resource_user_001', '资源上传者1', 'resource001@campus.com', '13900000031', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 103, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:09:31', '2025-11-09 13:09:31');
+INSERT INTO `user` VALUES (38, 'resource_user_002', '资源下载者1', 'resource002@campus.com', '13900000032', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 79, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:09:45', '2025-11-09 13:09:45');
+INSERT INTO `user` VALUES (39, 'resource_user_003', '资源下载者2', 'resource003@campus.com', '13900000033', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:10:04', '2025-11-09 13:10:04');
+INSERT INTO `user` VALUES (40, 'resource_admin', '资源管理员', 'resadmin@campus.com', '13900000034', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:10:16', '2025-11-09 13:10:16');
+INSERT INTO `user` VALUES (41, 'school_admin', '学校管理员', 'schooladmin@campus.com', '13900000041', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'teacher', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:36:52', '2025-11-09 13:36:52');
+INSERT INTO `user` VALUES (42, 'school_user_001', '普通用户', 'schooluser@campus.com', '13900000042', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, NULL, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 13:37:01', '2025-11-09 13:37:01');
+INSERT INTO `user` VALUES (43, 'comment_user_001', '评论测试用户1', 'comment001@campus.com', '13900030041', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 14:05:50', '2025-11-09 14:05:50');
+INSERT INTO `user` VALUES (44, 'comment_user_002', '评论测试用户2', 'comment002@campus.com', '13900020042', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 14:06:10', '2025-11-09 14:06:10');
+INSERT INTO `user` VALUES (45, 'comment_user_003', '评论测试用户3', 'comment003@campus.com', '13900100043', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 14:06:24', '2025-11-09 14:06:24');
+INSERT INTO `user` VALUES (46, 'config_admin', '配置管理员', 'configadmin@campus.com', '13900000051', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'admin', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 14:17:50', '2025-11-09 14:17:50');
+INSERT INTO `user` VALUES (47, 'config_user', '普通用户', 'configuser@campus.com', '13900000052', 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 100, 1, 5.0, 0, 1, 0, NULL, '2025-11-09 14:18:04', '2025-11-09 14:18:04');
+INSERT INTO `user` VALUES (48, '2164601212', '2164601212', '2164601212@qq.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 110, 1, 5.0, 0, 1, 0, '2025-11-13 16:53:15', '2025-11-10 21:03:00', '2025-11-13 15:18:11');
+INSERT INTO `user` VALUES (49, '2164601202', '2164601202', '2164601202@qq.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 120, 1, 5.0, 0, 1, 0, NULL, '2025-11-12 21:12:30', '2025-11-13 15:17:28');
+INSERT INTO `user` VALUES (50, '216', '216', '216@qq.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 110, 1, 5.0, 0, 1, 0, NULL, '2025-11-13 15:21:56', '2025-11-13 15:22:00');
+INSERT INTO `user` VALUES (51, '121', '121', '121@qq.com', NULL, 'e10adc3949ba59abbe56e057f20f883e', NULL, NULL, 1, NULL, NULL, 'student', 110, 1, 5.0, 0, 1, 0, '2025-11-13 15:31:06', '2025-11-13 15:29:43', '2025-11-13 15:29:46');
 
 -- ----------------------------
 -- View structure for v_hot_tags

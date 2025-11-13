@@ -74,7 +74,7 @@ const tasks = ref<Task[]>([
   },
   {
     id: 3,
-    icon: '✅',
+    icon: '🎯',
     name: '每日签到',
     reward: 2,
     action: 'checkin',

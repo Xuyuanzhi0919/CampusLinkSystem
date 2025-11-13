@@ -1,17 +1,16 @@
 <template>
-  <view class="campus-notice" :class="{ collapsed: isCollapsed }">
-    <!-- 标题（可折叠） -->
-    <view class="card-header" @click="toggleCollapse">
-      <view class="header-left">
-        <text class="card-title">校园公告</text>
-        <text v-if="isCollapsed && notices.length > 0" class="notice-badge">{{ notices.length }} 条</text>
-      </view>
-      <text class="toggle-icon">{{ isCollapsed ? '▼' : '▲' }}</text>
-    </view>
-
-    <!-- 公告列表（可折叠） -->
-    <view v-if="!isCollapsed" class="card-content">
-      <view class="notice-list">
+  <StatusCardWrapper
+    title="校园公告"
+    :status="cardStatus"
+    card-type="notice"
+    :badge="notices.length > 0 ? notices.length + ' 条' : ''"
+    :skeleton-count="3"
+    @login="handleLoginClick"
+    @retry="loadNoticeData"
+    @empty-action="goToNoticeList"
+    @view-all="goToNoticeList"
+  >
+    <view class="notice-list">
       <view
         v-for="notice in notices"
         :key="notice.id"
@@ -36,23 +35,20 @@
         </view>
       </view>
     </view>
-    </view>
-  </view>
+  </StatusCardWrapper>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-
-// 折叠状态
-const isCollapsed = ref(true) // 默认折叠
-
-/**
- * 切换折叠状态
- */
-const toggleCollapse = () => {
-  isCollapsed.value = !isCollapsed.value
-}
+import { ref, onMounted, onUnmounted } from 'vue'
+import config from '@/config'
+import StatusCardWrapper from '@/components/StatusCardWrapper.vue'
 import { getMyNotifications } from '@/services/notification'
+import type { CardStatus } from '@/components/StatusCardWrapper.vue'
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
+import { retryAsync, RetryPresets } from '@/utils/retry'
+
+// 🎯 卡片状态管理
+const cardStatus = ref<CardStatus>('loading')
 
 // Props & Emits
 const emit = defineEmits<{
@@ -102,23 +98,91 @@ const getNoticeIcon = (type: string) => {
 }
 
 /**
- * 加载校园公告数据
+ * 🎯 检查登录状态
  */
-const loadNoticeData = async () => {
+const checkAuthStatus = () => {
+  const token = uni.getStorageSync(config.tokenKey)
+  return !!token
+}
+
+/**
+ * 🎯 处理登录按钮点击
+ */
+const handleLoginClick = () => {
+  uni.navigateTo({
+    url: '/pages/auth/login',
+    fail: () => {
+      uni.showToast({ title: '请先登录', icon: 'none' })
+    }
+  })
+}
+
+/**
+ * 加载校园公告数据（带缓存）
+ */
+const loadNoticeData = async (forceRefresh = false) => {
+  // 🎯 检查登录状态
+  if (!checkAuthStatus()) {
+    cardStatus.value = 'unauth'
+    return
+  }
+
+  // 🎯 尝试从缓存加载
+  if (!forceRefresh) {
+    const cached = cache.get<Notice[]>(CACHE_KEYS.NOTICES)
+    if (cached) {
+      console.log('[CampusNotice] 使用缓存数据')
+      notices.value = cached
+      cardStatus.value = cached.length === 0 ? 'empty' : 'normal'
+
+      // 🎯 后台静默刷新（缓存即将过期时）
+      const ttl = cache.getTTL(CACHE_KEYS.NOTICES)
+      if (ttl < CACHE_TTL.SHORT) {
+        console.log('[CampusNotice] 缓存即将过期，后台刷新')
+        loadNoticeData(true) // 静默刷新，不阻塞 UI
+      }
+      return
+    }
+  }
+
+  cardStatus.value = 'loading'
+
   try {
-    const res = await getMyNotifications({ type: 'system', page: 1, pageSize: 5 })
+    // 🎯 带重试的请求（最多重试 3 次）
+    const res = await retryAsync(
+      () => getMyNotifications({ type: 'system', page: 1, pageSize: 5 }),
+      {
+        ...RetryPresets.STANDARD,
+        onRetry: (attempt, delay) => {
+          console.log(`[CampusNotice] 第 ${attempt} 次重试，延迟 ${delay}ms`)
+        }
+      }
+    )
+
     const list = res?.list || res?.records || []
 
     notices.value = list.map((item: any) => ({
       id: item.notificationId,
-      icon: getNoticeIcon(item.type),
+      icon: getNoticeIcon(item.notifyType),
       title: item.title,
       time: formatTime(item.createdAt),
-      important: item.type === 'system' || item.priority === 'high'
+      important: item.notifyType === 'system' || item.priority === 'high'
     }))
+
+    // 🎯 缓存数据（5 分钟）
+    cache.set(CACHE_KEYS.NOTICES, notices.value, CACHE_TTL.MEDIUM)
+
+    // 🎯 判断是否为空数据
+    if (notices.value.length === 0) {
+      cardStatus.value = 'empty'
+    } else {
+      cardStatus.value = 'normal'
+    }
   } catch (error) {
-    console.error('加载校园公告失败:', error)
+    console.error('加载校园公告失败（已重试 3 次）:', error)
     notices.value = []
+    // 🎯 设置为错误状态
+    cardStatus.value = 'error'
   }
 }
 
@@ -141,142 +205,74 @@ const handleNoticeClick = (notice: Notice) => {
   emit('noticeClick', notice)
 }
 
-// 组件挂载时加载数据
+/**
+ * 🎯 企业级事件总线：监听登录事件
+ */
+const handleUserLogin = () => {
+  console.log('[CampusNotice] 监听到用户登录事件，刷新公告数据')
+  loadNoticeData()
+}
+
+/**
+ * 🎯 企业级事件总线：监听退出登录事件
+ */
+const handleUserLogout = () => {
+  console.log('[CampusNotice] 监听到用户退出登录事件，切换到未登录状态')
+  notices.value = []
+  cardStatus.value = 'unauth'
+
+  // 🎯 清除缓存
+  cache.remove(CACHE_KEYS.NOTICES)
+}
+
+// 组件挂载时加载数据并注册事件监听
 onMounted(() => {
   loadNoticeData()
+
+  // 🎯 注册全局事件监听
+  uni.$on('user-login', handleUserLogin)
+  uni.$on('user-logout', handleUserLogout)
+})
+
+// 组件卸载时清理事件监听
+onUnmounted(() => {
+  // 🎯 清理全局事件监听，防止内存泄漏
+  uni.$off('user-login', handleUserLogin)
+  uni.$off('user-logout', handleUserLogout)
 })
 </script>
 
 <style scoped lang="scss">
-/* 企业级重构：白卡 - 0 4px 16px rgba(0,0,0,0.04) + fade-up 入场动画 */
-.campus-notice {
-  background: #FFFFFF; /* 纯白卡 */
-  border: 1px solid #EEF1F6; /* 浅灰边框 */
-  border-radius: 32rpx; /* 16px */
-  padding: 48rpx; /* 24px - 增加内边距，呼吸感更强 */
-  height: auto;
-  min-height: 480rpx; /* 最小 240px */
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.04); /* 0 4px 16px - 让卡片"浮起来" */
-  transition: all var(--transition-hover, 150ms ease);
-  position: relative;
-  overflow: hidden;
-  animation: fadeInUp 450ms ease-out both; /* fade-up 入场动画，延迟 50ms */
-  animation-delay: 50ms;
-
-  /* 折叠态 */
-  &.collapsed {
-    padding: 24rpx 48rpx; /* 保持左右内边距 */
-    height: 96rpx; /* 48px - 增加高度 */
-    min-height: auto;
-  }
-}
-
-/* fade-up 入场动画 */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(40rpx); /* 20px */
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 文档规范：移除渐变背景，只保留 Hover 阴影增强 */
-.campus-notice:hover {
-  transform: translateY(-4rpx);
-  box-shadow: 0 12rpx 32rpx rgba(30, 95, 255, 0.12);
-  border-color: #1E5FFF;
-}
-
-/* 卡片头部 */
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0;
-  cursor: pointer;
-  user-select: none;
-}
-
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.notice-badge {
-  font-size: 24rpx;
-  color: #F59E0B;
-  font-weight: 600;
-  padding: 4rpx 12rpx;
-  background: rgba(245, 158, 11, 0.1);
-  border-radius: 12rpx;
-}
-
-.toggle-icon {
-  font-size: 24rpx;
-  color: #8F959E;
-  transition: transform 0.3s;
-}
-
-.card-content {
-  margin-top: 24rpx;
-  animation: slideDown 0.3s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.card-title {
-  font-size: 32rpx; /* 16px - 副标题规范 */
-  font-weight: 700;
-  color: #1D1D1F;
-  line-height: 1.6; /* 优化行高 */
-  position: relative;
-  padding-left: 20rpx; /* 为左侧条带留空间 */
-
-  /* 优化：增加橙色条带 */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6rpx; /* 3px */
-    height: 32rpx; /* 16px */
-    background: #F59E0B; /* 橙色 */
-    border-radius: 3rpx;
-  }
-}
-
-.more-link {
-  font-size: 24rpx;
-  color: #1E5FFF;
-  cursor: pointer;
-  line-height: 1;
-  transition: all 0.2s ease;
-}
-
-.more-link:hover {
-  color: #5A7FFF;
-}
+/* ========== 业务内容样式 ========== */
 
 /* 公告列表 */
 .notice-list {
   flex: 1;
   overflow-y: auto;
+
+  /* 🎨 优化滚动条样式 - WebKit 浏览器（Chrome, Safari, Edge） */
+  &::-webkit-scrollbar {
+    width: 6px; /* 滚动条宽度 */
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; /* 轨道透明 */
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15); /* 滑块颜色 - 浅灰色 */
+    border-radius: 3px;
+    transition: background 0.2s ease;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25); /* hover 时加深 */
+  }
+
+  /* 🎨 Firefox 滚动条样式 */
+  scrollbar-width: thin; /* 细滚动条 */
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent; /* 滑块颜色 轨道颜色 */
 }
 
 .notice-item {
@@ -362,4 +358,3 @@ onMounted(() => {
   line-height: 1;
 }
 </style>
-

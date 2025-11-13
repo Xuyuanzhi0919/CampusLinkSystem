@@ -33,21 +33,21 @@ public class StatsService {
     private final TaskMapper taskMapper;
 
     /**
-     * 获取今日活跃统计
-     * 使用缓存，10分钟过期
+     * 获取平台数据统计
+     * 包含：注册用户总数、今日新增问答、今日资源上传
+     * 使用缓存，缓存键包含日期，10分钟过期
      *
-     * @return 今日统计数据
+     * @return 平台统计数据
      */
-    @Cacheable(value = "todayStats", key = "'today'", unless = "#result == null")
+    @Cacheable(value = "todayStats", key = "T(java.time.LocalDate).now().toString()", unless = "#result == null")
     public TodayStatsResponse getTodayStats() {
         // 获取今天的开始和结束时间
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
 
-        // 统计今日活跃用户数（今日登录过的用户）
+        // 统计注册用户总数（改为显示平台规模，而非今日登录数）
         LambdaQueryWrapper<User> userWrapper = new LambdaQueryWrapper<>();
-        userWrapper.ge(User::getLastLoginTime, startOfDay);
-        userWrapper.le(User::getLastLoginTime, endOfDay);
+        userWrapper.eq(User::getStatus, 1); // 只统计正常状态的用户
         Integer activeUsers = Math.toIntExact(userMapper.selectCount(userWrapper));
 
         // 统计今日新增问题数
@@ -80,7 +80,7 @@ public class StatsService {
         response.setNewTasks(newTasks);
         response.setActivityParticipants(activityParticipants);
 
-        log.info("今日统计 - 活跃用户: {}, 新增问答: {}, 资源上传: {}, 新增任务: {}",
+        log.info("今日统计 - 注册用户: {}, 新增问答: {}, 资源上传: {}, 新增任务: {}",
                 activeUsers, newQuestions, newResources, newTasks);
 
         return response;

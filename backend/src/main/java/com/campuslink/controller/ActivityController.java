@@ -41,9 +41,10 @@ public class ActivityController {
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long clubId,
+            @RequestParam(required = false) Integer status,
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId);
+        PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId, status);
         return Result.success(result);
     }
 

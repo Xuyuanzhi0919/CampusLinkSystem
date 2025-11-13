@@ -31,3 +31,24 @@ export const updateUserProfile = (data: any) => {
 export const changePassword = (data: { oldPassword: string; newPassword: string }) => {
   return request.put('/user/password', data)
 }
+
+/**
+ * 获取签到状态
+ */
+export const getCheckInStatus = () => {
+  return request.get<boolean>('/user/check-in/status')
+}
+
+/**
+ * 每日签到
+ */
+export const dailyCheckIn = () => {
+  return request.post<{
+    success: boolean
+    message: string
+    pointsEarned: number
+    totalPoints: number
+    consecutiveDays: number
+    checkInTime: string
+  }>('/user/check-in')
+}

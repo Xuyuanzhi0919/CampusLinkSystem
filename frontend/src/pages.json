@@ -25,13 +25,6 @@
 			}
 		},
 		{
-			"path": "pages/user/index",
-			"style": {
-				"navigationBarTitleText": "个人中心",
-				"navigationBarBackgroundColor": "#FFFFFF"
-			}
-		},
-		{
 			"path": "pages/recommend/index",
 			"style": {
 				"navigationBarTitleText": "全部推荐",
@@ -46,10 +39,18 @@
 			}
 		},
 		{
-			"path": "pages/task/detail",
+			"path": "pages/club/activity-detail",
 			"style": {
-				"navigationBarTitleText": "任务详情",
-				"navigationStyle": "custom"
+				"navigationBarTitleText": "活动详情",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/list",
+			"style": {
+				"navigationBarTitleText": "全部活动",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true
 			}
 		}
 	],
@@ -79,10 +80,6 @@
 			{
 				"pagePath": "pages/question/index",
 				"text": "问答"
-			},
-			{
-				"pagePath": "pages/user/index",
-				"text": "我的"
 			}
 		]
 	}

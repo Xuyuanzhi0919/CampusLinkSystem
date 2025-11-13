@@ -7,6 +7,7 @@ import type { PageResult } from '@/types/api'
 
 /**
  * 获取活动列表
+ * @description 🎯 公开接口，无需登录即可浏览（但如果已登录会返回用户报名状态）
  */
 export const getActivityList = (params: {
   clubId?: number
@@ -19,6 +20,7 @@ export const getActivityList = (params: {
 
 /**
  * 获取活动详情
+ * @description 🎯 公开接口，无需登录即可查看（但如果已登录会返回用户报名状态）
  */
 export const getActivityDetail = (id: number) => {
   return request.get<any>(`/activity/${id}`)

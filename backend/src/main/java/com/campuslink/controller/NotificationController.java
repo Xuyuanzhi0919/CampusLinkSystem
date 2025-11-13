@@ -44,13 +44,14 @@ public class NotificationController {
     /**
      * 获取我的通知列表
      */
-    @Operation(summary = "获取我的通知列表", description = "分页获取当前用户的所有通知")
+    @Operation(summary = "获取我的通知列表", description = "分页获取当前用户的所有通知，支持按类型过滤")
     @GetMapping("/my")
     public Result<PageResult<NotificationResponse>> getMyNotifications(
             @RequestAttribute("userId") Long userId,
             @RequestParam(defaultValue = "1") Integer page,
-            @RequestParam(defaultValue = "10") Integer pageSize) {
-        PageResult<NotificationResponse> result = notificationService.getMyNotifications(userId, page, pageSize);
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String type) {
+        PageResult<NotificationResponse> result = notificationService.getMyNotifications(userId, page, pageSize, type);
         return Result.success(result);
     }
 

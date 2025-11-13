@@ -185,9 +185,12 @@
     <!-- 移动端折叠菜单 -->
     <view v-if="showMobileMenu" class="mobile-menu-overlay" @click="closeMobileMenu">
       <view class="mobile-menu-panel" @click.stop>
-        <!-- 菜单头部 -->
+        <!-- 菜单头部 - 优化: 品牌化设计 -->
         <view class="mobile-menu-header">
-          <text class="mobile-menu-title">菜单</text>
+          <view class="mobile-menu-brand">
+            <text class="mobile-menu-logo">CampusLink</text>
+            <text class="mobile-menu-subtitle">个人中心</text>
+          </view>
           <view class="mobile-menu-close" @click="closeMobileMenu">
             <text class="close-icon">×</text>
           </view>
@@ -220,34 +223,44 @@
               </view>
             </view>
 
+            <!-- 分组标题: 常用功能 -->
+            <view class="mobile-menu-section-title">常用功能</view>
+
             <!-- 签到 -->
-            <view class="mobile-menu-item" @click="handleCheckIn">
-              <text class="mobile-menu-item-icon">{{ isCheckedIn ? '✓' : '📅' }}</text>
+            <view class="mobile-menu-item menu-item-checkin" @click="handleCheckIn">
+              <text class="mobile-menu-item-icon icon-checkin">{{ isCheckedIn ? '✨' : '📅' }}</text>
               <text class="mobile-menu-item-text">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
               <text v-if="!isCheckedIn" class="mobile-menu-item-badge">+10积分</text>
+              <text v-if="isCheckedIn" class="mobile-menu-item-badge checked">已完成</text>
             </view>
 
             <!-- 发布 -->
-            <view class="mobile-menu-item" @click="handleMobilePublish">
-              <text class="mobile-menu-item-icon">✨</text>
-              <text class="mobile-menu-item-text">发布内容</text>
+            <view class="mobile-menu-item menu-item-publish" @click="handleMobilePublish">
+              <text class="mobile-menu-item-icon icon-publish">✨</text>
+              <text class="mobile-menu-item-text">我的发布</text>
             </view>
 
             <!-- 我的收藏 -->
-            <view class="mobile-menu-item" @click="handleMobileFavorites">
-              <text class="mobile-menu-item-icon">⭐</text>
+            <view class="mobile-menu-item menu-item-favorites" @click="handleMobileFavorites">
+              <text class="mobile-menu-item-icon icon-favorites">⭐</text>
               <text class="mobile-menu-item-text">我的收藏</text>
             </view>
 
+            <!-- 分组分割线 -->
+            <view class="mobile-menu-divider"></view>
+
+            <!-- 分组标题: 系统管理 -->
+            <view class="mobile-menu-section-title">系统管理</view>
+
             <!-- 设置 -->
-            <view class="mobile-menu-item" @click="handleMobileSettings">
-              <text class="mobile-menu-item-icon">⚙️</text>
+            <view class="mobile-menu-item menu-item-settings" @click="handleMobileSettings">
+              <text class="mobile-menu-item-icon icon-settings">⚙️</text>
               <text class="mobile-menu-item-text">设置</text>
             </view>
 
             <!-- 退出登录 -->
             <view class="mobile-menu-item mobile-menu-item-danger" @click="handleMobileLogout">
-              <text class="mobile-menu-item-icon">🚪</text>
+              <text class="mobile-menu-item-icon icon-logout">🚪</text>
               <text class="mobile-menu-item-text">退出登录</text>
             </view>
           </template>
@@ -266,6 +279,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from '@/components/UserDropdownMenu.vue'
 import PointsAnimation from '@/components/PointsAnimation.vue'
 import config from '@/config'
+import { dailyCheckIn, getCheckInStatus } from '@/services/user'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -285,6 +299,7 @@ const isVoiceActive = ref(false) // 语音搜索激活状态
 const isLoggedIn = ref(false)
 const showUserMenu = ref(false)
 const userInfo = ref({
+  userId: null as number | null,
   nickname: '',
   email: '',
   phone: '',
@@ -315,6 +330,7 @@ const checkLoginStatus = () => {
     try {
       const parsedUserInfo = JSON.parse(userInfoStr)
       userInfo.value = {
+        userId: parsedUserInfo.uId || parsedUserInfo.userId || parsedUserInfo.id || null,
         nickname: parsedUserInfo.nickname || '用户',
         email: parsedUserInfo.email || '',
         phone: parsedUserInfo.phone || '',
@@ -322,11 +338,17 @@ const checkLoginStatus = () => {
       }
       isLoggedIn.value = true
 
+      // 从后端同步签到状态
+      syncCheckInStatus()
+
       // 动画：登录按钮淡出，头像按钮淡入
       showLoginButton.value = false
       setTimeout(() => {
         showAvatarButton.value = true
       }, 200)
+
+      // 🎯 企业级事件总线：触发全局登录事件，通知所有监听组件刷新数据
+      uni.$emit('user-login', { userInfo: userInfo.value })
     } catch (error) {
       console.error('解析用户信息失败:', error)
       isLoggedIn.value = false
@@ -338,60 +360,105 @@ const checkLoginStatus = () => {
   }
 }
 
-// 检查今日是否已签到
+// 从后端同步签到状态
+const syncCheckInStatus = async () => {
+  try {
+    const isCheckedInToday = await getCheckInStatus()
+    isCheckedIn.value = isCheckedInToday
+
+    // 同时更新本地存储，保持一致性
+    const userId = userInfo.value.userId
+    if (userId) {
+      const storageKey = `lastCheckInDate_${userId}`
+      const today = new Date().toDateString()
+
+      if (isCheckedInToday) {
+        uni.setStorageSync(storageKey, today)
+      } else {
+        uni.removeStorageSync(storageKey)
+      }
+    }
+  } catch (error) {
+    console.error('同步签到状态失败:', error)
+    // 如果同步失败，回退到本地检查
+    checkTodayCheckIn()
+  }
+}
+
+// 检查今日是否已签到（本地检查，作为备用方案）
 const checkTodayCheckIn = () => {
-  const lastCheckInDate = uni.getStorageSync('lastCheckInDate')
+  // 使用用户专属的存储键
+  const userId = userInfo.value.userId
+  if (!userId) {
+    isCheckedIn.value = false
+    return
+  }
+
+  const storageKey = `lastCheckInDate_${userId}`
+  const lastCheckInDate = uni.getStorageSync(storageKey)
   const today = new Date().toDateString()
   isCheckedIn.value = lastCheckInDate === today
 }
 
 // 签到处理
-const handleCheckIn = (event: any) => {
+const handleCheckIn = async (event: any) => {
   if (isCheckedIn.value) {
     uni.showToast({ title: '今日已签到', icon: 'none' })
     return
   }
 
-  // 执行签到
-  const today = new Date().toDateString()
-  uni.setStorageSync('lastCheckInDate', today)
-  isCheckedIn.value = true
+  try {
+    // 调用后端签到API
+    const response = await dailyCheckIn()
 
-  // 显示签到成功提示（精美动画）
-  showCheckInSuccess()
+    if (response.success) {
+      // 签到成功 - 使用用户专属的存储键
+      const userId = userInfo.value.userId
+      if (userId) {
+        const storageKey = `lastCheckInDate_${userId}`
+        const today = new Date().toDateString()
+        uni.setStorageSync(storageKey, today)
+      }
+      isCheckedIn.value = true
 
-  // 显示积分动画
-  // #ifdef H5
-  const rect = event.target.getBoundingClientRect()
-  pointsPosition.value = {
-    x: rect.left + rect.width / 2,
-    y: rect.top + rect.height / 2
+      // 显示签到成功提示（精美动画，已包含积分信息）
+      showCheckInSuccess(response.pointsEarned || 10, response.consecutiveDays || 1)
+
+      console.log('签到成功:', response)
+    } else {
+      // 今日已签到
+      uni.showToast({ title: response.message || '今日已签到', icon: 'none' })
+    }
+  } catch (error) {
+    console.error('签到失败:', error)
+    uni.showToast({ title: '签到失败，请稍后重试', icon: 'none' })
   }
-  // #endif
-
-  // #ifndef H5
-  pointsPosition.value = {
-    x: uni.getSystemInfoSync().windowWidth / 2,
-    y: 200
-  }
-  // #endif
-
-  pointsValue.value = 10
-  showPointsAnimation.value = true
 }
 
 // 显示签到成功提示
-const showCheckInSuccess = () => {
+const showCheckInSuccess = (points: number = 10, consecutiveDays: number = 1) => {
   // #ifdef H5
   const toastDiv = document.createElement('div')
+
+  // 连续签到天数提示
+  const streakText = consecutiveDays > 1
+    ? `<span style="
+        font-size: 13px;
+        font-weight: 500;
+        color: #F59E0B;
+        line-height: 1.4;
+        margin-top: 4px;
+      ">🔥 已连续签到 ${consecutiveDays} 天</span>`
+    : ''
 
   toastDiv.innerHTML = `
     <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
       <div class="check-in-icon-big" style="
-        font-size: 48px;
+        font-size: 64px;
         line-height: 1;
         animation: bounceIn 0.6s ease-out;
-      ">✓</div>
+        filter: drop-shadow(0 4px 12px rgba(16, 185, 129, 0.3));
+      ">🎉</div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
         <span style="
           font-size: 18px;
@@ -404,7 +471,8 @@ const showCheckInSuccess = () => {
           font-weight: 500;
           color: #6B7280;
           line-height: 1.4;
-        ">获得 10 积分</span>
+        ">获得 ${points} 积分</span>
+        ${streakText}
       </div>
     </div>
   `
@@ -461,8 +529,9 @@ const showCheckInSuccess = () => {
   // #endif
 
   // #ifndef H5
+  const streakText = consecutiveDays > 1 ? `，连续${consecutiveDays}天` : ''
   uni.showToast({
-    title: '签到成功！+10积分',
+    title: `签到成功！+${points}积分${streakText}`,
     icon: 'success',
     duration: 2000
   })
@@ -471,6 +540,12 @@ const showCheckInSuccess = () => {
 
 // 组件挂载时检查登录状态和签到状态
 onMounted(() => {
+  // 清理旧的全局存储键(兼容旧版本)
+  const oldKey = 'lastCheckInDate'
+  if (uni.getStorageSync(oldKey)) {
+    uni.removeStorageSync(oldKey)
+  }
+
   checkLoginStatus()
   checkTodayCheckIn()
 })
@@ -515,10 +590,20 @@ const handleMenuClick = (menuId: string) => {
 
 // 退出登录
 const handleLogout = () => {
+  // 清除用户专属的签到状态
+  const userId = userInfo.value.userId
+  if (userId) {
+    const storageKey = `lastCheckInDate_${userId}`
+    uni.removeStorageSync(storageKey)
+  }
+
   // 清除本地存储
   uni.removeStorageSync(config.tokenKey)
   uni.removeStorageSync(config.refreshTokenKey)
   uni.removeStorageSync(config.userInfoKey)
+
+  // 🎯 企业级事件总线：触发全局退出登录事件，通知所有监听组件清空数据
+  uni.$emit('user-logout')
 
   // 显示提示
   showWelcomeToast('已安全退出,期待下次再见!', 'info')
@@ -528,7 +613,9 @@ const handleLogout = () => {
   setTimeout(() => {
     showLoginButton.value = true
     isLoggedIn.value = false
+    isCheckedIn.value = false
     userInfo.value = {
+      userId: null,
       nickname: '',
       email: '',
       phone: '',
@@ -1827,22 +1914,22 @@ defineExpose({
   }
 }
 
-/* ========== 移动端折叠菜单样式 ========== */
+/* ========== 移动端折叠菜单样式 - 锦上添花优化 ========== */
 .mobile-menu-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6); /* 优化：提高遮罩不透明度，增强菜单与主页面区分 */
-  backdrop-filter: blur(8px); /* 优化：增加模糊度 */
-  -webkit-backdrop-filter: blur(8px);
-  z-index: 99999; /* 关键修复：大幅提高层级到99999，确保覆盖所有页面内容（包括"为你推荐"卡片）*/
+  background: rgba(0, 0, 0, 0.6);
+  /* 锦上添花: 增强背景模糊效果 backdrop-filter: blur(12px) */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 99999;
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
   animation: fadeIn 0.3s ease-out;
-  /* 关键修复：阻止触摸穿透 */
   pointer-events: auto;
   touch-action: none;
 }
@@ -1851,17 +1938,18 @@ defineExpose({
   width: 560rpx; /* 280px - 70% 屏幕宽度 */
   max-width: 85%;
   height: 100vh;
-  background: #FFFFFF;
-  box-shadow: -8rpx 0 32rpx rgba(0, 0, 0, 0.15);
+  /* 优化: 添加淡蓝到白渐变背景 */
+  background: linear-gradient(180deg, #F9FAFB 0%, #FFFFFF 100%);
+  box-shadow: -16rpx 0 48rpx rgba(0, 0, 0, 0.12); /* 优化: 增强阴影 */
   display: flex;
   flex-direction: column;
-  animation: slideInRight 0.3s ease-out;
-  /* 关键修复：确保菜单独立定位，不影响页面布局 */
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 优化: 更流畅的缓动 */
   position: relative;
-  z-index: 100000; /* 关键修复：菜单面板层级设为100000，高于遮罩层 */
-  /* 关键修复：启用硬件加速，优化滑动性能 */
+  z-index: 100000;
   transform: translateZ(0);
   will-change: transform;
+  /* 优化: 统一圆角 - 左上和左下圆角 */
+  border-radius: 24rpx 0 0 24rpx; /* 12px */
 }
 
 @keyframes slideInRight {
@@ -1875,31 +1963,64 @@ defineExpose({
   }
 }
 
-/* 菜单头部 */
+/* ==========  菜单头部 - 优化品牌化设计 ========== */
 .mobile-menu-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 40rpx 32rpx;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid rgba(100, 116, 139, 0.1); /* 优化: 更柔和的分割线 */
+  background: linear-gradient(180deg, rgba(232, 240, 255, 0.3) 0%, transparent 100%); /* 优化: 轻微蓝色渐变 */
 }
 
-.mobile-menu-title {
+/* 优化: 品牌区域 */
+.mobile-menu-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  position: relative;
+  padding-left: 16rpx;
+
+  /* 优化: 品牌色分割线 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6rpx; /* 3px */
+    background: linear-gradient(180deg, var(--cl-primary, #2563EB) 0%, rgba(37, 99, 235, 0.3) 100%);
+    border-radius: 3rpx;
+  }
+}
+
+.mobile-menu-logo {
   font-size: 36rpx; /* 18px */
   font-weight: 700;
-  color: #1D2129;
+  color: var(--cl-primary, #2563EB);
+  line-height: 1.2;
+  letter-spacing: 0.5rpx;
+}
+
+.mobile-menu-subtitle {
+  font-size: 24rpx; /* 12px */
+  font-weight: 500;
+  color: #64748B;
+  line-height: 1.2;
+  opacity: 0.9;
 }
 
 .mobile-menu-close {
-  width: 88rpx; /* 44px - 优化：扩大触摸区域，符合触摸规范 */
+  width: 88rpx; /* 44px */
   height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
+  background: rgba(100, 116, 139, 0.08); /* 优化: 浅灰底色 */
+  border: 2rpx solid rgba(100, 116, 139, 0.1); /* 优化: 线框风格 */
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .mobile-menu-close:active {
@@ -1921,32 +2042,56 @@ defineExpose({
   overflow-y: auto;
 }
 
-/* 用户信息卡片 */
+/* ==========  用户信息卡片 - 锦上添花优化 ========== */
 .mobile-user-card {
   display: flex;
   align-items: center;
-  gap: 28rpx; /* 优化：增加头像与信息的间距 */
-  padding: 36rpx; /* 优化：增加内边距，增强呼吸感 */
+  gap: 28rpx;
+  padding: 36rpx;
   margin: 0 24rpx 32rpx;
-  background: linear-gradient(135deg, #E8F0FF 0%, #F5F8FF 100%);
+  /* 锦上添花: 更柔和的180°渐变 */
+  background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 24rpx;
+  border: 2rpx solid rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2rpx 12rpx rgba(37, 99, 235, 0.08); /* 优化：添加轻微阴影 */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+
+  /* 微光效果 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:active::before {
+    opacity: 1;
+  }
 }
 
 .mobile-user-card:active {
-  transform: scale(0.98);
-  box-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.06); /* 优化：按下时减弱阴影 */
+  transform: scale(0.97);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
 .mobile-user-avatar {
-  width: 96rpx; /* 48px */
+  width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 4rpx solid rgba(255, 255, 255, 0.8); /* 优化：添加白色边框 */
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08); /* 优化：添加阴影，增强层次感 */
+  border: 4rpx solid rgba(255, 255, 255, 0.8);
+  /* 锦上添花: 增强头像阴影,提升空间感 */
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
 .mobile-user-avatar-default {
@@ -1981,72 +2126,207 @@ defineExpose({
 }
 
 .mobile-user-email {
-  font-size: 26rpx; /* 13px - 优化：略微增大字号 */
-  color: #86909C;
+  font-size: 26rpx;
+  color: #8B95A1; /* 锦上添花: 更浅的灰色,增强层次区分 */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: 1.4; /* 优化：增加行高 */
+  line-height: 1.4;
+  opacity: 0.85; /* 锦上添花: 降低不透明度 */
 }
 
-/* 菜单项 */
+/* ==========  分组标题 - 锦上添花优化 ========== */
+.mobile-menu-section-title {
+  position: relative;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #7B8190; /* 锦上添花: 更浅的灰色,增强轻量感 */
+  padding: 24rpx 48rpx 12rpx 56rpx; /* 锦上添花: 左侧增加空间给竖条 */
+  letter-spacing: 1rpx;
+  text-transform: uppercase;
+
+  /* 锦上添花: 添加左侧品牌蓝竖条 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 40rpx;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4rpx; /* 2px */
+    height: 28rpx; /* 14px */
+    background: linear-gradient(180deg, #3478F6 0%, rgba(52, 120, 246, 0.3) 100%);
+    border-radius: 2rpx;
+  }
+}
+
+/* ==========  分组分割线 ========== */
+.mobile-menu-divider {
+  height: 2rpx;
+  background: linear-gradient(90deg, transparent 0%, rgba(100, 116, 139, 0.12) 50%, transparent 100%);
+  margin: 20rpx 24rpx;
+}
+
+/* ==========  菜单项 - 锦上添花交互优化 ========== */
 .mobile-menu-item {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  min-height: 96rpx; /* 48px - 优化：固定最小高度，确保触摸区域充足 */
-  padding: 24rpx 48rpx; /* 优化：调整内边距，使高度为 48px */
+  gap: 20rpx;
+  min-height: 96rpx;
+  padding: 24rpx 48rpx;
+  margin: 0 16rpx;
+  border-radius: 24rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
+
+  /* 锦上添花: hover时添加浅蓝背景 #F5F8FF */
+  &:hover {
+    background: rgba(245, 248, 255, 0.6); /* #F5F8FF */
+  }
 }
 
 .mobile-menu-item:active {
-  background: rgba(0, 0, 0, 0.06); /* 优化：增强按下反馈 */
+  background: rgba(241, 245, 255, 0.8); /* #F1F5FF - 更深的按压反馈 */
+  transform: scale(0.98);
 }
 
 .mobile-menu-item-icon {
-  font-size: 40rpx; /* 20px */
+  font-size: 40rpx;
   line-height: 1;
   flex-shrink: 0;
-  width: 40rpx; /* 优化：固定图标宽度，保证对齐 */
+  width: 40rpx;
   text-align: center;
+  transition: transform 0.2s ease;
+  /* 锦上添花: 默认轻微上浮 */
+  transform: translateY(-1rpx);
+}
+
+/* 锦上添花: hover时图标回落 */
+.mobile-menu-item:hover .mobile-menu-item-icon {
+  transform: translateY(0);
+}
+
+.mobile-menu-item:active .mobile-menu-item-icon {
+  transform: scale(1.1); /* 按压时图标放大 */
 }
 
 .mobile-menu-item-text {
-  font-size: 30rpx; /* 15px */
+  font-size: 30rpx;
   font-weight: 500;
-  color: #1D2129;
+  color: #5E6472; /* 锦上添花: 稍深的灰色,增强可读性 */
   flex: 1;
-  line-height: 1.5; /* 优化：增加行高，垂直居中对齐 */
+  line-height: 1.5;
 }
 
 .mobile-menu-item-badge {
-  font-size: 24rpx; /* 12px */
+  font-size: 22rpx; /* 11px */
   font-weight: 600;
   color: #10B981;
-  padding: 6rpx 16rpx; /* 优化：增加内边距，更易识别 */
-  background: rgba(16, 185, 129, 0.12); /* 优化：增加背景不透明度 */
-  border-radius: 14rpx;
+  padding: 6rpx 16rpx;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 12rpx; /* 优化: 统一圆角 */
+  white-space: nowrap;
 }
 
-/* 优化："退出登录"样式 - 降低冲击感 */
+.mobile-menu-item-badge.checked {
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.15);
+  /* 锦上添花: 微光晕动画效果 */
+  box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.4);
+  animation: badge-glow 2s ease-in-out infinite;
+}
+
+/* 锦上添花: 徽章光晕脉动动画 */
+@keyframes badge-glow {
+  0%, 100% {
+    box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20rpx rgba(34, 197, 94, 0.6);
+  }
+}
+
+/* ==========  功能图标个性色 ========== */
+/* 签到 - 绿色 */
+.icon-checkin {
+  filter: grayscale(0.2);
+}
+
+.menu-item-checkin:active .icon-checkin {
+  filter: grayscale(0) brightness(1.2) hue-rotate(10deg);
+}
+
+/* 发布 - 蓝色 */
+.icon-publish {
+  filter: grayscale(0.3);
+}
+
+.menu-item-publish:active .icon-publish {
+  filter: grayscale(0) brightness(1.2);
+}
+
+/* 收藏 - 金黄色 */
+.icon-favorites {
+  filter: grayscale(0.2);
+}
+
+.menu-item-favorites:active .icon-favorites {
+  filter: grayscale(0) brightness(1.3) hue-rotate(15deg);
+}
+
+/* 设置 - 灰蓝色 */
+.icon-settings {
+  filter: grayscale(0.4);
+}
+
+.menu-item-settings:active .icon-settings {
+  filter: grayscale(0) brightness(1.1);
+}
+
+/* 退出 - 灰色 → 红色 */
+.icon-logout {
+  filter: grayscale(1) brightness(0.8);
+}
+
+.mobile-menu-item-danger:active .icon-logout {
+  filter: grayscale(0) brightness(1) hue-rotate(-10deg);
+}
+
+/* ==========  退出登录 - 锦上添花透明红描边风格 ========== */
 .mobile-menu-item-danger {
-  background: rgba(255, 77, 79, 0.04); /* 添加浅红色背景 */
-  margin: 16rpx 24rpx 0; /* 增加外边距，与其他选项区分 */
-  border-radius: 16rpx; /* 添加圆角 */
+  /* 锦上添花: 透明红渐变描边风格 */
+  background: rgba(255, 77, 79, 0.05);
+  margin: 16rpx 24rpx 24rpx;
+  border-radius: 24rpx;
+  border: 2rpx solid rgba(255, 77, 79, 0.3);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 锦上添花: hover效果 */
+  &:hover {
+    background: rgba(255, 77, 79, 0.08);
+    border-color: rgba(255, 77, 79, 0.4);
+  }
 }
 
 .mobile-menu-item-danger:active {
-  background: rgba(255, 77, 79, 0.08); /* 优化：按下时加深背景 */
+  background: rgba(255, 77, 79, 0.12);
+  border-color: rgba(255, 77, 79, 0.5);
+  transform: scale(0.98);
 }
 
 .mobile-menu-item-danger .mobile-menu-item-text {
-  color: #FF4D4F;
+  color: #FF4D4F; /* 锦上添花: 更鲜艳的红色 */
+  font-weight: 600; /* 锦上添花: 加粗文字 */
 }
 
 .mobile-menu-item-danger .mobile-menu-item-icon {
-  opacity: 0.85; /* 优化：略微提高不透明度 */
+  opacity: 0.9;
+  /* 锦上添花: 灰度处理,hover时恢复彩色 */
+  filter: grayscale(0.3);
+}
+
+.mobile-menu-item-danger:hover .mobile-menu-item-icon {
+  filter: grayscale(0);
 }
 </style>
 

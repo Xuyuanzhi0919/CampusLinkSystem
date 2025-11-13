@@ -137,11 +137,11 @@
     <!-- 优化：模块分割线 -->
     <view class="module-divider"></view>
 
-    <!-- 优化：今日活跃模块 -->
+    <!-- 优化：平台数据模块 -->
     <view class="today-active-card">
       <view class="card-header">
-        <text class="card-icon">📅</text>
-        <text class="card-title">今日活跃</text>
+        <text class="card-icon">📊</text>
+        <text class="card-title">平台数据</text>
       </view>
 
       <!-- 加载中状态 -->
@@ -159,15 +159,15 @@
       <!-- 正常数据展示 -->
       <view v-else class="stats-list">
         <view class="stat-item">
-          <text class="stat-label">活跃用户</text>
+          <text class="stat-label">注册用户</text>
           <text class="stat-value">{{ todayStats.activeUsers }}</text>
         </view>
         <view class="stat-item">
-          <text class="stat-label">新增问答</text>
+          <text class="stat-label">今日问答</text>
           <text class="stat-value">{{ todayStats.newQuestions }}</text>
         </view>
         <view class="stat-item">
-          <text class="stat-label">资源上传</text>
+          <text class="stat-label">今日上传</text>
           <text class="stat-value">{{ todayStats.newResources }}</text>
         </view>
       </view>

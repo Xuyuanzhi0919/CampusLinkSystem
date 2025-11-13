@@ -5,10 +5,10 @@
 import request from '@/utils/request'
 
 /**
- * 今日活跃统计响应类型
+ * 平台数据统计响应类型
  */
 export interface TodayStatsResponse {
-  activeUsers: number        // 今日活跃用户数
+  activeUsers: number        // 注册用户总数
   newQuestions: number        // 今日新增问答数
   newResources: number        // 今日资源上传数
   newTasks?: number           // 今日新增任务数（可选）
@@ -16,7 +16,7 @@ export interface TodayStatsResponse {
 }
 
 /**
- * 获取今日活跃统计
+ * 获取平台数据统计
  * 无需登录，游客可访问
  */
 export const getTodayStats = () => {

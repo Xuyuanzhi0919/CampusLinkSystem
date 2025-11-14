@@ -628,7 +628,7 @@ onUnmounted(() => {
   width: 12rpx;
   height: 12rpx;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.1); /* 从 0.15 降低到 0.1 - 视觉降噪 */
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
@@ -637,6 +637,7 @@ onUnmounted(() => {
   width: 32rpx;
   border-radius: 6rpx;
   background: linear-gradient(135deg, #FF6B00 0%, #FF8A3D 100%);
-  box-shadow: 0 2rpx 8rpx rgba(255, 107, 0, 0.3);
+  opacity: 0.85; /* 降低不透明度 - 视觉降噪 */
+  box-shadow: 0 2rpx 8rpx rgba(255, 107, 0, 0.25); /* 从 0.3 降低到 0.25 */
 }
 </style>

@@ -74,12 +74,17 @@
         </view>
       </view>
 
-      <!-- 状态：无数据 -->
+      <!-- 状态:无数据 -->
       <view v-else-if="status === 'empty'" class="state-container state-empty">
         <view class="state-icon">📭</view>
         <text class="state-title">{{ stateMessages.emptyTitle }}</text>
         <text class="state-desc">{{ stateMessages.emptyDesc }}</text>
-        <view v-if="stateMessages.emptyAction" class="state-action-btn secondary" @click="handleEmptyAction">
+        <view
+          v-if="stateMessages.emptyAction"
+          class="state-action-btn"
+          :class="{ 'primary': cardType === 'notice', 'secondary': cardType !== 'notice' }"
+          @click="handleEmptyAction"
+        >
           <text class="action-btn-text">{{ stateMessages.emptyAction }}</text>
         </view>
       </view>
@@ -278,20 +283,20 @@ const handleEmptyAction = () => {
   gap: 24rpx;
 }
 
-/* 查看全部按钮 */
+/* 查看全部按钮 - 统一风格 */
 .view-all-btn {
   display: flex;
   align-items: center;
   gap: 6rpx;
-  padding: 8rpx 20rpx;
-  background: rgba(37, 99, 235, 0.08);
+  padding: 8rpx 16rpx;
+  background: transparent; /* 移除背景 */
   border-radius: 20rpx;
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
 
   &:hover {
-    background: rgba(37, 99, 235, 0.15);
+    background: rgba(59, 130, 246, 0.08); /* hover时显示淡背景 */
     transform: translateX(2rpx);
   }
 
@@ -301,19 +306,25 @@ const handleEmptyAction = () => {
 }
 
 .view-all-text {
-  font-size: 24rpx;
+  font-size: 26rpx; /* 从24rpx增加到26rpx (13px) */
   font-weight: 500;
-  color: var(--cl-primary, #2563EB);
+  color: #86909C; /* 默认灰色 */
   line-height: 1;
+  transition: color 0.2s ease;
+}
+
+.view-all-btn:hover .view-all-text {
+  color: #3B82F6; /* hover时变主色蓝 */
 }
 
 .view-all-icon {
   font-size: 24rpx;
-  color: var(--cl-primary, #2563EB);
+  color: #86909C; /* 默认灰色，与文字一致 */
   line-height: 1;
-  transition: transform 0.2s ease;
+  transition: all 0.2s ease;
 
   .view-all-btn:hover & {
+    color: #3B82F6; /* hover时变主色蓝 */
     transform: translateX(2rpx);
   }
 }
@@ -377,7 +388,7 @@ const handleEmptyAction = () => {
   align-items: center;
   justify-content: center;
   min-height: 320rpx; /* 160px */
-  padding: 48rpx 32rpx;
+  padding: 48rpx 32rpx 48rpx; /* 统一底部留白24px */
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -453,11 +464,21 @@ const handleEmptyAction = () => {
   }
 
   &.secondary {
-    background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-    box-shadow: 0 4rpx 12rpx rgba(100, 116, 139, 0.3);
+    background: #F5F7FA;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
 
     &:hover {
-      box-shadow: 0 6rpx 16rpx rgba(100, 116, 139, 0.4);
+      background: #E5E7EB;
+      box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
+    }
+  }
+
+  &.primary {
+    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+    box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3);
+
+    &:hover {
+      box-shadow: 0 6rpx 16rpx rgba(59, 130, 246, 0.4);
     }
   }
 }
@@ -467,6 +488,14 @@ const handleEmptyAction = () => {
   font-weight: 600;
   color: #FFFFFF;
   line-height: 1;
+}
+
+.state-action-btn.secondary .action-btn-text {
+  color: #4E5969; /* 次要按钮文字颜色 */
+}
+
+.state-action-btn.primary .action-btn-text {
+  color: #FFFFFF; /* 主色按钮文字颜色 */
 }
 
 /* ========== Skeleton 加载状态 - 差异化设计 ========== */
@@ -653,7 +682,7 @@ const handleEmptyAction = () => {
 
 /* ========== 正常状态 ========== */
 .state-normal {
-  padding: 0;
+  padding: 0 0 48rpx; /* 统一底部留白24px */
   min-height: auto;
 }
 

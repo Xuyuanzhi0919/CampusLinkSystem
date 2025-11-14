@@ -415,6 +415,8 @@ const handleSignupClick = async (activity: Activity) => {
         activities.value[activityIndex].remainingSlots--
       }
       console.log('[ClubActivity] 乐观更新：已将活动设置为已报名状态')
+      console.log('[ClubActivity] 更新后的活动对象:', activities.value[activityIndex])
+      console.log('[ClubActivity] 参数中的活动对象:', activity)
     }
 
     // 🎯 方案2：清除缓存并延迟刷新 - 确保后端数据同步

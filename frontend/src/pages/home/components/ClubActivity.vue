@@ -292,7 +292,7 @@ const loadActivityData = async (forceRefresh = false) => {
       poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
       clubName: item.clubName || '社团',
       remainingSlots: (item.maxParticipants || 50) - (item.currentParticipants || 0),
-      hasJoined: item.hasJoined || false, // 🎯 是否已报名（需要登录后才有值）
+      hasJoined: item.isJoined || false, // 🎯 后端字段是 isJoined，不是 hasJoined
     }))
 
     // 🐛 调试：打印映射后的数据

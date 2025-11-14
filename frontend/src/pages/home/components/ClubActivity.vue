@@ -285,6 +285,13 @@ const loadActivityData = async (forceRefresh = false) => {
 
     // 🐛 调试：打印后端返回的数据
     console.log('[ClubActivity] 后端返回的活动列表:', list)
+    console.log('[ClubActivity] 第一个活动项的原始数据:', list[0])
+    console.log('[ClubActivity] 所有活动的 isJoined 字段:', list.map((item: any) => ({
+      activityId: item.activityId,
+      title: item.title,
+      isJoined: item.isJoined,
+      isJoinedType: typeof item.isJoined
+    })))
 
     activities.value = list.map((item: any) => ({
       id: item.activityId,
@@ -297,6 +304,11 @@ const loadActivityData = async (forceRefresh = false) => {
 
     // 🐛 调试：打印映射后的数据
     console.log('[ClubActivity] 映射后的活动数据:', activities.value)
+    console.log('[ClubActivity] 映射后所有活动的 hasJoined 状态:', activities.value.map(a => ({
+      id: a.id,
+      name: a.name,
+      hasJoined: a.hasJoined
+    })))
 
     // 🎯 缓存数据（5 分钟）
     cache.set(CACHE_KEYS.ACTIVITIES, activities.value, CACHE_TTL.MEDIUM)

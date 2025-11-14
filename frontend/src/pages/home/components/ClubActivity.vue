@@ -286,12 +286,17 @@ const loadActivityData = async (forceRefresh = false) => {
     // 🐛 调试：打印后端返回的数据
     console.log('[ClubActivity] 后端返回的活动列表:', list)
     console.log('[ClubActivity] 第一个活动项的原始数据:', list[0])
-    console.log('[ClubActivity] 所有活动的 isJoined 字段:', list.map((item: any) => ({
+
+    // 🎯 关键调试：详细检查每个活动的 isJoined 字段
+    const isJoinedDetails = list.map((item: any) => ({
       activityId: item.activityId,
       title: item.title,
       isJoined: item.isJoined,
-      isJoinedType: typeof item.isJoined
-    })))
+      isJoinedType: typeof item.isJoined,
+      isJoinedValue: item.isJoined === true ? 'true' : item.isJoined === false ? 'false' : 'undefined/null'
+    }))
+    console.log('[ClubActivity] 所有活动的 isJoined 详细信息:', isJoinedDetails)
+    console.table(isJoinedDetails)
 
     activities.value = list.map((item: any) => ({
       id: item.activityId,
@@ -385,8 +390,8 @@ const handleSignupClick = async (activity: Activity) => {
 
   // 已登录且未报名，调用报名接口
   try {
-    // 🐛 调试：检查 Token 状态
-    const token = uni.getStorageSync('token')
+    // 🐛 调试：检查 Token 状态（使用正确的 key）
+    const token = uni.getStorageSync(config.tokenKey)
     console.log('[ClubActivity] 当前Token:', token ? '✅ 存在' : '❌ 不存在')
     console.log('[ClubActivity] Token前20字符:', token ? token.substring(0, 20) : 'N/A')
 

@@ -51,8 +51,8 @@
           </view>
 
           <!-- 报名按钮 -->
-          <view class="signup-btn">
-            <text class="signup-text">报名</text>
+          <view class="signup-btn" @click.stop="handleSignupClick(activity)">
+            <text class="signup-text">{{ isLoggedIn ? '立即报名' : '登录后报名' }}</text>
           </view>
         </view>
         </view>
@@ -85,6 +85,9 @@ import { retryAsync, RetryPresets } from '@/utils/retry'
 
 // 🎯 卡片状态管理
 const cardStatus = ref<CardStatus>('loading')
+
+// 🎯 登录状态
+const isLoggedIn = ref(false)
 
 // Props & Emits
 const emit = defineEmits<{
@@ -308,16 +311,8 @@ const loadActivityData = async (forceRefresh = false) => {
   } catch (error: any) {
     console.error('加载活动数据失败（已重试 3 次）:', error)
     activities.value = []
-
-    // 🎯 区分错误类型：401 未登录 vs 其他错误
-    const errorMessage = error?.message || ''
-    if (errorMessage.includes('未授权') || errorMessage.includes('401')) {
-      // 未登录状态
-      cardStatus.value = 'unauth'
-    } else {
-      // 网络或服务器错误
-      cardStatus.value = 'error'
-    }
+    // 🎯 网络或服务器错误
+    cardStatus.value = 'error'
   }
 }
 
@@ -346,9 +341,48 @@ const handleActivityClick = (activity: Activity) => {
   emit('activityClick', activity)
 }
 
+/**
+ * 🎯 报名按钮点击 - 未登录引导登录，已登录跳转详情页
+ */
+const handleSignupClick = (activity: Activity) => {
+  if (!isLoggedIn.value) {
+    // 未登录，跳转登录页
+    handleLoginClick()
+  } else {
+    // 已登录，跳转详情页进行报名
+    handleActivityClick(activity)
+  }
+}
+
+/**
+ * 🎯 监听退出登录事件 - 清除缓存
+ */
+const handleUserLogout = () => {
+  console.log('[ClubActivity] 监听到用户退出登录，清除缓存并重新加载')
+  isLoggedIn.value = false
+  cache.remove(CACHE_KEYS.ACTIVITIES)
+  loadActivityData()
+}
+
+/**
+ * 🎯 监听登录成功事件 - 更新登录状态
+ */
+const handleUserLogin = () => {
+  console.log('[ClubActivity] 监听到用户登录，更新登录状态')
+  isLoggedIn.value = true
+  loadActivityData() // 刷新数据以获取用户报名状态
+}
+
 // 组件挂载时加载数据并注册事件监听
 onMounted(() => {
+  // 🎯 初始化登录状态
+  isLoggedIn.value = checkAuthStatus()
+
   loadActivityData()
+
+  // 🎯 监听登录/退出事件
+  uni.$on('user-login', handleUserLogin)
+  uni.$on('user-logout', handleUserLogout)
 
   // 🎯 注册桌面端鼠标拖拽事件（全局监听）
   // @ts-ignore
@@ -362,6 +396,10 @@ onMounted(() => {
 
 // 组件卸载时清理事件监听
 onUnmounted(() => {
+  // 🎯 清理登录/退出事件监听
+  uni.$off('user-login', handleUserLogin)
+  uni.$off('user-logout', handleUserLogout)
+
   // 🎯 清理桌面端鼠标拖拽事件
   // @ts-ignore
   if (typeof document !== 'undefined') {

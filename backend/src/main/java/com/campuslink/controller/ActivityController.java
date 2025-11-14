@@ -42,7 +42,7 @@ public class ActivityController {
             @RequestParam(defaultValue = "10") Integer pageSize,
             @RequestParam(required = false) Long clubId,
             @RequestParam(required = false) Integer status,
-            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
         PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId, status);
         return Result.success(result);
@@ -52,7 +52,7 @@ public class ActivityController {
     @GetMapping("/{activityId}")
     public Result<ActivityResponse> getActivityDetail(
             @PathVariable Long activityId,
-            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
         ActivityResponse activityResponse = activityService.getActivityDetail(activityId, userId);
         return Result.success(activityResponse);

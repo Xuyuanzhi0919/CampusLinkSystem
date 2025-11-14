@@ -350,6 +350,10 @@ public class ActivityService {
                 response.setIsJoined(false);
                 response.setIsSignedIn(false);
             }
+        } else {
+            // 🎯 游客模式：设置默认值
+            response.setIsJoined(false);
+            response.setIsSignedIn(false);
         }
 
         return response;

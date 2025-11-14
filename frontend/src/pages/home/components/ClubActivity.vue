@@ -273,30 +273,10 @@ const loadActivityData = async (forceRefresh = false) => {
     // 🎯 带重试的请求（最多重试 3 次）
     const res = await retryAsync(
       () => getActivityList({ page: 1, pageSize: 6, status: 0 }),
-      {
-        ...RetryPresets.STANDARD,
-        onRetry: (attempt, delay) => {
-          console.log(`[ClubActivity] 第 ${attempt} 次重试，延迟 ${delay}ms`)
-        }
-      }
+      RetryPresets.STANDARD
     )
 
     const list = res?.list || res?.records || []
-
-    // 🐛 调试：打印后端返回的数据
-    console.log('[ClubActivity] 后端返回的活动列表:', list)
-    console.log('[ClubActivity] 第一个活动项的原始数据:', list[0])
-
-    // 🎯 关键调试：详细检查每个活动的 isJoined 字段
-    const isJoinedDetails = list.map((item: any) => ({
-      activityId: item.activityId,
-      title: item.title,
-      isJoined: item.isJoined,
-      isJoinedType: typeof item.isJoined,
-      isJoinedValue: item.isJoined === true ? 'true' : item.isJoined === false ? 'false' : 'undefined/null'
-    }))
-    console.log('[ClubActivity] 所有活动的 isJoined 详细信息:', isJoinedDetails)
-    console.table(isJoinedDetails)
 
     activities.value = list.map((item: any) => ({
       id: item.activityId,
@@ -304,16 +284,8 @@ const loadActivityData = async (forceRefresh = false) => {
       poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
       clubName: item.clubName || '社团',
       remainingSlots: (item.maxParticipants || 50) - (item.currentParticipants || 0),
-      hasJoined: item.isJoined || false, // 🎯 后端字段是 isJoined，不是 hasJoined
+      hasJoined: item.isJoined || false
     }))
-
-    // 🐛 调试：打印映射后的数据
-    console.log('[ClubActivity] 映射后的活动数据:', activities.value)
-    console.log('[ClubActivity] 映射后所有活动的 hasJoined 状态:', activities.value.map(a => ({
-      id: a.id,
-      name: a.name,
-      hasJoined: a.hasJoined
-    })))
 
     // 🎯 缓存数据（5 分钟）
     cache.set(CACHE_KEYS.ACTIVITIES, activities.value, CACHE_TTL.MEDIUM)
@@ -390,12 +362,6 @@ const handleSignupClick = async (activity: Activity) => {
 
   // 已登录且未报名，调用报名接口
   try {
-    // 🐛 调试：检查 Token 状态（使用正确的 key）
-    const token = uni.getStorageSync(config.tokenKey)
-    console.log('[ClubActivity] 当前Token:', token ? '✅ 存在' : '❌ 不存在')
-    console.log('[ClubActivity] Token前20字符:', token ? token.substring(0, 20) : 'N/A')
-
-    // 显示加载提示
     uni.showLoading({
       title: '报名中...',
       mask: true
@@ -403,53 +369,37 @@ const handleSignupClick = async (activity: Activity) => {
 
     await joinActivity(activity.id)
 
-    // 🐛 调试：报名成功
-    console.log('[ClubActivity] 报名成功，activityId:', activity.id)
-
-    // 隐藏加载提示
     uni.hideLoading()
 
-    // 显示成功提示
     uni.showToast({
       title: '报名成功！',
       icon: 'success',
       duration: 2000
     })
 
-    // 🎯 方案1：乐观更新 - 立即更新本地状态
+    // 🎯 乐观更新 - 立即更新本地状态
     const activityIndex = activities.value.findIndex(a => a.id === activity.id)
     if (activityIndex !== -1) {
       activities.value[activityIndex].hasJoined = true
-      // 名额减1（如果有剩余）
       if (activities.value[activityIndex].remainingSlots > 0) {
         activities.value[activityIndex].remainingSlots--
       }
-      console.log('[ClubActivity] 乐观更新：已将活动设置为已报名状态')
-      console.log('[ClubActivity] 更新后的活动对象:', activities.value[activityIndex])
-      console.log('[ClubActivity] 参数中的活动对象:', activity)
     }
 
-    // 🎯 方案2：清除缓存并延迟刷新 - 确保后端数据同步
+    // 🎯 清除缓存并延迟刷新 - 确保后端数据同步
     cache.remove(CACHE_KEYS.ACTIVITIES)
-    console.log('[ClubActivity] 已清除活动列表缓存')
-
     setTimeout(() => {
-      console.log('[ClubActivity] 开始强制刷新活动列表（forceRefresh=true）')
       loadActivityData(true)
-    }, 1000) // 🎯 增加到 1 秒，给后端更多时间更新数据
+    }, 1000)
 
   } catch (error: any) {
-    // 隐藏加载提示
     uni.hideLoading()
 
-    // 显示错误提示
     uni.showToast({
       title: error.message || '报名失败，请稍后重试',
       icon: 'none',
       duration: 2000
     })
-
-    console.error('[ClubActivity] 报名失败:', error)
   }
 }
 

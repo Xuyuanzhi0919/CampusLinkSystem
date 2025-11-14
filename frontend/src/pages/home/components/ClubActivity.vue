@@ -283,6 +283,9 @@ const loadActivityData = async (forceRefresh = false) => {
 
     const list = res?.list || res?.records || []
 
+    // 🐛 调试：打印后端返回的数据
+    console.log('[ClubActivity] 后端返回的活动列表:', list)
+
     activities.value = list.map((item: any) => ({
       id: item.activityId,
       name: item.title,
@@ -291,6 +294,9 @@ const loadActivityData = async (forceRefresh = false) => {
       remainingSlots: (item.maxParticipants || 50) - (item.currentParticipants || 0),
       hasJoined: item.hasJoined || false, // 🎯 是否已报名（需要登录后才有值）
     }))
+
+    // 🐛 调试：打印映射后的数据
+    console.log('[ClubActivity] 映射后的活动数据:', activities.value)
 
     // 🎯 缓存数据（5 分钟）
     cache.set(CACHE_KEYS.ACTIVITIES, activities.value, CACHE_TTL.MEDIUM)
@@ -375,6 +381,9 @@ const handleSignupClick = async (activity: Activity) => {
 
     await joinActivity(activity.id)
 
+    // 🐛 调试：报名成功
+    console.log('[ClubActivity] 报名成功，activityId:', activity.id)
+
     // 隐藏加载提示
     uni.hideLoading()
 
@@ -385,8 +394,12 @@ const handleSignupClick = async (activity: Activity) => {
       duration: 2000
     })
 
+    // 🐛 调试：准备刷新活动列表
+    console.log('[ClubActivity] 500ms 后刷新活动列表')
+
     // 刷新活动列表，更新报名状态和剩余名额
     setTimeout(() => {
+      console.log('[ClubActivity] 开始强制刷新活动列表（forceRefresh=true）')
       loadActivityData(true)
     }, 500)
 

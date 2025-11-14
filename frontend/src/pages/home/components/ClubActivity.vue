@@ -51,8 +51,14 @@
           </view>
 
           <!-- 报名按钮 -->
-          <view class="signup-btn" @click.stop="handleSignupClick(activity)">
-            <text class="signup-text">{{ isLoggedIn ? '立即报名' : '登录后报名' }}</text>
+          <view
+            class="signup-btn"
+            :class="{ 'joined': activity.hasJoined }"
+            @click.stop="handleSignupClick(activity)"
+          >
+            <text class="signup-text">
+              {{ activity.hasJoined ? '已报名' : (isLoggedIn ? '立即报名' : '登录后报名') }}
+            </text>
           </view>
         </view>
         </view>
@@ -78,7 +84,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import config from '@/config'
 import StatusCardWrapper from '@/components/StatusCardWrapper.vue'
-import { getActivityList } from '@/services/activity'
+import { getActivityList, joinActivity } from '@/services/activity'
 import type { CardStatus } from '@/components/StatusCardWrapper.vue'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import { retryAsync, RetryPresets } from '@/utils/retry'
@@ -101,6 +107,7 @@ interface Activity {
   poster: string
   clubName: string
   remainingSlots: number
+  hasJoined?: boolean // 🎯 是否已报名
 }
 
 const activities = ref<Activity[]>([])
@@ -282,6 +289,7 @@ const loadActivityData = async (forceRefresh = false) => {
       poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
       clubName: item.clubName || '社团',
       remainingSlots: (item.maxParticipants || 50) - (item.currentParticipants || 0),
+      hasJoined: item.hasJoined || false, // 🎯 是否已报名（需要登录后才有值）
     }))
 
     // 🎯 缓存数据（5 分钟）
@@ -338,15 +346,62 @@ const handleActivityClick = (activity: Activity) => {
 }
 
 /**
- * 🎯 报名按钮点击 - 未登录引导登录，已登录跳转详情页
+ * 🎯 报名按钮点击 - 未登录引导登录，已登录直接报名
  */
-const handleSignupClick = (activity: Activity) => {
+const handleSignupClick = async (activity: Activity) => {
   if (!isLoggedIn.value) {
-    // 未登录，跳转登录页
+    // 未登录，引导登录
     handleLoginClick()
-  } else {
-    // 已登录，跳转详情页进行报名
-    handleActivityClick(activity)
+    return
+  }
+
+  // 已报名，提示用户
+  if (activity.hasJoined) {
+    uni.showToast({
+      title: '您已报名该活动',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+
+  // 已登录且未报名，调用报名接口
+  try {
+    // 显示加载提示
+    uni.showLoading({
+      title: '报名中...',
+      mask: true
+    })
+
+    await joinActivity(activity.id)
+
+    // 隐藏加载提示
+    uni.hideLoading()
+
+    // 显示成功提示
+    uni.showToast({
+      title: '报名成功！',
+      icon: 'success',
+      duration: 2000
+    })
+
+    // 刷新活动列表，更新报名状态和剩余名额
+    setTimeout(() => {
+      loadActivityData(true)
+    }, 500)
+
+  } catch (error: any) {
+    // 隐藏加载提示
+    uni.hideLoading()
+
+    // 显示错误提示
+    uni.showToast({
+      title: error.message || '报名失败，请稍后重试',
+      icon: 'none',
+      duration: 2000
+    })
+
+    console.error('[ClubActivity] 报名失败:', error)
   }
 }
 
@@ -592,19 +647,45 @@ onUnmounted(() => {
   border-radius: 24rpx; /* 🎯 统一圆角：12px - 中等圆角 */
   cursor: pointer;
   transition: all 0.25s ease;
+
+  /* 🎯 已报名状态 */
+  &.joined {
+    background: #F0F2F5; /* 灰色背景 */
+    border-color: #D1D5DB; /* 浅灰边框 */
+    cursor: default;
+
+    .signup-text {
+      color: #9CA3AF; /* 灰色文字 */
+    }
+
+    &:hover {
+      background: #F0F2F5; /* hover 时保持灰色 */
+      border-color: #D1D5DB;
+      transform: none; /* 禁用 hover 效果 */
+      box-shadow: none;
+
+      .signup-text {
+        color: #9CA3AF; /* 保持灰色文字 */
+      }
+    }
+
+    &:active {
+      transform: none; /* 禁用点击效果 */
+    }
+  }
 }
 
-.signup-btn:hover {
+.signup-btn:not(.joined):hover {
   background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
   transform: translateY(-2rpx);
   box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3); /* 🎯 统一色调：蓝色阴影 */
 }
 
-.signup-btn:hover .signup-text {
+.signup-btn:not(.joined):hover .signup-text {
   color: white;
 }
 
-.signup-btn:active {
+.signup-btn:not(.joined):active {
   transform: scale(0.96);
 }
 

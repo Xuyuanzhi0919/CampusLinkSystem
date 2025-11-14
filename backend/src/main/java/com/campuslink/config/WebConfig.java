@@ -42,7 +42,6 @@ public class WebConfig implements WebMvcConfigurer {
                         "/tag/search",         // 搜索标签（游客可浏览）
                         "/stats/today",        // 今日活跃统计（游客可浏览）
                         "/activity/list",      // 🎯 活动列表（游客可浏览）
-                        "/activity/*/",        // 🎯 活动详情（游客可浏览，但报名需登录）
                         "/notification/list",  // 🎯 校园公告列表（游客可浏览）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",

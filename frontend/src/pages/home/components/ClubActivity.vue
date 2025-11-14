@@ -305,11 +305,19 @@ const loadActivityData = async (forceRefresh = false) => {
         showScrollHint()
       }, 100)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('加载活动数据失败（已重试 3 次）:', error)
     activities.value = []
-    // 🎯 设置为错误状态
-    cardStatus.value = 'error'
+
+    // 🎯 区分错误类型：401 未登录 vs 其他错误
+    const errorMessage = error?.message || ''
+    if (errorMessage.includes('未授权') || errorMessage.includes('401')) {
+      // 未登录状态
+      cardStatus.value = 'unauth'
+    } else {
+      // 网络或服务器错误
+      cardStatus.value = 'error'
+    }
   }
 }
 

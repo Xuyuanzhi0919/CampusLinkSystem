@@ -87,8 +87,8 @@
       <!-- 状态：系统错误 -->
       <view v-else-if="status === 'error'" class="state-container state-error">
         <view class="state-icon">⚠️</view>
-        <text class="state-title">加载失败</text>
-        <text class="state-desc">网络异常或系统错误，请稍后重试</text>
+        <text class="state-title">{{ stateMessages.errorTitle }}</text>
+        <text class="state-desc">{{ stateMessages.errorDesc }}</text>
         <view class="state-action-btn secondary" @click="handleRetry">
           <text class="action-btn-text">重试</text>
         </view>
@@ -154,19 +154,25 @@ const stateMessages = computed(() => {
       unauth: '解锁你的积分和任务数据~',
       emptyTitle: '暂无任务',
       emptyDesc: '当前没有可完成的任务',
-      emptyAction: ''
+      emptyAction: '',
+      errorTitle: '加载失败',
+      errorDesc: '积分数据加载失败，请稍后重试'
     },
     notice: {
       unauth: '不错过任何重要的校园公告~',
       emptyTitle: '暂无校园公告',
       emptyDesc: '最近没有新的公告发布',
-      emptyAction: '去公告列表'
+      emptyAction: '去公告列表',
+      errorTitle: '加载失败',
+      errorDesc: '公告数据加载失败，请检查网络连接'
     },
     activity: {
       unauth: '发现精彩的社团活动,开启校园生活~',
       emptyTitle: '暂无社团动态',
       emptyDesc: '快去参加第一个活动吧',
-      emptyAction: '浏览全部社团'
+      emptyAction: '浏览全部社团',
+      errorTitle: '加载失败',
+      errorDesc: '活动数据加载失败，请稍后重试'
     }
   }
   return messages[props.cardType] || messages.points

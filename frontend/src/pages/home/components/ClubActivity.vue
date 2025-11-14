@@ -489,8 +489,9 @@ onUnmounted(() => {
 .activity-card {
   display: inline-block;
   width: 240rpx;
-  background: #F7F8FA;
-  border-radius: 16rpx;
+  background: #FFFFFF; /* 🎯 优化：改为纯白，降低视觉密度 */
+  border: 1px solid #F0F2F5; /* 🎯 添加浅边框，保持层次感 */
+  border-radius: 24rpx; /* 🎯 统一圆角：12px - 与主卡片保持一致 */
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -540,8 +541,8 @@ onUnmounted(() => {
   top: 12rpx;
   right: 12rpx;
   padding: 6rpx 12rpx;
-  background: rgba(255, 107, 0, 0.9);
-  border-radius: 8rpx;
+  background: rgba(59, 130, 246, 0.9); /* 🎯 统一色调：蓝色背景 */
+  border-radius: 16rpx; /* 🎯 统一圆角：8px - 小圆角 */
   backdrop-filter: blur(4rpx);
 }
 
@@ -587,16 +588,16 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: transparent;
-  border: 2rpx solid #FF6B00;
-  border-radius: 32rpx;
+  border: 2rpx solid #3B82F6; /* 🎯 统一色调：改为蓝色主色 */
+  border-radius: 24rpx; /* 🎯 统一圆角：12px - 中等圆角 */
   cursor: pointer;
   transition: all 0.25s ease;
 }
 
 .signup-btn:hover {
-  background: linear-gradient(135deg, #FF6B00 0%, #FF8A3D 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
   transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(255, 107, 0, 0.3);
+  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3); /* 🎯 统一色调：蓝色阴影 */
 }
 
 .signup-btn:hover .signup-text {
@@ -610,7 +611,7 @@ onUnmounted(() => {
 .signup-text {
   font-size: 28rpx;
   font-weight: 600;
-  color: #FF6B00;
+  color: #3B82F6; /* 🎯 统一色调：蓝色文字 */
   line-height: 1;
   transition: color 0.25s ease;
 }
@@ -636,8 +637,8 @@ onUnmounted(() => {
 .dot-active {
   width: 32rpx;
   border-radius: 6rpx;
-  background: linear-gradient(135deg, #FF6B00 0%, #FF8A3D 100%);
+  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
   opacity: 0.85; /* 降低不透明度 - 视觉降噪 */
-  box-shadow: 0 2rpx 8rpx rgba(255, 107, 0, 0.25); /* 从 0.3 降低到 0.25 */
+  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.25); /* 🎯 统一色调：蓝色阴影 */
 }
 </style>

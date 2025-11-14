@@ -217,7 +217,7 @@ const handleEmptyAction = () => {
 .status-card-wrapper {
   background: #FFFFFF;
   border: 1px solid #EEF1F6;
-  border-radius: 32rpx; /* 16px */
+  border-radius: 24rpx; /* 🎯 统一圆角：12px - 与左栏保持一致 */
   padding: 48rpx;
   height: auto;
   min-height: 480rpx;
@@ -449,7 +449,7 @@ const handleEmptyAction = () => {
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border-radius: 40rpx;
+  border-radius: 24rpx; /* 🎯 统一圆角：12px - 改为中等圆角 */
   box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3);
   cursor: pointer;
   transition: all 0.2s ease;
@@ -546,7 +546,7 @@ const handleEmptyAction = () => {
   gap: 16rpx;
   width: 100%;
   padding: 16rpx;
-  background: #F7F8FA;
+  background: #FAFBFC; /* 🎯 优化：更浅的背景色 */
   border-radius: 16rpx;
 }
 
@@ -641,7 +641,8 @@ const handleEmptyAction = () => {
   display: flex;
   flex-direction: column;
   width: 240rpx;
-  background: #F7F8FA;
+  background: #FFFFFF; /* 🎯 优化：纯白背景 */
+  border: 1px solid #F0F2F5; /* 🎯 添加浅边框 */
   border-radius: 16rpx;
   overflow: hidden;
   flex-shrink: 0;

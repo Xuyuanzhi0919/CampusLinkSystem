@@ -394,14 +394,25 @@ const handleSignupClick = async (activity: Activity) => {
       duration: 2000
     })
 
-    // 🐛 调试：准备刷新活动列表
-    console.log('[ClubActivity] 500ms 后刷新活动列表')
+    // 🎯 方案1：乐观更新 - 立即更新本地状态
+    const activityIndex = activities.value.findIndex(a => a.id === activity.id)
+    if (activityIndex !== -1) {
+      activities.value[activityIndex].hasJoined = true
+      // 名额减1（如果有剩余）
+      if (activities.value[activityIndex].remainingSlots > 0) {
+        activities.value[activityIndex].remainingSlots--
+      }
+      console.log('[ClubActivity] 乐观更新：已将活动设置为已报名状态')
+    }
 
-    // 刷新活动列表，更新报名状态和剩余名额
+    // 🎯 方案2：清除缓存并延迟刷新 - 确保后端数据同步
+    cache.remove(CACHE_KEYS.ACTIVITIES)
+    console.log('[ClubActivity] 已清除活动列表缓存')
+
     setTimeout(() => {
       console.log('[ClubActivity] 开始强制刷新活动列表（forceRefresh=true）')
       loadActivityData(true)
-    }, 500)
+    }, 1000) // 🎯 增加到 1 秒，给后端更多时间更新数据
 
   } catch (error: any) {
     // 隐藏加载提示

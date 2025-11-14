@@ -466,6 +466,12 @@ onMounted(() => {
   // #ifndef H5
   // uni-app 中使用 onPageScroll 生命周期
   // #endif
+
+  // 🎯 监听卡片触发的登录事件
+  uni.$on('show-login-modal', () => {
+    console.log('[Home] 收到登录弹窗请求')
+    showLoginModal.value = true
+  })
 })
 
 // 组件卸载时移除监听
@@ -474,6 +480,9 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handlePageScroll)
   if (scrollTimer) clearTimeout(scrollTimer)
   // #endif
+
+  // 🎯 清理登录事件监听
+  uni.$off('show-login-modal')
 })
 
 /**

@@ -106,15 +106,11 @@ const checkAuthStatus = () => {
 }
 
 /**
- * 🎯 处理登录按钮点击
+ * 🎯 处理登录按钮点击 - 触发首页弹窗
  */
 const handleLoginClick = () => {
-  uni.navigateTo({
-    url: '/pages/auth/login',
-    fail: () => {
-      uni.showToast({ title: '请先登录', icon: 'none' })
-    }
-  })
+  // 触发全局事件，由首页监听并显示登录弹窗
+  uni.$emit('show-login-modal')
 }
 
 /**

@@ -385,6 +385,11 @@ const handleSignupClick = async (activity: Activity) => {
 
   // 已登录且未报名，调用报名接口
   try {
+    // 🐛 调试：检查 Token 状态
+    const token = uni.getStorageSync('token')
+    console.log('[ClubActivity] 当前Token:', token ? '✅ 存在' : '❌ 不存在')
+    console.log('[ClubActivity] Token前20字符:', token ? token.substring(0, 20) : 'N/A')
+
     // 显示加载提示
     uni.showLoading({
       title: '报名中...',

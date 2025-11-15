@@ -2,8 +2,14 @@
  * 资源模块类型定义
  */
 
-// 资源分类
-export type ResourceCategory = 'courseware' | 'paper' | 'note' | 'other'
+// 资源分类 (与后端 category 字段对应)
+export enum ResourceCategory {
+  COURSEWARE = 0,  // 课件
+  PAPER = 1,       // 试题
+  NOTE = 2,        // 笔记
+}
+
+export type ResourceCategoryString = 'courseware' | 'paper' | 'note' | 'other'
 
 // 资源文件类型
 export type ResourceFileType = 'pdf' | 'docx' | 'pptx' | 'zip' | 'other'
@@ -46,12 +52,12 @@ export interface ResourceDetail extends ResourceItem {
 
 // 资源列表查询参数
 export interface ResourceListParams {
-  category?: ResourceCategory
+  category?: number  // 资源分类: 0=课件, 1=试题, 2=笔记
   schoolId?: number
   keyword?: string
   page?: number
   pageSize?: number
-  sortBy?: 'downloads' | 'created_at' | 'score'
+  sortBy?: 'download_count' | 'created_at' | 'score'
   sortOrder?: 'asc' | 'desc'
 }
 

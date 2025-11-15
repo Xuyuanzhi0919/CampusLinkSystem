@@ -24,7 +24,16 @@
       "Bash(git rm:*)",
       "Bash(npm run dev:mp-weixin:*)",
       "Bash(if exist nul del nul)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(del /f nul 2)",
+      "Bash(timeout 30 tail:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(timeout:*)",
+      "Bash(exit:*)",
+      "Bash(src/pages/home/components/ClubActivity.vue)",
+      "Bash(ClubActivity.vue)",
+      "Bash(SkeletonResourceCard.vue)"
     ],
     "deny": [],
     "ask": []

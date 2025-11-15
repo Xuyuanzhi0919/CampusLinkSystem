@@ -81,3 +81,67 @@ export const getUploadSignature = () => {
   }>('/resource/upload/signature')
 }
 
+/**
+ * 搜索资源
+ * @param params 搜索参数
+ */
+export const searchResources = (params: {
+  q: string
+  category?: number
+  schoolId?: number
+  page?: number
+  pageSize?: number
+}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/search', params)
+}
+
+/**
+ * 获取我上传的资源
+ * @param params 分页参数
+ */
+export const getMyResources = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/my', params)
+}
+
+/**
+ * 获取我的下载历史
+ * @param params 分页参数
+ */
+export const getMyDownloadHistory = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<any>>('/resource/download-history', params)
+}
+
+/**
+ * 获取待审核资源列表 (管理员)
+ * @param params 分页参数
+ */
+export const getPendingResources = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/pending', params)
+}
+
+/**
+ * 审核通过资源 (管理员)
+ * @param id 资源ID
+ */
+export const approveResource = (id: number) => {
+  return request.put<void>(`/resource/${id}/approve`)
+}
+
+/**
+ * 拒绝资源 (管理员)
+ * @param id 资源ID
+ * @param rejectReason 拒绝原因
+ */
+export const rejectResource = (id: number, rejectReason: string) => {
+  return request.put<void>(`/resource/${id}/reject`, { rejectReason })
+}
+

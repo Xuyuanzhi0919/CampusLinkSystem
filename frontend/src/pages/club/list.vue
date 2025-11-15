@@ -45,11 +45,35 @@
         @click="goToDetail(activity.activityId)"
       >
         <!-- 活动封面 -->
-        <image
-          class="activity-cover"
-          :src="activity.coverImage || `https://picsum.photos/200/150?random=${activity.activityId}`"
-          mode="aspectFill"
-        />
+        <view class="cover-wrapper">
+          <image
+            class="activity-cover"
+            :src="activity.coverImage || `https://picsum.photos/200/150?random=${activity.activityId}`"
+            mode="aspectFill"
+          />
+
+          <!-- 状态标签 -->
+          <view
+            class="status-badge"
+            :class="getStatusClass(activity)"
+          >
+            <text class="status-text">{{ getStatusText(activity) }}</text>
+          </view>
+        </view>
+
+        <!-- 收藏按钮 -->
+        <view
+          class="favorite-btn"
+          :class="{ 'favorited': activity.isFavorited }"
+          @click.stop="toggleFavorite(activity)"
+        >
+          <text class="favorite-icon">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
+        </view>
+
+        <!-- 已报名角标 -->
+        <view v-if="activity.isJoined" class="joined-badge">
+          <text class="joined-text">✓ 已报名</text>
+        </view>
 
         <!-- 活动信息 -->
         <view class="activity-info">
@@ -57,7 +81,16 @@
           <text class="activity-club">{{ activity.clubName }}</text>
           <view class="activity-meta">
             <text class="meta-item">📅 {{ formatDate(activity.startTime) }}</text>
+            <text class="meta-item">📍 {{ activity.location || '待定' }}</text>
+          </view>
+          <view class="activity-meta">
             <text class="meta-item">👥 {{ activity.currentParticipants }}/{{ activity.maxParticipants }}</text>
+            <text
+              class="meta-item remaining"
+              :class="{ 'urgent': getRemainingSlots(activity) < 10 && getRemainingSlots(activity) > 0 }"
+            >
+              🎫 剩余{{ getRemainingSlots(activity) }}个名额
+            </text>
           </view>
         </view>
       </view>
@@ -131,6 +164,8 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { getActivityList } from '@/services/activity'
+import { addFavorite, removeFavorite } from '@/services/favorite'
+import config from '@/config'
 
 // 搜索关键词
 const searchKeyword = ref('')
@@ -223,23 +258,14 @@ const loadActivityList = async (refresh = false) => {
       params.keyword = searchKeyword.value.trim()
     }
 
+    // 🎯 添加排序参数（由后端处理）
+    if (filters.value.sortBy) {
+      params.sortBy = filters.value.sortBy
+    }
+
     const res = await getActivityList(params)
 
     let list = res?.list || res?.records || []
-
-    // 客户端排序（如果后端不支持）
-    if (filters.value.sortBy === 'hot') {
-      // 按热门度排序（报名人数）
-      list = list.sort((a: any, b: any) =>
-        (b.currentParticipants || 0) - (a.currentParticipants || 0)
-      )
-    } else if (filters.value.sortBy === 'new') {
-      // 按最新发布排序
-      list = list.sort((a: any, b: any) =>
-        new Date(b.createdAt || b.createTime).getTime() - new Date(a.createdAt || a.createTime).getTime()
-      )
-    }
-    // time 排序：默认按时间排序，不需要处理
 
     if (refresh) {
       activities.value = list
@@ -351,6 +377,95 @@ const formatDate = (dateStr: string) => {
 }
 
 /**
+ * 🎯 计算剩余名额
+ */
+const getRemainingSlots = (activity: any) => {
+  return Math.max(0, (activity.maxParticipants || 0) - (activity.currentParticipants || 0))
+}
+
+/**
+ * 🎯 获取活动状态文本
+ */
+const getStatusText = (activity: any) => {
+  const remaining = getRemainingSlots(activity)
+
+  if (activity.status === 2) return '已结束'
+  if (activity.status === 1) return '进行中'
+  if (remaining === 0) return '名额已满'
+  if (activity.status === 0) return '未开始'
+  return '报名中'
+}
+
+/**
+ * 🎯 获取状态样式类
+ */
+const getStatusClass = (activity: any) => {
+  const remaining = getRemainingSlots(activity)
+
+  if (activity.status === 2) return 'status-ended'
+  if (activity.status === 1) return 'status-ongoing'
+  if (remaining === 0) return 'status-full'
+  if (activity.status === 0) return 'status-upcoming'
+  return 'status-available'
+}
+
+/**
+ * 🎯 切换收藏状态
+ */
+const toggleFavorite = async (activity: any) => {
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 1500
+    })
+    return
+  }
+
+  const activityIndex = activities.value.findIndex(a => a.activityId === activity.activityId)
+  if (activityIndex === -1) return
+
+  const currentFavStatus = activity.isFavorited
+
+  try {
+    // 乐观更新
+    activities.value[activityIndex].isFavorited = !currentFavStatus
+
+    if (currentFavStatus) {
+      await removeFavorite('activity', activity.activityId)
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'success',
+        duration: 1500
+      })
+    } else {
+      await addFavorite('activity', activity.activityId)
+      uni.showToast({
+        title: '收藏成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+
+    // 🎯 触发全局事件,通知其他页面更新收藏状态
+    uni.$emit('activity-favorite-changed', {
+      activityId: activity.activityId,
+      isFavorited: !currentFavStatus
+    })
+
+  } catch (error: any) {
+    // 失败时回滚
+    activities.value[activityIndex].isFavorited = currentFavStatus
+    uni.showToast({
+      title: error.message || '操作失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
  * 下拉刷新
  */
 const onPullDownRefresh = () => {
@@ -443,6 +558,7 @@ defineExpose({
 }
 
 .activity-item {
+  position: relative;
   display: flex;
   gap: 24rpx;
   background: white;
@@ -458,11 +574,142 @@ defineExpose({
   transform: scale(0.98);
 }
 
-.activity-cover {
+.cover-wrapper {
+  position: relative;
   width: 200rpx;
   height: 150rpx;
-  border-radius: 12rpx;
   flex-shrink: 0;
+}
+
+.activity-cover {
+  width: 100%;
+  height: 100%;
+  border-radius: 12rpx;
+}
+
+/* 🎯 状态标签 */
+.status-badge {
+  position: absolute;
+  top: 8rpx;
+  left: 8rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 8rpx;
+  backdrop-filter: blur(10rpx);
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1;
+  z-index: 5;
+}
+
+.status-text {
+  font-size: 20rpx;
+  line-height: 1;
+}
+
+.status-available {
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+}
+
+.status-upcoming {
+  background: rgba(59, 130, 246, 0.9);
+  color: white;
+}
+
+.status-ongoing {
+  background: rgba(245, 158, 11, 0.9);
+  color: white;
+}
+
+.status-full {
+  background: rgba(239, 68, 68, 0.9);
+  color: white;
+}
+
+.status-ended {
+  background: rgba(107, 114, 128, 0.9);
+  color: white;
+}
+
+/* 🎯 已报名角标 */
+.joined-badge {
+  position: absolute;
+  top: 48rpx;
+  left: 16rpx;
+  padding: 6rpx 12rpx;
+  background: linear-gradient(135deg, #2FBD6A 0%, #4DD88E 100%);
+  border-radius: 8rpx;
+  box-shadow: 0 2rpx 8rpx rgba(47, 189, 106, 0.3);
+  z-index: 11;
+}
+
+.joined-text {
+  font-size: 20rpx;
+  font-weight: 600;
+  color: white;
+  line-height: 1;
+}
+
+/* 🎯 收藏按钮 */
+.favorite-btn {
+  position: absolute;
+  top: 16rpx;
+  right: 16rpx;
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FFE5D9 0%, #FFF0E8 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.15);
+  z-index: 10;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 16rpx rgba(255, 122, 0, 0.25);
+}
+
+.favorite-btn:active {
+  transform: scale(0.95);
+}
+
+.favorite-btn.favorited {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.3);
+  animation: heart-beat 0.6s ease-out;
+}
+
+.favorite-btn.favorited:hover {
+  box-shadow: 0 6rpx 16rpx rgba(255, 107, 107, 0.4);
+}
+
+.favorite-icon {
+  font-size: 32rpx;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.favorite-btn.favorited .favorite-icon {
+  transform: scale(1.1);
+}
+
+@keyframes heart-beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.15);
+  }
 }
 
 .activity-info {
@@ -500,6 +747,16 @@ defineExpose({
   font-size: 24rpx;
   color: #999999;
   line-height: 1;
+}
+
+.meta-item.remaining {
+  color: #666666;
+  font-weight: 500;
+}
+
+.meta-item.remaining.urgent {
+  color: #FF7A00;
+  font-weight: 600;
 }
 
 /* 空状态 */

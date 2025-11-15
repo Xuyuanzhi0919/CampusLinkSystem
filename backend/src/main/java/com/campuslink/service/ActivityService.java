@@ -81,7 +81,8 @@ public class ActivityService {
     /**
      * 获取活动列表
      */
-    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize, Long clubId, Integer status) {
+    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize,
+                                                         Long clubId, Integer status, String sortBy, String keyword) {
         Page<Activity> activityPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<>();
 
@@ -94,7 +95,24 @@ public class ActivityService {
             wrapper.eq(Activity::getStatus, status);
         }
 
-        wrapper.orderByDesc(Activity::getCreatedAt);
+        // 🎯 关键字搜索 - 搜索标题和地点
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.and(w -> w.like(Activity::getTitle, keyword)
+                    .or()
+                    .like(Activity::getLocation, keyword));
+        }
+
+        // 🎯 排序逻辑
+        if ("hot".equals(sortBy)) {
+            // 按热度排序（报名人数降序）
+            wrapper.orderByDesc(Activity::getCurrentParticipants);
+        } else if ("time".equals(sortBy)) {
+            // 按时间排序（开始时间升序）
+            wrapper.orderByAsc(Activity::getStartTime);
+        } else {
+            // 默认按创建时间降序（最新）
+            wrapper.orderByDesc(Activity::getCreatedAt);
+        }
 
         activityPage = activityMapper.selectPage(activityPage, wrapper);
 

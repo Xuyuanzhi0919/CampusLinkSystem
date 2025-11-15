@@ -10,9 +10,8 @@
     @empty-action="goToActivityList"
     @view-all="goToActivityList"
   >
-    <!-- 筛选和排序控制栏 -->
+    <!-- 🎯 状态筛选栏（仅保留状态筛选）-->
     <view v-if="activities.length > 0" class="filter-bar">
-      <!-- 状态筛选 -->
       <view class="filter-group">
         <view
           v-for="filter in statusFilters"
@@ -24,27 +23,13 @@
           <text class="filter-text">{{ filter.label }}</text>
         </view>
       </view>
-
-      <!-- 排序选择 -->
-      <view class="sort-group">
-        <view
-          v-for="sort in sortOptions"
-          :key="sort.value"
-          class="sort-tag"
-          :class="{ 'active': currentSort === sort.value }"
-          @click="currentSort = sort.value"
-        >
-          <text class="sort-text">{{ sort.label }}</text>
-          <text v-if="currentSort === sort.value" class="sort-icon">▼</text>
-        </view>
-      </view>
     </view>
 
     <!-- 🎯 空状态占位 -->
     <view v-if="filteredActivities.length === 0 && activities.length > 0" class="empty-state">
       <view class="empty-icon">📭</view>
       <text class="empty-title">没有找到相关活动</text>
-      <text class="empty-desc">试试调整筛选条件或排序方式</text>
+      <text class="empty-desc">试试调整筛选条件</text>
       <view class="empty-action" @click="resetFilters">
         <text class="action-text">重置筛选</text>
       </view>
@@ -169,9 +154,8 @@ const cardStatus = ref<CardStatus>('loading')
 // 🎯 登录状态
 const isLoggedIn = ref(false)
 
-// 🎯 筛选和排序状态
+// 🎯 筛选状态
 const currentStatusFilter = ref<string | number>('all')
-const currentSort = ref<string>('created-desc') // 🎯 默认显示最新发布的活动
 
 // 筛选选项
 const statusFilters = [
@@ -179,13 +163,6 @@ const statusFilters = [
   { label: '未开始', value: 0 },
   { label: '进行中', value: 1 },
   { label: '已结束', value: 2 }
-]
-
-// 排序选项
-const sortOptions = [
-  { label: '最新发布', value: 'created-desc' }, // 🎯 按创建时间倒序
-  { label: '即将开始', value: 'start-asc' },    // 🎯 按开始时间正序（过滤已结束）
-  { label: '名额最多', value: 'slots-desc' }     // 🎯 按剩余名额倒序
 ]
 
 // Props & Emits
@@ -211,7 +188,7 @@ interface Activity {
 
 const activities = ref<Activity[]>([])
 
-// 🎯 过滤和排序后的活动列表
+// 🎯 筛选后的活动列表（默认按创建时间倒序）
 const filteredActivities = computed(() => {
   let filtered = activities.value
 
@@ -223,27 +200,11 @@ const filteredActivities = computed(() => {
   // 🎯 步骤 2：创建副本用于排序（避免修改原数组）
   filtered = [...filtered]
 
-  // 🎯 步骤 3：排序逻辑
-  if (currentSort.value === 'created-desc') {
-    // 最新发布（按创建时间倒序）
-    filtered.sort((a, b) => {
-      if (!a.createdAt || !b.createdAt) return 0
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    })
-  } else if (currentSort.value === 'start-asc') {
-    // 即将开始（按开始时间正序）
-    // 🎯 仅在未选择状态筛选时，才过滤掉已结束的活动
-    if (currentStatusFilter.value === 'all') {
-      filtered = filtered.filter(a => a.status !== 2)
-    }
-    filtered.sort((a, b) => {
-      if (!a.startTime || !b.startTime) return 0
-      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
-    })
-  } else if (currentSort.value === 'slots-desc') {
-    // 名额最多（按剩余名额倒序）
-    filtered.sort((a, b) => (b.remainingSlots || 0) - (a.remainingSlots || 0))
-  }
+  // 🎯 步骤 3：默认按创建时间倒序排序（最新发布）
+  filtered.sort((a, b) => {
+    if (!a.createdAt || !b.createdAt) return 0
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  })
 
   return filtered
 })
@@ -797,7 +758,6 @@ const toggleFavorite = async (activity: Activity, event: Event) => {
  */
 const resetFilters = () => {
   currentStatusFilter.value = 'all'
-  currentSort.value = 'time-desc'
 
   uni.showToast({
     title: '已重置筛选',
@@ -979,15 +939,13 @@ onUnmounted(() => {
   margin-bottom: 24rpx;
 }
 
-.filter-group,
-.sort-group {
+.filter-group {
   display: flex;
   flex-wrap: wrap;
   gap: 12rpx;
 }
 
-.filter-tag,
-.sort-tag {
+.filter-tag {
   display: inline-flex;
   align-items: center;
   gap: 4rpx;
@@ -1006,29 +964,17 @@ onUnmounted(() => {
     background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
     border-color: #FF6B35;
 
-    .filter-text,
-    .sort-text {
+    .filter-text {
       color: #FFFFFF;
       font-weight: 600;
-    }
-
-    .sort-icon {
-      color: #FFFFFF;
     }
   }
 }
 
-.filter-text,
-.sort-text {
+.filter-text {
   font-size: 28rpx;
   color: #374151;
   font-weight: 500;
-  transition: all 0.3s ease;
-}
-
-.sort-icon {
-  font-size: 20rpx;
-  color: #9CA3AF;
   transition: all 0.3s ease;
 }
 

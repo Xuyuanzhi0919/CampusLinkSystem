@@ -332,6 +332,12 @@ const handleJoinActivity = async () => {
     // 🎯 触发数字闪烁动画
     triggerNumberHighlight()
 
+    // 🎯 触发全局事件，通知首页刷新活动数据
+    uni.$emit('activity-status-changed', {
+      activityId: activityId.value,
+      isJoined: true
+    })
+
     // 可选：弹窗询问是否加入日历提醒
     setTimeout(() => {
       uni.showModal({
@@ -373,6 +379,12 @@ const handleCancelActivity = async () => {
 
     // 🎯 触发数字闪烁动画
     triggerNumberHighlight()
+
+    // 🎯 触发全局事件，通知首页刷新活动数据
+    uni.$emit('activity-status-changed', {
+      activityId: activityId.value,
+      isJoined: false
+    })
   } catch (err: any) {
     console.error('取消报名失败:', err)
     uni.showToast({

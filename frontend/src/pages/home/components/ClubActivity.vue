@@ -422,6 +422,35 @@ const handleUserLogin = () => {
   loadActivityData() // 刷新数据以获取用户报名状态
 }
 
+/**
+ * 🎯 监听活动状态变化事件 - 同步报名/取消报名状态
+ */
+const handleActivityStatusChanged = (event: { activityId: number, isJoined: boolean }) => {
+  console.log('[ClubActivity] 监听到活动状态变化:', event)
+
+  // 清除缓存
+  cache.remove(CACHE_KEYS.ACTIVITIES)
+
+  // 立即更新本地状态
+  const activityIndex = activities.value.findIndex(a => a.id === event.activityId)
+  if (activityIndex !== -1) {
+    activities.value[activityIndex].hasJoined = event.isJoined
+    // 更新名额数（报名时减1，取消时加1）
+    if (event.isJoined) {
+      if (activities.value[activityIndex].remainingSlots > 0) {
+        activities.value[activityIndex].remainingSlots--
+      }
+    } else {
+      activities.value[activityIndex].remainingSlots++
+    }
+  }
+
+  // 延迟刷新确保同步
+  setTimeout(() => {
+    loadActivityData(true)
+  }, 500)
+}
+
 // 组件挂载时加载数据并注册事件监听
 onMounted(() => {
   // 🎯 初始化登录状态
@@ -432,6 +461,9 @@ onMounted(() => {
   // 🎯 监听登录/退出事件
   uni.$on('user-login', handleUserLogin)
   uni.$on('user-logout', handleUserLogout)
+
+  // 🎯 监听活动状态变化事件（详情页报名/取消报名）
+  uni.$on('activity-status-changed', handleActivityStatusChanged)
 
   // 🎯 注册桌面端鼠标拖拽事件（全局监听）
   // @ts-ignore
@@ -448,6 +480,9 @@ onUnmounted(() => {
   // 🎯 清理登录/退出事件监听
   uni.$off('user-login', handleUserLogin)
   uni.$off('user-logout', handleUserLogout)
+
+  // 🎯 清理活动状态变化事件监听
+  uni.$off('activity-status-changed', handleActivityStatusChanged)
 
   // 🎯 清理桌面端鼠标拖拽事件
   // @ts-ignore

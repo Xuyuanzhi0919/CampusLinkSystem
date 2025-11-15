@@ -171,7 +171,7 @@ const isLoggedIn = ref(false)
 
 // 🎯 筛选和排序状态
 const currentStatusFilter = ref<string | number>('all')
-const currentSort = ref<string>('time-desc')
+const currentSort = ref<string>('created-desc') // 🎯 默认显示最新发布的活动
 
 // 筛选选项
 const statusFilters = [
@@ -183,9 +183,9 @@ const statusFilters = [
 
 // 排序选项
 const sortOptions = [
-  { label: '最新活动', value: 'time-desc' },
-  { label: '即将开始', value: 'time-asc' },
-  { label: '名额最多', value: 'slots-desc' }
+  { label: '最新发布', value: 'created-desc' }, // 🎯 按创建时间倒序
+  { label: '即将开始', value: 'start-asc' },    // 🎯 按开始时间正序（过滤已结束）
+  { label: '名额最多', value: 'slots-desc' }     // 🎯 按剩余名额倒序
 ]
 
 // Props & Emits
@@ -205,6 +205,7 @@ interface Activity {
   startTime?: string   // 🎯 活动开始时间
   endTime?: string     // 🎯 活动结束时间
   status?: number      // 🎯 活动状态 (0=待开始, 1=进行中, 2=已结束)
+  createdAt?: string   // 🎯 活动创建时间（用于"最新发布"排序）
   imageLoaded?: boolean // 🎯 图片是否已加载完成
 }
 
@@ -212,22 +213,26 @@ const activities = ref<Activity[]>([])
 
 // 🎯 过滤和排序后的活动列表
 const filteredActivities = computed(() => {
-  let filtered = [...activities.value]
+  let filtered = activities.value
 
-  // 按状态筛选
+  // 🎯 步骤 1：按状态筛选
   if (currentStatusFilter.value !== 'all') {
     filtered = filtered.filter(a => a.status === currentStatusFilter.value)
   }
 
-  // 排序
-  if (currentSort.value === 'time-desc') {
-    // 最新活动（按开始时间倒序）
+  // 🎯 步骤 2：创建副本用于排序（避免修改原数组）
+  filtered = [...filtered]
+
+  // 🎯 步骤 3：排序逻辑
+  if (currentSort.value === 'created-desc') {
+    // 最新发布（按创建时间倒序）
     filtered.sort((a, b) => {
-      if (!a.startTime || !b.startTime) return 0
-      return new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      if (!a.createdAt || !b.createdAt) return 0
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
-  } else if (currentSort.value === 'time-asc') {
-    // 即将开始（按开始时间正序）
+  } else if (currentSort.value === 'start-asc') {
+    // 即将开始（按开始时间正序，且过滤掉已结束的）
+    filtered = filtered.filter(a => a.status !== 2) // 排除已结束的活动
     filtered.sort((a, b) => {
       if (!a.startTime || !b.startTime) return 0
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()

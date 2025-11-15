@@ -154,7 +154,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import config from '@/config'
 import StatusCardWrapper from '@/components/StatusCardWrapper.vue'
 import { getActivityList, joinActivity } from '@/services/activity'
@@ -501,9 +501,20 @@ const loadActivityData = async (forceRefresh = false) => {
   cardStatus.value = 'loading'
 
   try {
+    // 🎯 构建请求参数
+    const params: any = {
+      page: 1,
+      pageSize: 6
+    }
+
+    // 🎯 根据用户选择的状态筛选器传递参数
+    if (currentStatusFilter.value !== 'all') {
+      params.status = currentStatusFilter.value
+    }
+
     // 🎯 带重试的请求（最多重试 3 次）
     const res = await retryAsync(
-      () => getActivityList({ page: 1, pageSize: 6, status: 0 }),
+      () => getActivityList(params),
       RetryPresets.STANDARD
     )
 
@@ -527,6 +538,7 @@ const loadActivityData = async (forceRefresh = false) => {
         startTime: item.startTime,    // 🎯 活动开始时间
         endTime: item.endTime,        // 🎯 活动结束时间
         status: item.status,          // 🎯 活动状态
+        createdAt: item.createdAt,    // 🎯 活动创建时间（用于"最新发布"排序）
         imageLoaded: oldState?.imageLoaded || false  // 🎯 保留已加载状态
       }
     })
@@ -889,6 +901,15 @@ const handleKeyboardNavigation = (event: KeyboardEvent) => {
     }
   }
 }
+
+/**
+ * 🎯 监听状态筛选变化 - 重新从后端加载数据
+ */
+watch(currentStatusFilter, () => {
+  console.log('[ClubActivity] 状态筛选变化，重新加载数据:', currentStatusFilter.value)
+  cache.remove(CACHE_KEYS.ACTIVITIES) // 清除缓存，确保获取最新数据
+  loadActivityData(true)
+})
 
 // 组件挂载时加载数据并注册事件监听
 onMounted(() => {

@@ -2,17 +2,40 @@
   <view class="activity-list-page" role="main" aria-label="活动列表页面">
     <!-- 搜索栏 + 筛选按钮 -->
     <view class="search-bar" role="search">
-      <view class="search-input">
-        <text class="search-icon" aria-hidden="true">🔍</text>
-        <input
-          class="input"
-          type="text"
-          v-model="searchKeyword"
-          placeholder="搜索活动名称或社团"
-          aria-label="搜索活动"
-          @confirm="handleSearch"
-        />
+      <view class="search-input-wrapper">
+        <view class="search-input">
+          <text class="search-icon" aria-hidden="true">🔍</text>
+          <input
+            class="input"
+            type="text"
+            v-model="searchKeyword"
+            placeholder="搜索活动名称或社团"
+            aria-label="搜索活动"
+            @focus="showSearchHistory = true"
+            @confirm="handleSearch"
+          />
+          <text v-if="searchKeyword" class="clear-icon" @click="clearSearch">×</text>
+        </view>
+
+        <!-- 🎯 搜索历史下拉列表 -->
+        <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
+          <view class="history-header">
+            <text class="history-title">搜索历史</text>
+            <text class="history-clear" @click="clearAllHistory">清空</text>
+          </view>
+          <view
+            v-for="(item, index) in searchHistory"
+            :key="index"
+            class="history-item"
+            @click="selectHistory(item)"
+          >
+            <text class="history-icon">🕒</text>
+            <text class="history-text">{{ item }}</text>
+            <text class="history-delete" @click.stop="deleteHistory(index)">×</text>
+          </view>
+        </view>
       </view>
+
       <view
         class="filter-btn"
         role="button"
@@ -24,6 +47,28 @@
       >
         <text class="filter-icon" aria-hidden="true">⚙️</text>
       </view>
+    </view>
+
+    <!-- 🎯 快捷筛选 Tabs -->
+    <view class="quick-filter-tabs">
+      <view
+        v-for="(tab, index) in quickFilterTabs"
+        :key="index"
+        class="tab-item"
+        :class="{ active: filters.status === tab.value }"
+        @click="handleQuickFilter(tab.value)"
+      >
+        <text class="tab-text">{{ tab.label }}</text>
+        <view v-if="filters.status === tab.value" class="tab-indicator"></view>
+      </view>
+    </view>
+
+    <!-- 🎯 筛选结果信息栏 -->
+    <view class="result-info" v-if="!loading || activities.length > 0">
+      <text class="result-count">
+        {{ hasActiveFilters || searchKeyword ? `找到 ${activities.length} 条活动` : `共 ${activities.length} 条活动` }}
+      </text>
+      <text v-if="hasActiveFilters" class="filtered-hint">（已筛选）</text>
     </view>
 
     <!-- 筛选标签栏 -->
@@ -47,20 +92,25 @@
 
     <!-- 活动列表 -->
     <view class="activity-list">
-      <!-- 🎯 骨架屏 - 首次加载时显示 -->
+      <!-- 🎯 骨架屏 - 首次加载时显示（符合文档规范）-->
       <view v-if="loading && activities.length === 0" class="skeleton-list">
-        <view v-for="i in 3" :key="'skeleton-' + i" class="skeleton-item">
+        <view v-for="i in skeletonCount" :key="'skeleton-' + i" class="skeleton-item">
+          <!-- 封面图骨架 -->
           <view class="skeleton-cover shimmer"></view>
+
+          <!-- 文本信息骨架 -->
           <view class="skeleton-info">
-            <view class="skeleton-title shimmer"></view>
+            <!-- 标题两行 - 第一行长，第二行短 -->
+            <view class="skeleton-title skeleton-title-1 shimmer"></view>
+            <view class="skeleton-title skeleton-title-2 shimmer"></view>
+
+            <!-- 社团名称 -->
             <view class="skeleton-club shimmer"></view>
+
+            <!-- 时间 + 地点一行 -->
             <view class="skeleton-meta">
-              <view class="skeleton-meta-item shimmer"></view>
-              <view class="skeleton-meta-item shimmer"></view>
-            </view>
-            <view class="skeleton-meta">
-              <view class="skeleton-meta-item shimmer"></view>
-              <view class="skeleton-meta-item shimmer"></view>
+              <view class="skeleton-meta-item skeleton-meta-time shimmer"></view>
+              <view class="skeleton-meta-item skeleton-meta-location shimmer"></view>
             </view>
           </view>
         </view>
@@ -79,21 +129,33 @@
       >
         <!-- 活动封面 -->
         <view class="cover-wrapper">
+          <!-- 🎯 图片懒加载 + 占位符 + 错误处理 -->
           <image
             class="activity-cover"
+            :class="{ 'image-loaded': activity._imageLoaded, 'image-error': activity._imageError }"
             :src="activity.coverImage || `https://picsum.photos/200/150?random=${activity.activityId}`"
             mode="aspectFill"
             :alt="`${activity.title}封面图`"
+            lazy-load
+            @load="onImageLoad(activity)"
+            @error="onImageError(activity)"
           />
+          <!-- 🎯 骨架屏占位符 - 统一设计规范 -->
+          <view v-if="!activity._imageLoaded && !activity._imageError" class="image-skeleton skeleton-shimmer"></view>
+          <!-- 🎯 错误占位符 - 降级展示 -->
+          <view v-if="activity._imageError" class="image-error-placeholder">
+            <text class="error-icon">📷</text>
+            <text class="error-text">加载失败</text>
+          </view>
 
-          <!-- 状态标签 - 左上角 -->
+          <!-- 🎯 状态标签 - 左上角（整合倒计时） -->
           <view
             class="status-badge"
             :class="getStatusClass(activity)"
             role="status"
-            :aria-label="`活动状态：${getStatusText(activity)}`"
+            :aria-label="`活动状态：${getStatusTextWithCountdown(activity)}`"
           >
-            <text class="status-text" aria-hidden="true">{{ getStatusText(activity) }}</text>
+            <text class="status-text" aria-hidden="true">{{ getStatusTextWithCountdown(activity) }}</text>
           </view>
 
           <!-- 已报名标签 - 左下角 -->
@@ -119,11 +181,26 @@
 
         <!-- 活动信息 -->
         <view class="activity-info">
-          <text class="activity-title">{{ activity.title }}</text>
+          <!-- 🎯 标题 - 支持关键词高亮 -->
+          <view class="activity-title">
+            <text
+              v-for="(part, index) in highlightText(activity.title)"
+              :key="index"
+              :class="{ 'highlight': part.highlight }"
+            >{{ part.text }}</text>
+          </view>
           <text class="activity-club">{{ activity.clubName }}</text>
           <view class="activity-meta">
             <text class="meta-item">📅 {{ formatDate(activity.startTime) }}</text>
-            <text class="meta-item">📍 {{ activity.location || '待定' }}</text>
+            <!-- 🎯 地点 - 支持关键词高亮 -->
+            <view class="meta-item location-item">
+              <text>📍 </text>
+              <text
+                v-for="(part, index) in highlightText(activity.location || '待定')"
+                :key="index"
+                :class="{ 'highlight': part.highlight }"
+              >{{ part.text }}</text>
+            </view>
           </view>
           <view class="activity-meta">
             <text class="meta-item">👥 {{ activity.currentParticipants }}/{{ activity.maxParticipants }}</text>
@@ -148,6 +225,20 @@
       <view v-if="loading && activities.length > 0" class="loading-more">
         <text class="loading-text">加载中...</text>
       </view>
+
+      <!-- 🎯 没有更多数据提示 -->
+      <view v-if="!loading && !hasMore && activities.length > 0" class="no-more-data">
+        <text class="no-more-text">没有更多数据了</text>
+      </view>
+    </view>
+
+    <!-- 🎯 回到顶部按钮 -->
+    <view
+      v-if="showBackTop"
+      class="back-top-btn"
+      @click="scrollToTop"
+    >
+      <text class="back-top-icon">↑</text>
     </view>
 
     <!-- 筛选弹窗 -->
@@ -237,7 +328,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { getActivityList } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
@@ -246,6 +337,15 @@ import config from '@/config'
 // 搜索关键词
 const searchKeyword = ref('')
 let searchTimer: number | null = null // 防抖定时器
+
+// 🎯 搜索历史
+const showSearchHistory = ref(false)
+const searchHistory = ref<string[]>([])
+const SEARCH_HISTORY_KEY = 'activity_search_history'
+const MAX_HISTORY_COUNT = 5 // 最多保存5条历史
+
+// 🎯 筛选条件持久化
+const FILTER_STORAGE_KEY = 'activity_filter_conditions'
 
 // 活动列表
 const activities = ref<any[]>([])
@@ -257,6 +357,13 @@ const hasMore = ref(true)
 // 🎯 错误重试机制
 const retryCount = ref(0)
 const maxRetries = 3
+
+// 🎯 回到顶部按钮
+const showBackTop = ref(false)
+const scrollTop = ref(0)
+
+// 🎯 骨架屏数量（根据屏幕高度动态计算）
+const skeletonCount = ref(3)
 
 // 筛选弹窗
 const showFilterPopup = ref(false)
@@ -276,6 +383,14 @@ const tempFilters = ref({ ...filters.value })
 
 // 状态选项
 const statusOptions = [
+  { label: '全部', value: null },
+  { label: '未开始', value: 0 },
+  { label: '进行中', value: 1 },
+  { label: '已结束', value: 2 }
+]
+
+// 🎯 快捷筛选 Tabs（用于顶部快速切换）
+const quickFilterTabs = [
   { label: '全部', value: null },
   { label: '未开始', value: 0 },
   { label: '进行中', value: 1 },
@@ -408,6 +523,9 @@ const loadActivityList = async (refresh = false) => {
 
     let list = res?.list || res?.records || []
 
+    // 🎯 保存后端返回的原始数据量（用于判断是否还有更多数据）
+    const originalListLength = list.length
+
     // 🎯 前端过滤：时间范围
     if (filters.value.timeRange !== 'all') {
       const now = new Date()
@@ -452,7 +570,10 @@ const loadActivityList = async (refresh = false) => {
       activities.value = [...activities.value, ...list]
     }
 
-    hasMore.value = list.length >= pageSize.value
+    // 🎯 关键修复：基于后端返回的原始数据量判断是否还有更多数据
+    // 只有当后端返回的数据量等于pageSize时，才认为可能还有更多数据
+    // 这样即使前端过滤掉了部分数据，也能正确判断
+    hasMore.value = originalListLength === pageSize.value
     page.value++
 
     // 🎯 成功后重置重试计数
@@ -500,7 +621,193 @@ const loadActivityList = async (refresh = false) => {
  * 搜索
  */
 const handleSearch = () => {
+  const keyword = searchKeyword.value.trim()
+  if (keyword) {
+    // 🎯 保存搜索历史
+    saveSearchHistory(keyword)
+  }
+  showSearchHistory.value = false
   loadActivityList(true)
+}
+
+/**
+ * 🎯 清除搜索
+ */
+const clearSearch = () => {
+  searchKeyword.value = ''
+  showSearchHistory.value = false
+  loadActivityList(true)
+}
+
+/**
+ * 🎯 保存搜索历史
+ */
+const saveSearchHistory = (keyword: string) => {
+  // 去重：如果已存在，先移除
+  const index = searchHistory.value.indexOf(keyword)
+  if (index > -1) {
+    searchHistory.value.splice(index, 1)
+  }
+
+  // 添加到数组开头
+  searchHistory.value.unshift(keyword)
+
+  // 限制最多保存5条
+  if (searchHistory.value.length > MAX_HISTORY_COUNT) {
+    searchHistory.value = searchHistory.value.slice(0, MAX_HISTORY_COUNT)
+  }
+
+  // 保存到本地存储
+  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+}
+
+/**
+ * 🎯 选择历史记录
+ */
+const selectHistory = (keyword: string) => {
+  searchKeyword.value = keyword
+  showSearchHistory.value = false
+  handleSearch()
+}
+
+/**
+ * 🎯 删除单条历史记录
+ */
+const deleteHistory = (index: number) => {
+  searchHistory.value.splice(index, 1)
+  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+}
+
+/**
+ * 🎯 清空所有历史记录
+ */
+const clearAllHistory = () => {
+  searchHistory.value = []
+  uni.removeStorageSync(SEARCH_HISTORY_KEY)
+  showSearchHistory.value = false
+}
+
+/**
+ * 🎯 加载搜索历史
+ */
+const loadSearchHistory = () => {
+  try {
+    const history = uni.getStorageSync(SEARCH_HISTORY_KEY)
+    if (history) {
+      searchHistory.value = JSON.parse(history)
+    }
+  } catch (error) {
+    console.error('加载搜索历史失败:', error)
+  }
+}
+
+/**
+ * 🎯 保存筛选条件到本地存储
+ */
+const saveFilterConditions = () => {
+  try {
+    const filterData = {
+      status: filters.value.status,
+      sortBy: filters.value.sortBy,
+      timeRange: filters.value.timeRange,
+      joinStatus: filters.value.joinStatus
+    }
+    uni.setStorageSync(FILTER_STORAGE_KEY, JSON.stringify(filterData))
+    console.log('[Filter] 筛选条件已保存:', filterData)
+  } catch (error) {
+    console.error('[Filter] 保存筛选条件失败:', error)
+  }
+}
+
+/**
+ * 🎯 从本地存储恢复筛选条件
+ */
+const loadFilterConditions = () => {
+  try {
+    const savedFilters = uni.getStorageSync(FILTER_STORAGE_KEY)
+    if (savedFilters) {
+      const filterData = JSON.parse(savedFilters)
+      filters.value.status = filterData.status ?? null
+      filters.value.sortBy = filterData.sortBy || 'time'
+      filters.value.timeRange = filterData.timeRange || 'all'
+      filters.value.joinStatus = filterData.joinStatus || 'all'
+
+      // 同步到临时筛选条件
+      tempFilters.value = { ...filters.value }
+
+      console.log('[Filter] 筛选条件已恢复:', filterData)
+    }
+  } catch (error) {
+    console.error('[Filter] 加载筛选条件失败:', error)
+  }
+}
+
+/**
+ * 🎯 根据屏幕高度动态计算骨架屏数量
+ */
+const calculateSkeletonCount = () => {
+  try {
+    const systemInfo = uni.getSystemInfoSync()
+    const screenHeight = systemInfo.windowHeight || systemInfo.screenHeight || 667
+
+    // 估算：
+    // - 顶部搜索栏 + Tabs + 结果信息 ≈ 200rpx = 100px
+    // - 每个骨架屏项高度 ≈ 200rpx = 100px
+    // - 底部留白 ≈ 100rpx = 50px
+
+    const headerHeight = 150 // 顶部区域高度（px）
+    const itemHeight = 100   // 单个骨架屏项高度（px）
+    const bottomPadding = 50 // 底部留白（px）
+
+    const availableHeight = screenHeight - headerHeight - bottomPadding
+    const count = Math.ceil(availableHeight / itemHeight)
+
+    // 限制在 3-8 个之间
+    skeletonCount.value = Math.max(3, Math.min(8, count))
+
+    console.log(`[Skeleton] 屏幕高度: ${screenHeight}px, 骨架屏数量: ${skeletonCount.value}`)
+  } catch (error) {
+    console.error('[Skeleton] 计算骨架屏数量失败:', error)
+    skeletonCount.value = 3 // 降级方案：默认 3 个
+  }
+}
+
+/**
+ * 🎯 回到顶部
+ */
+const scrollToTop = () => {
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  })
+}
+
+/**
+ * 🎯 处理页面滚动事件 - 显示/隐藏回到顶部按钮 + 触发加载更多
+ */
+const handleScroll = () => {
+  // #ifdef H5
+  scrollTop.value = window.pageYOffset || document.documentElement.scrollTop
+  showBackTop.value = scrollTop.value > 400
+
+  // 🎯 H5 端手动触发"到达底部"逻辑
+  const scrollHeight = document.documentElement.scrollHeight
+  const clientHeight = document.documentElement.clientHeight
+  const scrollBottom = scrollHeight - scrollTop.value - clientHeight
+
+  // 距离底部小于 50px 时触发加载
+  if (scrollBottom < 50) {
+    onReachBottom()
+  }
+  // #endif
+}
+
+/**
+ * 🎯 UniApp 页面滚动回调（用于小程序等）
+ */
+const onPageScroll = (e: any) => {
+  scrollTop.value = e.scrollTop
+  showBackTop.value = e.scrollTop > 400
 }
 
 /**
@@ -537,6 +844,7 @@ const selectJoinStatus = (joinStatus: 'all' | 'joined' | 'available') => {
 const applyFilters = () => {
   filters.value = { ...tempFilters.value }
   showFilterPopup.value = false
+  saveFilterConditions() // 🎯 保存筛选条件
   loadActivityList(true)
 }
 
@@ -570,6 +878,7 @@ const clearFilter = (key: string) => {
   } else if (key === 'joinStatus') {
     filters.value.joinStatus = 'all'
   }
+  saveFilterConditions() // 🎯 保存筛选条件
   loadActivityList(true)
 }
 
@@ -585,7 +894,55 @@ const clearAllFilters = () => {
     timeRange: 'all',
     joinStatus: 'all'
   }
+  saveFilterConditions() // 🎯 保存筛选条件
   loadActivityList(true)
+}
+
+/**
+ * 🎯 快捷筛选 Tab 切换
+ */
+const handleQuickFilter = (status: number | null) => {
+  filters.value.status = status
+  saveFilterConditions() // 🎯 保存筛选条件
+  loadActivityList(true)
+}
+
+/**
+ * 🎯 搜索关键词高亮处理
+ * @param text 要处理的文本
+ * @returns 分割后的文本片段数组，标记是否需要高亮
+ */
+const highlightText = (text: string) => {
+  // 如果没有搜索关键词，直接返回原文本
+  if (!searchKeyword.value.trim()) {
+    return [{ text, highlight: false }]
+  }
+
+  const keyword = searchKeyword.value.trim()
+  const regex = new RegExp(`(${keyword})`, 'gi')
+  const parts = text.split(regex)
+
+  return parts.map(part => ({
+    text: part,
+    highlight: part.toLowerCase() === keyword.toLowerCase()
+  }))
+}
+
+/**
+ * 🎯 图片加载成功回调
+ */
+const onImageLoad = (activity: any) => {
+  activity._imageLoaded = true
+  activity._imageError = false
+}
+
+/**
+ * 🎯 图片加载失败回调
+ */
+const onImageError = (activity: any) => {
+  activity._imageLoaded = false
+  activity._imageError = true
+  console.warn(`[Image] 活动封面加载失败: ${activity.activityId}`)
 }
 
 /**
@@ -616,28 +973,72 @@ const getRemainingSlots = (activity: any) => {
 }
 
 /**
- * 🎯 获取活动状态文本
+ * 🎯 获取活动状态文本（整合倒计时）
  */
-const getStatusText = (activity: any) => {
+const getStatusTextWithCountdown = (activity: any) => {
   const remaining = getRemainingSlots(activity)
+  const now = new Date()
+  const startTime = new Date(activity.startTime)
+  const diffMs = startTime.getTime() - now.getTime()
 
+  // 已结束
   if (activity.status === 2) return '已结束'
+
+  // 进行中
   if (activity.status === 1) return '进行中'
+
+  // 名额已满
   if (remaining === 0) return '名额已满'
-  if (activity.status === 0) return '未开始'
+
+  // 未开始 - 显示倒计时
+  if (activity.status === 0) {
+    const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000))
+    const diffHours = Math.floor(diffMs / (60 * 60 * 1000))
+    const diffMinutes = Math.floor(diffMs / (60 * 1000))
+
+    // 即将开始（1小时内）
+    if (diffMinutes <= 60 && diffMinutes > 0) return '即将开始'
+    // 2小时内
+    if (diffHours < 2) return `${diffHours}小时后`
+    // 24小时内
+    if (diffHours < 24) return `${diffHours}小时后`
+    // 7天内
+    if (diffDays < 7 && diffDays >= 1) return `${diffDays}天后`
+    // 7天以上显示未开始
+    return '未开始'
+  }
+
   return '报名中'
 }
 
 /**
- * 🎯 获取状态样式类
+ * 🎯 获取状态样式类（整合倒计时紧急度）
  */
 const getStatusClass = (activity: any) => {
   const remaining = getRemainingSlots(activity)
+  const now = new Date()
+  const startTime = new Date(activity.startTime)
+  const diffHours = Math.floor((startTime.getTime() - now.getTime()) / (60 * 60 * 1000))
 
+  // 已结束
   if (activity.status === 2) return 'status-ended'
+
+  // 进行中
   if (activity.status === 1) return 'status-ongoing'
+
+  // 名额已满
   if (remaining === 0) return 'status-full'
-  if (activity.status === 0) return 'status-upcoming'
+
+  // 未开始 - 根据倒计时设置紧急度
+  if (activity.status === 0) {
+    // 2小时内 - 紧急（红色+动画）
+    if (diffHours < 2 && diffHours >= 0) return 'status-urgent'
+    // 24小时内 - 即将开始（橙色）
+    if (diffHours < 24) return 'status-soon'
+    // 其他 - 未开始（蓝色）
+    return 'status-upcoming'
+  }
+
   return 'status-available'
 }
 
@@ -722,9 +1123,41 @@ const onReachBottom = () => {
   loadActivityList()
 }
 
+/**
+ * 🎯 监听收藏状态变化（跨页面同步）
+ */
+const handleFavoriteChange = (event: any) => {
+  const { activityId, isFavorited } = event
+  const index = activities.value.findIndex(a => a.activityId === activityId)
+  if (index > -1) {
+    activities.value[index].isFavorited = isFavorited
+  }
+}
+
 // 页面加载
 onMounted(() => {
+  calculateSkeletonCount() // 🎯 计算骨架屏数量
+  loadSearchHistory() // 🎯 加载搜索历史
+  loadFilterConditions() // 🎯 加载筛选条件
   loadActivityList()
+
+  // 🎯 监听全局收藏状态变化事件
+  uni.$on('activity-favorite-changed', handleFavoriteChange)
+
+  // 🎯 H5 端监听窗口滚动事件
+  // #ifdef H5
+  window.addEventListener('scroll', handleScroll)
+  // #endif
+})
+
+// 🎯 页面卸载时移除事件监听
+onUnmounted(() => {
+  uni.$off('activity-favorite-changed', handleFavoriteChange)
+
+  // 🎯 H5 端移除窗口滚动监听
+  // #ifdef H5
+  window.removeEventListener('scroll', handleScroll)
+  // #endif
 })
 
 /**
@@ -745,7 +1178,8 @@ watch(searchKeyword, () => {
 // 导出方法给页面使用
 defineExpose({
   onPullDownRefresh,
-  onReachBottom
+  onReachBottom,
+  onPageScroll
 })
 </script>
 
@@ -765,8 +1199,12 @@ defineExpose({
   border-bottom: 1rpx solid #E5E7EB;
 }
 
-.search-input {
+.search-input-wrapper {
   flex: 1;
+  position: relative;
+}
+
+.search-input {
   display: flex;
   align-items: center;
   gap: 16rpx;
@@ -808,6 +1246,89 @@ defineExpose({
   line-height: 1.4;
 }
 
+/* 🎯 清除搜索按钮 */
+.clear-icon {
+  font-size: 40rpx;
+  color: #9CA3AF;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 8rpx;
+}
+
+/* 🎯 搜索历史下拉列表 */
+.search-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8rpx;
+  background: white;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  overflow: hidden;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 24rpx;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.history-title {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: #6B7280;
+}
+
+.history-clear {
+  font-size: 24rpx;
+  color: #FF7A00;
+  cursor: pointer;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  border-bottom: 1rpx solid #F3F4F6;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+.history-item:active {
+  background: #F9FAFB;
+}
+
+.history-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.history-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: #374151;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-delete {
+  font-size: 36rpx;
+  color: #9CA3AF;
+  line-height: 1;
+  padding: 0 8rpx;
+  cursor: pointer;
+}
+
 /* 活动列表 */
 .activity-list {
   padding: 24rpx 32rpx;
@@ -844,6 +1365,91 @@ defineExpose({
   width: 100%;
   height: 100%;
   border-radius: 12rpx;
+  background: #F3F4F6;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* 🎯 图片加载完成后显示 */
+.activity-cover.image-loaded {
+  opacity: 1;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 🎯 图片加载失败 */
+.activity-cover.image-error {
+  opacity: 0.3;
+}
+
+/* ========== 🎯 骨架屏统一设计规范 ========== */
+
+/* 骨架屏图片占位符 - 企业级懒加载方案 */
+.image-skeleton {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #E6E8EE;
+  border-radius: 12rpx;
+}
+
+/* 高光扫过动画（shimmer effect）*/
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -150%;
+  width: 150%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: skeleton-shimmer 1.2s infinite;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* 🎯 图片加载失败占位符 */
+.image-error-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  border-radius: 12rpx;
+}
+
+.error-icon {
+  font-size: 40rpx;
+  opacity: 0.5;
+}
+
+.error-text {
+  font-size: 20rpx;
+  color: #EF4444;
+  opacity: 0.7;
 }
 
 /* 🎯 状态标签 */
@@ -875,13 +1481,26 @@ defineExpose({
   color: white;
 }
 
-.status-ongoing {
+/* 🎯 即将开始（24小时内） */
+.status-soon {
   background: rgba(245, 158, 11, 0.9);
   color: white;
 }
 
-.status-full {
+/* 🎯 紧急（2小时内）- 带脉冲动画 */
+.status-urgent {
   background: rgba(239, 68, 68, 0.9);
+  color: white;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-ongoing {
+  background: rgba(34, 197, 94, 0.9);
+  color: white;
+}
+
+.status-full {
+  background: rgba(156, 163, 175, 0.9);
   color: white;
 }
 
@@ -974,7 +1593,8 @@ defineExpose({
   }
 }
 
-/* 🎯 骨架屏样式 */
+/* ========== 🎯 活动卡片骨架屏（首次加载）========== */
+
 .skeleton-list {
   padding: 0;
 }
@@ -984,55 +1604,80 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 24rpx;
-  background: white;
+  background: #FDFDFE;
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
 }
 
+/* 骨架块基础样式 */
+.skeleton-cover,
+.skeleton-title,
+.skeleton-club,
+.skeleton-meta-item {
+  background-color: #E6E8EE;
+}
+
+/* 封面图骨架 - 16:9 比例 */
 .skeleton-cover {
   width: 200rpx;
   height: 150rpx;
   flex-shrink: 0;
-  border-radius: 12rpx;
-  background: #E5E7EB;
+  border-radius: 16rpx;
 }
 
 .skeleton-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 14rpx;
 }
 
+/* 标题两行 - 胶囊形（文档规范：第一行 70%，第二行 50%）*/
 .skeleton-title {
-  width: 60%;
-  height: 32rpx;
-  border-radius: 4rpx;
-  background: #E5E7EB;
+  height: 28rpx;
+  border-radius: 999rpx;
 }
 
+.skeleton-title-1 {
+  width: 70%;
+}
+
+.skeleton-title-2 {
+  width: 50%;
+  height: 24rpx;
+}
+
+/* 社团名称 - 胶囊形 */
 .skeleton-club {
   width: 40%;
-  height: 24rpx;
-  border-radius: 4rpx;
-  background: #E5E7EB;
+  height: 22rpx;
+  border-radius: 999rpx;
 }
 
+/* 时间 + 地点一行 */
 .skeleton-meta {
   display: flex;
   gap: 16rpx;
+  margin-top: 8rpx;
 }
 
 .skeleton-meta-item {
-  width: 120rpx;
   height: 20rpx;
-  border-radius: 4rpx;
-  background: #E5E7EB;
+  border-radius: 999rpx;
 }
 
-/* 🎯 骨架屏闪烁动画 */
+/* 文档规范：时间 30%，地点 40% */
+.skeleton-meta-time {
+  width: 30%;
+}
+
+.skeleton-meta-location {
+  width: 40%;
+}
+
+/* 🎯 统一的 shimmer 高光动画（复用） */
 .shimmer {
   position: relative;
   overflow: hidden;
@@ -1042,24 +1687,24 @@ defineExpose({
   content: '';
   position: absolute;
   top: 0;
-  left: -100%;
-  width: 100%;
+  left: -150%;
+  width: 150%;
   height: 100%;
   background: linear-gradient(
     90deg,
-    transparent,
-    rgba(255, 255, 255, 0.8),
-    transparent
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0) 100%
   );
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 1.2s infinite;
 }
 
 @keyframes shimmer {
   0% {
-    left: -100%;
+    transform: translateX(0);
   }
   100% {
-    left: 100%;
+    transform: translateX(100%);
   }
 }
 
@@ -1083,6 +1728,28 @@ defineExpose({
   -webkit-box-orient: vertical;
 }
 
+/* 🎯 搜索关键词高亮 */
+.highlight {
+  color: #FF7A00;
+  font-weight: 700;
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
+  padding: 2rpx 6rpx;
+  border-radius: 4rpx;
+  animation: highlightPulse 0.5s ease-out;
+}
+
+@keyframes highlightPulse {
+  0% {
+    background: #FFF3E0;
+  }
+  50% {
+    background: #FFD699;
+  }
+  100% {
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
+  }
+}
+
 .activity-club {
   font-size: 26rpx;
   color: #666666;
@@ -1101,6 +1768,12 @@ defineExpose({
   line-height: 1;
 }
 
+.location-item {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
 .meta-item.remaining {
   color: #666666;
   font-weight: 500;
@@ -1109,6 +1782,16 @@ defineExpose({
 .meta-item.remaining.urgent {
   color: #FF7A00;
   font-weight: 600;
+}
+
+/* 🎯 脉冲动画（用于紧急状态） */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* 🎯 空状态优化 */
@@ -1149,6 +1832,169 @@ defineExpose({
 .loading-text {
   font-size: 26rpx;
   color: #999999;
+}
+
+/* 🎯 没有更多数据 */
+.no-more-data {
+  padding: 48rpx;
+  text-align: center;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  position: relative;
+  display: inline-block;
+  padding: 0 24rpx;
+}
+
+.no-more-text::before,
+.no-more-text::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 80rpx;
+  height: 1rpx;
+  background: linear-gradient(to right, transparent, #E5E7EB, transparent);
+}
+
+.no-more-text::before {
+  right: 100%;
+  margin-right: 16rpx;
+}
+
+.no-more-text::after {
+  left: 100%;
+  margin-left: 16rpx;
+}
+
+/* 🎯 回到顶部按钮 */
+.back-top-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 120rpx;
+  width: 88rpx;
+  height: 88rpx;
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba(255, 122, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 999;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.back-top-btn:hover {
+  transform: translateY(-8rpx);
+  box-shadow: 0 12rpx 32rpx rgba(255, 122, 0, 0.4);
+}
+
+.back-top-btn:active {
+  transform: translateY(-4rpx) scale(0.95);
+}
+
+.back-top-icon {
+  font-size: 48rpx;
+  font-weight: bold;
+  color: white;
+  line-height: 1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🎯 快捷筛选 Tabs */
+.quick-filter-tabs {
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  padding: 20rpx 32rpx;
+  background: white;
+  border-bottom: 1rpx solid #E5E7EB;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 0;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.tab-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #6B7280;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.tab-item.active .tab-text {
+  color: #FF7A00;
+  font-weight: 600;
+  font-size: 30rpx;
+}
+
+.tab-indicator {
+  width: 32rpx;
+  height: 6rpx;
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  border-radius: 3rpx;
+  animation: tabIndicatorSlide 0.3s ease-out;
+}
+
+@keyframes tabIndicatorSlide {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 32rpx;
+    opacity: 1;
+  }
+}
+
+/* 🎯 筛选结果信息栏 */
+.result-info {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 32rpx;
+  background: #FFF9F0;
+  border-bottom: 1rpx solid #FFE5CC;
+}
+
+.result-count {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #FF7A00;
+}
+
+.filtered-hint {
+  font-size: 24rpx;
+  color: #FF9933;
 }
 
 /* 筛选标签栏 */

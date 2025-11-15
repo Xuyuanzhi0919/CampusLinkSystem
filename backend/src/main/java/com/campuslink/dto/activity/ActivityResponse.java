@@ -90,6 +90,11 @@ public class ActivityResponse {
     private Boolean isSignedIn;
 
     /**
+     * 是否已收藏
+     */
+    private Boolean isFavorited;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;

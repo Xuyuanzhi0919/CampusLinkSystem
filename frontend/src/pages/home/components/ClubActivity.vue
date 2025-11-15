@@ -3,14 +3,54 @@
     title="社团动态"
     :status="cardStatus"
     card-type="activity"
-    :badge="activities.length > 0 ? activities.length + ' 个活动' : ''"
+    :badge="filteredActivities.length > 0 ? filteredActivities.length + ' 个活动' : ''"
     :skeleton-count="3"
     @login="handleLoginClick"
     @retry="loadActivityData"
     @empty-action="goToActivityList"
     @view-all="goToActivityList"
   >
-    <view class="scroll-wrapper">
+    <!-- 筛选和排序控制栏 -->
+    <view v-if="activities.length > 0" class="filter-bar">
+      <!-- 状态筛选 -->
+      <view class="filter-group">
+        <view
+          v-for="filter in statusFilters"
+          :key="filter.value"
+          class="filter-tag"
+          :class="{ 'active': currentStatusFilter === filter.value }"
+          @click="currentStatusFilter = filter.value"
+        >
+          <text class="filter-text">{{ filter.label }}</text>
+        </view>
+      </view>
+
+      <!-- 排序选择 -->
+      <view class="sort-group">
+        <view
+          v-for="sort in sortOptions"
+          :key="sort.value"
+          class="sort-tag"
+          :class="{ 'active': currentSort === sort.value }"
+          @click="currentSort = sort.value"
+        >
+          <text class="sort-text">{{ sort.label }}</text>
+          <text v-if="currentSort === sort.value" class="sort-icon">▼</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 🎯 空状态占位 -->
+    <view v-if="filteredActivities.length === 0 && activities.length > 0" class="empty-state">
+      <view class="empty-icon">📭</view>
+      <text class="empty-title">没有找到相关活动</text>
+      <text class="empty-desc">试试调整筛选条件或排序方式</text>
+      <view class="empty-action" @click="resetFilters">
+        <text class="action-text">重置筛选</text>
+      </view>
+    </view>
+
+    <view v-else class="scroll-wrapper">
       <!-- 左侧渐变提示 -->
       <view class="scroll-hint scroll-hint-left"></view>
 
@@ -27,7 +67,7 @@
       >
         <view class="activity-container">
           <view
-            v-for="(activity, index) in activities"
+            v-for="(activity, index) in filteredActivities"
             :key="activity.id"
             class="activity-card"
             :class="{ 'fade-in': showAnimation }"
@@ -36,12 +76,17 @@
           >
           <!-- 活动海报 -->
           <view class="activity-poster">
+            <!-- 🎯 模糊占位背景 -->
+            <view class="poster-placeholder" :class="{ 'fade-out': activity.imageLoaded }"></view>
+
             <image
               class="poster-image"
+              :class="{ 'loaded': activity.imageLoaded }"
               :src="activity.poster"
               mode="aspectFill"
               lazy-load
-              @error="handleImageError"
+              @load="handleImageLoad(activity)"
+              @error="handleImageError(activity)"
             />
 
             <!-- 剩余名额标签 -->
@@ -52,6 +97,15 @@
             <!-- 🎯 活动状态标签 -->
             <view v-if="activity.status !== undefined" class="status-badge" :class="getActivityStatusClass(activity.status)">
               <text class="status-text">{{ getActivityStatusLabel(activity.status) }}</text>
+            </view>
+
+            <!-- 🎯 收藏按钮 -->
+            <view
+              class="favorite-btn"
+              :class="{ 'favorited': activity.isFavorited }"
+              @click="toggleFavorite(activity, $event)"
+            >
+              <text class="favorite-icon">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
             </view>
           </view>
 
@@ -88,9 +142,9 @@
     </view>
 
     <!-- 🎯 分页Dots指示器 -->
-    <view v-if="activities.length > 1" class="pagination-dots">
+    <view v-if="filteredActivities.length > 1" class="pagination-dots">
       <view
-        v-for="(activity, index) in activities"
+        v-for="(activity, index) in filteredActivities"
         :key="activity.id"
         class="dot"
         :class="{ 'dot-active': currentIndex === index }"
@@ -100,10 +154,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import config from '@/config'
 import StatusCardWrapper from '@/components/StatusCardWrapper.vue'
 import { getActivityList, joinActivity } from '@/services/activity'
+import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { CardStatus } from '@/components/StatusCardWrapper.vue'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import { retryAsync, RetryPresets } from '@/utils/retry'
@@ -113,6 +168,25 @@ const cardStatus = ref<CardStatus>('loading')
 
 // 🎯 登录状态
 const isLoggedIn = ref(false)
+
+// 🎯 筛选和排序状态
+const currentStatusFilter = ref<string | number>('all')
+const currentSort = ref<string>('time-desc')
+
+// 筛选选项
+const statusFilters = [
+  { label: '全部', value: 'all' },
+  { label: '未开始', value: 0 },
+  { label: '进行中', value: 1 },
+  { label: '已结束', value: 2 }
+]
+
+// 排序选项
+const sortOptions = [
+  { label: '最新活动', value: 'time-desc' },
+  { label: '即将开始', value: 'time-asc' },
+  { label: '名额最多', value: 'slots-desc' }
+]
 
 // Props & Emits
 const emit = defineEmits<{
@@ -127,12 +201,44 @@ interface Activity {
   clubName: string
   remainingSlots: number
   hasJoined?: boolean // 🎯 是否已报名
+  isFavorited?: boolean // 🎯 是否已收藏
   startTime?: string   // 🎯 活动开始时间
   endTime?: string     // 🎯 活动结束时间
   status?: number      // 🎯 活动状态 (0=待开始, 1=进行中, 2=已结束)
+  imageLoaded?: boolean // 🎯 图片是否已加载完成
 }
 
 const activities = ref<Activity[]>([])
+
+// 🎯 过滤和排序后的活动列表
+const filteredActivities = computed(() => {
+  let filtered = [...activities.value]
+
+  // 按状态筛选
+  if (currentStatusFilter.value !== 'all') {
+    filtered = filtered.filter(a => a.status === currentStatusFilter.value)
+  }
+
+  // 排序
+  if (currentSort.value === 'time-desc') {
+    // 最新活动（按开始时间倒序）
+    filtered.sort((a, b) => {
+      if (!a.startTime || !b.startTime) return 0
+      return new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    })
+  } else if (currentSort.value === 'time-asc') {
+    // 即将开始（按开始时间正序）
+    filtered.sort((a, b) => {
+      if (!a.startTime || !b.startTime) return 0
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
+    })
+  } else if (currentSort.value === 'slots-desc') {
+    // 名额最多（按剩余名额倒序）
+    filtered.sort((a, b) => (b.remainingSlots || 0) - (a.remainingSlots || 0))
+  }
+
+  return filtered
+})
 
 // 🎯 动画控制
 const showAnimation = ref(false) // 是否显示淡入动画
@@ -330,11 +436,20 @@ const getSignupButtonText = (activity: Activity) => {
 }
 
 /**
+ * 🎯 处理图片加载成功
+ */
+const handleImageLoad = (activity: Activity) => {
+  // 标记图片已加载
+  activity.imageLoaded = true
+}
+
+/**
  * 🎯 处理图片加载错误
  */
-const handleImageError = (e: any) => {
-  console.error('图片加载失败:', e)
-  // uni-app 的 image 组件会自动显示默认占位图
+const handleImageError = (activity: Activity) => {
+  console.error('图片加载失败:', activity.poster)
+  // 即使加载失败,也标记为已加载以移除占位符
+  activity.imageLoaded = true
 }
 
 /**
@@ -384,19 +499,29 @@ const loadActivityData = async (forceRefresh = false) => {
       RetryPresets.STANDARD
     )
 
-    const list = res?.list || res?.records || []
+    const list = res?.list || (res as any)?.records || []
 
-    activities.value = list.map((item: any) => ({
-      id: item.activityId,
-      name: item.title,
-      poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
-      clubName: item.clubName || '社团',
-      remainingSlots: item.remainingSlots ?? 0,  // 🎯 直接使用后端计算的剩余名额
-      hasJoined: item.isJoined || false,
-      startTime: item.startTime,    // 🎯 活动开始时间
-      endTime: item.endTime,        // 🎯 活动结束时间
-      status: item.status           // 🎯 活动状态
-    }))
+    // 🎯 保留旧数据的图片加载状态，避免刷新时重新加载图片
+    const oldActivitiesMap = new Map(
+      activities.value.map(a => [a.id, { imageLoaded: a.imageLoaded }])
+    )
+
+    activities.value = list.map((item: any) => {
+      const oldState = oldActivitiesMap.get(item.activityId)
+      return {
+        id: item.activityId,
+        name: item.title,
+        poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
+        clubName: item.clubName || '社团',
+        remainingSlots: item.remainingSlots ?? 0,  // 🎯 直接使用后端计算的剩余名额
+        hasJoined: item.isJoined || false,
+        isFavorited: item.isFavorited || false,  // 🎯 收藏状态
+        startTime: item.startTime,    // 🎯 活动开始时间
+        endTime: item.endTime,        // 🎯 活动结束时间
+        status: item.status,          // 🎯 活动状态
+        imageLoaded: oldState?.imageLoaded || false  // 🎯 保留已加载状态
+      }
+    })
 
     // 🎯 缓存数据（5 分钟）
     cache.set(CACHE_KEYS.ACTIVITIES, activities.value, CACHE_TTL.MEDIUM)
@@ -407,16 +532,17 @@ const loadActivityData = async (forceRefresh = false) => {
     } else {
       cardStatus.value = 'normal'
 
-      // 🎯 触发淡入动画
-      setTimeout(() => {
-        showAnimation.value = true
-      }, 50)
+      // 🎯 只在首次加载时触发淡入动画，避免刷新时重复动画
+      if (!showAnimation.value) {
+        setTimeout(() => {
+          showAnimation.value = true
+        }, 50)
 
-      // 🎯 数据加载成功后，触发首次横滑提示
-      // 使用 nextTick 确保 DOM 已渲染
-      setTimeout(() => {
-        showScrollHint()
-      }, 100)
+        // 🎯 数据加载成功后，触发首次横滑提示
+        setTimeout(() => {
+          showScrollHint()
+        }, 100)
+      }
     }
   } catch (error: any) {
     console.error('加载活动数据失败（已重试 3 次）:', error)
@@ -534,24 +660,24 @@ const performSignup = async (activity: Activity) => {
 
     uni.hideLoading()
 
-    uni.showToast({
-      title: '报名成功！',
-      icon: 'success',
-      duration: 2000
-    })
-
-    // 🎯 乐观更新 - 立即更新报名状态
+    // 立即更新本地状态
     const activityIndex = activities.value.findIndex(a => a.id === activity.id)
     if (activityIndex !== -1) {
       activities.value[activityIndex].hasJoined = true
-      // 🎯 不手动减少名额,等待后端刷新获取准确数据
+      if (activities.value[activityIndex].remainingSlots > 0) {
+        activities.value[activityIndex].remainingSlots -= 1
+      }
     }
 
-    // 🎯 清除缓存并延迟刷新 - 获取最新的名额数据
+    // 显示成功提示
+    uni.showToast({
+      title: '报名成功',
+      icon: 'success',
+      duration: 1500
+    })
+
+    // 清除缓存
     cache.remove(CACHE_KEYS.ACTIVITIES)
-    setTimeout(() => {
-      loadActivityData(true)
-    }, 1000)
 
   } catch (error: any) {
     uni.hideLoading()
@@ -588,6 +714,79 @@ const performSignup = async (activity: Activity) => {
 }
 
 /**
+ * 🎯 切换收藏状态
+ */
+const toggleFavorite = async (activity: Activity, event: Event) => {
+  // 阻止事件冒泡,避免触发卡片点击
+  event.stopPropagation()
+
+  // 检查登录状态
+  if (!isLoggedIn.value) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 1500
+    })
+    return
+  }
+
+  const activityIndex = activities.value.findIndex(a => a.id === activity.id)
+  if (activityIndex === -1) return
+
+  const currentFavStatus = activity.isFavorited
+
+  try {
+    // 乐观更新
+    activities.value[activityIndex].isFavorited = !currentFavStatus
+
+    if (currentFavStatus) {
+      // 取消收藏
+      await removeFavorite('activity', activity.id)
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'success',
+        duration: 1500
+      })
+    } else {
+      // 添加收藏
+      await addFavorite('activity', activity.id)
+      uni.showToast({
+        title: '收藏成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+
+    // 🎯 清除缓存,确保下次加载时获取最新的收藏状态
+    cache.remove(CACHE_KEYS.ACTIVITIES)
+
+  } catch (error: any) {
+    // 失败时回滚
+    activities.value[activityIndex].isFavorited = currentFavStatus
+
+    uni.showToast({
+      title: error.message || '操作失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
+ * 🎯 重置筛选条件
+ */
+const resetFilters = () => {
+  currentStatusFilter.value = 'all'
+  currentSort.value = 'time-desc'
+
+  uni.showToast({
+    title: '已重置筛选',
+    icon: 'success',
+    duration: 1500
+  })
+}
+
+/**
  * 🎯 监听退出登录事件 - 清除缓存
  */
 const handleUserLogout = () => {
@@ -608,24 +807,79 @@ const handleUserLogin = () => {
 
 /**
  * 🎯 监听活动状态变化事件 - 同步报名/取消报名状态
+ * ⚠️ 注意：此事件仅由 activity-detail.vue 触发，用于同步详情页的报名操作
  */
 const handleActivityStatusChanged = (event: { activityId: number, isJoined: boolean }) => {
-  console.log('[ClubActivity] 监听到活动状态变化:', event)
+  console.log('[ClubActivity] 🔔 监听到活动状态变化事件:', event)
+  console.log('[ClubActivity] 📍 事件来源：activity-detail.vue（详情页报名/取消报名）')
 
-  // 清除缓存
-  cache.remove(CACHE_KEYS.ACTIVITIES)
-
-  // 立即更新本地状态
+  // 🎯 立即更新本地状态，不触发刷新
   const activityIndex = activities.value.findIndex(a => a.id === event.activityId)
   if (activityIndex !== -1) {
     activities.value[activityIndex].hasJoined = event.isJoined
-    // 🎯 不手动修改名额,等待后端刷新获取准确数据
+    // 如果是取消报名，恢复名额
+    if (!event.isJoined && activities.value[activityIndex].remainingSlots !== undefined) {
+      activities.value[activityIndex].remainingSlots += 1
+    }
+    // 如果是报名，减少名额
+    else if (event.isJoined && activities.value[activityIndex].remainingSlots > 0) {
+      activities.value[activityIndex].remainingSlots -= 1
+    }
+    console.log('[ClubActivity] ✅ 本地状态已更新，不触发刷新')
   }
 
-  // 延迟刷新确保同步
-  setTimeout(() => {
-    loadActivityData(true)
-  }, 500)
+  // 🎯 清除缓存，下次进入页面时会重新加载最新数据
+  cache.remove(CACHE_KEYS.ACTIVITIES)
+}
+
+/**
+ * 🎯 监听活动收藏状态变化事件 - 同步收藏/取消收藏状态
+ * ⚠️ 注意：此事件仅由 activity-detail.vue 触发，用于同步详情页的收藏操作
+ */
+const handleActivityFavoriteChanged = (event: { activityId: number, isFavorited: boolean }) => {
+  console.log('[ClubActivity] 🔔 监听到活动收藏状态变化事件:', event)
+  console.log('[ClubActivity] 📍 事件来源：activity-detail.vue（详情页收藏/取消收藏）')
+
+  // 🎯 立即更新本地状态
+  const activityIndex = activities.value.findIndex(a => a.id === event.activityId)
+  if (activityIndex !== -1) {
+    activities.value[activityIndex].isFavorited = event.isFavorited
+    console.log('[ClubActivity] ✅ 收藏状态已同步')
+  }
+
+  // 🎯 清除缓存，确保数据一致性
+  cache.remove(CACHE_KEYS.ACTIVITIES)
+}
+
+/**
+ * 🎯 键盘导航 - 左箭头切换到上一个活动
+ */
+const handleKeyboardNavigation = (event: KeyboardEvent) => {
+  if (filteredActivities.value.length === 0) return
+
+  const scrollContainer = document.querySelector('.activity-scroll') as HTMLElement
+  if (!scrollContainer) return
+
+  // 左箭头 - 上一个
+  if (event.key === 'ArrowLeft') {
+    event.preventDefault()
+    if (currentIndex.value > 0) {
+      currentIndex.value -= 1
+      // 滚动到对应位置
+      const cardWidth = 240 + 24 // 卡片宽度 + gap
+      scrollContainer.scrollLeft = currentIndex.value * cardWidth
+    }
+  }
+  // 右箭头 - 下一个
+  else if (event.key === 'ArrowRight') {
+    event.preventDefault()
+    if (currentIndex.value < filteredActivities.value.length - 1) {
+      currentIndex.value += 1
+      // 滚动到对应位置
+      const cardWidth = 240 + 24 // 卡片宽度 + gap
+      scrollContainer.scrollLeft = currentIndex.value * cardWidth
+    }
+  }
 }
 
 // 组件挂载时加载数据并注册事件监听
@@ -642,6 +896,9 @@ onMounted(() => {
   // 🎯 监听活动状态变化事件（详情页报名/取消报名）
   uni.$on('activity-status-changed', handleActivityStatusChanged)
 
+  // 🎯 监听活动收藏状态变化事件（详情页收藏/取消收藏）
+  uni.$on('activity-favorite-changed', handleActivityFavoriteChanged)
+
   // 🎯 注册桌面端鼠标拖拽事件（全局监听）
   // @ts-ignore
   if (typeof document !== 'undefined') {
@@ -649,6 +906,9 @@ onMounted(() => {
     document.addEventListener('mouseup', handleMouseUp)
     document.addEventListener('touchmove', handleMouseMove)
     document.addEventListener('touchend', handleMouseUp)
+
+    // 🎯 注册键盘导航事件
+    document.addEventListener('keydown', handleKeyboardNavigation)
   }
 })
 
@@ -661,19 +921,167 @@ onUnmounted(() => {
   // 🎯 清理活动状态变化事件监听
   uni.$off('activity-status-changed', handleActivityStatusChanged)
 
-  // 🎯 清理桌面端鼠标拖拽事件
+  // 🎯 清理活动收藏状态变化事件监听
+  uni.$off('activity-favorite-changed', handleActivityFavoriteChanged)
+
+  // 🎯 清理桌面端鼠标拖拽事件和键盘导航事件
   // @ts-ignore
   if (typeof document !== 'undefined') {
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
     document.removeEventListener('touchmove', handleMouseMove)
     document.removeEventListener('touchend', handleMouseUp)
+    document.removeEventListener('keydown', handleKeyboardNavigation)
   }
 })
 </script>
 
 <style scoped lang="scss">
 /* ========== 业务内容样式 ========== */
+
+/* 🎯 筛选和排序控制栏 */
+.filter-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  padding: 20rpx 32rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.filter-group,
+.sort-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.filter-tag,
+.sort-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 12rpx 24rpx;
+  background: #F3F4F6;
+  border-radius: 24rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover {
+    background: #E5E7EB;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+    border-color: #FF6B35;
+
+    .filter-text,
+    .sort-text {
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+
+    .sort-icon {
+      color: #FFFFFF;
+    }
+  }
+}
+
+.filter-text,
+.sort-text {
+  font-size: 28rpx;
+  color: #374151;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.sort-icon {
+  font-size: 20rpx;
+  color: #9CA3AF;
+  transition: all 0.3s ease;
+}
+
+/* 🎯 空状态占位 */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56rpx 32rpx 52rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  margin-bottom: 24rpx;
+  animation: fadeIn 0.5s ease;
+  box-sizing: border-box;
+  height: 444rpx; /* 🎯 与活动卡片高度完全一致 (400rpx卡片 + 16rpx容器padding + 28rpx分页点padding) */
+  border: 1px solid #F0F2F5; /* 与活动卡片边框保持一致 */
+}
+
+.empty-icon {
+  font-size: 96rpx;
+  margin-bottom: 20rpx;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 8rpx;
+}
+
+.empty-desc {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  margin-bottom: 28rpx;
+  text-align: center;
+}
+
+.empty-action {
+  padding: 16rpx 40rpx;
+  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  border-radius: 32rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.25);
+
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 6rpx 16rpx rgba(255, 107, 53, 0.35);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.action-text {
+  font-size: 28rpx;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10rpx);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 
 /* 活动横向滚动 */
 .activity-scroll {
@@ -797,11 +1205,46 @@ onUnmounted(() => {
   background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); /* 🎯 加载占位背景 */
 }
 
+/* 🎯 渐进式加载占位符 */
+.poster-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 50%, #E5E7EB 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  z-index: 1;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+
+  &.fade-out {
+    opacity: 0;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 .poster-image {
   width: 100%;
   height: 100%;
-  background-color: #F9FAFB; /* 🎯 图片加载中的背景色 */
-  transition: opacity 0.3s ease; /* 🎯 图片加载完成后的淡入效果 */
+  background-color: #F9FAFB;
+  opacity: 0;
+  z-index: 2;
+  position: relative;
+  transition: opacity 0.5s ease;
+
+  &.loaded {
+    opacity: 1;
+  }
 }
 
 .slots-tag {
@@ -852,6 +1295,63 @@ onUnmounted(() => {
 /* 已结束 - 灰色 */
 .status-ended {
   background: rgba(148, 163, 184, 0.9);
+}
+
+/* 🎯 收藏按钮 */
+.favorite-btn {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8rpx);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 10;
+
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.favorited {
+    background: rgba(255, 240, 242, 0.95);
+    animation: heartBeat 0.6s ease;
+  }
+}
+
+.favorite-icon {
+  font-size: 32rpx;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+@keyframes heartBeat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  14% {
+    transform: scale(1.3);
+  }
+  28% {
+    transform: scale(1);
+  }
+  42% {
+    transform: scale(1.2);
+  }
+  56% {
+    transform: scale(1);
+  }
 }
 
 /* 活动信息 */
@@ -990,6 +1490,86 @@ onUnmounted(() => {
   color: #3B82F6; /* 🎯 统一色调：蓝色文字 */
   line-height: 1;
   transition: color 0.25s ease;
+}
+
+/* 🎯 报名成功动画效果 */
+.activity-card.success-pulse {
+  animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+  50% {
+    transform: scale(1.03);
+    box-shadow: 0 8rpx 32rpx rgba(34, 197, 94, 0.4);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  }
+}
+
+/* 🎯 成功图标样式 */
+.success-icon {
+  position: absolute;
+  right: 16rpx;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 36rpx;
+  height: 36rpx;
+  background: linear-gradient(135deg, #22C55E 0%, #10B981 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24rpx;
+  font-weight: bold;
+  animation: successIconPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.4);
+}
+
+@keyframes successIconPop {
+  0% {
+    transform: translateY(-50%) scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(-50%) scale(1.2);
+  }
+  100% {
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+  }
+}
+
+/* 🎯 按钮成功状态动画 */
+.signup-btn.success-animation {
+  background: linear-gradient(135deg, #22C55E 0%, #10B981 100%) !important;
+  border-color: #22C55E !important;
+  animation: buttonSuccess 0.6s ease-out;
+
+  .signup-text {
+    color: white !important;
+  }
+}
+
+@keyframes buttonSuccess {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(0.95);
+  }
+  40% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ========== 🎯 分页Dots指示器 ========== */

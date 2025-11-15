@@ -33,9 +33,18 @@
 
       <!-- ② 活动主体信息 -->
       <view class="activity-main">
-        <!-- 标题 + 标签 -->
+        <!-- 标题 + 标签 + 收藏按钮 -->
         <view class="title-section">
-          <text class="activity-title">{{ activity.title }}</text>
+          <view class="title-row">
+            <text class="activity-title">{{ activity.title }}</text>
+            <view
+              class="favorite-btn"
+              :class="{ 'favorited': activity.isFavorited }"
+              @click="toggleFavorite"
+            >
+              <text class="favorite-icon">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
+            </view>
+          </view>
           <view class="activity-tags">
             <view v-if="isHot" class="tag tag-hot">🔥 热门</view>
             <view v-if="isNew" class="tag tag-new">🆕 新发布</view>
@@ -121,6 +130,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getActivityDetail, joinActivity, cancelActivity } from '@/services/activity'
+import { addFavorite, removeFavorite } from '@/services/favorite'
+import { cache, CACHE_KEYS } from '@/utils/cache'
+import config from '@/config'
 
 // 🎯 路由参数
 const activityId = ref<number>(0)
@@ -152,6 +164,7 @@ interface ActivityDetail {
   clubId: number
   clubName: string
   isJoined: boolean
+  isFavorited: boolean
   status: number  // 0=未开始 1=进行中 2=已结束
   createdAt: string
 }
@@ -168,6 +181,7 @@ const activity = ref<ActivityDetail>({
   clubId: 0,
   clubName: '',
   isJoined: false,
+  isFavorited: false,
   status: 0,
   createdAt: ''
 })
@@ -406,6 +420,62 @@ const triggerNumberHighlight = () => {
 }
 
 /**
+ * 🎯 切换收藏状态
+ */
+const toggleFavorite = async () => {
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 1500
+    })
+    return
+  }
+
+  const currentFavStatus = activity.value.isFavorited
+
+  try {
+    // 乐观更新
+    activity.value.isFavorited = !currentFavStatus
+
+    if (currentFavStatus) {
+      await removeFavorite('activity', activity.value.activityId)
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'success',
+        duration: 1500
+      })
+    } else {
+      await addFavorite('activity', activity.value.activityId)
+      uni.showToast({
+        title: '收藏成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+
+    // 🎯 清除缓存,确保下次加载时获取最新的收藏状态
+    cache.remove(CACHE_KEYS.ACTIVITIES)
+
+    // 🎯 触发全局事件,通知首页更新收藏状态
+    uni.$emit('activity-favorite-changed', {
+      activityId: activity.value.activityId,
+      isFavorited: !currentFavStatus
+    })
+
+  } catch (error: any) {
+    // 失败时回滚
+    activity.value.isFavorited = currentFavStatus
+    uni.showToast({
+      title: error.message || '操作失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
  * 🎯 跳转到社团主页
  */
 const goToClub = () => {
@@ -618,13 +688,79 @@ onMounted(() => {
   margin-bottom: 32rpx; /* 🎯 最终版：标签区 → 信息卡片 16px */
 }
 
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 24rpx; /* 🎯 最终版：标题 → 标签 12px */
+}
+
 .activity-title {
   font-size: 48rpx; /* 🎯 最终版：Web 24px，H5 20px */
   font-weight: 600; /* 🎯 最终版：600 字重 */
   color: #1A1A1A;
   line-height: 1.4;
-  display: block;
-  margin-bottom: 24rpx; /* 🎯 最终版：标题 → 标签 12px */
+  flex: 1;
+}
+
+/* 🎯 收藏按钮 */
+.favorite-btn {
+  flex-shrink: 0;
+  width: 80rpx;
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FFE5D9 0%, #FFF0E8 100%);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.15);
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6rpx 16rpx rgba(255, 122, 0, 0.25);
+}
+
+.favorite-btn:active {
+  transform: scale(0.95);
+}
+
+.favorite-btn.favorited {
+  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.3);
+  animation: heart-beat 0.6s ease-out;
+}
+
+.favorite-btn.favorited:hover {
+  box-shadow: 0 6rpx 16rpx rgba(255, 107, 107, 0.4);
+}
+
+.favorite-icon {
+  font-size: 40rpx;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.favorite-btn.favorited .favorite-icon {
+  transform: scale(1.1);
+}
+
+@keyframes heart-beat {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  75% {
+    transform: scale(1.15);
+  }
 }
 
 .activity-tags {

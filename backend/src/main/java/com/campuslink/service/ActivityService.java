@@ -35,6 +35,7 @@ public class ActivityService {
     private final ClubMemberMapper clubMemberMapper;
     private final UserMapper userMapper;
     private final PointsLogMapper pointsLogMapper;
+    private final FavoriteService favoriteService;
 
     /**
      * 创建活动
@@ -358,10 +359,14 @@ public class ActivityService {
                 response.setIsJoined(false);
                 response.setIsSignedIn(false);
             }
+
+            // 🎯 查询是否已收藏
+            response.setIsFavorited(favoriteService.isFavorited(userId, "activity", activity.getActivityId()));
         } else {
             // 🎯 游客模式：设置默认值
             response.setIsJoined(false);
             response.setIsSignedIn(false);
+            response.setIsFavorited(false);
         }
 
         return response;

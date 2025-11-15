@@ -1,19 +1,28 @@
 <template>
-  <view class="activity-list-page">
+  <view class="activity-list-page" role="main" aria-label="活动列表页面">
     <!-- 搜索栏 + 筛选按钮 -->
-    <view class="search-bar">
+    <view class="search-bar" role="search">
       <view class="search-input">
-        <text class="search-icon">🔍</text>
+        <text class="search-icon" aria-hidden="true">🔍</text>
         <input
           class="input"
           type="text"
           v-model="searchKeyword"
           placeholder="搜索活动名称或社团"
+          aria-label="搜索活动"
           @confirm="handleSearch"
         />
       </view>
-      <view class="filter-btn" @click="showFilterPopup = true">
-        <text class="filter-icon">⚙️</text>
+      <view
+        class="filter-btn"
+        role="button"
+        aria-label="打开筛选面板"
+        tabindex="0"
+        @click="showFilterPopup = true"
+        @keydown.enter="showFilterPopup = true"
+        @keydown.space.prevent="showFilterPopup = true"
+      >
+        <text class="filter-icon" aria-hidden="true">⚙️</text>
       </view>
     </view>
 
@@ -38,11 +47,35 @@
 
     <!-- 活动列表 -->
     <view class="activity-list">
+      <!-- 🎯 骨架屏 - 首次加载时显示 -->
+      <view v-if="loading && activities.length === 0" class="skeleton-list">
+        <view v-for="i in 3" :key="'skeleton-' + i" class="skeleton-item">
+          <view class="skeleton-cover shimmer"></view>
+          <view class="skeleton-info">
+            <view class="skeleton-title shimmer"></view>
+            <view class="skeleton-club shimmer"></view>
+            <view class="skeleton-meta">
+              <view class="skeleton-meta-item shimmer"></view>
+              <view class="skeleton-meta-item shimmer"></view>
+            </view>
+            <view class="skeleton-meta">
+              <view class="skeleton-meta-item shimmer"></view>
+              <view class="skeleton-meta-item shimmer"></view>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 🎯 活动卡片列表 -->
       <view
         v-for="activity in activities"
         :key="activity.activityId"
         class="activity-item"
+        role="article"
+        :aria-label="`活动：${activity.title}`"
+        tabindex="0"
         @click="goToDetail(activity.activityId)"
+        @keydown.enter="goToDetail(activity.activityId)"
       >
         <!-- 活动封面 -->
         <view class="cover-wrapper">
@@ -50,29 +83,38 @@
             class="activity-cover"
             :src="activity.coverImage || `https://picsum.photos/200/150?random=${activity.activityId}`"
             mode="aspectFill"
+            :alt="`${activity.title}封面图`"
           />
 
-          <!-- 状态标签 -->
+          <!-- 状态标签 - 左上角 -->
           <view
             class="status-badge"
             :class="getStatusClass(activity)"
+            role="status"
+            :aria-label="`活动状态：${getStatusText(activity)}`"
           >
-            <text class="status-text">{{ getStatusText(activity) }}</text>
+            <text class="status-text" aria-hidden="true">{{ getStatusText(activity) }}</text>
+          </view>
+
+          <!-- 已报名标签 - 左下角 -->
+          <view v-if="activity.isJoined" class="joined-badge" role="status" aria-label="已报名">
+            <text class="joined-text" aria-hidden="true">已报名</text>
           </view>
         </view>
 
-        <!-- 收藏按钮 -->
+        <!-- 收藏按钮 - 右上角 -->
         <view
           class="favorite-btn"
           :class="{ 'favorited': activity.isFavorited }"
+          role="button"
+          :aria-label="activity.isFavorited ? '取消收藏' : '添加收藏'"
+          :aria-pressed="activity.isFavorited"
+          tabindex="0"
           @click.stop="toggleFavorite(activity)"
+          @keydown.enter.stop="toggleFavorite(activity)"
+          @keydown.space.prevent.stop="toggleFavorite(activity)"
         >
-          <text class="favorite-icon">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
-        </view>
-
-        <!-- 已报名角标 -->
-        <view v-if="activity.isJoined" class="joined-badge">
-          <text class="joined-text">✓ 已报名</text>
+          <text class="favorite-icon" aria-hidden="true">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
         </view>
 
         <!-- 活动信息 -->
@@ -95,14 +137,15 @@
         </view>
       </view>
 
-      <!-- 空状态 -->
+      <!-- 🎯 智能空状态 -->
       <view v-if="!loading && activities.length === 0" class="empty-state">
-        <text class="empty-icon">📭</text>
-        <text class="empty-text">暂无活动</text>
+        <text class="empty-icon">{{ emptyStateConfig.icon }}</text>
+        <text class="empty-text">{{ emptyStateConfig.text }}</text>
+        <text v-if="emptyStateConfig.hint" class="empty-hint">{{ emptyStateConfig.hint }}</text>
       </view>
 
       <!-- 加载更多 -->
-      <view v-if="loading" class="loading-more">
+      <view v-if="loading && activities.length > 0" class="loading-more">
         <text class="loading-text">加载中...</text>
       </view>
     </view>
@@ -123,7 +166,7 @@
               v-for="status in statusOptions"
               :key="status.value"
               class="option-item"
-              :class="{ active: filters.status === status.value }"
+              :class="{ active: tempFilters.status === status.value }"
               @click="selectStatus(status.value)"
             >
               <text class="option-text">{{ status.label }}</text>
@@ -139,10 +182,42 @@
               v-for="sort in sortOptions"
               :key="sort.value"
               class="option-item"
-              :class="{ active: filters.sortBy === sort.value }"
+              :class="{ active: tempFilters.sortBy === sort.value }"
               @click="selectSort(sort.value)"
             >
               <text class="option-text">{{ sort.label }}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 🎯 时间范围 -->
+        <view class="filter-section">
+          <text class="section-title">时间范围</text>
+          <view class="option-list">
+            <view
+              v-for="timeRange in timeRangeOptions"
+              :key="timeRange.value"
+              class="option-item"
+              :class="{ active: tempFilters.timeRange === timeRange.value }"
+              @click="selectTimeRange(timeRange.value as 'all' | 'today' | 'week' | 'month')"
+            >
+              <text class="option-text">{{ timeRange.label }}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 🎯 报名状态 -->
+        <view class="filter-section">
+          <text class="section-title">报名状态</text>
+          <view class="option-list">
+            <view
+              v-for="joinStatus in joinStatusOptions"
+              :key="joinStatus.value"
+              class="option-item"
+              :class="{ active: tempFilters.joinStatus === joinStatus.value }"
+              @click="selectJoinStatus(joinStatus.value as 'all' | 'joined' | 'available')"
+            >
+              <text class="option-text">{{ joinStatus.label }}</text>
             </view>
           </view>
         </view>
@@ -162,13 +237,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { getActivityList } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import config from '@/config'
 
 // 搜索关键词
 const searchKeyword = ref('')
+let searchTimer: number | null = null // 防抖定时器
 
 // 活动列表
 const activities = ref<any[]>([])
@@ -176,6 +253,10 @@ const loading = ref(false)
 const page = ref(1)
 const pageSize = ref(20)
 const hasMore = ref(true)
+
+// 🎯 错误重试机制
+const retryCount = ref(0)
+const maxRetries = 3
 
 // 筛选弹窗
 const showFilterPopup = ref(false)
@@ -185,7 +266,9 @@ const filters = ref({
   status: null as number | null, // 活动状态：null=全部, 0=未开始, 1=进行中, 2=已结束
   clubId: null as number | null, // 社团ID（预留）
   clubName: '', // 社团名称（预留）
-  sortBy: 'time' as 'time' | 'hot' | 'new' // 排序方式：time=时间, hot=热门, new=最新
+  sortBy: 'time' as 'time' | 'hot' | 'new', // 排序方式：time=时间, hot=热门, new=最新
+  timeRange: 'all' as 'all' | 'today' | 'week' | 'month', // 🎯 时间范围：all=全部, today=今天, week=本周, month=本月
+  joinStatus: 'all' as 'all' | 'joined' | 'available' // 🎯 报名状态：all=全部, joined=已报名, available=可报名
 })
 
 // 临时筛选条件（用于弹窗）
@@ -206,11 +289,56 @@ const sortOptions = [
   { label: '最新发布', value: 'new' }
 ]
 
+// 🎯 时间范围选项
+const timeRangeOptions = [
+  { label: '全部时间', value: 'all' },
+  { label: '今天', value: 'today' },
+  { label: '本周', value: 'week' },
+  { label: '本月', value: 'month' }
+]
+
+// 🎯 报名状态选项
+const joinStatusOptions = [
+  { label: '全部', value: 'all' },
+  { label: '已报名', value: 'joined' },
+  { label: '可报名', value: 'available' }
+]
+
 // 是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
   return filters.value.status !== null ||
          filters.value.clubId !== null ||
-         filters.value.sortBy !== 'time'
+         filters.value.sortBy !== 'time' ||
+         filters.value.timeRange !== 'all' ||
+         filters.value.joinStatus !== 'all'
+})
+
+// 🎯 智能空状态配置
+const emptyStateConfig = computed(() => {
+  // 有搜索关键词
+  if (searchKeyword.value.trim()) {
+    return {
+      icon: '🔍',
+      text: `没有找到"${searchKeyword.value}"相关的活动`,
+      hint: '试试搜索其他关键词或清除筛选条件'
+    }
+  }
+
+  // 有筛选条件
+  if (hasActiveFilters.value) {
+    return {
+      icon: '🎯',
+      text: '没有符合条件的活动',
+      hint: '试试调整筛选条件'
+    }
+  }
+
+  // 默认空状态
+  return {
+    icon: '📭',
+    text: '暂无活动',
+    hint: '敬请期待更多精彩活动'
+  }
 })
 
 // 获取状态标签
@@ -263,26 +391,108 @@ const loadActivityList = async (refresh = false) => {
       params.sortBy = filters.value.sortBy
     }
 
+    // 🎯 缓存键（基于查询参数生成）
+    const cacheKey = `${CACHE_KEYS.ACTIVITIES}:${JSON.stringify(params)}`
+
+    // 🎯 首次加载时尝试读取缓存
+    if (refresh && page.value === 1) {
+      const cachedData = cache.get<any[]>(cacheKey)
+      if (cachedData && cachedData.length > 0) {
+        activities.value = cachedData
+        loading.value = false
+        return
+      }
+    }
+
     const res = await getActivityList(params)
 
     let list = res?.list || res?.records || []
 
+    // 🎯 前端过滤：时间范围
+    if (filters.value.timeRange !== 'all') {
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+      list = list.filter((activity: any) => {
+        const startTime = new Date(activity.startTime)
+
+        if (filters.value.timeRange === 'today') {
+          return startTime >= today && startTime < new Date(today.getTime() + 24 * 60 * 60 * 1000)
+        } else if (filters.value.timeRange === 'week') {
+          const weekLater = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000)
+          return startTime >= today && startTime < weekLater
+        } else if (filters.value.timeRange === 'month') {
+          const monthLater = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000)
+          return startTime >= today && startTime < monthLater
+        }
+        return true
+      })
+    }
+
+    // 🎯 前端过滤：报名状态
+    if (filters.value.joinStatus !== 'all') {
+      list = list.filter((activity: any) => {
+        if (filters.value.joinStatus === 'joined') {
+          return activity.isJoined === true
+        } else if (filters.value.joinStatus === 'available') {
+          const remaining = (activity.maxParticipants || 0) - (activity.currentParticipants || 0)
+          return remaining > 0 && activity.status === 0
+        }
+        return true
+      })
+    }
+
     if (refresh) {
       activities.value = list
+      // 🎯 缓存首页数据（2分钟过期）
+      if (page.value === 1 && list.length > 0) {
+        cache.set(cacheKey, list, CACHE_TTL.SHORT)
+      }
     } else {
       activities.value = [...activities.value, ...list]
     }
 
     hasMore.value = list.length >= pageSize.value
     page.value++
+
+    // 🎯 成功后重置重试计数
+    retryCount.value = 0
   } catch (error) {
     console.error('加载活动列表失败:', error)
-    uni.showToast({
-      title: '加载失败',
-      icon: 'none'
-    })
+
+    // 🎯 错误重试机制
+    if (retryCount.value < maxRetries) {
+      retryCount.value++
+
+      // 延迟重试（指数退避：1s, 2s, 4s）
+      const delay = Math.pow(2, retryCount.value - 1) * 1000
+
+      setTimeout(() => {
+        loading.value = false
+        loadActivityList(refresh)
+      }, delay)
+
+      uni.showToast({
+        title: `加载失败，${delay / 1000}秒后重试...`,
+        icon: 'none',
+        duration: 1500
+      })
+    } else {
+      // 🎯 超过最大重试次数
+      retryCount.value = 0
+      loading.value = false
+
+      uni.showToast({
+        title: '加载失败，请稍后重试',
+        icon: 'none',
+        duration: 2000
+      })
+    }
   } finally {
-    loading.value = false
+    // 只有在不需要重试时才关闭加载状态
+    if (retryCount.value === 0 || retryCount.value >= maxRetries) {
+      loading.value = false
+    }
   }
 }
 
@@ -308,6 +518,20 @@ const selectSort = (sortBy: 'time' | 'hot' | 'new') => {
 }
 
 /**
+ * 🎯 选择时间范围
+ */
+const selectTimeRange = (timeRange: 'all' | 'today' | 'week' | 'month') => {
+  tempFilters.value.timeRange = timeRange
+}
+
+/**
+ * 🎯 选择报名状态
+ */
+const selectJoinStatus = (joinStatus: 'all' | 'joined' | 'available') => {
+  tempFilters.value.joinStatus = joinStatus
+}
+
+/**
  * 应用筛选
  */
 const applyFilters = () => {
@@ -324,7 +548,9 @@ const resetFilters = () => {
     status: null,
     clubId: null,
     clubName: '',
-    sortBy: 'time'
+    sortBy: 'time',
+    timeRange: 'all',
+    joinStatus: 'all'
   }
 }
 
@@ -339,6 +565,10 @@ const clearFilter = (key: string) => {
     filters.value.clubName = ''
   } else if (key === 'sortBy') {
     filters.value.sortBy = 'time'
+  } else if (key === 'timeRange') {
+    filters.value.timeRange = 'all'
+  } else if (key === 'joinStatus') {
+    filters.value.joinStatus = 'all'
   }
   loadActivityList(true)
 }
@@ -351,7 +581,9 @@ const clearAllFilters = () => {
     status: null,
     clubId: null,
     clubName: '',
-    sortBy: 'time'
+    sortBy: 'time',
+    timeRange: 'all',
+    joinStatus: 'all'
   }
   loadActivityList(true)
 }
@@ -448,6 +680,9 @@ const toggleFavorite = async (activity: any) => {
       })
     }
 
+    // 🎯 清除缓存，确保下次加载最新数据
+    cache.remove(CACHE_KEYS.ACTIVITIES)
+
     // 🎯 触发全局事件,通知其他页面更新收藏状态
     uni.$emit('activity-favorite-changed', {
       activityId: activity.activityId,
@@ -468,22 +703,43 @@ const toggleFavorite = async (activity: any) => {
 /**
  * 下拉刷新
  */
-const onPullDownRefresh = () => {
-  loadActivityList(true).then(() => {
+const onPullDownRefresh = async () => {
+  try {
+    page.value = 1
+    await loadActivityList(true)
+  } catch (error) {
+    console.error('[ActivityList] 下拉刷新失败:', error)
+  } finally {
     uni.stopPullDownRefresh()
-  })
+  }
 }
 
 /**
  * 上拉加载
  */
 const onReachBottom = () => {
+  if (!hasMore.value || loading.value) return
   loadActivityList()
 }
 
 // 页面加载
 onMounted(() => {
   loadActivityList()
+})
+
+/**
+ * 🎯 监听搜索关键词变化 - 防抖优化
+ */
+watch(searchKeyword, () => {
+  // 清除之前的定时器
+  if (searchTimer) {
+    clearTimeout(searchTimer)
+  }
+
+  // 设置新的定时器,500ms 后执行搜索
+  searchTimer = setTimeout(() => {
+    loadActivityList(true)
+  }, 500) as unknown as number
 })
 
 // 导出方法给页面使用
@@ -560,6 +816,7 @@ defineExpose({
 .activity-item {
   position: relative;
   display: flex;
+  align-items: center;
   gap: 24rpx;
   background: white;
   border-radius: 16rpx;
@@ -579,6 +836,8 @@ defineExpose({
   width: 200rpx;
   height: 150rpx;
   flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 12rpx;
 }
 
 .activity-cover {
@@ -631,16 +890,19 @@ defineExpose({
   color: white;
 }
 
-/* 🎯 已报名角标 */
+/* 🎯 已报名标签 - 封面左下角 */
 .joined-badge {
   position: absolute;
-  top: 48rpx;
-  left: 16rpx;
+  bottom: 8rpx;
+  left: 8rpx;
   padding: 6rpx 12rpx;
-  background: linear-gradient(135deg, #2FBD6A 0%, #4DD88E 100%);
+  background: rgba(34, 197, 94, 0.9);
   border-radius: 8rpx;
-  box-shadow: 0 2rpx 8rpx rgba(47, 189, 106, 0.3);
-  z-index: 11;
+  backdrop-filter: blur(10rpx);
+  font-size: 20rpx;
+  font-weight: 600;
+  line-height: 1;
+  z-index: 6;
 }
 
 .joined-text {
@@ -650,13 +912,13 @@ defineExpose({
   line-height: 1;
 }
 
-/* 🎯 收藏按钮 */
+/* 🎯 收藏按钮 - 卡片右上角 */
 .favorite-btn {
   position: absolute;
   top: 16rpx;
   right: 16rpx;
-  width: 64rpx;
-  height: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -688,7 +950,7 @@ defineExpose({
 }
 
 .favorite-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
   line-height: 1;
   transition: transform 0.3s ease;
 }
@@ -712,6 +974,95 @@ defineExpose({
   }
 }
 
+/* 🎯 骨架屏样式 */
+.skeleton-list {
+  padding: 0;
+}
+
+.skeleton-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  background: white;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin-bottom: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.skeleton-cover {
+  width: 200rpx;
+  height: 150rpx;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+  background: #E5E7EB;
+}
+
+.skeleton-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.skeleton-title {
+  width: 60%;
+  height: 32rpx;
+  border-radius: 4rpx;
+  background: #E5E7EB;
+}
+
+.skeleton-club {
+  width: 40%;
+  height: 24rpx;
+  border-radius: 4rpx;
+  background: #E5E7EB;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: 16rpx;
+}
+
+.skeleton-meta-item {
+  width: 120rpx;
+  height: 20rpx;
+  border-radius: 4rpx;
+  background: #E5E7EB;
+}
+
+/* 🎯 骨架屏闪烁动画 */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.8),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 .activity-info {
   flex: 1;
   display: flex;
@@ -720,6 +1071,7 @@ defineExpose({
 }
 
 .activity-title {
+  flex: 1;
   font-size: 32rpx;
   font-weight: 600;
   color: #1A1A1A;
@@ -759,13 +1111,14 @@ defineExpose({
   font-weight: 600;
 }
 
-/* 空状态 */
+/* 🎯 空状态优化 */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 120rpx 32rpx;
+  text-align: center;
 }
 
 .empty-icon {
@@ -776,7 +1129,15 @@ defineExpose({
 
 .empty-text {
   font-size: 28rpx;
-  color: #666666;
+  font-weight: 500;
+  color: #333333;
+  margin-bottom: 16rpx;
+}
+
+.empty-hint {
+  font-size: 24rpx;
+  color: #999999;
+  line-height: 1.5;
 }
 
 /* 加载更多 */

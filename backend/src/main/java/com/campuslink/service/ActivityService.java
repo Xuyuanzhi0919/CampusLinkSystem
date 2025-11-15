@@ -336,6 +336,11 @@ public class ActivityService {
             response.setClubName(club.getClubName());
         }
 
+        // 🎯 计算剩余名额
+        Integer maxParticipants = activity.getMaxParticipants() != null ? activity.getMaxParticipants() : 0;
+        Integer currentParticipants = activity.getCurrentParticipants() != null ? activity.getCurrentParticipants() : 0;
+        response.setRemainingSlots(Math.max(0, maxParticipants - currentParticipants));
+
         // 查询当前用户是否已报名和签到
         if (userId != null) {
             LambdaQueryWrapper<ActivityParticipant> wrapper = new LambdaQueryWrapper<>();

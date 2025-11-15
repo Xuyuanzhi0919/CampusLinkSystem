@@ -60,6 +60,11 @@ public class ActivityResponse {
     private Integer currentParticipants;
 
     /**
+     * 剩余名额
+     */
+    private Integer remainingSlots;
+
+    /**
      * 参与奖励积分
      */
     private Integer rewardPoints;

@@ -133,9 +133,12 @@ public class ActivityService {
             throw new BusinessException(ResultCode.ACTIVITY_NOT_FOUND);
         }
 
-        // 检查活动状态
-        if (activity.getStatus() != 0) {
-            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已开始或已结束，无法报名");
+        // 🎯 检查活动状态 - 只有未开始(0)和进行中(1)可以报名
+        if (activity.getStatus() == 2) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已结束，无法报名");
+        }
+        if (activity.getStatus() == 3) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已取消，无法报名");
         }
 
         // 检查是否已报名

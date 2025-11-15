@@ -69,11 +69,14 @@
           <!-- 报名按钮 -->
           <view
             class="signup-btn"
-            :class="{ 'joined': activity.hasJoined }"
+            :class="{
+              'joined': activity.hasJoined,
+              'disabled': activity.status === 2 || activity.status === 3
+            }"
             @click.stop="handleSignupClick(activity)"
           >
             <text class="signup-text">
-              {{ activity.hasJoined ? '已报名' : (isLoggedIn ? '立即报名' : '登录后报名') }}
+              {{ getSignupButtonText(activity) }}
             </text>
           </view>
         </view>
@@ -294,6 +297,39 @@ const getActivityStatusClass = (status?: number) => {
 }
 
 /**
+ * 🎯 获取报名按钮文本
+ */
+const getSignupButtonText = (activity: Activity) => {
+  // 已报名
+  if (activity.hasJoined) {
+    return '已报名'
+  }
+
+  // 活动已结束
+  if (activity.status === 2) {
+    return '已结束'
+  }
+
+  // 活动已取消
+  if (activity.status === 3) {
+    return '已取消'
+  }
+
+  // 名额已满
+  if (activity.remainingSlots <= 0) {
+    return '名额已满'
+  }
+
+  // 未登录
+  if (!isLoggedIn.value) {
+    return '登录后报名'
+  }
+
+  // 正常状态
+  return '立即报名'
+}
+
+/**
  * 🎯 处理图片加载错误
  */
 const handleImageError = (e: any) => {
@@ -419,6 +455,36 @@ const handleActivityClick = (activity: Activity) => {
  * 🎯 报名按钮点击 - 未登录引导登录，已登录显示确认弹窗
  */
 const handleSignupClick = async (activity: Activity) => {
+  // 🎯 活动已结束，禁止报名
+  if (activity.status === 2) {
+    uni.showToast({
+      title: '活动已结束，无法报名',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+
+  // 🎯 活动已取消，禁止报名
+  if (activity.status === 3) {
+    uni.showToast({
+      title: '活动已取消',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+
+  // 🎯 名额已满，禁止报名
+  if (activity.remainingSlots <= 0) {
+    uni.showToast({
+      title: '很抱歉，活动名额已满',
+      icon: 'none',
+      duration: 2000
+    })
+    return
+  }
+
   if (!isLoggedIn.value) {
     // 未登录，引导登录
     handleLoginClick()
@@ -875,19 +941,46 @@ onUnmounted(() => {
       transform: none; /* 禁用点击效果 */
     }
   }
+
+  /* 🎯 禁用状态（已结束/已取消/名额已满） */
+  &.disabled {
+    background: #FAFAFA;
+    border-color: #E5E7EB;
+    cursor: not-allowed;
+    opacity: 0.6;
+
+    .signup-text {
+      color: #9CA3AF;
+    }
+
+    &:hover {
+      background: #FAFAFA;
+      border-color: #E5E7EB;
+      transform: none;
+      box-shadow: none;
+
+      .signup-text {
+        color: #9CA3AF;
+      }
+    }
+
+    &:active {
+      transform: none;
+    }
+  }
 }
 
-.signup-btn:not(.joined):hover {
+.signup-btn:not(.joined):not(.disabled):hover {
   background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
   transform: translateY(-2rpx);
   box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3); /* 🎯 统一色调：蓝色阴影 */
 }
 
-.signup-btn:not(.joined):hover .signup-text {
+.signup-btn:not(.joined):not(.disabled):hover .signup-text {
   color: white;
 }
 
-.signup-btn:not(.joined):active {
+.signup-btn:not(.joined):not(.disabled):active {
   transform: scale(0.96);
 }
 

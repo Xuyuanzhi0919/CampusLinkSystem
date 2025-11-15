@@ -231,8 +231,11 @@ const filteredActivities = computed(() => {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     })
   } else if (currentSort.value === 'start-asc') {
-    // 即将开始（按开始时间正序，且过滤掉已结束的）
-    filtered = filtered.filter(a => a.status !== 2) // 排除已结束的活动
+    // 即将开始（按开始时间正序）
+    // 🎯 仅在未选择状态筛选时，才过滤掉已结束的活动
+    if (currentStatusFilter.value === 'all') {
+      filtered = filtered.filter(a => a.status !== 2)
+    }
     filtered.sort((a, b) => {
       if (!a.startTime || !b.startTime) return 0
       return new Date(a.startTime).getTime() - new Date(b.startTime).getTime()

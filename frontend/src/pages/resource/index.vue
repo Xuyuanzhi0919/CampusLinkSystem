@@ -329,12 +329,9 @@ onMounted(() => {
 
 // 🎯 搜索区域
 .search-section {
-  padding: 24rpx;
+  padding: 24rpx 32rpx;
   background: #FFFFFF;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border-bottom: 1rpx solid #E5E7EB;
 }
 
 .search-container {
@@ -410,9 +407,9 @@ onMounted(() => {
 
 // 🎯 筛选区域
 .filter-section {
-  padding: 24rpx;
+  padding: 20rpx 32rpx;
   background: #FFFFFF;
-  border-bottom: 2rpx solid #F0F1F5;
+  border-bottom: 1rpx solid #E5E7EB;
 }
 
 .filter-tabs {
@@ -461,13 +458,15 @@ onMounted(() => {
 
 // 🎯 结果信息栏
 .result-info {
-  padding: 16rpx 24rpx;
-  background: transparent;
+  padding: 12rpx 32rpx;
+  background: #FFF9F0;
+  border-bottom: 1rpx solid #FFE5CC;
 }
 
 .info-text {
-  font-size: 24rpx;
-  color: #999;
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #FF7A00;
 }
 
 // 🎯 内容区域
@@ -477,12 +476,12 @@ onMounted(() => {
 
 .scroll-container {
   height: calc(100vh - 320rpx);
-  padding: 0 24rpx;
+  padding: 0 32rpx;
 }
 
 .skeleton-list,
 .resource-list {
-  padding-top: 16rpx;
+  padding-top: 24rpx;
 }
 
 .loading-more,
@@ -500,26 +499,39 @@ onMounted(() => {
 // 🎯 上传悬浮按钮
 .upload-fab {
   position: fixed;
-  right: 40rpx;
-  bottom: 180rpx;
-  width: 112rpx;
-  height: 112rpx;
+  right: 32rpx;
+  bottom: 120rpx;
+  width: 88rpx;
+  height: 88rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
   border-radius: 50%;
-  box-shadow: 0 8rpx 24rpx rgba(255, 107, 53, 0.4);
+  box-shadow: 0 8rpx 24rpx rgba(255, 122, 0, 0.3);
   cursor: pointer;
-  z-index: 90;
-  transition: all 0.3s ease;
+  z-index: 999;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeIn 0.3s ease-out;
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(-4rpx) scale(0.95);
   }
 
   &:hover {
-    box-shadow: 0 12rpx 32rpx rgba(255, 107, 53, 0.5);
+    transform: translateY(-8rpx);
+    box-shadow: 0 12rpx 32rpx rgba(255, 122, 0, 0.4);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -530,20 +542,10 @@ onMounted(() => {
   line-height: 1;
 }
 
-// 🎯 响应式适配
+// 🎯 响应式适配 - 移除最大宽度限制，与社团列表页保持一致
 @media (min-width: 768px) {
-  .resource-square-page {
-    max-width: 1200rpx;
-    margin: 0 auto;
-  }
-
   .scroll-container {
     height: calc(100vh - 280rpx);
-  }
-
-  .upload-fab {
-    right: 80rpx;
-    bottom: 80rpx;
   }
 }
 </style>

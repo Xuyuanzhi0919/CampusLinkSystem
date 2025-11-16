@@ -36,6 +36,7 @@ export interface ResourceItem {
   downloads: number
   likes: number
   createdAt: string
+  status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
 }
 
 // 资源详情

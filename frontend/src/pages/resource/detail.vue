@@ -39,34 +39,9 @@
         <view class="main-content">
           <!-- 信息头区 - 整合标题+标签+统计 -->
           <view class="info-header">
-        <!-- 标题行 - PC端包含下载按钮 -->
+        <!-- 标题行 - 方案A：纯净标题，无按钮 -->
         <view class="title-row">
           <text class="resource-title">{{ resource.title }}</text>
-
-          <!-- PC端下载按钮（主CTA） -->
-          <view class="desktop-download-btn-wrapper">
-            <!-- 预览按钮（仅PDF类型） -->
-            <view
-              v-if="resource.fileType === 'pdf'"
-              class="desktop-preview-btn"
-              @click="handlePreview"
-            >
-              <text class="btn-icon">👁</text>
-              <text class="btn-text">预览</text>
-            </view>
-
-            <!-- 下载按钮 -->
-            <view
-              class="desktop-download-btn"
-              :class="{ 'downloaded': resource.isDownloaded }"
-              @click="handleDownload"
-            >
-              <text class="btn-icon">↓</text>
-              <text class="btn-text">
-                {{ resource.isDownloaded ? '已下载' : '下载 (-5积分)' }}
-              </text>
-            </view>
-          </view>
         </view>
 
         <!-- 标签组 -->
@@ -98,6 +73,14 @@
           </text>
         </view>
 
+        <!-- 移动端预览按钮（仅PDF，次操作） -->
+        <view v-if="resource.fileType === 'pdf'" class="mobile-preview-btn-wrapper">
+          <view class="mobile-preview-btn" @click="handlePreview">
+            <text class="btn-icon">👁</text>
+            <text class="btn-text">预览</text>
+          </view>
+        </view>
+
         <!-- 评分区域 -->
         <view class="rating-section">
           <view class="rating-label">资源质量</view>
@@ -110,41 +93,6 @@
             size="medium"
             @change="handleRatingChange"
           />
-        </view>
-
-        <!-- PC端内联操作按钮组 -->
-        <view class="desktop-actions">
-          <!-- 点赞按钮 -->
-          <view
-            class="desktop-action-btn like-btn"
-            :class="{ 'is-liked': resource.isLiked }"
-            @click="handleLike"
-          >
-            <text class="action-icon">{{ resource.isLiked ? '♥' : '♡' }}</text>
-            <text class="action-text">点赞 {{ resource.likes }}</text>
-          </view>
-
-          <!-- 评论按钮 -->
-          <view class="desktop-action-btn" @click="scrollToComment">
-            <text class="action-icon">◐</text>
-            <text class="action-text">评论 {{ commentCount }}</text>
-          </view>
-
-          <!-- 收藏按钮 -->
-          <view
-            class="desktop-action-btn favorite-btn"
-            :class="{ 'is-favorited': resource.isFavorited }"
-            @click="handleFavorite"
-          >
-            <text class="action-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
-            <text class="action-text">收藏 {{ resource.favorites || 0 }}</text>
-          </view>
-
-          <!-- 更多按钮 -->
-          <view class="desktop-action-btn" @click="showMoreMenu">
-            <text class="action-icon">⋮</text>
-            <text class="action-text">更多</text>
-          </view>
         </view>
       </view>
 
@@ -197,6 +145,49 @@
 
     <!-- 右侧：侧边栏（仅PC端显示） -->
     <view class="sidebar">
+      <!-- 方案A：操作卡片（文件操作集合） -->
+      <view class="operation-card">
+        <view class="operation-title">文件操作</view>
+
+        <!-- 预览按钮（仅PDF） -->
+        <view
+          v-if="resource.fileType === 'pdf'"
+          class="operation-btn operation-preview"
+          @click="handlePreview"
+        >
+          <text class="operation-icon">👁</text>
+          <text class="operation-text">预览</text>
+        </view>
+
+        <!-- 下载按钮 -->
+        <view
+          class="operation-btn operation-download"
+          :class="{ 'downloaded': resource.isDownloaded }"
+          @click="handleDownload"
+        >
+          <text class="operation-icon">↓</text>
+          <text class="operation-text">
+            {{ resource.isDownloaded ? '已下载' : '下载 (-5积分)' }}
+          </text>
+        </view>
+
+        <!-- 收藏按钮 -->
+        <view
+          class="operation-btn operation-favorite"
+          :class="{ 'is-favorited': resource.isFavorited }"
+          @click="handleFavorite"
+        >
+          <text class="operation-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
+          <text class="operation-text">收藏</text>
+        </view>
+
+        <!-- 更多按钮 -->
+        <view class="operation-btn operation-more" @click="showMoreMenu">
+          <text class="operation-icon">⋯</text>
+          <text class="operation-text">更多</text>
+        </view>
+      </view>
+
       <!-- 上传者信息卡片 -->
       <view class="uploader-card" @click="navigateToUserProfile">
         <image
@@ -262,12 +253,6 @@
         >
           <text class="action-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
           <text class="action-label">{{ resource.favorites || 0 }}</text>
-        </view>
-
-        <!-- 预览按钮（仅PDF） -->
-        <view v-if="resource.fileType === 'pdf'" class="action-icon-btn preview-btn" @click="handlePreview">
-          <text class="action-icon">👁</text>
-          <text class="action-label">预览</text>
         </view>
 
         <!-- 更多按钮 -->
@@ -1147,6 +1132,173 @@ const closePreview = () => {
   // #endif
 }
 
+// ============ 方案A：PC端操作卡片（右侧） ============
+.operation-card {
+  background: #FFFFFF;
+  border-radius: 12rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  padding: 24rpx;
+  margin-bottom: 16rpx;
+
+  // 移动端：隐藏
+  display: none;
+
+  // PC端：显示
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: block;
+  }
+  // #endif
+}
+
+.operation-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #F0F0F0;
+}
+
+.operation-btn {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  width: 100%;
+  padding: 14rpx 20rpx;
+  margin-bottom: 12rpx;
+  border-radius: 8rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 26rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .operation-icon {
+    font-size: 24rpx;
+    line-height: 1;
+  }
+
+  .operation-text {
+    flex: 1;
+    font-size: 26rpx;
+  }
+}
+
+// 预览按钮（次操作 - 轻边框）
+.operation-preview {
+  background: #FFFFFF;
+  border: 2rpx solid #D1D5DB;
+  color: #374151;
+
+  .operation-icon {
+    color: #6B7280;
+  }
+
+  &:hover {
+    background: #F9FAFB;
+    border-color: #9CA3AF;
+  }
+
+  &:active {
+    background: #F3F4F6;
+  }
+}
+
+// 下载按钮（主操作 - 橙色）
+.operation-download {
+  background: #FF7A00;
+  color: #FFFFFF;
+  border: none;
+  font-weight: 500;
+  box-shadow: 0 2rpx 6rpx rgba(255, 122, 0, 0.2);
+
+  .operation-icon {
+    color: #FFFFFF;
+  }
+
+  &:hover {
+    background: #FF8C1A;
+    transform: translateY(-1rpx);
+    box-shadow: 0 3rpx 8rpx rgba(255, 122, 0, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  // 已下载状态
+  &.downloaded {
+    background: #E5E7EB;
+    color: #9CA3AF;
+    box-shadow: none;
+
+    .operation-icon {
+      color: #9CA3AF;
+    }
+
+    &:hover {
+      background: #E5E7EB;
+      transform: none;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// 收藏按钮（次操作 - 轻背景）
+.operation-favorite {
+  background: #F8F8F8;
+  color: #6B7280;
+
+  .operation-icon {
+    color: #6B7280;
+    font-size: 26rpx;
+  }
+
+  &:hover {
+    background: #F0F0F0;
+  }
+
+  &:active {
+    background: #E8E8E8;
+  }
+
+  // 已收藏状态
+  &.is-favorited {
+    background: #FFF7ED;
+    color: #F59E0B;
+
+    .operation-icon {
+      color: #F59E0B;
+    }
+
+    &:hover {
+      background: #FFEDD5;
+    }
+  }
+}
+
+// 更多按钮（文本按钮）
+.operation-more {
+  background: transparent;
+  color: #6B7280;
+  padding: 12rpx 20rpx;
+
+  .operation-icon {
+    color: #6B7280;
+  }
+
+  &:hover {
+    background: #F8F8F8;
+  }
+
+  &:active {
+    background: #F0F0F0;
+  }
+}
+
 // 资源头图区 - 优化后：降低高度，轻渐变，避免"错误横幅"感
 .resource-header {
   width: 100%;
@@ -1233,64 +1385,6 @@ const closePreview = () => {
   line-height: 1.4;
 }
 
-// PC端下载按钮包装器
-.desktop-download-btn-wrapper {
-  // 移动端：隐藏
-  display: none;
-
-  // PC端：显示
-  // #ifdef H5
-  @media (min-width: 768px) {
-    display: block;
-  }
-  // #endif
-}
-
-.desktop-download-btn {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 28rpx;
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-  color: #FFFFFF;
-  border-radius: 28rpx;
-  font-size: 26rpx;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.3);
-  transition: all 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    opacity: 0.9;
-    transform: translateY(-1rpx);
-  }
-
-  &:active:not(.downloaded) {
-    opacity: 0.85;
-    transform: scale(0.98);
-  }
-
-  &.downloaded {
-    background: #E8E8E8;
-    color: #999999;
-    box-shadow: none;
-
-    &:hover {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  .btn-icon {
-    font-size: 24rpx;
-  }
-
-  .btn-text {
-    font-size: 26rpx;
-  }
-}
-
 .tag-group {
   display: flex;
   flex-wrap: wrap;
@@ -1374,6 +1468,46 @@ const closePreview = () => {
   opacity: 1 !important;  // 点赞状态不透明
 }
 
+// ============ 方案A：移动端预览按钮 ============
+.mobile-preview-btn-wrapper {
+  margin-top: 16rpx;
+
+  // PC端：隐藏
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: none;
+  }
+  // #endif
+}
+
+.mobile-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 24rpx;
+  background: #FFFFFF;
+  border: 2rpx solid #D1D5DB;
+  border-radius: 12rpx;  // 6-8px
+  font-size: 26rpx;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:active {
+    background: #F9FAFB;
+  }
+
+  .btn-icon {
+    font-size: 22rpx;
+    color: #6B7280;
+  }
+
+  .btn-text {
+    font-size: 26rpx;
+    color: #374151;
+  }
+}
+
 // 评分区域
 .rating-section {
   display: flex;
@@ -1398,84 +1532,6 @@ const closePreview = () => {
   font-weight: 600;
   color: #333333;
   white-space: nowrap;
-}
-
-// PC端内联操作按钮组
-.desktop-actions {
-  // 移动端：隐藏
-  display: none;
-
-  // PC端：显示
-  // #ifdef H5
-  @media (min-width: 768px) {
-    display: flex;
-    align-items: center;
-    gap: 12rpx;
-    margin-top: 16rpx;
-    padding-top: 16rpx;
-    border-top: 1rpx solid #F0F0F0;
-  }
-  // #endif
-}
-
-.desktop-action-btn {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 10rpx 20rpx;
-  background: #F8F8F8;
-  border-radius: 24rpx;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &:hover {
-    background: #F0F0F0;
-  }
-
-  &:active {
-    transform: scale(0.96);
-  }
-
-  &.like-btn {
-    &.is-liked {
-      background: #FFF5F5;
-
-      .action-icon,
-      .action-text {
-        color: #F87171;
-      }
-
-      &:hover {
-        background: #FFEBEB;
-      }
-    }
-  }
-
-  &.favorite-btn {
-    &.is-favorited {
-      background: #FFF7ED;
-
-      .action-icon,
-      .action-text {
-        color: #F59E0B;
-      }
-
-      &:hover {
-        background: #FFEDD5;
-      }
-    }
-  }
-
-  .action-icon {
-    font-size: 24rpx;
-    color: #666666;
-  }
-
-  .action-text {
-    font-size: 24rpx;
-    color: #666666;
-    font-weight: 500;
-  }
 }
 
 // 上传者信息卡片
@@ -1904,42 +1960,6 @@ const closePreview = () => {
 }
 
 // ============ PDF预览功能样式 ============
-
-// 预览按钮（PC端）- 轻边框按钮（统一信息风）
-.desktop-preview-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 10rpx 24rpx;
-  background: #FFFFFF;
-  border: 2rpx solid #D1D5DB;
-  border-radius: 12rpx;  // 6-8px
-  font-size: 28rpx;
-  font-weight: 400;  // 更轻量
-  cursor: pointer;
-  transition: all 0.15s ease;
-  margin-right: 16rpx;
-
-  &:hover {
-    background: #F9FAFB;
-    border-color: #9CA3AF;
-  }
-
-  &:active {
-    background: #F3F4F6;
-  }
-
-  .btn-icon {
-    font-size: 24rpx;  // 细线图标
-    color: #6B7280;
-  }
-
-  .btn-text {
-    font-size: 28rpx;
-    font-weight: 400;
-    color: #374151;  // 深灰
-  }
-}
 
 // 预览弹窗覆盖层
 .preview-overlay {

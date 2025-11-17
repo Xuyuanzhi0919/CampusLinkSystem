@@ -1137,8 +1137,9 @@ const closePreview = () => {
   background: #FFFFFF;
   border-radius: 12rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  padding: 24rpx;
+  padding: 20rpx;  // 减少padding：24rpx → 20rpx
   margin-bottom: 16rpx;
+  overflow: hidden;  // 防止内容溢出
 
   // 移动端：隐藏
   display: none;
@@ -1152,38 +1153,46 @@ const closePreview = () => {
 }
 
 .operation-title {
-  font-size: 28rpx;
+  font-size: 26rpx;  // 缩小字体：28rpx → 26rpx
   font-weight: 600;
   color: #333333;
-  margin-bottom: 20rpx;
-  padding-bottom: 16rpx;
+  margin-bottom: 16rpx;  // 减少间距：20rpx → 16rpx
+  padding-bottom: 12rpx;  // 减少间距：16rpx → 12rpx
   border-bottom: 1rpx solid #F0F0F0;
 }
 
 .operation-btn {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;  // 减少gap：12rpx → 10rpx
   width: 100%;
-  padding: 14rpx 20rpx;
-  margin-bottom: 12rpx;
+  padding: 12rpx 16rpx;  // 减少padding：14rpx 20rpx → 12rpx 16rpx
+  margin-bottom: 10rpx;  // 减少间距：12rpx → 10rpx
   border-radius: 8rpx;
   cursor: pointer;
   transition: all 0.2s ease;
-  font-size: 26rpx;
+  font-size: 24rpx;  // 缩小字体：26rpx → 24rpx
+  box-sizing: border-box;  // 确保border不会增加宽度
+  overflow: hidden;  // 防止内容溢出
+  text-overflow: ellipsis;
+  white-space: nowrap;
 
   &:last-child {
     margin-bottom: 0;
   }
 
   .operation-icon {
-    font-size: 24rpx;
+    font-size: 22rpx;  // 缩小图标：24rpx → 22rpx
     line-height: 1;
+    flex-shrink: 0;  // 图标不缩放
   }
 
   .operation-text {
     flex: 1;
-    font-size: 26rpx;
+    font-size: 24rpx;  // 缩小字体：26rpx → 24rpx
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

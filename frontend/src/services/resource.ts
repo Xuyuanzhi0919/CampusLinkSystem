@@ -149,3 +149,12 @@ export const rejectResource = (id: number, rejectReason: string) => {
   return request.put<void>(`/resource/${id}/reject`, { rejectReason })
 }
 
+/**
+ * 举报资源
+ * @param id 资源ID
+ * @param data 举报数据
+ */
+export const reportResource = (id: number, data: { reason: string; description?: string }) => {
+  return request.post<{ message: string }>(`/resource/${id}/report`, data)
+}
+

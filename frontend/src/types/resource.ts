@@ -35,10 +35,12 @@ export interface ResourceItem {
   score: number
   downloads: number
   likes: number
+  favorites?: number       // 收藏数（可选）
   createdAt: string
   status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
   isDownloaded?: boolean   // 是否已下载（可选，登录用户会有）
   isLiked?: boolean        // 是否已点赞（可选，登录用户会有）
+  isFavorited?: boolean    // 是否已收藏（可选，登录用户会有）
 }
 
 // 资源详情
@@ -52,6 +54,8 @@ export interface ResourceDetail extends ResourceItem {
   schoolName?: string
   isLiked: boolean
   isDownloaded: boolean
+  isFavorited: boolean  // 是否已收藏（必需）
+  favorites: number  // 收藏数（必需）
   views?: number  // 浏览次数
   commentCount?: number  // 评论数量
 }

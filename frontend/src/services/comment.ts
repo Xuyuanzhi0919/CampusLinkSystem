@@ -11,36 +11,25 @@ export function getResourceComments(
   resourceId: number,
   params: CommentListParams = {}
 ) {
-  return request<{
+  return request.get<{
     list: ResourceComment[]
     total: number
     page: number
     pageSize: number
     totalPages: number
-  }>({
-    url: `/resource/${resourceId}/comments`,
-    method: 'GET',
-    params
-  })
+  }>(`/resource/${resourceId}/comments`, params)
 }
 
 /**
  * Add comment or reply
  */
 export function addComment(resourceId: number, data: AddCommentRequest) {
-  return request<{ commentId: number }>({
-    url: `/resource/${resourceId}/comments`,
-    method: 'POST',
-    data
-  })
+  return request.post<{ commentId: number }>(`/resource/${resourceId}/comments`, data)
 }
 
 /**
  * Delete comment
  */
 export function deleteComment(commentId: number) {
-  return request({
-    url: `/resource/comments/${commentId}`,
-    method: 'DELETE'
-  })
+  return request.delete(`/resource/comments/${commentId}`)
 }

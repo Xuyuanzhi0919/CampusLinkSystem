@@ -33,9 +33,30 @@
         <text class="file-type-icon">{{ fileTypeIcon }}</text>
       </view>
 
-      <!-- 信息头区 - 整合标题+标签+统计 -->
-      <view class="info-header">
-        <text class="resource-title">{{ resource.title }}</text>
+      <!-- Web端双栏布局容器 -->
+      <view class="desktop-layout">
+        <!-- 左侧：主内容区 -->
+        <view class="main-content">
+          <!-- 信息头区 - 整合标题+标签+统计 -->
+          <view class="info-header">
+        <!-- 标题行 - PC端包含下载按钮 -->
+        <view class="title-row">
+          <text class="resource-title">{{ resource.title }}</text>
+
+          <!-- PC端下载按钮（主CTA） -->
+          <view class="desktop-download-btn-wrapper">
+            <view
+              class="desktop-download-btn"
+              :class="{ 'downloaded': resource.isDownloaded }"
+              @click="handleDownload"
+            >
+              <text class="btn-icon">↓</text>
+              <text class="btn-text">
+                {{ resource.isDownloaded ? '已下载' : '下载 (-5积分)' }}
+              </text>
+            </view>
+          </view>
+        </view>
 
         <!-- 标签组 -->
         <view class="tag-group">
@@ -44,44 +65,62 @@
           <view v-if="isHotResource" class="tag tag-hot">HOT</view>
         </view>
 
-        <!-- 统计数据 - 紧凑单行 -->
+        <!-- 统计数据 - 紧凑单行，统一线性图标 -->
         <view class="stats-compact">
           <text class="stat-item">
-            <text class="stat-icon">○</text>{{ resource.views || 0 }}
+            <text class="stat-icon stat-icon-view">○</text>{{ resource.views || 0 }}
           </text>
           <text class="stat-divider">·</text>
           <text class="stat-item">
-            <text class="stat-icon">↓</text>{{ resource.downloads }}
+            <text class="stat-icon stat-icon-download">↓</text>{{ resource.downloads }}
           </text>
           <text class="stat-divider">·</text>
           <text class="stat-item" @click="scrollToLike">
-            <text class="stat-icon" :class="{ 'text-liked': resource.isLiked }">
+            <text class="stat-icon stat-icon-like" :class="{ 'text-liked': resource.isLiked }">
               {{ resource.isLiked ? '♥' : '♡' }}
             </text>
             <text :class="{ 'text-liked': resource.isLiked }">{{ resource.likes }}</text>
           </text>
           <text class="stat-divider">·</text>
           <text class="stat-item" @click="scrollToComment">
-            <text class="stat-icon">◐</text>{{ commentCount }}
+            <text class="stat-icon stat-icon-comment">▭</text>{{ commentCount }}
           </text>
         </view>
-      </view>
 
-      <!-- 上传者信息卡片 -->
-      <view class="uploader-card" @click="navigateToUserProfile">
-        <image
-          :src="resource.uploaderAvatar || defaultAvatar"
-          class="uploader-avatar"
-          mode="aspectFill"
-        />
-        <view class="uploader-info">
-          <text class="uploader-name">{{ resource.uploaderName }}</text>
-          <text class="uploader-points">积分 {{ resource.uploaderPoints || 0 }}</text>
+        <!-- PC端内联操作按钮组 -->
+        <view class="desktop-actions">
+          <!-- 点赞按钮 -->
+          <view
+            class="desktop-action-btn like-btn"
+            :class="{ 'is-liked': resource.isLiked }"
+            @click="handleLike"
+          >
+            <text class="action-icon">{{ resource.isLiked ? '♥' : '♡' }}</text>
+            <text class="action-text">点赞 {{ resource.likes }}</text>
+          </view>
+
+          <!-- 评论按钮 -->
+          <view class="desktop-action-btn" @click="scrollToComment">
+            <text class="action-icon">◐</text>
+            <text class="action-text">评论 {{ commentCount }}</text>
+          </view>
+
+          <!-- 收藏按钮 -->
+          <view
+            class="desktop-action-btn favorite-btn"
+            :class="{ 'is-favorited': resource.isFavorited }"
+            @click="handleFavorite"
+          >
+            <text class="action-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
+            <text class="action-text">收藏 {{ resource.favorites || 0 }}</text>
+          </view>
+
+          <!-- 更多按钮 -->
+          <view class="desktop-action-btn" @click="showMoreMenu">
+            <text class="action-icon">⋮</text>
+            <text class="action-text">更多</text>
+          </view>
         </view>
-        <view class="uploader-meta">
-          <text class="upload-time">{{ formatUploadTime(resource.createdAt) }}</text>
-        </view>
-        <text class="arrow-icon">›</text>
       </view>
 
       <!-- 资源详情卡片 -->
@@ -127,6 +166,29 @@
         <CommentList :resourceId="resourceId" @update:count="updateCommentCount" />
       </view>
 
+      <!-- 底部占位 -->
+      <view class="bottom-placeholder"></view>
+    </view>
+
+    <!-- 右侧：侧边栏（仅PC端显示） -->
+    <view class="sidebar">
+      <!-- 上传者信息卡片 -->
+      <view class="uploader-card" @click="navigateToUserProfile">
+        <image
+          :src="resource.uploaderAvatar || defaultAvatar"
+          class="uploader-avatar"
+          mode="aspectFill"
+        />
+        <view class="uploader-info">
+          <text class="uploader-name">{{ resource.uploaderName }}</text>
+          <text class="uploader-points">积分 {{ resource.uploaderPoints || 0 }}</text>
+        </view>
+        <view class="uploader-meta">
+          <text class="upload-time">{{ formatUploadTime(resource.createdAt) }}</text>
+        </view>
+        <text class="arrow-icon">›</text>
+      </view>
+
       <!-- 相关推荐区 -->
       <view v-if="relatedResources.length > 0" class="recommend-section">
         <view class="section-header">
@@ -142,9 +204,8 @@
           />
         </view>
       </view>
-
-      <!-- 底部占位 -->
-      <view class="bottom-placeholder"></view>
+    </view>
+  </view>
     </scroll-view>
 
     <!-- 固定底部操作栏 - 重构：左侧小功能 + 右侧主操作 -->
@@ -166,6 +227,16 @@
         <view class="action-icon-btn" @click="scrollToComment">
           <text class="action-icon">◐</text>
           <text class="action-label">{{ commentCount }}</text>
+        </view>
+
+        <!-- 收藏按钮 -->
+        <view
+          class="action-icon-btn favorite-btn"
+          :class="{ 'is-favorited': resource.isFavorited }"
+          @click="handleFavorite"
+        >
+          <text class="action-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
+          <text class="action-label">{{ resource.favorites || 0 }}</text>
         </view>
 
         <!-- 更多按钮 -->
@@ -225,7 +296,8 @@ import { onLoad } from '@dcloudio/uni-app'
 import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
-import { getResourceDetail, downloadResource, likeResource, unlikeResource } from '@/services/resource'
+import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource } from '@/services/resource'
+import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
 import config from '@/config'
@@ -260,6 +332,7 @@ const resource = ref<Partial<ResourceDetail>>({
   views: 0,
   downloads: 0,
   likes: 0,
+  favorites: 0,
   uploaderName: '',
   uploaderAvatar: '',
   uploaderPoints: 0,
@@ -267,22 +340,40 @@ const resource = ref<Partial<ResourceDetail>>({
   createdAt: '',
   isDownloaded: false,
   isLiked: false,
+  isFavorited: false,
 })
 
 // 相关推荐资源
 const relatedResources = ref<ResourceItem[]>([])
 
-// 计算属性：头图渐变背景
+// 计算属性：头图渐变背景（文件类型专属配色 - 轻渐变优化版）
 const headerGradient = computed(() => {
   const fileType = resource.value.fileType?.toLowerCase() || 'other'
   const gradients: Record<string, string> = {
-    pdf: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    pptx: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    ppt: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-    docx: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    doc: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-    zip: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-    other: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+    // PDF：红色系（Adobe风格）- 轻渐变，避免"错误横幅"感
+    pdf: 'linear-gradient(135deg, #E53935 0%, #FF6B6B 50%, rgba(255, 236, 236, 0.2) 100%)',
+    // Word：蓝色系（Microsoft风格）- 轻渐变
+    docx: 'linear-gradient(135deg, #2B579A 0%, #5B8FCE 50%, rgba(219, 234, 254, 0.2) 100%)',
+    doc: 'linear-gradient(135deg, #2B579A 0%, #5B8FCE 50%, rgba(219, 234, 254, 0.2) 100%)',
+    // PPT：橙色系（PowerPoint风格）- 轻渐变
+    pptx: 'linear-gradient(135deg, #D24726 0%, #FF7A59 50%, rgba(254, 236, 229, 0.2) 100%)',
+    ppt: 'linear-gradient(135deg, #D24726 0%, #FF7A59 50%, rgba(254, 236, 229, 0.2) 100%)',
+    // Excel：绿色系 - 轻渐变
+    xlsx: 'linear-gradient(135deg, #217346 0%, #48BB78 50%, rgba(220, 252, 231, 0.2) 100%)',
+    xls: 'linear-gradient(135deg, #217346 0%, #48BB78 50%, rgba(220, 252, 231, 0.2) 100%)',
+    // ZIP：灰色系（压缩文件）- 轻渐变
+    zip: 'linear-gradient(135deg, #6C757D 0%, #94A3B8 50%, rgba(241, 245, 249, 0.2) 100%)',
+    rar: 'linear-gradient(135deg, #6C757D 0%, #94A3B8 50%, rgba(241, 245, 249, 0.2) 100%)',
+    '7z': 'linear-gradient(135deg, #6C757D 0%, #94A3B8 50%, rgba(241, 245, 249, 0.2) 100%)',
+    // 图片：紫色系 - 轻渐变
+    jpg: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, rgba(237, 233, 254, 0.2) 100%)',
+    jpeg: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, rgba(237, 233, 254, 0.2) 100%)',
+    png: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 50%, rgba(237, 233, 254, 0.2) 100%)',
+    // 视频：深蓝色系 - 轻渐变
+    mp4: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, rgba(219, 234, 254, 0.2) 100%)',
+    avi: 'linear-gradient(135deg, #1E40AF 0%, #3B82F6 50%, rgba(219, 234, 254, 0.2) 100%)',
+    // 其他：中性灰 - 轻渐变
+    other: 'linear-gradient(135deg, #64748B 0%, #94A3B8 50%, rgba(241, 245, 249, 0.2) 100%)',
   }
   return gradients[fileType] || gradients.other
 })
@@ -415,7 +506,17 @@ const toggleDescription = () => {
 
 // 返回上一页
 const goBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+
+  // 如果页面栈中只有当前页（刷新后的情况），跳转到资源广场（tabBar页面）
+  if (pages.length === 1) {
+    uni.switchTab({
+      url: '/pages/resource/index'
+    })
+  } else {
+    // 正常返回上一页
+    uni.navigateBack()
+  }
 }
 
 // 跳转到用户主页
@@ -576,6 +677,43 @@ const handleLike = async () => {
   }
 }
 
+// 处理收藏
+const handleFavorite = async () => {
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    return
+  }
+
+  // 乐观更新UI
+  const wasFavorited = resource.value.isFavorited
+  const originalFavorites = resource.value.favorites || 0
+
+  resource.value.isFavorited = !wasFavorited
+  resource.value.favorites = wasFavorited ? originalFavorites - 1 : originalFavorites + 1
+
+  try {
+    if (wasFavorited) {
+      await removeFavorite('resource', resourceId.value)
+    } else {
+      await addFavorite('resource', resourceId.value)
+    }
+    uni.showToast({
+      title: wasFavorited ? '已取消收藏' : '收藏成功',
+      icon: 'success',
+    })
+  } catch (err: any) {
+    // 回滚UI
+    resource.value.isFavorited = wasFavorited
+    resource.value.favorites = originalFavorites
+    uni.showToast({
+      title: err.message || '操作失败',
+      icon: 'none',
+    })
+  }
+}
+
 // 显示更多菜单
 const showMoreMenu = () => {
   showMorePopup.value = true
@@ -627,17 +765,54 @@ const copyToClipboard = (text: string) => {
 // 处理举报
 const handleReport = () => {
   closeMoreMenu()
-  uni.showModal({
-    title: '举报原因',
-    editable: true,
-    placeholderText: '请输入举报原因',
-    success: (res) => {
-      if (res.confirm && res.content) {
-        // TODO: 调用举报API
-        uni.showToast({ title: '举报成功，我们会尽快处理', icon: 'success' })
+
+  // 预设举报理由
+  const reportReasons = [
+    '内容违规',
+    '版权问题',
+    '虚假信息',
+    '广告spam',
+    '其他原因'
+  ]
+
+  uni.showActionSheet({
+    itemList: reportReasons,
+    success: async (res) => {
+      const selectedReason = reportReasons[res.tapIndex]
+
+      // 如果选择"其他原因"，弹出输入框
+      if (selectedReason === '其他原因') {
+        uni.showModal({
+          title: '请输入举报原因',
+          editable: true,
+          placeholderText: '请详细描述举报原因',
+          success: async (modalRes) => {
+            if (modalRes.confirm && modalRes.content) {
+              await submitReport(selectedReason, modalRes.content)
+            }
+          }
+        })
+      } else {
+        await submitReport(selectedReason)
       }
-    },
+    }
   })
+}
+
+// 提交举报
+const submitReport = async (reason: string, description?: string) => {
+  try {
+    await reportResource(resourceId.value, { reason, description })
+    uni.showToast({
+      title: '举报成功，我们会尽快处理',
+      icon: 'success'
+    })
+  } catch (err: any) {
+    uni.showToast({
+      title: err.message || '举报失败',
+      icon: 'none'
+    })
+  }
 }
 </script>
 
@@ -645,14 +820,12 @@ const handleReport = () => {
 .resource-detail-page {
   min-height: 100vh;
   background: #F5F5F5;
-  padding-bottom: 100rpx; // 调整底部占位：120rpx → 100rpx
+  padding-bottom: 100rpx; // 移动端：底部占位（为固定栏留空间）
 
-  // PC端适配：居中显示，限制最大宽度
+  // PC端适配：全屏布局，无左右间隔
   // #ifdef H5
   @media (min-width: 768px) {
-    max-width: 1200px;
-    margin: 0 auto;
-    box-shadow: 0 0 20rpx rgba(0, 0, 0, 0.1);
+    padding-bottom: 24rpx; // PC端：正常底部间距
   }
   // #endif
 }
@@ -764,38 +937,200 @@ const handleReport = () => {
   // #endif
 }
 
-// 资源头图区
+// Web端双栏布局容器
+.desktop-layout {
+  // 移动端：单栏布局
+  display: block;
+
+  // PC端：限制最大宽度的双栏布局（真正的阅读体验）
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: flex;
+    gap: 40rpx;  // 左右栏间距：20rpx → 40rpx，更清晰的分隔
+    padding: 20rpx 40rpx;
+    max-width: 2400rpx;  // 限制最大宽度：1200px（rpx单位）
+    margin: 0 auto;  // 居中显示
+    align-items: flex-start; // 顶部对齐
+  }
+  // #endif
+}
+
+// 左侧主内容区
+.main-content {
+  // 移动端：全宽
+  width: 100%;
+
+  // PC端：68%宽度，调整比例让内容更集中
+  // #ifdef H5
+  @media (min-width: 768px) {
+    flex: 0 0 68%;
+    max-width: 68%;
+  }
+  // #endif
+}
+
+// 右侧侧边栏
+.sidebar {
+  // 移动端：隐藏（内容在左侧主区域显示）
+  display: none;
+
+  // PC端：显示，30%宽度，固定定位效果
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: block;
+    flex: 0 0 30%;
+    max-width: 30%;
+
+    // 添加粘性定位，滚动时保持可见
+    position: sticky;
+    top: 20rpx;
+    align-self: flex-start;
+  }
+  // #endif
+}
+
+// 资源头图区 - 优化后：降低高度，轻渐变，避免"错误横幅"感
 .resource-header {
   width: 100%;
-  height: 240rpx;  // 降低高度：280rpx → 240rpx，减少空白浪费
+  height: 140rpx;  // 降低高度：180rpx → 140rpx
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: -10rpx;  // 向上延伸，与导航栏轻微重叠，营造沉浸式体验
+  position: relative;
+
+  // PC端：更紧凑的高度，增加圆角，与内容区对齐
+  // #ifdef H5
+  @media (min-width: 768px) {
+    height: 120rpx;  // 降低高度：160rpx → 120rpx
+    max-width: 2400rpx;  // 与内容区相同的最大宽度
+    margin: 20rpx auto 0;  // 居中显示
+    padding: 0 40rpx;  // 左右内边距
+    border-radius: 12rpx;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  // #endif
+
+  // 添加微妙的纹理效果，增强专业感
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, transparent 100%);
+    pointer-events: none;
+  }
 }
 
 .file-type-icon {
-  font-size: 56rpx;  // 文本图标字体大小
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.95);
-  letter-spacing: 4rpx;
-  font-family: 'Arial', sans-serif;
+  font-size: 48rpx;  // 缩小图标：56rpx → 48rpx
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.98);
+  letter-spacing: 2rpx;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);  // 添加轻微阴影，增强可读性
+  position: relative;
+  z-index: 1;
+
+  // PC端：稍微大一点
+  // #ifdef H5
+  @media (min-width: 768px) {
+    font-size: 52rpx;
+  }
+  // #endif
 }
 
 // 信息头区
 .info-header {
   background: #FFFFFF;
-  padding: 24rpx 24rpx 20rpx;  // 紧凑化：减少上下padding
+  padding: 24rpx 24rpx 20rpx;
   margin-bottom: 16rpx;
+
+  // PC端：增加圆角和阴影，增强卡片感
+  // #ifdef H5
+  @media (min-width: 768px) {
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+    padding: 28rpx 32rpx 24rpx;
+  }
+  // #endif
+}
+
+// 标题行（PC端包含下载按钮）- 紧凑间距优化
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;  // 紧凑间距：与标签组更近，视觉上形成整体
 }
 
 .resource-title {
-  display: block;
+  flex: 1;
   font-size: 36rpx;
   font-weight: 600;
   color: #333333;
   line-height: 1.4;
-  margin-bottom: 12rpx;  // 减少间距：16rpx → 12rpx
+}
+
+// PC端下载按钮包装器
+.desktop-download-btn-wrapper {
+  // 移动端：隐藏
+  display: none;
+
+  // PC端：显示
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: block;
+  }
+  // #endif
+}
+
+.desktop-download-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 28rpx;
+  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
+  color: #FFFFFF;
+  border-radius: 28rpx;
+  font-size: 26rpx;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.3);
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    opacity: 0.9;
+    transform: translateY(-1rpx);
+  }
+
+  &:active:not(.downloaded) {
+    opacity: 0.85;
+    transform: scale(0.98);
+  }
+
+  &.downloaded {
+    background: #E8E8E8;
+    color: #999999;
+    box-shadow: none;
+
+    &:hover {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .btn-icon {
+    font-size: 24rpx;
+  }
+
+  .btn-text {
+    font-size: 26rpx;
+  }
 }
 
 .tag-group {
@@ -812,18 +1147,19 @@ const handleReport = () => {
   font-weight: 500;
 }
 
+// 淡化标签：使用透明背景(0.12-0.15)，避免抢标题
 .tag-category {
-  background: #FFF4E6;
+  background: rgba(255, 107, 53, 0.12);  // 橙色主题色透明版
   color: #FF6B35;
 }
 
 .tag-course {
-  background: #E3F2FD;
+  background: rgba(33, 150, 243, 0.12);  // 蓝色透明版
   color: #2196F3;
 }
 
 .tag-hot {
-  background: #FFEBEE;
+  background: rgba(244, 67, 54, 0.15);  // 红色透明版，稍深一点
   color: #F44336;
   font-weight: 600;
   letter-spacing: 1rpx;
@@ -843,18 +1179,119 @@ const handleReport = () => {
   gap: 4rpx;  // 图标与数字之间的间距
 }
 
+// 统计栏图标 - 统一线性风格，细描边
 .stat-icon {
-  font-size: 22rpx;
+  font-size: 20rpx;  // 缩小图标：22rpx → 20rpx
   color: #999999;
   line-height: 1;
+  font-weight: 300;  // 更细的字重
+  opacity: 0.85;  // 轻微透明，更柔和
+
+  // 为每种图标类型优化显示
+  &.stat-icon-view {
+    font-size: 20rpx;
+  }
+
+  &.stat-icon-download {
+    font-size: 18rpx;
+  }
+
+  &.stat-icon-like {
+    font-size: 20rpx;
+  }
+
+  &.stat-icon-comment {
+    font-size: 16rpx;
+    opacity: 0.9;
+  }
 }
 
 .stat-divider {
   color: #CCCCCC;
+  opacity: 0.6;
 }
 
 .text-liked {
   color: #F87171;
+  opacity: 1 !important;  // 点赞状态不透明
+}
+
+// PC端内联操作按钮组
+.desktop-actions {
+  // 移动端：隐藏
+  display: none;
+
+  // PC端：显示
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    margin-top: 16rpx;
+    padding-top: 16rpx;
+    border-top: 1rpx solid #F0F0F0;
+  }
+  // #endif
+}
+
+.desktop-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 10rpx 20rpx;
+  background: #F8F8F8;
+  border-radius: 24rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #F0F0F0;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.like-btn {
+    &.is-liked {
+      background: #FFF5F5;
+
+      .action-icon,
+      .action-text {
+        color: #F87171;
+      }
+
+      &:hover {
+        background: #FFEBEB;
+      }
+    }
+  }
+
+  &.favorite-btn {
+    &.is-favorited {
+      background: #FFF7ED;
+
+      .action-icon,
+      .action-text {
+        color: #F59E0B;
+      }
+
+      &:hover {
+        background: #FFEDD5;
+      }
+    }
+  }
+
+  .action-icon {
+    font-size: 24rpx;
+    color: #666666;
+  }
+
+  .action-text {
+    font-size: 24rpx;
+    color: #666666;
+    font-weight: 500;
+  }
 }
 
 // 上传者信息卡片
@@ -862,10 +1299,24 @@ const handleReport = () => {
   display: flex;
   align-items: center;
   background: #FFFFFF;
-  padding: 20rpx 24rpx;  // 减少上下padding：24rpx → 20rpx
+  padding: 20rpx 24rpx;
   margin-bottom: 16rpx;
   cursor: pointer;
-  transition: background 0.2s;  // 添加交互反馈
+  transition: all 0.2s;
+
+  // PC端：增加圆角、阴影和悬停效果
+  // #ifdef H5
+  @media (min-width: 768px) {
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+    padding: 24rpx 28rpx;
+
+    &:hover {
+      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+      transform: translateY(-2rpx);
+    }
+  }
+  // #endif
 
   &:active {
     background: #F8F8F8;
@@ -923,8 +1374,17 @@ const handleReport = () => {
 // 资源详情卡片
 .detail-card {
   background: #FFFFFF;
-  padding: 20rpx 24rpx;  // 减少上下padding：24rpx → 20rpx
+  padding: 20rpx 24rpx;
   margin-bottom: 16rpx;
+
+  // PC端：增加圆角和阴影
+  // #ifdef H5
+  @media (min-width: 768px) {
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+    padding: 24rpx 32rpx;
+  }
+  // #endif
 }
 
 .detail-row {
@@ -995,7 +1455,14 @@ const handleReport = () => {
 .comment-section {
   background: #FFFFFF;
   margin-bottom: 16rpx;
-  border-radius: 0;  // 移除圆角，保持简洁
+
+  // PC端：增加圆角和阴影
+  // #ifdef H5
+  @media (min-width: 768px) {
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+  // #endif
 }
 
 .section-header {
@@ -1024,6 +1491,15 @@ const handleReport = () => {
   background: #FFFFFF;
   padding: 24rpx;
   margin-bottom: 16rpx;
+
+  // PC端：增加圆角和阴影
+  // #ifdef H5
+  @media (min-width: 768px) {
+    border-radius: 12rpx;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+    padding: 28rpx;
+  }
+  // #endif
 }
 
 .more-link {
@@ -1061,14 +1537,10 @@ const handleReport = () => {
   z-index: 100;
   box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);  // 添加顶部阴影
 
-  // PC端适配：限制宽度并居中
+  // PC端适配：隐藏底部栏，改用内联按钮
   // #ifdef H5
   @media (min-width: 768px) {
-    max-width: 1200px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-left: 1rpx solid #E0E0E0;
-    border-right: 1rpx solid #E0E0E0;
+    display: none;
   }
   // #endif
 }
@@ -1118,6 +1590,18 @@ const handleReport = () => {
 
     .action-label {
       color: #F87171;
+    }
+  }
+}
+
+.favorite-btn {
+  &.is-favorited {
+    .action-icon {
+      color: #F59E0B;
+    }
+
+    .action-label {
+      color: #F59E0B;
     }
   }
 }

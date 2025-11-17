@@ -1,6 +1,6 @@
 <template>
   <view class="comment-list">
-    <!-- Comment input -->
+    <!-- 评论输入区 -->
     <view class="comment-input-section">
       <view class="input-wrapper">
         <textarea
@@ -19,7 +19,7 @@
       </view>
     </view>
 
-    <!-- Comments list -->
+    <!-- 评论列表 -->
     <view class="comments-wrapper">
       <view v-if="loading" class="loading-container">
         <text class="loading-text">加载中...</text>
@@ -338,8 +338,8 @@ const formatTime = (dateStr: string) => {
 }
 
 .comment-input-section {
-  padding: 20rpx 24rpx;  // 减少padding
-  background: #FAFAFA;  // 改为浅色背景，与主内容区分
+  padding: 20rpx 24rpx;
+  background: #FAFAFA;
   border-bottom: 1rpx solid #F0F0F0;
 }
 
@@ -349,17 +349,17 @@ const formatTime = (dateStr: string) => {
 
 .comment-textarea {
   width: 100%;
-  min-height: 100rpx;  // 缩小高度：120rpx → 100rpx
-  padding: 14rpx 16rpx;  // 减少上下padding
-  background: #FFFFFF;  // 改为白色背景，增强层次
-  border: 1rpx solid #E0E0E0;  // 添加边框
-  border-radius: 10rpx;  // 减小圆角：12rpx → 10rpx
+  min-height: 120rpx;
+  padding: 16rpx;
+  background: #FFFFFF;
+  border: 1rpx solid #E0E0E0;
+  border-radius: 10rpx;
   font-size: 28rpx;
   line-height: 1.6;
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: #FF6B35;  // 聚焦时高亮边框
+    border-color: #FF6B35;
   }
 }
 
@@ -367,23 +367,23 @@ const formatTime = (dateStr: string) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 12rpx;  // 减少间距：16rpx → 12rpx
+  margin-top: 12rpx;
 }
 
 .char-count {
-  font-size: 22rpx;  // 缩小字体：24rpx → 22rpx
+  font-size: 22rpx;
   color: #999999;
 }
 
 .submit-btn {
-  padding: 10rpx 28rpx;  // 缩小按钮：12rpx 32rpx → 10rpx 28rpx
+  padding: 10rpx 28rpx;
   background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
   color: #FFFFFF;
   border: none;
-  border-radius: 24rpx;  // 减小圆角：32rpx → 24rpx
+  border-radius: 24rpx;
   font-size: 26rpx;
   font-weight: 500;
-  box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.2);  // 添加阴影
+  box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.2);
 
   &:disabled {
     opacity: 0.5;

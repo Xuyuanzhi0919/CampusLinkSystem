@@ -8,7 +8,21 @@
       </view>
     </view>
 
-    <view v-if="error" class="error-container">
+    <!-- CORS降级：iframe模式 -->
+    <view v-if="error === 'iframe-fallback'" class="iframe-fallback-container">
+      <view class="fallback-notice">
+        <text class="notice-icon">ℹ️</text>
+        <text class="notice-text">检测到跨域限制，已切换到浏览器原生预览模式</text>
+      </view>
+      <iframe
+        :src="fileUrl"
+        class="fallback-iframe"
+        frameborder="0"
+      ></iframe>
+    </view>
+
+    <!-- 其他错误 -->
+    <view v-else-if="error && error !== 'iframe-fallback'" class="error-container">
       <text class="error-icon">⚠️</text>
       <text class="error-text">{{ error }}</text>
       <view class="error-btn" @click="retry">
@@ -16,6 +30,7 @@
       </view>
     </view>
 
+    <!-- PDF.js渲染模式 -->
     <view v-if="!loading && !error" class="pdf-container">
       <!-- 工具栏 -->
       <view class="pdf-toolbar">
@@ -60,7 +75,7 @@
 
 <script setup lang="ts">
 // #ifdef H5
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 
 // 配置PDF.js worker路径 - 使用本地worker文件
@@ -85,6 +100,9 @@ const totalPages = ref(0)
 const scale = ref(1.2)
 const canvasWidth = ref(0)
 const canvasHeight = ref(0)
+
+// 暴露fileUrl给模板使用
+const fileUrl = computed(() => props.fileUrl)
 
 let pdfDoc: any = null
 
@@ -116,9 +134,29 @@ const loadPDF = async () => {
     await renderPage(1)
   } catch (err: any) {
     console.error('PDF加载失败:', err)
-    error.value = err.message || 'PDF加载失败，请稍后重试'
-    loading.value = false
+
+    // 检测CORS错误，降级到iframe
+    const isCORSError =
+      err.message?.includes('CORS') ||
+      err.message?.includes('Failed to fetch') ||
+      err.name === 'UnknownErrorException'
+
+    if (isCORSError) {
+      // CORS错误：降级到iframe模式
+      handleCORSFallback()
+    } else {
+      // 其他错误：显示错误信息
+      error.value = err.message || 'PDF加载失败，请稍后重试'
+      loading.value = false
+    }
   }
+}
+
+// CORS降级处理
+const handleCORSFallback = () => {
+  // 显示iframe降级提示
+  error.value = 'iframe-fallback'
+  loading.value = false
 }
 
 // 渲染指定页面
@@ -353,6 +391,43 @@ onMounted(() => {
   display: block;
   margin: 0 auto;
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.3);
+}
+
+// iframe降级模式
+.iframe-fallback-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #525659;
+}
+
+.fallback-notice {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  background: #FFF3CD;
+  border-bottom: 1rpx solid rgba(0, 0, 0, 0.1);
+}
+
+.notice-icon {
+  font-size: 32rpx;
+}
+
+.notice-text {
+  flex: 1;
+  font-size: 24rpx;
+  color: #856404;
+  line-height: 1.5;
+}
+
+.fallback-iframe {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #FFFFFF;
 }
 // #endif
 </style>

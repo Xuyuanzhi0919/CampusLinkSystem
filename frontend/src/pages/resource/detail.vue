@@ -51,26 +51,39 @@
           <view v-if="isHotResource" class="tag tag-hot">HOT</view>
         </view>
 
-        <!-- 统计数据 - 紧凑单行，统一线性图标 -->
+        <!-- 统计数据 - 紧凑单行，智能显示非零项 -->
         <view class="stats-compact">
-          <text class="stat-item">
-            <text class="stat-icon stat-icon-view">○</text>{{ resource.views || 0 }}
-          </text>
-          <text class="stat-divider">·</text>
-          <text class="stat-item">
-            <text class="stat-icon stat-icon-download">↓</text>{{ resource.downloads }}
-          </text>
-          <text class="stat-divider">·</text>
+          <!-- 浏览数（如果存在且>0） -->
+          <template v-if="resource.views && resource.views > 0">
+            <text class="stat-item">
+              <text class="stat-icon stat-icon-view">○</text>{{ resource.views }}
+            </text>
+          </template>
+
+          <!-- 下载数（如果存在且>0） -->
+          <template v-if="resource.downloads && resource.downloads > 0">
+            <text v-if="resource.views && resource.views > 0" class="stat-divider">·</text>
+            <text class="stat-item">
+              <text class="stat-icon stat-icon-download">↓</text>{{ resource.downloads }}
+            </text>
+          </template>
+
+          <!-- 点赞数（总是显示，支持交互） -->
+          <text v-if="hasAnyPreviousStat(['views', 'downloads'])" class="stat-divider">·</text>
           <text class="stat-item" @click="scrollToLike">
             <text class="stat-icon stat-icon-like" :class="{ 'text-liked': resource.isLiked }">
               {{ resource.isLiked ? '♥' : '♡' }}
             </text>
-            <text :class="{ 'text-liked': resource.isLiked }">{{ resource.likes }}</text>
+            <text :class="{ 'text-liked': resource.isLiked }">{{ resource.likes || 0 }}</text>
           </text>
-          <text class="stat-divider">·</text>
-          <text class="stat-item" @click="scrollToComment">
-            <text class="stat-icon stat-icon-comment">▭</text>{{ commentCount }}
-          </text>
+
+          <!-- 评论数（如果存在且>0） -->
+          <template v-if="commentCount && commentCount > 0">
+            <text class="stat-divider">·</text>
+            <text class="stat-item" @click="scrollToComment">
+              <text class="stat-icon stat-icon-comment">▭</text>{{ commentCount }}
+            </text>
+          </template>
         </view>
 
         <!-- 移动端预览按钮（仅PDF，次操作） -->
@@ -464,6 +477,16 @@ const fileTypeIcon = computed(() => {
 const isHotResource = computed(() => {
   return (resource.value.downloads || 0) > 50 || (resource.value.likes || 0) > 30
 })
+
+// 判断是否有任何前置统计项显示（用于分隔符逻辑）
+const hasAnyPreviousStat = (statKeys: string[]) => {
+  return statKeys.some(key => {
+    if (key === 'views') return resource.value.views && resource.value.views > 0
+    if (key === 'downloads') return resource.value.downloads && resource.value.downloads > 0
+    if (key === 'comments') return commentCount.value && commentCount.value > 0
+    return false
+  })
+}
 
 // 页面加载
 onLoad((options) => {

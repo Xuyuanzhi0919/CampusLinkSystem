@@ -63,8 +63,15 @@
 import { ref, onMounted, watch } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
 
-// 配置PDF.js worker路径
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+// 配置PDF.js worker路径 - 使用本地worker文件
+// 方案1：使用pdfjs-dist包自带的worker（推荐）
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).href
+
+// 方案2：如果方案1不工作，使用jsDelivr CDN（备用）
+// pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`
 
 const props = defineProps<{
   fileUrl: string

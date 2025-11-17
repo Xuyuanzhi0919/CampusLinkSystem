@@ -52,7 +52,7 @@
               @click="handlePreview"
             >
               <text class="btn-icon">👁</text>
-              <text class="btn-text">预览</text>
+              <text class="btn-text">预览 PDF</text>
             </view>
 
             <!-- 下载按钮 -->
@@ -1792,16 +1792,19 @@ const closePreview = () => {
 
 .preview-btn {
   .action-icon {
-    color: #667EEA;
+    color: #475467;
   }
 
   .action-label {
-    color: #667EEA;
+    color: #475467;
   }
 
   &:active {
     .action-icon {
-      color: #764BA2;
+      color: #344054;
+    }
+    .action-label {
+      color: #344054;
     }
   }
 }
@@ -1906,33 +1909,38 @@ const closePreview = () => {
 .desktop-preview-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 16rpx 32rpx;
-  background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
-  color: #FFFFFF;
-  border-radius: 32rpx;
+  gap: 12rpx;
+  padding: 12rpx 28rpx;
+  background: #FFFFFF;
+  color: #344054;
+  border: 2rpx solid #D0D5DD;
+  border-radius: 16rpx;
   font-size: 28rpx;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   margin-right: 16rpx;
 
   &:hover {
-    transform: translateY(-2rpx);
-    box-shadow: 0 8rpx 16rpx rgba(102, 126, 234, 0.3);
+    background: #F9FAFB;
+    border-color: #98A2B3;
+    box-shadow: 0 2rpx 8rpx rgba(16, 24, 40, 0.05);
   }
 
   &:active {
-    transform: translateY(0);
+    background: #F2F4F7;
+    transform: translateY(1rpx);
   }
 
   .btn-icon {
     font-size: 28rpx;
+    color: #475467;
   }
 
   .btn-text {
     font-size: 28rpx;
-    font-weight: 600;
+    font-weight: 500;
+    color: #344054;
   }
 }
 

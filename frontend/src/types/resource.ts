@@ -32,10 +32,12 @@ export interface ResourceItem {
   fileSize: number
   category: ResourceCategory
   courseName?: string
-  score: number
+  score: number            // 积分要求
   downloads: number
   likes: number
   favorites?: number       // 收藏数（可选）
+  averageRating?: number   // 平均评分（1-5）
+  totalRatings?: number    // 总评分人数
   createdAt: string
   status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
   isDownloaded?: boolean   // 是否已下载（可选，登录用户会有）
@@ -56,6 +58,9 @@ export interface ResourceDetail extends ResourceItem {
   isDownloaded: boolean
   isFavorited: boolean  // 是否已收藏（必需）
   favorites: number  // 收藏数（必需）
+  averageRating: number  // 平均评分（必需）
+  totalRatings: number   // 总评分人数（必需）
+  userRating?: number    // 当前用户的评分（0表示未评分）
   views?: number  // 浏览次数
   commentCount?: number  // 评论数量
 }

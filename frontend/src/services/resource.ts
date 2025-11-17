@@ -158,3 +158,28 @@ export const reportResource = (id: number, data: { reason: string; description?:
   return request.post<{ message: string }>(`/resource/${id}/report`, data)
 }
 
+/**
+ * 评分资源
+ * @param id 资源ID
+ * @param rating 评分（1-5）
+ */
+export const rateResource = (id: number, rating: number) => {
+  return request.post<{
+    averageRating: number
+    totalRatings: number
+    userRating: number
+  }>(`/resource/${id}/rate`, { rating })
+}
+
+/**
+ * 获取资源评分
+ * @param id 资源ID
+ */
+export const getResourceRating = (id: number) => {
+  return request.get<{
+    averageRating: number
+    totalRatings: number
+    userRating: number
+  }>(`/resource/${id}/rating`)
+}
+

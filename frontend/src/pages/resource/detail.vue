@@ -98,6 +98,20 @@
           </text>
         </view>
 
+        <!-- 评分区域 -->
+        <view class="rating-section">
+          <view class="rating-label">资源质量</view>
+          <RatingStars
+            v-model="userRating"
+            :readonly="false"
+            :showText="true"
+            :showCount="true"
+            :totalRatings="resource.totalRatings || 0"
+            size="medium"
+            @change="handleRatingChange"
+          />
+        </view>
+
         <!-- PC端内联操作按钮组 -->
         <view class="desktop-actions">
           <!-- 点赞按钮 -->
@@ -338,10 +352,11 @@ import { onLoad } from '@dcloudio/uni-app'
 import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+import RatingStars from '@/components/RatingStars.vue'
 // #ifdef H5
 import PDFViewer from '@/components/pdf/PDFViewer.vue'
 // #endif
-import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource } from '@/services/resource'
+import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource, rateResource } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
@@ -360,6 +375,7 @@ const showMorePopup = ref(false)
 const showPreviewDialog = ref(false)
 const commentCount = ref(0)
 const userPoints = ref(0)
+const userRating = ref(0) // 用户评分（0-5）
 
 // 默认头像
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
@@ -379,6 +395,8 @@ const resource = ref<Partial<ResourceDetail>>({
   downloads: 0,
   likes: 0,
   favorites: 0,
+  averageRating: 0,
+  totalRatings: 0,
   uploaderName: '',
   uploaderAvatar: '',
   uploaderPoints: 0,
@@ -464,6 +482,9 @@ const loadResourceDetail = async () => {
   try {
     const res = await getResourceDetail(resourceId.value)
     resource.value = res
+
+    // 初始化用户评分
+    userRating.value = res.userRating || 0
 
     // 加载相关推荐（延迟加载）
     setTimeout(() => {
@@ -755,6 +776,49 @@ const handleFavorite = async () => {
     resource.value.favorites = originalFavorites
     uni.showToast({
       title: err.message || '操作失败',
+      icon: 'none',
+    })
+  }
+}
+
+// 处理评分变化
+const handleRatingChange = async (rating: number) => {
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({ title: '请先登录', icon: 'none' })
+    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    // 回滚评分
+    userRating.value = resource.value.userRating || 0
+    return
+  }
+
+  // 保存旧值，用于回滚
+  const oldRating = resource.value.userRating || 0
+  const oldAverage = resource.value.averageRating || 0
+  const oldTotal = resource.value.totalRatings || 0
+
+  try {
+    // 调用评分API
+    const result = await rateResource(resourceId.value, rating)
+
+    // 更新资源评分数据
+    resource.value.averageRating = result.averageRating
+    resource.value.totalRatings = result.totalRatings
+    resource.value.userRating = result.userRating
+
+    uni.showToast({
+      title: rating > 0 ? '评分成功' : '已取消评分',
+      icon: 'success',
+    })
+  } catch (err: any) {
+    // 回滚评分
+    userRating.value = oldRating
+    resource.value.averageRating = oldAverage
+    resource.value.totalRatings = oldTotal
+    resource.value.userRating = oldRating
+
+    uni.showToast({
+      title: err.message || '评分失败',
       icon: 'none',
     })
   }
@@ -1308,6 +1372,32 @@ const closePreview = () => {
 .text-liked {
   color: #F87171;
   opacity: 1 !important;  // 点赞状态不透明
+}
+
+// 评分区域
+.rating-section {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 20rpx;
+  padding: 20rpx 0;
+  border-top: 1rpx solid #F0F0F0;
+  border-bottom: 1rpx solid #F0F0F0;
+
+  // PC端：增加内边距
+  // #ifdef H5
+  @media (min-width: 768px) {
+    margin-top: 24rpx;
+    padding: 24rpx 0;
+  }
+  // #endif
+}
+
+.rating-label {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #333333;
+  white-space: nowrap;
 }
 
 // PC端内联操作按钮组

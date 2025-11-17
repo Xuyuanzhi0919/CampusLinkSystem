@@ -45,6 +45,17 @@
 
           <!-- PC端下载按钮（主CTA） -->
           <view class="desktop-download-btn-wrapper">
+            <!-- 预览按钮（仅PDF类型） -->
+            <view
+              v-if="resource.fileType === 'pdf'"
+              class="desktop-preview-btn"
+              @click="handlePreview"
+            >
+              <text class="btn-icon">👁</text>
+              <text class="btn-text">预览</text>
+            </view>
+
+            <!-- 下载按钮 -->
             <view
               class="desktop-download-btn"
               :class="{ 'downloaded': resource.isDownloaded }"
@@ -239,6 +250,12 @@
           <text class="action-label">{{ resource.favorites || 0 }}</text>
         </view>
 
+        <!-- 预览按钮（仅PDF） -->
+        <view v-if="resource.fileType === 'pdf'" class="action-icon-btn preview-btn" @click="handlePreview">
+          <text class="action-icon">👁</text>
+          <text class="action-label">预览</text>
+        </view>
+
         <!-- 更多按钮 -->
         <view class="action-icon-btn" @click="showMoreMenu">
           <text class="action-icon">⋮</text>
@@ -270,6 +287,11 @@
     <!-- 更多菜单弹窗 -->
     <view v-if="showMorePopup" class="popup-overlay" @click="closeMoreMenu">
       <view class="more-menu" @click.stop>
+        <!-- 预览选项（仅PDF） -->
+        <view v-if="resource.fileType === 'pdf'" class="menu-item" @click="handlePreview">
+          <text class="menu-icon">👁</text>
+          <text class="menu-text">预览PDF</text>
+        </view>
         <view class="menu-item" @click="scrollToComment">
           <text class="menu-icon">◐</text>
           <text class="menu-text">评论 ({{ commentCount }})</text>
@@ -287,6 +309,26 @@
         </view>
       </view>
     </view>
+
+    <!-- PDF预览弹窗（H5端） -->
+    <!-- #ifdef H5 -->
+    <view v-if="showPreviewDialog" class="preview-overlay" @click="closePreview">
+      <view class="preview-container" @click.stop>
+        <view class="preview-header">
+          <text class="preview-title">{{ resource.title }}</text>
+          <view class="preview-close" @click="closePreview">
+            <text class="close-icon">✕</text>
+          </view>
+        </view>
+        <view class="preview-content">
+          <PDFViewer :fileUrl="resource.fileUrl || ''" />
+        </view>
+        <view class="preview-footer">
+          <text class="preview-tip">预览模式 • 完整版请下载查看</text>
+        </view>
+      </view>
+    </view>
+    <!-- #endif -->
   </view>
 </template>
 
@@ -296,6 +338,9 @@ import { onLoad } from '@dcloudio/uni-app'
 import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+// #ifdef H5
+import PDFViewer from '@/components/pdf/PDFViewer.vue'
+// #endif
 import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/resource'
@@ -312,6 +357,7 @@ const errorMessage = ref('')
 const descriptionExpanded = ref(false)
 const showDownloadDialog = ref(false)
 const showMorePopup = ref(false)
+const showPreviewDialog = ref(false)
 const commentCount = ref(0)
 const userPoints = ref(0)
 
@@ -813,6 +859,54 @@ const submitReport = async (reason: string, description?: string) => {
       icon: 'none'
     })
   }
+}
+
+// 处理预览
+const handlePreview = () => {
+  closeMoreMenu() // 关闭更多菜单（如果打开）
+
+  // #ifdef H5
+  showPreviewDialog.value = true
+  // #endif
+
+  // #ifdef MP-WEIXIN
+  // 微信小程序使用wx.downloadFile + wx.openDocument
+  uni.showLoading({ title: '加载中...' })
+  uni.downloadFile({
+    url: resource.value.fileUrl || '',
+    success: (res) => {
+      uni.hideLoading()
+      const filePath = res.tempFilePath
+      uni.openDocument({
+        filePath,
+        fileType: 'pdf',
+        success: () => {
+          console.log('打开文档成功')
+        },
+        fail: (err) => {
+          uni.showToast({
+            title: '无法打开文档',
+            icon: 'none'
+          })
+          console.error('打开文档失败:', err)
+        }
+      })
+    },
+    fail: (err) => {
+      uni.hideLoading()
+      uni.showToast({
+        title: '下载失败',
+        icon: 'none'
+      })
+      console.error('下载失败:', err)
+    }
+  })
+  // #endif
+}
+
+// 关闭预览
+const closePreview = () => {
+  showPreviewDialog.value = false
 }
 </script>
 
@@ -1606,6 +1700,22 @@ const submitReport = async (reason: string, description?: string) => {
   }
 }
 
+.preview-btn {
+  .action-icon {
+    color: #667EEA;
+  }
+
+  .action-label {
+    color: #667EEA;
+  }
+
+  &:active {
+    .action-icon {
+      color: #764BA2;
+    }
+  }
+}
+
 // 右侧：主下载按钮
 .primary-download-btn {
   flex: 1;
@@ -1698,5 +1808,132 @@ const submitReport = async (reason: string, description?: string) => {
 .menu-text {
   font-size: 28rpx;
   color: #333333;
+}
+
+// ============ PDF预览功能样式 ============
+
+// 预览按钮（PC端）
+.desktop-preview-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 32rpx;
+  background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+  color: #FFFFFF;
+  border-radius: 32rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-right: 16rpx;
+
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 8rpx 16rpx rgba(102, 126, 234, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .btn-icon {
+    font-size: 28rpx;
+  }
+
+  .btn-text {
+    font-size: 28rpx;
+    font-weight: 600;
+  }
+}
+
+// 预览弹窗覆盖层
+.preview-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40rpx;
+}
+
+// 预览容器
+.preview-container {
+  width: 100%;
+  max-width: 1400rpx;
+  height: 90vh;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+}
+
+// 预览头部
+.preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  border-bottom: 1rpx solid #E0E0E0;
+  background: #FAFAFA;
+}
+
+.preview-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333333;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.preview-close {
+  width: 64rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #E0E0E0;
+  }
+
+  .close-icon {
+    font-size: 40rpx;
+    color: #666666;
+    font-weight: 300;
+  }
+}
+
+// 预览内容
+.preview-content {
+  flex: 1;
+  overflow: hidden;
+  background: #525659; // 深色背景，与PDF.js查看器一致
+}
+
+// 预览底部
+.preview-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx;
+  border-top: 1rpx solid #E0E0E0;
+  background: #FAFAFA;
+}
+
+.preview-tip {
+  font-size: 24rpx;
+  color: #999999;
 }
 </style>

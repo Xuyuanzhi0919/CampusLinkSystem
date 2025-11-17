@@ -52,7 +52,7 @@
               @click="handlePreview"
             >
               <text class="btn-icon">👁</text>
-              <text class="btn-text">预览 PDF</text>
+              <text class="btn-text">预览</text>
             </view>
 
             <!-- 下载按钮 -->
@@ -1905,42 +1905,39 @@ const closePreview = () => {
 
 // ============ PDF预览功能样式 ============
 
-// 预览按钮（PC端）
+// 预览按钮（PC端）- 轻边框按钮（统一信息风）
 .desktop-preview-btn {
   display: inline-flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 28rpx;
+  gap: 8rpx;
+  padding: 10rpx 24rpx;
   background: #FFFFFF;
-  color: #344054;
-  border: 2rpx solid #D0D5DD;
-  border-radius: 16rpx;
+  border: 2rpx solid #D1D5DB;
+  border-radius: 12rpx;  // 6-8px
   font-size: 28rpx;
-  font-weight: 500;
+  font-weight: 400;  // 更轻量
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   margin-right: 16rpx;
 
   &:hover {
     background: #F9FAFB;
-    border-color: #98A2B3;
-    box-shadow: 0 2rpx 8rpx rgba(16, 24, 40, 0.05);
+    border-color: #9CA3AF;
   }
 
   &:active {
-    background: #F2F4F7;
-    transform: translateY(1rpx);
+    background: #F3F4F6;
   }
 
   .btn-icon {
-    font-size: 28rpx;
-    color: #475467;
+    font-size: 24rpx;  // 细线图标
+    color: #6B7280;
   }
 
   .btn-text {
     font-size: 28rpx;
-    font-weight: 500;
-    color: #344054;
+    font-weight: 400;
+    color: #374151;  // 深灰
   }
 }
 

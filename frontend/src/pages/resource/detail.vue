@@ -181,10 +181,28 @@
           <text class="operation-text">收藏</text>
         </view>
 
-        <!-- 更多按钮 -->
-        <view class="operation-btn operation-more" @click="showMoreMenu">
-          <text class="operation-icon">⋯</text>
-          <text class="operation-text">更多</text>
+        <!-- 更多按钮（Web端带Popover） -->
+        <view class="operation-more-wrapper">
+          <view class="operation-btn operation-more" @click="showMoreMenu">
+            <text class="operation-icon">⋯</text>
+            <text class="operation-text">更多</text>
+          </view>
+
+          <!-- Web端Popover菜单（就地弹出） -->
+          <view v-if="showMorePopup" class="more-popover" @click.stop>
+            <view class="menu-item" @click="scrollToComment">
+              <text class="menu-icon">💬</text>
+              <text class="menu-text">评论 ({{ commentCount }})</text>
+            </view>
+            <view class="menu-item" @click="handleShare">
+              <text class="menu-icon">🔗</text>
+              <text class="menu-text">分享</text>
+            </view>
+            <view class="menu-item" @click="handleReport">
+              <text class="menu-icon">⚠️</text>
+              <text class="menu-text">举报</text>
+            </view>
+          </view>
         </view>
       </view>
 
@@ -283,8 +301,8 @@
       @cancel="showDownloadDialog = false"
     />
 
-    <!-- 更多菜单弹窗 -->
-    <view v-if="showMorePopup" class="popup-overlay" @click="closeMoreMenu">
+    <!-- 更多菜单弹窗（移动端底部Action Sheet） -->
+    <view v-if="showMorePopup" class="popup-overlay mobile-only" @click="closeMoreMenu">
       <view class="more-menu" @click.stop>
         <!-- 预览选项（仅PDF） -->
         <view v-if="resource.fileType === 'pdf'" class="menu-item" @click="handlePreview">
@@ -333,7 +351,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { onLoad } from '@dcloudio/uni-app'
+import { onLoad, onUnload } from '@dcloudio/uni-app'
 import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
@@ -457,6 +475,13 @@ onLoad((options) => {
     error.value = true
     errorMessage.value = '资源ID不存在'
   }
+})
+
+// 页面卸载时清理事件监听器
+onUnload(() => {
+  // #ifdef H5
+  document.removeEventListener('click', handleClickOutside)
+  // #endif
 })
 
 // 加载资源详情
@@ -812,12 +837,36 @@ const handleRatingChange = async (rating: number) => {
 // 显示更多菜单
 const showMoreMenu = () => {
   showMorePopup.value = true
+
+  // Web端：添加点击外部关闭Popover的监听器
+  // #ifdef H5
+  if (window.innerWidth >= 768) {
+    // 延迟添加监听器，避免立即触发关闭
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 100)
+  }
+  // #endif
 }
 
 // 关闭更多菜单
 const closeMoreMenu = () => {
   showMorePopup.value = false
+
+  // 移除点击外部监听器
+  // #ifdef H5
+  document.removeEventListener('click', handleClickOutside)
+  // #endif
 }
+
+// 点击外部关闭Popover（仅Web端）
+// #ifdef H5
+const handleClickOutside = () => {
+  if (showMorePopup.value && window.innerWidth >= 768) {
+    closeMoreMenu()
+  }
+}
+// #endif
 
 // 处理分享
 const handleShare = () => {
@@ -1290,6 +1339,10 @@ const closePreview = () => {
 }
 
 // 更多按钮（文本按钮）
+.operation-more-wrapper {
+  position: relative;  // 为Popover定位
+}
+
 .operation-more {
   background: transparent;
   color: #6B7280;
@@ -1305,6 +1358,57 @@ const closePreview = () => {
 
   &:active {
     background: #F0F0F0;
+  }
+}
+
+// Web端Popover菜单（右侧就地弹出）
+.more-popover {
+  position: absolute;
+  top: calc(100% + 4rpx);  // 紧贴按钮下方
+  right: 0;  // 右对齐
+  min-width: 180rpx;
+  background: #FFFFFF;
+  border-radius: 10rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 100;
+
+  // 移动端：隐藏（使用底部Action Sheet）
+  display: none;
+
+  // PC端：显示
+  // #ifdef H5
+  @media (min-width: 768px) {
+    display: block;
+  }
+  // #endif
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+    padding: 16rpx 20rpx;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: #F9FAFB;
+    }
+
+    &:active {
+      background: #F3F4F6;
+    }
+
+    .menu-icon {
+      font-size: 28rpx;
+      flex-shrink: 0;
+    }
+
+    .menu-text {
+      font-size: 26rpx;
+      color: #374151;
+    }
   }
 }
 
@@ -1913,6 +2017,7 @@ const closePreview = () => {
 }
 
 // 更多菜单弹窗
+// 移动端底部弹窗遮罩层（PC端隐藏）
 .popup-overlay {
   position: fixed;
   top: 0;
@@ -1923,6 +2028,15 @@ const closePreview = () => {
   z-index: 200;
   display: flex;
   align-items: flex-end;
+
+  // PC端：隐藏（使用Popover代替）
+  // #ifdef H5
+  @media (min-width: 768px) {
+    &.mobile-only {
+      display: none;
+    }
+  }
+  // #endif
 }
 
 .more-menu {

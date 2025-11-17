@@ -47,6 +47,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/auth/login",         // 登录
                         "/auth/refresh",       // 刷新Token
                         "/health",             // 健康检查
+                        "/api/pdf/**",         // PDF代理服务（公开访问）
                         "/resource/list",      // 资源列表（使用可选认证）
                         "/resource/search",    // 搜索资源（使用可选认证）
                         "/question/list",      // 问题列表（使用可选认证）

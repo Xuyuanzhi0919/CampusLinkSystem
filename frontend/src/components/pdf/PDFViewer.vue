@@ -77,6 +77,7 @@
 // #ifdef H5
 import { ref, computed, onMounted, watch } from 'vue'
 import * as pdfjsLib from 'pdfjs-dist'
+import { config } from '@/config'
 
 // 配置PDF.js worker路径 - 使用本地worker文件
 // 方案1：使用pdfjs-dist包自带的worker（推荐）
@@ -104,6 +105,28 @@ const canvasHeight = ref(0)
 // 暴露fileUrl给模板使用
 const fileUrl = computed(() => props.fileUrl)
 
+// 处理PDF URL（外部URL通过后端代理）
+const processedPdfUrl = computed(() => {
+  const url = props.fileUrl
+
+  // 检测是否是外部URL（非同域）
+  const isExternalUrl = url.startsWith('http://') || url.startsWith('https://')
+  const currentOrigin = window.location.origin
+  const isSameDomain = url.startsWith(currentOrigin) || url.startsWith('/')
+
+  if (isExternalUrl && !isSameDomain) {
+    // 外部URL：通过后端代理
+    // 从config.baseURL提取服务器地址（移除/api/v1后缀）
+    const apiServer = config.baseURL.replace(/\/api\/v1$/, '')
+    const proxyUrl = `${apiServer}/api/pdf/proxy?url=${encodeURIComponent(url)}`
+    console.log('使用代理URL:', proxyUrl, '原始URL:', url)
+    return proxyUrl
+  } else {
+    // 同域URL：直接使用
+    return url
+  }
+})
+
 let pdfDoc: any = null
 
 // 加载PDF文档
@@ -113,9 +136,9 @@ const loadPDF = async () => {
     error.value = ''
     loadingProgress.value = 0
 
-    // 使用PDF.js加载PDF
+    // 使用PDF.js加载PDF（使用处理后的URL）
     const loadingTask = pdfjsLib.getDocument({
-      url: props.fileUrl,
+      url: processedPdfUrl.value,
       withCredentials: false,
     })
 

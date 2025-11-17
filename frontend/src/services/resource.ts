@@ -40,7 +40,11 @@ export const uploadResource = (data: ResourceUploadParams) => {
  * @param id 资源ID
  */
 export const downloadResource = (id: number) => {
-  return request.post<{ fileUrl: string }>(`/resource/${id}/download`)
+  return request.post<{
+    downloadUrl: string
+    pointsCost: number
+    remainingPoints: number
+  }>(`/resource/${id}/download`)
 }
 
 /**

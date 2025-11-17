@@ -263,12 +263,32 @@ const handleAIAnswer = () => {
  * 功能导航
  */
 const handleNavigate = (path: string) => {
-  uni.navigateTo({
-    url: path,
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
+  // 检查是否是 tabBar 页面
+  const tabBarPages = [
+    'pages/home/index',
+    'pages/resource/index',
+    'pages/question/index'
+  ]
+
+  const isTabBarPage = tabBarPages.some(tabPath => path.includes(tabPath))
+
+  if (isTabBarPage) {
+    // tabBar 页面使用 switchTab
+    uni.switchTab({
+      url: path,
+      fail: () => {
+        uni.showToast({ title: '功能开发中', icon: 'none' })
+      },
+    })
+  } else {
+    // 非 tabBar 页面使用 navigateTo
+    uni.navigateTo({
+      url: path,
+      fail: () => {
+        uni.showToast({ title: '功能开发中', icon: 'none' })
+      },
+    })
+  }
 }
 
 /**

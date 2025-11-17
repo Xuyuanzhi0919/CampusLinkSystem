@@ -33,6 +33,16 @@ public class ResourceListResponse {
      */
     private String rejectReason;
 
+    /**
+     * 是否已下载（登录用户返回true/false，未登录用户返回false）
+     */
+    private Boolean isDownloaded;
+
+    /**
+     * 是否已点赞（登录用户返回true/false，未登录用户返回false）
+     */
+    private Boolean isLiked;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 }

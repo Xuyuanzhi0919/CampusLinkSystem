@@ -23,6 +23,12 @@
         <view class="voice-search-btn" @click="handleVoiceSearch">
           <view class="voice-icon">🎤</view>
         </view>
+
+        <!-- PC 端上传按钮 -->
+        <view class="upload-btn-pc" @click="handleUploadClick">
+          <text class="upload-icon">+</text>
+          <text class="upload-text">上传资源</text>
+        </view>
       </view>
     </view>
 
@@ -69,6 +75,8 @@
             :key="item.resourceId"
             :resource="item"
             @click="handleResourceClick"
+            @download="handleResourceDownload"
+            @like="handleResourceLike"
           />
 
           <!-- 加载更多状态 -->
@@ -100,18 +108,31 @@
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar />
+
+    <!-- 🎯 下载确认对话框 -->
+    <DownloadConfirmDialog
+      :visible="showDownloadDialog"
+      :resource="selectedResource"
+      :user-points="userPoints"
+      :loading="downloading"
+      @confirm="handleDownloadConfirm"
+      @cancel="handleDownloadCancel"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { getResourceList } from '@/services/resource'
+import { ref, computed, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
+import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import type { ResourceItem } from '@/types/resource'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import PCFloatingNav from '@/components/PCFloatingNav.vue'
 import CustomTabBar from '@/components/CustomTabBar.vue'
+import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+import config from '@/config'
 
 // 🎯 快捷筛选选项
 const quickFilterTabs = [
@@ -134,6 +155,20 @@ const hasMore = ref(true)
 const searchKeyword = ref('')
 const currentCategory = ref<number | null>(null)
 const searchDebounceTimer = ref<number | null>(null)
+
+// 🎯 下载相关状态
+const showDownloadDialog = ref(false)
+const selectedResource = ref<ResourceItem | null>(null)
+const userPoints = ref(0)
+const downloading = ref(false)
+
+// 🎯 本地已下载资源ID集合
+const DOWNLOADED_RESOURCES_KEY = 'downloaded_resources'
+const downloadedResourceIds = ref<Set<number>>(new Set())
+
+// 🎯 本地已点赞资源ID集合
+const LIKED_RESOURCES_KEY = 'liked_resources'
+const likedResourceIds = ref<Set<number>>(new Set())
 
 // 🎯 空状态文案
 const emptyTitle = computed(() => {
@@ -181,19 +216,30 @@ const loadResourceList = async (isRefresh = false) => {
     }
 
     const res = await getResourceList(params)
+    console.log('[ResourceSquare] API响应:', res)
 
-    if (isRefresh) {
-      resources.value = res.data.records
-    } else {
-      resources.value.push(...res.data.records)
+    // 检查响应数据是否有效
+    if (!res || !res.list) {
+      console.error('[ResourceSquare] 响应数据格式错误:', res)
+      throw new Error('数据格式错误')
     }
 
-    total.value = res.data.total
-    hasMore.value = resources.value.length < res.data.total
+    // 合并本地下载状态和点赞状态
+    mergeDownloadedStatus(res.list)
+    mergeLikedStatus(res.list)
+
+    if (isRefresh) {
+      resources.value = res.list
+    } else {
+      resources.value.push(...res.list)
+    }
+
+    total.value = res.total
+    hasMore.value = resources.value.length < res.total
 
     console.log('[ResourceSquare] 加载成功:', {
       page: page.value,
-      total: res.data.total,
+      total: res.total,
       loaded: resources.value.length
     })
   } catch (error) {
@@ -293,10 +339,9 @@ const handleVoiceSearch = () => {
 const handleResourceClick = (resource: ResourceItem) => {
   console.log('[ResourceSquare] 点击资源:', resource)
 
-  // TODO: 跳转到资源详情页
-  uni.showToast({
-    title: '资源详情页开发中',
-    icon: 'none'
+  // 跳转到资源详情页
+  uni.navigateTo({
+    url: `/pages/resource/detail?id=${resource.resourceId}`
   })
 }
 
@@ -313,10 +358,420 @@ const handleUploadClick = () => {
   })
 }
 
+/**
+ * 🎯 获取用户积分
+ */
+const loadUserPoints = () => {
+  const userInfo = uni.getStorageSync(config.userInfoKey)
+  if (userInfo) {
+    try {
+      const user = JSON.parse(userInfo)
+      userPoints.value = user.points || 0
+    } catch (e) {
+      console.error('[ResourceSquare] 解析用户信息失败:', e)
+      userPoints.value = 0
+    }
+  }
+}
+
+/**
+ * 🎯 从本地存储加载已下载的资源ID
+ */
+const loadDownloadedResources = () => {
+  try {
+    const stored = uni.getStorageSync(DOWNLOADED_RESOURCES_KEY)
+    if (stored) {
+      const ids = JSON.parse(stored)
+      downloadedResourceIds.value = new Set(ids)
+      console.log('[ResourceSquare] 加载已下载资源ID:', ids)
+    }
+  } catch (e) {
+    console.error('[ResourceSquare] 加载已下载资源失败:', e)
+    downloadedResourceIds.value = new Set()
+  }
+}
+
+/**
+ * 🎯 保存已下载的资源ID到本地存储
+ */
+const saveDownloadedResource = (resourceId: number) => {
+  try {
+    downloadedResourceIds.value.add(resourceId)
+    const ids = Array.from(downloadedResourceIds.value)
+    uni.setStorageSync(DOWNLOADED_RESOURCES_KEY, JSON.stringify(ids))
+    console.log('[ResourceSquare] 保存已下载资源ID:', resourceId)
+  } catch (e) {
+    console.error('[ResourceSquare] 保存已下载资源失败:', e)
+  }
+}
+
+/**
+ * 🎯 合并本地下载状态到资源列表
+ */
+const mergeDownloadedStatus = (resourceList: ResourceItem[]) => {
+  resourceList.forEach(resource => {
+    // 如果后端没有返回 isDownloaded，则从本地缓存中查找
+    if (resource.isDownloaded === undefined) {
+      resource.isDownloaded = downloadedResourceIds.value.has(resource.resourceId)
+    }
+    // 如果后端返回了 isDownloaded=true，也同步到本地缓存
+    else if (resource.isDownloaded) {
+      downloadedResourceIds.value.add(resource.resourceId)
+    }
+  })
+}
+
+/**
+ * 🎯 从本地存储加载已点赞的资源ID
+ */
+const loadLikedResources = () => {
+  try {
+    const stored = uni.getStorageSync(LIKED_RESOURCES_KEY)
+    if (stored) {
+      const ids = JSON.parse(stored)
+      likedResourceIds.value = new Set(ids)
+      console.log('[ResourceSquare] 加载已点赞资源ID:', ids)
+    }
+  } catch (e) {
+    console.error('[ResourceSquare] 加载已点赞资源失败:', e)
+    likedResourceIds.value = new Set()
+  }
+}
+
+/**
+ * 🎯 保存已点赞的资源ID到本地存储
+ */
+const saveLikedResource = (resourceId: number) => {
+  try {
+    likedResourceIds.value.add(resourceId)
+    const ids = Array.from(likedResourceIds.value)
+    uni.setStorageSync(LIKED_RESOURCES_KEY, JSON.stringify(ids))
+    console.log('[ResourceSquare] 保存已点赞资源ID:', resourceId)
+  } catch (e) {
+    console.error('[ResourceSquare] 保存已点赞资源失败:', e)
+  }
+}
+
+/**
+ * 🎯 移除已点赞的资源ID
+ */
+const removeLikedResource = (resourceId: number) => {
+  try {
+    likedResourceIds.value.delete(resourceId)
+    const ids = Array.from(likedResourceIds.value)
+    uni.setStorageSync(LIKED_RESOURCES_KEY, JSON.stringify(ids))
+    console.log('[ResourceSquare] 移除已点赞资源ID:', resourceId)
+  } catch (e) {
+    console.error('[ResourceSquare] 移除已点赞资源失败:', e)
+  }
+}
+
+/**
+ * 🎯 合并本地点赞状态到资源列表
+ */
+const mergeLikedStatus = (resourceList: ResourceItem[]) => {
+  resourceList.forEach(resource => {
+    // 如果后端没有返回 isLiked，则从本地缓存中查找
+    if (resource.isLiked === undefined) {
+      resource.isLiked = likedResourceIds.value.has(resource.resourceId)
+    }
+    // 如果后端返回了 isLiked=true，也同步到本地缓存
+    else if (resource.isLiked) {
+      likedResourceIds.value.add(resource.resourceId)
+    }
+  })
+}
+
+/**
+ * 🎯 点击资源点赞按钮
+ */
+const handleResourceLike = async (resource: ResourceItem) => {
+  console.log('[ResourceSquare] 点击点赞:', resource)
+
+  // 检查登录状态
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    })
+    setTimeout(() => {
+      uni.reLaunch({
+        url: '/pages/auth/login'
+      })
+    }, 2000)
+    return
+  }
+
+  try {
+    const isLiked = resource.isLiked
+
+    if (isLiked) {
+      // 取消点赞
+      await unlikeResource(resource.resourceId)
+
+      // 更新本地缓存
+      removeLikedResource(resource.resourceId)
+
+      // 更新资源状态
+      const index = resources.value.findIndex(
+        item => item.resourceId === resource.resourceId
+      )
+      if (index !== -1) {
+        resources.value[index].isLiked = false
+        resources.value[index].likes = Math.max(0, resources.value[index].likes - 1)
+      }
+
+      uni.showToast({
+        title: '已取消点赞',
+        icon: 'success',
+        duration: 1500
+      })
+    } else {
+      // 点赞
+      await likeResource(resource.resourceId)
+
+      // 更新本地缓存
+      saveLikedResource(resource.resourceId)
+
+      // 更新资源状态
+      const index = resources.value.findIndex(
+        item => item.resourceId === resource.resourceId
+      )
+      if (index !== -1) {
+        resources.value[index].isLiked = true
+        resources.value[index].likes += 1
+      }
+
+      uni.showToast({
+        title: '点赞成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+  } catch (error: any) {
+    console.error('[ResourceSquare] 点赞操作失败:', error)
+    uni.showToast({
+      title: error.message || '操作失败，请重试',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
+ * 🎯 点击资源下载按钮
+ */
+const handleResourceDownload = (resource: ResourceItem) => {
+  console.log('[ResourceSquare] 点击下载:', resource)
+
+  // 检查登录状态
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    })
+    setTimeout(() => {
+      uni.reLaunch({
+        url: '/pages/auth/login'
+      })
+    }, 2000)
+    return
+  }
+
+  // 如果已下载，直接下载（免费）
+  if (resource.isDownloaded) {
+    handleDirectDownload(resource)
+    return
+  }
+
+  // 显示下载确认对话框
+  selectedResource.value = resource
+  showDownloadDialog.value = true
+}
+
+/**
+ * 🎯 直接下载（已下载过的资源）
+ */
+const handleDirectDownload = async (resource: ResourceItem) => {
+  try {
+    uni.showLoading({
+      title: '准备下载...',
+      mask: true
+    })
+
+    const res = await downloadResource(resource.resourceId)
+
+    uni.hideLoading()
+
+    // 触发浏览器下载
+    if (res.downloadUrl) {
+      // #ifdef H5
+      const link = document.createElement('a')
+      link.href = res.downloadUrl
+      link.download = resource.title || 'resource'
+      link.click()
+      // #endif
+
+      // #ifndef H5
+      uni.downloadFile({
+        url: res.downloadUrl,
+        success: (downloadRes) => {
+          if (downloadRes.statusCode === 200) {
+            uni.showToast({
+              title: '下载成功',
+              icon: 'success'
+            })
+          }
+        },
+        fail: () => {
+          uni.showToast({
+            title: '下载失败',
+            icon: 'none'
+          })
+        }
+      })
+      // #endif
+
+      uni.showToast({
+        title: '下载成功（免费）',
+        icon: 'success',
+        duration: 2000
+      })
+    }
+  } catch (error: any) {
+    uni.hideLoading()
+    console.error('[ResourceSquare] 直接下载失败:', error)
+    uni.showToast({
+      title: error.message || '下载失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
+ * 🎯 确认下载（扣除积分）
+ */
+const handleDownloadConfirm = async () => {
+  if (!selectedResource.value) return
+
+  try {
+    downloading.value = true
+
+    const res = await downloadResource(selectedResource.value.resourceId)
+
+    // 下载成功，更新状态
+    if (res.downloadUrl) {
+      // 触发浏览器下载
+      // #ifdef H5
+      const link = document.createElement('a')
+      link.href = res.downloadUrl
+      link.download = selectedResource.value.title || 'resource'
+      link.click()
+      // #endif
+
+      // #ifndef H5
+      uni.downloadFile({
+        url: res.downloadUrl,
+        success: (downloadRes) => {
+          if (downloadRes.statusCode === 200) {
+            uni.showToast({
+              title: '下载成功',
+              icon: 'success'
+            })
+          }
+        },
+        fail: () => {
+          uni.showToast({
+            title: '下载失败',
+            icon: 'none'
+          })
+        }
+      })
+      // #endif
+
+      // 保存到本地缓存
+      saveDownloadedResource(selectedResource.value.resourceId)
+
+      // 更新该资源的下载状态
+      const index = resources.value.findIndex(
+        item => item.resourceId === selectedResource.value!.resourceId
+      )
+      if (index !== -1) {
+        resources.value[index].isDownloaded = true
+        resources.value[index].downloads += 1
+      }
+
+      // 更新用户积分（使用后端返回的剩余积分）
+      userPoints.value = res.remainingPoints
+
+      // 更新本地存储的用户信息
+      const userInfo = uni.getStorageSync(config.userInfoKey)
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          user.points = res.remainingPoints
+          uni.setStorageSync(config.userInfoKey, JSON.stringify(user))
+        } catch (e) {
+          console.error('[ResourceSquare] 更新用户信息失败:', e)
+        }
+      }
+
+      uni.showToast({
+        title: `下载成功！消耗 ${res.pointsCost} 积分`,
+        icon: 'success',
+        duration: 2000
+      })
+
+      // 关闭对话框
+      showDownloadDialog.value = false
+      selectedResource.value = null
+    }
+  } catch (error: any) {
+    console.error('[ResourceSquare] 下载失败:', error)
+    uni.showToast({
+      title: error.message || '下载失败',
+      icon: 'none',
+      duration: 2000
+    })
+  } finally {
+    downloading.value = false
+  }
+}
+
+/**
+ * 🎯 取消下载
+ */
+const handleDownloadCancel = () => {
+  showDownloadDialog.value = false
+  selectedResource.value = null
+}
+
 // 🎯 页面加载
 onMounted(() => {
   console.log('[ResourceSquare] 页面加载')
+  loadUserPoints()
+  loadDownloadedResources()
+  loadLikedResources()
   loadResourceList(true)
+})
+
+// 🎯 页面显示（从详情页返回时也会触发）
+onShow(() => {
+  console.log('[ResourceSquare] 页面显示')
+  // 重新加载用户积分、已下载资源和已点赞资源状态
+  loadUserPoints()
+  loadDownloadedResources()
+  loadLikedResources()
+  // 重新合并当前列表的下载和点赞状态
+  if (resources.value.length > 0) {
+    mergeDownloadedStatus(resources.value)
+    mergeLikedStatus(resources.value)
+  }
 })
 </script>
 
@@ -329,7 +784,7 @@ onMounted(() => {
 
 // 🎯 搜索区域
 .search-section {
-  padding: 24rpx 32rpx;
+  padding: 16rpx 32rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #E5E7EB;
 }
@@ -337,7 +792,7 @@ onMounted(() => {
 .search-container {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .search-box {
@@ -405,16 +860,51 @@ onMounted(() => {
   font-size: 36rpx;
 }
 
+// 🎯 PC 端上传按钮
+.upload-btn-pc {
+  display: none;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  border-radius: 48rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.upload-icon {
+  font-size: 32rpx;
+  font-weight: 300;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.upload-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
 // 🎯 筛选区域
 .filter-section {
-  padding: 20rpx 32rpx;
+  padding: 12rpx 32rpx 16rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #E5E7EB;
 }
 
 .filter-tabs {
   display: flex;
-  gap: 16rpx;
+  gap: 12rpx;
 }
 
 .filter-tab {
@@ -422,16 +912,17 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  padding: 20rpx 16rpx;
-  background: #F5F6FA;
-  border-radius: 24rpx;
-  border: 2rpx solid transparent;
+  gap: 6rpx;
+  padding: 14rpx 12rpx;
+  background: transparent;
+  border-radius: 16rpx;
+  border: 1rpx solid #E5E7EB;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 
   &:hover {
-    background: #EEF0F5;
+    background: #F9FAFB;
+    border-color: #FFD4BB;
   }
 
   &.active {
@@ -446,12 +937,12 @@ onMounted(() => {
 }
 
 .tab-icon {
-  font-size: 40rpx;
+  font-size: 32rpx;
 }
 
 .tab-label {
-  font-size: 24rpx;
-  font-weight: 600;
+  font-size: 22rpx;
+  font-weight: 500;
   color: #666;
   transition: color 0.3s;
 }
@@ -476,12 +967,11 @@ onMounted(() => {
 
 .scroll-container {
   height: calc(100vh - 320rpx);
-  padding: 0 32rpx;
 }
 
 .skeleton-list,
 .resource-list {
-  padding-top: 24rpx;
+  padding: 24rpx 32rpx;
 }
 
 .loading-more,
@@ -496,11 +986,11 @@ onMounted(() => {
   color: #999;
 }
 
-// 🎯 上传悬浮按钮
+// 🎯 上传悬浮按钮 (移动端)
 .upload-fab {
   position: fixed;
   right: 32rpx;
-  bottom: 120rpx;
+  bottom: 140rpx;
   width: 88rpx;
   height: 88rpx;
   display: flex;
@@ -546,6 +1036,69 @@ onMounted(() => {
 @media (min-width: 768px) {
   .scroll-container {
     height: calc(100vh - 280rpx);
+  }
+
+  // PC 端显示上传按钮，隐藏 FAB
+  .upload-btn-pc {
+    display: flex;
+  }
+
+  .upload-fab {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  // 移动端隐藏 PC 端上传按钮
+  .upload-btn-pc {
+    display: none;
+  }
+
+  // 移动端显示 FAB
+  .upload-fab {
+    display: flex;
+  }
+
+  // 移动端优化搜索区域
+  .search-section {
+    padding: 12rpx 24rpx;
+  }
+
+  .search-container {
+    gap: 10rpx;
+  }
+
+  // 移动端优化筛选区域
+  .filter-section {
+    padding: 10rpx 24rpx 12rpx;
+  }
+
+  .filter-tab {
+    padding: 10rpx 8rpx;
+    gap: 4rpx;
+  }
+
+  .tab-icon {
+    font-size: 28rpx;
+  }
+
+  .tab-label {
+    font-size: 20rpx;
+  }
+
+  // 移动端优化结果信息栏
+  .result-info {
+    padding: 10rpx 24rpx;
+  }
+
+  .info-text {
+    font-size: 24rpx;
+  }
+
+  // 移动端优化列表容器
+  .skeleton-list,
+  .resource-list {
+    padding: 24rpx 24rpx;
   }
 }
 </style>

@@ -18,6 +18,13 @@
 			}
 		},
 		{
+			"path": "pages/resource/detail",
+			"style": {
+				"navigationBarTitleText": "资源详情",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",

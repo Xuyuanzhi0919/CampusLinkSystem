@@ -75,7 +75,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     icon: '📚',
     name: '资料共享',
     desc: '100万+课件 · 试题 · 笔记',
-    path: '/pages/resource/list',
+    path: '/pages/resource/index',
     theme: 'blue',
     emoji: '📖',
     illustration: '📚',

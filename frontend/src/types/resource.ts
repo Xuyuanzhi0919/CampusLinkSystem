@@ -37,11 +37,14 @@ export interface ResourceItem {
   likes: number
   createdAt: string
   status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
+  isDownloaded?: boolean   // 是否已下载（可选，登录用户会有）
+  isLiked?: boolean        // 是否已点赞（可选，登录用户会有）
 }
 
 // 资源详情
 export interface ResourceDetail extends ResourceItem {
   uploaderId: number
+  uploaderPoints?: number  // 上传者积分
   fileUrl: string
   fileName: string
   status: ResourceStatus
@@ -49,6 +52,8 @@ export interface ResourceDetail extends ResourceItem {
   schoolName?: string
   isLiked: boolean
   isDownloaded: boolean
+  views?: number  // 浏览次数
+  commentCount?: number  // 评论数量
 }
 
 // 资源列表查询参数

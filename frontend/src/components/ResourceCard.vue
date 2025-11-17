@@ -33,21 +33,23 @@
     <!-- 🎯 资源描述 -->
     <view class="description">{{ resource.description }}</view>
 
-    <!-- 🎯 标签区域 -->
-    <view class="tags-row">
-      <!-- 课程名称标签 -->
-      <view v-if="resource.courseName" class="tag course-tag">
-        📖 {{ resource.courseName }}
+    <!-- 🎯 标签和文件信息行 -->
+    <view class="meta-row">
+      <!-- 左侧：课程标签 -->
+      <view class="tags-left">
+        <view v-if="resource.courseName" class="tag course-tag">
+          📖 {{ resource.courseName }}
+        </view>
       </view>
 
-      <!-- 文件类型标签 -->
-      <view class="tag file-tag">
-        {{ getFileTypeIcon(resource.fileType) }} {{ getFileTypeText(resource.fileType) }}
-      </view>
-
-      <!-- 文件大小标签 -->
-      <view v-if="resource.fileSize" class="tag size-tag">
-        {{ formatFileSize(resource.fileSize) }}
+      <!-- 右侧：文件信息 -->
+      <view class="file-info">
+        <view class="tag file-tag">
+          {{ getFileTypeIcon(resource.fileType) }} {{ getFileTypeText(resource.fileType) }}
+        </view>
+        <view v-if="resource.fileSize" class="tag size-tag">
+          {{ formatFileSize(resource.fileSize) }}
+        </view>
       </view>
     </view>
 
@@ -66,24 +68,42 @@
         <text class="time">{{ formatTime(resource.createdAt) }}</text>
       </view>
 
-      <!-- 右侧：统计信息 -->
-      <view class="stats-row">
-        <!-- 下载量 -->
-        <view class="stat-item downloads">
-          <text class="stat-icon">📥</text>
-          <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
+      <!-- 右侧：统计信息和下载按钮 -->
+      <view class="right-section">
+        <!-- 统计信息 -->
+        <view class="stats-row">
+          <!-- 下载量 -->
+          <view class="stat-item downloads">
+            <text class="stat-icon">↓</text>
+            <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
+          </view>
+
+          <!-- 点赞数 -->
+          <view class="stat-item likes">
+            <text class="stat-icon">♥</text>
+            <text class="stat-value">{{ formatNumber(resource.likes) }}</text>
+          </view>
         </view>
 
-        <!-- 点赞数 -->
-        <view class="stat-item likes">
-          <text class="stat-icon">❤️</text>
-          <text class="stat-value">{{ formatNumber(resource.likes) }}</text>
+        <!-- 点赞按钮 -->
+        <view
+          class="like-btn"
+          :class="{ 'is-liked': resource.isLiked }"
+          @click.stop="handleLike"
+        >
+          <text class="like-icon">{{ resource.isLiked ? '♥' : '♡' }}</text>
         </view>
 
-        <!-- 积分 -->
-        <view class="stat-item points">
-          <text class="stat-icon">💰</text>
-          <text class="stat-value">{{ resource.score }}</text>
+        <!-- 下载按钮 -->
+        <view
+          class="download-btn"
+          :class="{ 'is-downloaded': resource.isDownloaded }"
+          @click.stop="handleDownload"
+        >
+          <text class="download-icon">{{ resource.isDownloaded ? '✓' : '↓' }}</text>
+          <text class="download-text">
+            {{ resource.isDownloaded ? '已下载' : `${resource.score}积分` }}
+          </text>
         </view>
       </view>
     </view>
@@ -94,6 +114,7 @@
 import { ref, onMounted } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 import { ResourceCategory, ResourceStatus } from '@/types/resource'
+import { PLACEHOLDER_IMAGES } from '@/config/images'
 
 // Props
 interface Props {
@@ -105,12 +126,14 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   click: [resource: ResourceItem]
+  download: [resource: ResourceItem]
+  like: [resource: ResourceItem]
 }>()
 
 // 🎯 响应式状态
 const isActive = ref(false)
 const isMobile = ref(false)
-const defaultAvatar = 'https://via.placeholder.com/80x80/FF6B35/FFFFFF?text=U'
+const defaultAvatar = PLACEHOLDER_IMAGES.avatar
 
 // 🎯 检测设备类型
 onMounted(() => {
@@ -275,6 +298,20 @@ const onMouseLeave = () => {
 const handleClick = () => {
   emit('click', props.resource)
 }
+
+/**
+ * 🎯 点击下载按钮
+ */
+const handleDownload = () => {
+  emit('download', props.resource)
+}
+
+/**
+ * 🎯 点击点赞按钮
+ */
+const handleLike = () => {
+  emit('like', props.resource)
+}
 </script>
 
 <style scoped lang="scss">
@@ -311,7 +348,7 @@ const handleClick = () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16rpx;
-  margin-bottom: 16rpx;
+  margin-bottom: 10rpx;
 }
 
 .title-row {
@@ -363,34 +400,34 @@ const handleClick = () => {
 // 🎯 审核状态标签
 .status-badge {
   flex-shrink: 0;
-  padding: 8rpx 16rpx;
-  border-radius: 24rpx;
-  font-size: 22rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 28rpx;
+  font-size: 20rpx;
   font-weight: 500;
   white-space: nowrap;
 
   &.status-0 {
-    background: rgba(156, 163, 175, 0.15);
+    background: rgba(156, 163, 175, 0.12);
     color: #6B7280;
   }
 
   &.status-1 {
-    background: rgba(16, 185, 129, 0.15);
+    background: rgba(16, 185, 129, 0.12);
     color: #10B981;
   }
 
   &.status-2 {
-    background: rgba(239, 68, 68, 0.15);
+    background: rgba(239, 68, 68, 0.12);
     color: #EF4444;
   }
 }
 
 // 🎯 描述区域
 .description {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #6B7280;
-  line-height: 1.6;
-  margin-bottom: 16rpx;
+  line-height: 1.5;
+  margin-bottom: 12rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -399,22 +436,48 @@ const handleClick = () => {
   word-break: break-word;
 }
 
-// 🎯 标签行
-.tags-row {
+// 🎯 标签和文件信息行
+.meta-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-bottom: 16rpx;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.tags-left {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 20rpx;
+  gap: 8rpx;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 50%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 8rpx 16rpx;
-  border-radius: 24rpx;
-  font-size: 22rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 28rpx;
+  font-size: 20rpx;
   font-weight: 500;
   white-space: nowrap;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &.course-tag {
     background: rgba(99, 102, 241, 0.1);
@@ -424,11 +487,13 @@ const handleClick = () => {
   &.file-tag {
     background: rgba(59, 130, 246, 0.1);
     color: #3B82F6;
+    flex-shrink: 1;
   }
 
   &.size-tag {
     background: rgba(107, 114, 128, 0.1);
     color: #6B7280;
+    flex-shrink: 0;
   }
 }
 
@@ -438,8 +503,8 @@ const handleClick = () => {
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
-  padding-top: 16rpx;
-  border-top: 2rpx solid #F3F4F6;
+  padding-top: 12rpx;
+  border-top: 1rpx solid #F3F4F6;
 }
 
 .user-info {
@@ -483,7 +548,7 @@ const handleClick = () => {
 .stats-row {
   display: flex;
   align-items: center;
-  gap: 24rpx;
+  gap: 20rpx;
   flex-shrink: 0;
 }
 
@@ -491,59 +556,213 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 500;
 
   &.downloads {
-    color: #3B82F6;
+    color: #64748B;
+
+    .stat-icon {
+      color: #64748B;
+    }
   }
 
   &.likes {
-    color: #EF4444;
+    color: #94A3B8;
+
+    .stat-icon {
+      color: #F87171;
+      opacity: 0.8;
+    }
   }
 
   &.points {
-    color: #F59E0B;
+    color: #64748B;
     font-weight: 600;
+
+    .stat-icon {
+      color: #FBBF24;
+      opacity: 0.9;
+    }
   }
 }
 
 .stat-icon {
-  font-size: 28rpx;
+  font-size: 24rpx;
+  font-weight: 400;
 }
 
 .stat-value {
-  font-size: 24rpx;
+  font-size: 22rpx;
+}
+
+// 🎯 右侧区域（统计+点赞+下载按钮）
+.right-section {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+// 🎯 点赞按钮
+.like-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(248, 113, 113, 0.1);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.1);
+    background: rgba(248, 113, 113, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &.is-liked {
+    background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
+    box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.25);
+
+    .like-icon {
+      color: #FFFFFF;
+      animation: like-bounce 0.5s ease-in-out;
+    }
+  }
+}
+
+.like-icon {
+  font-size: 28rpx;
+  color: #F87171;
+  line-height: 1;
+  transition: all 0.3s ease;
+}
+
+@keyframes like-bounce {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+// 🎯 下载按钮
+.download-btn {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  border-radius: 32rpx;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2rpx 8rpx rgba(255, 122, 0, 0.15);
+
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.is-downloaded {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.15);
+
+    &:hover {
+      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25);
+    }
+  }
+}
+
+.download-icon {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
+.download-text {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #FFFFFF;
+  white-space: nowrap;
 }
 
 // 🎯 响应式适配
 @media (max-width: 768px) {
-  .resource-card {
-    border-radius: 12rpx;
-    padding: 20rpx;
-  }
-
   .title {
     font-size: 30rpx;
   }
 
   .description {
-    font-size: 26rpx;
+    font-size: 24rpx;
+    line-height: 1.4;
+  }
+
+  .card-header {
+    margin-bottom: 8rpx;
+  }
+
+  .meta-row {
+    margin-bottom: 12rpx;
+    gap: 8rpx;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .tags-left {
+    width: 100%;
+  }
+
+  .file-info {
+    gap: 4rpx;
+    max-width: 100%;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .tag {
+    font-size: 18rpx;
+    padding: 4rpx 10rpx;
   }
 
   .card-footer {
     flex-direction: column;
     align-items: flex-start;
-    gap: 12rpx;
+    gap: 10rpx;
+    padding-top: 10rpx;
   }
 
   .user-info {
     width: 100%;
   }
 
-  .stats-row {
+  .right-section {
     width: 100%;
-    justify-content: flex-end;
+    justify-content: space-between;
+  }
+
+  .stats-row {
+    flex: 1;
+    justify-content: flex-start;
+  }
+
+  .download-btn {
+    padding: 6rpx 12rpx;
+  }
+
+  .download-icon,
+  .download-text {
+    font-size: 20rpx;
   }
 }
 

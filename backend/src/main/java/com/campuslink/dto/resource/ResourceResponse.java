@@ -25,8 +25,11 @@ public class ResourceResponse {
     private Long schoolId;
     private String schoolName;
     private Integer score;
+    private Integer views;  // 浏览次数
     private Integer downloads;
     private Integer likes;
+    private Integer uploaderPoints;  // 上传者积分
+    private Integer commentCount;  // 评论数量
     private Boolean isDownloaded;
     private Boolean isLiked;
 

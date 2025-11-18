@@ -1216,10 +1216,11 @@ const closePreview = () => {
   // 移动端：隐藏
   display: none;
 
-  // PC端：显示
+  // PC端：显示，并允许Popover溢出
   // #ifdef H5
   @media (min-width: 768px) {
     display: block;
+    overflow: visible;  // ✅ 关键修复：允许Popover菜单溢出显示
   }
   // #endif
 }
@@ -1408,8 +1409,8 @@ const closePreview = () => {
   .menu-item {
     display: flex;
     align-items: center;
-    gap: 12rpx;
-    padding: 16rpx 20rpx;
+    gap: 8px;  // rpx → px
+    padding: 12px 16px;  // rpx → px
     cursor: pointer;
     transition: background 0.15s ease;
     white-space: nowrap;
@@ -1423,12 +1424,12 @@ const closePreview = () => {
     }
 
     .menu-icon {
-      font-size: 28rpx;
+      font-size: 18px;  // rpx → px
       flex-shrink: 0;
     }
 
     .menu-text {
-      font-size: 26rpx;
+      font-size: 14px;  // rpx → px
       color: #374151;
     }
   }

@@ -32,6 +32,11 @@ public class ResourceResponse {
     private Integer commentCount;  // 评论数量
     private Boolean isDownloaded;
     private Boolean isLiked;
+    private Boolean isFavorited;  // 是否已收藏
+    private Integer favorites;  // 收藏数
+    private Double averageRating;  // 平均评分（1-5）
+    private Integer totalRatings;  // 总评分人数
+    private Integer userRating;  // 用户评分（0表示未评分）
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;

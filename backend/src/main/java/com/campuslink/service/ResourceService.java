@@ -34,6 +34,7 @@ public class ResourceService {
     private final DownloadLogService downloadLogService;
     private final ResourceLikeService resourceLikeService;
     private final ResourceCommentService resourceCommentService;
+    private final FavoriteService favoriteService;
 
     /**
      * 上传资源
@@ -449,14 +450,25 @@ public class ResourceService {
         Long commentCount = resourceCommentService.countByResourceId(resource.getRid());
         response.setCommentCount(commentCount != null ? commentCount.intValue() : 0);
 
-        // 填充下载状态和点赞状态
+        // 统计收藏数
+        Long favoriteCount = favoriteService.getFavoriteCount("resource", resource.getRid());
+        response.setFavorites(favoriteCount != null ? favoriteCount.intValue() : 0);
+
+        // 填充下载状态、点赞状态、收藏状态
         if (currentUserId != null) {
             response.setIsDownloaded(downloadLogService.hasDownloaded(currentUserId, resource.getRid()));
             response.setIsLiked(resourceLikeService.hasLiked(currentUserId, resource.getRid()));
+            response.setIsFavorited(favoriteService.isFavorited(currentUserId, "resource", resource.getRid()));
         } else {
             response.setIsDownloaded(false);
             response.setIsLiked(false);
+            response.setIsFavorited(false);
         }
+
+        // 填充评分相关字段（暂时设置默认值，等待后续实现）
+        response.setAverageRating(0.0);
+        response.setTotalRatings(0);
+        response.setUserRating(0);
 
         return response;
     }

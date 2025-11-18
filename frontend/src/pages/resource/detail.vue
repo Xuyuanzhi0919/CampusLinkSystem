@@ -1387,21 +1387,22 @@ const closePreview = () => {
 // Web端Popover菜单（右侧就地弹出）
 .more-popover {
   position: absolute;
-  top: calc(100% + 4rpx);  // 紧贴按钮下方
+  top: 100%;  // 紧贴按钮下方（使用百分比而不是calc）
+  margin-top: 4px;  // 间距改用margin
   right: 0;  // 右对齐
-  min-width: 180rpx;
+  min-width: 180px;  // 使用px而不是rpx
   background: #FFFFFF;
-  border-radius: 10rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  z-index: 100;
+  z-index: 1000;  // 提高z-index：100 → 1000
 
   // 移动端：隐藏（使用底部Action Sheet）
   display: none;
 
-  // PC端：显示（不使用条件编译，直接使用媒体查询）
-  @media (min-width: 768px) {
-    display: block;
+  // PC端：显示（降低断点到540px，适配更多设备）
+  @media (min-width: 540px) {
+    display: block !important;  // 添加!important确保优先级
   }
 
   .menu-item {

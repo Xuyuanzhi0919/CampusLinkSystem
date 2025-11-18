@@ -857,8 +857,15 @@ const handleRatingChange = async (rating: number) => {
   }
 }
 
-// 显示更多菜单
-const showMoreMenu = () => {
+// 显示更多菜单（Toggle行为）
+const showMoreMenu = (event?: any) => {
+  // 如果已经打开，则关闭
+  if (showMorePopup.value) {
+    closeMoreMenu()
+    return
+  }
+
+  // 打开菜单
   showMorePopup.value = true
 
   // Web端：添加点击外部关闭Popover的监听器
@@ -884,10 +891,22 @@ const closeMoreMenu = () => {
 
 // 点击外部关闭Popover（仅Web端）
 // #ifdef H5
-const handleClickOutside = () => {
-  if (showMorePopup.value && window.innerWidth >= 768) {
-    closeMoreMenu()
+const handleClickOutside = (event: MouseEvent) => {
+  if (!showMorePopup.value || window.innerWidth < 768) {
+    return
   }
+
+  // 检查点击目标是否在".operation-more-wrapper"内部
+  const target = event.target as HTMLElement
+  const moreWrapper = target.closest('.operation-more-wrapper')
+
+  // 如果点击的是"更多"按钮或其内部元素，忽略（由showMoreMenu处理）
+  if (moreWrapper) {
+    return
+  }
+
+  // 点击外部：关闭菜单
+  closeMoreMenu()
 }
 // #endif
 

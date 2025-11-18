@@ -19,8 +19,8 @@
           </view>
         </view>
 
-        <!-- 语音搜索按钮 (复用活动列表的) -->
-        <view class="voice-search-btn" @click="handleVoiceSearch">
+        <!-- 语音搜索按钮 (复用活动列表的) - 暂时隐藏，等待功能实现 -->
+        <view v-if="false" class="voice-search-btn" @click="handleVoiceSearch">
           <view class="voice-icon">🎤</view>
         </view>
 
@@ -292,10 +292,9 @@ const handleSearchInput = () => {
   }
 
   searchDebounceTimer.value = setTimeout(() => {
-    if (searchKeyword.value) {
-      console.log('[ResourceSquare] 搜索:', searchKeyword.value)
-      loadResourceList(true)
-    }
+    // 修复：清空搜索框时也应该重新加载列表
+    console.log('[ResourceSquare] 搜索:', searchKeyword.value || '(清空)')
+    loadResourceList(true)
   }, 300) as unknown as number
 }
 
@@ -402,6 +401,20 @@ const saveDownloadedResource = (resourceId: number) => {
     console.log('[ResourceSquare] 保存已下载资源ID:', resourceId)
   } catch (e) {
     console.error('[ResourceSquare] 保存已下载资源失败:', e)
+  }
+}
+
+/**
+ * 🎯 移除已下载的资源ID
+ */
+const removeDownloadedResource = (resourceId: number) => {
+  try {
+    downloadedResourceIds.value.delete(resourceId)
+    const ids = Array.from(downloadedResourceIds.value)
+    uni.setStorageSync(DOWNLOADED_RESOURCES_KEY, JSON.stringify(ids))
+    console.log('[ResourceSquare] 移除已下载资源ID:', resourceId)
+  } catch (e) {
+    console.error('[ResourceSquare] 移除已下载资源失败:', e)
   }
 }
 
@@ -659,18 +672,38 @@ const handleDirectDownload = async (resource: ResourceItem) => {
 const handleDownloadConfirm = async () => {
   if (!selectedResource.value) return
 
+  // 保存原始状态用于回滚
+  const resourceId = selectedResource.value.resourceId
+  const index = resources.value.findIndex(item => item.resourceId === resourceId)
+  if (index === -1) return
+
+  const oldDownloaded = resources.value[index].isDownloaded
+  const oldDownloads = resources.value[index].downloads
+  const oldPoints = userPoints.value
+
   try {
     downloading.value = true
 
-    const res = await downloadResource(selectedResource.value.resourceId)
+    // 🎯 乐观更新：先更新UI
+    resources.value[index].isDownloaded = true
+    resources.value[index].downloads += 1
+    // 暂时减去积分（假设需要5积分，实际会用后端返回值）
+    const estimatedCost = 5
+    userPoints.value = Math.max(0, userPoints.value - estimatedCost)
 
-    // 下载成功，更新状态
+    // 关闭对话框并保存到缓存（乐观）
+    showDownloadDialog.value = false
+    saveDownloadedResource(resourceId)
+
+    const res = await downloadResource(resourceId)
+
+    // 下载成功，使用后端返回的真实数据更新
     if (res.downloadUrl) {
       // 触发浏览器下载
       // #ifdef H5
       const link = document.createElement('a')
       link.href = res.downloadUrl
-      link.download = selectedResource.value.title || 'resource'
+      link.download = selectedResource.value!.title || 'resource'
       link.click()
       // #endif
 
@@ -694,19 +727,7 @@ const handleDownloadConfirm = async () => {
       })
       // #endif
 
-      // 保存到本地缓存
-      saveDownloadedResource(selectedResource.value.resourceId)
-
-      // 更新该资源的下载状态
-      const index = resources.value.findIndex(
-        item => item.resourceId === selectedResource.value!.resourceId
-      )
-      if (index !== -1) {
-        resources.value[index].isDownloaded = true
-        resources.value[index].downloads += 1
-      }
-
-      // 更新用户积分（使用后端返回的剩余积分）
+      // 更新用户积分（使用后端返回的真实剩余积分）
       userPoints.value = res.remainingPoints
 
       // 更新本地存储的用户信息
@@ -727,12 +748,24 @@ const handleDownloadConfirm = async () => {
         duration: 2000
       })
 
-      // 关闭对话框
-      showDownloadDialog.value = false
       selectedResource.value = null
     }
   } catch (error: any) {
     console.error('[ResourceSquare] 下载失败:', error)
+
+    // 🔄 回滚UI状态
+    if (index !== -1) {
+      resources.value[index].isDownloaded = oldDownloaded
+      resources.value[index].downloads = oldDownloads
+    }
+    userPoints.value = oldPoints
+
+    // 移除已保存的下载缓存
+    removeDownloadedResource(resourceId)
+
+    // 重新打开对话框
+    showDownloadDialog.value = true
+
     uni.showToast({
       title: error.message || '下载失败',
       icon: 'none',

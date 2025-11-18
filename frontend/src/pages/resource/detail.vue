@@ -98,7 +98,7 @@
         <view class="rating-section">
           <view class="rating-label">资源质量</view>
           <RatingStars
-            v-model="userRating"
+            v-model="resource.userRating"
             :readonly="false"
             :showText="true"
             :showCount="true"
@@ -516,8 +516,7 @@ const loadResourceDetail = async () => {
     const res = await getResourceDetail(resourceId.value)
     resource.value = res
 
-    // 初始化用户评分
-    userRating.value = res.userRating || 0
+    // 用户评分已包含在 resource.value.userRating 中，无需单独赋值
 
     // 加载相关推荐（延迟加载）
     setTimeout(() => {

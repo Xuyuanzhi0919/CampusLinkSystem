@@ -260,7 +260,7 @@ public class ResourceController {
         Integer rating = request.get("rating");
 
         if (rating == null) {
-            return Result.error("评分不能为空");
+            return Result.error(400, "评分不能为空");
         }
 
         return resourceService.rateResource(id, userId, rating);

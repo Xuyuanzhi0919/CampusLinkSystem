@@ -391,7 +391,7 @@ const showMorePopup = ref(false)
 const showPreviewDialog = ref(false)
 const commentCount = ref(0)
 const userPoints = ref(0)
-const userRating = ref(0) // 用户评分（0-5）
+// 用户评分直接使用 resource.value.userRating，无需独立变量
 
 // 默认头像
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
@@ -816,12 +816,16 @@ const handleFavorite = async () => {
 
 // 处理评分变化
 const handleRatingChange = async (rating: number) => {
+  // 前端验证评分范围
+  if (rating < 0 || rating > 5) {
+    console.error('Invalid rating:', rating)
+    return
+  }
+
   const token = uni.getStorageSync(config.tokenKey)
   if (!token) {
     uni.showToast({ title: '请先登录', icon: 'none' })
     setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
-    // 回滚评分
-    userRating.value = resource.value.userRating || 0
     return
   }
 
@@ -830,11 +834,14 @@ const handleRatingChange = async (rating: number) => {
   const oldAverage = resource.value.averageRating || 0
   const oldTotal = resource.value.totalRatings || 0
 
+  // 乐观更新UI（组件会自动响应）
+  resource.value.userRating = rating
+
   try {
     // 调用评分API
     const result = await rateResource(resourceId.value, rating)
 
-    // 更新资源评分数据
+    // 更新资源评分数据（使用服务器返回的真实值）
     resource.value.averageRating = result.averageRating
     resource.value.totalRatings = result.totalRatings
     resource.value.userRating = result.userRating
@@ -844,8 +851,7 @@ const handleRatingChange = async (rating: number) => {
       icon: 'success',
     })
   } catch (err: any) {
-    // 回滚评分
-    userRating.value = oldRating
+    // 回滚评分（只需要回滚 resource 对象）
     resource.value.averageRating = oldAverage
     resource.value.totalRatings = oldTotal
     resource.value.userRating = oldRating

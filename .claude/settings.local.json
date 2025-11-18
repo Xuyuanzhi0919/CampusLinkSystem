@@ -33,7 +33,19 @@
       "Bash(exit:*)",
       "Bash(src/pages/home/components/ClubActivity.vue)",
       "Bash(ClubActivity.vue)",
-      "Bash(SkeletonResourceCard.vue)"
+      "Bash(SkeletonResourceCard.vue)",
+      "Bash(python:*)",
+      "Bash(echo:*)",
+      "Bash(\"F:\\Cluade Code Project\\CampusLink\\backend\\src\\main\\java\\com\\campuslink\\dto\\comment\\CommentResponse.java\")",
+      "Bash(CommentResponse.java)",
+      "Bash(del \"F:\\Cluade Code Project\\CampusLink\\backend\\src\\main\\java\\com\\campuslink\\service\\ResourceCommentService.java\")",
+      "Bash(ren CommentResponse.java ResourceCommentResponse.java)",
+      "Bash(del nul 2)",
+      "Bash(if exist nul del /f nul 2)",
+      "Bash(.gitignore)",
+      "Bash(npm install:*)",
+      "Bash(taskkill:*)",
+      "Bash(tasklist:*)"
     ],
     "deny": [],
     "ask": []

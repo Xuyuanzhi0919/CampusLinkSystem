@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
+
+import com.campuslink.common.Result;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.resource.*;
 import com.campuslink.entity.Resource;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -488,7 +491,7 @@ public class ResourceService {
         // 验证资源是否存在
         Resource resource = resourceMapper.selectById(resourceId);
         if (resource == null) {
-            return Result.error("资源不存在");
+            return Result.error(ResultCode.RESOURCE_NOT_FOUND);
         }
 
         try {
@@ -505,7 +508,7 @@ public class ResourceService {
             String message = rating > 0 ? "评分成功" : "已取消评分";
             return Result.success(message, data);
         } catch (IllegalArgumentException e) {
-            return Result.error(e.getMessage());
+            return Result.error(400, e.getMessage());
         }
     }
 }

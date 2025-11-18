@@ -1399,12 +1399,10 @@ const closePreview = () => {
   // 移动端：隐藏（使用底部Action Sheet）
   display: none;
 
-  // PC端：显示
-  // #ifdef H5
+  // PC端：显示（不使用条件编译，直接使用媒体查询）
   @media (min-width: 768px) {
     display: block;
   }
-  // #endif
 
   .menu-item {
     display: flex;
@@ -2053,13 +2051,11 @@ const closePreview = () => {
   align-items: flex-end;
 
   // PC端：隐藏（使用Popover代替）
-  // #ifdef H5
   @media (min-width: 768px) {
     &.mobile-only {
       display: none;
     }
   }
-  // #endif
 }
 
 .more-menu {

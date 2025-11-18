@@ -35,6 +35,7 @@ public class ResourceService {
     private final ResourceLikeService resourceLikeService;
     private final ResourceCommentService resourceCommentService;
     private final FavoriteService favoriteService;
+    private final ResourceRatingService resourceRatingService;
 
     /**
      * 上传资源
@@ -465,11 +466,46 @@ public class ResourceService {
             response.setIsFavorited(false);
         }
 
-        // 填充评分相关字段（暂时设置默认值，等待后续实现）
-        response.setAverageRating(0.0);
-        response.setTotalRatings(0);
-        response.setUserRating(0);
+        // 填充评分相关字段（从ResourceRatingService获取真实数据）
+        ResourceRatingService.RatingResult ratingResult =
+            resourceRatingService.calculateRatingStatistics(resource.getRid(), currentUserId);
+        response.setAverageRating(ratingResult.getAverageRating());
+        response.setTotalRatings(ratingResult.getTotalRatings());
+        response.setUserRating(ratingResult.getUserRating());
 
         return response;
+    }
+
+    /**
+     * 用户对资源进行评分
+     *
+     * @param resourceId 资源ID
+     * @param userId     用户ID
+     * @param rating     评分（0-5，0表示取消评分）
+     * @return 评分结果（包含平均分、总评分人数、用户评分）
+     */
+    public Result<Map<String, Object>> rateResource(Long resourceId, Long userId, Integer rating) {
+        // 验证资源是否存在
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            return Result.error("资源不存在");
+        }
+
+        try {
+            // 调用评分服务
+            ResourceRatingService.RatingResult result =
+                resourceRatingService.rateResource(userId, resourceId, rating);
+
+            // 返回评分结果
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("averageRating", result.getAverageRating());
+            data.put("totalRatings", result.getTotalRatings());
+            data.put("userRating", result.getUserRating());
+
+            String message = rating > 0 ? "评分成功" : "已取消评分";
+            return Result.success(message, data);
+        } catch (IllegalArgumentException e) {
+            return Result.error(e.getMessage());
+        }
     }
 }

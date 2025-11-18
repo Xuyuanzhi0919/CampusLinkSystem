@@ -248,4 +248,21 @@ public class ResourceController {
         commentService.deleteComment(commentId, userId);
         return Result.success("删除成功");
     }
+
+    @Operation(summary = "评分资源", description = "用户对资源进行评分（1-5星），rating=0表示取消评分")
+    @PostMapping("/{id}/rate")
+    public Result<Map<String, Object>> rateResource(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Parameter(description = "评分（0-5，0表示取消评分）") @RequestBody Map<String, Integer> request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Integer rating = request.get("rating");
+
+        if (rating == null) {
+            return Result.error("评分不能为空");
+        }
+
+        return resourceService.rateResource(id, userId, rating);
+    }
 }

@@ -1146,27 +1146,14 @@ const closePreview = () => {
 
 // 内容滚动区
 .content-scroll {
-  height: calc(100vh - 88rpx - 100rpx);  // 调整高度：120rpx → 100rpx
+  // 移除固定高度，使用自然滚动（避免双滚动条）
+  // height: calc(100vh - 88rpx - 100rpx);  // ❌ 会导致双滚动条
+  min-height: calc(100vh - 88rpx - 100rpx);  // ✅ 最小高度，自然滚动
 
-  // PC端适配：优化滚动体验
+  // PC端适配：优化滚动体验（应用于body滚动条）
   // #ifdef H5
   @media (min-width: 768px) {
-    &::-webkit-scrollbar {
-      width: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: #F5F5F5;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: #CCCCCC;
-      border-radius: 4px;
-
-      &:hover {
-        background: #999999;
-      }
-    }
+    // 移除容器自身滚动条样式，改为在全局设置body滚动条样式
   }
   // #endif
 }

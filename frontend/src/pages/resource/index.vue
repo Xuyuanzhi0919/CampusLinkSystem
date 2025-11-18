@@ -966,7 +966,9 @@ onShow(() => {
 }
 
 .scroll-container {
-  height: calc(100vh - 320rpx);
+  // 移除固定高度，使用自然滚动（避免双滚动条）
+  // height: calc(100vh - 320rpx);  // ❌ 会导致双滚动条
+  min-height: calc(100vh - 320rpx);  // ✅ 最小高度，自然滚动
 }
 
 .skeleton-list,
@@ -1032,10 +1034,31 @@ onShow(() => {
   line-height: 1;
 }
 
-// 🎯 响应式适配 - 移除最大宽度限制，与社团列表页保持一致
+// 🎯 响应式适配 - PC端优化
 @media (min-width: 768px) {
   .scroll-container {
-    height: calc(100vh - 280rpx);
+    // 移除固定高度，使用自然滚动
+    // height: calc(100vh - 280rpx);  // ❌ 会导致双滚动条
+    min-height: calc(100vh - 280rpx);  // ✅ 最小高度，自然滚动
+  }
+
+  // PC端：资源列表使用网格布局
+  .resource-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 24px;
+    max-width: 1400px;  // 限制最大宽度
+    margin: 0 auto;  // 居中显示
+    padding: 20px 40px;
+  }
+
+  .skeleton-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px 40px;
   }
 
   // PC 端显示上传按钮，隐藏 FAB

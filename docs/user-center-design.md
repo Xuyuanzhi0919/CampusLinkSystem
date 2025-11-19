@@ -15,6 +15,12 @@
 
 ## 🎯 设计目标
 
+### 产品定位
+CampusLink 定位为**清爽学习社区 + 校园工具**，而非游戏积分商城。用户中心的设计应体现：
+- **理性、可信赖**：学习相关产品的基础调性
+- **年轻、有元气**：校园氛围的活力感
+- **安静、有秩序**：信息优先，避免过度娱乐化
+
 ### 核心目标
 1. **信息展示**: 清晰展示用户基本信息、积分、等级、统计数据
 2. **功能入口**: 提供各种用户相关功能的快捷入口
@@ -26,8 +32,23 @@
 - **简洁明了**: 信息层次清晰，避免视觉混乱
 - **易用性**: 常用功能易于访问，操作流程简单
 - **一致性**: 与现有资源中心、问答中心风格统一
+- **克制配色**: 避免"彩虹超市风"，统一品牌主色
+- **轻量阴影**: 避免厚重感，用灰底拉开层级
 - **响应式**: 适配不同屏幕尺寸
 - **高性能**: 快速加载，流畅交互
+
+### 配色优化思路
+❌ **之前的问题**：
+- 紫蓝渐变 header（偏电竞/游戏风）
+- 每个功能入口独立高饱和渐变（彩虹超市）
+- 等级徽章过于华丽（闪瞎眼的金色）
+- 品牌色不统一（蓝/紫/绿/黄/红全开）
+
+✅ **优化后的方案**：
+- **统一品牌主色**：#2563EB（校园科技蓝）
+- **按功能分组配色**：学习（蓝）/ 资产（黄）/ 系统（灰）
+- **轻量化阴影**：用灰底 + 轻阴影代替厚重感
+- **哑光金属色**：等级徽章降低华丽度
 
 ---
 
@@ -72,54 +93,86 @@
 
 ### 色彩方案
 
-参考现有页面的色彩体系，保持一致性：
+基于 CampusLink "清爽学习社区"的定位，采用克制、理性的色彩体系：
 
-#### 主色调
+#### 核心设计理念
+- **主基调**: 理性、可信赖（学习相关产品的基础）
+- **点缀**: 年轻、有一点元气（校园氛围）
+- **整体**: 安静、有秩序（信息优先，避免视觉混乱）
+
+#### 品牌主色（统一全站）
 ```scss
-// 主品牌色（蓝色系）
-$primary-blue: #1E5FFF;           // 主按钮、链接
-$primary-blue-light: #3B82F6;     // hover状态
-$primary-blue-gradient: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+// 品牌主色：校园科技蓝（统一识别）
+$primary: #2563EB;                // 主按钮、链接、品牌标识
+$primary-hover: #1D4ED8;          // hover状态
+$primary-soft: #EFF6FF;           // 主色浅背景（卡片底色）
+$primary-gradient: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
 
-// 辅助色
-$success-green: #48BB78;          // 成功状态
-$warning-orange: #FF8C42;         // 警告、积分相关
-$danger-red: #FF4D4F;             // 危险操作
-$info-purple: #7C3AED;            // 信息提示
+// 辅助色：突出"学习 & 校园"
+$accent-teal: #14B8A6;            // 学习成就、关键标签
+$accent-yellow: #FACC15;          // 积分、等级点缀（少量使用）
+
+// 功能语义色
+$success-green: #10B981;          // 成功状态
+$warning-orange: #F59E0B;         // 警告、提示
+$danger-red: #EF4444;             // 危险操作、错误
+$info-blue: #3B82F6;              // 信息提示
 ```
 
-#### 中性色
+#### 中性色（阅读舒适）
 ```scss
-// 背景色
-$bg-primary: #FFFFFF;             // 主背景
-$bg-secondary: #F9FBFF;           // 次级背景
-$bg-tertiary: #F8FAFC;            // 卡片背景
+// 背景色（柔和灰阶）
+$bg-page: #F3F4F6;                // 页面底色
+$bg-card: #FFFFFF;                // 卡片背景
+$bg-secondary: #F9FAFB;           // 次级区域背景
+$bg-tertiary: #F3F4F6;            // 功能入口底色
 
-// 文字色
-$text-primary: #333333;           // 主标题
-$text-secondary: #666666;         // 次要文字
-$text-tertiary: #999999;          // 辅助文字
-$text-disabled: #CCCCCC;          // 禁用状态
+// 文字色（清晰层次）
+$text-primary: #111827;           // 主标题（深灰，非纯黑）
+$text-secondary: #6B7280;         // 次要文字
+$text-tertiary: #9CA3AF;          // 辅助文字
+$text-disabled: #D1D5DB;          // 禁用状态
 
-// 边框色
-$border-light: #F0F0F0;           // 浅边框
-$border-normal: #E0E0E0;          // 普通边框
-$border-dark: #D0D0D0;            // 深边框
+// 边框色（轻量）
+$border-light: #F3F4F6;           // 浅边框
+$border-normal: #E5E7EB;          // 普通边框
+$border-dark: #D1D5DB;            // 深边框
 ```
 
-#### 渐变色方案
+#### 功能入口分组配色（按类型统一）
 ```scss
-// 顶部信息卡片背景渐变
-$header-gradient: linear-gradient(135deg,
-  #667EEA 0%,      // 紫蓝色
-  #764BA2 100%     // 深紫色
-);
+// 学习相关（资源、问答、任务）- 蓝系
+$function-study-bg: #EFF6FF;      // 柔和蓝底
+$function-study-icon: #2563EB;    // 品牌蓝图标
 
-// 等级徽章渐变
-$level-gradient-bronze: linear-gradient(135deg, #CD7F32 0%, #E8A87C 100%);   // 青铜
-$level-gradient-silver: linear-gradient(135deg, #C0C0C0 0%, #E8E8E8 100%);   // 白银
-$level-gradient-gold: linear-gradient(135deg, #FFD700 0%, #FFF4A3 100%);     // 黄金
-$level-gradient-diamond: linear-gradient(135deg, #4FC3F7 0%, #B3E5FC 100%);  // 钻石
+// 个人资产（积分、收藏）- 黄橙系
+$function-asset-bg: #FFFBEB;      // 柔和黄底
+$function-asset-icon: #F59E0B;    // 暖黄图标
+
+// 系统类（设置、关于、帮助）- 中性灰
+$function-system-bg: #F3F4F6;     // 中性灰底
+$function-system-icon: #6B7280;   // 灰色图标
+```
+
+#### 顶部卡片背景（两种方案）
+```scss
+// 方案A：清爽浅蓝块（推荐，更工具型）
+$header-bg: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+$header-border: 1px solid rgba(37, 99, 235, 0.10);
+// 配合深色文字，头像边框用品牌蓝
+
+// 方案B：品牌蓝渐变（保留渐变但统一品牌色）
+$header-gradient: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+// 配合白色文字，装饰图形降低透明度
+```
+
+#### 等级徽章（哑光金属色，降低游戏感）
+```scss
+$level-bronze:  linear-gradient(135deg, #B45309 0%, #F97316 100%);   // 青铜（橙棕色）
+$level-silver:  linear-gradient(135deg, #9CA3AF 0%, #E5E7EB 100%);   // 白银（浅灰）
+$level-gold:    linear-gradient(135deg, #D97706 0%, #FBBF24 100%);   // 黄金（暖金色）
+$level-diamond: linear-gradient(135deg, #0EA5E9 0%, #E0F2FE 100%);   // 钻石（天蓝色）
+$level-master:  linear-gradient(135deg, #8B5CF6 0%, #DDD6FE 100%);   // 大师（浅紫色）
 ```
 
 ### 字体规范
@@ -171,16 +224,22 @@ $radius-lg: 24rpx;                // 大圆角（大卡片）
 $radius-full: 50%;                // 圆形（头像）
 ```
 
-### 阴影规范
+### 阴影规范（轻量化，避免厚重感）
 
 ```scss
-// 卡片阴影
-$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-$shadow-md: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
-$shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+// 卡片阴影（整体扁平化）
+$shadow-xs: 0 1rpx 3rpx rgba(0, 0, 0, 0.05);    // 微阴影（功能卡片）
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);    // 轻阴影（普通卡片）
+$shadow-md: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);   // 中阴影（重要卡片）
 
-// 按钮hover阴影
-$shadow-hover: 0 6rpx 20rpx rgba(30, 95, 255, 0.25);
+// 交互阴影（hover 状态）
+$shadow-hover: 0 4rpx 16rpx rgba(37, 99, 235, 0.15);  // 品牌蓝色光晕
+
+// 使用策略：
+// - 页面底色用灰色 (#F3F4F6) 拉开层级
+// - 功能入口卡片：用柔和底色 + 1px 边框，不加阴影
+// - 顶部信息卡片：用浅阴影 $shadow-sm 即可
+// - 交互按钮：hover 时才显示 $shadow-hover
 ```
 
 ---
@@ -397,28 +456,27 @@ interface UserProfileData {
 └─────────────────────────────┘
 ```
 
-#### 功能项配置
+#### 功能项配置（按类型分组）
 ```typescript
 interface FunctionItem {
   id: string
   icon: string              // emoji图标
   label: string             // 功能名称
   path: string              // 跳转路径
+  type: 'study' | 'asset' | 'system'  // 功能类型（决定配色）
   description?: string      // 功能描述
   badge?: number            // 角标数字（如未读消息）
-  iconColor?: string        // 图标颜色
-  gradient?: string         // 背景渐变
   requiredAuth?: boolean    // 是否需要登录
 }
 
 const functionItems: FunctionItem[] = [
+  // 学习相关（蓝系）
   {
     id: 'my-resources',
     icon: '📚',
     label: '我的资源',
     path: '/pages/user/my-resources',
-    iconColor: '#E53935',
-    gradient: 'linear-gradient(135deg, #E53935 0%, #FF6B6B 100%)',
+    type: 'study',
     requiredAuth: true
   },
   {
@@ -426,8 +484,7 @@ const functionItems: FunctionItem[] = [
     icon: '💬',
     label: '我的问答',
     path: '/pages/question/my',
-    iconColor: '#1E5FFF',
-    gradient: 'linear-gradient(135deg, #1E5FFF 0%, #60A5FA 100%)',
+    type: 'study',
     requiredAuth: true
   },
   {
@@ -435,17 +492,17 @@ const functionItems: FunctionItem[] = [
     icon: '📋',
     label: '我的任务',
     path: '/pages/user/my-tasks',
-    iconColor: '#48BB78',
-    gradient: 'linear-gradient(135deg, #48BB78 0%, #81E6D9 100%)',
+    type: 'study',
     requiredAuth: true
   },
+
+  // 个人资产（黄橙系）
   {
     id: 'my-favorites',
     icon: '⭐',
     label: '我的收藏',
     path: '/pages/user/favorites',
-    iconColor: '#FFD700',
-    gradient: 'linear-gradient(135deg, #FFD700 0%, #FFF4A3 100%)',
+    type: 'asset',
     requiredAuth: true
   },
   {
@@ -453,17 +510,17 @@ const functionItems: FunctionItem[] = [
     icon: '🎁',
     label: '积分记录',
     path: '/pages/user/points',
-    iconColor: '#FF8C42',
-    gradient: 'linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%)',
+    type: 'asset',
     requiredAuth: true
   },
+
+  // 系统类（中性灰）
   {
     id: 'settings',
     icon: '⚙️',
     label: '设置',
     path: '/pages/user/settings',
-    iconColor: '#64748B',
-    gradient: 'linear-gradient(135deg, #64748B 0%, #94A3B8 100%)',
+    type: 'system',
     requiredAuth: false
   },
   {
@@ -471,8 +528,7 @@ const functionItems: FunctionItem[] = [
     icon: '📖',
     label: '关于',
     path: '/pages/user/about',
-    iconColor: '#7C3AED',
-    gradient: 'linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%)',
+    type: 'system',
     requiredAuth: false
   },
   {
@@ -480,14 +536,32 @@ const functionItems: FunctionItem[] = [
     icon: '💡',
     label: '帮助中心',
     path: '/pages/user/help',
-    iconColor: '#0EA5E9',
-    gradient: 'linear-gradient(135deg, #0EA5E9 0%, #7DD3FC 100%)',
+    type: 'system',
     requiredAuth: false
   }
 ]
+
+// 类型配色映射
+const typeColorMap = {
+  study: {
+    bg: '#EFF6FF',      // 柔和蓝底
+    icon: '#2563EB',    // 品牌蓝
+    border: '#DBEAFE'
+  },
+  asset: {
+    bg: '#FFFBEB',      // 柔和黄底
+    icon: '#F59E0B',    // 暖黄
+    border: '#FEF3C7'
+  },
+  system: {
+    bg: '#F3F4F6',      // 中性灰底
+    icon: '#6B7280',    // 灰色
+    border: '#E5E7EB'
+  }
+}
 ```
 
-#### 样式规范
+#### 样式规范（轻量化设计）
 ```scss
 .function-grid {
   padding: 32rpx;
@@ -506,7 +580,7 @@ const functionItems: FunctionItem[] = [
   .grid-container {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 24rpx;
+    gap: 20rpx;
 
     // 移动端改为2列
     @media (max-width: 750rpx) {
@@ -520,33 +594,54 @@ const functionItems: FunctionItem[] = [
     flex-direction: column;
     align-items: center;
     padding: 24rpx 16rpx;
-    background: $bg-tertiary;
     border-radius: 16rpx;
-    transition: all 0.3s;
+    border: 1px solid transparent;
+    transition: all 0.2s;
     cursor: pointer;
 
+    // 按类型应用背景色
+    &.type-study {
+      background: #EFF6FF;
+      border-color: #DBEAFE;
+
+      .icon { color: #2563EB; }
+    }
+
+    &.type-asset {
+      background: #FFFBEB;
+      border-color: #FEF3C7;
+
+      .icon { color: #F59E0B; }
+    }
+
+    &.type-system {
+      background: #F3F4F6;
+      border-color: #E5E7EB;
+
+      .icon { color: #6B7280; }
+    }
+
     &:hover {
-      transform: translateY(-4rpx);
-      box-shadow: $shadow-md;
+      transform: translateY(-2rpx);  // 降低移动距离
+      box-shadow: $shadow-hover;
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.98);  // 轻微缩放
     }
 
     .icon-wrapper {
       position: relative;
-      width: 96rpx;
-      height: 96rpx;
-      border-radius: 24rpx;
+      width: 80rpx;  // 缩小图标容器
+      height: 80rpx;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin-bottom: 16rpx;
-      background: var(--gradient);
+      margin-bottom: 12rpx;
 
       .icon {
-        font-size: 48rpx;
+        font-size: 44rpx;  // emoji 大小
+        filter: none;  // 不添加额外滤镜
       }
 
       // 角标
@@ -564,7 +659,7 @@ const functionItems: FunctionItem[] = [
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2rpx 8rpx rgba(255, 77, 79, 0.4);
+        box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.3);
       }
     }
 
@@ -572,6 +667,7 @@ const functionItems: FunctionItem[] = [
       font-size: 26rpx;
       color: $text-secondary;
       text-align: center;
+      font-weight: 500;
     }
   }
 }

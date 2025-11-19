@@ -9,6 +9,7 @@
     <view v-else class="content-container">
       <!-- 用户资料头部 -->
       <UserProfileHeader
+        v-if="userProfile && userStats !== null"
         :profile="userProfile"
         :stats="userStats"
         :is-checked-in="isCheckedInToday"

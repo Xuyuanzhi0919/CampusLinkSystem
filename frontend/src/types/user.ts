@@ -6,7 +6,7 @@
  * 用户资料数据
  */
 export interface UserProfileData {
-  uId: number
+  uid: number
   username: string
   nickname: string
   email: string | null

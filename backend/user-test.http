@@ -10,18 +10,17 @@ POST {{baseUrl}}/auth/register
 Content-Type: application/json
 
 {
-  "username": "user_test_001",
+  "username": "user_tes1t_001",
   "password": "123456",
   "nickname": "测试用户001",
-  "email": "user001@campuslink.com",
-  "phone": "13900000001",
+  "email": "user0011@campuslink.com",
+  "phone": "13000000001",
   "schoolId": 1,
   "role": "student"
 }
 
 ### 手动设置token（从上面的注册响应中复制）
-@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjMsInVzZXJuYW1lIjoidXNlcl90ZXN0XzAwMSIsImlhdCI6MTc2MjYwNDc5MSwiZXhwIjoxNzYyNjExOTkxfQ.D_qOKs7r5ZZhPCjnS7hPqqw7CLdMk2SCj1B8JOV6XYg
-
+@userToken =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NTIsInVzZXJuYW1lIjoidXNlcl90ZXMxdF8wMDEiLCJpYXQiOjE3NjM1NTM0NTYsImV4cCI6MTc2MzU2MDY1Nn0.17EVM99xnTJJnEK4v9Cg2cyQ3UNjRvtseNFYYUKuVMI
 ####################
 # 个人资料管理
 ####################

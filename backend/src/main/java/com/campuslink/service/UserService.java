@@ -37,6 +37,14 @@ public class UserService {
     private final SchoolMapper schoolMapper;
     private final JwtUtil jwtUtil;
 
+    // 统计数据查询所需Mapper
+    private final com.campuslink.mapper.ResourceMapper resourceMapper;
+    private final com.campuslink.mapper.DownloadLogMapper downloadLogMapper;
+    private final com.campuslink.mapper.QuestionMapper questionMapper;
+    private final com.campuslink.mapper.AnswerMapper answerMapper;
+    private final com.campuslink.mapper.TaskMapper taskMapper;
+    private final com.campuslink.mapper.FavoriteMapper favoriteMapper;
+
     /**
      * 用户注册
      */
@@ -203,21 +211,65 @@ public class UserService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
+        // 查询上传资源数
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resourceQuery = new LambdaQueryWrapper<>();
+        resourceQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId);
+        int resourceCount = Math.toIntExact(resourceMapper.selectCount(resourceQuery));
+
+        // 查询下载次数
+        LambdaQueryWrapper<com.campuslink.entity.DownloadLog> downloadQuery = new LambdaQueryWrapper<>();
+        downloadQuery.eq(com.campuslink.entity.DownloadLog::getUserId, userId);
+        int downloadCount = Math.toIntExact(downloadLogMapper.selectCount(downloadQuery));
+
+        // 查询提问数
+        LambdaQueryWrapper<com.campuslink.entity.Question> questionQuery = new LambdaQueryWrapper<>();
+        questionQuery.eq(com.campuslink.entity.Question::getAskerId, userId);
+        int questionCount = Math.toIntExact(questionMapper.selectCount(questionQuery));
+
+        // 查询回答数
+        LambdaQueryWrapper<com.campuslink.entity.Answer> answerQuery = new LambdaQueryWrapper<>();
+        answerQuery.eq(com.campuslink.entity.Answer::getResponderId, userId);
+        int answerCount = Math.toIntExact(answerMapper.selectCount(answerQuery));
+
+        // 查询被采纳答案数
+        LambdaQueryWrapper<com.campuslink.entity.Answer> acceptedQuery = new LambdaQueryWrapper<>();
+        acceptedQuery.eq(com.campuslink.entity.Answer::getResponderId, userId);
+        acceptedQuery.eq(com.campuslink.entity.Answer::getIsAccepted, true);
+        int acceptedAnswerCount = Math.toIntExact(answerMapper.selectCount(acceptedQuery));
+
+        // 查询发布任务数
+        LambdaQueryWrapper<com.campuslink.entity.Task> taskPublishQuery = new LambdaQueryWrapper<>();
+        taskPublishQuery.eq(com.campuslink.entity.Task::getPublisherId, userId);
+        int taskPublishCount = Math.toIntExact(taskMapper.selectCount(taskPublishQuery));
+
+        // 查询完成任务数(作为接单者且状态为已完成)
+        LambdaQueryWrapper<com.campuslink.entity.Task> taskCompleteQuery = new LambdaQueryWrapper<>();
+        taskCompleteQuery.eq(com.campuslink.entity.Task::getAccepterId, userId);
+        taskCompleteQuery.eq(com.campuslink.entity.Task::getStatus, 2); // 状态2=已完成
+        int taskCompleteCount = Math.toIntExact(taskMapper.selectCount(taskCompleteQuery));
+
+        // 查询收藏数
+        LambdaQueryWrapper<com.campuslink.entity.Favorite> favoriteQuery = new LambdaQueryWrapper<>();
+        favoriteQuery.eq(com.campuslink.entity.Favorite::getUserId, userId);
+        int favoriteCount = Math.toIntExact(favoriteMapper.selectCount(favoriteQuery));
+
+        // 查询获赞数 (暂时返回0,需要评论/点赞表)
+        int likeCount = 0;
+
         // 计算连续签到天数
         int checkInDays = calculateConsecutiveDays(userId);
 
-        // 构建统计数据（暂时返回模拟数据，后续可以查询真实数据）
         return UserStatsVO.builder()
-                .resourceCount(0)          // TODO: 查询 resource 表
-                .downloadCount(0)          // TODO: 查询下载记录
-                .questionCount(0)          // TODO: 查询 question 表
-                .answerCount(0)            // TODO: 查询 answer 表
-                .acceptedAnswerCount(0)    // TODO: 查询被采纳的答案数
-                .taskPublishCount(0)       // TODO: 查询 task 表
-                .taskCompleteCount(0)      // TODO: 查询完成的任务数
-                .favoriteCount(0)          // TODO: 查询收藏数
-                .likeCount(0)              // TODO: 查询获赞数
-                .checkInDays(checkInDays)  // 连续签到天数
+                .resourceCount(resourceCount)
+                .downloadCount(downloadCount)
+                .questionCount(questionCount)
+                .answerCount(answerCount)
+                .acceptedAnswerCount(acceptedAnswerCount)
+                .taskPublishCount(taskPublishCount)
+                .taskCompleteCount(taskCompleteCount)
+                .favoriteCount(favoriteCount)
+                .likeCount(likeCount)
+                .checkInDays(checkInDays)
                 .build();
     }
 

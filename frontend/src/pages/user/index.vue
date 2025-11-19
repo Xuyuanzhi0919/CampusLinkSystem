@@ -83,19 +83,10 @@ const loadUserData = async () => {
       getCheckInStatus()
     ])
 
-    console.log('=== 用户数据加载成功 ===')
-    console.log('profileRes:', profileRes)
-    console.log('statsRes:', statsRes)
-    console.log('checkInRes:', checkInRes)
-
     // request拦截器已自动解包data字段,直接使用响应
     userProfile.value = profileRes
     userStats.value = statsRes
     isCheckedInToday.value = checkInRes
-
-    console.log('userProfile.value:', userProfile.value)
-    console.log('userStats.value:', userStats.value)
-    console.log('isCheckedInToday.value:', isCheckedInToday.value)
 
     // 更新 store 中的用户信息
     if (profileRes) {

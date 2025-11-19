@@ -3,7 +3,7 @@ export const config = {
   // API 基础地址
   baseURL: process.env.NODE_ENV === 'production'
     ? 'https://api.campuslink.com/api/v1'
-    : 'http://localhost:8080/api/v1',
+    : '/api/v1',  // 开发环境使用相对路径，通过Vite代理转发
 
   // 文件上传地址
   uploadURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',

@@ -57,6 +57,8 @@ public class QuestionService {
         question.setContent(request.getContent());
         question.setAskerId(userId);
         question.setCategory(request.getCategory());
+        question.setTags(convertListToJson(request.getTags()));
+        question.setImages(convertListToJson(request.getImages()));
         question.setViews(0);
         question.setAnswerCount(0);
         question.setIsSolved(0); // 未解决
@@ -163,6 +165,12 @@ public class QuestionService {
         response.setCreatedAt(question.getCreatedAt());
         response.setUpdatedAt(question.getUpdatedAt());
 
+        // 解析JSON字段
+        response.setTags(parseJsonArray(question.getTags()));
+        response.setImages(parseJsonArray(question.getImages()));
+        response.setAiAnswer(question.getAiAnswer());
+        response.setAiGeneratedAt(question.getAiGeneratedAt());
+
         // 获取提问者信息
         User asker = userMapper.selectById(question.getAskerId());
         if (asker != null) {
@@ -171,6 +179,53 @@ public class QuestionService {
         }
 
         return response;
+    }
+
+    /**
+     * 将List转换为JSON数组字符串
+     */
+    private String convertListToJson(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder("[");
+        for (int i = 0; i < list.size(); i++) {
+            if (i > 0) sb.append(",");
+            sb.append("\"").append(list.get(i)).append("\"");
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
+    /**
+     * 解析JSON数组字符串
+     */
+    private List<String> parseJsonArray(String jsonStr) {
+        if (jsonStr == null || jsonStr.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        try {
+            // 简单的JSON数组解析(去掉方括号和引号)
+            String content = jsonStr.trim();
+            if (content.startsWith("[") && content.endsWith("]")) {
+                content = content.substring(1, content.length() - 1);
+            }
+            if (content.isEmpty()) {
+                return new ArrayList<>();
+            }
+            // 分割并清理每个元素
+            String[] items = content.split(",");
+            List<String> result = new ArrayList<>();
+            for (String item : items) {
+                String cleaned = item.trim().replaceAll("^\"|\"$", "");
+                if (!cleaned.isEmpty()) {
+                    result.add(cleaned);
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            return new ArrayList<>();
+        }
     }
 
     /**
@@ -240,8 +295,18 @@ public class QuestionService {
         List<AnswerResponse> responses = new ArrayList<>();
         for (Answer answer : answers) {
             AnswerResponse response = new AnswerResponse();
-            BeanUtils.copyProperties(answer, response);
+            response.setAid(answer.getAid());
+            response.setQuestionId(answer.getQuestionId());
             response.setAnswererId(answer.getResponderId());
+            response.setContent(answer.getContent());
+            response.setLikes(answer.getLikes());
+            response.setIsAccepted(answer.getIsAccepted() == 1);  // 转换为Boolean
+            response.setIsLiked(false);  // TODO: 根据当前用户查询是否已点赞
+            response.setCreatedAt(answer.getCreatedAt());
+            response.setUpdatedAt(answer.getUpdatedAt());
+
+            // 解析图片JSON (如果Answer实体有images字段)
+            // response.setImages(parseJsonArray(answer.getImages()));
 
             // 获取回答者信息
             User answerer = userMapper.selectById(answer.getResponderId());
@@ -302,6 +367,60 @@ public class QuestionService {
     }
 
     /**
+     * 获取我的提问列表
+     */
+    public PageResult<QuestionListResponse> getMyQuestions(Long userId, Integer page, Integer pageSize, Integer status) {
+        // 构建查询条件
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Question::getAskerId, userId)
+                .eq(Question::getStatus, 1); // 只查询正常状态的问题
+
+        // 如果指定了status参数,按状态筛选
+        if (status != null) {
+            wrapper.eq(Question::getIsSolved, status);
+        }
+
+        // 按创建时间倒序
+        wrapper.orderByDesc(Question::getCreatedAt);
+
+        // 分页查询
+        Page<Question> pageObj = new Page<>(page, pageSize);
+        Page<Question> result = questionMapper.selectPage(pageObj, wrapper);
+
+        // 转换为响应对象
+        List<QuestionListResponse> responses = new ArrayList<>();
+        for (Question question : result.getRecords()) {
+            QuestionListResponse response = new QuestionListResponse();
+            response.setQid(question.getQid());
+            response.setTitle(question.getTitle());
+            response.setCategory(question.getCategory());
+            response.setBounty(question.getRewardPoints());
+            response.setViews(question.getViews());
+            response.setAnswerCount(question.getAnswerCount());
+            response.setStatus(question.getIsSolved());
+            response.setCreatedAt(question.getCreatedAt());
+
+            // 获取提问者昵称
+            User asker = userMapper.selectById(question.getAskerId());
+            if (asker != null) {
+                response.setAskerNickname(asker.getNickname());
+            }
+
+            responses.add(response);
+        }
+
+        // 构建分页结果
+        PageResult<QuestionListResponse> pageResult = new PageResult<>();
+        pageResult.setList(responses);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setPage((long) page);
+        pageResult.setPageSize((long) pageSize);
+        pageResult.setTotalPages((result.getTotal() + pageSize - 1) / pageSize);
+
+        return pageResult;
+    }
+
+    /**
      * 点赞问题（暂不实现,数据库没有likes字段）
      */
     @Transactional(rollbackFor = Exception.class)
@@ -347,5 +466,78 @@ public class QuestionService {
             answerMapper.updateById(answer);
         }
         return answer.getLikes();
+    }
+
+    /**
+     * 删除答案
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteAnswer(Long userId, Long answerId) {
+        // 检查答案是否存在
+        Answer answer = answerMapper.selectById(answerId);
+        if (answer == null || answer.getStatus() == 0) {
+            throw new BusinessException(ResultCode.ANSWER_NOT_FOUND);
+        }
+
+        // 检查是否是答案作者本人
+        if (!answer.getResponderId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED);
+        }
+
+        // 检查答案是否已被采纳
+        if (answer.getIsAccepted() == 1) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "已被采纳的答案不能删除");
+        }
+
+        // 软删除答案
+        answer.setStatus(0);
+        answer.setUpdatedAt(LocalDateTime.now());
+        answerMapper.updateById(answer);
+
+        // 更新问题的回答数量
+        Question question = questionMapper.selectById(answer.getQuestionId());
+        if (question != null && question.getAnswerCount() > 0) {
+            question.setAnswerCount(question.getAnswerCount() - 1);
+            question.setUpdatedAt(LocalDateTime.now());
+            questionMapper.updateById(question);
+        }
+    }
+
+    /**
+     * 删除问题
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteQuestion(Long userId, Long questionId) {
+        // 检查问题是否存在
+        Question question = questionMapper.selectById(questionId);
+        if (question == null || question.getStatus() == 0) {
+            throw new BusinessException(ResultCode.QUESTION_NOT_FOUND);
+        }
+
+        // 检查是否是提问者本人
+        if (!question.getAskerId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED);
+        }
+
+        // 检查问题是否已解决(已解决的问题不能删除)
+        if (question.getIsSolved() == 1) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "已解决的问题不能删除");
+        }
+
+        // 软删除问题
+        question.setStatus(0);
+        question.setUpdatedAt(LocalDateTime.now());
+        questionMapper.updateById(question);
+
+        // 软删除该问题下的所有答案
+        LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Answer::getQuestionId, questionId)
+                .eq(Answer::getStatus, 1);
+        List<Answer> answers = answerMapper.selectList(wrapper);
+        for (Answer answer : answers) {
+            answer.setStatus(0);
+            answer.setUpdatedAt(LocalDateTime.now());
+            answerMapper.updateById(answer);
+        }
     }
 }

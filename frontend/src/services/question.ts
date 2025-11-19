@@ -34,7 +34,7 @@ export const getQuestionDetail = (id: number) => {
  * @param data 问题数据
  */
 export const createQuestion = (data: QuestionCreateParams) => {
-  return request.post<{ questionId: number }>('/question/create', data)
+  return request.post<{ questionId: number }>('/question/ask', data)
 }
 
 /**
@@ -64,7 +64,7 @@ export const getAnswerList = (
  * @param answerId 回答ID
  */
 export const acceptAnswer = (questionId: number, answerId: number) => {
-  return request.post(`/question/${questionId}/answer/${answerId}/accept`)
+  return request.post(`/question/${questionId}/accept/${answerId}`)
 }
 
 /**
@@ -97,5 +97,28 @@ export const deleteQuestion = (id: number) => {
  */
 export const deleteAnswer = (id: number) => {
   return request.delete(`/answer/${id}`)
+}
+
+/**
+ * 获取我的提问列表
+ * @param params 查询参数
+ */
+export const getMyQuestions = (params: {
+  page?: number
+  pageSize?: number
+  status?: number // 0=未解决, 1=已解决
+} = {}) => {
+  return request.get<PageResult<QuestionItem>>('/question/my', params)
+}
+
+/**
+ * 获取我的回答列表
+ * @param params 查询参数
+ */
+export const getMyAnswers = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<AnswerItem & { question: QuestionItem }>>('/answer/my', params)
 }
 

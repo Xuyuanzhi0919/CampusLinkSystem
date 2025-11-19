@@ -8,19 +8,23 @@ import config from '@/config'
 
 // 用户信息接口
 export interface UserInfo {
-  userId: number
+  userId?: number      // 前端期望字段
+  uid?: number         // 后端实际字段
   username: string
   nickname: string
-  avatar: string
+  avatar?: string
+  avatarUrl?: string   // 后端使用 avatarUrl
   email?: string
   phone?: string
   studentId?: string
-  schoolId: number
+  schoolId?: number
   schoolName?: string
   major?: string
   grade?: number
   points: number
+  level?: number       // 后端有level字段
   role: 'user' | 'moderator' | 'admin'
+  createdAt?: string
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -42,8 +46,25 @@ export const useUserStore = defineStore('user', () => {
       token.value = uni.getStorageSync(config.tokenKey) || ''
       refreshToken.value = uni.getStorageSync(config.refreshTokenKey) || ''
       const storedUserInfo = uni.getStorageSync(config.userInfoKey)
+
       if (storedUserInfo) {
-        userInfo.value = JSON.parse(storedUserInfo)
+        try {
+          const parsed = typeof storedUserInfo === 'string'
+            ? JSON.parse(storedUserInfo)
+            : storedUserInfo
+
+          // 统一字段名: uid → userId, avatarUrl → avatar
+          if (parsed.uid && !parsed.userId) {
+            parsed.userId = parsed.uid
+          }
+          if (parsed.avatarUrl && !parsed.avatar) {
+            parsed.avatar = parsed.avatarUrl
+          }
+
+          userInfo.value = parsed
+        } catch (parseError) {
+          console.error('解析用户信息失败:', parseError)
+        }
       }
     } catch (error) {
       console.error('初始化用户信息失败:', error)
@@ -67,6 +88,14 @@ export const useUserStore = defineStore('user', () => {
    * 设置用户信息
    */
   const setUserInfo = (info: UserInfo) => {
+    // 统一字段名
+    if (info.uid && !info.userId) {
+      info.userId = info.uid
+    }
+    if (info.avatarUrl && !info.avatar) {
+      info.avatar = info.avatarUrl
+    }
+
     userInfo.value = info
     uni.setStorageSync(config.userInfoKey, JSON.stringify(info))
   }

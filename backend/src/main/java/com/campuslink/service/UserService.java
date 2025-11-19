@@ -401,6 +401,38 @@ public class UserService {
     }
 
     /**
+     * 获取用户贡献排行榜
+     */
+    public PageResult<UserVO> getUserRanking(Integer page, Integer pageSize) {
+        // 构建分页对象
+        Page<User> pageParam = new Page<>(page, pageSize);
+
+        // 构建查询条件：按积分降序排序，只查询正常状态的用户
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getStatus, 1)  // 只查询正常用户
+                .orderByDesc(User::getPoints)  // 按积分降序
+                .orderByDesc(User::getCreatedAt);  // 积分相同时按注册时间排序
+
+        // 执行查询
+        Page<User> userPage = userMapper.selectPage(pageParam, queryWrapper);
+
+        // 转换为 VO 列表
+        List<UserVO> userVOList = new ArrayList<>();
+        for (User user : userPage.getRecords()) {
+            userVOList.add(convertToVO(user));
+        }
+
+        // 构建分页结果
+        return new PageResult<>(
+                userVOList,
+                userPage.getTotal(),
+                (long) page,
+                (long) pageSize,
+                userPage.getPages()
+        );
+    }
+
+    /**
      * 转换为 VO 对象
      */
     private UserVO convertToVO(User user) {

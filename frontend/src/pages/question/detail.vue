@@ -169,14 +169,17 @@
 
     <!-- 固定底部回答输入框 -->
     <view v-if="question && question.status !== 1" class="answer-input-bar">
-      <input
-        v-model="answerContent"
-        class="answer-input"
-        placeholder="写下你的回答..."
-        :focus="inputFocused"
-        @focus="handleInputFocus"
-        @blur="handleInputBlur"
-      />
+      <view class="input-wrapper">
+        <input
+          v-model="answerContent"
+          class="answer-input"
+          placeholder="写下你的回答..."
+          :focus="inputFocused"
+          @focus="handleInputFocus"
+          @blur="handleInputBlur"
+        />
+        <text class="char-count">{{ answerContent.length }}/500</text>
+      </view>
       <view class="answer-actions">
         <view class="action-icon-btn" @click="handleChooseImage">
           <text class="icon">🖼️</text>
@@ -215,6 +218,7 @@ import {
   deleteAnswer
 } from '@/services/question'
 import AnswerCard from './components/AnswerCard.vue'
+import { formatNumber, formatTime } from '@/utils/formatters'
 
 // Stores
 const questionStore = useQuestionStore()
@@ -270,7 +274,15 @@ const sortedAnswers = computed(() => {
     // 已采纳答案始终在最前面
     if (a.isAccepted && !b.isAccepted) return -1
     if (!a.isAccepted && b.isAccepted) return 1
-    return 0
+
+    // 非采纳答案按照选择的排序方式排序
+    if (sortBy.value === 'likes') {
+      // 按点赞数降序
+      return (b.likes || 0) - (a.likes || 0)
+    } else {
+      // 按时间降序（最新的在前）
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    }
   })
 })
 
@@ -604,42 +616,6 @@ const getCategoryIcon = (category: string): string => {
     '其他': '📌'
   }
   return iconMap[category] || '📌'
-}
-
-// 格式化数字
-const formatNumber = (num: number): string => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + 'w'
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k'
-  }
-  return num.toString()
-}
-
-// 格式化时间
-const formatTime = (timeStr: string): string => {
-  const time = new Date(timeStr).getTime()
-  const now = Date.now()
-  const diff = now - time
-
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const month = 30 * day
-
-  if (diff < minute) {
-    return '刚刚'
-  } else if (diff < hour) {
-    return Math.floor(diff / minute) + ' 分钟前'
-  } else if (diff < day) {
-    return Math.floor(diff / hour) + ' 小时前'
-  } else if (diff < month) {
-    return Math.floor(diff / day) + ' 天前'
-  } else {
-    const date = new Date(time)
-    return `${date.getMonth() + 1}月${date.getDate()}日`
-  }
 }
 </script>
 
@@ -1093,13 +1069,27 @@ const formatTime = (timeStr: string): string => {
   box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
   z-index: 100;
 
+  .input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
   .answer-input {
     flex: 1;
     height: 72rpx;
-    padding: 0 24rpx;
+    padding: 0 110rpx 0 24rpx;
     background: #F5F5F5;
     border-radius: 36rpx;
     font-size: 28rpx;
+  }
+
+  .char-count {
+    position: absolute;
+    right: 24rpx;
+    font-size: 22rpx;
+    color: #999;
   }
 
   .answer-actions {

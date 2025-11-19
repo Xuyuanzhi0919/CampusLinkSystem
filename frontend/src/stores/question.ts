@@ -22,8 +22,8 @@ export const useQuestionStore = defineStore('question', () => {
 
   // 筛选条件
   const category = ref<string | null>(null)
-  const isSolved = ref<boolean | null>(null)
-  const sortBy = ref<'created_at' | 'views' | 'rewardPoints' | 'answerCount'>('created_at')
+  const status = ref<number | null>(null)
+  const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
   const keyword = ref<string>('')
 
   // 分页信息
@@ -59,12 +59,12 @@ export const useQuestionStore = defineStore('question', () => {
 
   // 未解决的问题数量
   const unsolvedCount = computed(() => {
-    return questions.value.filter((q) => !q.isSolved).length
+    return questions.value.filter((q) => q.status === 0).length
   })
 
   // 已解决的问题数量
   const solvedCount = computed(() => {
-    return questions.value.filter((q) => q.isSolved).length
+    return questions.value.filter((q) => q.status === 1).length
   })
 
   // ===================================
@@ -179,15 +179,15 @@ export const useQuestionStore = defineStore('question', () => {
    */
   const updateFilters = (filters: {
     category?: string | null
-    isSolved?: boolean | null
-    sortBy?: 'created_at' | 'views' | 'rewardPoints' | 'answerCount'
+    status?: number | null
+    sortBy?: 'created_at' | 'views' | 'bounty' | 'answerCount'
     keyword?: string
   }) => {
     if (filters.category !== undefined) {
       category.value = filters.category
     }
-    if (filters.isSolved !== undefined) {
-      isSolved.value = filters.isSolved
+    if (filters.status !== undefined) {
+      status.value = filters.status
     }
     if (filters.sortBy !== undefined) {
       sortBy.value = filters.sortBy
@@ -202,7 +202,7 @@ export const useQuestionStore = defineStore('question', () => {
    */
   const resetFilters = () => {
     category.value = null
-    isSolved.value = null
+    status.value = null
     sortBy.value = 'created_at'
     keyword.value = ''
   }
@@ -266,7 +266,7 @@ export const useQuestionStore = defineStore('question', () => {
     questions,
     currentQuestion,
     category,
-    isSolved,
+    status,
     sortBy,
     keyword,
     page,

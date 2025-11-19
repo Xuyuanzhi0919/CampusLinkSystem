@@ -82,4 +82,13 @@ public class UserController {
         CheckInResponse response = userService.checkIn(userId);
         return Result.success(response);
     }
+
+    @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")
+    @GetMapping("/ranking")
+    public Result<PageResult<UserVO>> getUserRanking(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize) {
+        PageResult<UserVO> ranking = userService.getUserRanking(page, pageSize);
+        return Result.success(ranking);
+    }
 }

@@ -73,7 +73,7 @@
       <!-- 状态筛选 -->
       <view class="sort-right">
         <view class="status-filter" @click="handleStatusToggle">
-          <text class="status-icon">{{ isSolved === true ? '✅' : isSolved === false ? '❓' : '📋' }}</text>
+          <text class="status-icon">{{ status === 1 ? '✅' : status === 0 ? '❓' : '📋' }}</text>
           <text class="status-label">{{ statusLabel }}</text>
         </view>
       </view>
@@ -104,6 +104,7 @@
           v-for="item in questions"
           :key="item.qid"
           :question="item"
+          :keyword="searchKeyword"
           @click="handleQuestionClick(item.qid)"
         />
 
@@ -159,8 +160,8 @@ let searchDebounce: number | null = null
 
 // 筛选条件
 const category = ref<string | null>(null)
-const isSolved = ref<boolean | null>(null)
-const sortBy = ref<'created_at' | 'views' | 'rewardPoints' | 'answerCount'>('created_at')
+const status = ref<number | null>(null)
+const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
 
 // 分页
 const page = ref(1)
@@ -181,14 +182,14 @@ const categories = [
 const sortOptions = [
   { label: '最新', value: 'created_at' },
   { label: '最热', value: 'views' },
-  { label: '悬赏', value: 'rewardPoints' },
+  { label: '悬赏', value: 'bounty' },
   { label: '回答', value: 'answerCount' }
 ]
 
 // 状态标签
 const statusLabel = computed(() => {
-  if (isSolved.value === true) return '已解决'
-  if (isSolved.value === false) return '未解决'
+  if (status.value === 1) return '已解决'
+  if (status.value === 0) return '未解决'
   return '全部'
 })
 
@@ -225,7 +226,7 @@ const loadQuestions = async (refresh = false) => {
     const res = await questionStore.loadQuestions({
       keyword: searchKeyword.value,
       category: category.value,
-      isSolved: isSolved.value,
+      status: status.value,
       page: page.value,
       pageSize: pageSize.value,
       sortBy: sortBy.value,
@@ -338,12 +339,12 @@ const handleSortChange = (value: 'created_at' | 'views' | 'rewardPoints' | 'answ
 
 // 状态切换
 const handleStatusToggle = () => {
-  if (isSolved.value === null) {
-    isSolved.value = false // 全部 → 未解决
-  } else if (isSolved.value === false) {
-    isSolved.value = true // 未解决 → 已解决
+  if (status.value === null) {
+    status.value = 0 // 全部 → 未解决
+  } else if (status.value === 0) {
+    status.value = 1 // 未解决 → 已解决
   } else {
-    isSolved.value = null // 已解决 → 全部
+    status.value = null // 已解决 → 全部
   }
   loadQuestions(true)
 }

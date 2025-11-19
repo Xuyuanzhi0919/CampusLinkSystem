@@ -51,11 +51,11 @@ export interface AnswerItem {
 // 问题列表查询参数
 export interface QuestionListParams {
   category?: QuestionCategory
-  isSolved?: boolean
+  status?: number | null
   keyword?: string
   page?: number
   pageSize?: number
-  sortBy?: 'views' | 'created_at' | 'rewardPoints'
+  sortBy?: 'views' | 'created_at' | 'bounty' | 'answerCount'
   sortOrder?: 'asc' | 'desc'
 }
 
@@ -66,7 +66,7 @@ export interface QuestionCreateParams {
   category: QuestionCategory
   tags: string[]
   images?: string[]
-  rewardPoints: number
+  bounty: number
 }
 
 // 回答参数

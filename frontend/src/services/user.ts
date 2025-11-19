@@ -52,3 +52,10 @@ export const dailyCheckIn = () => {
     checkInTime: string
   }>('/user/check-in')
 }
+
+/**
+ * 获取用户贡献排行榜
+ */
+export const getUserRanking = (params: { page?: number; pageSize?: number } = {}) => {
+  return request.get<any>('/user/ranking', params)
+}

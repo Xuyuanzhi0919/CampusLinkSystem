@@ -5,6 +5,18 @@ import uni from "@dcloudio/vite-plugin-uni";
 export default defineConfig({
   plugins: [uni()],
 
+  // 开发服务器配置
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+        // 不重写路径，因为后端context-path已经是/api/v1
+      }
+    }
+  },
+
   // 优化配置
   optimizeDeps: {
     // 排除pdfjs-dist，让其在运行时加载

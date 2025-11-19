@@ -13,10 +13,16 @@
     </view>
 
     <!-- 层级 1：问题标题 -->
-    <view class="card-title">{{ question.title }}</view>
+    <view class="card-title">
+      <rich-text v-if="keyword" :nodes="highlightText(question.title, keyword)" />
+      <text v-else>{{ question.title }}</text>
+    </view>
 
     <!-- 层级 2：内容摘要（可选） -->
-    <view v-if="contentPreview" class="card-content">{{ contentPreview }}</view>
+    <view v-if="contentPreview" class="card-content">
+      <rich-text v-if="keyword" :nodes="highlightText(contentPreview, keyword)" />
+      <text v-else>{{ contentPreview }}</text>
+    </view>
 
     <!-- 层级 3：标签列表（紧凑） -->
     <view v-if="question.tags && question.tags.length > 0" class="card-tags">
@@ -26,6 +32,9 @@
         class="tag"
       >
         #{{ tag }}
+      </view>
+      <view v-if="hasMoreTags" class="tag tag-more">
+        +{{ remainingTagsCount }}
       </view>
     </view>
 
@@ -63,10 +72,12 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { QuestionItem } from '@/types/question'
+import { formatNumber, formatTime, truncateText } from '@/utils/formatters'
 
 // Props
 interface Props {
   question: QuestionItem
+  keyword?: string  // 搜索关键词,用于高亮
 }
 
 const props = defineProps<Props>()
@@ -79,15 +90,24 @@ const emit = defineEmits<{
 // 内容预览（截取前80个字符）
 const contentPreview = computed(() => {
   if (!props.question.content) return ''
-  return props.question.content.length > 80
-    ? props.question.content.substring(0, 80) + '...'
-    : props.question.content
+  return truncateText(props.question.content, 80)
 })
 
 // 显示的标签（最多3个）
 const displayTags = computed(() => {
   if (!props.question.tags) return []
   return props.question.tags.slice(0, 3)
+})
+
+// 是否有更多标签
+const hasMoreTags = computed(() => {
+  return props.question.tags && props.question.tags.length > 3
+})
+
+// 剩余标签数量
+const remainingTagsCount = computed(() => {
+  if (!props.question.tags) return 0
+  return Math.max(0, props.question.tags.length - 3)
 })
 
 // 获取分类类型
@@ -112,39 +132,19 @@ const getCategoryIcon = (category: string): string => {
   return iconMap[category] || '📌'
 }
 
-// 格式化数字
-const formatNumber = (num: number): string => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + 'w'
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k'
-  }
-  return num.toString()
-}
+// 高亮关键词
+const highlightText = (text: string, keyword: string): string => {
+  if (!keyword || !text) return text
 
-// 格式化时间
-const formatTime = (timeStr: string): string => {
-  const time = new Date(timeStr).getTime()
-  const now = Date.now()
-  const diff = now - time
+  try {
+    // 转义特殊字符
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`(${escapedKeyword})`, 'gi')
 
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const month = 30 * day
-
-  if (diff < minute) {
-    return '刚刚'
-  } else if (diff < hour) {
-    return Math.floor(diff / minute) + '分钟前'
-  } else if (diff < day) {
-    return Math.floor(diff / hour) + '小时前'
-  } else if (diff < month) {
-    return Math.floor(diff / day) + '天前'
-  } else {
-    const date = new Date(time)
-    return `${date.getMonth() + 1}月${date.getDate()}日`
+    // 替换为带高亮样式的HTML
+    return text.replace(regex, '<span style="color: #FF7D00; font-weight: 600; background: rgba(255, 125, 0, 0.1); padding: 0 4px; border-radius: 4px;">$1</span>')
+  } catch (error) {
+    return text
   }
 }
 
@@ -270,6 +270,12 @@ const handleClick = () => {
     font-size: 20rpx;
     border-radius: 6rpx;
     line-height: 1;
+
+    &.tag-more {
+      background: rgba(107, 114, 128, 0.08);
+      color: #6B7280;
+      font-weight: 600;
+    }
   }
 }
 

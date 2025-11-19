@@ -13,7 +13,8 @@
           @focus="showSearchHistory = true"
           @blur="handleSearchBlur"
         />
-        <text v-if="searchKeyword" class="clear-icon" @click="handleClearSearch">✕</text>
+        <text v-if="searchLoading" class="search-loading-icon">⏳</text>
+        <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">✕</text>
       </view>
 
       <!-- 🕒 搜索历史面板 -->
@@ -156,12 +157,14 @@ const refreshing = ref(false)
 const searchKeyword = ref('')
 const showSearchHistory = ref(false)
 const searchHistory = ref<string[]>([])
+const searchLoading = ref(false)
 let searchDebounce: number | null = null
 
 // 筛选条件
 const category = ref<string | null>(null)
 const status = ref<number | null>(null)
 const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
+let filterDebounce: number | null = null
 
 // 分页
 const page = ref(1)
@@ -242,6 +245,7 @@ const loadQuestions = async (refresh = false) => {
     })
   } finally {
     loading.value = false
+    searchLoading.value = false
     refreshing.value = false
   }
 }
@@ -252,6 +256,9 @@ const handleSearchInput = () => {
     clearTimeout(searchDebounce)
   }
 
+  // 显示加载状态
+  searchLoading.value = true
+
   searchDebounce = setTimeout(() => {
     // 如果有搜索关键词,保存到历史
     if (searchKeyword.value.trim()) {
@@ -259,7 +266,7 @@ const handleSearchInput = () => {
       loadSearchHistory()
     }
     loadQuestions(true)
-  }, 300) as unknown as number
+  }, 500) as unknown as number // 优化为500ms,对中文输入法更友好
 }
 
 // 搜索确认
@@ -325,16 +332,26 @@ const handleClearSearch = () => {
   loadQuestions(true)
 }
 
+// 防抖加载函数
+const debouncedLoadQuestions = () => {
+  if (filterDebounce) {
+    clearTimeout(filterDebounce)
+  }
+  filterDebounce = setTimeout(() => {
+    loadQuestions(true)
+  }, 300) as unknown as number
+}
+
 // 分类切换
 const handleCategoryChange = (value: string | null) => {
   category.value = value
-  loadQuestions(true)
+  debouncedLoadQuestions()
 }
 
 // 排序切换
 const handleSortChange = (value: 'created_at' | 'views' | 'rewardPoints' | 'answerCount') => {
   sortBy.value = value
-  loadQuestions(true)
+  debouncedLoadQuestions()
 }
 
 // 状态切换
@@ -346,7 +363,7 @@ const handleStatusToggle = () => {
   } else {
     status.value = null // 已解决 → 全部
   }
-  loadQuestions(true)
+  debouncedLoadQuestions()
 }
 
 // 下拉刷新
@@ -420,6 +437,12 @@ onMounted(() => {
     flex: 1;
     font-size: 28rpx;
     color: #333;
+  }
+
+  .search-loading-icon {
+    font-size: 30rpx;
+    padding: 0 6rpx;
+    animation: rotate 1.5s linear infinite;
   }
 
   .clear-icon {

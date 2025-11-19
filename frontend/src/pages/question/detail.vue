@@ -161,10 +161,21 @@
     </scroll-view>
 
     <!-- 错误状态 -->
-    <view v-else class="error-container">
-      <text class="error-icon">😕</text>
-      <text class="error-text">问题不存在或已被删除</text>
-      <view class="error-btn" @click="handleGoBack">返回</view>
+    <view v-else-if="error" class="error-container">
+      <text class="error-icon">
+        {{ error.type === 'not-found' ? '😕' : error.type === 'network' ? '📡' : '⚠️' }}
+      </text>
+      <text class="error-text">{{ error.message }}</text>
+      <view class="error-actions">
+        <view
+          v-if="error.type === 'network' || error.type === 'unknown'"
+          class="error-btn error-btn--primary"
+          @click="handleRetry"
+        >
+          重试
+        </view>
+        <view class="error-btn" @click="handleGoBack">返回</view>
+      </view>
     </view>
 
     <!-- 固定底部回答输入框 -->
@@ -230,6 +241,10 @@ const question = computed(() => questionStore.currentQuestion)
 // 页面状态
 const loading = ref(true)
 const refreshing = ref(false)
+const error = ref<{
+  type: 'not-found' | 'network' | 'unknown'
+  message: string
+} | null>(null)
 
 // 回答列表
 const answers = ref<AnswerItem[]>([])
@@ -299,13 +314,28 @@ onLoad((options) => {
 const loadQuestionDetail = async () => {
   try {
     loading.value = true
+    error.value = null
     await questionStore.loadQuestionDetail(questionId.value)
-  } catch (error: any) {
-    console.error('加载问题详情失败:', error)
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+  } catch (err: any) {
+    console.error('加载问题详情失败:', err)
+
+    // 判断错误类型
+    if (err.statusCode === 404 || err.message?.includes('不存在') || err.message?.includes('已删除')) {
+      error.value = {
+        type: 'not-found',
+        message: '问题不存在或已被删除'
+      }
+    } else if (!navigator.onLine || err.message?.includes('网络') || err.message?.includes('timeout')) {
+      error.value = {
+        type: 'network',
+        message: '网络连接失败,请检查网络后重试'
+      }
+    } else {
+      error.value = {
+        type: 'unknown',
+        message: err.message || '加载失败,请稍后重试'
+      }
+    }
   } finally {
     loading.value = false
   }
@@ -596,6 +626,13 @@ const handleGoBack = () => {
   uni.navigateBack()
 }
 
+// 重试加载
+const handleRetry = () => {
+  error.value = null
+  loadQuestionDetail()
+  loadAnswers()
+}
+
 // 获取分类类型
 const getCategoryType = (category: string): string => {
   const categoryMap: Record<string, string> = {
@@ -692,14 +729,31 @@ const getCategoryIcon = (category: string): string => {
   font-size: 28rpx;
   color: #666;
   margin-bottom: 48rpx;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.error-actions {
+  display: flex;
+  gap: 24rpx;
 }
 
 .error-btn {
   padding: 16rpx 48rpx;
-  background: #1E5FFF;
-  color: #FFF;
+  background: #F5F7FA;
+  color: #666;
   border-radius: 48rpx;
   font-size: 28rpx;
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &--primary {
+    background: #1E5FFF;
+    color: #FFF;
+  }
 }
 
 // ===================================

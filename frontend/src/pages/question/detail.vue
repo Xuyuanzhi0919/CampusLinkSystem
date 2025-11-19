@@ -1,5 +1,19 @@
 <template>
   <view class="detail-page">
+    <!-- 顶部导航栏 -->
+    <view class="nav-bar">
+      <view class="nav-left" @click="goBack">
+        <text class="nav-icon">‹</text>
+        <text class="nav-text">返回</text>
+      </view>
+      <view class="nav-center">
+        <text class="nav-title">问题详情</text>
+      </view>
+      <view class="nav-right" @click="showMoreMenu">
+        <text class="nav-icon">•••</text>
+      </view>
+    </view>
+
     <!-- 加载状态 -->
     <view v-if="loading && !question" class="loading-container">
       <view class="skeleton-question">
@@ -178,6 +192,27 @@
       </view>
     </view>
 
+    <!-- 更多菜单弹出层 -->
+    <view v-if="showMorePopup" class="more-menu-overlay" @click="closeMoreMenu">
+      <view class="more-menu-content" @click.stop>
+        <view v-if="isMyQuestion" class="menu-item" @click="handleEditQuestion">
+          <text class="menu-icon">✏️</text>
+          <text class="menu-label">编辑问题</text>
+        </view>
+        <view class="menu-item" @click="handleReportQuestion">
+          <text class="menu-icon">🚨</text>
+          <text class="menu-label">举报</text>
+        </view>
+        <view class="menu-item" @click="handleShareQuestion">
+          <text class="menu-icon">📤</text>
+          <text class="menu-label">分享</text>
+        </view>
+        <view class="menu-item menu-item--cancel" @click="closeMoreMenu">
+          <text class="menu-label">取消</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 固定底部回答输入框 -->
     <view v-if="question && question.status !== 1" class="answer-input-bar">
       <view class="input-wrapper">
@@ -261,6 +296,9 @@ const inputFocused = ref(false)
 
 // 问题ID
 const questionId = ref(0)
+
+// 更多菜单状态
+const showMorePopup = ref(false)
 
 // 是否是我的问题
 const isMyQuestion = computed(() => {
@@ -622,8 +660,78 @@ const handlePreviewImage = (index: number) => {
 }
 
 // 返回
-const handleGoBack = () => {
-  uni.navigateBack()
+// 返回上一页（智能返回逻辑）
+const goBack = () => {
+  const pages = getCurrentPages()
+
+  // 检查页面栈，决定返回方式
+  if (pages.length === 1) {
+    // 页面栈只有一页，直接跳转到问答中心
+    uni.switchTab({
+      url: '/pages/question/index'
+    })
+  } else if (pages.length >= 2) {
+    // 获取上一页的路径
+    const prevPage = pages[pages.length - 2]
+    const prevRoute = prevPage.route || ''
+
+    // 如果上一页是问答中心（tabBar页面），使用 switchTab
+    if (prevRoute === 'pages/question/index') {
+      uni.switchTab({
+        url: '/pages/question/index'
+      })
+    } else {
+      // 否则正常返回
+      uni.navigateBack()
+    }
+  } else {
+    // 默认返回
+    uni.navigateBack()
+  }
+}
+
+// 兼容旧函数名（错误状态中使用）
+const handleGoBack = goBack
+
+// 显示更多菜单
+const showMoreMenu = () => {
+  showMorePopup.value = true
+}
+
+// 关闭更多菜单
+const closeMoreMenu = () => {
+  showMorePopup.value = false
+}
+
+// 编辑问题
+const handleEditQuestion = () => {
+  closeMoreMenu()
+  uni.navigateTo({
+    url: `/pages/question/ask?id=${questionId.value}`
+  })
+}
+
+// 举报问题
+const handleReportQuestion = () => {
+  closeMoreMenu()
+  uni.showModal({
+    title: '举报',
+    content: '确定要举报这个问题吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.showToast({
+          title: '举报成功，我们会尽快处理',
+          icon: 'success'
+        })
+      }
+    }
+  })
+}
+
+// 分享问题（从更多菜单）
+const handleShareQuestion = () => {
+  closeMoreMenu()
+  handleShare()
 }
 
 // 重试加载
@@ -661,6 +769,132 @@ const getCategoryIcon = (category: string): string => {
   min-height: 100vh;
   background: #FBFCFE;
   padding-bottom: 120rpx;
+}
+
+// ===================================
+// 顶部导航栏
+// ===================================
+.nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 32rpx;
+  background: #FFFFFF;
+  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left,
+.nav-right {
+  display: flex;
+  align-items: center;
+  padding: 8rpx;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.6;
+  }
+}
+
+.nav-icon {
+  font-size: 40rpx;
+  color: #333333;
+}
+
+.nav-text {
+  font-size: 28rpx;
+  color: #333333;
+  margin-left: 4rpx;
+}
+
+.nav-center {
+  flex: 1;
+  text-align: center;
+}
+
+.nav-title {
+  font-size: 36rpx;
+  font-weight: 600;
+  color: #333333;
+}
+
+// ===================================
+// 更多菜单
+// ===================================
+.more-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn 0.3s ease;
+}
+
+.more-menu-content {
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 24rpx 0;
+  animation: slideUp 0.3s ease;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: 32rpx 48rpx;
+  transition: background 0.2s;
+  cursor: pointer;
+
+  &:active {
+    background: #F5F7FA;
+  }
+
+  &--cancel {
+    justify-content: center;
+    border-top: 1rpx solid #F0F0F0;
+    margin-top: 16rpx;
+    padding-top: 32rpx;
+
+    .menu-label {
+      color: #999999;
+    }
+  }
+}
+
+.menu-icon {
+  font-size: 40rpx;
+  margin-right: 24rpx;
+}
+
+.menu-label {
+  font-size: 32rpx;
+  color: #333333;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 // ===================================

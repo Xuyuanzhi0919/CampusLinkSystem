@@ -90,6 +90,15 @@
 				"navigationBarBackgroundColor": "#FFFFFF",
 				"enablePullDownRefresh": true
 			}
+		},
+		{
+			"path": "pages/user/index",
+			"style": {
+				"navigationBarTitleText": "我的",
+				"navigationBarBackgroundColor": "#F9FAFB",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
 		}
 	],
 	"globalStyle": {
@@ -100,7 +109,7 @@
 	},
 	"tabBar": {
 		"color": "#666666",
-		"selectedColor": "#409EFF",
+		"selectedColor": "#2563EB",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
 		"fontSize": "10px",
@@ -118,6 +127,10 @@
 			{
 				"pagePath": "pages/question/index",
 				"text": "问答"
+			},
+			{
+				"pagePath": "pages/user/index",
+				"text": "我的"
 			}
 		]
 	}

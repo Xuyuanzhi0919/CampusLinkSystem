@@ -107,6 +107,15 @@
 				"navigationStyle": "custom",
 				"backgroundColor": "#F9FAFB"
 			}
+		},
+		{
+			"path": "pages/user/favorites",
+			"style": {
+				"navigationBarTitleText": "我的收藏",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
 		}
 	],
 	"globalStyle": {

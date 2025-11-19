@@ -75,14 +75,21 @@ Authorization: Bearer {token}
   "code": 200,
   "message": "success",
   "data": {
-    "records": [],
+    "list": [],
     "total": 100,
-    "current": 1,
-    "size": 20,
-    "pages": 5
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 5
   }
 }
 ```
+
+**字段说明**：
+- `list`: 数据列表
+- `total`: 总记录数
+- `page`: 当前页码
+- `pageSize`: 每页数量
+- `totalPages`: 总页数
 
 ---
 
@@ -283,7 +290,7 @@ Authorization: Bearer {refreshToken}
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "logId": 1,
         "userId": 1,
@@ -294,9 +301,9 @@ Authorization: Bearer {refreshToken}
       }
     ],
     "total": 50,
-    "current": 1,
-    "size": 20,
-    "pages": 3
+    "page":1,
+    "pageSize":20,
+    "totalPages":3
   }
 }
 ```
@@ -360,7 +367,7 @@ Authorization: Bearer {refreshToken}
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "resourceId": 1,
         "title": "数据结构课件",
@@ -377,9 +384,9 @@ Authorization: Bearer {refreshToken}
       }
     ],
     "total": 100,
-    "current": 1,
-    "size": 20,
-    "pages": 5
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 5
   }
 }
 ```
@@ -528,7 +535,7 @@ Authorization: Bearer {refreshToken}
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "questionId": 1,
         "title": "如何学习数据结构？",
@@ -544,9 +551,9 @@ Authorization: Bearer {refreshToken}
       }
     ],
     "total": 50,
-    "current": 1,
-    "size": 20,
-    "pages": 3
+    "page":1,
+    "pageSize":20,
+    "totalPages":3
   }
 }
 ```
@@ -729,7 +736,7 @@ Authorization: Bearer {refreshToken}
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "taskId": 1,
         "title": "帮忙打印资料",
@@ -743,9 +750,9 @@ Authorization: Bearer {refreshToken}
       }
     ],
     "total": 30,
-    "current": 1,
-    "size": 20,
-    "pages": 2
+    "page":1,
+    "pageSize":20,
+    "totalPages":2
   }
 }
 ```
@@ -1261,7 +1268,7 @@ POST /comment
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "clubId": 1,
         "clubName": "计算机协会",
@@ -1274,9 +1281,9 @@ POST /comment
       }
     ],
     "total": 20,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -1347,7 +1354,7 @@ POST /comment
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "userId": 1,
         "username": "user1",
@@ -1358,9 +1365,9 @@ POST /comment
       }
     ],
     "total": 50,
-    "current": 1,
-    "size": 20,
-    "pages": 3
+    "page":1,
+    "pageSize":20,
+    "totalPages":3
   }
 }
 ```
@@ -1423,7 +1430,7 @@ POST /comment
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "activityId": 1,
         "title": "技术分享会",
@@ -1439,9 +1446,9 @@ POST /comment
       }
     ],
     "total": 15,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -1531,7 +1538,7 @@ POST /comment
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "userId": 1,
         "username": "user1",
@@ -1543,9 +1550,9 @@ POST /comment
       }
     ],
     "total": 30,
-    "current": 1,
-    "size": 20,
-    "pages": 2
+    "page":1,
+    "pageSize":20,
+    "totalPages":2
   }
 }
 ```
@@ -1719,7 +1726,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "commentId": 1,
         "userId": 1,
@@ -1751,9 +1758,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 10,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -1868,7 +1875,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "userId": 2,
         "userName": "用户2",
@@ -1879,9 +1886,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 5,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -1898,7 +1905,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "messageId": 1,
         "senderId": 1,
@@ -1917,9 +1924,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 10,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -2041,7 +2048,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "notificationId": 1,
         "type": "system",
@@ -2054,9 +2061,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 20,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -2203,7 +2210,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "reportId": 1,
         "reportType": 2,
@@ -2220,9 +2227,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 15,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -2338,7 +2345,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "schoolId": 1,
         "schoolName": "清华大学",
@@ -2348,9 +2355,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 50,
-    "current": 1,
-    "size": 20,
-    "pages": 3
+    "page":1,
+    "pageSize":20,
+    "totalPages":3
   }
 }
 ```
@@ -2428,7 +2435,7 @@ GET /favorite/count/task/1
   "code": 200,
   "message": "success",
   "data": {
-    "records": [
+    "list": [
       {
         "configId": 1,
         "configKey": "upload_max_size",
@@ -2439,9 +2446,9 @@ GET /favorite/count/task/1
       }
     ],
     "total": 10,
-    "current": 1,
-    "size": 20,
-    "pages": 1
+    "page":1,
+    "pageSize":20,
+    "totalPages":1
   }
 }
 ```
@@ -2589,11 +2596,19 @@ password: 123456
 
 **文档维护**: 如发现文档有误或需要补充，请联系后端开发团队。
 
-**最后更新**: 2025-11-11
+**最后更新**: 2025-11-16
 
 ---
 
 ## 更新日志
+
+### v1.2 (2025-11-16)
+- 🔧 **修正分页响应格式**：统一所有分页接口的响应字段名
+  - `records` → `list` (数据列表)
+  - `current` → `page` (当前页码)
+  - `size` → `pageSize` (每页数量)
+  - `pages` → `totalPages` (总页数)
+- 📝 添加分页响应字段说明，提升文档可读性
 
 ### v1.1 (2025-11-11)
 - ✨ 新增任务模块7个扩展接口:

@@ -7,6 +7,10 @@ spring:
   application:
     name: campuslink-backend
 
+  # 激活本地配置 (开发环境)
+  profiles:
+    active: local
+
   # 数据库配置
   datasource:
     url: jdbc:mysql://localhost:3306/campuslink?serverTimezone=Asia/Shanghai&useSSL=false
@@ -79,6 +83,16 @@ jwt:
   secret: your-secret-key-change-in-production-min-256-bits
   expiration: 7200
   refresh-expiration: 604800
+
+# 阿里云 OSS 配置
+# 注意: 实际密钥请配置在 application-local.yml 中 (该文件已被 .gitignore 忽略)
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    bucket-name: campuslink-resources
+    upload-dir: uploads/
 
 # 日志配置
 logging:

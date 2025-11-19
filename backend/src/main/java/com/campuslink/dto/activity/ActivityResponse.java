@@ -60,6 +60,11 @@ public class ActivityResponse {
     private Integer currentParticipants;
 
     /**
+     * 剩余名额
+     */
+    private Integer remainingSlots;
+
+    /**
      * 参与奖励积分
      */
     private Integer rewardPoints;
@@ -83,6 +88,11 @@ public class ActivityResponse {
      * 是否已签到
      */
     private Boolean isSignedIn;
+
+    /**
+     * 是否已收藏
+     */
+    private Boolean isFavorited;
 
     /**
      * 创建时间

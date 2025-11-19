@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ### 手动设置第一个用户的token
-@user1Token =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6MjAsInVzZXJuYW1lIjoiY2x1Yl9jcmVhdG9yXzAwMSIsImlhdCI6MTc2MjYwNDA1NiwiZXhwIjoxNzYyNjExMjU2fQ.kPjMtUinFq_sfLgXXWYLQe0XJXzIQ2q-4AiuX16Gviw
+@user1Token =eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NDgsInVzZXJuYW1lIjoiMjE2NDYwMTIxMiIsImlhdCI6MTc2MzAyMzk5NSwiZXhwIjoxNzYzMDMxMTk1fQ.GbhuY0KQRe3x0cJqK4Cx9t80kQm1ugYwJRf7N6JZjVg
 
 ### 2. 注册第二个测试用户（普通成员）
 # @name user2Register

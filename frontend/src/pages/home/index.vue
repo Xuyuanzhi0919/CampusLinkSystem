@@ -263,12 +263,32 @@ const handleAIAnswer = () => {
  * 功能导航
  */
 const handleNavigate = (path: string) => {
-  uni.navigateTo({
-    url: path,
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
+  // 检查是否是 tabBar 页面
+  const tabBarPages = [
+    'pages/home/index',
+    'pages/resource/index',
+    'pages/question/index'
+  ]
+
+  const isTabBarPage = tabBarPages.some(tabPath => path.includes(tabPath))
+
+  if (isTabBarPage) {
+    // tabBar 页面使用 switchTab
+    uni.switchTab({
+      url: path,
+      fail: () => {
+        uni.showToast({ title: '功能开发中', icon: 'none' })
+      },
+    })
+  } else {
+    // 非 tabBar 页面使用 navigateTo
+    uni.navigateTo({
+      url: path,
+      fail: () => {
+        uni.showToast({ title: '功能开发中', icon: 'none' })
+      },
+    })
+  }
 }
 
 /**
@@ -466,6 +486,12 @@ onMounted(() => {
   // #ifndef H5
   // uni-app 中使用 onPageScroll 生命周期
   // #endif
+
+  // 🎯 监听卡片触发的登录事件
+  uni.$on('show-login-modal', () => {
+    console.log('[Home] 收到登录弹窗请求')
+    showLoginModal.value = true
+  })
 })
 
 // 组件卸载时移除监听
@@ -474,6 +500,9 @@ onUnmounted(() => {
   window.removeEventListener('scroll', handlePageScroll)
   if (scrollTimer) clearTimeout(scrollTimer)
   // #endif
+
+  // 🎯 清理登录事件监听
+  uni.$off('show-login-modal')
 })
 
 /**
@@ -553,7 +582,7 @@ onReachBottom(() => {
 .content-section {
   padding: 48rpx 0 120rpx; /* 优化：减小上下留白，从60rpx/160rpx改为48rpx/120rpx */
   position: relative;
-  z-index: 1;
+  z-index: auto; /* 关键修复：移除固定z-index，避免创建层叠上下文干扰移动端菜单 */
   background: transparent; /* 使用全局背景 */
 }
 
@@ -633,7 +662,7 @@ onReachBottom(() => {
 .auxiliary-section {
   padding: 80rpx 0 120rpx; /* 优化：减小内边距，从128rpx/160rpx改为80rpx/120rpx */
   position: relative;
-  z-index: 1;
+  z-index: auto; /* 关键修复：移除固定z-index，避免创建层叠上下文干扰移动端菜单 */
   /* 优化：统一浅灰背景 #F8FAFC，与上方自然衔接 */
   background: #F8FAFC;
 

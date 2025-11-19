@@ -3,6 +3,7 @@ package com.campuslink.dto.question;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 问题详情响应
@@ -43,6 +44,26 @@ public class QuestionResponse {
      * 问题分类
      */
     private String category;
+
+    /**
+     * 标签列表
+     */
+    private List<String> tags;
+
+    /**
+     * 图片URL列表
+     */
+    private List<String> images;
+
+    /**
+     * AI智能答复
+     */
+    private String aiAnswer;
+
+    /**
+     * AI答复生成时间
+     */
+    private LocalDateTime aiGeneratedAt;
 
     /**
      * 悬赏积分

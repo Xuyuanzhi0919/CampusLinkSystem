@@ -4,8 +4,11 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.resource.*;
 import com.campuslink.dto.download.DownloadLogResponse;
+import com.campuslink.dto.comment.AddCommentRequest;
+import com.campuslink.dto.comment.ResourceCommentResponse;
 import com.campuslink.service.ResourceService;
 import com.campuslink.service.DownloadLogService;
+import com.campuslink.service.ResourceCommentService;
 import com.campuslink.common.ResultCode;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -27,6 +30,17 @@ import java.util.Map;
 public class ResourceController {
     private final ResourceService resourceService;
     private final DownloadLogService downloadLogService;
+    private final ResourceCommentService commentService;
+    private final com.campuslink.service.OssService ossService;
+
+    @Operation(summary = "获取 OSS 上传签名", description = "客户端直传 OSS 前需要先获取签名")
+    @GetMapping("/upload/signature")
+    public Result<com.campuslink.dto.resource.OssSignatureResponse> getUploadSignature(
+            @Parameter(description = "文件名") @RequestParam String fileName
+    ) {
+        com.campuslink.dto.resource.OssSignatureResponse signature = ossService.generateUploadSignature(fileName);
+        return Result.success(signature);
+    }
 
     @Operation(summary = "上传资源")
     @PostMapping("/upload")
@@ -48,10 +62,14 @@ public class ResourceController {
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "排序字段") @RequestParam(defaultValue = "created_at") String sortBy,
-            @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder
+            @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder,
+            HttpServletRequest httpRequest
     ) {
+        // 获取当前用户ID（可能为null，表示未登录）
+        Long currentUserId = (Long) httpRequest.getAttribute("userId");
+
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, keyword, page, pageSize, sortBy, sortOrder
+                category, schoolId, keyword, page, pageSize, sortBy, sortOrder, currentUserId
         );
         return Result.success(result);
     }
@@ -81,18 +99,22 @@ public class ResourceController {
     @Operation(summary = "点赞资源")
     @PostMapping("/{id}/like")
     public Result<Map<String, Integer>> likeResource(
-            @Parameter(description = "资源ID") @PathVariable Long id
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            HttpServletRequest httpRequest
     ) {
-        Integer likes = resourceService.likeResource(id);
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Integer likes = resourceService.likeResource(id, userId);
         return Result.success("点赞成功", Map.of("likes", likes));
     }
 
     @Operation(summary = "取消点赞")
     @DeleteMapping("/{id}/like")
     public Result<Map<String, Integer>> unlikeResource(
-            @Parameter(description = "资源ID") @PathVariable Long id
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            HttpServletRequest httpRequest
     ) {
-        Integer likes = resourceService.unlikeResource(id);
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Integer likes = resourceService.unlikeResource(id, userId);
         return Result.success("取消点赞成功", Map.of("likes", likes));
     }
 
@@ -103,10 +125,14 @@ public class ResourceController {
             @Parameter(description = "资源分类") @RequestParam(required = false) String category,
             @Parameter(description = "学校ID") @RequestParam(required = false) Long schoolId,
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
-            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            HttpServletRequest httpRequest
     ) {
+        // 获取当前用户ID（可能为null，表示未登录）
+        Long currentUserId = (Long) httpRequest.getAttribute("userId");
+
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, q, page, pageSize, "created_at", "desc"
+                category, schoolId, q, page, pageSize, "created_at", "desc", currentUserId
         );
         return Result.success(result);
     }
@@ -197,5 +223,56 @@ public class ResourceController {
 
         PageResult<DownloadLogResponse> result = downloadLogService.getResourceDownloadHistory(id, page, pageSize);
         return Result.success(result);
+    }
+
+    @Operation(summary = "添加评论", description = "对资源发表评论或回复")
+    @PostMapping("/{id}/comments")
+    public Result<Map<String, Long>> addComment(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Valid @RequestBody AddCommentRequest request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Long commentId = commentService.addComment(id, userId, request);
+        return Result.success("评论成功", Map.of("commentId", commentId));
+    }
+
+    @Operation(summary = "获取评论列表", description = "获取资源的所有评论（分页）")
+    @GetMapping("/{id}/comments")
+    public Result<PageResult<ResourceCommentResponse>> getComments(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize
+    ) {
+        PageResult<ResourceCommentResponse> result = commentService.getResourceComments(id, page, pageSize);
+        return Result.success(result);
+    }
+
+    @Operation(summary = "删除评论", description = "删除自己的评论")
+    @DeleteMapping("/comments/{commentId}")
+    public Result<Void> deleteComment(
+            @Parameter(description = "评论ID") @PathVariable Long commentId,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        commentService.deleteComment(commentId, userId);
+        return Result.success("删除成功");
+    }
+
+    @Operation(summary = "评分资源", description = "用户对资源进行评分（1-5星），rating=0表示取消评分")
+    @PostMapping("/{id}/rate")
+    public Result<Map<String, Object>> rateResource(
+            @Parameter(description = "资源ID") @PathVariable Long id,
+            @Parameter(description = "评分（0-5，0表示取消评分）") @RequestBody Map<String, Integer> request,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        Integer rating = request.get("rating");
+
+        if (rating == null) {
+            return Result.error(400, "评分不能为空");
+        }
+
+        return resourceService.rateResource(id, userId, rating);
     }
 }

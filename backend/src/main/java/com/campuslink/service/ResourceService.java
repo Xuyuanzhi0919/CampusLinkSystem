@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
+
+import com.campuslink.common.Result;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.resource.*;
 import com.campuslink.entity.Resource;
@@ -19,6 +21,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -31,6 +35,10 @@ public class ResourceService {
     private final UserMapper userMapper;
     private final SchoolMapper schoolMapper;
     private final DownloadLogService downloadLogService;
+    private final ResourceLikeService resourceLikeService;
+    private final ResourceCommentService resourceCommentService;
+    private final FavoriteService favoriteService;
+    private final ResourceRatingService resourceRatingService;
 
     /**
      * 上传资源
@@ -55,7 +63,8 @@ public class ResourceService {
         resource.setCategory(request.getCategory());
         resource.setCourseName(request.getCourseName());
         resource.setSchoolId(request.getSchoolId() != null ? request.getSchoolId() : user.getSchoolId());
-        resource.setScore(request.getScore());
+        // 如果未指定积分，默认设置为5分（根据MVP设计）
+        resource.setScore(request.getScore() != null ? request.getScore() : 5);
         resource.setDownloads(0);
         resource.setLikes(0);
         resource.setStatus(0); // 0-待审核
@@ -76,7 +85,8 @@ public class ResourceService {
             Integer page,
             Integer pageSize,
             String sortBy,
-            String sortOrder
+            String sortOrder,
+            Long currentUserId
     ) {
         // 构建分页对象
         Page<Resource> pageObj = new Page<>(page, pageSize);
@@ -115,6 +125,32 @@ public class ResourceService {
         List<ResourceListResponse> resourceList = resourcePage.getRecords().stream()
                 .map(this::convertToListResponse)
                 .collect(Collectors.toList());
+
+        // 填充已下载状态和已点赞状态
+        if (currentUserId != null && !resourceList.isEmpty()) {
+            // 提取所有资源ID
+            Set<Long> resourceIds = resourceList.stream()
+                    .map(ResourceListResponse::getResourceId)
+                    .collect(Collectors.toSet());
+
+            // 批量查询已下载的资源ID
+            Set<Long> downloadedIds = downloadLogService.getDownloadedResourceIds(currentUserId, resourceIds);
+
+            // 批量查询已点赞的资源ID
+            Set<Long> likedIds = resourceLikeService.getLikedResourceIds(currentUserId, resourceIds);
+
+            // 填充isDownloaded和isLiked字段
+            resourceList.forEach(vo -> {
+                vo.setIsDownloaded(downloadedIds.contains(vo.getResourceId()));
+                vo.setIsLiked(likedIds.contains(vo.getResourceId()));
+            });
+        } else {
+            // 未登录用户，全部设置为false
+            resourceList.forEach(vo -> {
+                vo.setIsDownloaded(false);
+                vo.setIsLiked(false);
+            });
+        }
 
         return new PageResult<>(
                 resourceList,
@@ -201,14 +237,24 @@ public class ResourceService {
      * 点赞资源
      */
     @Transactional(rollbackFor = Exception.class)
-    public Integer likeResource(Long resourceId) {
+    public Integer likeResource(Long resourceId, Long userId) {
         Resource resource = resourceMapper.selectById(resourceId);
         if (resource == null || resource.getStatus() != 1) {
             throw new BusinessException(ResultCode.RESOURCE_NOT_FOUND);
         }
 
+        // 检查是否已点赞
+        if (resourceLikeService.hasLiked(userId, resourceId)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "已经点赞过该资源");
+        }
+
+        // 记录点赞关系
+        resourceLikeService.recordLike(userId, resourceId);
+
+        // 增加点赞计数
         resource.setLikes(resource.getLikes() + 1);
         resourceMapper.updateById(resource);
+
         return resource.getLikes();
     }
 
@@ -216,16 +262,26 @@ public class ResourceService {
      * 取消点赞
      */
     @Transactional(rollbackFor = Exception.class)
-    public Integer unlikeResource(Long resourceId) {
+    public Integer unlikeResource(Long resourceId, Long userId) {
         Resource resource = resourceMapper.selectById(resourceId);
         if (resource == null || resource.getStatus() != 1) {
             throw new BusinessException(ResultCode.RESOURCE_NOT_FOUND);
         }
 
+        // 检查是否已点赞
+        if (!resourceLikeService.hasLiked(userId, resourceId)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "尚未点赞该资源");
+        }
+
+        // 删除点赞记录
+        resourceLikeService.removeLike(userId, resourceId);
+
+        // 减少点赞计数
         if (resource.getLikes() > 0) {
             resource.setLikes(resource.getLikes() - 1);
             resourceMapper.updateById(resource);
         }
+
         return resource.getLikes();
     }
 
@@ -381,6 +437,7 @@ public class ResourceService {
         if (uploader != null) {
             response.setUploaderName(uploader.getNickname());
             response.setUploaderAvatar(uploader.getAvatarUrl());
+            response.setUploaderPoints(uploader.getPoints());  // 添加上传者积分
         }
 
         // 查询学校名称
@@ -391,11 +448,68 @@ public class ResourceService {
             }
         }
 
-        // 当前版本暂不支持下载状态和点赞状态查询,默认返回false
-        // 后续可通过查询download_log表和like表来实现
-        response.setIsDownloaded(false);
-        response.setIsLiked(false);
+        // 设置浏览次数（暂时使用下载次数的估算值，实际应从数据库views字段获取）
+        response.setViews(resource.getDownloads() != null ? resource.getDownloads() * 3 : 0);
+
+        // 统计评论数量
+        Long commentCount = resourceCommentService.countByResourceId(resource.getRid());
+        response.setCommentCount(commentCount != null ? commentCount.intValue() : 0);
+
+        // 统计收藏数
+        Long favoriteCount = favoriteService.getFavoriteCount("resource", resource.getRid());
+        response.setFavorites(favoriteCount != null ? favoriteCount.intValue() : 0);
+
+        // 填充下载状态、点赞状态、收藏状态
+        if (currentUserId != null) {
+            response.setIsDownloaded(downloadLogService.hasDownloaded(currentUserId, resource.getRid()));
+            response.setIsLiked(resourceLikeService.hasLiked(currentUserId, resource.getRid()));
+            response.setIsFavorited(favoriteService.isFavorited(currentUserId, "resource", resource.getRid()));
+        } else {
+            response.setIsDownloaded(false);
+            response.setIsLiked(false);
+            response.setIsFavorited(false);
+        }
+
+        // 填充评分相关字段（从ResourceRatingService获取真实数据）
+        ResourceRatingService.RatingResult ratingResult =
+            resourceRatingService.calculateRatingStatistics(resource.getRid(), currentUserId);
+        response.setAverageRating(ratingResult.getAverageRating());
+        response.setTotalRatings(ratingResult.getTotalRatings());
+        response.setUserRating(ratingResult.getUserRating());
 
         return response;
+    }
+
+    /**
+     * 用户对资源进行评分
+     *
+     * @param resourceId 资源ID
+     * @param userId     用户ID
+     * @param rating     评分（0-5，0表示取消评分）
+     * @return 评分结果（包含平均分、总评分人数、用户评分）
+     */
+    public Result<Map<String, Object>> rateResource(Long resourceId, Long userId, Integer rating) {
+        // 验证资源是否存在
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            return Result.error(ResultCode.RESOURCE_NOT_FOUND);
+        }
+
+        try {
+            // 调用评分服务
+            ResourceRatingService.RatingResult result =
+                resourceRatingService.rateResource(userId, resourceId, rating);
+
+            // 返回评分结果
+            Map<String, Object> data = new java.util.HashMap<>();
+            data.put("averageRating", result.getAverageRating());
+            data.put("totalRatings", result.getTotalRatings());
+            data.put("userRating", result.getUserRating());
+
+            String message = rating > 0 ? "评分成功" : "已取消评分";
+            return Result.success(message, data);
+        } catch (IllegalArgumentException e) {
+            return Result.error(400, e.getMessage());
+        }
     }
 }

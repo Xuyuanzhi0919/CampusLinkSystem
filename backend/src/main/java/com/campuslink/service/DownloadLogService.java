@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -53,6 +54,30 @@ public class DownloadLogService {
                 .eq(DownloadLog::getResourceId, resourceId);
 
         return downloadLogMapper.selectCount(wrapper) > 0;
+    }
+
+    /**
+     * 批量查询用户已下载的资源ID集合
+     * 用于在资源列表中标记已下载状态，避免N+1查询问题
+     *
+     * @param userId 用户ID
+     * @param resourceIds 资源ID集合
+     * @return 已下载的资源ID集合
+     */
+    public Set<Long> getDownloadedResourceIds(Long userId, Set<Long> resourceIds) {
+        if (userId == null || resourceIds == null || resourceIds.isEmpty()) {
+            return Set.of();
+        }
+
+        LambdaQueryWrapper<DownloadLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(DownloadLog::getUserId, userId)
+                .in(DownloadLog::getResourceId, resourceIds)
+                .select(DownloadLog::getResourceId);
+
+        return downloadLogMapper.selectList(wrapper)
+                .stream()
+                .map(DownloadLog::getResourceId)
+                .collect(Collectors.toSet());
     }
 
     /**

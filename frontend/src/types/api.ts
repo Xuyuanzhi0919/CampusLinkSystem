@@ -18,11 +18,11 @@ export interface PageParams {
 
 // 分页响应数据
 export interface PageResult<T> {
-  list: T[]
+  list: T[]         // 后端实际返回的字段名
   total: number
-  page: number
-  pageSize: number
-  totalPages: number
+  page: number      // 当前页码
+  pageSize: number  // 每页数量
+  totalPages: number // 总页数
 }
 
 // 排序参数

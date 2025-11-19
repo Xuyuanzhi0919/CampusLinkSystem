@@ -35,6 +35,7 @@ public class ActivityService {
     private final ClubMemberMapper clubMemberMapper;
     private final UserMapper userMapper;
     private final PointsLogMapper pointsLogMapper;
+    private final FavoriteService favoriteService;
 
     /**
      * 创建活动
@@ -80,7 +81,8 @@ public class ActivityService {
     /**
      * 获取活动列表
      */
-    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize, Long clubId) {
+    public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize,
+                                                         Long clubId, Integer status, String sortBy, String keyword) {
         Page<Activity> activityPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<>();
 
@@ -88,7 +90,29 @@ public class ActivityService {
             wrapper.eq(Activity::getClubId, clubId);
         }
 
-        wrapper.orderByDesc(Activity::getCreatedAt);
+        // 如果指定了状态，则过滤
+        if (status != null) {
+            wrapper.eq(Activity::getStatus, status);
+        }
+
+        // 🎯 关键字搜索 - 搜索标题和地点
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.and(w -> w.like(Activity::getTitle, keyword)
+                    .or()
+                    .like(Activity::getLocation, keyword));
+        }
+
+        // 🎯 排序逻辑
+        if ("hot".equals(sortBy)) {
+            // 按热度排序（报名人数降序）
+            wrapper.orderByDesc(Activity::getCurrentParticipants);
+        } else if ("time".equals(sortBy)) {
+            // 按时间排序（开始时间升序）
+            wrapper.orderByAsc(Activity::getStartTime);
+        } else {
+            // 默认按创建时间降序（最新）
+            wrapper.orderByDesc(Activity::getCreatedAt);
+        }
 
         activityPage = activityMapper.selectPage(activityPage, wrapper);
 
@@ -128,9 +152,12 @@ public class ActivityService {
             throw new BusinessException(ResultCode.ACTIVITY_NOT_FOUND);
         }
 
-        // 检查活动状态
-        if (activity.getStatus() != 0) {
-            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已开始或已结束，无法报名");
+        // 🎯 检查活动状态 - 只有未开始(0)和进行中(1)可以报名
+        if (activity.getStatus() == 2) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已结束，无法报名");
+        }
+        if (activity.getStatus() == 3) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已取消，无法报名");
         }
 
         // 检查是否已报名
@@ -331,6 +358,11 @@ public class ActivityService {
             response.setClubName(club.getClubName());
         }
 
+        // 🎯 计算剩余名额
+        Integer maxParticipants = activity.getMaxParticipants() != null ? activity.getMaxParticipants() : 0;
+        Integer currentParticipants = activity.getCurrentParticipants() != null ? activity.getCurrentParticipants() : 0;
+        response.setRemainingSlots(Math.max(0, maxParticipants - currentParticipants));
+
         // 查询当前用户是否已报名和签到
         if (userId != null) {
             LambdaQueryWrapper<ActivityParticipant> wrapper = new LambdaQueryWrapper<>();
@@ -345,6 +377,14 @@ public class ActivityService {
                 response.setIsJoined(false);
                 response.setIsSignedIn(false);
             }
+
+            // 🎯 查询是否已收藏
+            response.setIsFavorited(favoriteService.isFavorited(userId, "activity", activity.getActivityId()));
+        } else {
+            // 🎯 游客模式：设置默认值
+            response.setIsJoined(false);
+            response.setIsSignedIn(false);
+            response.setIsFavorited(false);
         }
 
         return response;

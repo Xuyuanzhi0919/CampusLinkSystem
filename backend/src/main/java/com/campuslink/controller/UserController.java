@@ -2,6 +2,7 @@ package com.campuslink.controller;
 
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
+import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.PointsLogVO;
 import com.campuslink.dto.UpdateProfileRequest;
 import com.campuslink.dto.UserVO;
@@ -64,5 +65,30 @@ public class UserController {
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
         PageResult<PointsLogVO> pointsLog = userService.getPointsLog(userId, page, pageSize);
         return Result.success(pointsLog);
+    }
+
+    @Operation(summary = "获取签到状态", description = "查询当前用户今日是否已签到")
+    @GetMapping("/check-in/status")
+    public Result<Boolean> getCheckInStatus(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
+        Boolean isCheckedIn = userService.getCheckInStatus(userId);
+        return Result.success(isCheckedIn);
+    }
+
+    @Operation(summary = "每日签到", description = "用户每日签到，获得积分奖励")
+    @PostMapping("/check-in")
+    public Result<CheckInResponse> checkIn(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
+        CheckInResponse response = userService.checkIn(userId);
+        return Result.success(response);
+    }
+
+    @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")
+    @GetMapping("/ranking")
+    public Result<PageResult<UserVO>> getUserRanking(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize) {
+        PageResult<UserVO> ranking = userService.getUserRanking(page, pageSize);
+        return Result.success(ranking);
     }
 }

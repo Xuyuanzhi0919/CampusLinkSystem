@@ -28,7 +28,7 @@ export const getResourceDetail = (id: number) => {
 }
 
 /**
- * 上传资源
+ * 上传资源（创建资源记录）
  * @param data 资源数据
  */
 export const uploadResource = (data: ResourceUploadParams) => {
@@ -36,11 +36,20 @@ export const uploadResource = (data: ResourceUploadParams) => {
 }
 
 /**
+ * 创建资源（uploadResource 的别名）
+ */
+export const createResource = uploadResource
+
+/**
  * 下载资源
  * @param id 资源ID
  */
 export const downloadResource = (id: number) => {
-  return request.post<{ fileUrl: string }>(`/resource/${id}/download`)
+  return request.post<{
+    downloadUrl: string
+    pointsCost: number
+    remainingPoints: number
+  }>(`/resource/${id}/download`)
 }
 
 /**
@@ -70,7 +79,7 @@ export const deleteResource = (id: number) => {
 /**
  * 获取上传签名（用于客户端直传 OSS）
  */
-export const getUploadSignature = () => {
+export const getUploadSignature = (fileName: string) => {
   return request.get<{
     host: string
     policy: string
@@ -78,6 +87,105 @@ export const getUploadSignature = () => {
     accessId: string
     expire: number
     dir: string
-  }>('/resource/upload/signature')
+    key: string
+  }>('/resource/upload/signature', { fileName })
+}
+
+/**
+ * 搜索资源
+ * @param params 搜索参数
+ */
+export const searchResources = (params: {
+  q: string
+  category?: number
+  schoolId?: number
+  page?: number
+  pageSize?: number
+}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/search', params)
+}
+
+/**
+ * 获取我上传的资源
+ * @param params 分页参数
+ */
+export const getMyResources = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/my', params)
+}
+
+/**
+ * 获取我的下载历史
+ * @param params 分页参数
+ */
+export const getMyDownloadHistory = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<any>>('/resource/download-history', params)
+}
+
+/**
+ * 获取待审核资源列表 (管理员)
+ * @param params 分页参数
+ */
+export const getPendingResources = (params: {
+  page?: number
+  pageSize?: number
+} = {}) => {
+  return request.get<PageResult<ResourceItem>>('/resource/pending', params)
+}
+
+/**
+ * 审核通过资源 (管理员)
+ * @param id 资源ID
+ */
+export const approveResource = (id: number) => {
+  return request.put<void>(`/resource/${id}/approve`)
+}
+
+/**
+ * 拒绝资源 (管理员)
+ * @param id 资源ID
+ * @param rejectReason 拒绝原因
+ */
+export const rejectResource = (id: number, rejectReason: string) => {
+  return request.put<void>(`/resource/${id}/reject`, { rejectReason })
+}
+
+/**
+ * 举报资源
+ * @param id 资源ID
+ * @param data 举报数据
+ */
+export const reportResource = (id: number, data: { reason: string; description?: string }) => {
+  return request.post<{ message: string }>(`/resource/${id}/report`, data)
+}
+
+/**
+ * 评分资源
+ * @param id 资源ID
+ * @param rating 评分（1-5）
+ */
+export const rateResource = (id: number, rating: number) => {
+  return request.post<{
+    averageRating: number
+    totalRatings: number
+    userRating: number
+  }>(`/resource/${id}/rate`, { rating })
+}
+
+/**
+ * 获取资源评分
+ * @param id 资源ID
+ */
+export const getResourceRating = (id: number) => {
+  return request.get<{
+    averageRating: number
+    totalRatings: number
+    userRating: number
+  }>(`/resource/${id}/rating`)
 }
 

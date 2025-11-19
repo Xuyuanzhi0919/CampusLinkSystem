@@ -78,14 +78,14 @@ export const RESOURCE_COVERS = {
 
 // ==================== 占位图 ====================
 export const PLACEHOLDER_IMAGES = {
-  // 用户头像占位图
-  avatar: 'https://via.placeholder.com/150/409EFF/FFFFFF?text=User',
-  
+  // 用户头像占位图（使用更可靠的服务）
+  avatar: 'https://ui-avatars.com/api/?name=User&background=FF6B35&color=fff&size=150',
+
   // 图片加载失败占位图
-  error: 'https://via.placeholder.com/400x300/CCCCCC/666666?text=Image+Not+Found',
-  
+  error: 'https://ui-avatars.com/api/?name=Error&background=CCCCCC&color=666666&size=400',
+
   // 通用占位图
-  default: 'https://via.placeholder.com/400x300/F5F7FA/999999?text=Loading',
+  default: 'https://ui-avatars.com/api/?name=Image&background=F5F7FA&color=999999&size=400',
 }
 
 // ==================== 工具函数 ====================

@@ -48,7 +48,7 @@ const functions: FunctionItem[] = [
     icon: '💬',
     name: '智能问答',
     desc: 'AI秒速答疑',
-    path: '/pages/question/list',
+    path: '/pages/question/index',
     theme: 'blue', // 青春蓝系
     isCore: true, // 核心功能，放大1.2倍
   },

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 提问请求
  */
@@ -29,6 +31,16 @@ public class AskQuestionRequest {
      */
     @NotBlank(message = "问题分类不能为空")
     private String category;
+
+    /**
+     * 标签列表 (可选)
+     */
+    private List<String> tags;
+
+    /**
+     * 图片URL列表 (可选)
+     */
+    private List<String> images;
 
     /**
      * 悬赏积分 (可选,默认0)

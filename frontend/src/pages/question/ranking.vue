@@ -6,7 +6,7 @@
         <view class="nav-left" @click="goBack">
           <text class="back-icon">←</text>
         </view>
-        <text class="nav-title">热门问答榜</text>
+        <text class="nav-title">贡献榜</text>
         <view class="nav-right"></view>
       </view>
     </view>
@@ -30,7 +30,7 @@
       <view v-else class="ranking-list">
         <view
           v-for="(item, index) in list"
-          :key="item.id"
+          :key="item.uid"
           class="ranking-item"
           @click="handleItemClick(item)"
         >
@@ -39,20 +39,27 @@
             <text class="rank-text">{{ index + 1 }}</text>
           </view>
 
+          <!-- 用户头像 -->
+          <image
+            class="user-avatar"
+            :src="item.avatarUrl || '/static/default-avatar.png'"
+            mode="aspectFill"
+          />
+
           <!-- 内容 -->
           <view class="item-content">
-            <text class="item-title">{{ item.title }}</text>
+            <text class="item-title">{{ item.nickname }}</text>
             <view class="item-meta">
-              <text class="meta-item">{{ item.views }} 浏览</text>
+              <text class="meta-item">积分: {{ formatNumber(item.points) }}</text>
               <text class="meta-dot">·</text>
-              <text class="meta-item">{{ item.answers }} 回答</text>
+              <text class="meta-item">Lv.{{ item.level || 1 }}</text>
             </view>
           </view>
 
-          <!-- 热度 -->
-          <view class="hot-badge">
-            <text class="hot-icon">🔥</text>
-            <text class="hot-text">{{ item.hot }}</text>
+          <!-- 积分徽章 -->
+          <view class="points-badge">
+            <text class="points-icon">⭐</text>
+            <text class="points-text">{{ formatNumber(item.points) }}</text>
           </view>
         </view>
       </view>
@@ -62,7 +69,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { getQuestionList } from '@/services/question'
+import { getUserRanking } from '@/services/user'
+import { formatNumber } from '@/utils/formatters'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 
@@ -76,21 +84,12 @@ const list = ref<any[]>([])
 const loadData = async () => {
   isLoading.value = true
   try {
-    const res = await getQuestionList({ 
-      page: 1, 
-      pageSize: 20, 
-      sortBy: 'view_count', 
-      sortOrder: 'desc' 
+    const res = await getUserRanking({
+      page: 1,
+      pageSize: 20
     })
-    
-    const data = res?.list || res?.records || []
-    list.value = data.map((item: any, index: number) => ({
-      id: item.questionId,
-      title: item.title,
-      views: item.viewCount || 0,
-      answers: item.answerCount || 0,
-      hot: Math.max(100 - index * 5, 10)
-    }))
+
+    list.value = res?.list || []
   } catch (error) {
     console.error('加载榜单失败:', error)
     list.value = []
@@ -110,8 +109,10 @@ const goBack = () => {
  * 点击榜单项
  */
 const handleItemClick = (item: any) => {
-  uni.navigateTo({
-    url: '/pages/question/detail?id=' + item.id
+  // 暂时不跳转,可以后续实现用户详情页
+  uni.showToast({
+    title: item.nickname,
+    icon: 'none'
   })
 }
 
@@ -124,7 +125,7 @@ onMounted(() => {
 <style scoped lang="scss">
 .ranking-page {
   min-height: 100vh;
-  background: var(--cl-bg, #F7F8FA);
+  background: #FBFCFE;
   padding-bottom: 120rpx;
 }
 
@@ -133,9 +134,8 @@ onMounted(() => {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: saturate(180%) blur(10px);
-  border-bottom: 1px solid var(--cl-divider, #E5E7EB);
+  background: #FFF;
+  border-bottom: 1rpx solid #E5E7EB;
 }
 
 .nav-content {
@@ -143,23 +143,22 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  padding: 0 32rpx;
+  padding: 0 24rpx;
 }
 
 .nav-left {
   width: 80rpx;
-  cursor: pointer;
 }
 
 .back-icon {
-  font-size: 40rpx;
-  color: var(--cl-text, #0F172A);
+  font-size: 36rpx;
+  color: #111827;
 }
 
 .nav-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: var(--cl-text, #0F172A);
+  color: #111827;
 }
 
 .nav-right {
@@ -168,79 +167,82 @@ onMounted(() => {
 
 /* 内容区 */
 .content-container {
-  padding: 24rpx 32rpx;
+  padding: 12rpx 24rpx;
 }
 
 .loading-container {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 12rpx;
 }
 
 /* 榜单列表 */
 .ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
+  gap: 12rpx;
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  background: white;
-  border-radius: var(--radius-md, 12px);
-  padding: 32rpx;
-  box-shadow: var(--shadow-1, 0 2px 8px rgba(0,0,0,.06));
+  gap: 16rpx;
+  background: #FFF;
+  border-radius: 12rpx;
+  padding: 20rpx 18rpx;
+  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
   transition: all 0.2s;
-  cursor: pointer;
-  
+
   &:active {
-    transform: scale(0.98);
+    transform: translateY(1rpx);
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
   }
 }
 
 /* 排名徽章 */
 .rank-badge {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: 16rpx;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--cl-gray-100, #F3F4F6);
+  background: #F5F7FA;
   flex-shrink: 0;
-  
+
   &.rank-1 {
     background: linear-gradient(135deg, #FFD700, #FFA500);
-    box-shadow: 0 4rpx 12rpx rgba(255, 215, 0, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba(255, 215, 0, 0.25);
   }
-  
+
   &.rank-2 {
     background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
-    box-shadow: 0 4rpx 12rpx rgba(192, 192, 192, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba(192, 192, 192, 0.25);
   }
-  
+
   &.rank-3 {
     background: linear-gradient(135deg, #CD7F32, #B8860B);
-    box-shadow: 0 4rpx 12rpx rgba(205, 127, 50, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba(205, 127, 50, 0.25);
   }
 }
 
 .rank-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   font-weight: 700;
-  color: white;
-  
-  .rank-1 &,
-  .rank-2 &,
-  .rank-3 & {
-    color: white;
-  }
-  
+  color: #FFF;
+
   .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) & {
-    color: var(--cl-gray-600, #4B5563);
+    color: #6B7280;
   }
+}
+
+/* 用户头像 */
+.user-avatar {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  background: #F5F5F5;
+  flex-shrink: 0;
 }
 
 /* 内容 */
@@ -252,51 +254,50 @@ onMounted(() => {
 }
 
 .item-title {
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 600;
-  color: var(--cl-text, #0F172A);
+  color: #111827;
   line-height: 1.4;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .item-meta {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 12rpx;
 }
 
 .meta-item {
   font-size: 22rpx;
-  color: var(--cl-gray-400, #9CA3AF);
+  color: #9CA3AF;
 }
 
 .meta-dot {
   font-size: 22rpx;
-  color: var(--cl-gray-400, #9CA3AF);
+  color: #D1D5DB;
 }
 
-/* 热度徽章 */
-.hot-badge {
+/* 积分徽章 */
+.points-badge {
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 8rpx 16rpx;
-  background: rgba(239, 68, 68, 0.1);
-  border-radius: 999rpx;
+  gap: 4rpx;
+  padding: 6rpx 12rpx;
+  background: rgba(255, 193, 7, 0.1);
+  border-radius: 16rpx;
   flex-shrink: 0;
 }
 
-.hot-icon {
-  font-size: 24rpx;
+.points-icon {
+  font-size: 22rpx;
 }
 
-.hot-text {
+.points-text {
   font-size: 22rpx;
   font-weight: 600;
-  color: #EF4444;
+  color: #FF9800;
 }
 </style>
 

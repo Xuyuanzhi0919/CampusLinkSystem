@@ -70,11 +70,11 @@ const tasks = ref<Task[]>([
     icon: '💡',
     name: '回答问题',
     reward: 5,
-    action: '/pages/question/list',
+    action: '/pages/question/index',
   },
   {
     id: 3,
-    icon: '✅',
+    icon: '🎯',
     name: '每日签到',
     reward: 2,
     action: 'checkin',

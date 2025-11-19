@@ -5,14 +5,14 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 今日活跃统计响应DTO
+ * 平台数据统计响应DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class TodayStatsResponse {
     /**
-     * 今日活跃用户数
+     * 注册用户总数
      */
     private Integer activeUsers;
 

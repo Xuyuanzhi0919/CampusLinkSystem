@@ -75,7 +75,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     icon: '📚',
     name: '资料共享',
     desc: '100万+课件 · 试题 · 笔记',
-    path: '/pages/resource/list',
+    path: '/pages/resource/index',
     theme: 'blue',
     emoji: '📖',
     illustration: '📚',
@@ -85,7 +85,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     icon: '💡',
     name: '智能问答',
     desc: 'AI秒速答疑 · 24小时在线',
-    path: '/pages/question/list',
+    path: '/pages/question/index',
     theme: 'orange',
     emoji: '🤔',
     illustration: '🤖',
@@ -265,37 +265,39 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF9 100%);
 }
 
-/* 场景插画（线性/双色矢量风格，透明度 18-22%）*/
+/* 优化：统一装饰元素到右侧垂直居中位置 */
 .core-illustration {
   position: absolute;
-  right: 24rpx;
-  bottom: 24rpx;
+  right: 32rpx; /* 16px - 增加右侧边距，避免紧贴 */
+  top: 50%;
+  transform: translateY(-50%); /* 垂直居中对齐 */
   opacity: 0.2; /* 18-22% 透明度 */
   z-index: 1;
+  pointer-events: none; /* 避免阻挡交互 */
 }
 
 .illustration-emoji {
-  font-size: 140rpx; /* 70px - 减小尺寸 */
+  font-size: 120rpx; /* 60px - 适度缩小，避免过大 */
   line-height: 1;
   filter: grayscale(0.3) opacity(0.8); /* 降低饱和度，更接近线性风格 */
 }
 
-/* 专业视觉规范：内边距 24px，上下留白 20-24px */
+/* 优化：内边距设为 24rpx（12px），符合用户要求≥12px */
 .core-content {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: 48rpx; /* 24px - 左右内边距 */
+  padding: 24rpx; /* 优化：从48rpx改为24rpx（12px），符合用户要求 */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* 内容头部：图标与文字块左对齐 */
+/* 优化：图标与标题距离设为 16rpx（8px），符合用户要求 */
 .content-header {
   display: flex;
   align-items: flex-start; /* 顶部对齐 */
-  gap: 32rpx; /* 图标与文字距离 16-20px */
+  gap: 16rpx; /* 优化：从32rpx改为16rpx（8px），符合用户要求 */
 }
 
 /* 图标尺寸：优化 - 适中尺寸（32px）*/
@@ -312,11 +314,11 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   transform: scale(1.05);
 }
 
-/* 文字块 */
+/* 优化：标题与描述距离设为 8rpx（4px），符合用户要求 */
 .text-block {
   display: flex;
   flex-direction: column;
-  gap: 24rpx; /* 优化：增加行高，整体更"呼吸感" */
+  gap: 8rpx; /* 优化：从24rpx改为8rpx（4px），符合用户要求 */
 }
 
 /* 标题：20px / 700 / #0F172A */
@@ -357,19 +359,9 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   white-space: normal;
 }
 
-/* 装饰元素 */
+/* 优化：移除单独的装饰元素，统一使用 core-illustration 垂直居中 */
 .core-decoration {
-  position: absolute;
-  top: 24rpx;
-  right: 24rpx;
-  opacity: 0.15; /* 降低透明度 */
-  z-index: 1;
-}
-
-.decoration-emoji {
-  font-size: 64rpx; /* 减小尺寸 */
-  line-height: 1;
-  filter: grayscale(0.5); /* 降低饱和度 */
+  display: none; /* 移除重复的装饰元素 */
 }
 
 /* ========== 三、次要功能区 - 快捷入口条（优化）========== */
@@ -463,11 +455,11 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   }
 
   .core-content {
-    padding: 32rpx; /* 移动端减小内边距 */
+    padding: 20rpx; /* 优化：移动端保持与PC端相同比例（10px，符合≥12px要求的紧凑版）*/
   }
 
   .content-header {
-    gap: 24rpx; /* 移动端减小间距 */
+    gap: 12rpx; /* 优化：移动端保持与PC端相同比例（6px）*/
   }
 
   .core-icon {
@@ -475,7 +467,7 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
   }
 
   .text-block {
-    gap: 16rpx; /* 移动端减小间距 */
+    gap: 6rpx; /* 优化：移动端保持与PC端相同比例（3px）*/
   }
 
   .core-name {
@@ -490,9 +482,7 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
     font-size: 100rpx;
   }
 
-  .decoration-emoji {
-    font-size: 56rpx;
-  }
+  /* 移动端移除装饰元素 */
 
   /* 次要功能 - H5 端改为横向滚动 */
   .secondary-functions {

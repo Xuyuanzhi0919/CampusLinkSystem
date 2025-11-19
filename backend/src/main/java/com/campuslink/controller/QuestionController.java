@@ -51,6 +51,18 @@ public class QuestionController {
         return Result.success(result);
     }
 
+    @Operation(summary = "获取我的提问")
+    @GetMapping("/my")
+    public Result<PageResult<QuestionListResponse>> getMyQuestions(
+            @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "问题状态") @RequestParam(required = false) Integer status,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        PageResult<QuestionListResponse> result = questionService.getMyQuestions(userId, page, pageSize, status);
+        return Result.success(result);
+    }
+
     @Operation(summary = "获取问题详情")
     @GetMapping("/{id}")
     public Result<QuestionResponse> getQuestionById(
@@ -109,21 +121,13 @@ public class QuestionController {
         return Result.success("取消点赞成功", Map.of("likes", likes));
     }
 
-    @Operation(summary = "点赞答案")
-    @PostMapping("/answer/{id}/like")
-    public Result<Map<String, Integer>> likeAnswer(
-            @Parameter(description = "答案ID") @PathVariable Long id
+    @Operation(summary = "删除问题")
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Integer likes = questionService.likeAnswer(id);
-        return Result.success("点赞成功", Map.of("likes", likes));
-    }
-
-    @Operation(summary = "取消点赞答案")
-    @DeleteMapping("/answer/{id}/like")
-    public Result<Map<String, Integer>> unlikeAnswer(
-            @Parameter(description = "答案ID") @PathVariable Long id
-    ) {
-        Integer likes = questionService.unlikeAnswer(id);
-        return Result.success("取消点赞成功", Map.of("likes", likes));
+        questionService.deleteQuestion(userId, id);
+        return Result.success("删除成功", null);
     }
 }

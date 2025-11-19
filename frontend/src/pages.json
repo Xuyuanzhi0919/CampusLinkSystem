@@ -99,6 +99,14 @@
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}
+		},
+		{
+			"path": "pages/user/edit-profile",
+			"style": {
+				"navigationBarTitleText": "编辑资料",
+				"navigationStyle": "custom",
+				"backgroundColor": "#F9FAFB"
+			}
 		}
 	],
 	"globalStyle": {

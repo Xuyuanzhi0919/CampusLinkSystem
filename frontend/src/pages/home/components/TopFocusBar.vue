@@ -279,7 +279,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from '@/components/UserDropdownMenu.vue'
 import PointsAnimation from '@/components/PointsAnimation.vue'
 import config from '@/config'
-import { dailyCheckIn, getCheckInStatus } from '@/services/user'
+import { checkIn, getCheckInStatus } from '@/services/user'
 
 // Props & Emits
 const emit = defineEmits<{
@@ -409,7 +409,7 @@ const handleCheckIn = async (event: any) => {
 
   try {
     // 调用后端签到API
-    const response = await dailyCheckIn()
+    const response = await checkIn()
 
     if (response.success) {
       // 签到成功 - 使用用户专属的存储键

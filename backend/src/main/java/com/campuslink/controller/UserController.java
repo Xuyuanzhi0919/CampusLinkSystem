@@ -5,6 +5,7 @@ import com.campuslink.common.Result;
 import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.PointsLogVO;
 import com.campuslink.dto.UpdateProfileRequest;
+import com.campuslink.dto.UserStatsVO;
 import com.campuslink.dto.UserVO;
 import com.campuslink.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -23,6 +24,14 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final UserService userService;
+
+    @Operation(summary = "获取用户统计数据", description = "获取当前用户的统计数据（资源、问答、任务等）")
+    @GetMapping("/stats")
+    public Result<UserStatsVO> getUserStats(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
+        UserStatsVO stats = userService.getUserStats(userId);
+        return Result.success(stats);
+    }
 
     @Operation(summary = "获取用户信息", description = "根据用户ID获取用户详细信息")
     @GetMapping("/{id}")

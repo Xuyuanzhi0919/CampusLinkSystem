@@ -191,6 +191,34 @@ public class UserService {
     }
 
     /**
+     * 获取用户统计数据
+     */
+    public UserStatsVO getUserStats(Long userId) {
+        // 验证用户是否存在
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 计算连续签到天数
+        int checkInDays = calculateConsecutiveDays(userId);
+
+        // 构建统计数据（暂时返回模拟数据，后续可以查询真实数据）
+        return UserStatsVO.builder()
+                .resourceCount(0)          // TODO: 查询 resource 表
+                .downloadCount(0)          // TODO: 查询下载记录
+                .questionCount(0)          // TODO: 查询 question 表
+                .answerCount(0)            // TODO: 查询 answer 表
+                .acceptedAnswerCount(0)    // TODO: 查询被采纳的答案数
+                .taskPublishCount(0)       // TODO: 查询 task 表
+                .taskCompleteCount(0)      // TODO: 查询完成的任务数
+                .favoriteCount(0)          // TODO: 查询收藏数
+                .likeCount(0)              // TODO: 查询获赞数
+                .checkInDays(checkInDays)  // 连续签到天数
+                .build();
+    }
+
+    /**
      * 更新个人资料
      */
     @Transactional(rollbackFor = Exception.class)

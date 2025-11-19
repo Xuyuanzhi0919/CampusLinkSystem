@@ -55,10 +55,12 @@ export interface UpdateProfileRequest {
  * 签到响应
  */
 export interface CheckInResponse {
-  points: number
-  continuousDays: number
-  totalCheckInDays: number
-  isCheckedInToday: boolean
+  success: boolean
+  message: string
+  pointsEarned: number
+  totalPoints: number
+  consecutiveDays: number
+  checkInTime: string
 }
 
 /**

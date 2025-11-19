@@ -56,6 +56,11 @@ public class UserVO {
     private Long schoolId;
 
     /**
+     * 学校名称
+     */
+    private String schoolName;
+
+    /**
      * 专业
      */
     private String major;

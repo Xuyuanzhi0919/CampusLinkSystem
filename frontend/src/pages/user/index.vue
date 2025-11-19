@@ -117,20 +117,28 @@ const handleCheckIn = async () => {
   try {
     const res = await checkIn()
 
-    // 更新签到状态
-    isCheckedInToday.value = true
+    if (res.data.success) {
+      // 更新签到状态
+      isCheckedInToday.value = true
 
-    // 更新积分
-    if (userProfile.value) {
-      userProfile.value.points += res.data.points
+      // 更新积分
+      if (userProfile.value) {
+        userProfile.value.points = res.data.totalPoints
+      }
+
+      // 显示签到成功提示
+      uni.showToast({
+        title: `签到成功!获得 ${res.data.pointsEarned} 积分`,
+        icon: 'success',
+        duration: 2000
+      })
+    } else {
+      // 今日已签到
+      uni.showToast({
+        title: res.data.message || '今日已签到',
+        icon: 'none'
+      })
     }
-
-    // 显示签到成功提示
-    uni.showToast({
-      title: `签到成功!获得 ${res.data.points} 积分`,
-      icon: 'success',
-      duration: 2000
-    })
   } catch (error: any) {
     console.error('签到失败:', error)
     uni.showToast({

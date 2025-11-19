@@ -6,9 +6,11 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.*;
 import com.campuslink.entity.PointsLog;
+import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.PointsLogMapper;
+import com.campuslink.mapper.SchoolMapper;
 import com.campuslink.mapper.UserMapper;
 import com.campuslink.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PointsLogMapper pointsLogMapper;
+    private final SchoolMapper schoolMapper;
     private final JwtUtil jwtUtil;
 
     /**
@@ -466,10 +469,20 @@ public class UserService {
     private UserVO convertToVO(User user) {
         UserVO userVO = new UserVO();
         BeanUtils.copyProperties(user, userVO);
+
         // 手机号脱敏
         if (user.getPhone() != null && user.getPhone().length() == 11) {
             userVO.setPhone(user.getPhone().substring(0, 3) + "****" + user.getPhone().substring(7));
         }
+
+        // 查询学校名称
+        if (user.getSchoolId() != null) {
+            School school = schoolMapper.selectById(user.getSchoolId());
+            if (school != null) {
+                userVO.setSchoolName(school.getSchoolName());
+            }
+        }
+
         return userVO;
     }
 }

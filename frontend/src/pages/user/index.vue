@@ -88,17 +88,18 @@ const loadUserData = async () => {
     console.log('statsRes:', statsRes)
     console.log('checkInRes:', checkInRes)
 
-    userProfile.value = profileRes.data
-    userStats.value = statsRes.data
-    isCheckedInToday.value = checkInRes.data
+    // request拦截器已自动解包data字段,直接使用响应
+    userProfile.value = profileRes
+    userStats.value = statsRes
+    isCheckedInToday.value = checkInRes
 
     console.log('userProfile.value:', userProfile.value)
     console.log('userStats.value:', userStats.value)
     console.log('isCheckedInToday.value:', isCheckedInToday.value)
 
     // 更新 store 中的用户信息
-    if (profileRes.data) {
-      userStore.setUserInfo(profileRes.data)
+    if (profileRes) {
+      userStore.setUserInfo(profileRes)
     }
   } catch (error: any) {
     console.error('加载用户数据失败:', error)

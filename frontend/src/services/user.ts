@@ -3,33 +3,51 @@
  */
 
 import request from '@/utils/request'
+import type {
+  UserProfileData,
+  UserStatsData,
+  UpdateProfileRequest,
+  CheckInResponse,
+  PointsLogItem,
+  PageResult
+} from '@/types/user'
 
 /**
- * 获取当前用户信息
+ * 获取当前用户资料
  */
 export const getUserProfile = () => {
-  return request.get<any>('/user/profile')
-}
-
-/**
- * 获取用户积分记录
- */
-export const getPointsLogs = (params: { page?: number; pageSize?: number } = {}) => {
-  return request.get<any>('/user/points/logs', params)
+  return request.get<UserProfileData>('/user/profile')
 }
 
 /**
  * 更新用户资料
  */
-export const updateUserProfile = (data: any) => {
-  return request.put('/user/profile', data)
+export const updateUserProfile = (data: UpdateProfileRequest) => {
+  return request.put<UserProfileData>('/user/profile', data)
 }
 
 /**
- * 修改密码
+ * 获取用户统计数据
  */
-export const changePassword = (data: { oldPassword: string; newPassword: string }) => {
-  return request.put('/user/password', data)
+export const getUserStats = () => {
+  return request.get<UserStatsData>('/user/stats')
+}
+
+/**
+ * 获取积分记录
+ */
+export const getPointsLog = (page: number = 1, pageSize: number = 20) => {
+  return request.get<PageResult<PointsLogItem>>('/user/points/log', {
+    page,
+    pageSize
+  })
+}
+
+/**
+ * 每日签到
+ */
+export const checkIn = () => {
+  return request.post<CheckInResponse>('/user/check-in')
 }
 
 /**
@@ -40,22 +58,21 @@ export const getCheckInStatus = () => {
 }
 
 /**
- * 每日签到
+ * 修改密码
  */
-export const dailyCheckIn = () => {
-  return request.post<{
-    success: boolean
-    message: string
-    pointsEarned: number
-    totalPoints: number
-    consecutiveDays: number
-    checkInTime: string
-  }>('/user/check-in')
+export const changePassword = (oldPassword: string, newPassword: string) => {
+  return request.put('/user/password', {
+    oldPassword,
+    newPassword
+  })
 }
 
 /**
  * 获取用户贡献排行榜
  */
-export const getUserRanking = (params: { page?: number; pageSize?: number } = {}) => {
-  return request.get<any>('/user/ranking', params)
+export const getUserRanking = (page: number = 1, pageSize: number = 20) => {
+  return request.get<PageResult<UserProfileData>>('/user/ranking', {
+    page,
+    pageSize
+  })
 }

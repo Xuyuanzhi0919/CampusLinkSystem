@@ -19,6 +19,12 @@ public class PointsLogVO {
     private Long logId;
 
     /**
+     * 用户ID
+     */
+    @Schema(description = "用户ID")
+    private Long userId;
+
+    /**
      * 积分变化（正数为增加，负数为减少）
      */
     @Schema(description = "积分变化")

@@ -67,11 +67,13 @@ export interface CheckInResponse {
  * 积分记录项
  */
 export interface PointsLogItem {
-  id: number
+  logId: number
   userId: number
-  points: number
-  type: string                 // 'upload' | 'download' | 'answer' | 'accept' | 'task' | 'checkin'
-  description: string
+  pointsChange: number
+  pointsAfter: number
+  reason: string
+  relatedType: string | null
+  relatedId: number | null
   createdAt: string
 }
 
@@ -118,8 +120,9 @@ export interface LevelConfig {
  * 分页结果
  */
 export interface PageResult<T> {
-  records: T[]
+  list: T[]
   total: number
   page: number
   pageSize: number
+  totalPages: number
 }

@@ -48,7 +48,8 @@
       "Bash(tasklist:*)",
       "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiYWRtaW4iLCJ1c2VySWQiOjEsInVzZXJuYW1lIjoiYWRtaW4iLCJpYXQiOjE3NjM0NTA5NzUsImV4cCI6MTc2MzQ1ODE3NX0.IaynkE2f4E4rX3t1zM5OSFVmKAHku7GlGb8O2U6s2HQ\")",
       "Bash(login_response.json)",
-      "Bash(test_rating.bat)"
+      "Bash(test_rating.bat)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []

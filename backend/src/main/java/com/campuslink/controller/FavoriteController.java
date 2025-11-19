@@ -1,6 +1,8 @@
 package com.campuslink.controller;
 
+import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
+import com.campuslink.dto.FavoriteItemVO;
 import com.campuslink.service.FavoriteService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -73,5 +75,20 @@ public class FavoriteController {
     ) {
         Long count = favoriteService.getFavoriteCount(targetType, targetId);
         return Result.success(Map.of("count", count));
+    }
+
+    /**
+     * 获取我的收藏列表
+     */
+    @Operation(summary = "获取我的收藏列表", description = "分页获取当前用户的收藏列表")
+    @GetMapping("/my")
+    public Result<PageResult<FavoriteItemVO>> getMyFavorites(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @Parameter(description = "对象类型(可选)") @RequestParam(required = false) String targetType,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize
+    ) {
+        PageResult<FavoriteItemVO> favorites = favoriteService.getUserFavorites(userId, targetType, page, pageSize);
+        return Result.success(favorites);
     }
 }

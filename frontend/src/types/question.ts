@@ -7,17 +7,21 @@ export type QuestionCategory = '学习' | '生活' | '技术' | '其他'
 
 // 问题列表项
 export interface QuestionItem {
-  questionId: number
+  qid: number              // 后端返回 qid
+  questionId?: number      // 兼容字段
   title: string
-  content: string
-  askerName: string
-  askerAvatar: string
+  content?: string
+  askerNickname: string    // 后端返回 askerNickname
+  askerName?: string       // 兼容字段
+  askerAvatar?: string
   category: QuestionCategory
-  tags: string[]
+  tags?: string[]
   views: number
   answerCount: number
-  isSolved: boolean
-  rewardPoints: number
+  status: number           // 后端返回 status (0=未解决, 1=已解决)
+  isSolved?: boolean       // 兼容字段
+  bounty: number           // 后端返回 bounty
+  rewardPoints?: number    // 兼容字段
   createdAt: string
 }
 

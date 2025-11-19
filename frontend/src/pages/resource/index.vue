@@ -1,5 +1,12 @@
 <template>
   <view class="resource-square-page">
+    <!-- 搜索历史遮罩层 -->
+    <view
+      v-if="showSearchHistory && searchHistory.length > 0 && !searchKeyword"
+      class="search-history-mask"
+      @click="handleMaskClick"
+    />
+
     <!-- 🎯 顶部搜索栏 -->
     <view class="search-section">
       <view class="search-container">
@@ -13,9 +20,37 @@
             confirm-type="search"
             @confirm="handleSearch"
             @input="handleSearchInput"
+            @focus="handleSearchFocus"
+            @blur="handleSearchBlur"
           />
           <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
             ✕
+          </view>
+        </view>
+
+        <!-- 搜索历史下拉面板 -->
+        <view
+          v-if="showSearchHistory && searchHistory.length > 0 && !searchKeyword"
+          class="search-history-panel"
+          @click.stop
+        >
+          <view class="history-header">
+            <text class="history-title">搜索历史</text>
+            <text class="history-clear" @click="clearSearchHistory">清空</text>
+          </view>
+          <view class="history-list">
+            <view
+              v-for="(item, index) in searchHistory"
+              :key="index"
+              class="history-item"
+              @click="handleSearchHistoryClick(item)"
+            >
+              <text class="history-icon">🕐</text>
+              <text class="history-text">{{ item }}</text>
+              <text class="history-delete" @click.stop="deleteSearchHistoryItem(item)">
+                ✕
+              </text>
+            </view>
           </view>
         </view>
 
@@ -33,7 +68,7 @@
     </view>
 
     <!-- 🎯 快捷筛选 Tabs -->
-    <view v-if="resources.length > 0 || loading" class="filter-section">
+    <view class="filter-section">
       <view class="filter-tabs">
         <view
           v-for="tab in quickFilterTabs"
@@ -48,9 +83,42 @@
       </view>
     </view>
 
-    <!-- 🎯 筛选结果信息栏 -->
-    <view v-if="!loading && resources.length > 0" class="result-info">
-      <text class="info-text">为你找到 {{ total }} 条资源</text>
+    <!-- 🎯 排序选择器 -->
+    <view class="sort-section">
+      <view class="sort-tabs">
+        <view
+          class="sort-tab"
+          :class="{ active: currentSortBy === 'created_at' }"
+          @click="handleSortChange('created_at')"
+        >
+          <text class="sort-label">最新</text>
+        </view>
+        <view
+          class="sort-tab"
+          :class="{ active: currentSortBy === 'downloads' }"
+          @click="handleSortChange('downloads')"
+        >
+          <text class="sort-label">下载最多</text>
+        </view>
+        <view
+          class="sort-tab"
+          :class="{ active: currentSortBy === 'likes' }"
+          @click="handleSortChange('likes')"
+        >
+          <text class="sort-label">点赞最多</text>
+        </view>
+      </view>
+      <view class="sort-right">
+        <text v-if="!loading && resources.length > 0" class="result-count">
+          共 {{ total }} 条
+        </text>
+        <!-- 高级筛选按钮 - 始终显示 -->
+        <view class="filter-btn" :class="{ 'has-filter': hasActiveFilters }" @click="showAdvancedFilter = true">
+          <text class="filter-icon">🎛️</text>
+          <text class="filter-label">筛选</text>
+          <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
+        </view>
+      </view>
     </view>
 
     <!-- 🎯 资源卡片列表 -->
@@ -60,8 +128,10 @@
         class="scroll-container"
         :refresher-enabled="true"
         :refresher-triggered="refreshing"
+        :scroll-top="scrollTop"
         @refresherrefresh="onRefresh"
         @scrolltolower="onLoadMore"
+        @scroll="handleScroll"
       >
         <!-- 加载中：显示骨架屏 -->
         <view v-if="loading && resources.length === 0" class="skeleton-list">
@@ -103,6 +173,15 @@
       <view class="fab-icon">+</view>
     </view>
 
+    <!-- 🎯 返回顶部按钮 -->
+    <view
+      v-if="showBackToTop"
+      class="back-to-top-btn"
+      @click="scrollToTop"
+    >
+      <view class="back-to-top-icon">↑</view>
+    </view>
+
     <!-- PC端悬浮导航 -->
     <PCFloatingNav />
 
@@ -118,6 +197,88 @@
       @confirm="handleDownloadConfirm"
       @cancel="handleDownloadCancel"
     />
+
+    <!-- 🎯 高级筛选抽屉 -->
+    <view v-if="showAdvancedFilter" class="filter-drawer-mask" @click="showAdvancedFilter = false" />
+    <view class="filter-drawer" :class="{ 'drawer-show': showAdvancedFilter }">
+      <!-- 抽屉头部 -->
+      <view class="drawer-header">
+        <text class="drawer-title">高级筛选</text>
+        <view class="drawer-actions">
+          <text class="drawer-reset" @click="handleResetFilters">重置</text>
+          <text class="drawer-close" @click="showAdvancedFilter = false">✕</text>
+        </view>
+      </view>
+
+      <!-- 筛选内容 -->
+      <view class="drawer-content">
+        <!-- 积分范围筛选 -->
+        <view class="filter-group">
+          <view class="filter-group-title">积分范围</view>
+          <view class="filter-options">
+            <view
+              class="filter-option"
+              :class="{ active: advancedFilters.scoreRange === null }"
+              @click="handleScoreRangeChange(null)"
+            >
+              <text class="option-label">全部</text>
+            </view>
+            <view
+              class="filter-option"
+              :class="{ active: advancedFilters.scoreRange === 'free' }"
+              @click="handleScoreRangeChange('free')"
+            >
+              <text class="option-label">免费</text>
+              <text class="option-desc">(0分)</text>
+            </view>
+            <view
+              class="filter-option"
+              :class="{ active: advancedFilters.scoreRange === 'low' }"
+              @click="handleScoreRangeChange('low')"
+            >
+              <text class="option-label">低积分</text>
+              <text class="option-desc">(1-5分)</text>
+            </view>
+            <view
+              class="filter-option"
+              :class="{ active: advancedFilters.scoreRange === 'medium' }"
+              @click="handleScoreRangeChange('medium')"
+            >
+              <text class="option-label">中积分</text>
+              <text class="option-desc">(6-10分)</text>
+            </view>
+            <view
+              class="filter-option"
+              :class="{ active: advancedFilters.scoreRange === 'high' }"
+              @click="handleScoreRangeChange('high')"
+            >
+              <text class="option-label">高积分</text>
+              <text class="option-desc">(10分以上)</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 本校资源筛选 -->
+        <view class="filter-group">
+          <view class="filter-group-title">学校资源</view>
+          <view class="filter-switch-row">
+            <text class="switch-label">只看本校资源</text>
+            <switch
+              :checked="advancedFilters.onlyMySchool"
+              @change="handleMySchoolChange"
+              color="#FF6B35"
+            />
+          </view>
+          <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
+        </view>
+      </view>
+
+      <!-- 抽屉底部 -->
+      <view class="drawer-footer">
+        <button class="drawer-cancel-btn" @click="showAdvancedFilter = false">取消</button>
+        <button class="drawer-confirm-btn" @click="handleApplyFilters">确定 ({{ filteredResultHint }})</button>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -137,9 +298,11 @@ import config from '@/config'
 // 🎯 快捷筛选选项
 const quickFilterTabs = [
   { label: '全部', value: null, icon: '📦' },
-  { label: '课件', value: 0, icon: '📚' },
-  { label: '试题', value: 1, icon: '📝' },
-  { label: '笔记', value: 2, icon: '✍️' }
+  { label: '课件', value: '课件', icon: '📚' },
+  { label: '试题', value: '试卷', icon: '📝' },
+  { label: '笔记', value: '笔记', icon: '✍️' },
+  { label: '教材', value: '教材', icon: '📖' },
+  { label: '实验报告', value: '实验报告', icon: '🔬' }
 ]
 
 // 🎯 状态管理
@@ -150,11 +313,40 @@ const page = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const hasMore = ref(true)
+const isFirstShow = ref(true) // 标记是否首次显示
 
 // 🎯 筛选条件
 const searchKeyword = ref('')
-const currentCategory = ref<number | null>(null)
+const currentCategory = ref<string | null>(null)
 const searchDebounceTimer = ref<number | null>(null)
+const showSearchHistory = ref(false) // 显示搜索历史面板
+
+// 🎯 搜索历史
+const SEARCH_HISTORY_KEY = 'resource_search_history'
+const MAX_SEARCH_HISTORY = 10
+const searchHistory = ref<string[]>([])
+
+// 🎯 排序条件
+const currentSortBy = ref('created_at')
+const currentSortOrder = ref<'asc' | 'desc'>('desc')
+
+// 🎯 高级筛选相关
+const showAdvancedFilter = ref(false)
+const advancedFilters = ref<{
+  scoreRange: 'free' | 'low' | 'medium' | 'high' | null
+  onlyMySchool: boolean
+}>({
+  scoreRange: null,
+  onlyMySchool: false
+})
+
+// 当前用户学校ID（从本地存储获取）
+const userSchoolId = ref<number | null>(null)
+
+// 🎯 返回顶部相关
+const showBackToTop = ref(false)
+const scrollTop = ref(0)
+const currentScrollTop = ref(0)
 
 // 🎯 下载相关状态
 const showDownloadDialog = ref(false)
@@ -175,6 +367,9 @@ const emptyTitle = computed(() => {
   if (searchKeyword.value) {
     return '没有找到相关资源'
   }
+  if (currentCategory.value) {
+    return `暂无「${currentCategory.value}」资源`
+  }
   return '暂无资源'
 })
 
@@ -182,8 +377,125 @@ const emptyDescription = computed(() => {
   if (searchKeyword.value) {
     return '试试减少筛选条件或换个关键词'
   }
+  if (currentCategory.value) {
+    return '该分类下还没有资源，试试切换其他分类或上传资源吧'
+  }
   return '还没有人上传资源哦'
 })
+
+// 🎯 高级筛选相关 computed
+const hasActiveFilters = computed(() => {
+  return advancedFilters.value.scoreRange !== null || advancedFilters.value.onlyMySchool
+})
+
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (advancedFilters.value.scoreRange !== null) count++
+  if (advancedFilters.value.onlyMySchool) count++
+  return count
+})
+
+const filteredResultHint = computed(() => {
+  if (total.value === 0) return '无结果'
+  return `${total.value} 条`
+})
+
+/**
+ * 🎯 加载搜索历史
+ */
+const loadSearchHistory = () => {
+  const stored = uni.getStorageSync(SEARCH_HISTORY_KEY)
+  if (stored) {
+    try {
+      searchHistory.value = JSON.parse(stored)
+    } catch (e) {
+      console.error('[ResourceSquare] 加载搜索历史失败:', e)
+      searchHistory.value = []
+    }
+  }
+}
+
+/**
+ * 🎯 保存搜索历史
+ */
+const saveSearchHistory = (keyword: string) => {
+  if (!keyword || keyword.trim() === '') return
+
+  const trimmedKeyword = keyword.trim()
+
+  // 移除已存在的相同关键词
+  const filtered = searchHistory.value.filter(item => item !== trimmedKeyword)
+
+  // 添加到最前面
+  filtered.unshift(trimmedKeyword)
+
+  // 保留最多 10 条
+  searchHistory.value = filtered.slice(0, MAX_SEARCH_HISTORY)
+
+  // 保存到本地存储
+  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+}
+
+/**
+ * 🎯 清空搜索历史
+ */
+const clearSearchHistory = () => {
+  searchHistory.value = []
+  uni.removeStorageSync(SEARCH_HISTORY_KEY)
+  uni.showToast({
+    title: '已清空历史',
+    icon: 'success',
+    duration: 1500
+  })
+}
+
+/**
+ * 🎯 删除单条搜索历史
+ */
+const deleteSearchHistoryItem = (keyword: string) => {
+  searchHistory.value = searchHistory.value.filter(item => item !== keyword)
+  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+}
+
+/**
+ * 🎯 点击搜索历史项
+ */
+const handleSearchHistoryClick = (keyword: string) => {
+  // 立即关闭面板，防止 blur 事件延迟关闭导致闪烁
+  showSearchHistory.value = false
+  searchKeyword.value = keyword
+  handleSearch()
+}
+
+/**
+ * 🎯 处理搜索框聚焦
+ */
+const handleSearchFocus = () => {
+  // 如果有搜索历史且搜索框为空，显示历史面板
+  if (searchHistory.value.length > 0 && !searchKeyword.value) {
+    // 使用 nextTick 延迟显示，避免与 blur 事件冲突
+    setTimeout(() => {
+      showSearchHistory.value = true
+    }, 100)
+  }
+}
+
+/**
+ * 🎯 处理搜索框失焦
+ */
+const handleSearchBlur = () => {
+  // 延迟关闭，给点击历史项的事件时间执行
+  setTimeout(() => {
+    showSearchHistory.value = false
+  }, 200)
+}
+
+/**
+ * 🎯 处理遮罩点击
+ */
+const handleMaskClick = () => {
+  showSearchHistory.value = false
+}
 
 /**
  * 🎯 加载资源列表
@@ -202,8 +514,8 @@ const loadResourceList = async (isRefresh = false) => {
     const params: any = {
       page: page.value,
       pageSize: pageSize.value,
-      sortBy: 'created_at',
-      sortOrder: 'desc'
+      sortBy: currentSortBy.value,
+      sortOrder: currentSortOrder.value
     }
 
     // 应用筛选条件
@@ -213,6 +525,11 @@ const loadResourceList = async (isRefresh = false) => {
 
     if (searchKeyword.value) {
       params.keyword = searchKeyword.value
+    }
+
+    // 应用高级筛选：本校资源
+    if (advancedFilters.value.onlyMySchool && userSchoolId.value) {
+      params.schoolId = userSchoolId.value
     }
 
     const res = await getResourceList(params)
@@ -228,10 +545,30 @@ const loadResourceList = async (isRefresh = false) => {
     mergeDownloadedStatus(res.list)
     mergeLikedStatus(res.list)
 
+    // 应用客户端筛选：积分范围（前端筛选）
+    let filteredList = res.list
+    if (advancedFilters.value.scoreRange) {
+      filteredList = filteredList.filter((item: ResourceItem) => {
+        const score = item.score || 0
+        switch (advancedFilters.value.scoreRange) {
+          case 'free':
+            return score === 0
+          case 'low':
+            return score > 0 && score <= 5
+          case 'medium':
+            return score > 5 && score <= 10
+          case 'high':
+            return score > 10
+          default:
+            return true
+        }
+      })
+    }
+
     if (isRefresh) {
-      resources.value = res.list
+      resources.value = filteredList
     } else {
-      resources.value.push(...res.list)
+      resources.value.push(...filteredList)
     }
 
     total.value = res.total
@@ -273,13 +610,85 @@ const onLoadMore = () => {
 }
 
 /**
+ * 🎯 监听滚动事件
+ */
+const handleScroll = (e: any) => {
+  currentScrollTop.value = e.detail.scrollTop
+  // 滚动超过一屏（800rpx ≈ 400px）时显示返回顶部按钮
+  showBackToTop.value = e.detail.scrollTop > 400
+}
+
+/**
+ * 🎯 返回顶部
+ */
+const scrollToTop = () => {
+  // 通过修改 scrollTop 触发滚动
+  scrollTop.value = currentScrollTop.value
+  setTimeout(() => {
+    scrollTop.value = 0
+  }, 100)
+}
+
+/**
  * 🎯 处理分类切换
  */
-const handleCategoryChange = (category: number | null) => {
+const handleCategoryChange = (category: string | null) => {
   if (currentCategory.value === category) return
 
   currentCategory.value = category
   console.log('[ResourceSquare] 切换分类:', category)
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 处理排序切换
+ */
+const handleSortChange = (sortBy: string) => {
+  if (currentSortBy.value === sortBy) {
+    // 相同排序字段，切换升降序
+    currentSortOrder.value = currentSortOrder.value === 'desc' ? 'asc' : 'desc'
+  } else {
+    // 不同排序字段，默认降序
+    currentSortBy.value = sortBy
+    currentSortOrder.value = 'desc'
+  }
+
+  console.log('[ResourceSquare] 切换排序:', sortBy, currentSortOrder.value)
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 处理积分范围筛选
+ */
+const handleScoreRangeChange = (range: 'free' | 'low' | 'medium' | 'high' | null) => {
+  advancedFilters.value.scoreRange = range
+  console.log('[ResourceSquare] 积分范围筛选:', range)
+}
+
+/**
+ * 🎯 处理本校资源筛选开关
+ */
+const handleMySchoolChange = (e: any) => {
+  advancedFilters.value.onlyMySchool = e.detail.value
+  console.log('[ResourceSquare] 本校资源筛选:', e.detail.value)
+}
+
+/**
+ * 🎯 应用筛选
+ */
+const handleApplyFilters = () => {
+  console.log('[ResourceSquare] 应用高级筛选:', advancedFilters.value)
+  showAdvancedFilter.value = false
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 重置筛选
+ */
+const handleResetFilters = () => {
+  advancedFilters.value.scoreRange = null
+  advancedFilters.value.onlyMySchool = false
+  console.log('[ResourceSquare] 重置筛选')
   loadResourceList(true)
 }
 
@@ -306,10 +715,17 @@ const handleSearch = () => {
     clearTimeout(searchDebounceTimer.value)
   }
 
-  if (searchKeyword.value) {
-    console.log('[ResourceSquare] 确认搜索:', searchKeyword.value)
-    loadResourceList(true)
+  // 关闭搜索历史面板
+  showSearchHistory.value = false
+
+  // 保存搜索历史（只有在有搜索词时才保存）
+  if (searchKeyword.value && searchKeyword.value.trim()) {
+    saveSearchHistory(searchKeyword.value)
   }
+
+  // 无论搜索框是否为空，都重新加载（清空搜索也是一种操作）
+  console.log('[ResourceSquare] 确认搜索:', searchKeyword.value || '(全部资源)')
+  loadResourceList(true)
 }
 
 /**
@@ -350,10 +766,9 @@ const handleResourceClick = (resource: ResourceItem) => {
 const handleUploadClick = () => {
   console.log('[ResourceSquare] 点击上传')
 
-  // TODO: 跳转到上传页面或显示上传弹窗
-  uni.showToast({
-    title: '上传功能开发中',
-    icon: 'none'
+  // 跳转到上传页面
+  uni.navigateTo({
+    url: '/pages/resource/upload'
   })
 }
 
@@ -687,8 +1102,8 @@ const handleDownloadConfirm = async () => {
     // 🎯 乐观更新：先更新UI
     resources.value[index].isDownloaded = true
     resources.value[index].downloads += 1
-    // 暂时减去积分（假设需要5积分，实际会用后端返回值）
-    const estimatedCost = 5
+    // 暂时减去积分（使用资源的score字段，如果没有则默认5）
+    const estimatedCost = resources.value[index].score || 5
     userPoints.value = Math.max(0, userPoints.value - estimatedCost)
 
     // 关闭对话框并保存到缓存（乐观）
@@ -787,24 +1202,44 @@ const handleDownloadCancel = () => {
 // 🎯 页面加载
 onMounted(() => {
   console.log('[ResourceSquare] 页面加载')
+
+  // 加载用户学校ID（从本地存储）
+  try {
+    const userInfo = uni.getStorageSync('userInfo')
+    if (userInfo) {
+      const parsedInfo = JSON.parse(userInfo)
+      userSchoolId.value = parsedInfo.schoolId || null
+      console.log('[ResourceSquare] 用户学校ID:', userSchoolId.value)
+    }
+  } catch (e) {
+    console.error('[ResourceSquare] 加载学校ID失败:', e)
+  }
+
   loadUserPoints()
   loadDownloadedResources()
   loadLikedResources()
+  loadSearchHistory() // 加载搜索历史
   loadResourceList(true)
 })
 
 // 🎯 页面显示（从详情页返回时也会触发）
 onShow(() => {
   console.log('[ResourceSquare] 页面显示')
-  // 重新加载用户积分、已下载资源和已点赞资源状态
+
+  // 首次显示跳过（onMounted 已经加载了）
+  if (isFirstShow.value) {
+    isFirstShow.value = false
+    return
+  }
+
+  // 从详情页返回时：刷新数据
+  console.log('[ResourceSquare] 从详情页返回，刷新数据')
   loadUserPoints()
   loadDownloadedResources()
   loadLikedResources()
-  // 重新合并当前列表的下载和点赞状态
-  if (resources.value.length > 0) {
-    mergeDownloadedStatus(resources.value)
-    mergeLikedStatus(resources.value)
-  }
+
+  // 重新加载当前页数据（保持页码和筛选条件）
+  loadResourceList(true)
 })
 </script>
 
@@ -815,14 +1250,37 @@ onShow(() => {
   padding-bottom: 120rpx;
 }
 
+// 🎯 搜索历史遮罩层
+.search-history-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 99;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 // 🎯 搜索区域
 .search-section {
+  position: relative;
   padding: 16rpx 32rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #E5E7EB;
 }
 
 .search-container {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12rpx;
@@ -870,6 +1328,86 @@ onShow(() => {
 
   &:hover {
     color: #666;
+  }
+}
+
+// 搜索历史面板
+.search-history-panel {
+  position: absolute;
+  top: 100%;
+  left: 32rpx;
+  right: 32rpx;
+  margin-top: 8rpx;
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 600rpx;
+  overflow: hidden;
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24rpx 32rpx;
+    border-bottom: 1rpx solid #F0F0F0;
+
+    .history-title {
+      font-size: 28rpx;
+      font-weight: 500;
+      color: #333;
+    }
+
+    .history-clear {
+      font-size: 24rpx;
+      color: #FF6B35;
+      cursor: pointer;
+      transition: opacity 0.2s;
+
+      &:hover {
+        opacity: 0.8;
+      }
+    }
+  }
+
+  .history-list {
+    max-height: 500rpx;
+    overflow-y: auto;
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    padding: 24rpx 32rpx;
+    cursor: pointer;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #F5F6FA;
+    }
+
+    .history-icon {
+      font-size: 32rpx;
+      margin-right: 16rpx;
+      opacity: 0.5;
+    }
+
+    .history-text {
+      flex: 1;
+      font-size: 28rpx;
+      color: #666;
+    }
+
+    .history-delete {
+      font-size: 32rpx;
+      color: #999;
+      padding: 0 8rpx;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #FF6B35;
+      }
+    }
   }
 }
 
@@ -930,14 +1468,14 @@ onShow(() => {
 
 // 🎯 筛选区域
 .filter-section {
-  padding: 12rpx 32rpx 16rpx;
+  padding: 10rpx 32rpx 12rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid #E5E7EB;
 }
 
 .filter-tabs {
   display: flex;
-  gap: 12rpx;
+  gap: 10rpx;
 }
 
 .filter-tab {
@@ -945,10 +1483,10 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6rpx;
-  padding: 14rpx 12rpx;
+  gap: 4rpx;
+  padding: 10rpx 8rpx;
   background: transparent;
-  border-radius: 16rpx;
+  border-radius: 12rpx;
   border: 1rpx solid #E5E7EB;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -970,27 +1508,346 @@ onShow(() => {
 }
 
 .tab-icon {
-  font-size: 32rpx;
+  font-size: 28rpx;
 }
 
 .tab-label {
-  font-size: 22rpx;
+  font-size: 24rpx;
   font-weight: 500;
   color: #666;
   transition: color 0.3s;
 }
 
-// 🎯 结果信息栏
-.result-info {
-  padding: 12rpx 32rpx;
-  background: #FFF9F0;
-  border-bottom: 1rpx solid #FFE5CC;
+// 🎯 排序选择器
+.sort-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10rpx 32rpx;
+  background: #FFFFFF;
+  border-bottom: 1rpx solid #E5E7EB;
+
+  .sort-tabs {
+    display: flex;
+    gap: 24rpx;
+  }
+
+  .sort-tab {
+    padding: 8rpx 16rpx;
+    border-radius: 8rpx;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+
+    &.active {
+      background: linear-gradient(135deg, #FFF4E6 0%, #FFE9CC 100%);
+
+      .sort-label {
+        color: #FF7A00;
+        font-weight: 700;
+      }
+
+      // 🎯 激活态下划线
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 24rpx;
+        height: 4rpx;
+        background: linear-gradient(90deg, #FF7A00 0%, #FF9933 100%);
+        border-radius: 2rpx;
+      }
+    }
+
+    &:hover:not(.active) {
+      background: #F5F6FA;
+    }
+  }
+
+  .sort-label {
+    font-size: 26rpx;
+    color: #666;
+    font-weight: 500;
+    transition: all 0.3s;
+  }
+
+  .result-count {
+    font-size: 24rpx;
+    color: #999;
+  }
+
+  .sort-right {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+  }
+
+  // 筛选按钮
+  .filter-btn {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 6rpx;
+    padding: 10rpx 16rpx;
+    background: #F5F6FA;
+    border-radius: 32rpx;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.has-filter {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 122, 0, 0.1) 100%);
+      border: 1rpx solid rgba(255, 107, 53, 0.2);
+    }
+
+    &:hover {
+      background: rgba(255, 107, 53, 0.15);
+      transform: translateY(-1rpx);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+
+    .filter-icon {
+      font-size: 28rpx;
+    }
+
+    .filter-label {
+      font-size: 24rpx;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .filter-badge {
+      min-width: 28rpx;
+      height: 28rpx;
+      line-height: 28rpx;
+      padding: 0 6rpx;
+      background: linear-gradient(135deg, #FF6B35 0%, #FF7A00 100%);
+      color: #FFF;
+      font-size: 20rpx;
+      font-weight: 700;
+      border-radius: 50%;
+      text-align: center;
+    }
+  }
 }
 
-.info-text {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: #FF7A00;
+// 🎯 高级筛选抽屉
+.filter-drawer-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.filter-drawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  background: #FFF;
+  border-radius: 32rpx 32rpx 0 0;
+  z-index: 1001;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+
+  &.drawer-show {
+    transform: translateY(0);
+  }
+
+  .drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32rpx 32rpx 24rpx;
+    border-bottom: 1rpx solid #F0F0F0;
+
+    .drawer-title {
+      font-size: 32rpx;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .drawer-actions {
+      display: flex;
+      align-items: center;
+      gap: 24rpx;
+    }
+
+    .drawer-reset {
+      font-size: 26rpx;
+      color: #FF6B35;
+      cursor: pointer;
+      transition: opacity 0.2s;
+
+      &:active {
+        opacity: 0.7;
+      }
+    }
+
+    .drawer-close {
+      font-size: 36rpx;
+      color: #999;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:active {
+        color: #666;
+      }
+    }
+  }
+
+  .drawer-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24rpx 32rpx;
+  }
+
+  .drawer-footer {
+    display: flex;
+    gap: 16rpx;
+    padding: 24rpx 32rpx;
+    border-top: 1rpx solid #F0F0F0;
+    background: #FFF;
+
+    button {
+      flex: 1;
+      height: 88rpx;
+      border-radius: 44rpx;
+      font-size: 28rpx;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .drawer-cancel-btn {
+      background: #F5F6FA;
+      color: #666;
+
+      &:active {
+        opacity: 0.8;
+      }
+    }
+
+    .drawer-confirm-btn {
+      background: linear-gradient(135deg, #FF6B35 0%, #FF7A00 100%);
+      color: #FFF;
+      box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+
+      &:active {
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+// 筛选组
+.filter-group {
+  margin-bottom: 40rpx;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  .filter-group-title {
+    font-size: 28rpx;
+    font-weight: 700;
+    color: #111;
+    margin-bottom: 20rpx;
+  }
+
+  .filter-options {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16rpx;
+  }
+
+  .filter-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6rpx;
+    padding: 20rpx 12rpx;
+    background: #F5F6FA;
+    border-radius: 16rpx;
+    border: 2rpx solid transparent;
+    cursor: pointer;
+    transition: all 0.3s;
+
+    &.active {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 122, 0, 0.1) 100%);
+      border-color: #FF6B35;
+
+      .option-label {
+        color: #FF6B35;
+        font-weight: 700;
+      }
+
+      .option-desc {
+        color: #FF6B35;
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    .option-label {
+      font-size: 26rpx;
+      color: #333;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .option-desc {
+      font-size: 20rpx;
+      color: #999;
+      transition: all 0.3s;
+    }
+  }
+
+  .filter-switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24rpx;
+    background: #F5F6FA;
+    border-radius: 16rpx;
+    margin-bottom: 16rpx;
+
+    .switch-label {
+      font-size: 28rpx;
+      color: #333;
+      font-weight: 600;
+    }
+  }
+
+  .filter-hint {
+    font-size: 22rpx;
+    color: #999;
+    line-height: 1.6;
+    padding: 0 24rpx;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 // 🎯 内容区域
@@ -1067,6 +1924,53 @@ onShow(() => {
   line-height: 1;
 }
 
+// 🎯 返回顶部按钮
+.back-to-top-btn {
+  position: fixed;
+  right: 32rpx;
+  bottom: 250rpx;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
+  border-radius: 50%;
+  box-shadow: 0 6rpx 20rpx rgba(99, 102, 241, 0.3);
+  cursor: pointer;
+  z-index: 998;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slideInUp 0.3s ease-out;
+
+  &:active {
+    transform: translateY(-4rpx) scale(0.95);
+  }
+
+  &:hover {
+    transform: translateY(-8rpx);
+    box-shadow: 0 10rpx 28rpx rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.back-to-top-icon {
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  line-height: 1;
+}
+
 // 🎯 响应式适配 - PC端优化
 @media (min-width: 768px) {
   .scroll-container {
@@ -1101,6 +2005,22 @@ onShow(() => {
 
   .upload-fab {
     display: none;
+  }
+
+  // PC 端返回顶部按钮位置调整
+  .back-to-top-btn {
+    right: 48rpx;
+    bottom: 80rpx;
+    width: 80rpx;
+    height: 80rpx;
+
+    &:hover {
+      transform: translateY(-6rpx) scale(1.05);
+    }
+  }
+
+  .back-to-top-icon {
+    font-size: 44rpx;
   }
 }
 

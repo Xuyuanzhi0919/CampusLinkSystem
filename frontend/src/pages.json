@@ -25,6 +25,13 @@
 			}
 		},
 		{
+			"path": "pages/resource/upload",
+			"style": {
+				"navigationBarTitleText": "上传资源",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",
@@ -43,6 +50,30 @@
 			"style": {
 				"navigationBarTitleText": "热门问答榜",
 				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/question/detail",
+			"style": {
+				"navigationBarTitleText": "问题详情",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/question/ask",
+			"style": {
+				"navigationBarTitleText": "提问",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/question/my",
+			"style": {
+				"navigationBarTitleText": "我的问答",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true
 			}
 		},
 		{

@@ -28,12 +28,17 @@ export const getResourceDetail = (id: number) => {
 }
 
 /**
- * 上传资源
+ * 上传资源（创建资源记录）
  * @param data 资源数据
  */
 export const uploadResource = (data: ResourceUploadParams) => {
   return request.post<{ resourceId: number }>('/resource/upload', data)
 }
+
+/**
+ * 创建资源（uploadResource 的别名）
+ */
+export const createResource = uploadResource
 
 /**
  * 下载资源
@@ -74,7 +79,7 @@ export const deleteResource = (id: number) => {
 /**
  * 获取上传签名（用于客户端直传 OSS）
  */
-export const getUploadSignature = () => {
+export const getUploadSignature = (fileName: string) => {
   return request.get<{
     host: string
     policy: string
@@ -82,7 +87,8 @@ export const getUploadSignature = () => {
     accessId: string
     expire: number
     dir: string
-  }>('/resource/upload/signature')
+    key: string
+  }>('/resource/upload/signature', { fileName })
 }
 
 /**

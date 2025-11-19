@@ -85,7 +85,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     icon: '💡',
     name: '智能问答',
     desc: 'AI秒速答疑 · 24小时在线',
-    path: '/pages/question/list',
+    path: '/pages/question/index',
     theme: 'orange',
     emoji: '🤔',
     illustration: '🤖',

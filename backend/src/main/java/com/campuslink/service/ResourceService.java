@@ -63,7 +63,8 @@ public class ResourceService {
         resource.setCategory(request.getCategory());
         resource.setCourseName(request.getCourseName());
         resource.setSchoolId(request.getSchoolId() != null ? request.getSchoolId() : user.getSchoolId());
-        resource.setScore(request.getScore());
+        // 如果未指定积分，默认设置为5分（根据MVP设计）
+        resource.setScore(request.getScore() != null ? request.getScore() : 5);
         resource.setDownloads(0);
         resource.setLikes(0);
         resource.setStatus(0); // 0-待审核

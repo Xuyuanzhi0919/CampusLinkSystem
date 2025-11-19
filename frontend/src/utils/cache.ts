@@ -167,7 +167,13 @@ export const CACHE_KEYS = {
   USER_POINTS: 'user:points',
   NOTICES: 'notices:list',
   ACTIVITIES: 'activities:list',
-  TASKS: 'tasks:list'
+  TASKS: 'tasks:list',
+
+  // 问答模块
+  QUESTION_LIST: 'question:list',
+  QUESTION_DETAIL: 'question:detail:',
+  HOT_TAGS: 'question:hot_tags',
+  SEARCH_HISTORY: 'question:search_history'
 }
 
 /**

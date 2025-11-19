@@ -31,6 +31,16 @@ public class ResourceController {
     private final ResourceService resourceService;
     private final DownloadLogService downloadLogService;
     private final ResourceCommentService commentService;
+    private final com.campuslink.service.OssService ossService;
+
+    @Operation(summary = "获取 OSS 上传签名", description = "客户端直传 OSS 前需要先获取签名")
+    @GetMapping("/upload/signature")
+    public Result<com.campuslink.dto.resource.OssSignatureResponse> getUploadSignature(
+            @Parameter(description = "文件名") @RequestParam String fileName
+    ) {
+        com.campuslink.dto.resource.OssSignatureResponse signature = ossService.generateUploadSignature(fileName);
+        return Result.success(signature);
+    }
 
     @Operation(summary = "上传资源")
     @PostMapping("/upload")

@@ -72,6 +72,12 @@
       <view class="right-section">
         <!-- 统计信息 -->
         <view class="stats-row">
+          <!-- 积分价格 -->
+          <view v-if="!resource.isDownloaded" class="stat-item points">
+            <text class="stat-icon">💰</text>
+            <text class="stat-value">{{ resource.score }}</text>
+          </view>
+
           <!-- 下载量 -->
           <view class="stat-item downloads">
             <text class="stat-icon">↓</text>
@@ -146,10 +152,23 @@ const checkDevice = () => {
 }
 
 /**
- * 🎯 获取资源类型图标
+ * 🎯 获取资源类型图标 - 支持统一颜色体系
  */
 const getTypeIcon = (category: number | string | undefined): string => {
-  const categoryNum = typeof category === 'string' ? parseInt(category) : (category || 0)
+  // 如果是字符串类型，直接映射
+  if (typeof category === 'string') {
+    const stringIconMap: Record<string, string> = {
+      '课件': '📚',
+      '试卷': '📝',
+      '笔记': '✍️',
+      '教材': '📖',
+      '实验报告': '🔬'
+    }
+    return stringIconMap[category] || '📦'
+  }
+
+  // 如果是数字类型，使用枚举映射
+  const categoryNum = category || 0
   const iconMap: Record<number, string> = {
     [ResourceCategory.COURSEWARE]: '📚',
     [ResourceCategory.PAPER]: '📝',
@@ -318,8 +337,8 @@ const handleLike = () => {
 .resource-card {
   background: #FDFDFE;
   border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 24rpx;
+  padding: 20rpx;
+  margin-bottom: 16rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -348,7 +367,7 @@ const handleLike = () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16rpx;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
 }
 
 .title-row {
@@ -369,32 +388,49 @@ const handleLike = () => {
   border-radius: 12rpx;
   font-size: 24rpx;
 
-  // 🎯 不同类型的渐变背景
-  &.type-0 {
-    background: linear-gradient(135deg, #667EEA 0%, #764BA2 100%);
+  // 🎯 不同类型的渐变背景 - 统一颜色体系
+  // 课件 - 蓝色系
+  &.type-0,
+  &.type-课件 {
+    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
   }
 
-  &.type-1 {
-    background: linear-gradient(135deg, #F093FB 0%, #F5576C 100%);
+  // 试题 - 橙色系
+  &.type-1,
+  &.type-试卷 {
+    background: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
   }
 
-  &.type-2 {
-    background: linear-gradient(135deg, #FFA500 0%, #FF6B35 100%);
+  // 笔记 - 紫色系
+  &.type-2,
+  &.type-笔记 {
+    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+  }
+
+  // 教材 - 红色系
+  &.type-教材 {
+    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+  }
+
+  // 实验报告 - 青色系
+  &.type-实验报告 {
+    background: linear-gradient(135deg, #1ABC9C 0%, #16A085 100%);
   }
 }
 
 .title {
   flex: 1;
-  font-size: 32rpx;
+  font-size: 30rpx;
   font-weight: 600;
-  color: #1F2937;
-  line-height: 1.4;
+  color: #111827;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
+  letter-spacing: 0.2rpx;
 }
 
 // 🎯 审核状态标签
@@ -424,16 +460,17 @@ const handleLike = () => {
 
 // 🎯 描述区域
 .description {
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #6B7280;
-  line-height: 1.5;
-  margin-bottom: 12rpx;
+  line-height: 1.6;
+  margin-bottom: 10rpx;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
+  letter-spacing: 0.1rpx;
 }
 
 // 🎯 标签和文件信息行
@@ -442,7 +479,7 @@ const handleLike = () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 12rpx;
-  margin-bottom: 16rpx;
+  margin-bottom: 12rpx;
   min-width: 0;
   overflow: hidden;
 }
@@ -503,7 +540,7 @@ const handleLike = () => {
   align-items: center;
   justify-content: space-between;
   gap: 16rpx;
-  padding-top: 12rpx;
+  padding-top: 10rpx;
   border-top: 1rpx solid #F3F4F6;
 }
 
@@ -548,7 +585,7 @@ const handleLike = () => {
 .stats-row {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: 16rpx;
   flex-shrink: 0;
 }
 
@@ -558,31 +595,51 @@ const handleLike = () => {
   gap: 4rpx;
   font-size: 22rpx;
   font-weight: 500;
+  padding: 2rpx 6rpx;
+  border-radius: 8rpx;
+  transition: all 0.2s ease;
 
   &.downloads {
     color: #64748B;
+    background: rgba(100, 116, 139, 0.06);
 
     .stat-icon {
       color: #64748B;
+    }
+
+    &:hover {
+      background: rgba(100, 116, 139, 0.12);
     }
   }
 
   &.likes {
     color: #94A3B8;
+    background: rgba(248, 113, 113, 0.06);
 
     .stat-icon {
       color: #F87171;
-      opacity: 0.8;
+    }
+
+    &:hover {
+      background: rgba(248, 113, 113, 0.12);
     }
   }
 
   &.points {
-    color: #64748B;
-    font-weight: 600;
+    color: #F59E0B;
+    font-weight: 700;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    padding: 4rpx 8rpx;
+    border-radius: 12rpx;
 
     .stat-icon {
-      color: #FBBF24;
-      opacity: 0.9;
+      color: #F59E0B;
+      font-size: 20rpx;
+    }
+
+    .stat-value {
+      color: #D97706;
+      font-weight: 700;
     }
   }
 }
@@ -600,8 +657,9 @@ const handleLike = () => {
 .right-section {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
   flex-shrink: 0;
+  padding-right: 4rpx;
 }
 
 // 🎯 点赞按钮
@@ -611,14 +669,17 @@ const handleLike = () => {
   justify-content: center;
   width: 48rpx;
   height: 48rpx;
-  background: rgba(248, 113, 113, 0.1);
+  background: rgba(248, 113, 113, 0.12);
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1rpx solid rgba(248, 113, 113, 0.2);
 
   &:hover {
-    transform: scale(1.1);
-    background: rgba(248, 113, 113, 0.15);
+    transform: scale(1.15);
+    background: rgba(248, 113, 113, 0.2);
+    border-color: rgba(248, 113, 113, 0.4);
+    box-shadow: 0 4rpx 12rpx rgba(248, 113, 113, 0.25);
   }
 
   &:active {
@@ -627,20 +688,27 @@ const handleLike = () => {
 
   &.is-liked {
     background: linear-gradient(135deg, #F87171 0%, #EF4444 100%);
-    box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.25);
+    box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.35);
+    border-color: transparent;
 
     .like-icon {
       color: #FFFFFF;
       animation: like-bounce 0.5s ease-in-out;
     }
+
+    &:hover {
+      box-shadow: 0 6rpx 16rpx rgba(239, 68, 68, 0.45);
+      transform: scale(1.15);
+    }
   }
 }
 
 .like-icon {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: #F87171;
   line-height: 1;
   transition: all 0.3s ease;
+  filter: drop-shadow(0 1rpx 2rpx rgba(0, 0, 0, 0.1));
 }
 
 @keyframes like-bounce {
@@ -657,16 +725,17 @@ const handleLike = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  padding: 8rpx 16rpx;
-  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  padding: 6rpx 14rpx;
+  background: linear-gradient(135deg, #FFA726 0%, #FFB74D 100%);
   border-radius: 32rpx;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2rpx 8rpx rgba(255, 122, 0, 0.15);
+  box-shadow: 0 2rpx 6rpx rgba(255, 167, 38, 0.12);
 
   &:hover {
     transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.25);
+    box-shadow: 0 4rpx 10rpx rgba(255, 167, 38, 0.2);
+    background: linear-gradient(135deg, #FF9800 0%, #FFA726 100%);
   }
 
   &:active {
@@ -674,11 +743,12 @@ const handleLike = () => {
   }
 
   &.is-downloaded {
-    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-    box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.15);
+    background: linear-gradient(135deg, #26A69A 0%, #4DB6AC 100%);
+    box-shadow: 0 2rpx 6rpx rgba(38, 166, 154, 0.12);
 
     &:hover {
-      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25);
+      box-shadow: 0 4rpx 10rpx rgba(38, 166, 154, 0.2);
+      background: linear-gradient(135deg, #00897B 0%, #26A69A 100%);
     }
   }
 }
@@ -700,12 +770,13 @@ const handleLike = () => {
 // 🎯 响应式适配
 @media (max-width: 768px) {
   .title {
-    font-size: 30rpx;
+    font-size: 28rpx;
+    line-height: 1.5;
   }
 
   .description {
-    font-size: 24rpx;
-    line-height: 1.4;
+    font-size: 22rpx;
+    line-height: 1.6;
   }
 
   .card-header {

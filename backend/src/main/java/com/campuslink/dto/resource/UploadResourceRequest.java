@@ -37,7 +37,7 @@ public class UploadResourceRequest {
 
     private Long schoolId;
 
-    @NotNull(message = "所需积分不能为空")
+    // 所需积分（可选，如果不提供则后端默认设置为5）
     @Min(value = 1, message = "所需积分不能少于1")
     @Max(value = 20, message = "所需积分不能超过20")
     private Integer score;

@@ -307,7 +307,7 @@
 
     <!-- 下载确认弹窗 -->
     <DownloadConfirmDialog
-      v-if="showDownloadDialog"
+      :visible="showDownloadDialog"
       :resource="resource"
       :userPoints="userPoints"
       @confirm="confirmDownload"
@@ -539,9 +539,12 @@ const loadResourceDetail = async () => {
 // 加载用户信息
 const loadUserInfo = () => {
   try {
-    const userInfo = uni.getStorageSync('userInfo')
-    if (userInfo && userInfo.points !== undefined) {
-      userPoints.value = userInfo.points
+    const userInfoStr = uni.getStorageSync(config.userInfoKey)
+    if (userInfoStr) {
+      const userInfo = JSON.parse(userInfoStr)
+      if (userInfo && userInfo.points !== undefined) {
+        userPoints.value = userInfo.points
+      }
     }
   } catch (e) {
     console.error('Failed to load user info:', e)
@@ -607,14 +610,32 @@ const toggleDescription = () => {
 const goBack = () => {
   const pages = getCurrentPages()
 
-  // 如果页面栈中只有当前页（刷新后的情况），跳转到资源广场（tabBar页面）
+  // 检查上一页是否是资源广场（tabBar页面）
+  // 或者页面栈中只有当前页（直接访问详情页的情况）
   if (pages.length === 1) {
+    // 页面栈只有一页，直接跳转到资源广场
     uni.switchTab({
       url: '/pages/resource/index'
     })
+  } else if (pages.length >= 2) {
+    // 获取上一页的路径
+    const prevPage = pages[pages.length - 2]
+    const prevRoute = prevPage.route || ''
+
+    // 如果上一页是资源广场（tabBar页面），使用 switchTab
+    if (prevRoute === 'pages/resource/index') {
+      uni.switchTab({
+        url: '/pages/resource/index'
+      })
+    } else {
+      // 否则正常返回
+      uni.navigateBack()
+    }
   } else {
-    // 正常返回上一页
-    uni.navigateBack()
+    // 兜底：返回资源广场
+    uni.switchTab({
+      url: '/pages/resource/index'
+    })
   }
 }
 
@@ -695,6 +716,18 @@ const confirmDownload = async () => {
     resource.value.isDownloaded = true
     resource.value.downloads = (resource.value.downloads || 0) + 1
     userPoints.value = res.remainingPoints
+
+    // 更新本地存储的用户信息
+    const userInfoStr = uni.getStorageSync(config.userInfoKey)
+    if (userInfoStr) {
+      try {
+        const userInfo = JSON.parse(userInfoStr)
+        userInfo.points = res.remainingPoints
+        uni.setStorageSync(config.userInfoKey, JSON.stringify(userInfo))
+      } catch (e) {
+        console.error('Failed to update user info in storage:', e)
+      }
+    }
 
     uni.hideLoading()
     uni.showToast({ title: '下载成功', icon: 'success' })

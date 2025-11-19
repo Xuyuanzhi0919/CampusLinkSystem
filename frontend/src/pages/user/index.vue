@@ -9,7 +9,7 @@
     <view v-else class="content-container">
       <!-- 用户资料头部 -->
       <UserProfileHeader
-        v-if="userProfile && userStats !== null"
+        v-if="userProfile"
         :profile="userProfile"
         :stats="userStats"
         :is-checked-in="isCheckedInToday"
@@ -83,9 +83,18 @@ const loadUserData = async () => {
       getCheckInStatus()
     ])
 
+    console.log('=== 用户数据加载成功 ===')
+    console.log('profileRes:', profileRes)
+    console.log('statsRes:', statsRes)
+    console.log('checkInRes:', checkInRes)
+
     userProfile.value = profileRes.data
     userStats.value = statsRes.data
     isCheckedInToday.value = checkInRes.data
+
+    console.log('userProfile.value:', userProfile.value)
+    console.log('userStats.value:', userStats.value)
+    console.log('isCheckedInToday.value:', isCheckedInToday.value)
 
     // 更新 store 中的用户信息
     if (profileRes.data) {

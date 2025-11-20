@@ -95,7 +95,7 @@ const coreFunctions = ref<CoreFunctionItem[]>([
     icon: '🤝',
     name: '互助任务',
     desc: '帮助他人 · 赚取积分',
-    path: '/pages/task/list',
+    path: '/pages/task/index',
     theme: 'green',
     emoji: '👥',
     illustration: '💰',

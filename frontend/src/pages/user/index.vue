@@ -91,7 +91,7 @@ const loadUserData = async () => {
     userProfile.value = profileRes
     userStats.value = statsRes
     isCheckedInToday.value = checkInRes
-    unreadNotifications.value = notificationRes.count
+    unreadNotifications.value = notificationRes
 
     // 更新 store 中的用户信息
     if (profileRes) {

@@ -20,14 +20,14 @@ export const getMyNotifications = (params: {
  * 标记通知已读
  */
 export const markNotificationRead = (id: number) => {
-  return request.post(`/notification/${id}/read`)
+  return request.put(`/notification/${id}/read`)
 }
 
 /**
  * 标记所有通知已读
  */
 export const markAllNotificationsRead = () => {
-  return request.post('/notification/read-all')
+  return request.put('/notification/read-all')
 }
 
 /**
@@ -41,5 +41,5 @@ export const deleteNotification = (id: number) => {
  * 获取未读通知数
  */
 export const getUnreadCount = () => {
-  return request.get<{ count: number }>('/notification/unread/count')
+  return request.get<number>('/notification/unread-count')
 }

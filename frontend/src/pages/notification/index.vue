@@ -181,7 +181,7 @@ const loadNotifications = async (isRefresh = false) => {
 const loadUnreadCount = async () => {
   try {
     const result = await getUnreadCount()
-    tabs.value[0].badge = result.count
+    tabs.value[0].badge = result
   } catch (error) {
     console.error('加载未读数量失败:', error)
   }

@@ -98,7 +98,7 @@ const functionItems = computed<FunctionItem[]>(() => [
     id: 'points-history',
     icon: '🎁',
     label: '积分记录',
-    path: '/pages/user/points',
+    path: '/pages/user/points-history',
     type: 'asset',
     description: '查看积分获取和消费记录',
     badge: props.badges?.pointsHistory

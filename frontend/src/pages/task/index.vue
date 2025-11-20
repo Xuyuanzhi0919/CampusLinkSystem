@@ -78,10 +78,12 @@
         <text class="empty-tip">快去发布一个新任务吧~</text>
       </view>
 
-      <!-- 加载中 -->
-      <view v-if="loading && taskList.length === 0" class="loading-state">
-        <text class="loading-text">加载中...</text>
-      </view>
+      <!-- 加载中 - 骨架屏 -->
+      <SkeletonScreen
+        v-if="loading && taskList.length === 0"
+        type="card"
+        :count="4"
+      />
 
       <!-- 加载更多 -->
       <view v-if="taskList.length > 0" class="load-more">
@@ -103,6 +105,7 @@
 import { ref, onMounted } from 'vue'
 import { getTaskList } from '@/services/task'
 import { TaskStatus, type TaskListItem, type TaskType } from '@/types/task'
+import SkeletonScreen from '@/components/SkeletonScreen.vue'
 
 // 任务类型选项
 const taskTypes = [

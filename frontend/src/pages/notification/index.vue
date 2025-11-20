@@ -72,10 +72,12 @@
         <text class="empty-tip">有新消息时会显示在这里哦~</text>
       </view>
 
-      <!-- 加载中 -->
-      <view v-if="loading && notificationList.length === 0" class="loading-state">
-        <text class="loading-text">加载中...</text>
-      </view>
+      <!-- 加载中 - 骨架屏 -->
+      <SkeletonScreen
+        v-if="loading && notificationList.length === 0"
+        type="list"
+        :count="5"
+      />
 
       <!-- 加载更多 -->
       <view v-if="notificationList.length > 0" class="load-more">
@@ -97,6 +99,7 @@ import {
   deleteNotification,
   getUnreadCount
 } from '@/services/notification'
+import SkeletonScreen from '@/components/SkeletonScreen.vue'
 
 // 标签选项
 const tabs = ref([
@@ -610,18 +613,6 @@ defineExpose({
 
 .empty-tip {
   font-size: 26rpx;
-  color: #9CA3AF;
-}
-
-.loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 32rpx;
-}
-
-.loading-text {
-  font-size: 28rpx;
   color: #9CA3AF;
 }
 

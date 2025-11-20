@@ -175,6 +175,15 @@
 			}
 		}
 	],
+	"easycom": {
+		"autoscan": true,
+		"custom": {
+			"^LazyImage$": "@/components/LazyImage.vue",
+			"^SkeletonScreen$": "@/components/SkeletonScreen.vue",
+			"^SkeletonCard$": "@/components/SkeletonCard.vue",
+			"^SkeletonResourceCard$": "@/components/SkeletonResourceCard.vue"
+		}
+	},
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
 		"navigationBarTitleText": "CampusLink",

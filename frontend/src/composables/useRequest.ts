@@ -3,7 +3,7 @@
  * 自动管理加载状态、错误处理和防重复请求
  */
 
-import { ref, Ref } from 'vue'
+import { ref, type Ref } from 'vue'
 import { handleError } from '@/utils/errorHandler'
 import logger from '@/utils/logger'
 
@@ -129,7 +129,7 @@ export function useRequest<T = any>(
 
     try {
       const result = await requestFn(...args)
-      data.value = result
+      data.value = result as any
 
       // 成功回调
       if (onSuccess) {
@@ -249,9 +249,9 @@ export function usePagination<T = any>(
       })
 
       if (isRefresh || page.value === 1) {
-        list.value = result.list
+        list.value = result.list as any
       } else {
-        list.value = [...list.value, ...result.list]
+        list.value = [...list.value, ...result.list] as any
       }
 
       hasMore.value = page.value < result.totalPages

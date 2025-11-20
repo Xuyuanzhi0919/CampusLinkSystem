@@ -132,6 +132,15 @@
 				"navigationBarTitleText": "修改密码",
 				"navigationBarBackgroundColor": "#FFFFFF"
 			}
+		},
+		{
+			"path": "pages/task/index",
+			"style": {
+				"navigationBarTitleText": "任务大厅",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
 		}
 	],
 	"globalStyle": {

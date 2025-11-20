@@ -116,6 +116,15 @@
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}
+		},
+		{
+			"path": "pages/user/points-history",
+			"style": {
+				"navigationBarTitleText": "积分明细",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
 		}
 	],
 	"globalStyle": {

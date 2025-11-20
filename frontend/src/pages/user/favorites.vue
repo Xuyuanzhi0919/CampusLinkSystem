@@ -92,7 +92,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getMyFavorites, removeFavorite, type FavoriteItem } from '@/services/favorite'
-import { formatDistanceToNow } from '@/utils/date'
 
 // Tab 配置
 const tabs = [

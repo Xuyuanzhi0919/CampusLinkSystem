@@ -2,6 +2,7 @@ package com.campuslink.controller;
 
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
+import com.campuslink.dto.ChangePasswordRequest;
 import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.PointsLogVO;
 import com.campuslink.dto.UpdateProfileRequest;
@@ -11,6 +12,7 @@ import com.campuslink.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -90,6 +92,15 @@ public class UserController {
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
         CheckInResponse response = userService.checkIn(userId);
         return Result.success(response);
+    }
+
+    @Operation(summary = "修改密码", description = "修改当前登录用户的密码")
+    @PutMapping("/password")
+    public Result<Void> changePassword(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(userId, request);
+        return Result.success("密码修改成功");
     }
 
     @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")

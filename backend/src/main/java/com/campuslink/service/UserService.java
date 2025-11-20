@@ -484,6 +484,35 @@ public class UserService {
     }
 
     /**
+     * 修改密码
+     */
+    @Transactional
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        // 查询用户
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 验证旧密码
+        if (!encryptPassword(request.getOldPassword()).equals(user.getPasswordHash())) {
+            throw new BusinessException(400, "旧密码不正确");
+        }
+
+        // 检查新密码不能与旧密码相同
+        if (request.getOldPassword().equals(request.getNewPassword())) {
+            throw new BusinessException(400, "新密码不能与旧密码相同");
+        }
+
+        // 更新密码
+        user.setPasswordHash(encryptPassword(request.getNewPassword()));
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        log.info("用户修改密码成功: userId={}", userId);
+    }
+
+    /**
      * 获取用户贡献排行榜
      */
     public PageResult<UserVO> getUserRanking(Integer page, Integer pageSize) {

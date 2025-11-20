@@ -119,14 +119,14 @@ export const useUserStore = defineStore('user', () => {
     token.value = ''
     refreshToken.value = ''
     userInfo.value = null
-    
+
     uni.removeStorageSync(config.tokenKey)
     uni.removeStorageSync(config.refreshTokenKey)
     uni.removeStorageSync(config.userInfoKey)
-    
-    // 跳转到登录页
+
+    // 跳转到首页
     uni.reLaunch({
-      url: '/pages/auth/login',
+      url: '/pages/home/index',
     })
   }
 

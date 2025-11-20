@@ -203,18 +203,13 @@ const handleChangePassword = () => {
  * 处理退出登录
  */
 const handleLogout = () => {
-  // 清除用户信息和 Token
-  userStore.logout()
-
-  // 跳转到登录页
-  uni.reLaunch({
-    url: '/pages/auth/login'
-  })
-
   uni.showToast({
     title: '已退出登录',
     icon: 'success'
   })
+
+  // 清除用户信息和 Token（内部会跳转到首页）
+  userStore.logout()
 }
 
 /**

@@ -185,7 +185,7 @@ class Request {
 
         return this.request<T>(originalOptions)
       } else {
-        // Token刷新失败，跳转登录
+        // Token刷新失败，清除登录信息并跳转首页
         this.clearToken()
         uni.showToast({
           title: '登录已过期，请重新登录',
@@ -193,7 +193,7 @@ class Request {
         })
         setTimeout(() => {
           uni.reLaunch({
-            url: '/pages/auth/login',
+            url: '/pages/home/index',
           })
         }, 1500)
         return Promise.reject(new Error(res.message))

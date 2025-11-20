@@ -70,7 +70,7 @@
           />
           <text class="input-unit">积分</text>
         </view>
-        <text class="input-hint">当前积分: {{ userStore.userProfile?.points || 0 }}</text>
+        <text class="input-hint">当前积分: {{ userStore.userInfo?.points || 0 }}</text>
         <text v-if="errors.rewardPoints" class="error-text">{{ errors.rewardPoints }}</text>
       </view>
 
@@ -267,7 +267,7 @@ const validateForm = (): boolean => {
     isValid = false
   }
 
-  const userPoints = userStore.userProfile?.points || 0
+  const userPoints = userStore.userInfo?.points || 0
   if (formData.value.rewardPoints > userPoints) {
     errors.value.rewardPoints = '积分不足'
     isValid = false

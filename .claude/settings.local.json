@@ -50,7 +50,8 @@
       "Bash(login_response.json)",
       "Bash(test_rating.bat)",
       "Bash(git stash:*)",
-      "Bash(npm run type-check:*)"
+      "Bash(npm run type-check:*)",
+      "Bash(xargs sed:*)"
     ],
     "deny": [],
     "ask": []

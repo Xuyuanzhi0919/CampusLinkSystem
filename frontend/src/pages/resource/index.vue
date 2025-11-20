@@ -926,7 +926,7 @@ const handleResourceLike = async (resource: ResourceItem) => {
     })
     setTimeout(() => {
       uni.reLaunch({
-        url: '/pages/auth/login'
+        url: '/pages/home/index'
       })
     }, 2000)
     return
@@ -1004,7 +1004,7 @@ const handleResourceDownload = (resource: ResourceItem) => {
     })
     setTimeout(() => {
       uni.reLaunch({
-        url: '/pages/auth/login'
+        url: '/pages/home/index'
       })
     }, 2000)
     return

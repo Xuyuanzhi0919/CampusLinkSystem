@@ -684,7 +684,7 @@ const handleDownload = () => {
   const token = uni.getStorageSync(config.tokenKey)
   if (!token) {
     uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
     return
   }
 
@@ -781,7 +781,7 @@ const handleLike = async () => {
   const token = uni.getStorageSync(config.tokenKey)
   if (!token) {
     uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
     return
   }
 
@@ -814,7 +814,7 @@ const handleFavorite = async () => {
   const token = uni.getStorageSync(config.tokenKey)
   if (!token) {
     uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
     return
   }
 
@@ -857,7 +857,7 @@ const handleRatingChange = async (rating: number) => {
   const token = uni.getStorageSync(config.tokenKey)
   if (!token) {
     uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/auth/login' }), 2000)
+    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
     return
   }
 

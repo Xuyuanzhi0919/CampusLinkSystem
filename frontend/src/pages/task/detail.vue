@@ -1,18 +1,18 @@
 <template>
   <view class="task-detail-page">
-    <!-- �}� -->
+    <!-- 加载状态 -->
     <view v-if="loading" class="loading-container">
-      <text class="loading-text">�}-...</text>
+      <text class="loading-text">加载中...</text>
     </view>
 
-    <!-- ���� -->
+    <!-- 任务详情 -->
     <view v-else-if="task" class="detail-container">
-      <!-- �~ -->
+      <!-- 状态标签 -->
       <view class="status-badge" :class="`status-${task.status}`">
         <text class="status-text">{{ getStatusLabel(task.status) }}</text>
       </view>
 
-      <!-- ��� -->
+      <!-- 任务标题 -->
       <view class="task-header">
         <text class="task-title">{{ task.title }}</text>
         <view class="task-meta">
@@ -21,51 +21,51 @@
             <text class="meta-text">{{ getTypeLabel(task.taskType) }}</text>
           </view>
           <view class="meta-item">
-            <text class="meta-icon">=A</text>
-            <text class="meta-text">{{ task.viewCount }} O�</text>
+            <text class="meta-icon">👁</text>
+            <text class="meta-text">{{ task.viewCount }} 浏览</text>
           </view>
         </view>
       </view>
 
-      <!-- �O�o -->
+      <!-- 奖励信息 -->
       <view class="reward-section">
         <view class="reward-box">
-          <text class="reward-label">���O</text>
+          <text class="reward-label">任务奖励</text>
           <view class="reward-amount">
             <text class="amount-number">{{ task.rewardPoints }}</text>
-            <text class="amount-unit">�</text>
+            <text class="amount-unit">积分</text>
           </view>
         </view>
       </view>
 
-      <!-- ���� -->
+      <!-- 任务内容 -->
       <view class="content-section">
-        <view class="section-title">����</view>
+        <view class="section-title">任务描述</view>
         <text class="content-text">{{ task.content }}</text>
       </view>
 
-      <!-- ���o -->
+      <!-- 任务信息 -->
       <view class="info-section">
-        <view class="section-title">���o</view>
+        <view class="section-title">任务信息</view>
         <view class="info-list">
           <view v-if="task.location" class="info-item">
-            <text class="info-label">=� 0�</text>
+            <text class="info-label">📍 地点</text>
             <text class="info-value">{{ task.location }}</text>
           </view>
           <view v-if="task.deadline" class="info-item">
-            <text class="info-label">� *b��</text>
+            <text class="info-label">⏰ 截止时间</text>
             <text class="info-value">{{ formatDeadline(task.deadline) }}</text>
           </view>
           <view class="info-item">
-            <text class="info-label">=P ���</text>
+            <text class="info-label">📅 发布时间</text>
             <text class="info-value">{{ formatTime(task.createdAt) }}</text>
           </view>
         </view>
       </view>
 
-      <!-- ��o -->
+      <!-- 发布者信息 -->
       <view class="user-section">
-        <view class="section-title">�</view>
+        <view class="section-title">发布者</view>
         <view class="user-card">
           <image
             class="user-avatar"
@@ -76,9 +76,9 @@
         </view>
       </view>
 
-      <!-- �U�o���U	 -->
+      <!-- 接单者信息（如果有接单） -->
       <view v-if="task.accepterId" class="user-section">
-        <view class="section-title">�U</view>
+        <view class="section-title">接单者</view>
         <view class="user-card">
           <image
             class="user-avatar"
@@ -89,47 +89,47 @@
         </view>
       </view>
 
-      <!-- ���\ -->
+      <!-- 操作按钮 -->
       <view class="action-bar">
-        <!-- ��U�>:�U	� -->
+        <!-- 待接单状态：显示接单按钮 -->
         <button
           v-if="task.status === 0 && !isMyTask"
           class="action-btn primary"
           @click="handleAccept"
         >
-          �U
+          接单
         </button>
 
-        <!-- �L-��>:�	��U>:Ф	� -->
+        <!-- 进行中状态，发布者可见：显示确认完成按钮 -->
         <button
           v-if="task.status === 1 && isPublisher"
           class="action-btn success"
           @click="handleComplete"
         >
-          n��
+          确认完成
         </button>
 
-        <!-- ֈ	�����U�	 -->
+        <!-- 取消按钮（仅发布者，待接单状态） -->
         <button
           v-if="task.status === 0 && isPublisher"
           class="action-btn danger"
           @click="handleCancel"
         >
-          ֈ��
+          取消任务
         </button>
 
-        <!-- 6�	� -->
+        <!-- 收藏按钮 -->
         <button class="action-btn secondary" @click="handleFavorite">
-          {{ task.isFavorited ? '�6�' : '6�' }}
+          {{ task.isFavorited ? '已收藏' : '收藏' }}
         </button>
       </view>
     </view>
 
-    <!-- � -->
+    <!-- 错误状态 -->
     <view v-else class="error-container">
-      <text class="error-icon">=</text>
-      <text class="error-text">��X(� d</text>
-      <button class="back-btn" @click="goBack">��</button>
+      <text class="error-icon">😞</text>
+      <text class="error-text">任务不存在或已删除</text>
+      <button class="back-btn" @click="goBack">返回</button>
     </view>
   </view>
 </template>
@@ -146,7 +146,7 @@ const userStore = useUserStore()
 const task = ref<TaskDetail | null>(null)
 const loading = ref(true)
 
-// ��^'
+// 判断是否是我的任务
 const isMyTask = computed(() => {
   if (!task.value || !userStore.userInfo) return false
   return task.value.publisherId === userStore.userInfo.uid
@@ -163,16 +163,16 @@ const isAccepter = computed(() => {
 })
 
 /**
- * �}����
+ * 加载任务详情
  */
 const loadTaskDetail = async (id: number) => {
   try {
     loading.value = true
     task.value = await getTaskById(id)
   } catch (error: any) {
-    console.error('�}����1%:', error)
+    console.error('加载任务详情失败:', error)
     uni.showToast({
-      title: error.message || '�}1%',
+      title: error.message || '加载失败',
       icon: 'none'
     })
     task.value = null
@@ -182,27 +182,27 @@ const loadTaskDetail = async (id: number) => {
 }
 
 /**
- * �U
+ * 接单
  */
 const handleAccept = async () => {
   if (!task.value) return
 
   uni.showModal({
-    title: 'n��U',
-    content: `n��Ucd ${task.value.rewardPoints} �\:���`,
+    title: '确认接单',
+    content: `确定接单吗？将获得 ${task.value.rewardPoints} 积分奖励`,
     success: async (res) => {
       if (res.confirm) {
         try {
           await acceptTask(task.value!.tid)
           uni.showToast({
-            title: '�U�',
+            title: '接单成功',
             icon: 'success'
           })
-          // Ͱ�}����
+          // 重新加载任务详情
           await loadTaskDetail(task.value!.tid)
         } catch (error: any) {
           uni.showToast({
-            title: error.message || '�U1%',
+            title: error.message || '接单失败',
             icon: 'none'
           })
         }
@@ -212,26 +212,26 @@ const handleAccept = async () => {
 }
 
 /**
- * ���
+ * 完成任务
  */
 const handleComplete = async () => {
   if (!task.value) return
 
   uni.showModal({
-    title: 'n��',
-    content: 'n����',
+    title: '确认完成',
+    content: '确定标记任务为已完成吗？',
     success: async (res) => {
       if (res.confirm) {
         try {
           await completeTask(task.value!.tid)
           uni.showToast({
-            title: '���',
+            title: '任务已完成',
             icon: 'success'
           })
           await loadTaskDetail(task.value!.tid)
         } catch (error: any) {
           uni.showToast({
-            title: error.message || '�\1%',
+            title: error.message || '操作失败',
             icon: 'none'
           })
         }
@@ -241,27 +241,27 @@ const handleComplete = async () => {
 }
 
 /**
- * ֈ��
+ * 取消任务
  */
 const handleCancel = async () => {
   if (!task.value) return
 
   uni.showModal({
-    title: 'ֈ��',
-    content: 'n��ֈ�*��',
+    title: '取消任务',
+    content: '确定取消这个任务吗？',
     confirmColor: '#EF4444',
     success: async (res) => {
       if (res.confirm) {
         try {
           await cancelTask(task.value!.tid)
           uni.showToast({
-            title: '���ֈ',
+            title: '任务已取消',
             icon: 'success'
           })
           await loadTaskDetail(task.value!.tid)
         } catch (error: any) {
           uni.showToast({
-            title: error.message || '�\1%',
+            title: error.message || '操作失败',
             icon: 'none'
           })
         }
@@ -271,7 +271,7 @@ const handleCancel = async () => {
 }
 
 /**
- * 6�/ֈ6�
+ * 收藏/取消收藏
  */
 const handleFavorite = async () => {
   if (!task.value) return
@@ -281,73 +281,73 @@ const handleFavorite = async () => {
       await removeFavorite('task', task.value.tid)
       task.value.isFavorited = false
       uni.showToast({
-        title: '�ֈ6�',
+        title: '已取消收藏',
         icon: 'success'
       })
     } else {
       await addFavorite('task', task.value.tid)
       task.value.isFavorited = true
       uni.showToast({
-        title: '6��',
+        title: '收藏成功',
         icon: 'success'
       })
     }
   } catch (error: any) {
     uni.showToast({
-      title: error.message || '�\1%',
+      title: error.message || '操作失败',
       icon: 'none'
     })
   }
 }
 
 /**
- * ��
+ * 返回
  */
 const goBack = () => {
   uni.navigateBack()
 }
 
 /**
- * ����{��
+ * 获取任务类型图标
  */
 const getTypeIcon = (type: TaskType): string => {
   const iconMap: Record<string, string> = {
-    errand: '<�',
-    borrow: '>',
-    sign: '',
-    other: '=�'
+    errand: '🏃',
+    borrow: '🤝',
+    sign: '✅',
+    other: '📦'
   }
-  return iconMap[type] || '=�'
+  return iconMap[type] || '📦'
 }
 
 /**
- * ����{�~
+ * 获取任务类型标签
  */
 const getTypeLabel = (type: TaskType): string => {
   const labelMap: Record<string, string> = {
-    errand: '�',
-    borrow: '(',
-    sign: '�~0',
-    other: 'v�'
+    errand: '跑腿',
+    borrow: '借用',
+    sign: '代签到',
+    other: '其他'
   }
-  return labelMap[type] || 'v�'
+  return labelMap[type] || '其他'
 }
 
 /**
- * �ֶ~
+ * 获取状态标签
  */
 const getStatusLabel = (status: TaskStatus): string => {
   const labelMap: Record<number, string> = {
-    [TaskStatus.PENDING]: '��U',
-    [TaskStatus.IN_PROGRESS]: '�L-',
-    [TaskStatus.COMPLETED]: '�',
-    [TaskStatus.CANCELLED]: '�ֈ'
+    [TaskStatus.PENDING]: '待接单',
+    [TaskStatus.IN_PROGRESS]: '进行中',
+    [TaskStatus.COMPLETED]: '已完成',
+    [TaskStatus.CANCELLED]: '已取消'
   }
-  return labelMap[status] || '*�'
+  return labelMap[status] || '未知'
 }
 
 /**
- * <��
+ * 格式化时间
  */
 const formatTime = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -360,7 +360,7 @@ const formatTime = (dateStr: string): string => {
 }
 
 /**
- * <*b��
+ * 格式化截止时间
  */
 const formatDeadline = (dateStr: string): string => {
   const date = new Date(dateStr)
@@ -371,7 +371,7 @@ const formatDeadline = (dateStr: string): string => {
   return `${month}-${day} ${hours}:${minutes}`
 }
 
-// ub�}
+// 页面加载
 onMounted(() => {
   const pages = getCurrentPages()
   const currentPage = pages[pages.length - 1]

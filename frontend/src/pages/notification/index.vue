@@ -38,14 +38,14 @@
       <view v-if="!loading && notificationList.length > 0" class="notification-list">
         <view
           v-for="notification in notificationList"
-          :key="notification.id"
+          :key="notification.notificationId"
           class="notification-card"
           :class="{ unread: !notification.isRead }"
           @click="handleNotificationClick(notification)"
         >
           <!-- 左侧图标 -->
-          <view class="notification-icon" :class="`icon-${notification.type}`">
-            <text class="icon-text">{{ getNotificationIcon(notification.type) }}</text>
+          <view class="notification-icon" :class="`icon-${notification.notifyType}`">
+            <text class="icon-text">{{ getNotificationIcon(notification.notifyType) }}</text>
           </view>
 
           <!-- 中间内容 -->
@@ -223,7 +223,7 @@ const handleNotificationClick = async (notification: any) => {
   // 标记为已读
   if (!notification.isRead) {
     try {
-      await markNotificationRead(notification.id)
+      await markNotificationRead(notification.notificationId)
       notification.isRead = true
       loadUnreadCount()
     } catch (error) {
@@ -271,8 +271,8 @@ const handleDelete = async (notification: any) => {
     success: async (res) => {
       if (res.confirm) {
         try {
-          await deleteNotification(notification.id)
-          const index = notificationList.value.findIndex(item => item.id === notification.id)
+          await deleteNotification(notification.notificationId)
+          const index = notificationList.value.findIndex(item => item.notificationId === notification.notificationId)
           if (index > -1) {
             notificationList.value.splice(index, 1)
           }

@@ -47,6 +47,7 @@ import {
   checkIn,
   getCheckInStatus
 } from '@/services/user'
+import { getUnreadCount } from '@/services/notification'
 import UserProfileHeader from './components/UserProfileHeader.vue'
 import FunctionGrid from './components/FunctionGrid.vue'
 import AccountActions from './components/AccountActions.vue'
@@ -58,9 +59,11 @@ const loading = ref(true)
 const userProfile = ref<UserProfileData | null>(null)
 const userStats = ref<UserStatsData | null>(null)
 const isCheckedInToday = ref(false)
+const unreadNotifications = ref(0)
 
 // 功能角标(未读消息等)
 const functionBadges = computed(() => ({
+  notifications: unreadNotifications.value,
   myResources: 0,
   myQuestions: 0,
   myTasks: 0,
@@ -76,17 +79,19 @@ const loadUserData = async () => {
   try {
     loading.value = true
 
-    // 并行加载用户资料、统计数据和签到状态
-    const [profileRes, statsRes, checkInRes] = await Promise.all([
+    // 并行加载用户资料、统计数据、签到状态和未读通知数
+    const [profileRes, statsRes, checkInRes, notificationRes] = await Promise.all([
       getUserProfile(),
       getUserStats(),
-      getCheckInStatus()
+      getCheckInStatus(),
+      getUnreadCount()
     ])
 
     // request拦截器已自动解包data字段,直接使用响应
     userProfile.value = profileRes
     userStats.value = statsRes
     isCheckedInToday.value = checkInRes
+    unreadNotifications.value = notificationRes.count
 
     // 更新 store 中的用户信息
     if (profileRes) {

@@ -32,6 +32,7 @@ import type { FunctionItem } from '@/types/user'
 
 interface Props {
   badges?: {
+    notifications?: number
     myResources?: number
     myQuestions?: number
     myTasks?: number
@@ -50,12 +51,21 @@ const emit = defineEmits<{
 /**
  * 功能项配置
  * 按类型分组:
- * - study: 学习相关 (蓝色) - 资源、问答、任务、活动
+ * - study: 学习相关 (蓝色) - 通知、资源、问答、任务、活动
  * - asset: 个人资产 (黄色) - 积分、收藏
  * - system: 系统功能 (灰色) - 设置、关于
  */
 const functionItems = computed<FunctionItem[]>(() => [
   // 学习相关 (蓝色)
+  {
+    id: 'notifications',
+    icon: '🔔',
+    label: '通知中心',
+    path: '/pages/notification/index',
+    type: 'study',
+    description: '查看系统通知和消息提醒',
+    badge: props.badges?.notifications
+  },
   {
     id: 'my-resources',
     icon: '📚',

@@ -125,6 +125,13 @@
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}
+		},
+		{
+			"path": "pages/user/change-password",
+			"style": {
+				"navigationBarTitleText": "修改密码",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
 		}
 	],
 	"globalStyle": {

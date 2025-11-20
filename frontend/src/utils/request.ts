@@ -1,4 +1,6 @@
 import config from '@/config'
+import logger from './logger'
+import { getFriendlyErrorMessage } from './errorHandler'
 
 interface RequestOptions {
   url: string
@@ -65,7 +67,7 @@ class Request {
       const payload = JSON.parse(atob(parts[1]))
       return payload
     } catch (e) {
-      console.error('JWT解析失败:', e)
+      logger.error('JWT解析失败:', e)
       return null
     }
   }
@@ -112,7 +114,7 @@ class Request {
       }
       return false
     } catch (e) {
-      console.error('Token刷新失败:', e)
+      logger.error('Token刷新失败:', e)
       return false
     }
   }
@@ -128,9 +130,9 @@ class Request {
       this.isRefreshing = false
 
       if (success) {
-        console.log('Token已自动刷新')
+        logger.info('Token已自动刷新')
       } else {
-        console.warn('Token自动刷新失败')
+        logger.warn('Token自动刷新失败')
       }
     }
 
@@ -177,7 +179,7 @@ class Request {
 
       if (refreshSuccess) {
         // Token刷新成功，重试原请求
-        console.log('Token过期已刷新，重试请求')
+        logger.info('Token过期已刷新，重试请求')
 
         // 执行队列中的请求
         this.requestQueue.forEach((cb) => cb())
@@ -187,8 +189,9 @@ class Request {
       } else {
         // Token刷新失败，清除登录信息并跳转首页
         this.clearToken()
+        const friendlyMessage = getFriendlyErrorMessage({ code: 401 })
         uni.showToast({
-          title: '登录已过期，请重新登录',
+          title: friendlyMessage,
           icon: 'none',
         })
         setTimeout(() => {
@@ -229,9 +232,10 @@ class Request {
           this.afterResponse<T>(res, options).then(resolve).catch(reject)
         },
         fail: (err) => {
-          console.error('Request failed:', err)
+          logger.error('Request failed:', err)
+          const friendlyMessage = getFriendlyErrorMessage({ message: 'Network request failed' })
           uni.showToast({
-            title: '网络请求失败',
+            title: friendlyMessage,
             icon: 'none',
           })
           reject(err)

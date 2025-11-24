@@ -8,7 +8,10 @@
     <!-- 任务详情 -->
     <view v-else-if="task" class="detail-container">
       <!-- 状态标签 -->
-      <view class="status-badge" :class="`status-${task.status}`">
+      <view
+        class="status-badge"
+        :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isExpired }]"
+      >
         <text class="status-text">{{ getStatusLabel(task.status) }}</text>
       </view>
 
@@ -54,7 +57,10 @@
           </view>
           <view v-if="task.deadline" class="info-item">
             <text class="info-label">⏰ 截止时间</text>
-            <text class="info-value">{{ formatDeadline(task.deadline) }}</text>
+            <text class="info-value" :class="{ 'expired-text': isExpired }">
+              {{ formatDeadline(task.deadline) }}
+              <text v-if="isExpired" class="expired-tag">已过期</text>
+            </text>
           </view>
           <view class="info-item">
             <text class="info-label">📅 发布时间</text>
@@ -91,18 +97,34 @@
 
       <!-- 操作按钮 -->
       <view class="action-bar">
-        <!-- 待接单状态：显示接单按钮 -->
+        <!-- 待接单状态：显示接单按钮（未过期且不是自己的任务） -->
         <button
-          v-if="task.status === 0 && !isMyTask"
+          v-if="task.status === 0 && !isMyTask && !isExpired"
           class="action-btn primary"
           @click="handleAccept"
         >
           接单
         </button>
 
-        <!-- 进行中状态，发布者可见：显示确认完成按钮 -->
+        <!-- 进行中状态(status=2)，接单者可见：提交任务和放弃任务 -->
         <button
-          v-if="task.status === 1 && isPublisher"
+          v-if="task.status === 2 && isAccepter"
+          class="action-btn success"
+          @click="handleSubmit"
+        >
+          提交任务
+        </button>
+        <button
+          v-if="task.status === 2 && isAccepter"
+          class="action-btn danger"
+          @click="handleAbandon"
+        >
+          放弃任务
+        </button>
+
+        <!-- 待确认状态(status=3)，发布者可见：确认完成按钮 -->
+        <button
+          v-if="task.status === 3 && isPublisher"
           class="action-btn success"
           @click="handleComplete"
         >
@@ -136,7 +158,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { getTaskById, acceptTask, completeTask, cancelTask } from '@/services/task'
+import {
+  getTaskById,
+  acceptTask,
+  completeTask,
+  cancelTask,
+  submitTask,
+  abandonTask
+} from '@/services/task'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { TaskStatus, type TaskDetail, type TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
@@ -160,6 +189,16 @@ const isPublisher = computed(() => {
 const isAccepter = computed(() => {
   if (!task.value || !userStore.userInfo) return false
   return task.value.accepterId === userStore.userInfo.uid
+})
+
+/**
+ * 判断任务是否已截止
+ */
+const isExpired = computed(() => {
+  if (!task.value || !task.value.deadline) return false
+  const now = new Date()
+  const deadline = new Date(task.value.deadline)
+  return now > deadline
 })
 
 /**
@@ -271,6 +310,69 @@ const handleCancel = async () => {
 }
 
 /**
+ * 提交任务结果(接单者)
+ */
+const handleSubmit = async () => {
+  if (!task.value) return
+
+  // 简化版：直接提交，自动填充描述
+  uni.showModal({
+    title: '提交任务',
+    content: '确定提交任务吗？提交后等待发布者确认',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await submitTask(task.value!.tid, {
+            description: '任务已按要求完成，请查收。如有问题请联系我。',
+            images: []
+          })
+          uni.showToast({
+            title: '提交成功,等待确认',
+            icon: 'success'
+          })
+          await loadTaskDetail(task.value!.tid)
+        } catch (error: any) {
+          uni.showToast({
+            title: error.message || '操作失败',
+            icon: 'none'
+          })
+        }
+      }
+    }
+  })
+}
+
+/**
+ * 放弃任务(接单者)
+ */
+const handleAbandon = async () => {
+  if (!task.value) return
+
+  uni.showModal({
+    title: '放弃任务',
+    content: '确定放弃这个任务吗？任务将重新回到待接单状态',
+    confirmColor: '#EF4444',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await abandonTask(task.value!.tid)
+          uni.showToast({
+            title: '已放弃任务',
+            icon: 'success'
+          })
+          await loadTaskDetail(task.value!.tid)
+        } catch (error: any) {
+          uni.showToast({
+            title: error.message || '操作失败',
+            icon: 'none'
+          })
+        }
+      }
+    }
+  })
+}
+
+/**
  * 收藏/取消收藏
  */
 const handleFavorite = async () => {
@@ -337,11 +439,19 @@ const getTypeLabel = (type: TaskType): string => {
  * 获取状态标签
  */
 const getStatusLabel = (status: TaskStatus): string => {
+  // 如果是待接单状态且已过截止时间，显示"已截止"
+  if (status === TaskStatus.PENDING && isExpired.value) {
+    return '已截止'
+  }
+
   const labelMap: Record<number, string> = {
     [TaskStatus.PENDING]: '待接单',
+    [TaskStatus.ACCEPTED]: '已接取',
     [TaskStatus.IN_PROGRESS]: '进行中',
+    [TaskStatus.SUBMITTED]: '待确认',
     [TaskStatus.COMPLETED]: '已完成',
-    [TaskStatus.CANCELLED]: '已取消'
+    [TaskStatus.CANCELLED]: '已取消',
+    [TaskStatus.EXPIRED]: '已超时'
   }
   return labelMap[status] || '未知'
 }
@@ -364,11 +474,12 @@ const formatTime = (dateStr: string): string => {
  */
 const formatDeadline = (dateStr: string): string => {
   const date = new Date(dateStr)
+  const year = date.getFullYear()
   const month = (date.getMonth() + 1).toString().padStart(2, '0')
   const day = date.getDate().toString().padStart(2, '0')
   const hours = date.getHours().toString().padStart(2, '0')
   const minutes = date.getMinutes().toString().padStart(2, '0')
-  return `${month}-${day} ${hours}:${minutes}`
+  return `${year}-${month}-${day} ${hours}:${minutes}`
 }
 
 // 页面加载
@@ -439,24 +550,52 @@ onMounted(() => {
   font-weight: 500;
   margin-bottom: 24rpx;
 
+  // 待接单 - 蓝色
   &.status-0 {
     background: #DBEAFE;
     color: #2563EB;
   }
 
+  // 已接取 - 橙色
   &.status-1 {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: #FED7AA;
+    color: #EA580C;
   }
 
+  // 进行中 - 青色
   &.status-2 {
+    background: #CFFAFE;
+    color: #0891B2;
+  }
+
+  // 待确认 - 紫色
+  &.status-3 {
+    background: #E9D5FF;
+    color: #9333EA;
+  }
+
+  // 已完成 - 绿色
+  &.status-4 {
     background: #D1FAE5;
     color: #10B981;
   }
 
-  &.status-3 {
+  // 已取消 - 红色
+  &.status-5 {
     background: #FEE2E2;
     color: #EF4444;
+  }
+
+  // 已超时 - 灰色
+  &.status-6 {
+    background: #F3F4F6;
+    color: #6B7280;
+  }
+
+  // 已截止状态（特殊处理）
+  &.status-expired {
+    background: #F3F4F6;
+    color: #9CA3AF;
   }
 }
 
@@ -579,6 +718,19 @@ onMounted(() => {
   font-size: 28rpx;
   color: #1F2937;
   font-weight: 500;
+
+  &.expired-text {
+    color: #EF4444;
+  }
+}
+
+.expired-tag {
+  margin-left: 8rpx;
+  font-size: 24rpx;
+  color: #EF4444;
+  background: #FEE2E2;
+  padding: 2rpx 8rpx;
+  border-radius: 4rpx;
 }
 
 .user-card {

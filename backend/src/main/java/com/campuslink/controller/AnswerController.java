@@ -23,18 +23,20 @@ public class AnswerController {
     @Operation(summary = "点赞答案")
     @PostMapping("/{id}/like")
     public Result<Map<String, Integer>> likeAnswer(
-            @Parameter(description = "答案ID") @PathVariable Long id
+            @Parameter(description = "答案ID") @PathVariable Long id,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Integer likes = questionService.likeAnswer(id);
+        Integer likes = questionService.likeAnswer(userId, id);
         return Result.success("点赞成功", Map.of("likes", likes));
     }
 
     @Operation(summary = "取消点赞答案")
     @DeleteMapping("/{id}/like")
     public Result<Map<String, Integer>> unlikeAnswer(
-            @Parameter(description = "答案ID") @PathVariable Long id
+            @Parameter(description = "答案ID") @PathVariable Long id,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        Integer likes = questionService.unlikeAnswer(id);
+        Integer likes = questionService.unlikeAnswer(userId, id);
         return Result.success("取消点赞成功", Map.of("likes", likes));
     }
 

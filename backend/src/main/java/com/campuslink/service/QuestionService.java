@@ -6,9 +6,11 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.question.*;
 import com.campuslink.entity.Answer;
+import com.campuslink.entity.AnswerLike;
 import com.campuslink.entity.Question;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.AnswerLikeMapper;
 import com.campuslink.mapper.AnswerMapper;
 import com.campuslink.mapper.QuestionMapper;
 import com.campuslink.mapper.UserMapper;
@@ -30,6 +32,7 @@ public class QuestionService {
     private final QuestionMapper questionMapper;
     private final AnswerMapper answerMapper;
     private final UserMapper userMapper;
+    private final AnswerLikeMapper answerLikeMapper;
 
     /**
      * 提问
@@ -41,15 +44,18 @@ public class QuestionService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 如果设置了悬赏,检查用户积分是否足够
-        if (request.getBounty() != null && request.getBounty() > 0) {
-            if (user.getPoints() < request.getBounty()) {
-                throw new BusinessException(ResultCode.INSUFFICIENT_POINTS);
-            }
-            // 扣除悬赏积分
-            user.setPoints(user.getPoints() - request.getBounty());
-            userMapper.updateById(user);
+        // 计算需要扣除的总积分：提问2分 + 悬赏积分
+        int bounty = request.getBounty() != null ? request.getBounty() : 0;
+        int totalCost = 2 + bounty; // 提问固定扣2分
+
+        // 检查用户积分是否足够
+        if (user.getPoints() < totalCost) {
+            throw new BusinessException(ResultCode.INSUFFICIENT_POINTS);
         }
+
+        // 扣除积分
+        user.setPoints(user.getPoints() - totalCost);
+        userMapper.updateById(user);
 
         // 创建问题
         Question question = new Question();
@@ -98,6 +104,8 @@ public class QuestionService {
             wrapper.orderBy(true, "asc".equals(sortOrder), Question::getViews);
         } else if ("bounty".equals(sortBy)) {
             wrapper.orderBy(true, "asc".equals(sortOrder), Question::getRewardPoints);
+        } else if ("answerCount".equals(sortBy)) {
+            wrapper.orderBy(true, "asc".equals(sortOrder), Question::getAnswerCount);
         }
 
         // 分页查询
@@ -250,6 +258,21 @@ public class QuestionService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
+        // 防止提问者回答自己的问题
+        if (question.getAskerId().equals(userId)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "不能回答自己的问题");
+        }
+
+        // 检查用户是否已经回答过这个问题（防止刷积分）
+        LambdaQueryWrapper<Answer> checkWrapper = new LambdaQueryWrapper<>();
+        checkWrapper.eq(Answer::getQuestionId, questionId)
+                .eq(Answer::getResponderId, userId)
+                .eq(Answer::getStatus, 1);
+        Long existingAnswerCount = answerMapper.selectCount(checkWrapper);
+        if (existingAnswerCount > 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "您已经回答过这个问题了");
+        }
+
         // 创建答案
         Answer answer = new Answer();
         answer.setQuestionId(questionId);
@@ -263,6 +286,10 @@ public class QuestionService {
 
         answerMapper.insert(answer);
 
+        // 回答者获得 5 积分
+        user.setPoints(user.getPoints() + 5);
+        userMapper.updateById(user);
+
         // 更新问题的回答数量
         question.setAnswerCount(question.getAnswerCount() + 1);
         question.setUpdatedAt(LocalDateTime.now());
@@ -274,7 +301,7 @@ public class QuestionService {
     /**
      * 获取问题的所有答案
      */
-    public List<AnswerResponse> getAnswersByQuestionId(Long questionId) {
+    public List<AnswerResponse> getAnswersByQuestionId(Long questionId, Long currentUserId) {
         // 检查问题是否存在
         Question question = questionMapper.selectById(questionId);
         if (question == null || question.getStatus() == 0) {
@@ -301,7 +328,18 @@ public class QuestionService {
             response.setContent(answer.getContent());
             response.setLikes(answer.getLikes());
             response.setIsAccepted(answer.getIsAccepted() == 1);  // 转换为Boolean
-            response.setIsLiked(false);  // TODO: 根据当前用户查询是否已点赞
+
+            // 查询当前用户是否已点赞
+            boolean isLiked = false;
+            if (currentUserId != null) {
+                LambdaQueryWrapper<AnswerLike> likeWrapper = new LambdaQueryWrapper<>();
+                likeWrapper.eq(AnswerLike::getUserId, currentUserId)
+                        .eq(AnswerLike::getAnswerId, answer.getAid());
+                Long likeCount = answerLikeMapper.selectCount(likeWrapper);
+                isLiked = likeCount > 0;
+            }
+            response.setIsLiked(isLiked);
+
             response.setCreatedAt(answer.getCreatedAt());
             response.setUpdatedAt(answer.getUpdatedAt());
 
@@ -440,14 +478,39 @@ public class QuestionService {
      * 点赞答案
      */
     @Transactional(rollbackFor = Exception.class)
-    public Integer likeAnswer(Long answerId) {
+    public Integer likeAnswer(Long userId, Long answerId) {
+        // 验证答案是否存在
         Answer answer = answerMapper.selectById(answerId);
         if (answer == null || answer.getStatus() == 0) {
             throw new BusinessException(ResultCode.ANSWER_NOT_FOUND);
         }
 
+        // 不能给自己的回答点赞
+        if (answer.getResponderId().equals(userId)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "不能给自己的回答点赞");
+        }
+
+        // 检查是否已经点赞
+        LambdaQueryWrapper<AnswerLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AnswerLike::getUserId, userId)
+                .eq(AnswerLike::getAnswerId, answerId);
+        Long existingLikeCount = answerLikeMapper.selectCount(wrapper);
+
+        if (existingLikeCount > 0) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "您已经点赞过该答案");
+        }
+
+        // 创建点赞记录
+        AnswerLike answerLike = new AnswerLike();
+        answerLike.setUserId(userId);
+        answerLike.setAnswerId(answerId);
+        answerLike.setCreatedAt(LocalDateTime.now());
+        answerLikeMapper.insert(answerLike);
+
+        // 更新点赞数
         answer.setLikes(answer.getLikes() + 1);
         answerMapper.updateById(answer);
+
         return answer.getLikes();
     }
 
@@ -455,16 +518,32 @@ public class QuestionService {
      * 取消点赞答案
      */
     @Transactional(rollbackFor = Exception.class)
-    public Integer unlikeAnswer(Long answerId) {
+    public Integer unlikeAnswer(Long userId, Long answerId) {
+        // 验证答案是否存在
         Answer answer = answerMapper.selectById(answerId);
         if (answer == null || answer.getStatus() == 0) {
             throw new BusinessException(ResultCode.ANSWER_NOT_FOUND);
         }
 
+        // 查找点赞记录
+        LambdaQueryWrapper<AnswerLike> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AnswerLike::getUserId, userId)
+                .eq(AnswerLike::getAnswerId, answerId);
+        AnswerLike answerLike = answerLikeMapper.selectOne(wrapper);
+
+        if (answerLike == null) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "您还未点赞该答案");
+        }
+
+        // 删除点赞记录
+        answerLikeMapper.deleteById(answerLike.getLikeId());
+
+        // 更新点赞数
         if (answer.getLikes() > 0) {
             answer.setLikes(answer.getLikes() - 1);
             answerMapper.updateById(answer);
         }
+
         return answer.getLikes();
     }
 
@@ -487,6 +566,16 @@ public class QuestionService {
         // 检查答案是否已被采纳
         if (answer.getIsAccepted() == 1) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "已被采纳的答案不能删除");
+        }
+
+        // 扣除回答获得的积分（回答问题的5分）
+        User user = userMapper.selectById(userId);
+        if (user != null) {
+            // 回答问题获得的积分
+            int deductPoints = 5;
+            // 确保积分不会变成负数
+            user.setPoints(Math.max(0, user.getPoints() - deductPoints));
+            userMapper.updateById(user);
         }
 
         // 软删除答案
@@ -522,6 +611,14 @@ public class QuestionService {
         // 检查问题是否已解决(已解决的问题不能删除)
         if (question.getIsSolved() == 1) {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "已解决的问题不能删除");
+        }
+
+        // 退还积分：提问的2分 + 悬赏积分
+        User user = userMapper.selectById(userId);
+        if (user != null) {
+            int refundPoints = 2 + (question.getRewardPoints() != null ? question.getRewardPoints() : 0);
+            user.setPoints(user.getPoints() + refundPoints);
+            userMapper.updateById(user);
         }
 
         // 软删除问题

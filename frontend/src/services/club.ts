@@ -9,6 +9,7 @@ import type {
   ClubDetail,
   ClubListParams,
   ClubCreateParams,
+  ClubMember,
   ActivityItem,
   ActivityDetail,
   ActivityListParams,
@@ -52,7 +53,7 @@ export const joinClub = (id: number) => {
  * @param id 社团ID
  */
 export const quitClub = (id: number) => {
-  return request.post(`/club/${id}/quit`)
+  return request.post(`/club/${id}/leave`)
 }
 
 /**
@@ -117,5 +118,14 @@ export const getMyClubs = (params: { page?: number; pageSize?: number } = {}) =>
  */
 export const getMyActivities = (params: { page?: number; pageSize?: number } = {}) => {
   return request.get<PageResult<ActivityItem>>('/activity/my', params)
+}
+
+/**
+ * 获取社团成员列表
+ * @param clubId 社团ID
+ * @param params 查询参数
+ */
+export const getClubMembers = (clubId: number, params: { page?: number; pageSize?: number } = {}) => {
+  return request.get<PageResult<ClubMember>>(`/club/${clubId}/members`, params)
 }
 

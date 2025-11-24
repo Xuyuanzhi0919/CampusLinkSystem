@@ -287,6 +287,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import type { ResourceItem } from '@/types/resource'
+import { resourceSearchHistory } from '@/utils/searchHistory'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -322,8 +323,6 @@ const searchDebounceTimer = ref<number | null>(null)
 const showSearchHistory = ref(false) // 显示搜索历史面板
 
 // 🎯 搜索历史
-const SEARCH_HISTORY_KEY = 'resource_search_history'
-const MAX_SEARCH_HISTORY = 10
 const searchHistory = ref<string[]>([])
 
 // 🎯 排序条件
@@ -404,15 +403,7 @@ const filteredResultHint = computed(() => {
  * 🎯 加载搜索历史
  */
 const loadSearchHistory = () => {
-  const stored = uni.getStorageSync(SEARCH_HISTORY_KEY)
-  if (stored) {
-    try {
-      searchHistory.value = JSON.parse(stored)
-    } catch (e) {
-      console.error('[ResourceSquare] 加载搜索历史失败:', e)
-      searchHistory.value = []
-    }
-  }
+  searchHistory.value = resourceSearchHistory.getHistory()
 }
 
 /**
@@ -420,32 +411,28 @@ const loadSearchHistory = () => {
  */
 const saveSearchHistory = (keyword: string) => {
   if (!keyword || keyword.trim() === '') return
-
-  const trimmedKeyword = keyword.trim()
-
-  // 移除已存在的相同关键词
-  const filtered = searchHistory.value.filter(item => item !== trimmedKeyword)
-
-  // 添加到最前面
-  filtered.unshift(trimmedKeyword)
-
-  // 保留最多 10 条
-  searchHistory.value = filtered.slice(0, MAX_SEARCH_HISTORY)
-
-  // 保存到本地存储
-  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+  resourceSearchHistory.add(keyword.trim())
+  loadSearchHistory()
 }
 
 /**
  * 🎯 清空搜索历史
  */
 const clearSearchHistory = () => {
-  searchHistory.value = []
-  uni.removeStorageSync(SEARCH_HISTORY_KEY)
-  uni.showToast({
-    title: '已清空历史',
-    icon: 'success',
-    duration: 1500
+  uni.showModal({
+    title: '提示',
+    content: '确定清空所有搜索历史吗?',
+    success: (res) => {
+      if (res.confirm) {
+        resourceSearchHistory.clear()
+        loadSearchHistory()
+        uni.showToast({
+          title: '已清空历史',
+          icon: 'success',
+          duration: 1500
+        })
+      }
+    }
   })
 }
 
@@ -453,8 +440,8 @@ const clearSearchHistory = () => {
  * 🎯 删除单条搜索历史
  */
 const deleteSearchHistoryItem = (keyword: string) => {
-  searchHistory.value = searchHistory.value.filter(item => item !== keyword)
-  uni.setStorageSync(SEARCH_HISTORY_KEY, JSON.stringify(searchHistory.value))
+  resourceSearchHistory.remove(keyword)
+  loadSearchHistory()
 }
 
 /**
@@ -1049,25 +1036,24 @@ const handleDirectDownload = async (resource: ResourceItem) => {
         url: res.downloadUrl,
         success: (downloadRes) => {
           if (downloadRes.statusCode === 200) {
-            uni.showToast({
-              title: '下载成功',
-              icon: 'success'
-            })
+            console.log('[ResourceSquare] 文件下载成功:', downloadRes.tempFilePath)
           }
         },
-        fail: () => {
+        fail: (err) => {
+          console.error('[ResourceSquare] 文件下载失败:', err)
           uni.showToast({
-            title: '下载失败',
-            icon: 'none'
+            title: '文件下载失败，请重试',
+            icon: 'none',
+            duration: 2000
           })
         }
       })
       // #endif
 
       uni.showToast({
-        title: '下载成功（免费）',
+        title: '文件已保存（免费）',
         icon: 'success',
-        duration: 2000
+        duration: 2500
       })
     }
   } catch (error: any) {
@@ -1157,10 +1143,12 @@ const handleDownloadConfirm = async () => {
         }
       }
 
+      // 更详细的成功提示
+      const costInfo = res.pointsCost > 0 ? `消耗 ${res.pointsCost} 积分` : '免费下载'
       uni.showToast({
-        title: `下载成功！消耗 ${res.pointsCost} 积分`,
+        title: `下载成功！${costInfo}`,
         icon: 'success',
-        duration: 2000
+        duration: 2500
       })
 
       selectedResource.value = null

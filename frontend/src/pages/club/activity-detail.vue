@@ -60,6 +60,11 @@
             <view class="info-content">
               <text class="info-label">活动时间</text>
               <text class="info-value">{{ formatTime(activity.startTime) }} ~ {{ formatTime(activity.endTime) }}</text>
+              <!-- 🎯 时间倒计时 -->
+              <view v-if="countdown.show" class="countdown-box" :class="`countdown-${countdown.status}`">
+                <text class="countdown-icon">{{ countdown.icon }}</text>
+                <text class="countdown-text">{{ countdown.text }}</text>
+              </view>
             </view>
           </view>
 
@@ -128,8 +133,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { getActivityDetail, joinActivity, cancelActivity } from '@/services/activity'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { getActivityDetail, joinActivity, cancelActivity, checkInActivity } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS } from '@/utils/cache'
 import config from '@/config'
@@ -150,6 +155,16 @@ const rippleStyle = ref({})
 // 🎯 数字变化闪烁动画状态
 const numberHighlight = ref(false)
 
+// 🎯 倒计时状态
+const countdown = ref({
+  show: false,
+  status: 'upcoming', // upcoming | ongoing | ended
+  icon: '⏰',
+  text: ''
+})
+
+let countdownTimer: number | null = null
+
 // 🎯 活动数据
 interface ActivityDetail {
   activityId: number
@@ -164,6 +179,7 @@ interface ActivityDetail {
   clubId: number
   clubName: string
   isJoined: boolean
+  isSignedIn: boolean  // 🎯 新增：是否已签到
   isFavorited: boolean
   status: number  // 0=未开始 1=进行中 2=已结束
   createdAt: string
@@ -181,6 +197,7 @@ const activity = ref<ActivityDetail>({
   clubId: 0,
   clubName: '',
   isJoined: false,
+  isSignedIn: false,  // 🎯 新增：签到状态初始值
   isFavorited: false,
   status: 0,
   createdAt: ''
@@ -234,13 +251,38 @@ const isCrowded = computed(() => {
 /**
  * 🎯 计算属性：按钮状态
  */
-type ButtonStatus = 'available' | 'registered' | 'full' | 'ongoing' | 'ended'
+type ButtonStatus = 'available' | 'registered' | 'full' | 'ongoing' | 'ended' | 'checkin' | 'checkedin'
 
 const buttonStatus = computed<ButtonStatus>(() => {
-  if (activity.value.status === 2) return 'ended'
-  if (activity.value.status === 1) return 'ongoing'
+  const now = Date.now()
+  const endTime = activity.value.endTime ? new Date(activity.value.endTime).getTime() : 0
+  const startTime = activity.value.startTime ? new Date(activity.value.startTime).getTime() : 0
+
+  // 🎯 双重验证：前端时间判断 + 后端状态
+  // 1. 如果活动已结束（时间判断或后端状态）
+  if (now > endTime || activity.value.status === 2) return 'ended'
+
+  // 2. 如果活动进行中（时间判断或后端状态）
+  const isOngoing = (now >= startTime && now <= endTime) || activity.value.status === 1
+
+  if (isOngoing) {
+    // 2.1 活动进行中 + 已报名 + 已签到 → 已签到
+    if (activity.value.isJoined && activity.value.isSignedIn) return 'checkedin'
+
+    // 2.2 活动进行中 + 已报名 + 未签到 → 签到
+    if (activity.value.isJoined && !activity.value.isSignedIn) return 'checkin'
+
+    // 2.3 活动进行中 + 未报名 → 活动进行中（禁用）
+    return 'ongoing'
+  }
+
+  // 3. 如果用户已报名（活动未开始）
   if (activity.value.isJoined) return 'registered'
+
+  // 4. 如果名额已满
   if (remainingSlots.value <= 0) return 'full'
+
+  // 5. 可以报名
   return 'available'
 })
 
@@ -250,7 +292,9 @@ const buttonText = computed(() => {
     registered: '已报名',
     full: '名额已满',
     ongoing: '活动进行中',
-    ended: '活动已结束'
+    ended: '活动已结束',
+    checkin: '立即签到',      // 🎯 新增：签到按钮
+    checkedin: '已签到'        // 🎯 新增：已签到状态
   }
   return textMap[buttonStatus.value]
 })
@@ -260,7 +304,7 @@ const buttonClass = computed(() => {
 })
 
 const buttonDisabled = computed(() => {
-  return ['full', 'ongoing', 'ended'].includes(buttonStatus.value)
+  return ['full', 'ongoing', 'ended', 'checkedin'].includes(buttonStatus.value)  // 🎯 已签到时禁用
 })
 
 /**
@@ -274,6 +318,9 @@ const loadActivityDetail = async () => {
     const res = await getActivityDetail(activityId.value)
     activity.value = res
     loading.value = false
+
+    // 🎯 启动倒计时
+    startCountdownTimer()
   } catch (err: any) {
     console.error('加载活动详情失败:', err)
     error.value = true
@@ -324,6 +371,9 @@ const handleSignupAction = async (e?: any) => {
         }
       }
     })
+  } else if (buttonStatus.value === 'checkin') {
+    // 🎯 签到
+    await handleCheckIn()
   }
 }
 
@@ -403,6 +453,37 @@ const handleCancelActivity = async () => {
     console.error('取消报名失败:', err)
     uni.showToast({
       title: err.message || '取消失败',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
+ * 🎯 活动签到
+ */
+const handleCheckIn = async () => {
+  try {
+    await checkInActivity(activityId.value)
+
+    // 更新签到状态
+    activity.value.isSignedIn = true
+
+    uni.showToast({
+      title: '签到成功 +10积分',
+      icon: 'success',
+      duration: 2000
+    })
+
+    // 🎯 触发全局事件，通知更新用户积分
+    uni.$emit('points-changed', {
+      change: +10,
+      reason: '活动签到'
+    })
+  } catch (err: any) {
+    console.error('签到失败:', err)
+    uni.showToast({
+      title: err.message || '签到失败',
       icon: 'none',
       duration: 2000
     })
@@ -501,6 +582,86 @@ const formatTime = (time: string) => {
 }
 
 /**
+ * 🎯 更新倒计时
+ */
+const updateCountdown = () => {
+  if (!activity.value.startTime || !activity.value.endTime) {
+    countdown.value.show = false
+    return
+  }
+
+  const now = Date.now()
+  const startTime = new Date(activity.value.startTime).getTime()
+  const endTime = new Date(activity.value.endTime).getTime()
+
+  // 已结束
+  if (now > endTime) {
+    countdown.value.show = true
+    countdown.value.status = 'ended'
+    countdown.value.icon = '✅'
+    countdown.value.text = '活动已结束'
+    return
+  }
+
+  // 进行中
+  if (now >= startTime && now <= endTime) {
+    const remainingMs = endTime - now
+    const hours = Math.floor(remainingMs / (1000 * 60 * 60))
+    const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))
+
+    countdown.value.show = true
+    countdown.value.status = 'ongoing'
+    countdown.value.icon = '🔥'
+    countdown.value.text = `活动进行中，剩余 ${hours}小时${minutes}分钟`
+    return
+  }
+
+  // 即将开始
+  const remainingMs = startTime - now
+  const days = Math.floor(remainingMs / (1000 * 60 * 60 * 24))
+  const hours = Math.floor((remainingMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+  const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((remainingMs % (1000 * 60)) / 1000)
+
+  countdown.value.show = true
+  countdown.value.status = 'upcoming'
+  countdown.value.icon = '⏰'
+
+  if (days > 0) {
+    countdown.value.text = `距离开始还有 ${days}天 ${hours}小时`
+  } else if (hours > 0) {
+    countdown.value.text = `距离开始还有 ${hours}小时 ${minutes}分钟`
+  } else if (minutes > 0) {
+    countdown.value.text = `距离开始还有 ${minutes}分${seconds}秒`
+  } else {
+    countdown.value.text = `距离开始还有 ${seconds}秒`
+  }
+}
+
+/**
+ * 🎯 启动倒计时定时器
+ */
+const startCountdownTimer = () => {
+  // 立即更新一次
+  updateCountdown()
+
+  // 每秒更新
+  countdownTimer = setInterval(() => {
+    updateCountdown()
+  }, 1000) as unknown as number
+}
+
+/**
+ * 🎯 停止倒计时定时器
+ */
+const stopCountdownTimer = () => {
+  if (countdownTimer) {
+    clearInterval(countdownTimer)
+    countdownTimer = null
+  }
+}
+
+/**
  * 🎯 页面加载
  */
 onMounted(() => {
@@ -517,6 +678,14 @@ onMounted(() => {
   }
 
   loadActivityDetail()
+})
+
+/**
+ * 🎯 页面卸载
+ */
+onUnmounted(() => {
+  // 清理倒计时定时器
+  stopCountdownTimer()
 })
 </script>
 
@@ -881,6 +1050,42 @@ onMounted(() => {
   line-height: 1;
 }
 
+/* 🎯 倒计时盒子 */
+.countdown-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 6rpx 12rpx;
+  border-radius: 6rpx;
+  margin-top: 8rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+}
+
+.countdown-upcoming {
+  background: #FFF3E0;
+  color: #E65100;
+}
+
+.countdown-ongoing {
+  background: #E8F5E9;
+  color: #1B5E20;
+}
+
+.countdown-ended {
+  background: #EEEEEE;
+  color: #616161;
+}
+
+.countdown-icon {
+  font-size: 22rpx;
+  line-height: 1;
+}
+
+.countdown-text {
+  line-height: 1.2;
+}
+
 /* ========== 报名状态条 ========== */
 .signup-status {
   background: transparent; /* 🎯 最终版：透明背景 */
@@ -1023,6 +1228,27 @@ onMounted(() => {
 .button-registered {
   background: linear-gradient(135deg, #2FBD6A 0%, #4DD88E 100%);
   color: white;
+}
+
+/* 🎯 签到按钮样式 */
+.button-checkin {
+  background: linear-gradient(135deg, #FF6F00 0%, #FF8F00 100%);
+  color: white;
+  box-shadow: 0 4rpx 16rpx rgba(255, 111, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.button-checkin:hover {
+  box-shadow: 0 6rpx 20rpx rgba(255, 111, 0, 0.4);
+  transform: translateY(-2rpx);
+}
+
+/* 🎯 已签到状态 */
+.button-checkedin {
+  background: linear-gradient(135deg, #FFB74D 0%, #FFCC80 100%);
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.8;
 }
 
 .button-full,

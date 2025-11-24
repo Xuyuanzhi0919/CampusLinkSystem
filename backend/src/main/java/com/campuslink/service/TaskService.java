@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
+import com.campuslink.dto.notification.SendNotificationRequest;
 import com.campuslink.dto.report.CreateReportRequest;
 import com.campuslink.dto.task.*;
 import com.campuslink.entity.PointsLog;
@@ -42,6 +43,7 @@ public class TaskService {
     private final ReportService reportService;
     private final TaskLogMapper taskLogMapper;
     private final TaskRatingMapper taskRatingMapper;
+    private final NotificationService notificationService;
 
     /**
      * 发布任务
@@ -193,6 +195,10 @@ public class TaskService {
                 response.setAccepterNickname(accepter.getNickname());
                 response.setAccepterAvatar(accepter.getAvatarUrl());
             }
+        } else {
+            // 显式设置为 null，确保放弃任务后接单者信息被清除
+            response.setAccepterNickname(null);
+            response.setAccepterAvatar(null);
         }
 
         // 查询当前用户是否收藏了该任务
@@ -232,16 +238,27 @@ public class TaskService {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 更新任务状态为已接取
+        // 更新任务状态为进行中(接单后直接开始)
         task.setAccepterId(userId);
-        task.setStatus(TaskStatus.ACCEPTED.getCode()); // 已接取
+        task.setStatus(TaskStatus.IN_PROGRESS.getCode()); // 进行中
         task.setAcceptedAt(LocalDateTime.now()); // 记录接单时间
+        task.setStartedAt(LocalDateTime.now()); // 同时记录开始时间
         task.setUpdatedAt(LocalDateTime.now());
         taskMapper.updateById(task);
 
         // 记录操作日志
         recordTaskLog(taskId, userId, "accept", TaskStatus.ACTIVE.getCode(),
-            TaskStatus.ACCEPTED.getCode(), "用户接取任务");
+            TaskStatus.IN_PROGRESS.getCode(), "用户接取任务并开始执行");
+
+        // 发送通知给发布者
+        SendNotificationRequest notificationRequest = new SendNotificationRequest();
+        notificationRequest.setUserId(task.getPublisherId());
+        notificationRequest.setTitle("您的任务有人接单了");
+        notificationRequest.setContent(String.format("用户 %s 接受了您的任务「%s」", user.getNickname(), task.getTitle()));
+        notificationRequest.setNotifyType("task");
+        notificationRequest.setRelatedType("task");
+        notificationRequest.setRelatedId(taskId);
+        notificationService.sendToUser(task.getPublisherId(), notificationRequest);
     }
 
     /**
@@ -259,13 +276,14 @@ public class TaskService {
             throw new BusinessException(ResultCode.PERMISSION_DENIED);
         }
 
-        // 检查任务状态
-        if (task.getStatus() != 1) {
-            throw new BusinessException(ResultCode.TASK_NOT_IN_PROGRESS);
+        // 检查任务状态(必须是待确认状态)
+        if (task.getStatus() != TaskStatus.SUBMITTED.getCode()) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "当前任务状态不允许确认完成,任务状态: " + TaskStatus.fromCode(task.getStatus()).getName());
         }
 
-        // 更新任务状态
-        task.setStatus(2); // 已完成
+        // 更新任务状态为已完成
+        task.setStatus(TaskStatus.COMPLETED.getCode()); // 已完成 (status=4)
         task.setCompletedAt(LocalDateTime.now());
         task.setUpdatedAt(LocalDateTime.now());
         taskMapper.updateById(task);
@@ -287,7 +305,31 @@ public class TaskService {
                         "task",
                         task.getTid()
                 );
+
+                // 通知接单者：任务已完成，获得积分奖励
+                SendNotificationRequest accepterNotification = new SendNotificationRequest();
+                accepterNotification.setUserId(accepter.getUId());
+                accepterNotification.setTitle("任务已完成");
+                accepterNotification.setContent(String.format("您完成的任务「%s」已被确认，获得 %d 积分奖励！",
+                    task.getTitle(), task.getRewardPoints()));
+                accepterNotification.setNotifyType("task");
+                accepterNotification.setRelatedType("task");
+                accepterNotification.setRelatedId(taskId);
+                notificationService.sendToUser(accepter.getUId(), accepterNotification);
             }
+        }
+
+        // 通知发布者：任务已确认完成
+        User publisher = userMapper.selectById(task.getPublisherId());
+        if (publisher != null) {
+            SendNotificationRequest publisherNotification = new SendNotificationRequest();
+            publisherNotification.setUserId(publisher.getUId());
+            publisherNotification.setTitle("任务已确认完成");
+            publisherNotification.setContent(String.format("您发布的任务「%s」已确认完成", task.getTitle()));
+            publisherNotification.setNotifyType("task");
+            publisherNotification.setRelatedType("task");
+            publisherNotification.setRelatedId(taskId);
+            notificationService.sendToUser(publisher.getUId(), publisherNotification);
         }
     }
 
@@ -332,6 +374,61 @@ public class TaskService {
                     "task",
                     task.getTid()
             );
+        }
+    }
+
+    /**
+     * 放弃任务(接单者)
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void abandonTask(Long taskId, Long userId) {
+        Task task = taskMapper.selectById(taskId);
+        if (task == null) {
+            throw new BusinessException(ResultCode.TASK_NOT_FOUND);
+        }
+
+        // 检查是否是接单者
+        if (task.getAccepterId() == null || !task.getAccepterId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED.getCode(), "只有接单者可以放弃任务");
+        }
+
+        // 检查任务状态(只有进行中的任务可以放弃)
+        TaskStatus currentStatus = TaskStatus.fromCode(task.getStatus());
+        if (currentStatus != TaskStatus.IN_PROGRESS) {
+            throw new BusinessException(ResultCode.BAD_REQUEST.getCode(),
+                "当前任务状态不允许放弃,任务状态: " + currentStatus.getName());
+        }
+
+        // 更新任务状态:重新变回待接单状态
+        Integer oldStatus = task.getStatus();
+        task.setStatus(TaskStatus.ACTIVE.getCode()); // 重新变回待接单
+        task.setAccepterId(null); // 清空接单者
+        task.setAcceptedAt(null); // 清空接单时间
+        task.setStartedAt(null); // 清空开始时间
+        task.setUpdatedAt(LocalDateTime.now());
+        taskMapper.updateById(task);
+
+        // 记录操作日志
+        recordTaskLog(
+            taskId,
+            userId,
+            "abandon",
+            oldStatus,
+            TaskStatus.ACTIVE.getCode(),
+            "接单者放弃任务"
+        );
+
+        // 通知发布者
+        User publisher = userMapper.selectById(task.getPublisherId());
+        if (publisher != null) {
+            SendNotificationRequest notification = new SendNotificationRequest();
+            notification.setUserId(publisher.getUId());
+            notification.setTitle("任务已被放弃");
+            notification.setContent(String.format("您发布的任务「%s」已被接单者放弃,任务重新回到待接单状态", task.getTitle()));
+            notification.setNotifyType("task");
+            notification.setRelatedType("task");
+            notification.setRelatedId(taskId);
+            notificationService.sendToUser(publisher.getUId(), notification);
         }
     }
 

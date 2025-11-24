@@ -234,12 +234,87 @@ const handleNotificationClick = async (notification: any) => {
     }
   }
 
-  // 根据通知类型跳转到对应页面
-  if (notification.linkUrl) {
+  // 🎯 根据通知类型和关联对象跳转到对应页面
+  const targetUrl = getNotificationTargetUrl(notification)
+  if (targetUrl) {
     uni.navigateTo({
-      url: notification.linkUrl
+      url: targetUrl,
+      fail: (err) => {
+        console.error('页面跳转失败:', err)
+        uni.showToast({
+          title: '页面跳转失败',
+          icon: 'none'
+        })
+      }
     })
   }
+}
+
+/**
+ * 🎯 根据通知获取目标跳转链接
+ */
+const getNotificationTargetUrl = (notification: any): string => {
+  const { relatedType, relatedId, linkUrl } = notification
+
+  // 优先使用后端提供的 linkUrl
+  if (linkUrl) {
+    return linkUrl
+  }
+
+  // 根据 relatedType 和 relatedId 动态生成跳转链接
+  if (!relatedType || !relatedId) {
+    return ''
+  }
+
+  const urlMap: Record<string, string> = {
+    // 问题相关
+    'question': `/pages/question/detail?id=${relatedId}`,
+
+    // 回答相关(跳转到问题详情)
+    'answer': `/pages/question/detail?id=${relatedId}`,
+
+    // 资源相关
+    'resource': `/pages/resource/detail?id=${relatedId}`,
+
+    // 任务相关
+    'task': `/pages/task/detail?id=${relatedId}`,
+
+    // 活动相关
+    'activity': `/pages/club/activity-detail?id=${relatedId}`,
+
+    // 社团相关
+    'club': `/pages/club/detail?id=${relatedId}`,
+
+    // 用户相关(关注通知)
+    'user': `/pages/user/index?userId=${relatedId}`,
+
+    // 评论相关(根据 notifyType 推断)
+    'comment': getCommentTargetUrl(notification)
+  }
+
+  return urlMap[relatedType] || ''
+}
+
+/**
+ * 🎯 获取评论通知的目标链接
+ * 评论可能来自资源、问题、活动等,需要根据 notifyType 推断
+ */
+const getCommentTargetUrl = (notification: any): string => {
+  const { relatedId, content } = notification
+
+  // 根据通知内容推断评论的目标类型
+  if (content?.includes('资源')) {
+    return `/pages/resource/detail?id=${relatedId}`
+  }
+  if (content?.includes('问题') || content?.includes('回答')) {
+    return `/pages/question/detail?id=${relatedId}`
+  }
+  if (content?.includes('活动')) {
+    return `/pages/club/activity-detail?id=${relatedId}`
+  }
+
+  // 默认返回空字符串
+  return ''
 }
 
 /**

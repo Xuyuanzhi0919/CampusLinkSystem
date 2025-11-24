@@ -251,9 +251,13 @@ public class ActivityService {
             throw new BusinessException(ResultCode.BAD_REQUEST, "已签到，请勿重复签到");
         }
 
-        // 检查活动状态
-        if (activity.getStatus() != 1) {
-            throw new BusinessException(ResultCode.BAD_REQUEST, "活动未开始或已结束");
+        // 🎯 优化：检查活动时间（基于实际时间而非状态字段）
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(activity.getStartTime())) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动尚未开始，无法签到");
+        }
+        if (now.isAfter(activity.getEndTime())) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "活动已结束，无法签到");
         }
 
         // 更新签到状态
@@ -356,6 +360,16 @@ public class ActivityService {
         Club club = clubMapper.selectById(activity.getClubId());
         if (club != null) {
             response.setClubName(club.getClubName());
+        }
+
+        // 🎯 动态计算活动状态（基于时间）
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isBefore(activity.getStartTime())) {
+            response.setStatus(0); // 未开始
+        } else if (now.isAfter(activity.getEndTime())) {
+            response.setStatus(2); // 已结束
+        } else {
+            response.setStatus(1); // 进行中
         }
 
         // 🎯 计算剩余名额

@@ -223,6 +223,19 @@ public class TaskController {
     }
 
     /**
+     * 放弃任务(接单者)
+     */
+    @Operation(summary = "放弃任务")
+    @PostMapping("/{id}/abandon")
+    public Result<Void> abandonTask(
+            @Parameter(description = "任务ID") @PathVariable Long id,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        taskService.abandonTask(id, userId);
+        return Result.success("已放弃任务");
+    }
+
+    /**
      * 创建任务评价
      */
     @Operation(summary = "创建任务评价")

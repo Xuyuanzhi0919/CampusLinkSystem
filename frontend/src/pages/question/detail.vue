@@ -1352,30 +1352,65 @@ const getCategoryIcon = (category: string): string => {
   padding: 16rpx 24rpx;
   border-top: 1rpx solid #F0F0F0;
   display: flex;
-  align-items: center;
-  gap: 16rpx;
+  flex-direction: column;
+  gap: 12rpx;
   box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
   z-index: 100;
+
+  .format-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8rpx;
+    padding: 8rpx 0;
+    border-bottom: 1rpx solid #F0F0F0;
+
+    .toolbar-item {
+      min-width: 60rpx;
+      height: 48rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #F5F5F5;
+      border-radius: 8rpx;
+      padding: 0 12rpx;
+      transition: all 0.2s;
+
+      .toolbar-icon {
+        font-size: 24rpx;
+        font-weight: 600;
+        color: #333;
+      }
+
+      &:active {
+        background: #E0E0E0;
+        transform: scale(0.95);
+      }
+    }
+  }
 
   .input-wrapper {
     flex: 1;
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
+    gap: 16rpx;
   }
 
   .answer-input {
     flex: 1;
-    height: 72rpx;
-    padding: 0 110rpx 0 24rpx;
+    min-height: 72rpx;
+    max-height: 200rpx;
+    padding: 16rpx 110rpx 16rpx 24rpx;
     background: #F5F5F5;
-    border-radius: 36rpx;
+    border-radius: 16rpx;
     font-size: 28rpx;
+    line-height: 1.5;
   }
 
   .char-count {
     position: absolute;
     right: 24rpx;
+    bottom: 16rpx;
     font-size: 22rpx;
     color: #999;
   }
@@ -1384,6 +1419,7 @@ const getCategoryIcon = (category: string): string => {
     display: flex;
     align-items: center;
     gap: 16rpx;
+    flex-shrink: 0;
 
     .action-icon-btn {
       width: 72rpx;

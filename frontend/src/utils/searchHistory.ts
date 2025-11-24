@@ -106,5 +106,8 @@ class SearchHistoryManager {
 // 导出单例（问答模块）
 export const questionSearchHistory = new SearchHistoryManager(CACHE_KEYS.SEARCH_HISTORY)
 
+// 导出单例（资源模块）
+export const resourceSearchHistory = new SearchHistoryManager(CACHE_KEYS.RESOURCE_SEARCH_HISTORY)
+
 // 导出类（可用于其他模块）
 export { SearchHistoryManager }

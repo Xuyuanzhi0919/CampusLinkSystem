@@ -97,7 +97,7 @@
           <!-- 活动信息 -->
           <view class="activity-info">
             <text class="activity-name">{{ activity.name }}</text>
-            <text class="activity-club">{{ activity.clubName }}</text>
+            <text class="activity-club" @click.stop="handleClubClick(activity)">{{ activity.clubName }}</text>
             <!-- 🎯 活动时间 -->
             <view v-if="activity.startTime" class="activity-time">
               <text class="time-icon">⏰</text>
@@ -175,6 +175,7 @@ interface Activity {
   id: number
   name: string
   poster: string
+  clubId: number       // 🎯 社团ID
   clubName: string
   remainingSlots: number
   hasJoined?: boolean // 🎯 是否已报名
@@ -492,6 +493,7 @@ const loadActivityData = async (forceRefresh = false) => {
         id: item.activityId,
         name: item.title,
         poster: item.coverImage || 'https://picsum.photos/240/180?random=' + item.activityId,
+        clubId: item.clubId,          // 🎯 社团ID（用于跳转社团详情）
         clubName: item.clubName || '社团',
         remainingSlots: item.remainingSlots ?? 0,  // 🎯 直接使用后端计算的剩余名额
         hasJoined: item.isJoined || false,
@@ -538,7 +540,7 @@ const loadActivityData = async (forceRefresh = false) => {
  */
 const goToActivityList = () => {
   uni.navigateTo({
-    url: '/pages/club/list',
+    url: '/pages/club/activity-list',
     fail: () => {
       uni.showToast({ title: '功能开发中', icon: 'none' })
     },
@@ -556,6 +558,29 @@ const handleActivityClick = (activity: Activity) => {
     }
   })
   emit('activityClick', activity)
+}
+
+/**
+ * 点击社团名称跳转到社团详情
+ */
+const handleClubClick = (activity: Activity) => {
+  if (!activity.clubId) {
+    uni.showToast({
+      title: '社团信息不存在',
+      icon: 'none'
+    })
+    return
+  }
+
+  uni.navigateTo({
+    url: `/pages/club/detail?id=${activity.clubId}`,
+    fail: () => {
+      uni.showToast({
+        title: '功能开发中',
+        icon: 'none'
+      })
+    }
+  })
 }
 
 /**
@@ -1349,11 +1374,22 @@ onUnmounted(() => {
 
 .activity-club {
   font-size: 24rpx;
-  color: #86909C;
+  color: #2563EB;
   line-height: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    color: #1D4ED8;
+    text-decoration: underline;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 /* 🎯 活动时间 */

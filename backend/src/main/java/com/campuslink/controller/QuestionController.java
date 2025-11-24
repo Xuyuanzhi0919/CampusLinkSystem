@@ -86,9 +86,10 @@ public class QuestionController {
     @Operation(summary = "获取问题的所有答案")
     @GetMapping("/{id}/answers")
     public Result<List<AnswerResponse>> getAnswers(
-            @Parameter(description = "问题ID") @PathVariable Long id
+            @Parameter(description = "问题ID") @PathVariable Long id,
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
-        List<AnswerResponse> answers = questionService.getAnswersByQuestionId(id);
+        List<AnswerResponse> answers = questionService.getAnswersByQuestionId(id, userId);
         return Result.success(answers);
     }
 

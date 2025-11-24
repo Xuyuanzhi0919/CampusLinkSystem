@@ -150,17 +150,41 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  /**
+   * 从服务器获取最新用户信息
+   */
+  const fetchUserInfo = async () => {
+    try {
+      const res = await uni.request({
+        url: `${config.apiBaseUrl}/user/profile`,
+        method: 'GET',
+        header: {
+          Authorization: `Bearer ${token.value}`
+        }
+      })
+
+      if (res.statusCode === 200 && res.data) {
+        const data = res.data as any
+        if (data.code === 200 && data.data) {
+          setUserInfo(data.data)
+        }
+      }
+    } catch (error) {
+      console.error('获取用户信息失败:', error)
+    }
+  }
+
   return {
     // 状态
     token,
     refreshToken,
     userInfo,
-    
+
     // 计算属性
     isLoggedIn,
     isAdmin,
     isModerator,
-    
+
     // 方法
     init,
     setToken,
@@ -169,6 +193,7 @@ export const useUserStore = defineStore('user', () => {
     logout,
     updatePoints,
     updateUserInfo,
+    fetchUserInfo,
   }
 })
 

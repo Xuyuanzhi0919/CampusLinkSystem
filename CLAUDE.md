@@ -396,7 +396,7 @@ docker-compose down
 
 ## 特色功能实现说明
 
-### 语音搜索功能
+### 1. 语音搜索功能
 
 前端已实现完整的语音搜索功能，包含专业的 SVG 图标、动画效果和多平台支持：
 
@@ -417,12 +417,238 @@ docker-compose down
 
 详细实现文档：[frontend/VOICE_SEARCH_OPTIMIZATION.md](frontend/VOICE_SEARCH_OPTIMIZATION.md)
 
-### 任务状态管理
+### 2. 任务状态管理
 
 任务状态使用枚举类 `TaskStatus` 管理，支持状态流转和验证逻辑。关键实现点：
 - 接单操作需要事务保护，防止并发问题
 - 用户不能接自己发布的任务
 - 状态变更时需要记录到 `task_log` 表
+
+### 3. 前端状态管理最佳实践 (Pinia)
+
+项目使用 Pinia 进行状态管理，主要 Store 包括：
+
+**用户状态 (`stores/user.ts`)**：
+- **持久化存储**：Token、RefreshToken、用户信息同步到 `uni.storage`
+- **字段统一化**：自动处理后端字段差异（`uid` → `userId`，`avatarUrl` → `avatar`）
+- **权限计算**：提供 `isLoggedIn`、`isAdmin`、`isModerator` 计算属性
+- **关键方法**：
+  - `init()` - 应用启动时调用，从本地存储恢复状态
+  - `login()` - 登录后设置 Token 和用户信息
+  - `logout()` - 清除所有认证信息并重定向到首页
+  - `updatePoints()` - 积分变动后更新用户积分
+  - `updateUserInfo()` - 部分更新用户信息（如头像、昵称）
+
+**问答状态 (`stores/question.ts`)**：
+- **智能缓存**：第一页数据缓存 5 分钟（通过 `cache.ts`）
+- **分页管理**：自动处理列表追加和分页状态
+- **乐观更新**：支持本地立即更新列表项，无需重新请求
+- **筛选条件**：分类、状态、排序、关键词等条件持久化
+- **关键方法**：
+  - `loadQuestions()` - 加载问题列表（支持缓存控制）
+  - `refreshQuestions()` - 下拉刷新，重置到第一页
+  - `loadMoreQuestions()` - 上拉加载更多
+  - `updateQuestion()` - 乐观更新单个问题（如点赞、收藏）
+  - `addQuestion()` - 发布新问题后添加到列表顶部
+
+**使用规范**：
+```typescript
+// 在页面中使用 Store
+import { useUserStore } from '@/stores/user'
+import { useQuestionStore } from '@/stores/question'
+
+const userStore = useUserStore()
+const questionStore = useQuestionStore()
+
+// 应用启动时初始化（main.ts 或 App.vue）
+userStore.init()
+
+// 发布问题后乐观更新
+await publishQuestion(data)
+questionStore.addQuestion(newQuestion)
+
+// 点赞问题后乐观更新
+await likeQuestion(qid)
+questionStore.updateQuestion(qid, { likes: question.likes + 1 })
+```
+
+### 4. 评论系统实现
+
+项目支持两种评论系统架构：
+
+**架构 1：通用评论表 (`comment`)**：
+- 使用 `target_type` 和 `target_id` 区分评论对象（resource/question/answer/activity）
+- 适用于需要跨模块统一管理评论的场景
+- 实体类：`entity/Comment.java`
+
+**架构 2：专用评论表 (`resource_comment`)**：
+- 为特定模块单独设计评论表（如资源评论）
+- 更好的性能和灵活性，适合评论量大的模块
+- 实体类：`entity/ResourceComment.java`
+
+**评论层级设计**：
+- **两级结构**：一级评论（顶级）+ 二级回复（reply）
+- **禁止三级嵌套**：后端会拦截对回复的再回复（`ResourceCommentService:41`）
+- **级联删除**：删除一级评论时，自动删除所有回复（`ResourceCommentService:95-99`）
+
+**前端实现要点**：
+```typescript
+// 1. 调用评论 API（services/comment.ts）
+import { getResourceComments, addComment, deleteComment } from '@/services/comment'
+
+// 2. 获取评论列表（分页）
+const comments = await getResourceComments(resourceId, { page: 1, pageSize: 20 })
+
+// 3. 添加评论或回复
+await addComment(resourceId, {
+  content: '评论内容',
+  parentId: null  // 一级评论设为 null，回复时传父评论 ID
+})
+
+// 4. 删除评论（需要权限校验）
+await deleteComment(commentId)
+```
+
+**后端实现要点**：
+- 添加回复时验证 `parentId` 的合法性（`ResourceCommentService:33-44`）
+- 查询一级评论时自动加载所有回复（`ResourceCommentService:126-136`）
+- 删除评论时检查权限（仅评论者本人）
+
+### 5. 性能优化策略
+
+项目实现了完整的前端性能优化方案：
+
+#### 5.1 骨架屏加载 (`components/SkeletonScreen.vue`)
+
+**支持类型**：
+- `banner` - 轮播图骨架屏
+- `function` - 功能入口网格骨架屏
+- `card` - 卡片列表骨架屏（2 列网格）
+- `list` - 列表项骨架屏
+
+**使用方式**：
+```vue
+<template>
+  <!-- 加载状态显示骨架屏 -->
+  <SkeletonScreen v-if="loading" type="card" :count="6" />
+
+  <!-- 数据加载完成显示实际内容 -->
+  <view v-else class="content">
+    <!-- 实际内容 -->
+  </view>
+</template>
+```
+
+**视觉效果**：
+- 渐变动画：模拟内容加载中的闪烁效果（1.4s 循环）
+- 颜色方案：#f0f2f5 → #e6e8eb → #f0f2f5
+
+#### 5.2 图片懒加载 (`components/LazyImage.vue`)
+
+**核心特性**：
+- 占位符显示：加载前显示灰色渐变占位符
+- 淡入动画：图片加载完成后 0.3s 淡入
+- 错误处理：加载失败显示友好的错误提示
+- 多种模式：支持 `aspectFill`、`aspectFit`、`widthFix` 等
+
+**使用方式**：
+```vue
+<LazyImage
+  :src="imageUrl"
+  mode="aspectFill"
+  width="200rpx"
+  height="200rpx"
+  radius="12rpx"
+  :lazy="true"
+  placeholder="/static/default.png"
+/>
+```
+
+#### 5.3 请求防重复 (`composables/useRequest.ts`)
+
+**功能特性**：
+- **防重复请求**：自动拦截处理中的重复请求（`useRequest.ts:92-95`）
+- **防抖支持**：可配置防抖延迟，避免频繁触发（`useRequest.ts:98-109`）
+- **加载状态管理**：自动管理 `loading`、`error`、`data` 状态
+- **错误处理**：统一处理错误并显示友好提示
+
+**使用方式**：
+```typescript
+import { useRequest } from '@/composables/useRequest'
+import { submitForm } from '@/services/xxx'
+
+// 基础用法
+const { loading, data, error, run } = useRequest(submitForm)
+await run(formData)
+
+// 高级配置
+const { run } = useRequest(submitForm, {
+  showLoading: true,           // 显示 uni.showLoading
+  loadingText: '提交中...',
+  showError: true,             // 自动显示错误提示
+  debounce: 500,               // 500ms 防抖
+  onSuccess: (data) => {
+    uni.showToast({ title: '提交成功', icon: 'success' })
+  }
+})
+
+// 分页请求
+const { list, loadMore, refresh, hasMore } = usePagination(getTaskList, {
+  pageSize: 20,
+  immediate: true  // 立即加载第一页
+})
+```
+
+#### 5.4 Token 自动刷新 (`utils/request.ts`)
+
+**刷新策略**：
+- **预刷新**：Token 剩余时间 < 15 分钟时自动刷新（`request.ts:76-86`）
+- **失败重试**：401 响应时尝试刷新 Token 并重试原请求（`request.ts:165-203`）
+- **请求队列**：刷新期间的请求加入队列，刷新完成后批量执行（`request.ts:168-186`）
+
+**工作流程**：
+```
+1. 发起请求前检查 Token 是否即将过期
+   ↓
+2. 即将过期 → 调用 /auth/refresh 刷新 Token
+   ↓
+3. 使用新 Token 发起请求
+   ↓
+4. 如果响应 401 → 再次尝试刷新并重试
+   ↓
+5. 刷新失败 → 清除登录信息，跳转到首页
+```
+
+#### 5.5 缓存机制 (`utils/cache.ts`)
+
+**缓存策略**：
+- **短期缓存**（1 分钟）：实时性要求高的数据
+- **中期缓存**（5 分钟）：问题列表、资源列表等
+- **长期缓存**（30 分钟）：学校列表、分类数据等
+
+**使用方式**：
+```typescript
+import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
+
+// 写入缓存
+cache.set(CACHE_KEYS.QUESTION_LIST, data, CACHE_TTL.MEDIUM)
+
+// 读取缓存
+const cached = cache.get<QuestionList>(CACHE_KEYS.QUESTION_LIST)
+if (cached) {
+  return cached  // 使用缓存数据
+}
+
+// 清除缓存
+cache.remove(CACHE_KEYS.QUESTION_LIST)
+cache.clear()  // 清除所有缓存
+```
+
+**性能优化建议**：
+1. 列表页首次加载优先使用缓存，用户下拉刷新时绕过缓存
+2. 详情页根据更新频率决定缓存时长
+3. 用户操作（点赞、收藏）后使用乐观更新 + 缓存失效
+4. 图片资源使用 CDN + 懒加载，减少首屏加载时间
 
 ## 参考文档
 

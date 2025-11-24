@@ -28,15 +28,15 @@
           v-for="item in favoriteList"
           :key="item.favoriteId"
           class="favorite-card"
-          @click="handleCardClick(item)"
-          @longpress="handleLongPress(item)"
         >
-          <!-- 类型标签 -->
-          <view class="card-header">
-            <view class="type-tag" :class="`type-${item.targetType}`">
-              <text class="tag-text">{{ getTypeLabel(item.targetType) }}</text>
+          <!-- 卡片主体区域（可点击跳转） -->
+          <view class="card-content" @click="handleCardClick(item)">
+            <!-- 类型标签 -->
+            <view class="card-header">
+              <view class="type-tag" :class="`type-${item.targetType}`">
+                <text class="tag-text">{{ getTypeLabel(item.targetType) }}</text>
+              </view>
             </view>
-          </view>
 
           <!-- 标题 -->
           <text class="card-title">{{ item.title }}</text>
@@ -60,8 +60,14 @@
             </view>
           </view>
 
-          <!-- 收藏时间 -->
-          <text class="card-time">收藏于 {{ formatTime(item.createdAt) }}</text>
+            <!-- 收藏时间 -->
+            <text class="card-time">收藏于 {{ formatTime(item.createdAt) }}</text>
+          </view>
+
+          <!-- 取消收藏按钮 -->
+          <view class="remove-btn" @click.stop="handleRemoveFavorite(item)">
+            <text class="remove-icon">🗑️</text>
+          </view>
         </view>
       </view>
 
@@ -91,6 +97,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import { getMyFavorites, removeFavorite, type FavoriteItem } from '@/services/favorite'
 
 // Tab 配置
@@ -334,6 +341,12 @@ onMounted(() => {
   loadFavorites()
 })
 
+// 页面显示时刷新数据（从详情页返回时会触发）
+onShow(() => {
+  // 刷新当前页数据
+  loadFavorites(true)
+})
+
 // 下拉刷新回调
 defineExpose({
   onPullDownRefresh: () => {
@@ -396,15 +409,44 @@ defineExpose({
 
 // 收藏卡片
 .favorite-card {
+  position: relative;
   background: #FFFFFF;
   border-radius: 12rpx;
-  padding: 32rpx;
   margin-bottom: 20rpx;
   box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+}
+
+.card-content {
+  padding: 32rpx;
+  padding-right: 80rpx; // 为删除按钮留出空间
 
   &:active {
     opacity: 0.8;
   }
+}
+
+.remove-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 80rpx;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(to left, #FFFFFF 60%, transparent);
+  transition: all 0.2s;
+
+  &:active {
+    .remove-icon {
+      transform: scale(1.2);
+    }
+  }
+}
+
+.remove-icon {
+  font-size: 40rpx;
+  transition: transform 0.2s;
 }
 
 .card-header {

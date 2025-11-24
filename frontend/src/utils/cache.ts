@@ -173,7 +173,10 @@ export const CACHE_KEYS = {
   QUESTION_LIST: 'question:list',
   QUESTION_DETAIL: 'question:detail:',
   HOT_TAGS: 'question:hot_tags',
-  SEARCH_HISTORY: 'question:search_history'
+  SEARCH_HISTORY: 'question:search_history',
+
+  // 资源模块
+  RESOURCE_SEARCH_HISTORY: 'resource:search_history'
 }
 
 /**

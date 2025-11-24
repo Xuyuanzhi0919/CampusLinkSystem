@@ -154,16 +154,46 @@
             v-for="points in rewardOptions"
             :key="points"
             class="reward-item"
-            :class="{ active: formData.bounty === points }"
+            :class="{ active: formData.bounty === points && !isCustomReward }"
             @click="handleRewardSelect(points)"
           >
             <text class="reward-points">{{ points }}</text>
             <text class="reward-label">积分</text>
           </view>
+          <view
+            class="reward-item custom"
+            :class="{ active: isCustomReward }"
+            @click="handleCustomRewardClick"
+          >
+            <text class="reward-points">{{ isCustomReward ? formData.bounty : '自定义' }}</text>
+            <text class="reward-label">{{ isCustomReward ? '积分' : '1-100' }}</text>
+          </view>
         </view>
+
+        <!-- 自定义输入框 -->
+        <view v-if="showCustomInput" class="custom-input-wrapper">
+          <view class="custom-input-box">
+            <input
+              v-model.number="customRewardInput"
+              class="custom-input"
+              type="number"
+              placeholder="输入1-100的积分"
+              :maxlength="3"
+              @input="handleCustomRewardInput"
+              @confirm="handleCustomRewardConfirm"
+            />
+            <text class="input-unit">积分</text>
+          </view>
+          <view class="custom-input-actions">
+            <button class="cancel-btn" @click="handleCancelCustom">取消</button>
+            <button class="confirm-btn" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</button>
+          </view>
+          <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
+        </view>
+
         <view class="reward-hint">
           <text class="hint-icon">💡</text>
-          <text class="hint-text">设置悬赏可以获得更快更优质的回答</text>
+          <text class="hint-text">设置悬赏可以获得更快更优质的回答（范围：0-100积分）</text>
         </view>
       </view>
 
@@ -220,8 +250,21 @@ const categories = [
   { label: '其他', value: '其他' as QuestionCategory, icon: '📌' }
 ]
 
-// 悬赏选项
-const rewardOptions = [0, 5, 10, 20, 50]
+// 悬赏选项（预设）
+const rewardOptions = [0, 10, 20, 50, 100]
+
+// 自定义悬赏相关
+const showCustomInput = ref(false)
+const customRewardInput = ref<number | ''>('')
+const customRewardError = ref('')
+const isCustomReward = ref(false)
+
+// 自定义悬赏输入校验
+const isCustomRewardValid = computed(() => {
+  if (customRewardInput.value === '') return false
+  const value = Number(customRewardInput.value)
+  return !isNaN(value) && value >= 0 && value <= 100 && Number.isInteger(value)
+})
 
 // 推荐标签（根据分类动态显示）
 const recommendTags = computed(() => {
@@ -274,8 +317,11 @@ watch(() => formData.value, () => {
   autoSaveDraft()
 }, { deep: true })
 
-// 页面加载时恢复草稿
-onMounted(() => {
+// 页面加载时恢复草稿并刷新用户信息
+onMounted(async () => {
+  // 刷新用户信息（确保积分是最新的）
+  await userStore.fetchUserInfo()
+
   const draft = getDraft()
   if (draft) {
     uni.showModal({
@@ -407,6 +453,74 @@ const handleRewardSelect = (points: number) => {
     return
   }
   formData.value.bounty = points
+  isCustomReward.value = false
+  showCustomInput.value = false
+}
+
+/**
+ * 点击自定义悬赏按钮
+ */
+const handleCustomRewardClick = () => {
+  showCustomInput.value = !showCustomInput.value
+  if (showCustomInput.value) {
+    customRewardInput.value = ''
+    customRewardError.value = ''
+  }
+}
+
+/**
+ * 自定义悬赏输入处理
+ */
+const handleCustomRewardInput = () => {
+  customRewardError.value = ''
+  const value = Number(customRewardInput.value)
+
+  if (customRewardInput.value !== '' && !isNaN(value)) {
+    if (value < 0) {
+      customRewardError.value = '积分不能为负数'
+    } else if (value > 100) {
+      customRewardError.value = '悬赏积分不能超过100'
+    } else if (!Number.isInteger(value)) {
+      customRewardError.value = '请输入整数'
+    } else if (value > userPoints.value) {
+      customRewardError.value = '积分不足'
+    }
+  }
+}
+
+/**
+ * 确认自定义悬赏
+ */
+const handleCustomRewardConfirm = () => {
+  if (!isCustomRewardValid.value) {
+    return
+  }
+
+  const value = Number(customRewardInput.value)
+  if (value > userPoints.value) {
+    uni.showToast({
+      title: '积分不足',
+      icon: 'none'
+    })
+    return
+  }
+
+  formData.value.bounty = value
+  isCustomReward.value = true
+  showCustomInput.value = false
+  uni.showToast({
+    title: `已设置悬赏 ${value} 积分`,
+    icon: 'success'
+  })
+}
+
+/**
+ * 取消自定义悬赏
+ */
+const handleCancelCustom = () => {
+  showCustomInput.value = false
+  customRewardInput.value = ''
+  customRewardError.value = ''
 }
 
 /**
@@ -496,6 +610,9 @@ const handleSubmit = async () => {
 
     // 发布成功后删除草稿
     deleteDraft()
+
+    // 刷新用户信息（更新积分显示）
+    await userStore.fetchUserInfo()
 
     uni.showToast({
       title: '发布成功',
@@ -895,6 +1012,102 @@ const handleSubmit = async () => {
     margin-top: 4rpx;
     transition: color 0.2s;
   }
+
+  &.custom {
+    &:not(.active) {
+      .reward-points {
+        font-size: 26rpx;
+      }
+    }
+  }
+}
+
+// 自定义悬赏输入
+.custom-input-wrapper {
+  margin-top: 16rpx;
+  padding: 20rpx;
+  background: #F9FAFB;
+  border-radius: 12rpx;
+  border: 2rpx solid #E5E7EB;
+}
+
+.custom-input-box {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 16rpx;
+  background: #FFFFFF;
+  border-radius: 8rpx;
+  border: 2rpx solid #D1D5DB;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: #F97316;
+  }
+}
+
+.custom-input {
+  flex: 1;
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #111827;
+  text-align: center;
+}
+
+.input-unit {
+  font-size: 24rpx;
+  color: #6B7280;
+}
+
+.custom-input-actions {
+  display: flex;
+  gap: 12rpx;
+  margin-top: 16rpx;
+}
+
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  padding: 14rpx 0;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  border: none;
+  transition: all 0.2s;
+
+  &::after {
+    border: none;
+  }
+}
+
+.cancel-btn {
+  background: #F3F4F6;
+  color: #6B7280;
+
+  &:active {
+    background: #E5E7EB;
+  }
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+
+  &:disabled {
+    opacity: 0.5;
+  }
+
+  &:active:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+.custom-error {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #EF4444;
+  text-align: center;
 }
 
 .reward-hint {

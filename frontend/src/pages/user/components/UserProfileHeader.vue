@@ -7,7 +7,8 @@
         class="avatar"
         :src="profile?.avatarUrl || defaultAvatar"
         mode="aspectFill"
-        @click="handleEditProfile"
+        @click="handleAvatarClick"
+        @longpress="handleEditProfile"
       />
 
       <!-- 用户资料 -->
@@ -22,9 +23,10 @@
           <text class="school-name">{{ profile?.schoolName || '未设置学校' }}</text>
         </view>
 
-        <view class="points-row">
+        <view class="points-row" @click="handlePointsClick">
           <text class="points-label">积分</text>
           <text class="points-value">{{ profile?.points || 0 }}</text>
+          <text class="points-arrow">›</text>
         </view>
       </view>
     </view>
@@ -74,6 +76,7 @@ const emit = defineEmits<{
   editProfile: []
   checkIn: []
   statClick: [key: string]
+  pointsClick: []
 }>()
 
 // 默认头像
@@ -104,7 +107,7 @@ const statsData = computed(() => [
   {
     key: 'tasks',
     label: '任务',
-    value: props.stats?.taskPublishCount || 0
+    value: (props.stats?.taskPublishCount || 0) + (props.stats?.taskAcceptedCount || 0)
   },
   {
     key: 'favorites',
@@ -130,10 +133,44 @@ const handleCheckIn = () => {
 }
 
 /**
+ * 🎯 处理头像点击 - 预览头像
+ */
+const handleAvatarClick = () => {
+  const avatarUrl = props.profile?.avatarUrl || defaultAvatar
+
+  uni.previewImage({
+    current: avatarUrl,
+    urls: [avatarUrl],
+    longPressActions: {
+      itemList: ['保存图片', '编辑资料'],
+      success: (data) => {
+        if (data.tapIndex === 1) {
+          // 点击"编辑资料"
+          emit('editProfile')
+        } else if (data.tapIndex === 0) {
+          // 点击"保存图片"
+          uni.showToast({
+            title: '长按图片可保存',
+            icon: 'none'
+          })
+        }
+      }
+    }
+  })
+}
+
+/**
  * 处理统计项点击
  */
 const handleStatClick = (key: string) => {
   emit('statClick', key)
+}
+
+/**
+ * 处理积分点击
+ */
+const handlePointsClick = () => {
+  emit('pointsClick')
 }
 </script>
 
@@ -215,6 +252,17 @@ const handleStatClick = (key: string) => {
   align-items: center;
   gap: 8rpx;
   margin-top: 12rpx;
+  padding: 8rpx 12rpx 8rpx 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 8rpx;
+  margin-left: -12rpx;
+  padding-left: 12rpx;
+
+  &:active {
+    background: #FEF3C7;
+    transform: scale(0.98);
+  }
 }
 
 .points-label {
@@ -226,6 +274,13 @@ const handleStatClick = (key: string) => {
   font-size: 28rpx;
   font-weight: 600;
   color: #F59E0B;
+}
+
+.points-arrow {
+  font-size: 32rpx;
+  color: #D97706;
+  font-weight: bold;
+  margin-left: 4rpx;
 }
 
 // 统计数据

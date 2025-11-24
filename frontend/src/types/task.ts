@@ -3,13 +3,16 @@
  */
 
 /**
- * 任务状态枚举
+ * 任务状态枚举(必须与后端保持一致)
  */
 export enum TaskStatus {
-  PENDING = 0,    // 待接单
-  IN_PROGRESS = 1, // 进行中
-  COMPLETED = 2,   // 已完成
-  CANCELLED = 3    // 已取消
+  PENDING = 0,      // 待接单
+  ACCEPTED = 1,     // 已接取(已废弃,接单后直接进入进行中)
+  IN_PROGRESS = 2,  // 进行中
+  SUBMITTED = 3,    // 待确认
+  COMPLETED = 4,    // 已完成
+  CANCELLED = 5,    // 已取消
+  EXPIRED = 6       // 已超时
 }
 
 /**

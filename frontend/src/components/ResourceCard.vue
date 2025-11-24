@@ -106,9 +106,9 @@
           :class="{ 'is-downloaded': resource.isDownloaded }"
           @click.stop="handleDownload"
         >
-          <text class="download-icon">{{ resource.isDownloaded ? '✓' : '↓' }}</text>
+          <text class="download-icon">{{ resource.isDownloaded ? '↓' : '↓' }}</text>
           <text class="download-text">
-            {{ resource.isDownloaded ? '已下载' : `${resource.score}积分` }}
+            {{ resource.isDownloaded ? '重新下载' : `${resource.score}积分` }}
           </text>
         </view>
       </view>

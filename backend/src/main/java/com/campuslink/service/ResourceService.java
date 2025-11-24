@@ -112,6 +112,8 @@ public class ResourceService {
         // 排序
         if ("downloads".equals(sortBy)) {
             queryWrapper.orderBy(true, "asc".equals(sortOrder), Resource::getDownloads);
+        } else if ("likes".equals(sortBy)) {
+            queryWrapper.orderBy(true, "asc".equals(sortOrder), Resource::getLikes);
         } else if ("score".equals(sortBy)) {
             queryWrapper.orderBy(true, "asc".equals(sortOrder), Resource::getScore);
         } else {

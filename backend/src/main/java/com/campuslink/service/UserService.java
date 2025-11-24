@@ -242,6 +242,12 @@ public class UserService {
         taskPublishQuery.eq(com.campuslink.entity.Task::getPublisherId, userId);
         int taskPublishCount = Math.toIntExact(taskMapper.selectCount(taskPublishQuery));
 
+        // 查询接取任务总数(作为接单者且状态为进行中或已完成)
+        LambdaQueryWrapper<com.campuslink.entity.Task> taskAcceptedQuery = new LambdaQueryWrapper<>();
+        taskAcceptedQuery.eq(com.campuslink.entity.Task::getAccepterId, userId);
+        taskAcceptedQuery.in(com.campuslink.entity.Task::getStatus, 1, 2); // 状态1=进行中, 2=已完成
+        int taskAcceptedCount = Math.toIntExact(taskMapper.selectCount(taskAcceptedQuery));
+
         // 查询完成任务数(作为接单者且状态为已完成)
         LambdaQueryWrapper<com.campuslink.entity.Task> taskCompleteQuery = new LambdaQueryWrapper<>();
         taskCompleteQuery.eq(com.campuslink.entity.Task::getAccepterId, userId);
@@ -266,6 +272,7 @@ public class UserService {
                 .answerCount(answerCount)
                 .acceptedAnswerCount(acceptedAnswerCount)
                 .taskPublishCount(taskPublishCount)
+                .taskAcceptedCount(taskAcceptedCount)
                 .taskCompleteCount(taskCompleteCount)
                 .favoriteCount(favoriteCount)
                 .likeCount(likeCount)

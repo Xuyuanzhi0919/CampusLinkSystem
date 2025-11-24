@@ -96,16 +96,34 @@
 
         <!-- 评分区域 -->
         <view class="rating-section">
-          <view class="rating-label">资源质量</view>
-          <RatingStars
-            v-model="resource.userRating"
-            :readonly="false"
-            :showText="true"
-            :showCount="true"
-            :totalRatings="resource.totalRatings || 0"
-            size="medium"
-            @change="handleRatingChange"
-          />
+          <!-- 平均评分显示（只读） -->
+          <view class="average-rating">
+            <view class="rating-label">资源质量</view>
+            <RatingStars
+              :modelValue="resource.averageRating || 0"
+              :readonly="true"
+              :showText="true"
+              :showCount="true"
+              :totalRatings="resource.totalRatings || 0"
+              size="medium"
+            />
+          </view>
+
+          <!-- 用户评分区域（可交互） -->
+          <view class="user-rating">
+            <view class="user-rating-label">
+              <text class="label-text">我的评分</text>
+              <text v-if="resource.userRating > 0" class="label-hint">（点击星星可修改）</text>
+            </view>
+            <RatingStars
+              v-model="resource.userRating"
+              :readonly="false"
+              :showText="true"
+              :showCount="false"
+              size="medium"
+              @change="handleRatingChange"
+            />
+          </view>
         </view>
       </view>
 
@@ -180,7 +198,7 @@
         >
           <text class="operation-icon">↓</text>
           <text class="operation-text">
-            {{ resource.isDownloaded ? '已下载' : '下载 (-5积分)' }}
+            {{ resource.isDownloaded ? '重新下载' : '下载 (-5积分)' }}
           </text>
         </view>
 
@@ -300,7 +318,7 @@
       >
         <text class="btn-icon">↓</text>
         <text class="btn-text">
-          {{ resource.isDownloaded ? '已下载' : '下载 (-5积分)' }}
+          {{ resource.isDownloaded ? '重新下载（免费）' : '下载 (-5积分)' }}
         </text>
       </view>
     </view>
@@ -688,16 +706,9 @@ const handleDownload = () => {
     return
   }
 
+  // 如果已下载，直接免费下载，不弹确认框
   if (resource.value.isDownloaded) {
-    uni.showModal({
-      title: '提示',
-      content: '您已下载过该资源，是否重新下载？',
-      success: (res) => {
-        if (res.confirm) {
-          confirmDownload()
-        }
-      },
-    })
+    confirmDownload()
     return
   }
 
@@ -866,7 +877,29 @@ const handleRatingChange = async (rating: number) => {
   const oldAverage = resource.value.averageRating || 0
   const oldTotal = resource.value.totalRatings || 0
 
-  // 乐观更新UI（组件会自动响应）
+  // 如果用户已经评过分，并且不是取消评分，则弹出确认提示
+  if (oldRating > 0 && rating > 0) {
+    uni.showModal({
+      title: '修改评分',
+      content: `确定要将评分从 ${oldRating} 星修改为 ${rating} 星吗？`,
+      success: async (res) => {
+        if (res.confirm) {
+          await submitRating(rating, oldRating, oldAverage, oldTotal)
+        } else {
+          // 用户取消，不修改评分，保持原值
+          // Vue响应式会自动回滚
+        }
+      }
+    })
+  } else {
+    // 首次评分或取消评分，直接提交
+    await submitRating(rating, oldRating, oldAverage, oldTotal)
+  }
+}
+
+// 提交评分的实际逻辑
+const submitRating = async (rating: number, oldRating: number, oldAverage: number, oldTotal: number) => {
+  // 乐观更新UI
   resource.value.userRating = rating
 
   try {
@@ -878,12 +911,14 @@ const handleRatingChange = async (rating: number) => {
     resource.value.totalRatings = result.totalRatings
     resource.value.userRating = result.userRating
 
+    const actionText = oldRating === 0 ? '评分成功' : (rating === 0 ? '已取消评分' : '评分已更新')
     uni.showToast({
-      title: rating > 0 ? '评分成功' : '已取消评分',
+      title: actionText,
       icon: 'success',
+      duration: 2000
     })
   } catch (err: any) {
-    // 回滚评分（只需要回滚 resource 对象）
+    // 回滚评分
     resource.value.averageRating = oldAverage
     resource.value.totalRatings = oldTotal
     resource.value.userRating = oldRating
@@ -891,6 +926,7 @@ const handleRatingChange = async (rating: number) => {
     uni.showToast({
       title: err.message || '评分失败',
       icon: 'none',
+      duration: 2000
     })
   }
 }
@@ -1691,10 +1727,10 @@ const closePreview = () => {
 // 评分区域
 .rating-section {
   display: flex;
-  align-items: center;
-  gap: 16rpx;
+  flex-direction: column;
+  gap: 24rpx;
   margin-top: 20rpx;
-  padding: 20rpx 0;
+  padding: 24rpx 0;
   border-top: 1rpx solid #F0F0F0;
   border-bottom: 1rpx solid #F0F0F0;
 
@@ -1702,9 +1738,51 @@ const closePreview = () => {
   // #ifdef H5
   @media (min-width: 768px) {
     margin-top: 24rpx;
-    padding: 24rpx 0;
+    padding: 28rpx 0;
+    gap: 28rpx;
   }
   // #endif
+}
+
+// 平均评分区域
+.average-rating {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  border-radius: 12rpx;
+  border: 1rpx solid #FED7AA;
+}
+
+// 用户评分区域
+.user-rating {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 16rpx;
+  background: #FAFAFA;
+  border-radius: 12rpx;
+  border: 1rpx solid #E5E5E5;
+}
+
+.user-rating-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+
+  .label-text {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #333333;
+    white-space: nowrap;
+  }
+
+  .label-hint {
+    font-size: 22rpx;
+    color: #999999;
+    white-space: nowrap;
+  }
 }
 
 .rating-label {

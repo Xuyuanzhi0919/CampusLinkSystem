@@ -122,8 +122,8 @@
           <input
             v-model="formData.phone"
             class="item-input"
-            type="number"
-            placeholder="请输入手机号"
+            type="text"
+            placeholder="请输入手机号（如需修改请清空后重新输入）"
             maxlength="11"
             @blur="validateField('phone')"
           />
@@ -264,7 +264,10 @@ const validateField = (field: string) => {
       break
 
     case 'phone':
-      if (value && !/^1[3-9]\d{9}$/.test(value as string)) {
+      // 如果包含星号（脱敏状态），跳过验证
+      if (value && (value as string).includes('*')) {
+        delete errors.value.phone
+      } else if (value && !/^1[3-9]\d{9}$/.test(value as string)) {
         errors.value.phone = '请输入正确的手机号'
       } else {
         delete errors.value.phone
@@ -426,7 +429,8 @@ const handleSave = async () => {
     if (formData.value.grade) {
       updateData.grade = formData.value.grade
     }
-    if (formData.value.phone) {
+    // 只有当手机号不为空且不包含星号（不是脱敏状态）时才提交
+    if (formData.value.phone && !formData.value.phone.includes('*')) {
       updateData.phone = formData.value.phone
     }
 

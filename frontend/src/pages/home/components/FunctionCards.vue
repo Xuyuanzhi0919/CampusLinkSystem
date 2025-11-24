@@ -115,7 +115,7 @@ const secondaryFunctions = ref<SecondaryFunctionItem[]>([
     id: 4,
     icon: '🎭',
     name: '社团活动',
-    path: '/pages/club/list',
+    path: '/pages/club/activity-list',
   },
   {
     id: 5,

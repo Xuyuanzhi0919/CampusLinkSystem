@@ -21,6 +21,15 @@ export interface ClubDetail extends ClubItem {
   isMember: boolean
 }
 
+// 社团成员
+export interface ClubMember {
+  userId: number
+  nickname: string
+  avatarUrl?: string
+  role: string
+  joinedAt: string
+}
+
 // 活动列表项
 export interface ActivityItem {
   activityId: number

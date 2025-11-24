@@ -87,3 +87,24 @@ export const getMyAcceptedTasks = (params: {
 export const deleteTask = (id: number) => {
   return request.delete(`/task/${id}`)
 }
+
+/**
+ * 开始执行任务(接单者)
+ */
+export const startTask = (id: number) => {
+  return request.post(`/task/${id}/start`)
+}
+
+/**
+ * 提交任务结果(接单者)
+ */
+export const submitTask = (id: number, data: { description: string; images?: string[] }) => {
+  return request.post(`/task/${id}/submit`, data)
+}
+
+/**
+ * 放弃任务(接单者)
+ */
+export const abandonTask = (id: number) => {
+  return request.post(`/task/${id}/abandon`)
+}

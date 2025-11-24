@@ -51,7 +51,12 @@
       "Bash(test_rating.bat)",
       "Bash(git stash:*)",
       "Bash(npm run type-check:*)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(TOKEN=\"eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoic3R1ZGVudCIsInVzZXJJZCI6NTMsInVzZXJuYW1lIjoidGVzdHVzZXIwMDEiLCJpYXQiOjE3NjM2MzM2MDYsImV4cCI6MTc2MzY0MDgwNn0.thQCFkBTmtbCHtK8nI01LJa5HYGMQpYOiVFdMQio1XI\")",
+      "Bash(src/main/java/com/campuslink/service/QuestionService.java)",
+      "Bash(ren:*)",
+      "Bash(move \"F:\\Cluade Code Project\\CampusLink\\frontend\\src\\pages\\club\\list.vue\" \"F:\\Cluade Code Project\\CampusLink\\frontend\\src\\pages\\club\\activity-list.vue\")",
+      "Bash(cmd //c taskkill //F //PID 76532)"
     ],
     "deny": [],
     "ask": []

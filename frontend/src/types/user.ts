@@ -33,6 +33,7 @@ export interface UserStatsData {
   answerCount: number          // 回答数
   acceptedAnswerCount: number  // 被采纳回答数
   taskPublishCount: number     // 发布任务数
+  taskAcceptedCount: number    // 接取任务数（进行中+已完成）
   taskCompleteCount: number    // 完成任务数
   favoriteCount: number        // 收藏数
   likeCount: number            // 获赞数

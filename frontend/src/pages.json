@@ -84,11 +84,35 @@
 			}
 		},
 		{
-			"path": "pages/club/list",
+			"path": "pages/club/activity-list",
 			"style": {
-				"navigationBarTitleText": "全部活动",
+				"navigationBarTitleText": "社团活动",
 				"navigationBarBackgroundColor": "#FFFFFF",
 				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/club/list",
+			"style": {
+				"navigationBarTitleText": "社团列表",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/club/detail",
+			"style": {
+				"navigationBarTitleText": "社团详情",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/members",
+			"style": {
+				"navigationBarTitleText": "社团成员",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
 			}
 		},
 		{
@@ -123,7 +147,8 @@
 				"navigationBarTitleText": "积分明细",
 				"navigationBarBackgroundColor": "#FFFFFF",
 				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
+				"backgroundTextStyle": "dark",
+				"disableScroll": true
 			}
 		},
 		{
@@ -173,8 +198,40 @@
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}
+		},
+		{
+			"path": "pages/message/index",
+			"style": {
+				"navigationBarTitleText": "私信",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
+		},
+		{
+			"path": "pages/message/chat",
+			"style": {
+				"navigationBarTitleText": "聊天",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/error/404",
+			"style": {
+				"navigationBarTitleText": "页面不存在",
+				"navigationStyle": "custom"
+			}
 		}
 	],
+	"usingComponents": {},
+	"condition": {
+		"current": 0,
+		"list": [{
+			"name": "404",
+			"path": "pages/error/404"
+		}]
+	},
 	"easycom": {
 		"autoscan": true,
 		"custom": {

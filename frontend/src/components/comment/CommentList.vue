@@ -504,60 +504,66 @@ const formatTime = (dateStr: string) => {
 }
 
 .replies-container {
-  margin-top: 24rpx;
-  padding-left: 80rpx;
-  background: #F8F8F8;
+  margin-top: 20rpx;
+  margin-left: 80rpx;
+  background: #F5F5F5;
   border-radius: 12rpx;
-  padding: 16rpx;
+  padding: 20rpx 16rpx;
+  border-left: 3rpx solid #E0E0E0;
 }
 
 .reply-item {
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #E8E8E8;
 
   &:last-child {
     margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
   }
 }
 
 .reply-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12rpx;
+  margin-bottom: 10rpx;
 }
 
 .reply-avatar {
-  width: 48rpx;
-  height: 48rpx;
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
-  margin-right: 12rpx;
+  margin-right: 10rpx;
+  flex-shrink: 0;
 }
 
 .reply-user-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 2rpx;
 }
 
 .reply-user-name {
   font-size: 24rpx;
   font-weight: 500;
-  color: #333333;
+  color: #666666;
 }
 
 .reply-time {
   font-size: 20rpx;
-  color: #999999;
+  color: #AAAAAA;
 }
 
 .reply-content {
-  padding-left: 60rpx;
+  padding-left: 50rpx;
 }
 
 .reply-text {
   font-size: 26rpx;
-  line-height: 1.6;
-  color: #333333;
+  line-height: 1.5;
+  color: #555555;
   word-break: break-all;
 }
 

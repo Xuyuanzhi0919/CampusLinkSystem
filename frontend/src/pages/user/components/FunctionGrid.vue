@@ -33,6 +33,7 @@ import type { FunctionItem } from '@/types/user'
 interface Props {
   badges?: {
     notifications?: number
+    messages?: number
     myResources?: number
     myQuestions?: number
     myTasks?: number
@@ -67,6 +68,15 @@ const functionItems = computed<FunctionItem[]>(() => [
     badge: props.badges?.notifications
   },
   {
+    id: 'messages',
+    icon: '💬',
+    label: '我的消息',
+    path: '/pages/message/index',
+    type: 'study',
+    description: '查看私信和聊天记录',
+    badge: props.badges?.messages
+  },
+  {
     id: 'my-resources',
     icon: '📚',
     label: '我的资源',
@@ -77,7 +87,7 @@ const functionItems = computed<FunctionItem[]>(() => [
   },
   {
     id: 'my-questions',
-    icon: '💬',
+    icon: '❓',
     label: '我的问答',
     path: '/pages/question/my',
     type: 'study',

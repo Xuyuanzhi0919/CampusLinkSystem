@@ -34,6 +34,9 @@ public class UserStatsVO {
     @Schema(description = "发布任务数")
     private Integer taskPublishCount;
 
+    @Schema(description = "接取任务数（进行中+已完成）")
+    private Integer taskAcceptedCount;
+
     @Schema(description = "完成任务数")
     private Integer taskCompleteCount;
 

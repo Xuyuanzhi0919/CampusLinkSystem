@@ -276,9 +276,12 @@ const getTypeLabel = (type: TaskType): string => {
 const getStatusLabel = (status: TaskStatus): string => {
   const labelMap: Record<number, string> = {
     [TaskStatus.PENDING]: '待接单',
+    [TaskStatus.ACCEPTED]: '已接取',
     [TaskStatus.IN_PROGRESS]: '进行中',
+    [TaskStatus.SUBMITTED]: '待确认',
     [TaskStatus.COMPLETED]: '已完成',
-    [TaskStatus.CANCELLED]: '已取消'
+    [TaskStatus.CANCELLED]: '已取消',
+    [TaskStatus.EXPIRED]: '已超时'
   }
   return labelMap[status] || '未知'
 }
@@ -517,24 +520,46 @@ defineExpose({
   font-size: 24rpx;
   font-weight: 500;
 
+  // 待接单 - 蓝色
   &.status-0 {
     background: #DBEAFE;
     color: #2563EB;
   }
 
+  // 已接取 - 橙色
   &.status-1 {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: #FED7AA;
+    color: #EA580C;
   }
 
+  // 进行中 - 青色
   &.status-2 {
+    background: #CFFAFE;
+    color: #0891B2;
+  }
+
+  // 待确认 - 紫色
+  &.status-3 {
+    background: #E9D5FF;
+    color: #9333EA;
+  }
+
+  // 已完成 - 绿色
+  &.status-4 {
     background: #D1FAE5;
     color: #10B981;
   }
 
-  &.status-3 {
+  // 已取消 - 红色
+  &.status-5 {
     background: #FEE2E2;
     color: #EF4444;
+  }
+
+  // 已超时 - 灰色
+  &.status-6 {
+    background: #F3F4F6;
+    color: #6B7280;
   }
 }
 

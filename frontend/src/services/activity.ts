@@ -39,3 +39,10 @@ export const joinActivity = (id: number) => {
 export const cancelActivity = (id: number) => {
   return request.post(`/activity/${id}/cancel`)
 }
+
+/**
+ * 活动签到
+ */
+export const checkInActivity = (id: number) => {
+  return request.post(`/activity/${id}/signin`)
+}

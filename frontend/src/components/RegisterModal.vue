@@ -31,7 +31,43 @@
             placeholder="邮箱或手机号"
             v-model="formData.account"
             @focus="accountFocused = true"
-            @blur="accountFocused = false"
+            @blur="handleAccountBlur"
+          />
+        </view>
+
+        <!-- 用户名 -->
+        <view class="input-group" :class="{ 'input-focus': usernameFocused, 'input-error': usernameError }">
+          <view class="input-icon-wrapper">
+            <text class="input-icon gradient-icon">👤</text>
+          </view>
+          <input
+            class="form-input"
+            type="text"
+            placeholder="用户名（3-20字符，字母数字下划线）"
+            v-model="formData.username"
+            @focus="usernameFocused = true"
+            @blur="handleUsernameBlur"
+          />
+          <text v-if="usernameChecking" class="checking-icon">⏳</text>
+          <text v-else-if="usernameAvailable === true" class="success-icon">✓</text>
+          <text v-else-if="usernameAvailable === false" class="error-icon">✕</text>
+        </view>
+        <view v-if="usernameHint" class="hint-text" :class="{ 'hint-error': usernameAvailable === false }">
+          {{ usernameHint }}
+        </view>
+
+        <!-- 昵称 -->
+        <view class="input-group" :class="{ 'input-focus': nicknameFocused, 'input-error': nicknameError }">
+          <view class="input-icon-wrapper">
+            <text class="input-icon gradient-icon">😊</text>
+          </view>
+          <input
+            class="form-input"
+            type="text"
+            placeholder="昵称（选填，默认与用户名相同）"
+            v-model="formData.nickname"
+            @focus="nicknameFocused = true"
+            @blur="nicknameFocused = false"
           />
         </view>
 
@@ -157,6 +193,8 @@ const emit = defineEmits(['update:visible', 'register-success', 'go-to-login'])
 // 表单数据
 const formData = ref({
   account: '',
+  username: '',
+  nickname: '',
   password: '',
   confirmPassword: '',
   code: ''
@@ -165,10 +203,14 @@ const formData = ref({
 // 状态管理
 const showAnimation = ref(false)
 const accountFocused = ref(false)
+const usernameFocused = ref(false)
+const nicknameFocused = ref(false)
 const passwordFocused = ref(false)
 const confirmPasswordFocused = ref(false)
 const codeFocused = ref(false)
 const accountError = ref(false)
+const usernameError = ref(false)
+const nicknameError = ref(false)
 const passwordError = ref(false)
 const confirmPasswordError = ref(false)
 const codeError = ref(false)
@@ -177,6 +219,9 @@ const showConfirmPassword = ref(false)
 const loading = ref(false)
 const registerSuccess = ref(false)
 const codeCountdown = ref(0)
+const usernameChecking = ref(false)
+const usernameAvailable = ref<boolean | null>(null)
+const usernameHint = ref('')
 let countdownTimer: number | null = null
 
 // 密码强度计算
@@ -346,19 +391,108 @@ const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'inf
   // #endif
 }
 
+// 生成用户名
+const generateUsername = (account: string): string => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const isEmail = emailRegex.test(account)
+
+  if (isEmail) {
+    // 邮箱：提取@前的部分，去除特殊字符，只保留字母数字下划线
+    return account.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_')
+  } else {
+    // 手机号：添加user_前缀
+    return 'user_' + account.replace(/[^0-9]/g, '')
+  }
+}
+
+// 账号失焦处理 - 自动填充用户名和昵称
+const handleAccountBlur = () => {
+  accountFocused.value = false
+
+  if (formData.value.account && canSendCode.value) {
+    // 只在用户名为空时自动填充
+    if (!formData.value.username) {
+      const generatedUsername = generateUsername(formData.value.account)
+      formData.value.username = generatedUsername
+      usernameHint.value = '已自动生成，可修改'
+    }
+
+    // 只在昵称为空时自动填充
+    if (!formData.value.nickname) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      const isEmail = emailRegex.test(formData.value.account)
+      if (isEmail) {
+        formData.value.nickname = formData.value.account.split('@')[0].substring(0, 20)
+      } else {
+        formData.value.nickname = formData.value.account.substring(0, 20)
+      }
+    }
+  }
+}
+
+// 用户名失焦处理 - 检查用户名是否可用
+const handleUsernameBlur = async () => {
+  usernameFocused.value = false
+
+  const username = formData.value.username.trim()
+
+  // 清空之前的状态
+  usernameAvailable.value = null
+  usernameHint.value = ''
+
+  if (!username) {
+    usernameError.value = true
+    usernameHint.value = '用户名不能为空'
+    return
+  }
+
+  // 验证格式
+  if (username.length < 3 || username.length > 20) {
+    usernameError.value = true
+    usernameAvailable.value = false
+    usernameHint.value = '用户名长度需要3-20个字符'
+    return
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+    usernameError.value = true
+    usernameAvailable.value = false
+    usernameHint.value = '只能包含字母、数字和下划线'
+    return
+  }
+
+  // TODO: 调用后端API检查用户名是否已被占用
+  // 暂时跳过后端检查，假设都可用
+  usernameChecking.value = true
+
+  // 模拟API调用延迟
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  usernameChecking.value = false
+  usernameError.value = false
+  usernameAvailable.value = true
+  usernameHint.value = '用户名可用 ✓'
+}
+
 // 重置表单
 const resetForm = () => {
   formData.value = {
     account: '',
+    username: '',
+    nickname: '',
     password: '',
     confirmPassword: '',
     code: ''
   }
   accountError.value = false
+  usernameError.value = false
+  nicknameError.value = false
   passwordError.value = false
   confirmPasswordError.value = false
   codeError.value = false
   registerSuccess.value = false
+  usernameAvailable.value = null
+  usernameHint.value = ''
   if (countdownTimer) {
     clearInterval(countdownTimer)
     countdownTimer = null
@@ -432,6 +566,7 @@ const handleSendCode = async () => {
 // 表单验证（品牌化友好提示）
 const validateForm = () => {
   accountError.value = !formData.value.account
+  usernameError.value = !formData.value.username || formData.value.username.length < 3 || formData.value.username.length > 20
   passwordError.value = !formData.value.password || formData.value.password.length < 6
   confirmPasswordError.value = formData.value.password !== formData.value.confirmPassword
   // 临时禁用验证码验证
@@ -444,6 +579,21 @@ const validateForm = () => {
 
   if (!canSendCode.value) {
     showToast('邮箱或手机号格式好像不对呢 🤔', 'warning')
+    return false
+  }
+
+  if (usernameError.value) {
+    showToast('用户名需要3-20个字符哦 ~', 'info')
+    return false
+  }
+
+  if (!/^[a-zA-Z0-9_]+$/.test(formData.value.username)) {
+    showToast('用户名只能包含字母、数字和下划线 ~', 'warning')
+    return false
+  }
+
+  if (usernameAvailable === false) {
+    showToast('这个用户名已经被占用了，换一个试试？', 'warning')
     return false
   }
 
@@ -477,22 +627,12 @@ const handleRegister = async () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     const isEmail = emailRegex.test(formData.value.account)
 
-    // 生成合法的用户名（只包含字母、数字、下划线）
-    let username = ''
-    if (isEmail) {
-      // 邮箱：提取@前的部分，去除特殊字符，只保留字母数字下划线
-      username = formData.value.account.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_')
-    } else {
-      // 手机号：添加user_前缀
-      username = 'user_' + formData.value.account.replace(/[^0-9]/g, '')
-    }
-
     const registerData: RegisterRequest = {
-      username: username, // 使用生成的合法用户名
+      username: formData.value.username.trim(), // 使用用户填写的用户名
       password: formData.value.password,
       email: isEmail ? formData.value.account : undefined,
       phone: !isEmail ? formData.value.account : undefined,
-      nickname: formData.value.account.split('@')[0].substring(0, 20), // 昵称取前20个字符
+      nickname: formData.value.nickname.trim() || formData.value.username.trim(), // 使用用户填写的昵称，如果为空则使用用户名
       schoolId: 1, // TODO: 后续添加学校选择
       // 临时处理：验证码可选，如果没填则传默认值
       code: formData.value.code || '000000'
@@ -1108,6 +1248,49 @@ onUnmounted(() => {
     &:hover {
       color: #1D4ED8;
     }
+  }
+}
+
+/* ========== 用户名检查图标 ========== */
+.checking-icon {
+  font-size: 28rpx;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.success-icon {
+  font-size: 32rpx;
+  color: #10B981;
+  font-weight: bold;
+  animation: scaleIn 0.3s ease;
+}
+
+.error-icon {
+  font-size: 32rpx;
+  color: #EF4444;
+  font-weight: bold;
+  animation: scaleIn 0.3s ease;
+}
+
+/* ========== 提示文本 ========== */
+.hint-text {
+  font-size: 24rpx;
+  color: #10B981;
+  padding: 0 8rpx;
+  margin-top: -8rpx;
+  margin-bottom: 8rpx;
+  animation: fadeIn 0.3s ease;
+
+  &.hint-error {
+    color: #EF4444;
   }
 }
 </style>

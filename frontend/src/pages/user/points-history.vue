@@ -4,7 +4,7 @@
     <view class="points-overview">
       <view class="overview-card">
         <text class="overview-title">我的积分</text>
-        <text class="overview-points">{{ userStore.userProfile?.points || 0 }}</text>
+        <text class="overview-points">{{ userStore.userInfo?.points || 0 }}</text>
         <text class="overview-desc">可用于下载资源、发布悬赏等</text>
       </view>
     </view>
@@ -272,15 +272,31 @@ defineExpose({
 })
 </script>
 
+<style lang="scss">
+/* H5 端禁用页面滚动 */
+page {
+  height: 100%;
+  overflow: hidden;
+}
+</style>
+
 <style lang="scss" scoped>
 .points-history-page {
-  min-height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: #F9FAFB;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 // 顶部积分概览
 .points-overview {
   padding: 32rpx;
+  flex-shrink: 0;
 }
 
 .overview-card {
@@ -314,7 +330,8 @@ defineExpose({
 
 // 滚动区域
 .content-scroll {
-  height: calc(100vh - 280rpx);
+  flex: 1;
+  overflow-y: auto;
 }
 
 // 积分记录列表

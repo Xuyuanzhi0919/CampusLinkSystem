@@ -1,22 +1,36 @@
 <template>
   <view class="task-list-page">
-    <!-- 筛选栏 -->
-    <view class="filter-bar">
-      <!-- 任务类型筛选 -->
-      <scroll-view class="type-scroll" scroll-x>
-        <view class="type-tabs">
+    <!-- 任务类型筛选栏 -->
+    <view class="filter-section">
+      <scroll-view class="filter-scroll" scroll-x :show-scrollbar="false">
+        <view class="filter-tabs">
           <view
             v-for="type in taskTypes"
             :key="type.value"
-            class="type-tab"
+            class="filter-tab"
             :class="{ active: currentType === type.value }"
             @click="handleTypeChange(type.value)"
           >
-            <text class="type-icon">{{ type.icon }}</text>
-            <text class="type-label">{{ type.label }}</text>
+            <text class="tab-icon">{{ type.icon }}</text>
+            <text class="tab-label">{{ type.label }}</text>
           </view>
         </view>
       </scroll-view>
+    </view>
+
+    <!-- 状态筛选栏 -->
+    <view class="status-section">
+      <view class="status-tabs">
+        <view
+          v-for="statusOption in statusOptions"
+          :key="statusOption.value"
+          class="status-tab"
+          :class="{ active: currentStatus === statusOption.value }"
+          @click="handleStatusChange(statusOption.value)"
+        >
+          <text class="status-label">{{ statusOption.label }}</text>
+        </view>
+      </view>
     </view>
 
     <!-- 任务列表 -->
@@ -64,8 +78,11 @@
               <text class="reward-points">{{ task.rewardPoints }}</text>
               <text class="reward-unit">积分</text>
             </view>
-            <view class="status-tag" :class="`status-${task.status}`">
-              <text class="status-text">{{ getStatusLabel(task.status) }}</text>
+            <view
+              class="status-tag"
+              :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isTaskExpired(task) }]"
+            >
+              <text class="status-text">{{ getStatusLabel(task.status, task) }}</text>
             </view>
           </view>
         </view>
@@ -107,6 +124,16 @@ import { getTaskList } from '@/services/task'
 import { TaskStatus, type TaskListItem, type TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 
+// 任务状态选项
+const statusOptions = [
+  { value: '', label: '全部' },
+  { value: '0', label: '待接单' },
+  { value: '1', label: '进行中' },
+  { value: '2', label: '已完成' },
+  { value: '3', label: '已取消' },
+  { value: '6', label: '已超时' }
+]
+
 // 任务类型选项
 const taskTypes = [
   { value: '', label: '全部', icon: '📋' },
@@ -116,6 +143,7 @@ const taskTypes = [
   { value: 'other', label: '其他', icon: '📦' }
 ]
 
+const currentStatus = ref<string>('')
 const currentType = ref<string>('')
 const taskList = ref<TaskListItem[]>([])
 const loading = ref(false)
@@ -149,6 +177,10 @@ const loadTasks = async (isRefresh = false) => {
       sortOrder: 'desc'
     }
 
+    if (currentStatus.value !== '') {
+      params.status = currentStatus.value
+    }
+
     if (currentType.value) {
       params.taskType = currentType.value
     }
@@ -173,6 +205,15 @@ const loadTasks = async (isRefresh = false) => {
     refreshing.value = false
     loadingMore.value = false
   }
+}
+
+const handleStatusChange = (status: string) => {
+  if (currentStatus.value === status) return
+  currentStatus.value = status
+  page.value = 1
+  taskList.value = []
+  hasMore.value = true
+  loadTasks()
 }
 
 const handleTypeChange = (type: string) => {
@@ -226,14 +267,35 @@ const getTypeLabel = (type: TaskType): string => {
   return labelMap[type] || '其他'
 }
 
-const getStatusLabel = (status: TaskStatus): string => {
-  const labelMap: Record<number, string> = {
-    [TaskStatus.PENDING]: '待接单',
-    [TaskStatus.IN_PROGRESS]: '进行中',
-    [TaskStatus.COMPLETED]: '已完成',
-    [TaskStatus.CANCELLED]: '已取消'
+/**
+ * 检查任务是否已截止
+ */
+const isTaskExpired = (task: TaskListItem): boolean => {
+  if (!task.deadline) return false
+  const now = new Date()
+  const deadline = new Date(task.deadline)
+  return now > deadline
+}
+
+const getStatusLabel = (status: TaskStatus | number, task?: TaskListItem): string => {
+  // 确保status是数字类型
+  const statusNum = typeof status === 'string' ? parseInt(status) : status
+
+  // 如果是待接单状态且已过截止时间，显示"已截止"
+  if (statusNum === 0 && task && isTaskExpired(task)) {
+    return '已截止'
   }
-  return labelMap[status] || '未知'
+
+  const labelMap: Record<number, string> = {
+    0: '待接单',
+    1: '已接取',
+    2: '进行中',
+    3: '待确认',
+    4: '已完成',
+    5: '已取消',
+    6: '已超时'
+  }
+  return labelMap[statusNum] !== undefined ? labelMap[statusNum] : '未知'
 }
 
 const formatTime = (dateStr: string): string => {
@@ -273,12 +335,13 @@ defineExpose({
 
 <style lang="scss" scoped>
 .task-list-page {
-  min-height: 100vh;
+  height: 100vh; // 固定高度，防止页面整体滚动
   background: #F9FAFB;
-  padding-bottom: 120rpx;
+  overflow: hidden; // 阻止外层滚动，只允许内层scroll-view滚动
 }
 
-.filter-bar {
+// 📦 分类筛选栏
+.filter-section {
   position: sticky;
   top: 0;
   z-index: 100;
@@ -287,17 +350,21 @@ defineExpose({
   border-bottom: 1rpx solid #E5E7EB;
 }
 
-.type-scroll {
+.filter-scroll {
   white-space: nowrap;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.type-tabs {
+.filter-tabs {
   display: inline-flex;
   padding: 0 32rpx;
   gap: 16rpx;
 }
 
-.type-tab {
+.filter-tab {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -310,8 +377,8 @@ defineExpose({
   &.active {
     background: #2563EB;
 
-    .type-icon,
-    .type-label {
+    .tab-icon,
+    .tab-label {
       color: #FFFFFF;
     }
   }
@@ -321,19 +388,74 @@ defineExpose({
   }
 }
 
-.type-icon {
+.tab-icon {
   font-size: 36rpx;
   margin-bottom: 8rpx;
 }
 
-.type-label {
+.tab-label {
   font-size: 24rpx;
   color: #6B7280;
   font-weight: 500;
 }
 
+// 🎯 状态筛选栏
+.status-section {
+  position: sticky;
+  top: 120rpx;
+  z-index: 99;
+  background: #FFFFFF;
+  padding: 16rpx 32rpx;
+  border-bottom: 1rpx solid #E5E7EB;
+}
+
+.status-tabs {
+  display: flex;
+  gap: 12rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.status-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10rpx 24rpx;
+  border-radius: 24rpx;
+  background: #F3F4F6;
+  transition: all 0.3s;
+  flex-shrink: 0;
+
+  &.active {
+    background: #FF6B35;
+
+    .status-label {
+      color: #FFFFFF;
+      font-weight: 600;
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.status-label {
+  font-size: 26rpx;
+  color: #6B7280;
+  font-weight: 500;
+}
+
 .content-scroll {
-  height: calc(100vh - 180rpx);
+  height: calc(100vh - 240rpx);
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .task-list {
@@ -441,24 +563,52 @@ defineExpose({
   font-size: 24rpx;
   font-weight: 500;
 
+  // 待接单 - 蓝色
   &.status-0 {
     background: #DBEAFE;
     color: #2563EB;
   }
 
+  // 已接取 - 橙色
   &.status-1 {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: #FED7AA;
+    color: #EA580C;
   }
 
+  // 进行中 - 青色
   &.status-2 {
+    background: #CFFAFE;
+    color: #0891B2;
+  }
+
+  // 待确认 - 紫色
+  &.status-3 {
+    background: #E9D5FF;
+    color: #9333EA;
+  }
+
+  // 已完成 - 绿色
+  &.status-4 {
     background: #D1FAE5;
     color: #10B981;
   }
 
-  &.status-3 {
+  // 已取消 - 红色
+  &.status-5 {
     background: #FEE2E2;
     color: #EF4444;
+  }
+
+  // 已超时 - 灰色
+  &.status-6 {
+    background: #F3F4F6;
+    color: #6B7280;
+  }
+
+  // 已截止状态（特殊处理）
+  &.status-expired {
+    background: #F3F4F6;
+    color: #9CA3AF;
   }
 }
 
@@ -538,5 +688,24 @@ defineExpose({
   color: #FFFFFF;
   font-weight: 300;
   line-height: 1;
+}
+</style>
+
+<!-- H5端全局样式：隐藏uni-app生成的页面容器滚动条 -->
+<style lang="scss">
+page {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* H5端隐藏所有滚动条 */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* uni-app H5端页面容器 */
+uni-page-body {
+  height: 100%;
+  overflow: hidden;
 }
 </style>

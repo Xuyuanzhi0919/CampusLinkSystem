@@ -590,38 +590,55 @@ const handleMenuClick = (menuId: string) => {
 
 // 退出登录
 const handleLogout = () => {
-  // 清除用户专属的签到状态
-  const userId = userInfo.value.userId
-  if (userId) {
-    const storageKey = `lastCheckInDate_${userId}`
-    uni.removeStorageSync(storageKey)
-  }
+  // 二次确认
+  uni.showModal({
+    title: '退出登录',
+    content: '确定要退出登录吗？',
+    confirmText: '退出',
+    cancelText: '取消',
+    success: (res) => {
+      if (res.confirm) {
+        // 用户确认退出
+        console.log('用户确认退出登录')
 
-  // 清除本地存储
-  uni.removeStorageSync(config.tokenKey)
-  uni.removeStorageSync(config.refreshTokenKey)
-  uni.removeStorageSync(config.userInfoKey)
+        // 清除用户专属的签到状态
+        const userId = userInfo.value.userId
+        if (userId) {
+          const storageKey = `lastCheckInDate_${userId}`
+          uni.removeStorageSync(storageKey)
+        }
 
-  // 🎯 企业级事件总线：触发全局退出登录事件，通知所有监听组件清空数据
-  uni.$emit('user-logout')
+        // 清除本地存储
+        uni.removeStorageSync(config.tokenKey)
+        uni.removeStorageSync(config.refreshTokenKey)
+        uni.removeStorageSync(config.userInfoKey)
 
-  // 显示提示
-  showWelcomeToast('已安全退出,期待下次再见!', 'info')
+        // 🎯 企业级事件总线：触发全局退出登录事件，通知所有监听组件清空数据
+        uni.$emit('user-logout')
 
-  // 动画：头像按钮淡出，登录按钮淡入
-  showAvatarButton.value = false
-  setTimeout(() => {
-    showLoginButton.value = true
-    isLoggedIn.value = false
-    isCheckedIn.value = false
-    userInfo.value = {
-      userId: null,
-      nickname: '',
-      email: '',
-      phone: '',
-      avatar: ''
+        // 显示提示
+        showWelcomeToast('已安全退出,期待下次再见!', 'info')
+
+        // 动画：头像按钮淡出，登录按钮淡入
+        showAvatarButton.value = false
+        setTimeout(() => {
+          showLoginButton.value = true
+          isLoggedIn.value = false
+          isCheckedIn.value = false
+          userInfo.value = {
+            userId: null,
+            nickname: '',
+            email: '',
+            phone: '',
+            avatar: ''
+          }
+        }, 300)
+      } else {
+        // 用户取消退出
+        console.log('用户取消退出登录')
+      }
     }
-  }, 300)
+  })
 }
 
 // 显示欢迎提示（产品级轻量气泡 - CampusLink品牌调性）

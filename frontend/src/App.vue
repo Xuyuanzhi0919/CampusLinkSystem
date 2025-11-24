@@ -2,6 +2,10 @@
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
 import { useUserStore } from '@/stores/user';
 
+// #ifdef H5
+import { setupRouter } from './router/index'
+// #endif
+
 // 初始化用户状态
 const userStore = useUserStore();
 
@@ -11,6 +15,27 @@ onLaunch(() => {
   // 从本地存储恢复用户信息
   userStore.init();
   console.log('用户登录状态:', userStore.isLoggedIn);
+
+  // H5 端路由守卫初始化
+  // #ifdef H5
+  setupRouter();
+  console.log('H5 路由守卫已启动');
+  // #endif
+
+  // 监听页面不存在
+  uni.onPageNotFound((res) => {
+    console.log('页面不存在:', res.path);
+    // 重定向到 404 页面
+    uni.redirectTo({
+      url: '/pages/error/404',
+      fail: () => {
+        // 如果 404 页面也不存在，返回首页
+        uni.reLaunch({
+          url: '/pages/home/index'
+        });
+      }
+    });
+  });
 });
 
 onShow(() => {

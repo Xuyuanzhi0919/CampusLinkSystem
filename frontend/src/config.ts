@@ -5,6 +5,11 @@ export const config = {
     ? 'https://api.campuslink.com/api/v1'
     : '/api/v1',  // 开发环境使用相对路径，通过Vite代理转发
 
+  // WebSocket 地址
+  WS_URL: process.env.NODE_ENV === 'production'
+    ? 'wss://api.campuslink.com'
+    : 'ws://localhost:8080',  // 开发环境 WebSocket 地址
+
   // 文件上传地址
   uploadURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',
 

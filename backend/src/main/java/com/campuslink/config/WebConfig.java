@@ -64,7 +64,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/v3/api-docs/**",
                         "/v3/api-docs",
                         "/webjars/**",
-                        "/favicon.ico"
+                        "/favicon.ico",
+                        "/ws/**"               // WebSocket 端点
                 );
     }
 }

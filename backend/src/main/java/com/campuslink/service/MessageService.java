@@ -185,6 +185,38 @@ public class MessageService {
     }
 
     /**
+     * 撤回消息（2分钟内）
+     */
+    @Transactional
+    public Long recallMessage(Long userId, Long messageId) {
+        Message message = messageMapper.selectById(messageId);
+        if (message == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "消息不存在");
+        }
+
+        // 只能撤回自己发送的消息
+        if (!message.getSenderId().equals(userId)) {
+            throw new BusinessException(ResultCode.PERMISSION_DENIED, "只能撤回自己发送的消息");
+        }
+
+        // 检查是否在2分钟内
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime createdAt = message.getCreatedAt();
+        long minutesDiff = java.time.Duration.between(createdAt, now).toMinutes();
+
+        if (minutesDiff > 2) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "消息发送超过2分钟，无法撤回");
+        }
+
+        // 删除消息
+        Long receiverId = message.getReceiverId();
+        messageMapper.deleteById(messageId);
+        log.info("用户 {} 撤回了消息 {}", userId, messageId);
+
+        return receiverId;
+    }
+
+    /**
      * 删除消息
      */
     @Transactional

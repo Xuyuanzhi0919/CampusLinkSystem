@@ -1,5 +1,6 @@
 package com.campuslink.websocket;
 
+import com.campuslink.dto.message.SendMessageRequest;
 import com.campuslink.service.MessageService;
 import com.campuslink.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -105,6 +106,15 @@ public class ChatWebSocketHandler {
             } else if ("ping".equals(type)) {
                 // 心跳消息
                 sendMessage(session, Map.of("type", "pong"));
+            } else if ("typing".equals(type)) {
+                // 输入状态提示
+                handleTypingMessage(msgData);
+            } else if ("read".equals(type)) {
+                // 消息已读
+                handleReadMessage(msgData);
+            } else if ("recall".equals(type)) {
+                // 消息撤回
+                handleRecallMessage(msgData);
             }
 
         } catch (Exception e) {
@@ -139,33 +149,169 @@ public class ChatWebSocketHandler {
      * 处理聊天消息
      */
     private void handleChatMessage(Map<String, Object> msgData) {
-        Long toUserId = Long.valueOf(msgData.get("toUserId").toString());
-        String content = (String) msgData.get("content");
+        try {
+            Long toUserId = Long.valueOf(msgData.get("toUserId").toString());
+            String content = (String) msgData.get("content");
+            Integer msgType = msgData.get("msgType") != null
+                ? Integer.valueOf(msgData.get("msgType").toString())
+                : 1; // 默认文本消息
 
-        // 保存消息到数据库（通过 MessageService）
-        // Long messageId = messageService.sendMessage(userId, new SendMessageRequest(toUserId, content));
+            // 保存消息到数据库
+            SendMessageRequest request = new SendMessageRequest();
+            request.setReceiverId(toUserId);
+            request.setContent(content);
+            request.setMsgType(msgType);
 
-        // 推送消息给接收方（如果在线）
-        Session receiverSession = onlineUsers.get(toUserId);
-        if (receiverSession != null && receiverSession.isOpen()) {
-            sendMessage(receiverSession, Map.of(
-                "type", "chat",
-                "fromUserId", userId,
-                "toUserId", toUserId,
-                "content", content,
-                "timestamp", System.currentTimeMillis()
-            ));
+            Long messageId = messageService.sendMessage(userId, request);
+            log.info("消息已保存到数据库：messageId={}", messageId);
+
+            // 推送消息给接收方（如果在线）
+            Session receiverSession = onlineUsers.get(toUserId);
+            if (receiverSession != null && receiverSession.isOpen()) {
+                sendMessage(receiverSession, Map.of(
+                    "type", "chat",
+                    "messageId", messageId,
+                    "fromUserId", userId,
+                    "toUserId", toUserId,
+                    "content", content,
+                    "msgType", msgType,
+                    "timestamp", System.currentTimeMillis()
+                ));
+                log.info("消息已推送给接收方：toUserId={}", toUserId);
+            } else {
+                log.info("接收方不在线，消息已保存：toUserId={}", toUserId);
+            }
+
+            // 回复发送方（发送成功）
+            Session senderSession = onlineUsers.get(userId);
+            if (senderSession != null && senderSession.isOpen()) {
+                sendMessage(senderSession, Map.of(
+                    "type", "send_success",
+                    "messageId", messageId,
+                    "toUserId", toUserId,
+                    "content", content,
+                    "msgType", msgType,
+                    "timestamp", System.currentTimeMillis()
+                ));
+            }
+        } catch (Exception e) {
+            log.error("处理聊天消息失败：userId={}", userId, e);
+            Session senderSession = onlineUsers.get(userId);
+            if (senderSession != null && senderSession.isOpen()) {
+                sendMessage(senderSession, Map.of(
+                    "type", "send_error",
+                    "message", "发送失败：" + e.getMessage()
+                ));
+            }
         }
+    }
 
-        // 回复发送方（发送成功）
-        Session senderSession = onlineUsers.get(userId);
-        if (senderSession != null && senderSession.isOpen()) {
-            sendMessage(senderSession, Map.of(
-                "type", "send_success",
-                "toUserId", toUserId,
-                "content", content,
-                "timestamp", System.currentTimeMillis()
-            ));
+    /**
+     * 处理输入状态消息
+     */
+    private void handleTypingMessage(Map<String, Object> msgData) {
+        try {
+            Long toUserId = Long.valueOf(msgData.get("toUserId").toString());
+            Boolean isTyping = msgData.get("isTyping") != null
+                ? Boolean.valueOf(msgData.get("isTyping").toString())
+                : false;
+
+            log.info("输入状态变更：fromUserId={}, toUserId={}, isTyping={}", userId, toUserId, isTyping);
+
+            // 推送给接收方（如果在线）
+            Session receiverSession = onlineUsers.get(toUserId);
+            if (receiverSession != null && receiverSession.isOpen()) {
+                sendMessage(receiverSession, Map.of(
+                    "type", "typing",
+                    "fromUserId", userId,
+                    "toUserId", toUserId,
+                    "isTyping", isTyping,
+                    "timestamp", System.currentTimeMillis()
+                ));
+                log.info("输入状态已推送给接收方：toUserId={}", toUserId);
+            } else {
+                log.info("接收方不在线，忽略输入状态：toUserId={}", toUserId);
+            }
+
+        } catch (Exception e) {
+            log.error("处理输入状态消息失败：userId={}", userId, e);
+        }
+    }
+
+    /**
+     * 处理消息已读
+     */
+    private void handleReadMessage(Map<String, Object> msgData) {
+        try {
+            Long fromUserId = Long.valueOf(msgData.get("fromUserId").toString());
+
+            log.info("标记消息已读：readerId={}, fromUserId={}", userId, fromUserId);
+
+            // 调用 Service 标记消息为已读
+            messageService.markAsRead(userId, fromUserId);
+
+            // 通知发送方（如果在线）
+            Session senderSession = onlineUsers.get(fromUserId);
+            if (senderSession != null && senderSession.isOpen()) {
+                sendMessage(senderSession, Map.of(
+                    "type", "read_receipt",
+                    "readerId", userId,
+                    "timestamp", System.currentTimeMillis()
+                ));
+                log.info("已读回执已推送给发送方：fromUserId={}", fromUserId);
+            }
+
+        } catch (Exception e) {
+            log.error("处理消息已读失败：userId={}", userId, e);
+        }
+    }
+
+    /**
+     * 处理消息撤回
+     */
+    private void handleRecallMessage(Map<String, Object> msgData) {
+        try {
+            Long messageId = Long.valueOf(msgData.get("messageId").toString());
+
+            log.info("尝试撤回消息：userId={}, messageId={}", userId, messageId);
+
+            // 调用 Service 撤回消息（会验证权限和时间限制）
+            Long receiverId = messageService.recallMessage(userId, messageId);
+
+            // 通知接收方（如果在线）
+            if (receiverId != null) {
+                Session receiverSession = onlineUsers.get(receiverId);
+                if (receiverSession != null && receiverSession.isOpen()) {
+                    sendMessage(receiverSession, Map.of(
+                        "type", "message_recalled",
+                        "messageId", messageId,
+                        "fromUserId", userId,
+                        "timestamp", System.currentTimeMillis()
+                    ));
+                    log.info("撤回通知已推送给接收方：receiverId={}", receiverId);
+                }
+            }
+
+            // 通知发送方撤回成功
+            Session senderSession = onlineUsers.get(userId);
+            if (senderSession != null && senderSession.isOpen()) {
+                sendMessage(senderSession, Map.of(
+                    "type", "recall_success",
+                    "messageId", messageId,
+                    "timestamp", System.currentTimeMillis()
+                ));
+            }
+
+        } catch (Exception e) {
+            log.error("处理消息撤回失败：userId={}", userId, e);
+            // 通知发送方撤回失败
+            Session senderSession = onlineUsers.get(userId);
+            if (senderSession != null && senderSession.isOpen()) {
+                sendMessage(senderSession, Map.of(
+                    "type", "recall_error",
+                    "message", e.getMessage()
+                ));
+            }
         }
     }
 

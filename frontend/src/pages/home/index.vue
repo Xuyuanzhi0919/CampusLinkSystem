@@ -575,46 +575,45 @@ onReachBottom(() => {
 <style scoped lang="scss">
 // 变量已通过 uni.scss 全局注入
 
-/* 页面容器 */
+/* Phase 4：页面容器 - 简洁 */
 .home-new {
   min-height: 100vh;
-  background: $bg-surface;
+  background: $bg-page;
   position: relative;
 }
 
-/* 主内容区 */
+/* Phase 4：主内容区 - 紧凑间距 */
 .content-section {
-  padding: $sp-12 0 $sp-24;
+  padding: $sp-8 0 $sp-16;
   position: relative;
   z-index: auto;
   background: transparent;
+
+  @include mobile {
+    padding: $sp-4 0 $sp-12;
+  }
 }
 
-/* 内容容器 - 响应式布局 */
+/* Phase 4：内容容器 - 响应式布局 */
 .content-container {
-  max-width: 2560rpx;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 $sp-32;
+  padding: 0 $sp-16;
   display: flex;
-  gap: $sp-10;
-
-  @include desktop {
-    padding: 0 160rpx;
-    gap: $sp-12;
-  }
+  gap: $sp-8;
 
   @media (max-width: 1440px) {
-    padding: 0 $sp-24;
+    padding: 0 $sp-12;
   }
 
   @include mobile {
     flex-direction: column;
-    padding: 0 $sp-8;
-    gap: $sp-8;
+    padding: 0 $sp-4;
+    gap: $sp-4;
   }
 }
 
-/* 左侧推荐区 - 70% */
+/* Phase 4：左侧推荐区 - 70% */
 .recommend-area {
   flex: 70;
   min-width: 0;
@@ -624,180 +623,146 @@ onReachBottom(() => {
   }
 }
 
-/* 右侧榜单区 - 30% */
+/* Phase 4：右侧榜单区 - 30% */
 .ranking-area {
   flex: 30;
   min-width: 0;
-  background: $gray-50;
-  border-radius: $radius-lg;
-  padding: $sp-8;
-  box-shadow: $shadow-xs;
+  background: $bg-surface;
+  border-radius: $radius-md;
+  padding: $sp-6;
+  border: 1px solid $border-light;
 
   @include mobile {
     flex: 1;
     order: 2;
     background: transparent;
     padding: 0;
-    box-shadow: none;
+    border: none;
   }
 }
 
-/* 辅助信息区 */
+/* Phase 4：辅助信息区 - 紧凑 */
 .auxiliary-section {
-  padding: $sp-20 0 $sp-24;
+  padding: $sp-12 0 $sp-16;
   position: relative;
   z-index: auto;
-  background: $bg-page;
+  background: $bg-surface;
+  border-top: 1px solid $border-light;
 
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: $border-light;
+  @include mobile {
+    padding: $sp-8 0 $sp-12;
   }
 }
 
 .auxiliary-container {
-  max-width: 2560rpx;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 $sp-32;
+  padding: 0 $sp-16;
   display: flex;
-  gap: $sp-12;
-
-  @include desktop {
-    padding: 0 160rpx;
-  }
+  gap: $sp-8;
 
   @media (max-width: 1440px) {
-    padding: 0 $sp-24;
+    padding: 0 $sp-12;
   }
 
   @include mobile {
     flex-direction: column;
-    padding: 0 $sp-8;
-    gap: $sp-8;
+    padding: 0 $sp-4;
+    gap: $sp-4;
   }
 }
 
-/* 辅助卡片 */
+/* Phase 4：辅助卡片 */
 .auxiliary-card {
   flex: 1;
   min-width: 0;
-  min-height: 480rpx;
-  animation: fadeInUp $duration-base $ease-out both;
+  min-height: 360rpx;
 
-  &:nth-child(1) { animation-delay: 0.2s; }
-  &:nth-child(2) { animation-delay: 0.3s; }
-  &:nth-child(3) { animation-delay: 0.4s; }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  @include mobile {
+    min-height: 280rpx;
   }
 }
 
-/* 版权栏 */
+/* Phase 4：版权栏 - 简洁 */
 .footer-copyright {
-  max-width: 2560rpx;
-  margin: $sp-20 auto 0;
-  padding: $sp-12 $sp-32;
+  max-width: 1400px;
+  margin: $sp-12 auto 0;
+  padding: $sp-8 $sp-16;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $sp-6;
+  gap: $sp-4;
   border-top: 1px solid $border-light;
-  background: transparent;
 
-  @include desktop {
-    padding: $sp-12 160rpx;
+  @include mobile {
+    padding: $sp-6 $sp-4;
+    flex-wrap: wrap;
   }
 }
 
 .copyright-text {
-  font-size: $font-size-sm;
-  color: $text-placeholder;
+  font-size: $font-size-xs;
+  color: $text-quaternary;
   line-height: $line-height-normal;
 }
 
 .footer-divider {
-  font-size: $font-size-sm;
-  color: $gray-300;
+  font-size: $font-size-xs;
+  color: $border-color;
 }
 
 .footer-link {
-  font-size: $font-size-sm;
+  font-size: $font-size-xs;
   color: $text-tertiary;
   line-height: $line-height-normal;
   cursor: pointer;
-  transition: $transition-colors;
+  transition: $transition-fast;
 
   &:hover {
     color: $primary;
   }
 }
 
-/* 返回顶部按钮 */
+/* Phase 4：返回顶部按钮 - 简洁 */
 .back-to-top-btn {
   position: fixed;
-  right: $sp-10;
-  bottom: $sp-24;
+  right: $sp-8;
+  bottom: $sp-16;
   z-index: $z-fixed;
-  animation: fadeInUp $duration-slow $ease-out, float 3s ease-in-out infinite;
 
   :deep(.c-button) {
-    width: 96rpx;
-    height: 96rpx;
-    min-width: 96rpx;
+    width: 80rpx;
+    height: 80rpx;
+    min-width: 80rpx;
     padding: 0;
-    box-shadow: $shadow-fab;
-    transition: $transition-base;
+    box-shadow: $shadow-sm;
 
     &:hover {
-      transform: translateY(-4rpx) scale(1.1);
-      box-shadow: 0 12rpx 32rpx rgba($primary, 0.5);
-    }
-
-    &:active {
-      transform: translateY(0) scale(0.95);
+      box-shadow: $shadow-md;
     }
   }
 
   @include mobile {
-    right: $sp-8;
-    bottom: 160rpx;
+    right: $sp-4;
+    bottom: 140rpx;
 
     :deep(.c-button) {
-      width: 80rpx;
-      height: 80rpx;
-      min-width: 80rpx;
+      width: 72rpx;
+      height: 72rpx;
+      min-width: 72rpx;
     }
   }
 }
 
 .back-to-top-icon {
-  font-size: $font-size-3xl;
-  font-weight: $font-weight-bold;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-semibold;
   color: $text-inverse;
   line-height: 1;
 
   @include mobile {
-    font-size: $font-size-2xl;
+    font-size: $font-size-xl;
   }
-}
-
-/* 浮动动画 */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8rpx); }
 }
 </style>
 

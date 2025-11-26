@@ -530,290 +530,168 @@ onMounted(() => {
 <style scoped lang="scss">
 // 变量已通过 uni.scss 全局注入
 
-/* 优化：为「为你推荐」区添加统一背景层，让其独立于顶部 */
+/* Phase 3：推荐区域 - 专业简洁 */
 .recommend-section {
-  background: $gray-50; /* 浅灰背景 */
-  border-radius: $radius-lg; /* 12px */
-  padding: $sp-12; /* 24px */
-  /* 优化：增加轻微阴影 */
-  box-shadow: inset 0 2rpx 8rpx rgba($gray-900, 0.02);
-  transition: $transition-base;
-  animation: fadeInUp $duration-slow $ease-out;
+  background: $bg-surface;
+  border-radius: $radius-md;
+  padding: $sp-6;
+  border: 1px solid $border-light;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 优化：标题栏 - 增加底部分割线，增强栏目感 */
+/* Phase 3：标题栏 - 简洁专业 */
 .section-header {
   display: flex;
   align-items: center;
-  gap: $sp-8;
-  margin-bottom: $sp-8;
-  padding-bottom: $sp-6;
-  position: relative;
-  /* 优化：添加底部分割线 */
-  border-bottom: 1px solid $gray-200;
-
-  /* 优化：移除原有的底线装饰，改用完整的分割线 */
-  /* &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 80rpx;
-    height: 3rpx;
-    background: var(--cl-primary, $primary-light);
-    border-radius: 2rpx;
-  } */
+  gap: $sp-6;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-4;
+  border-bottom: 1px solid $border-light;
 }
 
-/* 标题包装器 */
+/* Phase 3：标题包装器 - 简化 */
 .title-wrapper {
   display: flex;
   flex-direction: column;
-  gap: $sp-2; /* 标题与副标题间距 */
+  gap: $sp-1;
 }
 
-/* 优化：标题 - 增强字重和视觉锚点 + 渐变文字 */
+/* Phase 3：标题 - 简洁专业，移除渐变效果 */
 .section-title {
-  font-size: $font-size-2xl; /* 20px - 标题规范 */
-  font-weight: $font-weight-bold; /* 优化：增强到 700，更突出 */
-  /* 精修：渐变文字效果 - 从深蓝到亮蓝 */
-  background: linear-gradient(135deg, $primary-dark 0%, $primary-light 50%, $primary-400 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: $font-size-xl; /* 18px */
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
   line-height: 1;
-  position: relative;
-  padding-left: $sp-6; /* 优化：增加左侧间距，为色条留更多空间 */
-  /* 精修：轻微文字阴影，增强立体感 */
-  filter: drop-shadow(0 2rpx 4rpx rgba($primary-light, 0.1));
-
-  /* 优化：左侧淡蓝渐变底条装饰线 */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8rpx; /* 4px 宽度 - 增大宽度 */
-    height: 40rpx; /* 20px 高度 */
-    background: linear-gradient(180deg, $primary-light 0%, $primary-400 100%); /* 蓝色渐变 */
-    border-radius: $radius-xs; /* 圆角 */
-    /* 精修：装饰条呼吸动画 */
-    animation: pulse 2s ease-in-out infinite;
-  }
 }
 
-/* 装饰条呼吸动画 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-/* 优化：副标题 - 淡化灰度，字距稍加宽 */
+/* Phase 3：副标题 - 淡灰色 */
 .section-subtitle {
-  font-size: $font-size-sm; /* 12px */
+  font-size: $font-size-xs;
   font-weight: $font-weight-regular;
-  color: $gray-400; /* 优化：更淡的灰度 */
+  color: $text-tertiary;
   line-height: $line-height-normal;
-  padding-left: $sp-6; /* 与标题对齐 */
-  letter-spacing: 0.5rpx; /* 优化：字距稍加宽 */
 }
 
-/* 优化：筛选标签 - 增强导航感 */
-/* 优化:Web端自动换行布局,避免横向滚动 */
+/* Phase 3：筛选标签 - 简洁专业 */
 .filter-tags {
   flex: 1;
   display: flex;
-  flex-wrap: wrap; /* Web端自动换行 */
-  gap: $sp-6;
+  flex-wrap: wrap;
+  gap: $sp-4;
 }
 
 .filter-tag {
-  font-size: $font-size-base; /* 14px - 正文规范 */
-  color: $gray-500;
-  padding: $sp-2 $sp-5;
-  border-radius: $radius-base;
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-sm;
   cursor: pointer;
-  transition: $transition-slow; /* 优化：延长过渡时间 */
-  position: relative;
+  transition: $transition-fast;
   background: transparent;
   font-weight: $font-weight-medium;
-  /* 优化：添加底边条（默认透明）*/
-  border-bottom: 2px solid transparent;
 
-  /* 优化：hover 时添加轻柔底边条（2px 蓝色）*/
   &:hover {
     color: $primary;
-    background: $gray-100;
-    border-bottom-color: $primary; /* 蓝色底边条 */
+    background: $gray-50;
   }
 
   &.active {
-    color: $primary-light;
-    background: $primary-100;
+    color: $primary;
+    background: $primary-50;
     font-weight: $font-weight-semibold;
-
-    /* 精修：激活状态添加底部渐变条 */
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: -2px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, $primary 0%, $primary-400 100%);
-      border-radius: 1px;
-      animation: slideIn $duration-slow $ease-out;
-    }
   }
 }
 
-/* 渐变条滑入动画 */
-@keyframes slideIn {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-/* 文档规范：换一批/查看全部条 - 浅蓝底，圆角 12 */
+/* Phase 3：操作栏 - 简洁专业 */
 .action-bar {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
-  margin-top: $sp-8; /* 与卡片列表间距 */
-  padding: $sp-4 $sp-6;
-  background: $primary-50; /* 文档规范：浅蓝底 */
-  border-radius: $radius-lg; /* 文档规范：圆角 12px */
-  transition: $transition-fast;
+  margin-top: $sp-6;
+  padding: $sp-3 $sp-4;
+  background: $gray-50;
+  border-radius: $radius-sm;
+  border: 1px solid $border-light;
 }
 
 .action-btn {
   display: flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-6;
+  padding: $sp-2 $sp-4;
   background: transparent;
-  color: $primary;
+  color: $text-secondary;
   border: none;
   cursor: pointer;
-  /* 精修：统一过渡时间，添加弹性缓动 */
-  transition: $transition-base;
+  transition: $transition-fast;
   font-weight: $font-weight-medium;
-  border-radius: $radius-md; /* 精修：预设圆角 */
+  border-radius: $radius-sm;
 
   &:hover {
-    /* 精修：hover 背景更深，与底栏区分 */
-    background: $primary-100;
-    /* 精修：轻微放大，增强交互感 */
-    transform: scale(1.02);
+    color: $primary;
+    background: $bg-surface;
   }
 
   &:active {
-    transform: scale(0.96);
-    transition: $transition-fast;
+    transform: scale(0.98);
   }
 }
 
 .action-icon {
-  font-size: $font-size-base;
+  font-size: $font-size-sm;
   line-height: 1;
-  transition: $transition-fast;
 }
 
 .action-text {
-  font-size: $font-size-base; /* 14px */
+  font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   line-height: 1;
 }
 
 .action-divider {
   width: 1px;
-  height: $sp-8; /* 16px */
-  background: $gray-300;
-  margin: 0 $sp-4;
+  height: $sp-6;
+  background: $border-color;
+  margin: 0 $sp-3;
 }
 
-/* 精修：刷新按钮特殊样式 */
+/* Phase 3：刷新按钮 */
 .refresh-btn {
-  position: relative;
-
-  /* 精修：hover 时刷新图标旋转 */
   &:hover .refresh-icon {
     transform: rotate(180deg);
   }
 }
 
-/* 精修：刷新图标过渡 */
 .refresh-icon {
-  transition: transform $duration-slow $ease-in-out;
+  transition: transform $duration-base $ease-out;
   display: inline-block;
-  /* 精修：增强图标视觉效果 */
-  font-size: $font-size-lg; /* 稍大一点，16px */
-  font-weight: $font-weight-semibold;
-  color: $primary;
-  /* 精修：轻微阴影，增强立体感 */
-  text-shadow: 0 1px 2px rgba($primary, 0.1);
 
-  /* 精修：刷新中的旋转动画 */
   &.rotating {
-    animation: rotate360 0.6s $ease-in-out infinite;
+    animation: rotate360 0.6s linear infinite;
   }
 }
 
 @keyframes rotate360 {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* 精修：推荐列表 - 响应式网格布局 + 呼吸感间距 */
+/* Phase 3：推荐列表 - 紧凑网格布局 */
 .recommend-list {
   display: grid;
-  /* 优化：响应式网格 - 3列（大屏）、2列（中屏）、1列（手机）*/
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: $sp-12; /* 精修：行间距 24px，增强呼吸感 */
-  column-gap: $sp-10; /* 精修：列间距 20px，保持紧凑 */
-  min-height: 400rpx;
-  /* 精修：增加顶部间距，与标题区分 */
-  margin-top: $sp-8;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: $sp-4;
+  min-height: 300rpx;
+  margin-top: $sp-4;
 
-  /* 内容交叉淡入淡出过渡 */
-  transition: opacity $duration-base $ease-out;
-
-  /* 响应式断点 */
   @media (max-width: 1440px) {
-    grid-template-columns: repeat(2, 1fr); /* 中屏：2列 */
-    gap: $sp-10;
-    column-gap: $sp-8;
+    grid-template-columns: repeat(2, 1fr);
+    gap: $sp-4;
   }
 
   @media (max-width: 960px) {
-    grid-template-columns: 1fr; /* 小屏：1列 */
-    gap: $sp-12; /* 精修：移动端保持 48rpx (24px)，避免拥挤 */
+    grid-template-columns: 1fr;
+    gap: $sp-3;
   }
 }
 
@@ -822,140 +700,47 @@ onMounted(() => {
   grid-column: 1 / -1;
 }
 
-/* 重构：卡片 - 整体可点击，hover 轻微上浮+光感边框 */
+/* Phase 3：卡片 - 简洁紧凑，移除顶部色条 */
 .recommend-card {
   position: relative;
-  padding: $sp-8; /* 内边距 16px */
-  background: $white; /* 纯白卡片 */
-  border: 1px solid transparent; /* 重构：默认透明边框，为 hover 留空间 */
-  border-radius: $radius-xl; /* 圆角 12px */
+  padding: $sp-4;
+  background: $bg-surface;
+  border: 1px solid $border-light;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: $transition-base; /* 统一过渡时间 */
-  min-height: 336rpx; /* 168px - 最小高度 */
-  /* 重构：统一阴影标准 */
-  box-shadow: 0 8rpx 20rpx rgba($gray-900, 0.05);
-  overflow: visible; /* 重构：允许色条溢出 */
+  transition: $transition-fast;
+  min-height: 240rpx;
   display: flex;
   flex-direction: column;
-  gap: $sp-4; /* 统一间距 8px */
+  gap: $sp-3;
 
-  /* 淡入动画（stagger 30ms）*/
-  animation: fadeInCard $duration-base $ease-out both;
-
-  /* 滑动状态 - 禁用过渡以实现实时跟手效果 */
-  &.swiping {
-    transition: none;
-    box-shadow: 0 12rpx 32rpx rgba($gray-900, 0.12);
-    opacity: 0.9;
-  }
-
-  /* 重构：Hover 状态 - 上浮 4px + 光感渐变边框 */
   &:hover {
-    transform: translateY(-8rpx); /* 上浮 4px */
-    /* 重构：hover 阴影标准 */
-    box-shadow: 0 16rpx 48rpx rgba($primary, 0.08);
-    /* 重构：光感边框 - 半透明蓝色 */
-    border-color: rgba($primary, 0.25);
-
-    .card-title {
-      /* 精修：标题渐变色呼应主题色 */
-      background: linear-gradient(135deg, $primary 0%, $primary-light 50%, $primary-400 100%);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* 重构：hover 时显示箭头指示器 */
-    .card-click-indicator {
-      opacity: 1;
-      transform: translateY(-50%) translateX(0); /* 修复：保持垂直居中 */
-    }
-
-    /* 重构：顶部色条加深 */
-    .card-top-bar {
-      opacity: 1;
-    }
+    border-color: $primary-200;
+    box-shadow: $shadow-sm;
   }
 
-  /* Active 状态 */
   &:active {
-    transform: translateY(-4rpx) scale(0.98);
-    transition: $transition-fast;
+    transform: scale(0.99);
   }
 }
 
-/* 文档规范：移除卡片背景渐变，统一使用纯白卡 */
-/* 已在 .recommend-card 中统一设置 background: $white */
-
-/* 卡片淡入动画 */
-@keyframes fadeInCard {
-  from {
-    opacity: 0;
-    transform: translateY(10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* 精修：顶部色条 - 6px 高度，柔化色彩，统一亮度 */
+/* Phase 3：隐藏顶部色条 */
 .card-top-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: $sp-3; /* 精修：12rpx (6px) */
-  border-radius: $radius-xl $radius-xl 0 0; /* 顶部圆角与卡片一致 */
-  opacity: 0.8; /* 默认半透明 */
-  transition: opacity $transition-base;
-  z-index: 1;
-
-  /* 精修：课件 - 柔和蓝色（亮度 70%）*/
-  &.bar-resource {
-    background: $primary-400; /* 柔和蓝色 */
-  }
-
-  /* 精修：问答 - 柔和橙色（亮度 73%）*/
-  &.bar-question {
-    background: $accent-300; /* 柔和橙色 */
-  }
-
-  /* 精修：任务 - 柔和绿色（亮度 68%）*/
-  &.bar-task {
-    background: $success-light; /* 柔和绿色 */
-  }
+  display: none;
 }
 
-/* 精修：类型标签 - 去掉背景色，颜色与色条同步 */
+/* Phase 3：类型标签 - 简洁灰色 */
 .type-tag {
   display: inline-flex;
   align-items: center;
-  gap: $sp-2; /* 图标与文字间距 */
-  padding: 0; /* 重构：去掉内边距 */
-  font-size: $font-size-sm; /* 12px */
-  font-weight: $font-weight-medium; /* 重构：从 600 降到 500 */
-  transition: $transition-base;
-  flex-shrink: 0;
-
-  /* 精修：课程 - 柔和蓝色，与色条同步 */
-  &.type-resource {
-    color: $primary-400; /* 柔和蓝色 */
-  }
-
-  /* 精修：问答 - 柔和橙色，与色条同步 */
-  &.type-question {
-    color: $accent-300; /* 柔和橙色 */
-  }
-
-  /* 精修：任务 - 柔和绿色，与色条同步 */
-  &.type-task {
-    color: $success-light; /* 柔和绿色 */
-  }
+  gap: $sp-1;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $text-tertiary;
 }
 
 .type-icon {
-  font-size: $font-size-sm; /* 图标大小 */
+  font-size: $font-size-xs;
   line-height: 1;
 }
 
@@ -963,123 +748,91 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 重构：点击指示器（左侧与标题对齐）*/
+/* Phase 3：隐藏点击指示器 */
 .card-click-indicator {
-  position: absolute;
-  /* 修复：改为左侧定位，与卡片标题垂直对齐 */
-  top: 50%;
-  transform: translateY(-50%) translateX(-8rpx);
-  right: $sp-8;
-  width: $sp-12;
-  height: $sp-12;
-  @include flex-center;
-  background: rgba($primary, 0.08);
-  border-radius: 50%;
-  opacity: 0;
-  transition: all $duration-base $ease-smooth;
-  pointer-events: none;
-  z-index: 5; /* 修复：降低层级，避免遮挡徽标 */
+  display: none;
 }
 
-.indicator-arrow {
-  font-size: $font-size-xl;
-  color: $primary-light;
-  line-height: 1;
-  font-weight: $font-weight-semibold;
-}
-
-/* 优化：卡片内容包装器 - 分层结构 */
+/* Phase 3：卡片内容 */
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: $sp-3; /* 6px - 标题与摘要间距 */
+  gap: $sp-2;
   flex: 1;
 }
 
-/* 精修：一级 - 卡片标题（加粗 + 紧凑行距）*/
+/* Phase 3：卡片标题 - 紧凑 */
 .card-title {
-  font-size: $font-size-lg; /* 16px */
-  font-weight: $font-weight-bold; /* 精修：从 600 增强到 700，更突出 */
-  color: $gray-900; /* 深色 */
-  line-height: $line-height-snug; /* 精修：从 1.6 缩小到 1.5，更紧凑 */
-  @include text-ellipsis(2); /* 最多两行 */
-  transition: $transition-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  line-height: $line-height-tight;
+  @include text-ellipsis(2);
 }
 
-/* 精修：二级 - 卡片摘要（灰度中等 + 紧凑行距）*/
+.recommend-card:hover .card-title {
+  color: $primary;
+}
+
+/* Phase 3：卡片摘要 - 淡灰 */
 .card-intro {
-  font-size: $font-size-base; /* 14px */
+  font-size: $font-size-sm;
   font-weight: $font-weight-regular;
-  color: $gray-500; /* 灰度中等 */
-  line-height: $line-height-tight; /* 精修：从 1.6 缩小到 1.4，提升信息密度 */
-  @include text-ellipsis(2); /* 最多 2 行 */
+  color: $text-tertiary;
+  line-height: $line-height-tight;
+  @include text-ellipsis(1);
 }
 
-/* 优化：三级 - Meta 信息（灰度最轻）*/
+/* Phase 3：Meta 信息 - 统一浅灰 */
 .card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-4 $sp-6;
-  margin-top: auto; /* 推到底部 */
-  padding-top: $sp-4;
-  border-top: 1px solid rgba($gray-900, 0.04);
+  gap: $sp-3;
+  margin-top: auto;
+  padding-top: $sp-3;
+  border-top: 1px solid $border-light;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: $sp-1;
 }
 
 .meta-icon {
-  font-size: $font-size-sm; /* 12px */
+  font-size: $font-size-xs;
   line-height: 1;
-  opacity: 0.6; /* 图标线性风格 */
+  opacity: 0.5;
 }
 
 .meta-text {
-  font-size: $font-size-sm; /* 12px */
-  color: $gray-400; /* 统一灰 400 */
+  font-size: $font-size-xs;
+  color: $text-tertiary;
   line-height: 1;
-  font-weight: $font-weight-regular;
 }
 
-/* 分隔符 - 文档规范：统一使用 "·" */
 .meta-dot {
-  font-size: $font-size-sm;
-  color: $gray-300;
+  font-size: $font-size-xs;
+  color: $text-quaternary;
   line-height: 1;
-  margin: 0 $sp-1;
 }
 
-/* 高亮元信息（积分）*/
-.meta-item.meta-highlight {
-  .meta-icon {
-    opacity: 1;
-  }
-
-  .meta-text {
-    color: $accent; /* 暖黄色 */
-    font-weight: $font-weight-semibold;
-  }
+/* 积分高亮 */
+.meta-item.meta-highlight .meta-text {
+  color: $accent;
+  font-weight: $font-weight-medium;
 }
 
-/* 紧急元信息（截止时间）*/
-.meta-item.meta-urgent {
-  .meta-icon {
-    opacity: 1;
-  }
-
-  .meta-text {
-    color: $error; /* 红色 */
-    font-weight: $font-weight-semibold;
-  }
+/* 紧急高亮 */
+.meta-item.meta-urgent .meta-text {
+  color: $error;
+  font-weight: $font-weight-medium;
 }
 
-/* 操作按钮 - 文档规范（合并成一个分组，减少噪点）*/
+/* Phase 3：操作按钮 - 简化 */
 .card-actions {
   display: flex;
-  margin-top: $sp-4;
+  margin-top: $sp-2;
 }
 
 .action-group {
@@ -1087,154 +840,117 @@ onMounted(() => {
   align-items: center;
   gap: 0;
   background: $gray-50;
-  border-radius: $radius-md; /* 8px */
+  border-radius: $radius-sm;
   padding: $sp-1;
-  border: 1px solid $gray-200;
 }
 
 .card-actions .action-btn {
   display: flex;
   align-items: center;
   gap: $sp-1;
-  padding: $sp-2 $sp-4;
+  padding: $sp-1 $sp-3;
   background: transparent;
-  border-radius: $radius-base; /* 6px */
+  border-radius: $radius-xs;
   cursor: pointer;
   transition: $transition-fast;
 
   &:hover {
-    background: $white;
-    transform: translateY(-1rpx);
-  }
-
-  &:active {
-    transform: scale(0.95);
+    background: $bg-surface;
   }
 }
 
 .card-actions .action-divider {
   width: 1px;
-  height: $sp-6; /* 12px */
-  background: $gray-200;
+  height: $sp-4;
+  background: $border-light;
 }
 
 .card-actions .action-icon {
-  font-size: $font-size-sm; /* 12px */
+  font-size: $font-size-xs;
   line-height: 1;
 }
 
 .action-label {
-  font-size: $font-size-xs; /* 11px */
-  font-weight: $font-weight-medium;
-  color: $gray-600;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-regular;
+  color: $text-tertiary;
   line-height: 1;
 }
 
-/* ========== 响应式适配 - 文档规范 ========== */
+/* ========== Phase 3：响应式适配 ========== */
 
-/* <960：网格改单列 + 4 条展示 */
 @media (max-width: 960px) {
   .recommend-list {
-    grid-template-columns: 1fr; /* 文档规范：单列布局 */
+    grid-template-columns: 1fr;
   }
 
-  /* 文档规范：只显示 4 条 */
   .recommend-card:nth-child(n+5) {
     display: none;
   }
-
-  /* 文档规范：查看全部变为满宽胶囊按钮 */
-  .action-bar {
-    border-radius: $radius-full; /* 胶囊按钮 */
-  }
 }
 
-/* 移动端（< 750px）*/
-@media (max-width: 750px) {
-  .recommend-list {
-    grid-template-columns: 1fr;
-    gap: $sp-6;
+@media (max-width: $breakpoint-sm) {
+  .recommend-section {
+    padding: $sp-4;
   }
 
   .section-header {
     flex-wrap: wrap;
-    gap: $sp-3;
+    gap: $sp-2;
   }
 
-  /* 优化:移动端横向滚动,显示1/3下一个标签作为滑动提示 */
   .filter-tags {
     order: 3;
     width: 100%;
-    flex-wrap: nowrap; /* 移动端不换行 */
-    overflow-x: auto; /* 允许横向滚动 */
-    -webkit-overflow-scrolling: touch; /* iOS流畅滚动 */
-    padding: 0 0 $sp-2 0; /* 为滚动条预留空间 */
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: $sp-1;
 
-    /* 优化:显示1/3的下一个标签作为视觉提示 */
-    /* 通过padding-right实现:假设每个标签约120rpx,显示40rpx的下一个标签 */
-    &::after {
-      content: '';
-      display: block;
-      min-width: $sp-10; /* 显示下一个标签的1/3 */
-      flex-shrink: 0;
-    }
-
-    /* 隐藏滚动条但保持滚动功能 */
     &::-webkit-scrollbar {
       display: none;
     }
-    scrollbar-width: none; /* Firefox */
+    scrollbar-width: none;
   }
 
-  /* 移动端标签项不允许收缩 */
   .filter-tag {
     flex-shrink: 0;
     white-space: nowrap;
   }
 
   .recommend-card {
-    min-height: 280rpx;
-  }
-
-  /* 移动端：操作栏满宽 */
-  .action-bar {
-    width: 100%;
-    border-radius: $radius-full;
+    min-height: 200rpx;
   }
 }
 
-/* ========== 优化：新增样式 ========== */
+/* ========== Phase 3：徽标样式 ========== */
 
-/* 优化：右上角徽标（热门/截止中）*/
 .card-badge {
   position: absolute;
-  top: $sp-4; /* 8px */
-  right: $sp-4; /* 8px */
+  top: $sp-3;
+  right: $sp-3;
   display: flex;
   align-items: center;
-  gap: $sp-1; /* 3px */
-  padding: $sp-1 $sp-3; /* 3px 6px */
-  border-radius: $radius-base; /* 6px */
-  font-size: $font-size-xs; /* 10px */
-  font-weight: $font-weight-semibold;
+  gap: $sp-1;
+  padding: $sp-1 $sp-2;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
   z-index: 2;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.1);
 
-  /* 热门徽标 */
   &.badge-hot {
-    background: linear-gradient(135deg, $warning-50 0%, $warning-100 100%); /* 黄色渐变 */
-    color: $warning-dark; /* 深黄 */
+    background: $warning-50;
+    color: $warning;
   }
 
-  /* 截止中徽标 */
   &.badge-urgent {
-    background: linear-gradient(135deg, $error-50 0%, $error-100 100%); /* 红色渐变 */
-    color: $error; /* 深红 */
+    background: $error-50;
+    color: $error;
   }
 }
 
 .badge-icon {
-  font-size: $font-size-xs; /* 10px */
+  font-size: $font-size-xs;
   line-height: 1;
 }
 
@@ -1242,27 +958,19 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 重构：移除原有的浮层样式，已被点击指示器替代 */
-
-/* 优化：底部操作栏 - 淡蓝底，增强存在感 */
-.action-bar {
-  background: $primary-50; /* 优化：统一使用变量 */
-}
-
-/* 优化：查看全部按钮 - 深蓝 + 箭头动画 */
+/* Phase 3：查看全部按钮 */
 .view-all-btn {
   .action-text {
     color: $primary;
-    font-weight: $font-weight-medium;
-  }
-
-  .arrow-icon {
-    transition: transform $duration-base $ease-out;
   }
 
   &:hover .arrow-icon {
-    transform: translateX(6rpx); /* 箭头向右移动 */
+    transform: translateX(4rpx);
   }
+}
+
+.arrow-icon {
+  transition: transform $transition-fast;
 }
 </style>
 

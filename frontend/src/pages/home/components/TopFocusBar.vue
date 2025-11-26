@@ -529,9 +529,9 @@ const showCheckInSuccess = (points: number = 10, consecutiveDays: number = 1) =>
   // #endif
 
   // #ifndef H5
-  const streakText = consecutiveDays > 1 ? `，连续${consecutiveDays}天` : ''
+  const streakMsg = consecutiveDays > 1 ? `，连续${consecutiveDays}天` : ''
   uni.showToast({
-    title: `签到成功！+${points}积分${streakText}`,
+    title: `签到成功！+${points}积分${streakMsg}`,
     icon: 'success',
     duration: 2000
   })

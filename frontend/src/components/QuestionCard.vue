@@ -30,9 +30,9 @@
           <text class="icon">💬</text>
           <text class="value">{{ question.answerCount }}</text>
         </view>
-        <view v-if="question.rewardPoints > 0" class="stat-item reward">
+        <view v-if="(question.bounty ?? question.rewardPoints ?? 0) > 0" class="stat-item reward">
           <text class="icon">💰</text>
-          <text class="value">{{ question.rewardPoints }}</text>
+          <text class="value">{{ question.bounty ?? question.rewardPoints ?? 0 }}</text>
         </view>
       </view>
     </view>

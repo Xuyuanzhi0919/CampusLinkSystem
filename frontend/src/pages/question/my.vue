@@ -18,7 +18,7 @@
     <view v-if="currentTab === 'questions'" class="filter-bar">
       <view
         v-for="filter in statusFilters"
-        :key="filter.value"
+        :key="filter.label"
         class="filter-item"
         :class="{ active: statusFilter === filter.value }"
         @click="handleStatusFilter(filter.value)"
@@ -141,8 +141,8 @@ const answerCount = ref(0)
 
 // Tab配置
 const tabs = computed(() => [
-  { label: '我的提问', value: 'questions', count: questionCount.value },
-  { label: '我的回答', value: 'answers', count: answerCount.value }
+  { label: '我的提问', value: 'questions' as const, count: questionCount.value },
+  { label: '我的回答', value: 'answers' as const, count: answerCount.value }
 ])
 
 // 状态筛选选项

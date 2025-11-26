@@ -19,10 +19,10 @@
         </view>
 
         <!-- PC端提问按钮 -->
-        <button class="pc-ask-btn" @click="handleAskQuestion">
-          <text class="ask-icon">✏️</text>
-          <text class="ask-text">提问</text>
-        </button>
+        <CButton type="primary" size="md" class="pc-ask-btn" @click="handleAskQuestion">
+          <template #icon><text>✏️</text></template>
+          提问
+        </CButton>
       </view>
 
       <!-- 🕒 搜索历史面板 -->
@@ -134,10 +134,10 @@
     </scroll-view>
 
     <!-- 🆕 发布问题悬浮按钮 -->
-    <view class="fab-btn" @click="handleAskQuestion">
-      <text class="fab-icon">✏️</text>
-      <text class="fab-label">提问</text>
-    </view>
+    <CButton type="primary" size="md" round class="fab-btn" @click="handleAskQuestion">
+      <template #icon><text>✏️</text></template>
+      提问
+    </CButton>
 
     <!-- ⬆️ 回到顶部按钮 -->
     <view v-if="showBackToTop" class="back-to-top" @click="scrollToTop">
@@ -164,7 +164,7 @@
             <view class="group-options">
               <view
                 v-for="item in categories.filter(c => c.value !== null)"
-                :key="item.value"
+                :key="item.value!"
                 class="option-item"
                 :class="{ selected: tempCategory === item.value }"
                 @click="tempCategory = item.value"
@@ -224,8 +224,8 @@
         </view>
 
         <view class="modal-footer">
-          <button class="reset-btn" @click="handleResetFilter">重置</button>
-          <button class="confirm-btn" @click="handleConfirmFilter">确定</button>
+          <CButton type="ghost" size="md" @click="handleResetFilter">重置</CButton>
+          <CButton type="primary" size="md" @click="handleConfirmFilter">确定</CButton>
         </view>
       </view>
     </view>
@@ -246,6 +246,7 @@ import { questionSearchHistory } from '@/utils/searchHistory'
 import QuestionCard from './components/QuestionCard.vue'
 import PCFloatingNav from '@/components/PCFloatingNav.vue'
 import CustomTabBar from '@/components/CustomTabBar.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 // Store
 const questionStore = useQuestionStore()
@@ -292,7 +293,7 @@ const scrollTop = ref(0)
 const showBackToTop = ref(false)
 
 // 分类配置
-const categories = [
+const categories: Array<{ label: string; value: string | null; icon: string }> = [
   { label: '全部', value: null, icon: '📦' },
   { label: '学习', value: '学习', icon: '📚' },
   { label: '生活', value: '生活', icon: '🏠' },
@@ -302,10 +303,10 @@ const categories = [
 
 // 排序选项
 const sortOptions = [
-  { label: '最新', value: 'created_at' },
-  { label: '最热', value: 'views' },
-  { label: '悬赏', value: 'bounty' },
-  { label: '回答', value: 'answerCount' }
+  { label: '最新', value: 'created_at' as const },
+  { label: '最热', value: 'views' as const },
+  { label: '悬赏', value: 'bounty' as const },
+  { label: '回答', value: 'answerCount' as const }
 ]
 
 // 状态标签
@@ -485,7 +486,7 @@ const handleCategoryChange = (value: string | null) => {
 }
 
 // 排序切换
-const handleSortChange = (value: 'created_at' | 'views' | 'rewardPoints' | 'answerCount') => {
+const handleSortChange = (value: 'created_at' | 'views' | 'bounty' | 'answerCount') => {
   sortBy.value = value
   debouncedLoadQuestions()
 }
@@ -625,37 +626,6 @@ onMounted(() => {
 // PC端提问按钮
 .pc-ask-btn {
   display: none;
-  align-items: center;
-  gap: $sp-2;
-  height: 68rpx;
-  padding: 0 $sp-8;
-  @include gradient-primary;
-  color: $white;
-  border: none;
-  border-radius: $radius-2xl;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
-  cursor: pointer;
-  transition: $transition-slow;
-  white-space: nowrap;
-
-  .ask-icon {
-    font-size: $font-size-xl;
-  }
-
-  .ask-text {
-    font-size: $font-size-base;
-  }
-
-  &:hover {
-    transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 16rpx rgba($primary, 0.35);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
 }
 
 // 🕒 搜索历史面板
@@ -951,37 +921,9 @@ onMounted(() => {
   gap: $sp-4;
   padding: $sp-6 $sp-8;
   border-top: 1rpx solid $gray-100;
-}
 
-.reset-btn,
-.confirm-btn {
-  flex: 1;
-  height: 80rpx;
-  border-radius: $radius-lg;
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
-  border: none;
-  cursor: pointer;
-  transition: $transition-base;
-}
-
-.reset-btn {
-  background: $gray-100;
-  color: $gray-500;
-
-  &:active {
-    background: $gray-200;
-  }
-}
-
-.confirm-btn {
-  @include gradient-primary;
-  color: $white;
-  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
-
-  &:active {
-    opacity: 0.9;
-    transform: scale(0.98);
+  :deep(.c-button) {
+    flex: 1;
   }
 }
 
@@ -1173,30 +1115,8 @@ onMounted(() => {
   position: fixed;
   right: $sp-8;
   bottom: $sp-30;
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  padding: $sp-4 $sp-7;
-  background: $primary;
-  border-radius: $radius-2xl;
-  box-shadow: 0 4rpx 16rpx rgba($primary, 0.25);
   z-index: $z-dropdown;
-  transition: $transition-base;
-
-  .fab-icon {
-    font-size: $font-size-lg;
-  }
-
-  .fab-label {
-    font-size: $font-size-sm;
-    color: $white;
-    font-weight: $font-weight-semibold;
-  }
-
-  &:active {
-    transform: scale(0.96);
-    box-shadow: 0 2rpx 12rpx rgba($primary, 0.2);
-  }
+  box-shadow: 0 4rpx 16rpx rgba($primary, 0.25);
 }
 
 // ===================================
@@ -1249,7 +1169,7 @@ onMounted(() => {
 @include desktop {
   // PC端：显示搜索框右边的提问按钮
   .pc-ask-btn {
-    display: flex;
+    display: inline-flex;
   }
 
   // PC端：隐藏移动端的悬浮按钮

@@ -19,6 +19,7 @@ export interface PageParams {
 // 分页响应数据
 export interface PageResult<T> {
   list: T[]         // 后端实际返回的字段名
+  records?: T[]     // 兼容某些后端返回 records 的情况
   total: number
   page: number      // 当前页码
   pageSize: number  // 每页数量

@@ -79,7 +79,7 @@ export function useRequest<T = any>(
 
   const loading = ref(false)
   const error = ref<Error | null>(null)
-  const data = ref<T | null>(null)
+  const data = ref<T | null>(null) as Ref<T | null>
 
   let debounceTimer: number | null = null
   let isProcessing = false

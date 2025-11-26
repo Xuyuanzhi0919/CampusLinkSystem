@@ -98,52 +98,57 @@
       <!-- 操作按钮 -->
       <view class="action-bar">
         <!-- 待接单状态：显示接单按钮（未过期且不是自己的任务） -->
-        <button
+        <CButton
           v-if="task.status === 0 && !isMyTask && !isExpired"
-          class="action-btn primary"
+          type="primary"
+          size="lg"
           @click="handleAccept"
         >
           接单
-        </button>
+        </CButton>
 
         <!-- 进行中状态(status=2)，接单者可见：提交任务和放弃任务 -->
-        <button
+        <CButton
           v-if="task.status === 2 && isAccepter"
-          class="action-btn success"
+          type="success"
+          size="lg"
           @click="handleSubmit"
         >
           提交任务
-        </button>
-        <button
+        </CButton>
+        <CButton
           v-if="task.status === 2 && isAccepter"
-          class="action-btn danger"
+          type="danger"
+          size="lg"
           @click="handleAbandon"
         >
           放弃任务
-        </button>
+        </CButton>
 
         <!-- 待确认状态(status=3)，发布者可见：确认完成按钮 -->
-        <button
+        <CButton
           v-if="task.status === 3 && isPublisher"
-          class="action-btn success"
+          type="success"
+          size="lg"
           @click="handleComplete"
         >
           确认完成
-        </button>
+        </CButton>
 
         <!-- 取消按钮（仅发布者，待接单状态） -->
-        <button
+        <CButton
           v-if="task.status === 0 && isPublisher"
-          class="action-btn danger"
+          type="danger"
+          size="lg"
           @click="handleCancel"
         >
           取消任务
-        </button>
+        </CButton>
 
         <!-- 收藏按钮 -->
-        <button class="action-btn secondary" @click="handleFavorite">
+        <CButton type="ghost" size="lg" @click="handleFavorite">
           {{ task.isFavorited ? '已收藏' : '收藏' }}
-        </button>
+        </CButton>
       </view>
     </view>
 
@@ -151,7 +156,7 @@
     <view v-else class="error-container">
       <text class="error-icon">😞</text>
       <text class="error-text">任务不存在或已删除</text>
-      <button class="back-btn" @click="goBack">返回</button>
+      <CButton type="primary" size="md" @click="goBack">返回</CButton>
     </view>
   </view>
 </template>
@@ -169,6 +174,7 @@ import {
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { TaskStatus, type TaskDetail, type TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
+import CButton from '@/components/ui/CButton.vue'
 
 const userStore = useUserStore()
 
@@ -485,8 +491,8 @@ const formatDeadline = (dateStr: string): string => {
 // 页面加载
 onMounted(() => {
   const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const options = currentPage.options as any
+  const currentPage = pages[pages.length - 1] as any
+  const options = currentPage?.options || {}
 
   if (options.id) {
     loadTaskDetail(Number(options.id))
@@ -534,14 +540,6 @@ onMounted(() => {
   margin-bottom: $sp-8;
 }
 
-.back-btn {
-  padding: $sp-4 $sp-12;
-  background: $primary;
-  color: $white;
-  border-radius: $radius-base;
-  border: none;
-  font-size: $font-size-base;
-}
 
 .detail-container {
   padding: $sp-8;
@@ -787,39 +785,9 @@ onMounted(() => {
   display: flex;
   gap: $sp-4;
   z-index: $z-modal - 1;
-}
 
-.action-btn {
-  flex: 1;
-  height: 88rpx;
-  border-radius: $radius-md;
-  border: none;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  @include flex-center;
-
-  &.primary {
-    background: $primary;
-    color: $white;
-  }
-
-  &.success {
-    background: $success;
-    color: $white;
-  }
-
-  &.danger {
-    background: $error;
-    color: $white;
-  }
-
-  &.secondary {
-    background: $gray-100;
-    color: $gray-500;
-  }
-
-  &:active {
-    opacity: 0.8;
+  :deep(.c-button) {
+    flex: 1;
   }
 }
 </style>

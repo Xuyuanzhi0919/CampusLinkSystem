@@ -86,18 +86,32 @@ export const useUserStore = defineStore('user', () => {
 
   /**
    * 设置用户信息
+   * @param info 用户信息，可以是 UserInfo 或 UserProfileData 格式
    */
-  const setUserInfo = (info: UserInfo) => {
+  const setUserInfo = (info: Record<string, any>) => {
     // 统一字段名
-    if (info.uid && !info.userId) {
-      info.userId = info.uid
-    }
-    if (info.avatarUrl && !info.avatar) {
-      info.avatar = info.avatarUrl
+    const normalizedInfo: UserInfo = {
+      userId: info.userId || info.uid,
+      uid: info.uid || info.userId,
+      avatar: info.avatar || info.avatarUrl || undefined,
+      avatarUrl: info.avatarUrl || info.avatar || undefined,
+      username: info.username || '',
+      nickname: info.nickname || '',
+      email: info.email,
+      phone: info.phone,
+      studentId: info.studentId,
+      schoolId: info.schoolId,
+      schoolName: info.schoolName,
+      major: info.major,
+      grade: info.grade,
+      points: info.points || 0,
+      level: info.level,
+      role: info.role || 'user',
+      createdAt: info.createdAt,
     }
 
-    userInfo.value = info
-    uni.setStorageSync(config.userInfoKey, JSON.stringify(info))
+    userInfo.value = normalizedInfo
+    uni.setStorageSync(config.userInfoKey, JSON.stringify(normalizedInfo))
   }
 
   /**
@@ -156,7 +170,7 @@ export const useUserStore = defineStore('user', () => {
   const fetchUserInfo = async () => {
     try {
       const res = await uni.request({
-        url: `${config.apiBaseUrl}/user/profile`,
+        url: `${config.baseURL}/user/profile`,
         method: 'GET',
         header: {
           Authorization: `Bearer ${token.value}`

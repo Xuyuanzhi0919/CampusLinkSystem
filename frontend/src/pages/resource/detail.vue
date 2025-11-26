@@ -113,7 +113,7 @@
           <view class="user-rating">
             <view class="user-rating-label">
               <text class="label-text">我的评分</text>
-              <text v-if="resource.userRating > 0" class="label-hint">（点击星星可修改）</text>
+              <text v-if="(resource.userRating ?? 0) > 0" class="label-hint">（点击星星可修改）</text>
             </view>
             <RatingStars
               v-model="resource.userRating"
@@ -577,7 +577,7 @@ const loadRelatedResources = async () => {
 }
 
 // 格式化文件大小
-const formatFileSize = (bytes: number): string => {
+const formatFileSize = (bytes: number | undefined): string => {
   if (!bytes) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
@@ -586,7 +586,7 @@ const formatFileSize = (bytes: number): string => {
 }
 
 // 格式化上传时间
-const formatUploadTime = (dateStr: string): string => {
+const formatUploadTime = (dateStr: string | undefined): string => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   const now = new Date()
@@ -610,7 +610,8 @@ const formatUploadTime = (dateStr: string): string => {
 }
 
 // 获取分类文本
-const getCategoryText = (category: number): string => {
+const getCategoryText = (category: number | undefined): string => {
+  if (category === undefined) return '未知'
   const categoryMap: Record<number, string> = {
     0: '课件',
     1: '试题',

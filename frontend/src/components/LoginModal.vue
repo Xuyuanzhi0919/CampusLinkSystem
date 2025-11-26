@@ -132,7 +132,7 @@ const showPassword = ref(false)
 const loading = ref(false)
 
 // 关闭弹窗
-const handleClose = (e) => {
+const handleClose = (_e?: Event) => {
   showAnimation.value = false
   setTimeout(() => {
     emit('update:visible', false)
@@ -140,12 +140,12 @@ const handleClose = (e) => {
 }
 
 // 点击遮罩关闭
-const handleMaskClick = (e) => {
+const handleMaskClick = (e: Event) => {
   handleClose(e)
 }
 
 // ESC 键监听处理函数
-const handleKeyDown = (e) => {
+const handleKeyDown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && props.visible) {
     handleClose()
   }

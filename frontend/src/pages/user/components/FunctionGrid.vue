@@ -1,7 +1,5 @@
 <template>
-  <view class="function-grid">
-    <view class="grid-title">我的功能</view>
-
+  <CCard title="我的功能" class="function-grid" :no-padding="true">
     <view class="grid-container">
       <view
         v-for="item in functionItems"
@@ -23,12 +21,13 @@
         <text class="label">{{ item.label }}</text>
       </view>
     </view>
-  </view>
+  </CCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FunctionItem } from '@/types/user'
+import CCard from '@/components/ui/CCard.vue'
 
 interface Props {
   badges?: {
@@ -171,21 +170,11 @@ const handleItemClick = (item: FunctionItem) => {
 // 变量已通过 uni.scss 全局注入
 
 .function-grid {
-  background: $white;
-  border-radius: $radius-2xl;
-  padding: $sp-8;
   margin: $sp-6;
-  box-shadow: $shadow-card;
-}
-
-.grid-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-  margin-bottom: $sp-6;
 }
 
 .grid-container {
+  padding: 0 $sp-8 $sp-8;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: $sp-8 $sp-6;

@@ -50,7 +50,7 @@ export interface AnswerItem {
 
 // 问题列表查询参数
 export interface QuestionListParams {
-  category?: QuestionCategory
+  category?: QuestionCategory | string | null
   status?: number | null
   keyword?: string
   page?: number

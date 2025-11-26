@@ -112,17 +112,18 @@
     </scroll-view>
 
     <!-- 发布任务按钮 -->
-    <view class="fab-button" @click="handlePublish">
-      <text class="fab-icon">+</text>
-    </view>
+    <CButton type="primary" size="lg" round class="fab-button" @click="handlePublish">
+      <template #icon><text class="fab-icon">+</text></template>
+    </CButton>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getTaskList } from '@/services/task'
-import { TaskStatus, type TaskListItem, type TaskType } from '@/types/task'
+import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 // 任务状态选项
 const statusOptions = [
@@ -678,23 +679,18 @@ defineExpose({
   position: fixed;
   right: $sp-8;
   bottom: 120rpx;
-  width: 112rpx;
-  height: 112rpx;
-  @include gradient-primary;
-  border-radius: $radius-full;
-  box-shadow: 0 8rpx 24rpx rgba($primary, 0.3);
-  @include flex-center;
   z-index: $z-modal - 1;
 
-  &:active {
-    transform: scale(0.9);
+  :deep(.c-button) {
+    width: 112rpx;
+    height: 112rpx;
+    padding: 0;
+    box-shadow: 0 8rpx 24rpx rgba($primary, 0.3);
   }
 }
 
 .fab-icon {
-  font-size: 64rpx;
-  color: $white;
-  font-weight: $font-weight-light;
+  font-size: 56rpx;
   line-height: 1;
 }
 </style>

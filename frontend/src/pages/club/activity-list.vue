@@ -255,7 +255,7 @@
           <view class="option-list">
             <view
               v-for="status in statusOptions"
-              :key="status.value"
+              :key="status.label"
               class="option-item"
               :class="{ active: tempFilters.status === status.value }"
               @click="selectStatus(status.value)"
@@ -400,9 +400,9 @@ const quickFilterTabs = [
 
 // 排序选项
 const sortOptions = [
-  { label: '按时间', value: 'time' },
-  { label: '最热门', value: 'hot' },
-  { label: '最新发布', value: 'new' }
+  { label: '按时间', value: 'time' as const },
+  { label: '最热门', value: 'hot' as const },
+  { label: '最新发布', value: 'new' as const }
 ]
 
 // 🎯 时间范围选项

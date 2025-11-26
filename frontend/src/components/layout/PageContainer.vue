@@ -72,7 +72,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, CSSProperties } from 'vue'
+import { computed, ref } from 'vue'
+import type { CSSProperties } from 'vue'
 import CNavBar from './CNavBar.vue'
 
 /**

@@ -9,15 +9,15 @@
         </view>
         <text class="navbar-title">编辑资料</text>
         <view class="navbar-right">
-          <button
-            class="save-button"
-            :class="{ disabled: !canSave }"
-            :disabled="!canSave || saving"
+          <CButton
+            type="primary"
+            size="sm"
+            :disabled="!canSave"
+            :loading="saving"
             @click="handleSave"
           >
-            <text v-if="!saving">保存</text>
-            <text v-else>保存中...</text>
-          </button>
+            保存
+          </CButton>
         </view>
       </view>
     </view>
@@ -143,6 +143,7 @@ import { useUserStore } from '@/stores/user'
 import type { UpdateProfileRequest } from '@/types/user'
 import { getUserProfile, updateUserProfile } from '@/services/user'
 import { getUploadSignature } from '@/services/resource'
+import CButton from '@/components/ui/CButton.vue'
 
 const userStore = useUserStore()
 
@@ -520,28 +521,8 @@ onMounted(() => {
 }
 
 .navbar-right {
-  width: 120rpx;
   display: flex;
   justify-content: flex-end;
-}
-
-.save-button {
-  padding: $sp-3 $sp-6;
-  background: $primary;
-  color: $white;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  border-radius: $radius-base;
-  border: none;
-
-  &.disabled {
-    background: $gray-200;
-    color: $gray-400;
-  }
-
-  &::after {
-    border: none;
-  }
 }
 
 // 内容区域

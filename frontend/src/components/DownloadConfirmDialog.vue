@@ -73,12 +73,12 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { ResourceItem } from '@/types/resource'
+import type { ResourceDetail } from '@/types/resource'
 
 // Props
 interface Props {
   visible: boolean
-  resource: ResourceItem | null
+  resource: Partial<ResourceDetail> | null
   userPoints: number
   loading?: boolean
 }
@@ -96,7 +96,7 @@ const emit = defineEmits<{
 // 计算积分是否不足
 const isInsufficientPoints = computed(() => {
   if (!props.resource) return false
-  return props.userPoints < props.resource.score
+  return props.userPoints < (props.resource.score ?? 0)
 })
 
 /**

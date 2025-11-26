@@ -592,7 +592,7 @@ const validateForm = () => {
     return false
   }
 
-  if (usernameAvailable === false) {
+  if (usernameAvailable.value === false) {
     showToast('这个用户名已经被占用了，换一个试试？', 'warning')
     return false
   }

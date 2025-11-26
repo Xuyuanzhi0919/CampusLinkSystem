@@ -1,12 +1,14 @@
 // 全局配置文件
+const isProd = import.meta.env.PROD
+
 export const config = {
   // API 基础地址
-  baseURL: process.env.NODE_ENV === 'production'
+  baseURL: isProd
     ? 'https://api.campuslink.com/api/v1'
     : '/api/v1',  // 开发环境使用相对路径，通过Vite代理转发
 
   // WebSocket 地址
-  WS_URL: process.env.NODE_ENV === 'production'
+  WS_URL: isProd
     ? 'wss://api.campuslink.com'
     : 'ws://localhost:8080',  // 开发环境 WebSocket 地址
 

@@ -44,17 +44,22 @@
       </view>
     </view>
 
-    <!-- 操作按钮 -->
+    <!-- 操作按钮 - 使用 CButton 组件 -->
     <view class="action-buttons">
-      <view class="btn btn-edit" @click="handleEditProfile">
-        <text class="btn-icon">✏️</text>
-        <text class="btn-text">编辑资料</text>
-      </view>
+      <CButton type="secondary" size="md" @click="handleEditProfile">
+        <template #icon><text>✏️</text></template>
+        编辑资料
+      </CButton>
 
-      <view class="btn btn-checkin" :class="{ disabled: isCheckedIn }" @click="handleCheckIn">
-        <text class="btn-icon">📅</text>
-        <text class="btn-text">{{ checkInButtonText }}</text>
-      </view>
+      <CButton
+        type="primary"
+        size="md"
+        :disabled="isCheckedIn"
+        @click="handleCheckIn"
+      >
+        <template #icon><text>📅</text></template>
+        {{ checkInButtonText }}
+      </CButton>
     </view>
   </view>
 </template>
@@ -63,6 +68,7 @@
 import { computed } from 'vue'
 import type { UserProfileData, UserStatsData } from '@/types/user'
 import LevelBadge from './LevelBadge.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 interface Props {
   profile: UserProfileData | null
@@ -322,52 +328,10 @@ const handlePointsClick = () => {
   display: flex;
   gap: $sp-4;
   margin-top: $sp-6;
-}
 
-.btn {
-  flex: 1;
-  @include flex-center;
-  gap: $sp-2;
-  height: 72rpx;
-  border-radius: $radius-md;
-  font-size: $font-size-base;
-  cursor: pointer;
-  transition: $transition-base;
-
-  &:active {
-    transform: scale(0.98);
+  // CButton 组件样式覆盖 - 让按钮等宽
+  :deep(.c-button) {
+    flex: 1;
   }
-}
-
-.btn-edit {
-  background: $primary-50;
-  color: $primary;
-
-  &:active {
-    background: $primary-100;
-  }
-}
-
-.btn-checkin {
-  @include gradient-primary;
-  color: $white;
-
-  &.disabled {
-    background: $gray-200;
-    color: $gray-400;
-    cursor: not-allowed;
-
-    &:active {
-      transform: none;
-    }
-  }
-}
-
-.btn-icon {
-  font-size: $font-size-lg;
-}
-
-.btn-text {
-  font-weight: $font-weight-medium;
 }
 </style>

@@ -35,20 +35,24 @@
 
       <!-- 操作按钮 -->
       <view class="action-section">
-        <button
+        <CButton
           v-if="!club.isMember"
-          class="action-btn join-btn"
+          type="primary"
+          size="lg"
+          block
           @click="handleJoin"
         >
           加入社团
-        </button>
-        <button
+        </CButton>
+        <CButton
           v-else
-          class="action-btn quit-btn"
+          type="ghost"
+          size="lg"
+          block
           @click="handleQuit"
         >
           退出社团
-        </button>
+        </CButton>
       </view>
 
       <!-- 社团简介 -->
@@ -173,6 +177,7 @@ import { ref, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
+import CButton from '@/components/ui/CButton.vue'
 
 // 状态
 const loading = ref(false)
@@ -471,34 +476,6 @@ onLoad((options) => {
   background: $white;
   padding: $sp-6 $sp-8;
   margin-bottom: $sp-4;
-}
-
-.action-btn {
-  width: 100%;
-  height: 88rpx;
-  border-radius: $radius-md;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  border: none;
-
-  &.join-btn {
-    @include gradient-primary;
-    color: $white;
-
-    &:active {
-      opacity: 0.8;
-    }
-  }
-
-  &.quit-btn {
-    background: $white;
-    color: $gray-500;
-    border: 2rpx solid $gray-200;
-
-    &:active {
-      background: $gray-50;
-    }
-  }
 }
 
 // ===================================

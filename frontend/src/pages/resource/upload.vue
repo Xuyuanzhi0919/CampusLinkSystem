@@ -3,6 +3,8 @@ import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import config from '@/config'
 import { getUploadSignature, createResource } from '@/services/resource'
+import type { ResourceFileType, ResourceCategory } from '@/types/resource'
+import CButton from '@/components/ui/CButton.vue'
 
 /**
  * 🎯 文件状态
@@ -184,7 +186,7 @@ const handleFileSelected = async (selectedFile: File) => {
 /**
  * 🎯 上传文件到OSS
  */
-const uploadFile = async (file: File) => {
+const uploadFile = async (fileToUpload: File) => {
   try {
     uploading.value = true
     uploadProgress.value = 0
@@ -199,7 +201,7 @@ const uploadFile = async (file: File) => {
     formData.append('OSSAccessKeyId', signature.accessId)
     formData.append('signature', signature.signature)
     formData.append('success_action_status', '200')  // 添加成功状态码
-    formData.append('file', file)  // file 必须在最后
+    formData.append('file', fileToUpload)  // file 必须在最后
 
     // 3. 上传到OSS
     await new Promise((resolve, reject) => {
@@ -398,9 +400,10 @@ const handleSubmit = async () => {
       fileName: fileName.value,
       fileUrl: fileUrl.value,
       fileSize: fileSize.value,
-      fileType: fileType.value,
-      category: form.value.category,
-      courseName: form.value.courseName || null
+      fileType: fileType.value as ResourceFileType,
+      category: parseInt(form.value.category, 10) as ResourceCategory,
+      courseName: form.value.courseName || undefined,
+      score: 5  // 默认5积分
     })
 
     // 4. 成功提示
@@ -624,14 +627,16 @@ onLoad(() => {
 
       <!-- 底部按钮 - 移动端固定在底部 -->
       <view class="submit-actions">
-        <button class="cancel-btn" @click="handleCancel">取消</button>
-        <button
-          class="submit-btn"
+        <CButton type="ghost" size="lg" @click="handleCancel">取消</CButton>
+        <CButton
+          type="accent"
+          size="lg"
           :disabled="!canSubmit"
+          :loading="submitting"
           @click="handleSubmit"
         >
-          {{ submitting ? '提交中...' : '提交审核' }}
-        </button>
+          提交审核
+        </CButton>
       </view>
     </view>
   </view>
@@ -942,36 +947,9 @@ onLoad(() => {
   gap: $sp-3;
   margin-top: $sp-8;
 
-  button {
+  // CButton 组件等宽
+  :deep(.c-button) {
     flex: 1;
-    height: 44px;
-    border-radius: $radius-base;
-    font-size: $font-size-lg;
-    border: none;
-
-    &.submit-btn {
-      background: $accent;
-      color: $white;
-      transition: $transition-slow;
-
-      &:hover:not(:disabled) {
-        background: $accent-dark;
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba($accent, 0.3);
-      }
-
-      &:disabled {
-        background: $gray-300;
-        color: rgba($gray-900, 0.25);
-        cursor: not-allowed;
-      }
-    }
-
-    &.cancel-btn {
-      background: $white;
-      color: $gray-800;
-      border: 1px solid $gray-200;
-    }
   }
 
   @include mobile {

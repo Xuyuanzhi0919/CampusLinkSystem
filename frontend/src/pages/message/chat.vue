@@ -144,13 +144,15 @@
       />
 
       <!-- 发送按钮 -->
-      <view
+      <CButton
+        type="primary"
+        size="sm"
         class="send-btn"
-        :class="{ disabled: !canSend }"
+        :disabled="!canSend"
         @click="handleSendMessage"
       >
-        <text class="send-text">发送</text>
-      </view>
+        发送
+      </CButton>
     </view>
 
     <!-- 表情选择器 -->
@@ -173,6 +175,7 @@ import type { Message } from '@/types/message'
 import { MessageType } from '@/types/message'
 import type { WebSocketMessage } from '@/composables/useWebSocket'
 import EmojiPicker from '@/components/EmojiPicker.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 // 路由参数
 const otherUserId = ref<number>(0)
@@ -242,12 +245,15 @@ function handleWebSocketMessage(message: WebSocketMessage) {
         addMessageToList({
           mId: message.messageId || Date.now(),
           senderId: message.fromUserId,
+          senderName: otherUserNickname.value,
+          senderAvatar: otherUserAvatar.value,
           receiverId: currentUserId.value,
+          receiverName: userStore.userInfo?.nickname || '',
+          receiverAvatar: userStore.userInfo?.avatar || '',
           content: message.content,
           msgType: message.msgType || MessageType.TEXT,
-          isRead: false,  // 使用布尔值
-          createdAt: new Date(message.timestamp).toISOString(),
-          senderAvatar: otherUserAvatar.value
+          isRead: false,
+          createdAt: new Date(message.timestamp).toISOString()
         })
 
         // 滚动到底部
@@ -270,12 +276,15 @@ function handleWebSocketMessage(message: WebSocketMessage) {
       addMessageToList({
         mId: message.messageId || Date.now(),
         senderId: currentUserId.value,
-        receiverId: message.toUserId,
+        senderName: userStore.userInfo?.nickname || '',
+        senderAvatar: userStore.userInfo?.avatar || '',
+        receiverId: message.toUserId ?? otherUserId.value,
+        receiverName: otherUserNickname.value,
+        receiverAvatar: otherUserAvatar.value,
         content: message.content,
         msgType: message.msgType || MessageType.TEXT,
-        isRead: false,  // 使用布尔值
-        createdAt: new Date(message.timestamp).toISOString(),
-        senderAvatar: userStore.userInfo?.avatar || ''
+        isRead: false,
+        createdAt: new Date(message.timestamp).toISOString()
       })
 
       // 滚动到底部
@@ -295,10 +304,10 @@ function handleWebSocketMessage(message: WebSocketMessage) {
     case 'typing':
       // 对方输入状态变更
       if (message.fromUserId === otherUserId.value) {
-        isOtherUserTyping.value = message.isTyping
+        isOtherUserTyping.value = message.isTyping ?? false
 
         // 如果正在输入，3秒后自动取消显示
-        if (message.isTyping) {
+        if (message.isTyping ?? false) {
           if (typingStopTimer) {
             clearTimeout(typingStopTimer)
           }
@@ -1450,25 +1459,6 @@ onMounted(async () => {
 }
 
 .send-btn {
-  padding: $sp-4 $sp-8;
-  @include gradient-primary;
-  border-radius: $radius-button;
-  transition: $transition-slow;
-
-  &.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  &:active {
-    opacity: 0.8;
-    transform: scale(0.95);
-  }
-}
-
-.send-text {
-  font-size: $font-size-base;
-  color: $white;
-  font-weight: $font-weight-medium;
+  flex-shrink: 0;
 }
 </style>

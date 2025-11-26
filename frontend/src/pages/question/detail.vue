@@ -181,14 +181,15 @@
       </text>
       <text class="error-text">{{ error.message }}</text>
       <view class="error-actions">
-        <view
+        <CButton
           v-if="error.type === 'network' || error.type === 'unknown'"
-          class="error-btn error-btn--primary"
+          type="primary"
+          size="md"
           @click="handleRetry"
         >
           重试
-        </view>
-        <view class="error-btn" @click="handleGoBack">返回</view>
+        </CButton>
+        <CButton type="ghost" size="md" @click="handleGoBack">返回</CButton>
       </view>
     </view>
 
@@ -230,13 +231,14 @@
         <view class="action-icon-btn" @click="handleChooseImage">
           <text class="icon">🖼️</text>
         </view>
-        <view
-          class="submit-btn"
-          :class="{ disabled: !canSubmitAnswer }"
+        <CButton
+          type="primary"
+          size="sm"
+          :disabled="!canSubmitAnswer"
           @click="handleSubmitAnswer"
         >
           发布
-        </view>
+        </CButton>
       </view>
     </view>
 
@@ -265,6 +267,7 @@ import {
 } from '@/services/question'
 import AnswerCard from './components/AnswerCard.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
+import CButton from '@/components/ui/CButton.vue'
 
 // Stores
 const questionStore = useQuestionStore()
@@ -302,12 +305,12 @@ const showMorePopup = ref(false)
 
 // 是否是我的问题
 const isMyQuestion = computed(() => {
-  return question.value && userStore.userInfo?.userId === question.value.askerId
+  return !!(question.value && userStore.userInfo?.userId === question.value.askerId)
 })
 
 // 是否可以采纳答案
 const canAcceptAnswer = computed(() => {
-  return isMyQuestion.value && question.value?.status !== 1
+  return isMyQuestion.value && question.value !== null && question.value.status !== 1
 })
 
 // 是否有更多回答
@@ -974,24 +977,6 @@ const getCategoryIcon = (category: string): string => {
   gap: $sp-6;
 }
 
-.error-btn {
-  padding: $sp-4 $sp-12;
-  background: $gray-100;
-  color: $gray-600;
-  border-radius: $radius-2xl;
-  font-size: $font-size-base;
-  transition: $transition-base;
-
-  &:active {
-    transform: scale(0.95);
-  }
-
-  &--primary {
-    background: $primary;
-    color: $white;
-  }
-}
-
 // ===================================
 // 滚动容器
 // ===================================
@@ -1438,24 +1423,6 @@ const getCategoryIcon = (category: string): string => {
       }
     }
 
-    .submit-btn {
-      padding: $sp-4 $sp-8;
-      @include gradient-primary;
-      color: $white;
-      font-size: $font-size-base;
-      font-weight: $font-weight-semibold;
-      border-radius: $radius-2xl;
-      transition: $transition-slow;
-
-      &:active {
-        transform: scale(0.95);
-      }
-
-      &.disabled {
-        background: $gray-300;
-        opacity: 0.6;
-      }
-    }
   }
 }
 

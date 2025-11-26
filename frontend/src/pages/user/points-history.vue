@@ -125,7 +125,7 @@ const loadPoints = async (isRefresh = false) => {
 
     // 如果是刷新，同时刷新用户信息（更新顶部积分）
     if (isRefresh) {
-      await userStore.fetchUserProfile()
+      await userStore.fetchUserInfo()
     }
   } catch (error: any) {
     console.error('加载积分记录失败:', error)

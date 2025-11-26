@@ -163,7 +163,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       handleReconnect()
     }
 
-    socket.onerror = () => {
+    socket.onerror = (event) => {
       status.value = WebSocketStatus.CLOSED
       isConnected.value = false
 
@@ -171,7 +171,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       stopHeartbeat()
 
       // 触发回调
-      onError?.()
+      onError?.(event)
 
       // 尝试重连
       handleReconnect()
@@ -233,7 +233,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
     })
 
     // 监听错误
-    socket.onError(() => {
+    socket.onError((res) => {
       status.value = WebSocketStatus.CLOSED
       isConnected.value = false
 
@@ -241,7 +241,7 @@ export function useWebSocket(options: UseWebSocketOptions = {}) {
       stopHeartbeat()
 
       // 触发回调
-      onError?.()
+      onError?.(res)
 
       // 尝试重连
       handleReconnect()

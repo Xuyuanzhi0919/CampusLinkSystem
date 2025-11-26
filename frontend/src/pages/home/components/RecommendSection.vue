@@ -222,7 +222,7 @@ const loadRecommendData = async () => {
   try {
     // 并行请求三个接口
     const [resourceRes, questionRes, taskRes] = await Promise.all([
-      getResourceList({ page: 1, pageSize: 6, sortBy: 'downloads', sortOrder: 'desc' }),
+      getResourceList({ page: 1, pageSize: 6, sortBy: 'download_count', sortOrder: 'desc' }),
       getQuestionList({ page: 1, pageSize: 6, sortBy: 'created_at', sortOrder: 'desc' }),
       getTaskList({ page: 1, pageSize: 6, status: 0 }) // 只获取待接单的任务
     ])

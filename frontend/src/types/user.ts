@@ -48,6 +48,7 @@ export interface UpdateProfileRequest {
   email?: string
   phone?: string
   avatarUrl?: string
+  studentId?: string
   major?: string
   grade?: number
 }
@@ -122,6 +123,7 @@ export interface LevelConfig {
  */
 export interface PageResult<T> {
   list: T[]
+  records?: T[]     // 兼容某些后端返回 records 的情况
   total: number
   page: number
   pageSize: number

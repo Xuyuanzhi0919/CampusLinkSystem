@@ -78,13 +78,15 @@
     />
 
     <!-- 快速返回顶部按钮 -->
-    <view
+    <CButton
       v-if="showBackToTop"
+      type="primary"
+      round
       class="back-to-top-btn"
       @click="scrollToTop"
     >
       <text class="back-to-top-icon">↑</text>
-    </view>
+    </CButton>
   </view>
 </template>
 
@@ -103,6 +105,7 @@ import PCFloatingNav from '@/components/PCFloatingNav.vue'
 import CustomTabBar from '@/components/CustomTabBar.vue'
 import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
+import CButton from '@/components/ui/CButton.vue'
 
 // 登录弹窗状态
 const showLoginModal = ref(false)
@@ -747,31 +750,36 @@ onReachBottom(() => {
   position: fixed;
   right: $sp-10;
   bottom: $sp-24;
-  width: 96rpx;
-  height: 96rpx;
-  @include gradient-primary;
-  border-radius: $radius-full;
-  @include flex-center;
-  cursor: pointer;
   z-index: $z-fixed;
-  box-shadow: $shadow-fab;
   animation: fadeInUp $duration-slow $ease-out, float 3s ease-in-out infinite;
-  transition: $transition-base;
 
-  &:hover {
-    transform: translateY(-4rpx) scale(1.1);
-    box-shadow: 0 12rpx 32rpx rgba($primary, 0.5);
-  }
+  :deep(.c-button) {
+    width: 96rpx;
+    height: 96rpx;
+    min-width: 96rpx;
+    padding: 0;
+    box-shadow: $shadow-fab;
+    transition: $transition-base;
 
-  &:active {
-    transform: translateY(0) scale(0.95);
+    &:hover {
+      transform: translateY(-4rpx) scale(1.1);
+      box-shadow: 0 12rpx 32rpx rgba($primary, 0.5);
+    }
+
+    &:active {
+      transform: translateY(0) scale(0.95);
+    }
   }
 
   @include mobile {
-    width: 80rpx;
-    height: 80rpx;
     right: $sp-8;
     bottom: 160rpx;
+
+    :deep(.c-button) {
+      width: 80rpx;
+      height: 80rpx;
+      min-width: 80rpx;
+    }
   }
 }
 

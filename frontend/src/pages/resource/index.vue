@@ -72,7 +72,7 @@
       <view class="filter-tabs">
         <view
           v-for="tab in quickFilterTabs"
-          :key="tab.value"
+          :key="tab.label"
           class="filter-tab"
           :class="{ active: currentCategory === tab.value }"
           @click="handleCategoryChange(tab.value)"

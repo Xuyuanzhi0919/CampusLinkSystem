@@ -156,7 +156,8 @@ export async function chooseAndUploadImages(options: {
             mask: true
           })
 
-          const urls = await uploadImagesToOSS(res.tempFilePaths, (current, total) => {
+          const filePaths = Array.isArray(res.tempFilePaths) ? res.tempFilePaths : [res.tempFilePaths]
+          const urls = await uploadImagesToOSS(filePaths, (current, total) => {
             uni.showLoading({
               title: `上传中 ${current}/${total}`,
               mask: true

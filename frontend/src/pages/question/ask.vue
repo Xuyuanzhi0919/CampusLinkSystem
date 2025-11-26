@@ -6,10 +6,10 @@
         <text class="nav-btn">取消</text>
       </view>
       <text class="nav-title">提问</text>
-      <view class="nav-right" @click="handleSubmit">
-        <text class="nav-btn nav-btn--primary" :class="{ disabled: !canSubmit }">
+      <view class="nav-right">
+        <CButton type="text" size="sm" :disabled="!canSubmit" @click="handleSubmit">
           发布
-        </text>
+        </CButton>
       </view>
     </view>
 
@@ -185,8 +185,8 @@
             <text class="input-unit">积分</text>
           </view>
           <view class="custom-input-actions">
-            <button class="cancel-btn" @click="handleCancelCustom">取消</button>
-            <button class="confirm-btn" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</button>
+            <CButton type="ghost" size="sm" @click="handleCancelCustom">取消</CButton>
+            <CButton type="accent" size="sm" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</CButton>
           </view>
           <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
         </view>
@@ -219,6 +219,7 @@ import { chooseAndUploadImages } from '@/utils/upload'
 import { validateTitle, validateContent, validateImages } from '@/utils/validator'
 import { saveDraft, getDraft, deleteDraft, hasDraft, formatDraftTime } from '@/utils/draft'
 import type { QuestionCategory } from '@/types/question'
+import CButton from '@/components/ui/CButton.vue'
 
 // Store
 const userStore = useUserStore()
@@ -602,7 +603,7 @@ const handleSubmit = async () => {
     const res = await createQuestion({
       title: formData.value.title.trim(),
       content: formData.value.content.trim(),
-      category: formData.value.category,
+      category: formData.value.category as QuestionCategory,
       tags: formData.value.tags,
       images: formData.value.images,
       bounty: formData.value.bounty
@@ -685,15 +686,6 @@ const handleSubmit = async () => {
   font-size: $font-size-base;
   color: $gray-500;
   padding: $sp-2 $sp-4;
-
-  &--primary {
-    color: $primary;
-    font-weight: $font-weight-semibold;
-
-    &.disabled {
-      color: $gray-300;
-    }
-  }
 }
 
 // ===================================
@@ -1063,42 +1055,9 @@ const handleSubmit = async () => {
   display: flex;
   gap: $sp-3;
   margin-top: $sp-4;
-}
 
-.cancel-btn,
-.confirm-btn {
-  flex: 1;
-  padding: $sp-3 0;
-  border-radius: $radius-sm;
-  font-size: $font-size-base;
-  border: none;
-  transition: $transition-base;
-
-  &::after {
-    border: none;
-  }
-}
-
-.cancel-btn {
-  background: $gray-200;
-  color: $gray-500;
-
-  &:active {
-    background: $gray-300;
-  }
-}
-
-.confirm-btn {
-  @include gradient-accent;
-  color: $white;
-  font-weight: $font-weight-semibold;
-
-  &:disabled {
-    opacity: 0.5;
-  }
-
-  &:active:not(:disabled) {
-    opacity: 0.9;
+  :deep(.c-button) {
+    flex: 1;
   }
 }
 
@@ -1125,7 +1084,7 @@ const handleSubmit = async () => {
   .hint-text {
     flex: 1;
     font-size: $font-size-sm;
-    color: $warning-800;
+    color: $warning-dark;
     line-height: $line-height-relaxed;
   }
 }

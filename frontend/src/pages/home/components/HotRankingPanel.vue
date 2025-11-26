@@ -259,7 +259,7 @@ const loadQuestions = async () => {
  */
 const loadResources = async () => {
   try {
-    const res = await getResourceList({ page: 1, pageSize: 5, sortBy: 'downloads', sortOrder: 'desc' })
+    const res = await getResourceList({ page: 1, pageSize: 5, sortBy: 'download_count', sortOrder: 'desc' })
     const list = res?.list || res?.records || []
     resourceList.value = list.map((item: any, index: number) => ({
       id: item.resourceId,

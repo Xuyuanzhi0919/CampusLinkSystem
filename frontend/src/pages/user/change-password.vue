@@ -82,14 +82,16 @@
         </view>
 
         <!-- 提交按钮 -->
-        <button
-          class="submit-btn"
-          :class="{ disabled: !isFormValid || submitting }"
-          :disabled="!isFormValid || submitting"
+        <CButton
+          type="primary"
+          size="lg"
+          block
+          :disabled="!isFormValid"
+          :loading="submitting"
           @click="handleSubmit"
         >
-          {{ submitting ? '提交中...' : '确认修改' }}
-        </button>
+          确认修改
+        </CButton>
       </view>
 
       <!-- 密码要求说明 -->
@@ -107,6 +109,7 @@
 import { ref, computed, onBeforeUnmount } from 'vue'
 import { changePassword } from '@/services/user'
 import { useUserStore } from '@/stores/user'
+import CButton from '@/components/ui/CButton.vue'
 
 // Store
 const userStore = useUserStore()
@@ -472,27 +475,7 @@ onBeforeUnmount(() => {
   }
 }
 
-// 提交按钮
-.submit-btn {
-  width: 100%;
-  height: 88rpx;
-  background: $primary;
-  color: $white;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  border-radius: $radius-md;
-  border: none;
-  @include flex-center;
-
-  &:active:not(.disabled) {
-    opacity: 0.8;
-  }
-
-  &.disabled {
-    background: $gray-300;
-    color: $gray-400;
-  }
-}
+// 提交按钮样式由 CButton 组件提供
 
 // 提示卡片
 .tips-card {

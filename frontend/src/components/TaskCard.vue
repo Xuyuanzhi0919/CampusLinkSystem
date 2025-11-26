@@ -44,19 +44,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import type { TaskItem } from '@/types/task'
+import type { TaskListItem } from '@/types/task'
 import { TaskStatus } from '@/types/task'
 
 // Props
 interface Props {
-  task: TaskItem
+  task: TaskListItem & {
+    publisherAvatar?: string
+    publisherName?: string
+    content?: string
+  }
 }
 
 const props = defineProps<Props>()
 
 // Emits
 const emit = defineEmits<{
-  click: [task: TaskItem]
+  click: [task: Props['task']]
 }>()
 
 // 点击激活状态
@@ -84,9 +88,12 @@ const onTouchEnd = () => {
 const getStatusText = (status: TaskStatus) => {
   const map: Record<TaskStatus, string> = {
     [TaskStatus.PENDING]: '待接单',
+    [TaskStatus.ACCEPTED]: '已接取',
     [TaskStatus.IN_PROGRESS]: '进行中',
+    [TaskStatus.SUBMITTED]: '待确认',
     [TaskStatus.COMPLETED]: '已完成',
     [TaskStatus.CANCELLED]: '已取消',
+    [TaskStatus.EXPIRED]: '已超时',
   }
   return map[status] || '未知'
 }

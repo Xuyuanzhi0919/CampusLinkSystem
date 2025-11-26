@@ -115,8 +115,8 @@ import SkeletonScreen from '@/components/SkeletonScreen.vue'
 
 // 标签选项
 const tabs = [
-  { value: 'published', label: '我发布的' },
-  { value: 'accepted', label: '我接受的' }
+  { value: 'published' as const, label: '我发布的' },
+  { value: 'accepted' as const, label: '我接受的' }
 ]
 
 // 状态选项

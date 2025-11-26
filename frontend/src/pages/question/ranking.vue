@@ -84,10 +84,7 @@ const list = ref<any[]>([])
 const loadData = async () => {
   isLoading.value = true
   try {
-    const res = await getUserRanking({
-      page: 1,
-      pageSize: 20
-    })
+    const res = await getUserRanking(1, 20)
 
     list.value = res?.list || []
   } catch (error) {

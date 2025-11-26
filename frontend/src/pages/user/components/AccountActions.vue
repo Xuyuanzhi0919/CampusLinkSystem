@@ -1,7 +1,5 @@
 <template>
-  <view class="account-actions">
-    <view class="actions-title">账户管理</view>
-
+  <CCard title="账户管理" class="account-actions" :no-padding="true">
     <view class="actions-list">
       <view
         v-for="action in actionItems"
@@ -20,10 +18,12 @@
         <text class="action-arrow">›</text>
       </view>
     </view>
-  </view>
+  </CCard>
 </template>
 
 <script setup lang="ts">
+import CCard from '@/components/ui/CCard.vue'
+
 interface ActionItem {
   id: string
   icon: string
@@ -92,21 +92,11 @@ const handleActionClick = (action: ActionItem) => {
 // 变量已通过 uni.scss 全局注入
 
 .account-actions {
-  background: $white;
-  border-radius: $radius-2xl;
-  padding: $sp-8;
   margin: $sp-6;
-  box-shadow: $shadow-card;
-}
-
-.actions-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-  margin-bottom: $sp-6;
 }
 
 .actions-list {
+  padding: 0 $sp-8;
   display: flex;
   flex-direction: column;
 }

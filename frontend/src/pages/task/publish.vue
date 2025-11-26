@@ -95,7 +95,7 @@
               @confirm="handleCustomRewardConfirm"
             />
             <text class="input-unit">积分</text>
-            <button class="confirm-btn" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</button>
+            <CButton type="accent" size="sm" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</CButton>
           </view>
           <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
         </view>
@@ -119,10 +119,10 @@
             class="form-input location-input"
             placeholder="如果需要，请填写任务地点"
           />
-          <button class="location-btn" @click="handleGetLocation">
-            <text class="location-icon">📍</text>
-            <text class="location-text">定位</text>
-          </button>
+          <CButton type="primary" size="sm" @click="handleGetLocation">
+            <template #icon><text>📍</text></template>
+            定位
+          </CButton>
         </view>
       </view>
 
@@ -149,14 +149,16 @@
       </view>
 
       <!-- 提交按钮 -->
-      <button
-        class="submit-btn"
-        :class="{ disabled: !isFormValid || submitting }"
-        :disabled="!isFormValid || submitting"
+      <CButton
+        type="primary"
+        size="lg"
+        block
+        :disabled="!isFormValid"
+        :loading="submitting"
         @click="handleSubmit"
       >
-        {{ submitting ? '发布中...' : '发布任务' }}
-      </button>
+        发布任务
+      </CButton>
     </view>
   </view>
 </template>
@@ -166,6 +168,7 @@ import { ref, computed } from 'vue'
 import { publishTask } from '@/services/task'
 import type { PublishTaskRequest, TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
+import CButton from '@/components/ui/CButton.vue'
 
 const userStore = useUserStore()
 
@@ -671,29 +674,6 @@ const formatDeadline = (dateStr: string): string => {
   color: $error;
 }
 
-// ===================================
-// 提交按钮
-// ===================================
-.submit-btn {
-  width: 100%;
-  height: 88rpx;
-  background: $primary;
-  color: $white;
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  border-radius: $radius-md;
-  border: none;
-  @include flex-center;
-
-  &:active:not(.disabled) {
-    opacity: 0.8;
-  }
-
-  &.disabled {
-    background: $gray-300;
-    color: $gray-400;
-  }
-}
 
 // ===================================
 // 奖励积分选择器
@@ -780,25 +760,6 @@ const formatDeadline = (dateStr: string): string => {
   color: $gray-500;
 }
 
-.confirm-btn {
-  padding: 0 $sp-8;
-  height: 72rpx;
-  background: $primary;
-  color: $white;
-  border-radius: $radius-base;
-  font-size: $font-size-base;
-  border: none;
-  cursor: pointer;
-
-  &:disabled {
-    background: $gray-400;
-    cursor: not-allowed;
-  }
-
-  &:active:not(:disabled) {
-    opacity: 0.8;
-  }
-}
 
 .custom-error {
   display: block;
@@ -843,37 +804,6 @@ const formatDeadline = (dateStr: string): string => {
   flex: 1;
 }
 
-.location-btn {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  padding: 0 $sp-6;
-  height: 72rpx;
-  background: $primary;
-  color: $white;
-  border-radius: $radius-base;
-  font-size: $font-size-base;
-  border: none;
-  cursor: pointer;
-
-  &:active {
-    opacity: 0.8;
-  }
-
-  &::after {
-    border: none;
-  }
-}
-
-.location-icon {
-  font-size: $font-size-lg;
-  line-height: 1;
-}
-
-.location-text {
-  font-size: $font-size-base;
-  line-height: 1;
-}
 
 .label-hint {
   font-size: $font-size-sm;

@@ -471,8 +471,8 @@ defineExpose({
   }
 
   &.type-task {
-    background: #EDE9FE;
-    color: #8B5CF6;
+    background: $favorite-50;
+    color: $favorite;
   }
 }
 

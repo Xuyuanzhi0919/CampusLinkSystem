@@ -162,7 +162,7 @@ const handleNavigate = (url: string) => {
 
 .btn-primary {
   background: var(--cl-primary);
-  color: #FFFFFF;
+  color: $white;
   box-shadow: var(--shadow-elev-1);
 
   &:hover {
@@ -172,7 +172,7 @@ const handleNavigate = (url: string) => {
 }
 
 .btn-secondary {
-  background: #FFFFFF;
+  background: $white;
   color: var(--cl-text);
   border: 2rpx solid var(--cl-gray-300);
 
@@ -206,7 +206,7 @@ const handleNavigate = (url: string) => {
   align-items: center;
   gap: 16rpx;
   padding: 24rpx 12rpx;
-  background: #FFFFFF;
+  background: $white;
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-elev-1);
   transition: var(--transition-hover);
@@ -227,19 +227,19 @@ const handleNavigate = (url: string) => {
   font-size: 32rpx;
 
   &.resource-icon {
-    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
   }
 
   &.question-icon {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    background: linear-gradient(135deg, $accent-100 0%, $accent-200 100%);
   }
 
   &.task-icon {
-    background: linear-gradient(135deg, #DCFCE7 0%, #BBF7D0 100%);
+    background: linear-gradient(135deg, $success-100 0%, $success-200 100%);
   }
 
   &.club-icon {
-    background: linear-gradient(135deg, #FCE7F3 0%, #FBCFE8 100%);
+    background: linear-gradient(135deg, $pink-100 0%, $pink-200 100%);
   }
 }
 

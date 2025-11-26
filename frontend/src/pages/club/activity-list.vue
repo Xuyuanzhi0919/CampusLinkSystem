@@ -1204,19 +1204,21 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 .activity-list-page {
   min-height: 100vh;
-  background: #F6F8FB;
+  background: $bg-page;
 }
 
 /* 搜索栏 */
 .search-bar {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 24rpx 32rpx;
-  background: white;
-  border-bottom: 1rpx solid #E5E7EB;
+  gap: $sp-4;
+  padding: $sp-6 $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $border-color;
 }
 
 .search-input-wrapper {
@@ -1227,52 +1229,50 @@ defineExpose({
 .search-input {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx 24rpx;
-  background: #F7F8FA;
-  border-radius: 48rpx;
+  gap: $sp-4;
+  padding: $sp-4 $sp-6;
+  background: $bg-input;
+  border-radius: $radius-2xl;
 }
 
 .filter-btn {
   width: 72rpx;
   height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F7F8FA;
-  border-radius: 50%;
+  @include flex-center;
+  background: $bg-input;
+  border-radius: $radius-full;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: $transition-base;
 }
 
 .filter-btn:active {
   transform: scale(0.95);
-  background: #E5E7EB;
+  background: $border-color;
 }
 
 .filter-icon {
-  font-size: 36rpx;
+  font-size: $font-size-xl;
   line-height: 1;
 }
 
 .search-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
   line-height: 1;
 }
 
 .input {
   flex: 1;
-  font-size: 28rpx;
+  font-size: $font-size-base;
   line-height: 1.4;
 }
 
 /* 🎯 清除搜索按钮 */
 .clear-icon {
   font-size: 40rpx;
-  color: #9CA3AF;
+  color: $gray-400;
   line-height: 1;
   cursor: pointer;
-  padding: 0 8rpx;
+  padding: 0 $sp-2;
 }
 
 /* 🎯 搜索历史下拉列表 */
@@ -1281,31 +1281,29 @@ defineExpose({
   top: 100%;
   left: 0;
   right: 0;
-  margin-top: 8rpx;
-  background: white;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  margin-top: $sp-2;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-dropdown;
+  z-index: $z-dropdown;
   overflow: hidden;
 }
 
 .history-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16rpx 24rpx;
-  border-bottom: 1rpx solid #E5E7EB;
+  @include flex-between;
+  padding: $sp-4 $sp-6;
+  border-bottom: 1rpx solid $border-color;
 }
 
 .history-title {
   font-size: 24rpx;
   font-weight: 500;
-  color: #6B7280;
+  color: $gray-500;
 }
 
 .history-clear {
   font-size: 24rpx;
-  color: #FF7A00;
+  color: $accent;
   cursor: pointer;
 }
 
@@ -1314,7 +1312,7 @@ defineExpose({
   align-items: center;
   gap: 12rpx;
   padding: 16rpx 24rpx;
-  border-bottom: 1rpx solid #F3F4F6;
+  border-bottom: 1rpx solid $gray-100;
   cursor: pointer;
   transition: background 0.2s ease;
 }
@@ -1324,7 +1322,7 @@ defineExpose({
 }
 
 .history-item:active {
-  background: #F9FAFB;
+  background: $gray-50;
 }
 
 .history-icon {
@@ -1335,7 +1333,7 @@ defineExpose({
 .history-text {
   flex: 1;
   font-size: 26rpx;
-  color: #374151;
+  color: $gray-700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1343,7 +1341,7 @@ defineExpose({
 
 .history-delete {
   font-size: 36rpx;
-  color: #9CA3AF;
+  color: $gray-400;
   line-height: 1;
   padding: 0 8rpx;
   cursor: pointer;
@@ -1385,7 +1383,7 @@ defineExpose({
   width: 100%;
   height: 100%;
   border-radius: 12rpx;
-  background: #F3F4F6;
+  background: $gray-100;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -1410,7 +1408,7 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: #E6E8EE;
+  background-color: $gray-200;
   border-radius: 12rpx;
 }
 
@@ -1457,7 +1455,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  background: linear-gradient(135deg, $error-50 0%, $error-100 100%);
   border-radius: 12rpx;
 }
 
@@ -1468,7 +1466,7 @@ defineExpose({
 
 .error-text {
   font-size: 20rpx;
-  color: #EF4444;
+  color: $error;
   opacity: 0.7;
 }
 
@@ -1624,7 +1622,7 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 24rpx;
-  background: #FDFDFE;
+  background: $white;
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 24rpx;
@@ -1636,7 +1634,7 @@ defineExpose({
 .skeleton-title,
 .skeleton-club,
 .skeleton-meta-item {
-  background-color: #E6E8EE;
+  background-color: $gray-200;
 }
 
 /* 封面图骨架 - 16:9 比例 */
@@ -1739,7 +1737,7 @@ defineExpose({
   flex: 1;
   font-size: 32rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: $text-primary;
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1750,7 +1748,7 @@ defineExpose({
 
 /* 🎯 搜索关键词高亮 */
 .highlight {
-  color: #FF7A00;
+  color: $accent;
   font-weight: 700;
   background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
   padding: 2rpx 6rpx;
@@ -1772,7 +1770,7 @@ defineExpose({
 
 .activity-club {
   font-size: 26rpx;
-  color: #666666;
+  color: $text-secondary;
   line-height: 1;
 }
 
@@ -1784,7 +1782,7 @@ defineExpose({
 
 .meta-item {
   font-size: 24rpx;
-  color: #999999;
+  color: $gray-400;
   line-height: 1;
 }
 
@@ -1795,12 +1793,12 @@ defineExpose({
 }
 
 .meta-item.remaining {
-  color: #666666;
+  color: $text-secondary;
   font-weight: 500;
 }
 
 .meta-item.remaining.urgent {
-  color: #FF7A00;
+  color: $accent;
   font-weight: 600;
 }
 
@@ -1833,13 +1831,13 @@ defineExpose({
 .empty-text {
   font-size: 28rpx;
   font-weight: 500;
-  color: #333333;
+  color: $gray-700;
   margin-bottom: 16rpx;
 }
 
 .empty-hint {
   font-size: 24rpx;
-  color: #999999;
+  color: $gray-400;
   line-height: 1.5;
 }
 
@@ -1851,7 +1849,7 @@ defineExpose({
 
 .loading-text {
   font-size: 26rpx;
-  color: #999999;
+  color: $gray-400;
 }
 
 /* 🎯 没有更多数据 */
@@ -1862,7 +1860,7 @@ defineExpose({
 
 .no-more-text {
   font-size: 24rpx;
-  color: #9CA3AF;
+  color: $gray-400;
   position: relative;
   display: inline-block;
   padding: 0 24rpx;
@@ -1875,7 +1873,7 @@ defineExpose({
   top: 50%;
   width: 80rpx;
   height: 1rpx;
-  background: linear-gradient(to right, transparent, #E5E7EB, transparent);
+  background: linear-gradient(to right, transparent, $border-color, transparent);
 }
 
 .no-more-text::before {
@@ -1895,7 +1893,7 @@ defineExpose({
   bottom: 120rpx;
   width: 88rpx;
   height: 88rpx;
-  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  background: linear-gradient(135deg, $accent 0%, $accent-light 100%);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -1941,7 +1939,7 @@ defineExpose({
   gap: 32rpx;
   padding: 20rpx 32rpx;
   background: white;
-  border-bottom: 1rpx solid #E5E7EB;
+  border-bottom: 1rpx solid $border-color;
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
@@ -1966,13 +1964,13 @@ defineExpose({
 .tab-text {
   font-size: 28rpx;
   font-weight: 500;
-  color: #6B7280;
+  color: $gray-500;
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
 .tab-item.active .tab-text {
-  color: #FF7A00;
+  color: $accent;
   font-weight: 600;
   font-size: 30rpx;
 }
@@ -1980,7 +1978,7 @@ defineExpose({
 .tab-indicator {
   width: 32rpx;
   height: 6rpx;
-  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
+  background: linear-gradient(135deg, $accent 0%, $accent-light 100%);
   border-radius: 3rpx;
   animation: tabIndicatorSlide 0.3s ease-out;
 }
@@ -2002,19 +2000,19 @@ defineExpose({
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 32rpx;
-  background: #FFF9F0;
-  border-bottom: 1rpx solid #FFE5CC;
+  background: $accent-50;
+  border-bottom: 1rpx solid $accent-100;
 }
 
 .result-count {
   font-size: 26rpx;
   font-weight: 500;
-  color: #FF7A00;
+  color: $accent;
 }
 
 .filtered-hint {
   font-size: 24rpx;
-  color: #FF9933;
+  color: $accent-light;
 }
 
 /* 筛选标签栏 */
@@ -2024,7 +2022,7 @@ defineExpose({
   gap: 12rpx;
   padding: 16rpx 32rpx;
   background: white;
-  border-bottom: 1rpx solid #E5E7EB;
+  border-bottom: 1rpx solid $border-color;
   overflow-x: auto;
   white-space: nowrap;
 }
@@ -2034,33 +2032,33 @@ defineExpose({
   align-items: center;
   gap: 8rpx;
   padding: 8rpx 16rpx;
-  background: #EFF6FF;
-  border: 1rpx solid #BFDBFE;
+  background: $primary-50;
+  border: 1rpx solid $primary-200;
   border-radius: 24rpx;
 }
 
 .tag-text {
   font-size: 24rpx;
-  color: #2563EB;
+  color: $primary;
 }
 
 .tag-close {
   font-size: 32rpx;
-  color: #2563EB;
+  color: $primary;
   line-height: 1;
   cursor: pointer;
 }
 
 .clear-all-btn {
   padding: 8rpx 16rpx;
-  background: #F3F4F6;
+  background: $gray-100;
   border-radius: 24rpx;
   cursor: pointer;
 }
 
 .clear-text {
   font-size: 24rpx;
-  color: #6B7280;
+  color: $gray-500;
 }
 
 /* 筛选弹窗 */
@@ -2099,32 +2097,32 @@ defineExpose({
   justify-content: space-between;
   align-items: center;
   padding: 32rpx;
-  border-bottom: 1rpx solid #E5E7EB;
+  border-bottom: 1rpx solid $border-color;
 }
 
 .popup-title {
   font-size: 32rpx;
   font-weight: 600;
-  color: #1A1A1A;
+  color: $text-primary;
 }
 
 .popup-close {
   font-size: 48rpx;
-  color: #9CA3AF;
+  color: $gray-400;
   line-height: 1;
   cursor: pointer;
 }
 
 .filter-section {
   padding: 32rpx;
-  border-bottom: 1rpx solid #F3F4F6;
+  border-bottom: 1rpx solid $gray-100;
 }
 
 .section-title {
   display: block;
   font-size: 28rpx;
   font-weight: 600;
-  color: #374151;
+  color: $gray-700;
   margin-bottom: 20rpx;
 }
 
@@ -2136,19 +2134,19 @@ defineExpose({
 
 .option-item {
   padding: 16rpx 32rpx;
-  background: #F3F4F6;
+  background: $gray-100;
   border-radius: 48rpx;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .option-item.active {
-  background: linear-gradient(135deg, #2F6AFF 0%, #5B8DFF 100%);
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
 }
 
 .option-text {
   font-size: 26rpx;
-  color: #374151;
+  color: $gray-700;
 }
 
 .option-item.active .option-text {
@@ -2174,15 +2172,15 @@ defineExpose({
 }
 
 .reset-btn {
-  background: #F3F4F6;
+  background: $gray-100;
 }
 
 .reset-btn:active {
-  background: #E5E7EB;
+  background: $border-color;
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #2F6AFF 0%, #5B8DFF 100%);
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
   box-shadow: 0 4rpx 16rpx rgba(47, 106, 255, 0.3);
 }
 
@@ -2196,7 +2194,7 @@ defineExpose({
 }
 
 .reset-btn .btn-text {
-  color: #6B7280;
+  color: $gray-500;
 }
 
 .confirm-btn .btn-text {

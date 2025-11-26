@@ -571,7 +571,7 @@ onMounted(() => {
     bottom: 0;
     width: 80rpx;
     height: 3rpx;
-    background: var(--cl-primary, #3B82F6);
+    background: var(--cl-primary, $primary-light);
     border-radius: 2rpx;
   } */
 }
@@ -588,7 +588,7 @@ onMounted(() => {
   font-size: $font-size-2xl; /* 20px - 标题规范 */
   font-weight: $font-weight-bold; /* 优化：增强到 700，更突出 */
   /* 精修：渐变文字效果 - 从深蓝到亮蓝 */
-  background: linear-gradient(135deg, $primary-dark 0%, $primary-light 50%, #60A5FA 100%);
+  background: linear-gradient(135deg, $primary-dark 0%, $primary-light 50%, $primary-400 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -607,7 +607,7 @@ onMounted(() => {
     transform: translateY(-50%);
     width: 8rpx; /* 4px 宽度 - 增大宽度 */
     height: 40rpx; /* 20px 高度 */
-    background: linear-gradient(180deg, $primary-light 0%, #60A5FA 100%); /* 蓝色渐变 */
+    background: linear-gradient(180deg, $primary-light 0%, $primary-400 100%); /* 蓝色渐变 */
     border-radius: $radius-xs; /* 圆角 */
     /* 精修：装饰条呼吸动画 */
     animation: pulse 2s ease-in-out infinite;
@@ -676,7 +676,7 @@ onMounted(() => {
       left: 0;
       right: 0;
       height: 2px;
-      background: linear-gradient(90deg, $primary 0%, #60A5FA 100%);
+      background: linear-gradient(90deg, $primary 0%, $primary-400 100%);
       border-radius: 1px;
       animation: slideIn $duration-slow $ease-out;
     }
@@ -859,7 +859,7 @@ onMounted(() => {
 
     .card-title {
       /* 精修：标题渐变色呼应主题色 */
-      background: linear-gradient(135deg, $primary 0%, $primary-light 50%, #60A5FA 100%);
+      background: linear-gradient(135deg, $primary 0%, $primary-light 50%, $primary-400 100%);
       -webkit-background-clip: text;
       background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -885,7 +885,7 @@ onMounted(() => {
 }
 
 /* 文档规范：移除卡片背景渐变，统一使用纯白卡 */
-/* 已在 .recommend-card 中统一设置 background: #FFFFFF */
+/* 已在 .recommend-card 中统一设置 background: $white */
 
 /* 卡片淡入动画 */
 @keyframes fadeInCard {

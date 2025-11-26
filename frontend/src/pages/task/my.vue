@@ -547,8 +547,8 @@ defineExpose({
 
   // 待确认 - 紫色
   &.status-3 {
-    background: #E9D5FF;
-    color: #9333EA;
+    background: $purple-100;
+    color: $purple;
   }
 
   // 已完成 - 绿色

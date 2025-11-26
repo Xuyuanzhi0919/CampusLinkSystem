@@ -35,6 +35,7 @@ $success: #16A34A;
 $success-light: #22C55E;
 $success-50: #F0FDF4;
 $success-100: #DCFCE7;
+$success-200: #BBF7D0;
 
 $warning: #F59E0B;
 $warning-light: #FBBF24;
@@ -51,6 +52,40 @@ $info: #0EA5E9;
 $info-light: #38BDF8;
 $info-50: #F0F9FF;
 $info-100: #E0F2FE;
+
+// 青色系 - 资源相关
+$cyan: #06B6D4;
+$cyan-light: #22D3EE;
+$cyan-50: #ECFEFF;
+$cyan-100: #CFFAFE;
+
+// 粉色系 - 活动相关
+$pink: #EC4899;
+$pink-light: #F472B6;
+$pink-50: #FDF2F8;
+$pink-100: #FCE7F3;
+$pink-200: #FBCFE8;
+
+// 排名徽章色 - 金银铜牌
+$rank-gold: #FFD700;
+$rank-gold-dark: #FFA500;
+$rank-silver: #C0C0C0;
+$rank-silver-dark: #A8A8A8;
+$rank-bronze: #CD7F32;
+$rank-bronze-dark: #B8860B;
+
+// 收藏/待确认主题色 - 紫色系
+$purple: #9333EA;
+$purple-light: #A855F7;
+$purple-50: #FAF5FF;
+$purple-100: #E9D5FF;
+$purple-200: #DDD6FE;
+
+// 收藏主题色 - 紫色系（使用同一色系）
+$favorite: #8B5CF6;
+$favorite-light: #A78BFA;
+$favorite-50: #EDE9FE;
+$favorite-100: #DDD6FE;
 
 // 中性色 - 灰色系
 $gray-900: #0F172A;   // 主文本

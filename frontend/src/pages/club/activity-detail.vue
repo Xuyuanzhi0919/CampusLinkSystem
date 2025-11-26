@@ -690,37 +690,13 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-/* ========== 🎯 设计系统变量（最终版统一规范）========== */
-:root {
-  /* 圆角 */
-  --radius-large: 24rpx; /* 12px */
-  --radius-medium: 16rpx; /* 8px */
-
-  /* 间距 */
-  --spacing-xs: 16rpx; /* 8px */
-  --spacing-sm: 24rpx; /* 12px */
-  --spacing-md: 32rpx; /* 16px */
-  --spacing-lg: 40rpx; /* 20px */
-  --spacing-xl: 48rpx; /* 24px */
-
-  /* 颜色 */
-  --color-primary: #2F6AFF;
-  --color-accent: #FF7A00;
-  --color-yellow: #FFB800;
-  --color-blue-light: #5B8DFF;
-  --color-bg-card: #FFFFFF;
-  --color-bg-page: #F6F8FB;
-  --color-text-main: #1A1A1A;
-  --color-text-secondary: #666666;
-  --color-text-tertiary: #777777;
-  --color-border: #E5E7EB;
-}
+// 变量已通过 uni.scss 全局注入
 
 /* ========== 页面容器 ========== */
 .activity-detail-page {
   min-height: 100vh;
-  background: var(--color-bg-page);
-  padding-bottom: 120rpx; /* 为底部按钮留空间 */
+  background: $bg-page;
+  padding-bottom: 120rpx;
 }
 
 /* ========== 加载骨架屏 ========== */
@@ -731,7 +707,7 @@ onUnmounted(() => {
 .skeleton-banner {
   width: 100%;
   height: 400rpx;
-  background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
@@ -745,10 +721,10 @@ onUnmounted(() => {
 
 .skeleton-line {
   height: 32rpx;
-  background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-  border-radius: 8rpx;
+  border-radius: $radius-sm;
 }
 
 .skeleton-title {
@@ -786,41 +762,40 @@ onUnmounted(() => {
 }
 
 .error-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #1A1A1A;
-  margin-bottom: 16rpx;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  margin-bottom: $sp-4;
 }
 
 .error-desc {
-  font-size: 28rpx;
-  color: #666666;
+  font-size: $font-size-base;
+  color: $text-secondary;
   text-align: center;
-  margin-bottom: 48rpx;
+  margin-bottom: $sp-12;
 }
 
 .error-btn {
-  padding: 20rpx 64rpx;
-  background: #2F6AFF;
-  border-radius: 48rpx;
+  padding: $sp-5 $sp-16;
+  @include gradient-primary;
+  border-radius: $radius-button;
   cursor: pointer;
 }
 
 .error-btn-text {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $text-inverse;
 }
 
 /* ========== 活动Banner ========== */
 .activity-banner {
   width: 100%;
-  height: 280rpx; /* 🎯 优化：从 400rpx 缩至 280rpx，减少空旷感 */
+  height: 280rpx;
   position: relative;
   overflow: hidden;
-  border-radius: 0 0 24rpx 24rpx; /* 🎯 最终版：底部圆角 12px，衔接更自然 */
+  border-radius: 0 0 $radius-lg $radius-lg;
 
-  /* 🎯 最终版：底部渐变遮罩，让内容区更稳 */
   &::after {
     content: '';
     position: absolute;
@@ -828,7 +803,7 @@ onUnmounted(() => {
     left: 0;
     right: 0;
     height: 80rpx;
-    background: linear-gradient(to top, rgba(0, 0, 0, 0.08), transparent); /* 🎯 从 0.15 降至 0.08，更自然轻盈 */
+    background: linear-gradient(to top, rgba($black, 0.08), transparent);
     pointer-events: none;
   }
 }
@@ -841,13 +816,13 @@ onUnmounted(() => {
 
 /* ========== 活动主体内容 ========== */
 .activity-main {
-  background: white;
-  border-radius: 32rpx 32rpx 0 0;
-  margin-top: -32rpx;
+  background: $bg-surface;
+  border-radius: $radius-xl $radius-xl 0 0;
+  margin-top: -$sp-8;
   position: relative;
   z-index: 1;
-  padding: 48rpx 32rpx 96rpx; /* 🎯 最终版：顶部 24px，底部 60-80px 预留空隙 */
-  max-width: 860px; /* 🎯 最终版：Web 端 740-860px */
+  padding: $sp-12 $sp-8 $sp-24;
+  max-width: 860px;
   margin-left: auto;
   margin-right: auto;
 }
@@ -866,45 +841,43 @@ onUnmounted(() => {
 }
 
 .activity-title {
-  font-size: 48rpx; /* 🎯 最终版：Web 24px，H5 20px */
-  font-weight: 600; /* 🎯 最终版：600 字重 */
-  color: #1A1A1A;
-  line-height: 1.4;
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  line-height: $line-height-snug;
   flex: 1;
 }
 
-/* 🎯 收藏按钮 */
+/* 收藏按钮 */
 .favorite-btn {
   flex-shrink: 0;
   width: 80rpx;
   height: 80rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FFE5D9 0%, #FFF0E8 100%);
-  border-radius: 50%;
+  @include flex-center;
+  background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
+  border-radius: $radius-full;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.15);
-}
+  transition: $transition-base;
+  box-shadow: 0 4rpx 12rpx rgba($accent, 0.15);
 
-.favorite-btn:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6rpx 16rpx rgba(255, 122, 0, 0.25);
-}
+  &:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6rpx 16rpx rgba($accent, 0.25);
+  }
 
-.favorite-btn:active {
-  transform: scale(0.95);
-}
+  &:active {
+    transform: scale(0.95);
+  }
 
-.favorite-btn.favorited {
-  background: linear-gradient(135deg, #FF6B6B 0%, #FF8E8E 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 107, 107, 0.3);
-  animation: heart-beat 0.6s ease-out;
-}
+  &.favorited {
+    background: linear-gradient(135deg, $error 0%, $error-light 100%);
+    box-shadow: 0 4rpx 12rpx rgba($error, 0.3);
+    animation: heart-beat 0.6s $ease-out;
 
-.favorite-btn.favorited:hover {
-  box-shadow: 0 6rpx 16rpx rgba(255, 107, 107, 0.4);
+    &:hover {
+      box-shadow: 0 6rpx 16rpx rgba($error, 0.4);
+    }
+  }
 }
 
 .favorite-icon {
@@ -947,72 +920,72 @@ onUnmounted(() => {
 }
 
 .tag-hot {
-  background: #FF7A00; /* 🎯 最终版：热门活动橙色 */
-  color: white;
+  background: $accent;
+  color: $text-inverse;
 }
 
 .tag-new {
-  background: #5B8DFF; /* 🎯 最终版：新发布浅蓝色 */
-  color: white;
+  background: $primary-light;
+  color: $text-inverse;
 }
 
 .tag-urgent {
-  background: #FFB800; /* 🎯 最终版：即将开始黄色 */
-  color: white;
+  background: $warning;
+  color: $text-inverse;
 }
 
 .tag-crowded {
-  background: #FF7A00; /* 🎯 最终版：名额紧张橙色 */
-  color: white;
+  background: $accent;
+  color: $text-inverse;
 }
 
 /* ========== 基本信息卡片 ========== */
 .info-card {
-  background: #FFFFFF; /* 🎯 最终版：纯白背景 */
-  border-radius: 24rpx; /* 🎯 最终版：12px 圆角 */
-  padding: 40rpx; /* 🎯 最终版：Web 20px, H5 16px */
-  margin-bottom: 32rpx; /* 🎯 最终优化：信息卡 → 进度条 16px（减少空白） */
+  background: $bg-surface;
+  border-radius: $radius-lg;
+  padding: $sp-10;
+  margin-bottom: $sp-8;
 }
 
 .info-item {
   display: flex;
   align-items: flex-start;
-  gap: 24rpx; /* 🎯 最终版：图标与文本间距 12px */
-  padding: 24rpx 0; /* 🎯 最终版：行间距 Web 12px, H5 10px */
-  border-bottom: 1rpx solid #E5E7EB;
-}
+  gap: $sp-6;
+  padding: $sp-6 0;
+  border-bottom: 1rpx solid $border-color;
 
-.info-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 }
 
 .info-icon {
-  font-size: 36rpx; /* 🎯 最终版：图标 16-18px */
+  font-size: $font-size-xl;
   line-height: 1;
   flex-shrink: 0;
-  color: #5B8DFF; /* 🎯 最终版：统一主蓝色 */
+  color: $primary-light;
 }
 
 .info-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .info-label {
-  font-size: 26rpx; /* 🎯 最终版：13px */
-  color: #777777; /* 🎯 最终版：#777 */
+  font-size: $font-size-sm;
+  color: $text-tertiary;
   line-height: 1;
 }
 
 .info-value {
-  font-size: 30rpx; /* 🎯 最终版：14-15px */
-  color: #333333;
-  font-weight: 500;
-  line-height: 1.4;
-  transition: all 0.3s ease;
+  font-size: $font-size-md;
+  color: $text-primary;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-snug;
+  transition: $transition-base;
 }
 
 /* 🎯 数字高亮闪烁动画 */
@@ -1022,31 +995,31 @@ onUnmounted(() => {
 
 @keyframes number-pulse {
   0%, 100% {
-    color: #333333;
+    color: $text-primary;
     transform: scale(1);
   }
   25% {
-    color: #FF6B00;
+    color: $accent;
     transform: scale(1.15);
-    font-weight: 700;
+    font-weight: $font-weight-bold;
   }
   50% {
-    color: #FF6B00;
+    color: $accent;
     transform: scale(1.1);
   }
   75% {
-    color: #FF8A3D;
+    color: $accent-light;
     transform: scale(1.05);
   }
 }
 
 .info-value.clickable {
-  color: #2F6AFF;
+  color: $primary;
 }
 
 .info-arrow {
-  font-size: 24rpx;
-  color: #999999;
+  font-size: $font-size-sm;
+  color: $text-placeholder;
   line-height: 1;
 }
 
@@ -1063,18 +1036,18 @@ onUnmounted(() => {
 }
 
 .countdown-upcoming {
-  background: #FFF3E0;
-  color: #E65100;
+  background: $warning-50;
+  color: $accent-dark;
 }
 
 .countdown-ongoing {
-  background: #E8F5E9;
-  color: #1B5E20;
+  background: $success-50;
+  color: $success;
 }
 
 .countdown-ended {
-  background: #EEEEEE;
-  color: #616161;
+  background: $gray-100;
+  color: $text-secondary;
 }
 
 .countdown-icon {
@@ -1095,55 +1068,53 @@ onUnmounted(() => {
 
 .status-bar {
   width: 100%;
-  height: 16rpx; /* 🎯 最终版：Web 6px + H5 8px，使用 8px = 16rpx 中间值 */
-  background: #E5E7EB;
-  border-radius: 12rpx; /* 🎯 最终版：6px 圆角 */
+  height: $sp-4;
+  background: $gray-200;
+  border-radius: $radius-base;
   overflow: hidden;
-  margin-bottom: 16rpx; /* 🎯 最终版：进度条 → 名额文案 8px */
+  margin-bottom: $sp-4;
 }
 
 .status-progress {
   height: 100%;
-  background: #2F6AFF; /* 🎯 最终版：纯色，不再用渐变 */
-  border-radius: 12rpx;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  background: $primary;
+  border-radius: $radius-base;
+  transition: width $duration-slow $ease-smooth;
 }
 
 .status-text {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-between;
 }
 
 .remaining {
-  font-size: 26rpx; /* 🎯 最终版：13px */
-  color: #444444; /* 🎯 最终版：#444 */
-  font-weight: 600;
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  font-weight: $font-weight-semibold;
 }
 
 .filled {
-  font-size: 26rpx; /* 🎯 最终版：13px */
-  color: #444444; /* 🎯 最终版：#444 */
-  font-weight: 400;
+  font-size: $font-size-sm;
+  color: $text-secondary;
+  font-weight: $font-weight-normal;
 }
 
 /* ========== 活动详情 ========== */
 .detail-section {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: 700;
-  color: #1A1A1A;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $text-primary;
   display: block;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .section-content {
-  font-size: 28rpx;
-  color: #333333;
-  line-height: 1.8;
+  font-size: $font-size-base;
+  color: $text-primary;
+  line-height: $line-height-relaxed;
   white-space: pre-wrap;
 }
 
@@ -1214,39 +1185,39 @@ onUnmounted(() => {
 
 /* 按钮状态样式 */
 .button-available {
-  background: linear-gradient(135deg, #2F6AFF 0%, #5B8DFF 100%);
-  color: white;
-  box-shadow: 0 4rpx 16rpx rgba(47, 106, 255, 0.3);
-  transition: all 0.3s ease;
-}
+  @include gradient-primary;
+  color: $text-inverse;
+  box-shadow: 0 4rpx 16rpx rgba($primary, 0.3);
+  transition: $transition-base;
 
-.button-available:hover {
-  box-shadow: 0 6rpx 20rpx rgba(47, 106, 255, 0.4);
-  transform: translateY(-2rpx);
+  &:hover {
+    box-shadow: 0 6rpx 20rpx rgba($primary, 0.4);
+    transform: translateY(-2rpx);
+  }
 }
 
 .button-registered {
-  background: linear-gradient(135deg, #2FBD6A 0%, #4DD88E 100%);
-  color: white;
+  background: linear-gradient(135deg, $success 0%, $success-light 100%);
+  color: $text-inverse;
 }
 
-/* 🎯 签到按钮样式 */
+/* 签到按钮样式 */
 .button-checkin {
-  background: linear-gradient(135deg, #FF6F00 0%, #FF8F00 100%);
-  color: white;
-  box-shadow: 0 4rpx 16rpx rgba(255, 111, 0, 0.3);
-  transition: all 0.3s ease;
+  @include gradient-accent;
+  color: $text-inverse;
+  box-shadow: 0 4rpx 16rpx rgba($accent, 0.3);
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: 0 6rpx 20rpx rgba($accent, 0.4);
+    transform: translateY(-2rpx);
+  }
 }
 
-.button-checkin:hover {
-  box-shadow: 0 6rpx 20rpx rgba(255, 111, 0, 0.4);
-  transform: translateY(-2rpx);
-}
-
-/* 🎯 已签到状态 */
+/* 已签到状态 */
 .button-checkedin {
-  background: linear-gradient(135deg, #FFB74D 0%, #FFCC80 100%);
-  color: white;
+  background: linear-gradient(135deg, $warning-light 0%, $accent-100 100%);
+  color: $text-inverse;
   cursor: not-allowed;
   opacity: 0.8;
 }
@@ -1254,8 +1225,8 @@ onUnmounted(() => {
 .button-full,
 .button-ongoing,
 .button-ended {
-  background: #E5E5E5;
-  color: #999999;
+  background: $gray-200;
+  color: $text-placeholder;
   cursor: not-allowed;
 }
 

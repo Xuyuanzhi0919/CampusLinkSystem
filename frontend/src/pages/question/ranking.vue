@@ -215,20 +215,20 @@ onMounted(() => {
 
   // 金牌
   &.rank-1 {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    box-shadow: 0 2rpx 8rpx rgba(255, 215, 0, 0.25);
+    background: linear-gradient(135deg, $rank-gold, $rank-gold-dark);
+    box-shadow: 0 2rpx 8rpx rgba($rank-gold, 0.25);
   }
 
   // 银牌
   &.rank-2 {
-    background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
-    box-shadow: 0 2rpx 8rpx rgba(192, 192, 192, 0.25);
+    background: linear-gradient(135deg, $rank-silver, $rank-silver-dark);
+    box-shadow: 0 2rpx 8rpx rgba($rank-silver, 0.25);
   }
 
   // 铜牌
   &.rank-3 {
-    background: linear-gradient(135deg, #CD7F32, #B8860B);
-    box-shadow: 0 2rpx 8rpx rgba(205, 127, 50, 0.25);
+    background: linear-gradient(135deg, $rank-bronze, $rank-bronze-dark);
+    box-shadow: 0 2rpx 8rpx rgba($rank-bronze, 0.25);
   }
 }
 

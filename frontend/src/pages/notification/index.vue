@@ -431,18 +431,20 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .notification-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $bg-page;
 }
 
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
   display: flex;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  background: $white;
+  border-bottom: 1rpx solid $border-color;
 }
 
 .tab-item {
@@ -458,13 +460,13 @@ defineExpose({
 
 .tab-label {
   font-size: 28rpx;
-  color: #6B7280;
+  color: $gray-500;
   font-weight: 500;
   transition: color 0.3s;
 }
 
 .tab-item.active .tab-label {
-  color: #2563EB;
+  color: $primary;
   font-weight: 600;
 }
 
@@ -475,7 +477,7 @@ defineExpose({
   transform: translateX(40rpx);
   min-width: 32rpx;
   height: 32rpx;
-  background: #EF4444;
+  background: $error;
   border-radius: 16rpx;
   display: flex;
   align-items: center;
@@ -485,7 +487,7 @@ defineExpose({
 
 .badge-text {
   font-size: 20rpx;
-  color: #FFFFFF;
+  color: $white;
   font-weight: 600;
   line-height: 1;
 }
@@ -497,7 +499,7 @@ defineExpose({
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background: #2563EB;
+  background: $primary;
   border-radius: 2rpx;
 }
 
@@ -505,8 +507,8 @@ defineExpose({
   display: flex;
   justify-content: flex-end;
   padding: 20rpx 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #F3F4F6;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
 }
 
 .action-btn {
@@ -514,7 +516,7 @@ defineExpose({
   align-items: center;
   gap: 8rpx;
   padding: 12rpx 24rpx;
-  background: #F3F4F6;
+  background: $gray-100;
   border-radius: 8rpx;
   transition: all 0.3s;
 
@@ -526,12 +528,12 @@ defineExpose({
 
 .action-icon {
   font-size: 24rpx;
-  color: #2563EB;
+  color: $primary;
 }
 
 .action-text {
   font-size: 24rpx;
-  color: #2563EB;
+  color: $primary;
   font-weight: 500;
 }
 
@@ -547,12 +549,12 @@ defineExpose({
   display: flex;
   align-items: flex-start;
   padding: 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #F3F4F6;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
   transition: all 0.3s;
 
   &.unread {
-    background: #F0F9FF;
+    background: $info-50;
   }
 
   &:active {
@@ -571,31 +573,31 @@ defineExpose({
   margin-right: 24rpx;
 
   &.icon-system {
-    background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+    background: linear-gradient(135deg, $primary-light 0%, $primary-400 100%);
   }
 
   &.icon-comment {
-    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    background: linear-gradient(135deg, $success 0%, $success-light 100%);
   }
 
   &.icon-like {
-    background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+    background: linear-gradient(135deg, $error 0%, $error-light 100%);
   }
 
   &.icon-follow {
-    background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+    background: linear-gradient(135deg, $favorite 0%, $favorite-light 100%);
   }
 
   &.icon-task {
-    background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+    background: linear-gradient(135deg, $accent 0%, $accent-light 100%);
   }
 
   &.icon-activity {
-    background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+    background: linear-gradient(135deg, $pink 0%, $pink-light 100%);
   }
 
   &.icon-resource {
-    background: linear-gradient(135deg, #06B6D4 0%, #22D3EE 100%);
+    background: linear-gradient(135deg, $cyan 0%, $cyan-light 100%);
   }
 }
 
@@ -613,13 +615,13 @@ defineExpose({
 .notification-title {
   font-size: 30rpx;
   font-weight: 600;
-  color: #1F2937;
+  color: $gray-800;
   line-height: 1.5;
 }
 
 .notification-message {
   font-size: 26rpx;
-  color: #6B7280;
+  color: $gray-500;
   line-height: 1.6;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -630,7 +632,7 @@ defineExpose({
 
 .notification-time {
   font-size: 24rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .notification-actions {
@@ -644,7 +646,7 @@ defineExpose({
 .unread-dot {
   width: 16rpx;
   height: 16rpx;
-  background: #EF4444;
+  background: $error;
   border-radius: 50%;
 }
 
@@ -658,7 +660,7 @@ defineExpose({
   transition: all 0.3s;
 
   &:active {
-    background: #FEE2E2;
+    background: $error-100;
     transform: scale(0.9);
   }
 }
@@ -682,13 +684,13 @@ defineExpose({
 
 .empty-text {
   font-size: 32rpx;
-  color: #6B7280;
+  color: $gray-500;
   margin-bottom: 16rpx;
 }
 
 .empty-tip {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .load-more {
@@ -700,7 +702,7 @@ defineExpose({
 
 .load-more-text {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .safe-area-bottom {

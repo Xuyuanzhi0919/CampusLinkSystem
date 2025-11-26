@@ -1015,229 +1015,160 @@ defineExpose({
 <style scoped lang="scss">
 // 变量已通过 uni.scss 全局注入
 
-/* 企业级重构：第一层 - 品牌渐变区（顶部背景）- 优化：缩减高度增强紧凑感 */
+/* Phase 1 重构：顶部区域 - 专业化、紧凑化 */
 .top-focus-bar {
   position: relative;
   width: 100%;
-  height: 640rpx; /* 320px - 优化：从800rpx减小到640rpx，减少20% */
-  /* 优化：径向渐变，从中心向外扩散，增强纵深感 */
-  background:
-    radial-gradient(ellipse at 50% 0%, $primary-100 0%, transparent 70%),
-    linear-gradient(180deg,
-      $primary-50 0%,      /* 顶部更亮的蓝 */
-      #EEF4FF 25%,     /* 中上 */
-      #F5F8FF 50%,     /* 中部 */
-      $gray-50 75%,     /* 中下略深 */
-      $bg-surface 100%     /* 底部纯白 */
-    );
-  overflow: visible; /* 允许内容溢出，实现自然过渡 */
-  z-index: auto; /* 关键修复：移除固定z-index，避免限制内部移动端菜单的层级 */
-
-  /* 优化：增强阴影，提升浮层感 */
-  box-shadow: 0 12rpx 40rpx rgba($primary, 0.08);
+  height: 400rpx; /* 200px - 大幅缩减高度，从 640rpx 减少到 400rpx（减少 37%）*/
+  /* 专业化配色：更简洁的渐变，减少花哨感 */
+  background: linear-gradient(180deg,
+    $gray-50 0%,           /* 顶部极淡灰 */
+    $bg-surface 100%       /* 底部纯白 */
+  );
+  overflow: visible;
+  z-index: auto;
+  /* 移除过重的阴影，改用轻微分割线 */
+  border-bottom: 1px solid $border-light;
 }
 
-/* 企业级重构：几何线条、模糊圆点、光晕装饰（10% 不透明度）*/
+/* Phase 1：极简装饰层 - 移除过多背景元素 */
 .bg-decoration-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
-
-  /* 添加整体光晕效果 + 白光透明渐层（增强视觉纵深）*/
-  background:
-    /* 顶部发光晕圈（白光透明渐层）*/
-    radial-gradient(circle at 50% 0%, rgba($bg-surface, 0.4) 0%, transparent 40%),
-    /* 右上光晕（45° 光线方向）*/
-    radial-gradient(circle at 85% 15%, rgba($primary, 0.12) 0%, transparent 50%),
-    /* 左下光晕 */
-    radial-gradient(circle at 15% 85%, rgba($primary-100, 0.10) 0%, transparent 50%),
-    /* 中央柔光 */
-    radial-gradient(circle at 50% 40%, rgba($primary-50, 0.08) 0%, transparent 60%);
+  display: none; /* 移除复杂装饰，保持专业简洁 */
 }
 
-/* 几何线条装饰 1 - 右上角（10% 不透明度）*/
-.bg-circle-1 {
-  position: absolute;
-  top: -50rpx;
-  right: 10%;
-  width: 500rpx;
-  height: 500rpx;
-  background:
-    /* 模糊圆点 */
-    radial-gradient(circle, rgba($primary, 0.10) 0%, transparent 60%);
-  border-radius: $radius-full;
-  filter: blur(40rpx); /* 20px 模糊 */
-}
-
-/* 几何线条装饰 2 - 左下角（10% 不透明度）*/
-.bg-circle-2 {
-  position: absolute;
-  bottom: -100rpx;
-  left: 5%;
-  width: 400rpx;
-  height: 400rpx;
-  background:
-    /* 模糊圆点 */
-    radial-gradient(circle, rgba($primary-100, 0.10) 0%, transparent 60%);
-  border-radius: $radius-full;
-  filter: blur(30rpx); /* 15px 模糊 */
-}
-
-/* 波浪形装饰 - 底部柔光带 */
+/* 移除几何装饰 */
+.bg-circle-1,
+.bg-circle-2,
 .bg-wave {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 120rpx; /* 60px */
-  background: linear-gradient(180deg, transparent 0%, rgba($gray-50, 0.6) 100%);
-  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+  display: none;
 }
 
-/* ========== 三、内容容器（方案 B：三层结构）========== */
+/* Phase 1：内容容器 - 紧凑布局 */
 .focus-container {
   position: relative;
   max-width: 2400rpx; /* 1200px */
   height: 100%;
   margin: 0 auto;
-  padding: 0 60rpx;
+  padding: 0 $sp-16; /* 64rpx = 32px */
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center; /* 垂直居中 */
+  gap: $sp-8; /* 导航栏与搜索区间距 */
   z-index: 2;
 }
 
-/* ========== 四、顶部导航栏（第一行）========== */
+/* Phase 1：顶部导航栏 - 紧凑专业 */
 .top-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 80rpx; /* 40px - 减小高度 */
-  padding-top: 16rpx;
+  height: 64rpx; /* 32px - 更紧凑 */
 }
 
-/* 品牌标识 */
+/* Phase 1：品牌标识 - 扁平化布局 */
 .brand-section {
   display: flex;
-  flex-direction: column;
-  gap: 2rpx;
+  flex-direction: row; /* 横向排列 */
+  align-items: center;
+  gap: $sp-4;
   position: relative;
-  padding-left: $sp-4; /* 为分割线留出空间 */
+  padding-left: $sp-4;
 
-  /* 优化：增加品牌色分割线，强化品牌识别 */
+  /* 左侧品牌色竖条 - 更细 */
   &::before {
     content: '';
     position: absolute;
     left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6rpx; /* 3px */
-    background: linear-gradient(180deg, $primary 0%, rgba($primary, 0.3) 100%);
-    border-radius: $radius-sm;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4rpx; /* 2px */
+    height: 32rpx; /* 16px */
+    background: $primary;
+    border-radius: $radius-xs;
   }
 }
 
 .brand-logo {
-  font-size: $font-size-3xl; /* 24px - 增大字号，增强品牌识别 */
+  font-size: $font-size-xl; /* 18px - 缩小字号 */
   font-weight: $font-weight-bold;
-  color: $primary;
-  line-height: $line-height-tight;
-  letter-spacing: 1rpx;
-  /* 优化：增加文字阴影，增强立体感 */
-  text-shadow: 0 2rpx 8rpx rgba($primary, 0.15);
+  color: $text-primary; /* 改为深灰色，更专业 */
+  line-height: 1;
+  letter-spacing: 0;
 }
 
 .brand-slogan {
-  font-size: $font-size-sm; /* 12px - 增大字号 */
-  font-weight: $font-weight-medium;
-  color: $text-secondary;
-  line-height: $line-height-tight;
-  /* 优化：增加轻微透明度 */
-  opacity: 0.9;
+  font-size: $font-size-xs; /* 10px */
+  font-weight: $font-weight-regular;
+  color: $text-tertiary;
+  line-height: 1;
 }
 
-/* 操作按钮组 - 优化：增强视觉层次 */
+/* Phase 1：操作按钮组 - 简洁专业 */
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: $sp-5; /* 增大间距 */
-  /* 优化：移除背景容器，让按钮更突出 */
-  padding: 0;
+  gap: $sp-4;
 }
 
 .action-btn {
-  padding: $sp-4 $sp-8; /* 增大内边距 */
-  background: rgba($bg-surface, 0.9);
-  backdrop-filter: blur(12px);
-  border-radius: $radius-xl; /* 14px - 更圆润 */
-  border: 2px solid transparent;
+  padding: $sp-3 $sp-6;
+  background: $bg-surface;
+  border-radius: $radius-md; /* 8px - 减小圆角 */
+  border: 1px solid $border-color;
   cursor: pointer;
   transition: $transition-fast;
   display: flex;
   align-items: center;
   gap: $sp-2;
-  /* 优化：增加阴影 */
-  box-shadow: $shadow-sm;
 }
 
-/* 优化：次操作按钮（登录/注册）- 白色背景 + 蓝色描边 */
+/* 次操作按钮（登录/注册）*/
 .action-btn-secondary {
-  background: rgba($bg-surface, 0.95); /* 白色背景 */
-  border: 2px solid $primary; /* 蓝色描边 */
+  background: $bg-surface;
+  border: 1px solid $primary;
 }
 
 .action-btn-secondary .action-btn-text {
-  color: $primary; /* 蓝色文字 */
-  font-size: $font-size-md; /* 15px - 增大 */
-  font-weight: $font-weight-semibold;
+  color: $primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
 }
 
 .action-btn-secondary:hover {
-  background: rgba($primary, 0.08); /* 轻微蓝色背景 */
+  background: $primary-50;
   border-color: $primary;
-  transform: translateY(-2rpx);
-  box-shadow: 0 6rpx 20rpx rgba($primary, 0.2);
 }
 
-/* 优化：主操作按钮（发布）- 蓝色实心按钮 + 渐变 */
+/* 主操作按钮（发布）*/
 .action-btn-primary {
-  @include gradient-primary; /* 蓝色渐变 */
+  background: $primary;
   border: none;
-  /* 优化：增强阴影 */
-  box-shadow: $shadow-fab;
 }
 
 .action-btn-primary .action-btn-text {
-  color: $text-inverse; /* 白色文字 */
-  font-size: $font-size-md; /* 15px */
-  font-weight: $font-weight-semibold;
+  color: $text-inverse;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
 }
 
 .action-btn-primary .action-btn-icon {
   color: $text-inverse;
-  font-size: $font-size-base;
+  font-size: $font-size-sm;
 }
 
 .action-btn-primary:hover {
-  /* 优化：hover 时渐变更亮 */
-  background: linear-gradient(135deg, $primary-light 0%, #60A5FA 100%);
-  transform: translateY(-2rpx) scale(1.03);
-  box-shadow: 0 12rpx 32rpx rgba($primary, 0.45);
+  background: $primary-dark;
 }
 
 .action-btn-text {
-  font-size: 26rpx; /* 13px - 减小字号 */
+  font-size: $font-size-sm;
   font-weight: $font-weight-medium;
-  color: $gray-700;
+  color: $text-secondary;
   line-height: 1;
 }
 
 .action-btn-icon {
-  font-size: 26rpx; /* 减小字号 */
+  font-size: $font-size-sm;
   line-height: 1;
 }
 
@@ -1286,84 +1217,71 @@ defineExpose({
 }
 
 
-/* ========== 五、主内容区（第二行：搜索框居中）========== */
+/* Phase 1：主内容区 - 搜索区域 */
 .main-content-area {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex: 1; /* 占据剩余空间 */
-  margin-top: 0; /* 移除上边距 */
 }
 
-/* 搜索栏（居中）- 优化：垂直布局 */
+/* Phase 1：搜索栏 - 核心入口，权重最高 */
 .search-section {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 1400rpx; /* 最大宽度 700px */
-  width: 70%; /* 占据 70% 宽度 */
-  gap: 20rpx; /* 搜索框与提示文字的间距 */
+  max-width: 1200rpx; /* 600px */
+  width: 100%;
+  gap: $sp-4;
 }
 
-/* 搜索框包装器 - 优化：增大间距，增强呼吸感 */
+/* 搜索框包装器 */
 .search-box-wrapper {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 100rpx; /* 50px - 从 20rpx 增加到 100rpx，增强呼吸感 */
+  gap: $sp-6;
 }
 
-/* 搜索框 - 优化：适中尺寸 + 增强阴影 */
+/* Phase 1：搜索框 - 专业简洁风格 */
 .search-box {
   position: relative;
   width: 100%;
-  height: 92rpx; /* 46px - 优化：从100rpx减小到92rpx */
-  /* 半透明玻璃效果（文档规范）*/
-  background: rgba($bg-surface, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-radius: $radius-2xl; /* 23px - 匹配高度的一半 */
+  height: 88rpx; /* 44px */
+  background: $bg-surface;
+  border-radius: $radius-lg; /* 12px - 减小圆角 */
   display: flex;
   align-items: center;
-  padding: 0 $sp-6;
-  gap: 14rpx;
-  /* 优化：柔和阴影，增强浮层感 */
-  box-shadow: $shadow-md;
+  padding: 0 $sp-4;
+  gap: $sp-3;
+  box-shadow: $shadow-sm;
   transition: $transition-fast;
-  /* 描边（文档规范）*/
-  border: 2px solid rgba($bg-surface, 0.9);
+  border: 1px solid $border-color;
 }
 
 .search-box:hover {
-  background: rgba($bg-surface, 0.95);
-  /* 优化：hover 时阴影更深 */
-  box-shadow: $shadow-lg;
-  transform: translateY(-3rpx);
-  border-color: rgba($primary, 0.4);
+  border-color: $primary-300;
+  box-shadow: $shadow-base;
 }
 
 .search-box:focus-within {
-  background: rgba($bg-surface, 0.98);
-  /* 优化：聚焦时发光蓝边 */
-  box-shadow: $shadow-lg, 0 0 0 4rpx rgba($primary, 0.15);
   border-color: $primary;
-  transform: translateY(-3rpx) scale(1.01);
+  box-shadow: 0 0 0 3rpx rgba($primary, 0.1);
 }
 
-/* 搜索图标 - 优化：增大尺寸 */
+/* Phase 1：搜索图标 */
 .search-icon {
-  font-size: $font-size-2xl; /* 20px - 增大 */
+  font-size: $font-size-lg;
   line-height: 1;
-  color: $primary; /* 改为品牌蓝 */
+  color: $text-placeholder;
   flex-shrink: 0;
 }
 
-/* 搜索输入框 - 优化：增大字号 */
+/* Phase 1：搜索输入框 */
 .search-input {
   flex: 1;
   height: 100%;
-  font-size: $font-size-lg; /* 16px - 增大 */
+  font-size: $font-size-base;
   color: $text-primary;
   border: none;
   outline: none;
@@ -1371,131 +1289,116 @@ defineExpose({
 }
 
 .search-input::placeholder {
-  color: $text-placeholder; /* 浅灰色 */
-  font-size: $font-size-lg; /* 16px - 增大 */
+  color: $text-placeholder;
+  font-size: $font-size-base;
 }
 
-/* 热门搜索标签 */
+/* Phase 1：热门搜索标签 */
 .hot-tags {
   position: absolute;
-  left: 60rpx;
+  left: 56rpx;
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  gap: $sp-3;
+  gap: $sp-2;
   z-index: 10;
 }
 
 .hot-tag {
-  font-size: $font-size-sm; /* 12px */
-  font-weight: $font-weight-medium;
-  color: $primary;
-  padding: $sp-2 $sp-4;
-  background: $primary-50;
-  border-radius: $radius-md;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-regular;
+  color: $text-tertiary;
+  padding: $sp-1 $sp-3;
+  background: $gray-100;
+  border-radius: $radius-sm;
   cursor: pointer;
-  transition: $transition-base;
+  transition: $transition-fast;
   white-space: nowrap;
 }
 
 .hot-tag:hover {
-  background: $primary;
-  color: $text-inverse;
-  transform: scale(1.05);
+  background: $primary-50;
+  color: $primary;
 }
 
 .hot-tag:active {
-  transform: scale(0.95);
+  transform: scale(0.98);
 }
 
-/* 优化：搜索按钮 - 橙色圆角矩形按钮 */
+/* Phase 1：搜索按钮 - 品牌蓝色 */
 .search-btn-primary {
   position: relative;
-  height: 68rpx; /* 34px */
-  padding: 0 $sp-10; /* 左右内边距 */
-  @include gradient-accent; /* 橙色渐变 */
-  border-radius: $radius-button-sm; /* 17px - 圆角 */
+  height: 64rpx; /* 32px */
+  padding: 0 $sp-8;
+  background: $primary;
+  border-radius: $radius-md;
   @include flex-center;
   cursor: pointer;
   transition: $transition-fast;
   flex-shrink: 0;
-  box-shadow: 0 6rpx 20rpx rgba($accent, 0.3);
   border: none;
 }
 
 .search-btn-primary:hover {
-  background: linear-gradient(135deg, $accent-dark 0%, $accent 100%);
-  transform: translateY(-2rpx) scale(1.05);
-  box-shadow: 0 8rpx 28rpx rgba($accent, 0.4);
+  background: $primary-dark;
 }
 
 .search-btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.98);
 }
 
 .search-btn-text {
-  font-size: $font-size-lg; /* 16px */
-  font-weight: $font-weight-semibold;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
   color: $text-inverse;
   line-height: 1;
-  letter-spacing: 1rpx;
 }
 
-/* 优化：语音搜索按钮 - 内联样式（在搜索框内部）*/
+/* Phase 1：语音搜索按钮 - 简洁风格 */
 .voice-search-btn-inline {
   position: relative;
-  width: 48rpx; /* 24px - 较小尺寸 */
-  height: 48rpx;
+  width: 40rpx;
+  height: 40rpx;
   background: transparent;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
+  transition: $transition-fast;
   flex-shrink: 0;
-  overflow: visible;
 }
 
 .voice-search-btn-inline:hover {
-  background: rgba($accent, 0.1);
-  transform: scale(1.1);
+  background: $gray-100;
 }
 
 .voice-search-btn-inline:active {
   transform: scale(0.95);
 }
 
-/* 语音激活状态 */
 .voice-search-btn-inline.voice-active {
-  background: rgba($accent, 0.2);
-  animation: voice-pulse-inline 1.5s ease-in-out infinite;
+  background: $error-50;
 }
 
-/* 优化：语音图标 - 内联样式 */
 .voice-icon-inline {
-  width: 28rpx; /* 14px */
-  height: 28rpx;
-  color: $accent; /* 橙色 */
-  position: relative;
-  z-index: 2;
+  width: 24rpx;
+  height: 24rpx;
+  color: $text-tertiary;
 }
 
 .voice-search-btn-inline.voice-active .voice-icon-inline {
-  color: $error; /* 激活时变红 */
+  color: $error;
 }
 
-/* 语音波纹效果 - 内联样式 */
 .voice-ripple-inline {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 40rpx;
-  height: 40rpx;
+  width: 32rpx;
+  height: 32rpx;
   border-radius: 50%;
-  border: 2rpx solid $accent;
-  opacity: 0.6;
+  border: 1px solid $error;
+  opacity: 0.5;
   animation: ripple-inline 1.5s ease-out infinite;
 }
 
@@ -1503,180 +1406,58 @@ defineExpose({
   animation-delay: 0.75s;
 }
 
-/* 语音脉冲动画 - 内联样式 */
-@keyframes voice-pulse-inline {
-  0%, 100% {
-    transform: scale(1);
-    background: rgba($accent, 0.2);
-  }
-  50% {
-    transform: scale(1.1);
-    background: rgba($accent, 0.3);
-  }
-}
-
-/* 波纹扩散动画 - 内联样式 */
 @keyframes ripple-inline {
   0% {
-    width: 40rpx;
-    height: 40rpx;
-    opacity: 0.6;
+    width: 32rpx;
+    height: 32rpx;
+    opacity: 0.5;
   }
   100% {
-    width: 80rpx;
-    height: 80rpx;
+    width: 64rpx;
+    height: 64rpx;
     opacity: 0;
   }
 }
 
-/* 优化：搜索框下方提示文字 - 更精简轻盈 */
+/* Phase 1：搜索框下方提示文字 */
 .search-tips {
   display: flex;
   align-items: center;
-  gap: $sp-3; /* 6px - 优化：减小间距，更紧凑 */
-  font-size: $font-size-xs; /* 12px - 优化：从28rpx减小到24rpx */
-  color: $gray-500; /* 降低灰度，减弱视觉权重 */
-  line-height: 40rpx; /* 20px - 优化：减小行高 */
-  /* 优化：添加淡入动画 */
-  opacity: 0;
-  animation: fadeInUp 0.6s ease-out 0.3s forwards; /* 延迟 0.3s 后淡入 */
+  gap: $sp-2;
+  font-size: $font-size-xs;
+  color: $text-placeholder;
+  line-height: 1;
 }
 
 .search-tip-item {
   font-weight: $font-weight-regular;
-  color: $gray-500;
-  /* 优化：添加轻微透明度 */
-  opacity: 0.85;
+  color: $text-placeholder;
 }
 
 .search-tip-divider {
-  color: $gray-400;
-  font-weight: $font-weight-light;
-  opacity: 0.6; /* 优化：进一步降低透明度 */
-}
-
-/* 淡入向上动画 */
-@keyframes fadeInUp {
-  0% {
-    opacity: 0;
-    transform: translateY(20rpx); /* 从下方 10px 处开始 */
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  color: $gray-300;
 }
 
 
 
-/* ========== 七、插画元素层 ========== */
+/* Phase 1：移除插画元素层 - 保持专业简洁 */
 .illustration-layer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 1;
-  pointer-events: none;
+  display: none; /* 移除过度装饰 */
 }
 
-/* 企业级优化：左侧校园建筑图标 - 透明度降至 8-12% */
-.campus-building {
-  position: absolute;
-  left: 5%;
-  bottom: 12%;
-  width: 120rpx;
-  height: 160rpx;
-  opacity: 0.10; /* 降至 10%，增强融合度 */
-  animation: float-building 6s ease-in-out infinite;
-  filter: blur(1rpx); /* 添加轻微模糊，使之不显突兀 */
-}
-
-/* 企业级优化：右侧主体插画 - 手持手机的学生 - 透明度降至 8-12% */
-.student-illustration {
-  position: absolute;
-  right: 6%;
-  bottom: 8%;
-  width: 300rpx;
-  height: 300rpx;
-  opacity: 0.12; /* 降至 12%，增强融合度 */
-  animation: float-student 4s ease-in-out infinite;
-  filter: blur(1rpx); /* 添加轻微模糊，使之不显突兀 */
-}
-
-/* 企业级优化：装饰元素 - 透明度降至 6-8% */
-.decoration-element {
-  position: absolute;
-  opacity: 0.08; /* 降至 8%，增强融合度 */
-  animation: float-decoration 5s ease-in-out infinite;
-}
-
-.decoration-book {
-  left: 15%;
-  top: 12%;
-  width: 100rpx;
-  height: 100rpx;
-  animation-delay: 0s;
-}
-
-.decoration-bulb {
-  right: 20%;
-  top: 8%;
-  width: 100rpx;
-  height: 100rpx;
-  animation-delay: 1s;
-}
-
-.decoration-pencil {
-  left: 35%;
-  bottom: 18%;
-  width: 80rpx;
-  height: 80rpx;
-  animation-delay: 2s;
-}
-
+.campus-building,
+.student-illustration,
+.decoration-element,
+.decoration-book,
+.decoration-bulb,
+.decoration-pencil,
 .decoration-cap {
-  right: 35%;
-  bottom: 22%;
-  width: 90rpx;
-  height: 90rpx;
-  animation-delay: 1.5s;
+  display: none;
 }
 
-/* ========== 八、动画效果 ========== */
-/* 建筑浮动动画 */
-@keyframes float-building {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-12rpx);
-  }
-}
+/* ========== 响应式设计 ========== */
 
-/* 学生插画浮动动画 */
-@keyframes float-student {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-16rpx) scale(1.02);
-  }
-}
-
-/* 装饰元素浮动动画 */
-@keyframes float-decoration {
-  0%, 100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-10rpx) rotate(5deg);
-  }
-}
-
-/* ========== 响应式设计 - 三级断点 ========== */
-
-/* 通用工具类：显示/隐藏控制 */
+/* 通用工具类 */
 .desktop-tablet-only {
   display: flex !important;
 }
@@ -1685,86 +1466,36 @@ defineExpose({
   display: none !important;
 }
 
-/* ========== 1. 桌面端（≥1024px）- 默认样式 ========== */
-/* 主要样式已在上方定义，这里是桌面端的默认状态 */
-
+/* 桌面端默认 */
 .brand-slogan-full {
-  display: inline; /* 显示完整副标题 */
+  display: inline;
 }
 
 .brand-slogan-short {
-  display: none; /* 隐藏简化副标题 */
+  display: none;
 }
 
-/* ========== 2. 平板端（768px - 1024px）========== */
+/* 平板端（768px - 1024px）*/
 @media (min-width: 768px) and (max-width: 1024px) {
-  /* 顶部容器高度保持不变 */
   .top-focus-bar {
-    height: 640rpx; /* 320px */
+    height: 360rpx; /* 180px */
   }
 
-  /* 品牌区域：简化副标题 */
   .brand-slogan-full {
-    display: none !important; /* 隐藏完整副标题 */
+    display: none !important;
   }
 
   .brand-slogan-short {
-    display: inline !important; /* 显示简化副标题 */
+    display: inline !important;
   }
 
-  .brand-logo {
-    font-size: 44rpx; /* 22px - 略微缩小 */
-  }
-
-  .brand-slogan {
-    font-size: 22rpx; /* 11px */
-  }
-
-  /* 操作按钮：缩小尺寸 */
-  .action-btn {
-    padding: 14rpx 28rpx; /* 缩小内边距 */
-  }
-
-  .action-btn-text {
-    font-size: 28rpx; /* 14px */
-  }
-
-  .check-in-btn {
-    height: 60rpx; /* 30px */
-    padding: 0 22rpx;
-  }
-
-  .check-in-icon,
-  .check-in-text {
-    font-size: 26rpx; /* 13px */
-  }
-
-  /* 搜索栏：增加宽度占比 */
   .search-section {
-    width: 85%; /* 平板端占据 85% 宽度 */
-  }
-
-  .search-box {
-    height: 88rpx; /* 44px - 略微缩小 */
-  }
-
-  .search-input {
-    font-size: 30rpx; /* 15px */
-  }
-
-  .search-btn-primary {
-    height: 64rpx; /* 32px */
-    padding: 0 36rpx;
-  }
-
-  .search-btn-text {
-    font-size: 30rpx; /* 15px */
+    max-width: 1000rpx;
   }
 }
 
-/* ========== 3. 移动端（<768px）========== */
+/* 移动端（<768px）*/
 @media (max-width: 768px) {
-  /* 隐藏/显示控制反转 */
   .desktop-tablet-only {
     display: none !important;
   }
@@ -1773,161 +1504,92 @@ defineExpose({
     display: flex !important;
   }
 
-  /* 顶部容器高度调整 */
   .top-focus-bar {
-    height: 180rpx; /* 90px - 优化：进一步缩减 */
+    height: 160rpx; /* 80px */
+    background: $bg-surface;
+    border-bottom: 1px solid $border-light;
   }
 
-  /* 内容容器调整 */
   .focus-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: stretch;
-    gap: 16rpx; /* 两行之间的间距 */
-    padding: 20rpx 32rpx; /* 增加左右内边距 */
+    padding: $sp-4 $sp-6;
+    gap: $sp-4;
   }
 
-  /* 第一行：品牌 + 汉堡菜单 */
   .top-nav-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     height: auto;
-    padding-top: 0;
   }
 
-  /* 品牌区域 */
   .brand-section {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0;
-    padding-left: 12rpx; /* 保留左侧分割线空间 */
+    padding-left: $sp-3;
   }
 
   .brand-logo {
-    font-size: 36rpx; /* 18px */
+    font-size: $font-size-lg;
   }
 
-  /* 隐藏所有副标题 */
   .brand-slogan {
     display: none !important;
   }
 
-  /* 汉堡菜单图标 */
+  /* 汉堡菜单 */
   .mobile-menu-icon {
-    width: 88rpx; /* 44px - 触摸规范 */
-    height: 88rpx;
-    display: flex;
+    width: 72rpx;
+    height: 72rpx;
+    @include flex-center;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: $sp-2;
+    gap: $sp-1;
     cursor: pointer;
-    border-radius: $radius-full;
-    background: rgba($bg-surface, 0.9);
-    box-shadow: $shadow-sm;
-    transition: $transition-base;
+    border-radius: $radius-md;
+    background: $gray-50;
+    transition: $transition-fast;
   }
 
   .mobile-menu-icon:active {
-    transform: scale(0.95);
-    background: rgba($bg-surface, 1);
+    background: $gray-100;
   }
 
   .hamburger-line {
-    width: 40rpx; /* 20px */
-    height: 4rpx; /* 2px */
-    background: $primary;
+    width: 32rpx;
+    height: 3rpx;
+    background: $text-secondary;
     border-radius: $radius-xs;
-    transition: $transition-base;
   }
 
   /* 搜索区域 */
-  .main-content-area {
-    flex: 1;
-    margin-top: 0;
-  }
-
   .search-section {
-    width: 100%; /* 移动端占满宽度 */
-  }
-
-  .search-box-wrapper {
-    gap: 0; /* 移除提示文字间距 */
+    width: 100%;
+    max-width: 100%;
   }
 
   .search-box {
-    height: 80rpx; /* 40px */
-    padding: 0 20rpx;
-    gap: 12rpx;
+    height: 72rpx;
+    padding: 0 $sp-3;
+    gap: $sp-2;
   }
 
   .search-icon {
-    font-size: 32rpx; /* 16px */
+    font-size: $font-size-base;
   }
 
   .search-input {
-    font-size: 28rpx; /* 14px */
+    font-size: $font-size-sm;
   }
 
   .search-input::placeholder {
-    font-size: 28rpx;
-  }
-
-  .voice-search-btn-inline {
-    width: 52rpx; /* 26px */
-    height: 52rpx;
-  }
-
-  .voice-icon-inline {
-    width: 32rpx; /* 16px */
-    height: 32rpx;
+    font-size: $font-size-sm;
   }
 
   .search-btn-primary {
-    height: 60rpx; /* 30px */
-    padding: 0 32rpx;
+    height: 56rpx;
+    padding: 0 $sp-6;
   }
 
   .search-btn-text {
-    font-size: 28rpx; /* 14px */
+    font-size: $font-size-xs;
   }
 
-  /* 插画元素 - 移动端淡化 */
-  .illustration-layer {
-    height: 180rpx;
-    opacity: 0.5; /* 整体降低透明度 */
-  }
-
-  .campus-building {
-    width: 80rpx; /* 40px */
-    height: 100rpx; /* 50px */
-    left: 3%;
-    bottom: 15%;
-  }
-
-  .student-illustration {
-    width: 150rpx; /* 75px */
-    height: 150rpx;
-    right: 3%;
-    bottom: 10%;
-  }
-
-  .decoration-element {
-    display: none; /* 移动端完全隐藏装饰元素 */
-  }
-
-  /* 背景装饰缩小 */
-  .bg-circle-1 {
-    width: 300rpx;
-    height: 300rpx;
-  }
-
-  .bg-circle-2 {
-    width: 250rpx;
-    height: 250rpx;
+  .search-tips {
+    display: none; /* 移动端隐藏提示 */
   }
 }
 

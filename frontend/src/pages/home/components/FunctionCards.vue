@@ -154,351 +154,268 @@ const handleClick = (item: CoreFunctionItem | SecondaryFunctionItem) => {
 <style scoped lang="scss">
 // 变量已通过 uni.scss 全局注入
 
-/* 企业级优化：功能卡区域 - 透明背景，使用全局极浅灰白 */
+/* Phase 2：功能卡区域 - 紧凑专业 */
 .function-cards {
-  padding: $sp-12 0;
-  background: transparent; /* 使用全局背景 */
-  animation: fadeIn $duration-slow $ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  padding: $sp-8 0;
+  background: transparent;
 }
 
 .cards-container {
-  max-width: 2560rpx; /* 1280px - 文档规范：超宽屏时限制最大宽度 */
+  max-width: 2560rpx;
   margin: 0 auto;
-  padding: 0 160rpx; /* 文档规范：主内容左右留白 80px */
+  padding: 0 $sp-16;
   display: flex;
   flex-direction: column;
-  gap: $sp-8;
+  gap: $sp-6;
 
-  /* 中等屏幕：减小左右留白 */
   @media (max-width: 1440px) {
-    padding: 0 $sp-24; /* 48px */
+    padding: 0 $sp-12;
   }
 
-  /* 小屏幕：进一步减小左右留白 */
   @media (max-width: $breakpoint-md) {
-    padding: 0 $sp-12; /* 24px */
+    padding: 0 $sp-8;
   }
 }
 
-/* ========== 二、核心功能区 - 大卡片（文档优化）========== */
+/* Phase 2：核心功能区 - 统一化专业设计 */
 .core-functions {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* 等宽卡片 */
-  gap: $sp-6; /* 12px - 缩小间距，让整体更凝聚 */
+  grid-template-columns: repeat(3, 1fr);
+  gap: $sp-4;
 }
 
-/* 企业级重构：核心功能卡片 - 浮层阴影 + 玻璃拟态 */
+/* Phase 2：核心功能卡片 - 统一白底 + 左侧强调条 */
 .core-card {
   position: relative;
-  height: 320rpx; /* 160px - 增加呼吸感 */
-  border-radius: $radius-xl; /* 16px - 更柔和 */
+  height: 200rpx; /* 100px - 更紧凑 */
+  border-radius: $radius-md; /* 12px - 减小圆角 */
   overflow: hidden;
   cursor: pointer;
   transition: $transition-fast;
-  /* 优化：外阴影 0 6px 12px rgba(0,0,0,0.04) */
-  box-shadow:
-    0 12rpx 24rpx rgba($gray-900, 0.04), /* 外阴影 */
-    inset 0 -2rpx 8rpx rgba($bg-surface, 0.5); /* 内渐变白 */
-  border: 1px solid rgba($bg-surface, 0.8); /* 玻璃拟态边框 */
-  /* 优化：玻璃拟态半透明底 */
-  backdrop-filter: blur(30rpx); /* 边缘模糊 15px */
-  -webkit-backdrop-filter: blur(30rpx);
+  background: $bg-surface;
+  border: 1px solid $border-color;
+  box-shadow: $shadow-xs;
+
+  /* 左侧品牌色强调条 */
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6rpx; /* 3px */
+    background: $primary;
+    border-radius: $radius-xs 0 0 $radius-xs;
+  }
 }
 
-/* Hover 状态：上浮 2px + 阴影变深 - 优化规范 */
 .core-card:hover {
-  transform: translateY(-4rpx); /* 上浮 2px */
-  /* 优化：阴影变深 */
-  box-shadow:
-    0 16rpx 32rpx rgba($gray-900, 0.08), /* 阴影变深 */
-    inset 0 -2rpx 8rpx rgba($bg-surface, 0.6); /* 内渐变白 */
-  filter: brightness(1.05); /* 亮度增加 5% */
+  border-color: $primary-300;
+  box-shadow: $shadow-sm;
 }
 
-/* 蓝色卡片悬浮时的柔光发亮 */
-.core-card.core-blue:hover {
-  box-shadow:
-    0 16rpx 48rpx rgba($primary, 0.25), /* 蓝色光晕 */
-    inset 0 -2rpx 8rpx rgba($bg-surface, 0.6);
-}
-
-/* 橙色卡片悬浮时的柔光发亮 */
-.core-card.core-orange:hover {
-  box-shadow:
-    0 16rpx 48rpx rgba($accent-light, 0.25), /* 橙黄光晕 */
-    inset 0 -2rpx 8rpx rgba($bg-surface, 0.6);
-}
-
-/* 绿色卡片悬浮时的柔光发亮 */
-.core-card.core-green:hover {
-  box-shadow:
-    0 16rpx 48rpx rgba($success-light, 0.25), /* 绿色光晕 */
-    inset 0 -2rpx 8rpx rgba($bg-surface, 0.6);
-}
-
-/* Active 状态：轻微缩小 */
 .core-card:active {
-  transform: scale(0.98);
-  box-shadow: $shadow-md;
+  transform: scale(0.99);
 }
 
-/* 优化：三卡片差异化配色，增强视觉节奏 */
-/* 资料共享：蓝色渐变 */
-.core-card.core-blue {
-  background: linear-gradient(135deg, $primary-100 0%, $primary-50 100%);
+/* 统一配色 - 都使用品牌蓝强调条 */
+.core-card.core-blue::before {
+  background: $primary;
 }
 
-/* 智能问答：橙黄色渐变（主视觉焦点）*/
-.core-card.core-orange {
-  background: linear-gradient(135deg, $accent-100 0%, $accent-50 100%);
+.core-card.core-orange::before {
+  background: $primary; /* 统一为品牌蓝 */
 }
 
-/* 互助任务：绿色渐变 */
-.core-card.core-green {
-  background: linear-gradient(135deg, $success-100 0%, $success-50 100%);
+.core-card.core-green::before {
+  background: $primary; /* 统一为品牌蓝 */
 }
 
-/* 优化：统一装饰元素到右侧垂直居中位置 */
+/* Phase 2：装饰插画 - 简化 */
 .core-illustration {
   position: absolute;
-  right: $sp-8; /* 16px - 增加右侧边距，避免紧贴 */
+  right: $sp-6;
   top: 50%;
-  transform: translateY(-50%); /* 垂直居中对齐 */
-  opacity: 0.2; /* 18-22% 透明度 */
+  transform: translateY(-50%);
+  opacity: 0.1;
   z-index: 1;
-  pointer-events: none; /* 避免阻挡交互 */
+  pointer-events: none;
 }
 
 .illustration-emoji {
-  font-size: 120rpx; /* 60px - 适度缩小，避免过大 */
+  font-size: 80rpx;
   line-height: 1;
-  filter: grayscale(0.3) opacity(0.8); /* 降低饱和度，更接近线性风格 */
+  filter: grayscale(0.5);
 }
 
-/* 优化：内边距设为 24rpx（12px），符合用户要求≥12px */
+/* Phase 2：卡片内容 */
 .core-content {
   position: relative;
   z-index: 2;
   height: 100%;
-  padding: $sp-6; /* 优化：从48rpx改为24rpx（12px），符合用户要求 */
+  padding: $sp-4 $sp-6 $sp-4 $sp-8; /* 左侧留出强调条空间 */
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-/* 优化：图标与标题距离设为 16rpx（8px），符合用户要求 */
 .content-header {
   display: flex;
-  align-items: flex-start; /* 顶部对齐 */
-  gap: $sp-4; /* 优化：从32rpx改为16rpx（8px），符合用户要求 */
+  align-items: center;
+  gap: $sp-3;
 }
 
-/* 图标尺寸：优化 - 适中尺寸（32px）*/
 .core-icon {
-  font-size: 64rpx; /* 32px - 优化：从76rpx缩小到64rpx */
+  font-size: $font-size-3xl; /* 24px */
   line-height: 1;
   flex-shrink: 0;
-  filter: drop-shadow(0 2rpx 4rpx rgba($gray-900, 0.08));
-  transition: $transition-fast;
 }
 
-/* Hover 时图标轻微放大 1.05x */
 .core-card:hover .core-icon {
   transform: scale(1.05);
 }
 
-/* 优化：标题与描述距离设为 8rpx（4px），符合用户要求 */
 .text-block {
   display: flex;
   flex-direction: column;
-  gap: $sp-2; /* 优化：从24rpx改为8rpx（4px），符合用户要求 */
+  gap: $sp-1;
 }
 
-/* 标题：20px / 700 / #0F172A */
 .core-name {
-  font-size: $font-size-2xl; /* 20px */
-  font-weight: $font-weight-bold; /* 加粗 */
-  color: $text-primary; /* 强主色 */
+  font-size: $font-size-lg; /* 16px */
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
   line-height: $line-height-tight;
-  transition: $transition-colors;
 }
 
-/* 蓝色主题标题 Hover 渐变为主色 */
-.core-card.core-blue:hover .core-name {
-  color: $primary-dark; /* 蓝色主题主色 */
+.core-card:hover .core-name {
+  color: $primary;
 }
 
-/* 橙色主题标题 Hover 渐变为主色 */
-.core-card.core-orange:hover .core-name {
-  color: $accent-dark; /* 橙色主题主色 */
-}
-
-/* 绿色主题标题 Hover 渐变为主色 */
-.core-card.core-green:hover .core-name {
-  color: $success; /* 绿色主题主色 */
-}
-
-/* 副标题：14px / 400 / #475569，最多两行省略 */
 .core-desc {
-  font-size: $font-size-base; /* 14px */
+  font-size: $font-size-sm; /* 12px */
   font-weight: $font-weight-regular;
-  color: $text-secondary; /* 柔副文 */
+  color: $text-tertiary;
   line-height: $line-height-normal;
-  @include text-ellipsis(2); /* 最多两行省略 */
+  @include text-ellipsis;
 }
 
-/* 优化：移除单独的装饰元素，统一使用 core-illustration 垂直居中 */
 .core-decoration {
-  display: none; /* 移除重复的装饰元素 */
+  display: none;
 }
 
-/* ========== 三、次要功能区 - 快捷入口条（优化）========== */
+/* Phase 2：次要功能区 - 简洁胶囊按钮 */
 .secondary-functions {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-6; /* 等间距 12px */
-  padding: $sp-10 $sp-12; /* 优化：增加上下内边距 */
-  /* 优化：浅灰底区块 */
-  background: $gray-50;
-  border-radius: $radius-lg;
-  /* 优化：增加轻微阴影 */
-  box-shadow: inset 0 2rpx 8rpx rgba($gray-900, 0.02);
+  gap: $sp-3;
+  padding: $sp-4 0;
 }
 
-/* 企业级重构：胶囊按钮 - 优化 padding 阴影 */
 .secondary-card {
   position: relative;
-  height: 88rpx; /* 44px */
-  padding: 0 $sp-7; /* 优化：增加左右内边距（12px → 14px）*/
-  background: $bg-surface; /* 白卡 */
-  border-radius: $radius-lg; /* 胶囊按钮圆角 10px */
+  height: 64rpx; /* 32px */
+  padding: 0 $sp-4;
+  background: $gray-50;
+  border-radius: $radius-sm;
   @include flex-center;
-  gap: $sp-4; /* 图标与文案间距 8px */
+  gap: $sp-2;
   cursor: pointer;
   transition: $transition-fast;
-  /* 优化：6px 的 padding 阴影 */
-  box-shadow: $shadow-sm;
-  border: 1px solid $gray-100; /* 浅灰边框 */
-  overflow: hidden;
+  border: 1px solid transparent;
 }
 
-/* Hover 状态：优化 - 上浮 2px + 背景变亮 5% */
 .secondary-card:hover {
-  transform: translateY(-4rpx); /* 上浮 2px */
-  box-shadow: 0 8rpx 24rpx rgba($primary, 0.12);
-  border-color: $primary;
-  /* 优化：背景变亮 5% */
-  background: $gray-50;
+  background: $primary-50;
+  border-color: $primary-200;
 }
 
 .secondary-card:active {
-  transform: translateY(-2rpx);
+  transform: scale(0.98);
 }
 
 .secondary-icon {
-  font-size: $font-size-xl; /* 18px - 文档规范 */
+  font-size: $font-size-base;
   line-height: 1;
-  transition: $transition-transform;
 }
 
 .secondary-card:hover .secondary-icon {
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .secondary-name {
-  font-size: $font-size-base; /* 14px */
-  font-weight: $font-weight-medium;
-  color: $gray-500; /* 默认灰 600 */
+  font-size: $font-size-sm;
+  font-weight: $font-weight-regular;
+  color: $text-secondary;
   line-height: 1;
-  transition: $transition-colors;
 }
 
 .secondary-card:hover .secondary-name {
-  color: $primary; /* Hover 主色 */
+  color: $primary;
 }
 
-/* ========== 四、H5 端适配 ========== */
+/* Phase 2：移动端适配 */
 @media (max-width: $breakpoint-sm) {
   .function-cards {
-    padding: $sp-8 0;
+    padding: $sp-4 0;
   }
 
   .cards-container {
-    max-width: 100%; /* 移动端充分利用屏幕宽度 */
-    padding: 0 $sp-6; /* 减小内边距，与主页面保持一致 */
-    gap: $sp-6;
+    padding: 0 $sp-4;
+    gap: $sp-4;
   }
 
-  /* 核心功能 - H5 端改为 1 列 */
+  /* 核心功能 - 移动端单列 */
   .core-functions {
     grid-template-columns: 1fr;
-    gap: $sp-6;
+    gap: $sp-3;
   }
 
   .core-card {
-    height: 240rpx; /* 120px - 移动端适当减小 */
+    height: 160rpx; /* 80px */
   }
 
   .core-content {
-    padding: $sp-5; /* 优化：移动端保持与PC端相同比例（10px）*/
-  }
-
-  .content-header {
-    gap: $sp-3; /* 优化：移动端保持与PC端相同比例（6px）*/
+    padding: $sp-3 $sp-4 $sp-3 $sp-6;
   }
 
   .core-icon {
-    font-size: $icon-size-xl; /* 28px */
-  }
-
-  .text-block {
-    gap: $sp-1; /* 优化：移动端保持与PC端相同比例（3px）*/
+    font-size: $font-size-2xl;
   }
 
   .core-name {
-    font-size: $font-size-xl; /* 18px */
+    font-size: $font-size-base;
   }
 
   .core-desc {
-    font-size: $font-size-sm; /* 12px */
+    font-size: $font-size-xs;
   }
 
   .illustration-emoji {
-    font-size: 100rpx;
+    font-size: 60rpx;
   }
 
-  /* 移动端移除装饰元素 */
-
-  /* 次要功能 - H5 端改为横向滚动 */
+  /* 次要功能 - 横向滚动 */
   .secondary-functions {
     flex-wrap: nowrap;
     overflow-x: auto;
-    padding: $sp-6 $sp-8;
-    gap: $sp-4;
+    padding: $sp-2 0;
+    gap: $sp-2;
     -webkit-overflow-scrolling: touch;
   }
 
   .secondary-card {
-    height: 80rpx; /* 40px */
-    padding: 0 $sp-5;
-    flex-shrink: 0; /* 防止收缩 */
+    height: 56rpx;
+    padding: 0 $sp-3;
+    flex-shrink: 0;
   }
 
   .secondary-icon {
-    font-size: $icon-size-sm; /* 16px */
+    font-size: $font-size-sm;
   }
 
   .secondary-name {
-    font-size: $font-size-sm; /* 12px */
+    font-size: $font-size-xs;
   }
 }
 </style>

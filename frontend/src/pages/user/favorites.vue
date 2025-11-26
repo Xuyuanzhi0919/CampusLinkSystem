@@ -359,42 +359,44 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .favorites-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $gray-50;
 }
 
 // Tab栏
 .tab-bar {
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
   display: flex;
-  background: #FFFFFF;
-  padding: 24rpx 32rpx;
-  border-bottom: 1rpx solid #E5E7EB;
+  background: $white;
+  padding: $sp-6 $sp-8;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .tab-item {
   flex: 1;
   text-align: center;
-  padding: 16rpx 0;
-  border-radius: 8rpx;
-  transition: all 0.3s;
+  padding: $sp-4 0;
+  border-radius: $radius-base;
+  transition: $transition-slow;
 
   &.active {
-    background: #2563EB;
+    background: $primary;
 
     .tab-text {
-      color: #FFFFFF;
-      font-weight: 600;
+      color: $white;
+      font-weight: $font-weight-semibold;
     }
   }
 }
 
 .tab-text {
-  font-size: 28rpx;
-  color: #6B7280;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
 // 滚动区域
@@ -404,21 +406,21 @@ defineExpose({
 
 // 收藏列表
 .favorite-list {
-  padding: 24rpx 32rpx;
+  padding: $sp-6 $sp-8;
 }
 
 // 收藏卡片
 .favorite-card {
   position: relative;
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  background: $white;
+  border-radius: $radius-md;
+  margin-bottom: $sp-5;
+  box-shadow: $shadow-card;
 }
 
 .card-content {
-  padding: 32rpx;
-  padding-right: 80rpx; // 为删除按钮留出空间
+  padding: $sp-8;
+  padding-right: 80rpx;
 
   &:active {
     opacity: 0.8;
@@ -431,11 +433,9 @@ defineExpose({
   right: 0;
   width: 80rpx;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(to left, #FFFFFF 60%, transparent);
-  transition: all 0.2s;
+  @include flex-center;
+  background: linear-gradient(to left, $white 60%, transparent);
+  transition: $transition-base;
 
   &:active {
     .remove-icon {
@@ -446,28 +446,28 @@ defineExpose({
 
 .remove-icon {
   font-size: 40rpx;
-  transition: transform 0.2s;
+  transition: $transition-base;
 }
 
 .card-header {
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .type-tag {
   display: inline-flex;
   align-items: center;
-  padding: 8rpx 16rpx;
-  border-radius: 4rpx;
-  font-size: 24rpx;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-xs;
+  font-size: $font-size-sm;
 
   &.type-resource {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $success-100;
+    color: $success;
   }
 
   &.type-question {
-    background: #FEF3C7;
-    color: #F59E0B;
+    background: $accent-100;
+    color: $accent;
   }
 
   &.type-task {
@@ -477,61 +477,53 @@ defineExpose({
 }
 
 .tag-text {
-  font-size: 24rpx;
-  font-weight: 500;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
 }
 
 .card-title {
   display: block;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 12rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-3;
+  @include text-ellipsis(2);
 }
 
 .card-desc {
   display: block;
   font-size: 26rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  color: $gray-500;
+  margin-bottom: $sp-4;
+  @include text-ellipsis(2);
 }
 
 .card-meta {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  margin-bottom: 12rpx;
+  gap: $sp-6;
+  margin-bottom: $sp-3;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .meta-icon {
-  font-size: 24rpx;
+  font-size: $font-size-sm;
 }
 
 .meta-text {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .card-time {
   display: block;
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 // 空状态
@@ -540,52 +532,48 @@ defineExpose({
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 
 .empty-tip {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 // 加载状态
 .loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 32rpx;
+  @include flex-center;
+  padding: 160rpx $sp-8;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 // 加载更多
 .load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32rpx;
+  @include flex-center;
+  padding: $sp-8;
 }
 
 .load-more-text {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

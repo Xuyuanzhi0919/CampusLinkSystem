@@ -931,20 +931,22 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .chat-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #F3F4F6;
+  background: $gray-100;
 }
 
 .nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  padding: $sp-5 $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
   flex-shrink: 0;
 }
 
@@ -957,7 +959,7 @@ onMounted(async () => {
 
 .back-icon {
   font-size: 40rpx;
-  color: #374151;
+  color: $gray-700;
 }
 
 .nav-center {
@@ -965,68 +967,68 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .nav-avatar {
   width: 56rpx;
   height: 56rpx;
-  border-radius: 50%;
-  background: #E5E7EB;
+  border-radius: $radius-full;
+  background: $gray-200;
 }
 
 .nav-info {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rpx;
+  gap: $sp-1;
 }
 
 .nav-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .ws-status {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .status-dot {
   width: 12rpx;
   height: 12rpx;
-  border-radius: 50%;
+  border-radius: $radius-full;
   animation: pulse 2s infinite;
 }
 
 .ws-status.connected .status-dot {
-  background: #00B42A;
+  background: $success;
 }
 
 .ws-status.disconnected .status-dot {
-  background: #9CA3AF;
+  background: $gray-400;
   animation: none;
 }
 
-/* 🎯 输入状态样式 */
+// 输入状态样式
 .ws-status.typing {
-  color: #F59E0B;
+  color: $accent;
 }
 
 .typing-dots-mini {
   display: flex;
   align-items: center;
-  gap: 4rpx;
+  gap: $sp-1;
   height: 12rpx;
 }
 
 .dot-mini {
   width: 6rpx;
   height: 6rpx;
-  border-radius: 50%;
-  background: #F59E0B;
+  border-radius: $radius-full;
+  background: $accent;
   animation: typingBounce 1.4s infinite ease-in-out;
 }
 
@@ -1043,13 +1045,13 @@ onMounted(async () => {
 }
 
 .ws-status.typing .status-text {
-  color: #F59E0B;
-  font-weight: 500;
+  color: $accent;
+  font-weight: $font-weight-medium;
 }
 
 .status-text {
-  font-size: 22rpx;
-  color: #6B7280;
+  font-size: $font-size-xs;
+  color: $gray-500;
 }
 
 @keyframes pulse {
@@ -1071,31 +1073,29 @@ onMounted(async () => {
 }
 
 .load-more-tip {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24rpx 32rpx;
+  @include flex-center;
+  padding: $sp-6 $sp-8;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .message-list {
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
-  padding: 24rpx 32rpx;
+  gap: $sp-8;
+  padding: $sp-6 $sp-8;
 }
 
 .message-item {
   display: flex;
   align-items: flex-start;
-  gap: 16rpx;
+  gap: $sp-4;
   width: 100%;
 
-  /* 🎯 对方的消息 - 左对齐 */
+  // 对方的消息 - 左对齐
   &:not(.is-mine) {
     flex-direction: row;
     justify-content: flex-start;
@@ -1110,7 +1110,7 @@ onMounted(async () => {
     }
   }
 
-  /* 🎯 我的消息 - 右对齐 */
+  // 我的消息 - 右对齐
   &.is-mine {
     flex-direction: row-reverse;
     justify-content: flex-start;
@@ -1129,85 +1129,85 @@ onMounted(async () => {
 .message-avatar {
   width: 72rpx;
   height: 72rpx;
-  border-radius: 50%;
-  background: #E5E7EB;
+  border-radius: $radius-full;
+  background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
 }
 
 .message-content {
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
   max-width: 480rpx;
   min-width: 0;
   flex: 1;
 }
 
 .message-bubble {
-  padding: 24rpx 28rpx;
-  border-radius: 16rpx;
+  padding: $sp-6 28rpx;
+  border-radius: $radius-card;
   word-wrap: break-word;
   word-break: break-all;
   max-width: 100%;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.2s;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
+  transition: $transition-base;
 }
 
-/* 🎯 对方的消息气泡 - 白色背景 */
+// 对方的消息气泡 - 白色背景
 .other-bubble {
-  background: #FFFFFF;
-  border-top-left-radius: 4rpx;
-  border: 1rpx solid #E5E7EB;
+  background: $white;
+  border-top-left-radius: $radius-xs;
+  border: 1rpx solid $gray-200;
 
   .message-text {
-    color: #1F2937;
+    color: $gray-800;
   }
 }
 
-/* 🎯 我的消息气泡 - 蓝色渐变背景 */
+// 我的消息气泡 - 蓝色渐变背景
 .mine-bubble {
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border-top-right-radius: 4rpx;
+  @include gradient-primary;
+  border-top-right-radius: $radius-xs;
 
   .message-text {
-    color: #FFFFFF;
+    color: $white;
   }
 }
 
 .message-text {
-  font-size: 28rpx;
-  line-height: 1.6;
+  font-size: $font-size-base;
+  line-height: $line-height-relaxed;
   white-space: pre-wrap;
 }
 
-/* 🎯 图片消息 */
+// 图片消息
 .message-image {
   max-width: 400rpx;
   max-height: 400rpx;
   min-width: 200rpx;
   min-height: 200rpx;
-  border-radius: 12rpx;
+  border-radius: $radius-md;
   display: block;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: $transition-base;
 
   &:active {
     opacity: 0.8;
   }
 }
 
-/* 🎯 文件消息 */
+// 文件消息
 .message-file {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  padding: 24rpx;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12rpx;
+  gap: $sp-5;
+  padding: $sp-6;
+  background: rgba($white, 0.1);
+  border-radius: $radius-md;
   min-width: 300rpx;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &:active {
     opacity: 0.8;
@@ -1224,72 +1224,70 @@ onMounted(async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
   min-width: 0;
 }
 
 .file-name {
   font-size: 26rpx;
   color: inherit;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis(1);
 }
 
 .file-size {
-  font-size: 22rpx;
+  font-size: $font-size-xs;
   opacity: 0.7;
 }
 
 .message-meta {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 0 8rpx;
+  gap: $sp-3;
+  padding: 0 $sp-2;
 }
 
 .message-time {
-  font-size: 22rpx;
-  color: #9CA3AF;
+  font-size: $font-size-xs;
+  color: $gray-400;
   white-space: nowrap;
 }
 
 .read-status {
   font-size: 20rpx;
-  padding: 2rpx 8rpx;
-  border-radius: 4rpx;
+  padding: $sp-1 $sp-2;
+  border-radius: $radius-xs;
   white-space: nowrap;
-  transition: all 0.3s;
+  transition: $transition-slow;
 }
 
 .read-status.is-read {
-  color: #10B981;
-  background: rgba(16, 185, 129, 0.1);
+  color: $success;
+  background: rgba($success, 0.1);
 }
 
 .read-status.is-unread {
-  color: #9CA3AF;
-  background: rgba(156, 163, 175, 0.1);
+  color: $gray-400;
+  background: rgba($gray-400, 0.1);
 }
 
-/* 🎯 输入状态提示 */
+// 输入状态提示
 .typing-indicator,
 .typing-indicator-fixed {
   display: flex;
   align-items: flex-start;
-  gap: 16rpx;
+  gap: $sp-4;
   width: 100%;
   flex-direction: row;
   justify-content: flex-start;
-  padding: 16rpx 32rpx;
+  padding: $sp-4 $sp-8;
   animation: fadeIn 0.3s ease-in-out;
 }
 
 .typing-indicator-fixed {
   position: relative;
-  background: #F9FAFB;
-  border-top: 1rpx solid #E5E7EB;
+  background: $gray-50;
+  border-top: 1rpx solid $gray-200;
 }
 
 @keyframes fadeIn {
@@ -1310,17 +1308,17 @@ onMounted(async () => {
 .typing-avatar {
   width: 72rpx;
   height: 72rpx;
-  border-radius: 50%;
-  background: #E5E7EB;
+  border-radius: $radius-full;
+  background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
 }
 
 .typing-content {
   order: 2;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
   max-width: 480rpx;
   min-width: 0;
   flex: 1;
@@ -1329,33 +1327,33 @@ onMounted(async () => {
 .typing-bubble {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 20rpx 24rpx;
-  border-radius: 16rpx;
-  border-top-left-radius: 4rpx;
-  background: #F3F4F6;
-  border: 1rpx solid #E5E7EB;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  gap: $sp-4;
+  padding: $sp-5 $sp-6;
+  border-radius: $radius-card;
+  border-top-left-radius: $radius-xs;
+  background: $gray-100;
+  border: 1rpx solid $gray-200;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.06);
 }
 
 .typing-text {
   font-size: 26rpx;
-  color: #6B7280;
+  color: $gray-500;
   flex-shrink: 0;
 }
 
 .typing-dots {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
   height: 20rpx;
 }
 
 .typing-dots .dot {
   width: 12rpx;
   height: 12rpx;
-  border-radius: 50%;
-  background: #9CA3AF;
+  border-radius: $radius-full;
+  background: $gray-400;
   animation: typingBounce 1.4s infinite ease-in-out;
 }
 
@@ -1387,32 +1385,32 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 32rpx 32rpx 32rpx;
+  padding: 120rpx $sp-8 $sp-8 $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 
 .empty-tip {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .input-bar {
   display: flex;
   align-items: flex-end;
-  gap: 16rpx;
-  padding: 24rpx 32rpx;
-  background: #FFFFFF;
-  border-top: 1rpx solid #E5E7EB;
+  gap: $sp-4;
+  padding: $sp-6 $sp-8;
+  background: $white;
+  border-top: 1rpx solid $gray-200;
   flex-shrink: 0;
 }
 
@@ -1420,19 +1418,17 @@ onMounted(async () => {
 .action-btn {
   width: 72rpx;
   height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F9FAFB;
-  border-radius: 50%;
+  @include flex-center;
+  background: $gray-50;
+  border-radius: $radius-full;
   flex-shrink: 0;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &:active {
     opacity: 0.7;
     transform: scale(0.95);
-    background: #F3F4F6;
+    background: $gray-100;
   }
 }
 
@@ -1445,19 +1441,19 @@ onMounted(async () => {
   flex: 1;
   min-height: 72rpx;
   max-height: 200rpx;
-  padding: 16rpx 24rpx;
-  background: #F9FAFB;
-  border-radius: 36rpx;
-  font-size: 28rpx;
-  color: #1F2937;
-  line-height: 1.5;
+  padding: $sp-4 $sp-6;
+  background: $gray-50;
+  border-radius: $radius-button;
+  font-size: $font-size-base;
+  color: $gray-800;
+  line-height: $line-height-normal;
 }
 
 .send-btn {
-  padding: 16rpx 32rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
-  border-radius: 36rpx;
-  transition: all 0.3s;
+  padding: $sp-4 $sp-8;
+  @include gradient-primary;
+  border-radius: $radius-button;
+  transition: $transition-slow;
 
   &.disabled {
     opacity: 0.5;
@@ -1471,8 +1467,8 @@ onMounted(async () => {
 }
 
 .send-text {
-  font-size: 28rpx;
-  color: #FFFFFF;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $white;
+  font-weight: $font-weight-medium;
 }
 </style>

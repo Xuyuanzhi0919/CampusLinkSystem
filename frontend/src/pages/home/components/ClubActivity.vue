@@ -951,56 +951,58 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 /* ========== 业务内容样式 ========== */
 
 /* 🎯 筛选和排序控制栏 */
 .filter-bar {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
-  padding: 20rpx 32rpx;
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  margin-bottom: 24rpx;
+  gap: $sp-3;
+  padding: $sp-5 $sp-8;
+  background: $white;
+  border-radius: $radius-md;
+  margin-bottom: $sp-6;
 }
 
 .filter-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .filter-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 12rpx 24rpx;
-  background: #F3F4F6;
-  border-radius: 24rpx;
+  gap: $sp-1;
+  padding: $sp-3 $sp-6;
+  background: $gray-100;
+  border-radius: $sp-6;
   border: 2rpx solid transparent;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all $duration-slow $ease-smooth;
   cursor: pointer;
 
   &:hover {
-    background: #E5E7EB;
+    background: $gray-200;
   }
 
   &.active {
-    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-    border-color: #FF6B35;
+    @include gradient-accent;
+    border-color: $accent;
 
     .filter-text {
-      color: #FFFFFF;
-      font-weight: 600;
+      color: $white;
+      font-weight: $font-weight-semibold;
     }
   }
 }
 
 .filter-text {
-  font-size: 28rpx;
-  color: #374151;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  font-size: $font-size-base;
+  color: $gray-700;
+  font-weight: $font-weight-medium;
+  transition: $transition-slow;
 }
 
 /* 🎯 空状态占位 */
@@ -1009,47 +1011,47 @@ onUnmounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 56rpx 32rpx 52rpx;
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  margin-bottom: 24rpx;
-  animation: fadeIn 0.5s ease;
+  padding: 56rpx $sp-8 52rpx;
+  background: $white;
+  border-radius: $radius-md;
+  margin-bottom: $sp-6;
+  animation: fadeIn $duration-slow $ease-out;
   box-sizing: border-box;
   height: 444rpx; /* 🎯 与活动卡片高度完全一致 (400rpx卡片 + 16rpx容器padding + 28rpx分页点padding) */
-  border: 1px solid #F0F2F5; /* 与活动卡片边框保持一致 */
+  border: 1px solid $gray-100; /* 与活动卡片边框保持一致 */
 }
 
 .empty-icon {
   font-size: 96rpx;
-  margin-bottom: 20rpx;
+  margin-bottom: $sp-5;
   animation: float 3s ease-in-out infinite;
 }
 
 .empty-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 8rpx;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $gray-700;
+  margin-bottom: $sp-2;
 }
 
 .empty-desc {
-  font-size: 24rpx;
-  color: #9CA3AF;
-  margin-bottom: 28rpx;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-bottom: $sp-7;
   text-align: center;
 }
 
 .empty-action {
-  padding: 16rpx 40rpx;
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-  border-radius: 32rpx;
+  padding: $sp-4 $sp-10;
+  @include gradient-accent;
+  border-radius: $sp-8;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.25);
+  transition: $transition-slow;
+  box-shadow: 0 4rpx 12rpx rgba($accent, 0.25);
 
   &:hover {
     transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 16rpx rgba(255, 107, 53, 0.35);
+    box-shadow: 0 6rpx 16rpx rgba($accent, 0.35);
   }
 
   &:active {
@@ -1058,9 +1060,9 @@ onUnmounted(() => {
 }
 
 .action-text {
-  font-size: 28rpx;
-  color: #FFFFFF;
-  font-weight: 600;
+  font-size: $font-size-base;
+  color: $white;
+  font-weight: $font-weight-semibold;
 }
 
 @keyframes float {
@@ -1108,18 +1110,18 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15); /* 滑块颜色 - 浅灰色 */
+    background: rgba($gray-900, 0.15); /* 滑块颜色 - 浅灰色 */
     border-radius: 3px;
-    transition: background 0.2s ease;
+    transition: background $duration-base $ease-out;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25); /* hover 时加深 */
+    background: rgba($gray-900, 0.25); /* hover 时加深 */
   }
 
   /* 🎨 Firefox 滚动条样式 */
   scrollbar-width: thin; /* 细滚动条 */
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent; /* 滑块颜色 轨道颜色 */
+  scrollbar-color: rgba($gray-900, 0.15) transparent; /* 滑块颜色 轨道颜色 */
 }
 
 /* 滚动包裹容器 - 用于横滑提示 */
@@ -1133,26 +1135,26 @@ onUnmounted(() => {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 40rpx;
+  width: $sp-10;
   pointer-events: none;
   z-index: 1;
-  transition: opacity 0.3s ease;
+  transition: opacity $duration-slow $ease-out;
 
   &.scroll-hint-left {
     left: 0;
-    background: linear-gradient(to right, rgba(255, 255, 255, 0.95), transparent);
+    background: linear-gradient(to right, rgba($white, 0.95), transparent);
   }
 
   &.scroll-hint-right {
     right: 0;
-    background: linear-gradient(to left, rgba(255, 255, 255, 0.95), transparent);
+    background: linear-gradient(to left, rgba($white, 0.95), transparent);
   }
 }
 
 .activity-container {
   display: inline-flex;
-  gap: 12rpx; /* 优化：从 16rpx 减少到 12rpx，更紧凑 */
-  padding: 8rpx 0;
+  gap: $sp-3; /* 优化：从 16rpx 减少到 12rpx，更紧凑 */
+  padding: $sp-2 0;
 
   /* 🎯 半露卡片：让最后一张卡片露出20%，暗示可以继续滑动 */
   padding-right: 20%; /* 右侧留白，下一张卡片会露出 */
@@ -1162,12 +1164,12 @@ onUnmounted(() => {
 .activity-card {
   display: inline-block;
   width: 240rpx;
-  background: #FFFFFF; /* 🎯 优化：改为纯白，降低视觉密度 */
-  border: 1px solid #F0F2F5; /* 🎯 添加浅边框，保持层次感 */
-  border-radius: 24rpx; /* 🎯 统一圆角：12px - 与主卡片保持一致 */
+  background: $white; /* 🎯 优化：改为纯白，降低视觉密度 */
+  border: 1px solid $gray-100; /* 🎯 添加浅边框，保持层次感 */
+  border-radius: $radius-lg; /* 🎯 统一圆角：12px - 与主卡片保持一致 */
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: $transition-slow;
   flex-shrink: 0;
 
   /* 🎯 初始状态：不可见 */
@@ -1177,7 +1179,7 @@ onUnmounted(() => {
 
 /* 🎯 淡入动画 */
 .activity-card.fade-in {
-  animation: fadeInUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: fadeInUp 0.6s $ease-smooth forwards;
 }
 
 @keyframes fadeInUp {
@@ -1193,7 +1195,7 @@ onUnmounted(() => {
 
 .activity-card:hover {
   transform: translateY(-8rpx);
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8rpx 24rpx rgba($gray-900, 0.12);
 }
 
 /* 活动海报 */
@@ -1202,7 +1204,7 @@ onUnmounted(() => {
   height: 180rpx;
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%); /* 🎯 加载占位背景 */
+  background: linear-gradient(135deg, $gray-100 0%, $gray-200 100%); /* 🎯 加载占位背景 */
 }
 
 /* 🎯 渐进式加载占位符 */
@@ -1212,12 +1214,12 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 50%, #E5E7EB 100%);
+  background: linear-gradient(135deg, $gray-200 0%, $gray-300 50%, $gray-200 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   z-index: 1;
   opacity: 1;
-  transition: opacity 0.5s ease;
+  transition: opacity $duration-slow $ease-out;
 
   &.fade-out {
     opacity: 0;
@@ -1236,11 +1238,11 @@ onUnmounted(() => {
 .poster-image {
   width: 100%;
   height: 100%;
-  background-color: #F9FAFB;
+  background-color: $gray-50;
   opacity: 0;
   z-index: 2;
   position: relative;
-  transition: opacity 0.5s ease;
+  transition: opacity $duration-slow $ease-out;
 
   &.loaded {
     opacity: 1;
@@ -1249,75 +1251,73 @@ onUnmounted(() => {
 
 .slots-tag {
   position: absolute;
-  top: 12rpx;
-  right: 12rpx;
-  padding: 6rpx 12rpx;
-  background: rgba(59, 130, 246, 0.9); /* 🎯 统一色调：蓝色背景 */
-  border-radius: 16rpx; /* 🎯 统一圆角：8px - 小圆角 */
+  top: $sp-3;
+  right: $sp-3;
+  padding: $sp-1 $sp-3;
+  background: rgba($primary, 0.9); /* 🎯 统一色调：蓝色背景 */
+  border-radius: $radius-md; /* 🎯 统一圆角：8px - 小圆角 */
   backdrop-filter: blur(4rpx);
 }
 
 .slots-text {
-  font-size: 22rpx;
-  color: #FFFFFF;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  color: $white;
+  font-weight: $font-weight-semibold;
   line-height: 1;
 }
 
 /* 🎯 活动状态标签 */
 .status-badge {
   position: absolute;
-  top: 12rpx;
-  left: 12rpx;
-  padding: 6rpx 12rpx;
-  border-radius: 16rpx;
+  top: $sp-3;
+  left: $sp-3;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-md;
   backdrop-filter: blur(4rpx);
-  transition: all 0.3s ease;
+  transition: $transition-slow;
 }
 
 .status-text {
-  font-size: 22rpx;
-  color: #FFFFFF;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  color: $white;
+  font-weight: $font-weight-semibold;
   line-height: 1;
 }
 
 /* 未开始 - 橙色 */
 .status-upcoming {
-  background: rgba(251, 146, 60, 0.9);
+  background: rgba($accent-light, 0.9);
 }
 
 /* 进行中 - 绿色 */
 .status-ongoing {
-  background: rgba(34, 197, 94, 0.9);
+  background: rgba($success-light, 0.9);
 }
 
 /* 已结束 - 灰色 */
 .status-ended {
-  background: rgba(148, 163, 184, 0.9);
+  background: rgba($gray-400, 0.9);
 }
 
 /* 🎯 收藏按钮 */
 .favorite-btn {
   position: absolute;
-  top: 12rpx;
-  right: 12rpx;
+  top: $sp-3;
+  right: $sp-3;
   width: 56rpx;
   height: 56rpx;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-full;
+  background: rgba($white, 0.9);
   backdrop-filter: blur(8rpx);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.1);
+  @include flex-center;
+  transition: all $duration-slow $ease-smooth;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.1);
   cursor: pointer;
   z-index: 10;
 
   &:hover {
     transform: scale(1.1);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4rpx 12rpx rgba($gray-900, 0.15);
   }
 
   &:active {
@@ -1325,15 +1325,15 @@ onUnmounted(() => {
   }
 
   &.favorited {
-    background: rgba(255, 240, 242, 0.95);
-    animation: heartBeat 0.6s ease;
+    background: rgba($error-100, 0.95);
+    animation: heartBeat 0.6s $ease-out;
   }
 }
 
 .favorite-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
   line-height: 1;
-  transition: all 0.3s ease;
+  transition: $transition-slow;
 }
 
 @keyframes heartBeat {
@@ -1356,34 +1356,30 @@ onUnmounted(() => {
 
 /* 活动信息 */
 .activity-info {
-  padding: 16rpx;
+  padding: $sp-4;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .activity-name {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #1D1D1F;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+  line-height: $line-height-snug;
+  @include text-ellipsis(1);
 }
 
 .activity-club {
-  font-size: 24rpx;
-  color: #2563EB;
+  font-size: $font-size-sm;
+  color: $primary;
   line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis(1);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: $transition-base;
 
   &:hover {
-    color: #1D4ED8;
+    color: $primary-dark;
     text-decoration: underline;
   }
 
@@ -1396,55 +1392,51 @@ onUnmounted(() => {
 .activity-time {
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  margin-top: 4rpx;
+  gap: $sp-1;
+  margin-top: $sp-1;
 }
 
 .time-icon {
-  font-size: 24rpx;
+  font-size: $font-size-sm;
   line-height: 1;
 }
 
 .time-text {
-  font-size: 22rpx;
-  color: #86909C;
+  font-size: $font-size-xs;
+  color: $gray-500;
   line-height: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis(1);
 }
 
 /* 报名按钮 */
 .signup-btn {
-  margin: 0 16rpx 16rpx;
-  height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  margin: 0 $sp-4 $sp-4;
+  height: $btn-height-sm;
+  @include flex-center;
   background: transparent;
-  border: 2rpx solid #3B82F6; /* 🎯 统一色调：改为蓝色主色 */
-  border-radius: 24rpx; /* 🎯 统一圆角：12px - 中等圆角 */
+  border: 2rpx solid $primary-light; /* 🎯 统一色调：改为蓝色主色 */
+  border-radius: $radius-lg; /* 🎯 统一圆角：12px - 中等圆角 */
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.25s $ease-out;
 
   /* 🎯 已报名状态 */
   &.joined {
-    background: #F0F2F5; /* 灰色背景 */
-    border-color: #D1D5DB; /* 浅灰边框 */
+    background: $gray-100; /* 灰色背景 */
+    border-color: $gray-300; /* 浅灰边框 */
     cursor: default;
 
     .signup-text {
-      color: #9CA3AF; /* 灰色文字 */
+      color: $gray-400; /* 灰色文字 */
     }
 
     &:hover {
-      background: #F0F2F5; /* hover 时保持灰色 */
-      border-color: #D1D5DB;
+      background: $gray-100; /* hover 时保持灰色 */
+      border-color: $gray-300;
       transform: none; /* 禁用 hover 效果 */
       box-shadow: none;
 
       .signup-text {
-        color: #9CA3AF; /* 保持灰色文字 */
+        color: $gray-400; /* 保持灰色文字 */
       }
     }
 
@@ -1455,23 +1447,23 @@ onUnmounted(() => {
 
   /* 🎯 禁用状态（已结束/已取消/名额已满） */
   &.disabled {
-    background: #FAFAFA;
-    border-color: #E5E7EB;
+    background: $gray-50;
+    border-color: $gray-200;
     cursor: not-allowed;
     opacity: 0.6;
 
     .signup-text {
-      color: #9CA3AF;
+      color: $gray-400;
     }
 
     &:hover {
-      background: #FAFAFA;
-      border-color: #E5E7EB;
+      background: $gray-50;
+      border-color: $gray-200;
       transform: none;
       box-shadow: none;
 
       .signup-text {
-        color: #9CA3AF;
+        color: $gray-400;
       }
     }
 
@@ -1482,13 +1474,13 @@ onUnmounted(() => {
 }
 
 .signup-btn:not(.joined):not(.disabled):hover {
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
+  background: linear-gradient(135deg, $primary-light 0%, $primary-400 100%); /* 🎯 统一色调：蓝色渐变 */
   transform: translateY(-2rpx);
-  box-shadow: 0 4rpx 12rpx rgba(59, 130, 246, 0.3); /* 🎯 统一色调：蓝色阴影 */
+  box-shadow: 0 4rpx 12rpx rgba($primary-light, 0.3); /* 🎯 统一色调：蓝色阴影 */
 }
 
 .signup-btn:not(.joined):not(.disabled):hover .signup-text {
-  color: white;
+  color: $white;
 }
 
 .signup-btn:not(.joined):not(.disabled):active {
@@ -1496,51 +1488,49 @@ onUnmounted(() => {
 }
 
 .signup-text {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #3B82F6; /* 🎯 统一色调：蓝色文字 */
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $primary-light; /* 🎯 统一色调：蓝色文字 */
   line-height: 1;
-  transition: color 0.25s ease;
+  transition: color 0.25s $ease-out;
 }
 
 /* 🎯 报名成功动画效果 */
 .activity-card.success-pulse {
-  animation: successPulse 0.6s ease-out;
+  animation: successPulse 0.6s $ease-out;
 }
 
 @keyframes successPulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4rpx 12rpx rgba($gray-900, 0.08);
   }
   50% {
     transform: scale(1.03);
-    box-shadow: 0 8rpx 32rpx rgba(34, 197, 94, 0.4);
+    box-shadow: 0 8rpx 32rpx rgba($success-light, 0.4);
   }
   100% {
     transform: scale(1);
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4rpx 12rpx rgba($gray-900, 0.08);
   }
 }
 
 /* 🎯 成功图标样式 */
 .success-icon {
   position: absolute;
-  right: 16rpx;
+  right: $sp-4;
   top: 50%;
   transform: translateY(-50%);
   width: 36rpx;
   height: 36rpx;
-  background: linear-gradient(135deg, #22C55E 0%, #10B981 100%);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 24rpx;
-  font-weight: bold;
-  animation: successIconPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  box-shadow: 0 4rpx 12rpx rgba(34, 197, 94, 0.4);
+  background: linear-gradient(135deg, $success-light 0%, $success 100%);
+  border-radius: $radius-full;
+  @include flex-center;
+  color: $white;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  animation: successIconPop 0.4s $ease-bounce;
+  box-shadow: 0 4rpx 12rpx rgba($success-light, 0.4);
 }
 
 @keyframes successIconPop {
@@ -1559,12 +1549,12 @@ onUnmounted(() => {
 
 /* 🎯 按钮成功状态动画 */
 .signup-btn.success-animation {
-  background: linear-gradient(135deg, #22C55E 0%, #10B981 100%) !important;
-  border-color: #22C55E !important;
-  animation: buttonSuccess 0.6s ease-out;
+  background: linear-gradient(135deg, $success-light 0%, $success 100%) !important;
+  border-color: $success-light !important;
+  animation: buttonSuccess 0.6s $ease-out;
 
   .signup-text {
-    color: white !important;
+    color: $white !important;
   }
 }
 
@@ -1588,24 +1578,24 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 12rpx;
-  padding: 20rpx 0 8rpx;
+  gap: $sp-3;
+  padding: $sp-5 0 $sp-2;
 }
 
 .dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.1); /* 从 0.15 降低到 0.1 - 视觉降噪 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  width: $sp-3;
+  height: $sp-3;
+  border-radius: $radius-full;
+  background: rgba($gray-900, 0.1); /* 从 0.15 降低到 0.1 - 视觉降噪 */
+  transition: all $duration-slow $ease-smooth;
   cursor: pointer;
 }
 
 .dot-active {
-  width: 32rpx;
-  border-radius: 6rpx;
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); /* 🎯 统一色调：蓝色渐变 */
+  width: $sp-8;
+  border-radius: $radius-sm;
+  background: linear-gradient(135deg, $primary-light 0%, $primary-400 100%); /* 🎯 统一色调：蓝色渐变 */
   opacity: 0.85; /* 降低不透明度 - 视觉降噪 */
-  box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.25); /* 🎯 统一色调：蓝色阴影 */
+  box-shadow: 0 2rpx 8rpx rgba($primary-light, 0.25); /* 🎯 统一色调：蓝色阴影 */
 }
 </style>

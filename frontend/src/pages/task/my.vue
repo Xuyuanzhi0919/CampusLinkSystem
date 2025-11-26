@@ -325,38 +325,41 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .my-task-page {
   min-height: 100vh;
-  background: #F9FAFB;
-  padding-bottom: 32rpx;
+  background: $bg-page;
+  padding-bottom: $sp-8;
 }
 
+// ===================================
+// 标签栏
+// ===================================
 .tab-bar {
   display: flex;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .tab-item {
   flex: 1;
   position: relative;
-  padding: 32rpx 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: $sp-8 0;
+  @include flex-center;
   cursor: pointer;
 }
 
 .tab-label {
-  font-size: 32rpx;
-  color: #6B7280;
-  font-weight: 500;
-  transition: color 0.3s;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  font-weight: $font-weight-medium;
+  transition: color $duration-slow;
 }
 
 .tab-item.active .tab-label {
-  color: #2563EB;
-  font-weight: 600;
+  color: $primary;
+  font-weight: $font-weight-semibold;
 }
 
 .tab-indicator {
@@ -366,36 +369,39 @@ defineExpose({
   transform: translateX(-50%);
   width: 60rpx;
   height: 4rpx;
-  background: #2563EB;
-  border-radius: 2rpx;
+  background: $primary;
+  border-radius: $radius-xs;
 }
 
+// ===================================
+// 状态筛选
+// ===================================
 .status-scroll {
   white-space: nowrap;
-  background: #FFFFFF;
-  padding: 24rpx 0;
-  border-bottom: 1rpx solid #E5E7EB;
+  background: $white;
+  padding: $sp-6 0;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .status-tabs {
   display: inline-flex;
-  padding: 0 32rpx;
-  gap: 16rpx;
+  padding: 0 $sp-8;
+  gap: $sp-4;
 }
 
 .status-tab {
   display: inline-flex;
   align-items: center;
-  padding: 12rpx 24rpx;
-  border-radius: 8rpx;
-  background: #F3F4F6;
-  transition: all 0.3s;
+  padding: $sp-3 $sp-6;
+  border-radius: $radius-base;
+  background: $gray-100;
+  transition: $transition-slow;
 
   &.active {
-    background: #DBEAFE;
+    background: $primary-100;
 
     .status-label {
-      color: #2563EB;
+      color: $primary;
     }
   }
 
@@ -405,26 +411,32 @@ defineExpose({
 }
 
 .status-label {
-  font-size: 26rpx;
-  color: #6B7280;
-  font-weight: 500;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  font-weight: $font-weight-medium;
   white-space: nowrap;
 }
 
+// ===================================
+// 内容滚动区
+// ===================================
 .content-scroll {
   height: calc(100vh - 240rpx);
 }
 
 .task-list {
-  padding: 24rpx 32rpx;
+  padding: $sp-6 $sp-8;
 }
 
+// ===================================
+// 任务卡片
+// ===================================
 .task-card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-8;
+  margin-bottom: $sp-5;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.05);
 
   &:active {
     opacity: 0.8;
@@ -432,110 +444,105 @@ defineExpose({
 }
 
 .card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16rpx;
+  @include flex-between;
+  margin-bottom: $sp-4;
 }
 
 .publisher {
-  font-size: 26rpx;
-  color: #6B7280;
-  font-weight: 500;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  font-weight: $font-weight-medium;
 }
 
 .time {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .card-title {
   display: block;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 16rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-4;
+  @include text-ellipsis(2);
 }
 
 .card-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
-  margin-bottom: 20rpx;
+  gap: $sp-4;
+  margin-bottom: $sp-5;
 }
 
 .info-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .info-icon {
-  font-size: 24rpx;
+  font-size: $font-size-sm;
 }
 
 .info-text {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 20rpx;
-  border-top: 1rpx solid #F3F4F6;
+  @include flex-between;
+  padding-top: $sp-5;
+  border-top: 1rpx solid $gray-100;
 }
 
 .reward {
   display: flex;
   align-items: baseline;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .reward-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .reward-points {
   font-size: 36rpx;
-  font-weight: bold;
-  color: #F59E0B;
+  font-weight: $font-weight-bold;
+  color: $accent;
 }
 
 .reward-unit {
-  font-size: 24rpx;
-  color: #F59E0B;
+  font-size: $font-size-sm;
+  color: $accent;
 }
 
+// ===================================
+// 状态标签
+// ===================================
 .status-tag {
-  padding: 8rpx 16rpx;
-  border-radius: 6rpx;
-  font-size: 24rpx;
-  font-weight: 500;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
 
   // 待接单 - 蓝色
   &.status-0 {
-    background: #DBEAFE;
-    color: #2563EB;
+    background: $primary-100;
+    color: $primary;
   }
 
   // 已接取 - 橙色
   &.status-1 {
-    background: #FED7AA;
-    color: #EA580C;
+    background: $accent-100;
+    color: $accent-700;
   }
 
   // 进行中 - 青色
   &.status-2 {
-    background: #CFFAFE;
-    color: #0891B2;
+    background: $info-100;
+    color: $info;
   }
 
   // 待确认 - 紫色
@@ -546,72 +553,74 @@ defineExpose({
 
   // 已完成 - 绿色
   &.status-4 {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $success-100;
+    color: $success;
   }
 
   // 已取消 - 红色
   &.status-5 {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: $error-100;
+    color: $error;
   }
 
   // 已超时 - 灰色
   &.status-6 {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $gray-100;
+    color: $gray-500;
   }
 }
 
+// ===================================
+// 空状态
+// ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 
 .empty-tip {
-  font-size: 26rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
+// ===================================
+// 加载状态
+// ===================================
 .loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 32rpx;
+  @include flex-center;
+  padding: 160rpx $sp-8;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32rpx;
+  @include flex-center;
+  padding: $sp-8;
 }
 
 .load-more-text {
-  font-size: 26rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

@@ -765,10 +765,12 @@ const getCategoryIcon = (category: string): string => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .detail-page {
   min-height: 100vh;
-  background: #FBFCFE;
-  padding-bottom: 120rpx;
+  background: $bg-page;
+  padding-bottom: $sp-30;
 }
 
 // ===================================
@@ -779,21 +781,21 @@ const getCategoryIcon = (category: string): string => {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  padding: 0 32rpx;
-  background: #FFFFFF;
-  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.05);
+  padding: 0 $sp-8;
+  background: $white;
+  box-shadow: 0 2rpx 16rpx rgba($gray-900, 0.05);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
 }
 
 .nav-left,
 .nav-right {
   display: flex;
   align-items: center;
-  padding: 8rpx;
+  padding: $sp-2;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity $duration-base;
 
   &:active {
     opacity: 0.6;
@@ -801,14 +803,14 @@ const getCategoryIcon = (category: string): string => {
 }
 
 .nav-icon {
-  font-size: 40rpx;
-  color: #333333;
+  font-size: $font-size-2xl;
+  color: $gray-800;
 }
 
 .nav-text {
-  font-size: 28rpx;
-  color: #333333;
-  margin-left: 4rpx;
+  font-size: $font-size-base;
+  color: $gray-800;
+  margin-left: $sp-1;
 }
 
 .nav-center {
@@ -817,9 +819,9 @@ const getCategoryIcon = (category: string): string => {
 }
 
 .nav-title {
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #333333;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 // ===================================
@@ -831,52 +833,52 @@ const getCategoryIcon = (category: string): string => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 999;
+  background: rgba($gray-900, 0.5);
+  z-index: $z-modal;
   display: flex;
   align-items: flex-end;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn $duration-slow $ease-out;
 }
 
 .more-menu-content {
   width: 100%;
-  background: #FFFFFF;
-  border-radius: 24rpx 24rpx 0 0;
-  padding: 24rpx 0;
-  animation: slideUp 0.3s ease;
+  background: $white;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $sp-6 0;
+  animation: slideUp $duration-slow $ease-out;
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 32rpx 48rpx;
-  transition: background 0.2s;
+  padding: $sp-8 $sp-12;
+  transition: background $duration-base;
   cursor: pointer;
 
   &:active {
-    background: #F5F7FA;
+    background: $gray-50;
   }
 
   &--cancel {
     justify-content: center;
-    border-top: 1rpx solid #F0F0F0;
-    margin-top: 16rpx;
-    padding-top: 32rpx;
+    border-top: 1rpx solid $gray-100;
+    margin-top: $sp-4;
+    padding-top: $sp-8;
 
     .menu-label {
-      color: #999999;
+      color: $gray-400;
     }
   }
 }
 
 .menu-icon {
-  font-size: 40rpx;
-  margin-right: 24rpx;
+  font-size: $font-size-2xl;
+  margin-right: $sp-6;
 }
 
 .menu-label {
-  font-size: 32rpx;
-  color: #333333;
+  font-size: $font-size-lg;
+  color: $gray-800;
 }
 
 @keyframes fadeIn {
@@ -907,40 +909,40 @@ const getCategoryIcon = (category: string): string => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 48rpx;
+  padding: $sp-12;
 }
 
 .skeleton-question {
   width: 100%;
-  padding: 24rpx;
+  padding: $sp-6;
 
   .skeleton-title {
     width: 80%;
     height: 60rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 24rpx;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-6;
   }
 
   .skeleton-content {
     width: 100%;
     height: 200rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 24rpx;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-6;
   }
 
   .skeleton-tags {
     width: 60%;
     height: 48rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: skeleton-loading 1.5s infinite;
-    border-radius: 8rpx;
+    border-radius: $radius-sm;
   }
 }
 
@@ -956,37 +958,37 @@ const getCategoryIcon = (category: string): string => {
 // 错误状态
 .error-icon {
   font-size: 120rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: $sp-6;
 }
 
 .error-text {
-  font-size: 28rpx;
-  color: #666;
-  margin-bottom: 48rpx;
+  font-size: $font-size-base;
+  color: $gray-600;
+  margin-bottom: $sp-12;
   text-align: center;
-  line-height: 1.6;
+  line-height: $line-height-relaxed;
 }
 
 .error-actions {
   display: flex;
-  gap: 24rpx;
+  gap: $sp-6;
 }
 
 .error-btn {
-  padding: 16rpx 48rpx;
-  background: #F5F7FA;
-  color: #666;
-  border-radius: 48rpx;
-  font-size: 28rpx;
-  transition: all 0.2s;
+  padding: $sp-4 $sp-12;
+  background: $gray-100;
+  color: $gray-600;
+  border-radius: $radius-2xl;
+  font-size: $font-size-base;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.95);
   }
 
   &--primary {
-    background: #1E5FFF;
-    color: #FFF;
+    background: $primary;
+    color: $white;
   }
 }
 
@@ -998,73 +1000,73 @@ const getCategoryIcon = (category: string): string => {
 }
 
 .bottom-placeholder {
-  height: 40rpx;
+  height: $sp-10;
 }
 
 // ===================================
 // 问题内容区
 // ===================================
 .question-section {
-  background: #FFF;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
 }
 
 // 分类标识
 .category-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 6rpx 16rpx;
-  border-radius: 16rpx;
-  font-size: 24rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-1;
+  padding: $sp-1 $sp-4;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  margin-bottom: $sp-4;
 
   .category-icon {
-    font-size: 24rpx;
+    font-size: $font-size-sm;
   }
 
   .category-label {
-    font-size: 24rpx;
-    font-weight: 600;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
   }
 
   &.category-study {
-    background: linear-gradient(135deg, #E8F4FF 0%, #F0F8FF 100%);
-    color: #1E5FFF;
+    background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
+    color: $primary;
   }
 
   &.category-life {
-    background: linear-gradient(135deg, #FFF5E6 0%, #FFFAF0 100%);
-    color: #FF7A00;
+    background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
+    color: $accent;
   }
 
   &.category-tech {
-    background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF9 100%);
-    color: #10B981;
+    background: linear-gradient(135deg, $success-50 0%, $success-100 100%);
+    color: $success;
   }
 
   &.category-other {
-    background: linear-gradient(135deg, #F5F5F5 0%, #FAFAFA 100%);
-    color: #6B7280;
+    background: linear-gradient(135deg, $gray-100 0%, $gray-50 100%);
+    color: $gray-500;
   }
 }
 
 // 问题标题
 .question-title {
-  font-size: 36rpx;
-  font-weight: 700;
-  color: #1D1D1F;
-  line-height: 1.5;
-  margin-bottom: 16rpx;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $gray-900;
+  line-height: $line-height-relaxed;
+  margin-bottom: $sp-4;
 }
 
 // 问题内容
 .question-content {
-  font-size: 28rpx;
-  color: #333;
-  line-height: 1.8;
-  margin-bottom: 24rpx;
+  font-size: $font-size-base;
+  color: $gray-800;
+  line-height: $line-height-loose;
+  margin-bottom: $sp-6;
   white-space: pre-wrap;
 }
 
@@ -1072,61 +1074,61 @@ const getCategoryIcon = (category: string): string => {
 .question-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
-  margin-bottom: 24rpx;
+  gap: $sp-4;
+  margin-bottom: $sp-6;
 
   .question-image {
     width: 216rpx;
     height: 216rpx;
-    border-radius: 12rpx;
-    background: #F5F5F5;
+    border-radius: $radius-base;
+    background: $gray-100;
   }
 }
 
 // 标签列表
 .question-tags {
   display: flex;
-  gap: 12rpx;
-  margin-bottom: 24rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-6;
   flex-wrap: wrap;
 
   .tag {
-    padding: 6rpx 16rpx;
-    background: rgba(30, 95, 255, 0.1);
-    color: #1E5FFF;
-    font-size: 24rpx;
-    border-radius: 12rpx;
+    padding: $sp-1 $sp-4;
+    background: rgba($primary, 0.1);
+    color: $primary;
+    font-size: $font-size-sm;
+    border-radius: $radius-base;
   }
 }
 
 // 统计信息
 .question-stats {
   display: flex;
-  gap: 32rpx;
-  margin-bottom: 24rpx;
-  padding-bottom: 24rpx;
-  border-bottom: 1rpx solid #F0F0F0;
+  gap: $sp-8;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-6;
+  border-bottom: 1rpx solid $gray-100;
   flex-wrap: wrap;
 
   .stat-item {
     display: flex;
     align-items: center;
-    gap: 6rpx;
-    font-size: 26rpx;
-    color: #666;
+    gap: $sp-1;
+    font-size: $font-size-sm + 2rpx;
+    color: $gray-600;
 
     .stat-icon {
-      font-size: 26rpx;
+      font-size: $font-size-sm + 2rpx;
     }
 
     &.reward {
-      color: #FF7A00;
-      font-weight: 700;
+      color: $accent;
+      font-weight: $font-weight-bold;
     }
 
     &.solved {
-      color: #10B981;
-      font-weight: 700;
+      color: $success;
+      font-weight: $font-weight-bold;
     }
   }
 }
@@ -1135,31 +1137,31 @@ const getCategoryIcon = (category: string): string => {
 .asker-info {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  margin-bottom: 24rpx;
+  gap: $sp-4;
+  margin-bottom: $sp-6;
 
   .asker-avatar {
     width: 72rpx;
     height: 72rpx;
-    border-radius: 50%;
-    background: #F5F5F5;
+    border-radius: $radius-full;
+    background: $gray-100;
   }
 
   .asker-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6rpx;
+    gap: $sp-1;
 
     .asker-name {
-      font-size: 28rpx;
-      font-weight: 600;
-      color: #333;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      color: $gray-800;
     }
 
     .asker-time {
-      font-size: 24rpx;
-      color: #999;
+      font-size: $font-size-sm;
+      color: $gray-400;
     }
   }
 }
@@ -1167,41 +1169,41 @@ const getCategoryIcon = (category: string): string => {
 // 操作按钮
 .question-actions {
   display: flex;
-  gap: 16rpx;
+  gap: $sp-4;
 
   .action-btn {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8rpx;
-    padding: 16rpx;
-    background: #F5F5F5;
-    border-radius: 12rpx;
-    transition: all 0.3s;
+    gap: $sp-2;
+    padding: $sp-4;
+    background: $gray-100;
+    border-radius: $radius-base;
+    transition: $transition-slow;
 
     .action-icon {
-      font-size: 28rpx;
+      font-size: $font-size-base;
     }
 
     .action-label {
-      font-size: 26rpx;
-      color: #666;
+      font-size: $font-size-sm + 2rpx;
+      color: $gray-600;
     }
 
     &:active {
-      background: #E5E5E5;
+      background: $gray-200;
     }
 
     &.danger {
-      background: rgba(255, 77, 79, 0.1);
+      background: rgba($error, 0.1);
 
       .action-label {
-        color: #FF4D4F;
+        color: $error;
       }
 
       &:active {
-        background: rgba(255, 77, 79, 0.2);
+        background: rgba($error, 0.2);
       }
     }
   }
@@ -1211,40 +1213,40 @@ const getCategoryIcon = (category: string): string => {
 // AI 回答区
 // ===================================
 .ai-answer-section {
-  background: linear-gradient(135deg, #F0F8FF 0%, #E8F4FF 100%);
-  padding: 24rpx;
-  margin-bottom: 16rpx;
-  border-radius: 16rpx;
-  margin: 0 24rpx 16rpx;
+  background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
+  padding: $sp-6;
+  margin-bottom: $sp-4;
+  border-radius: $radius-md;
+  margin: 0 $sp-6 $sp-4;
 }
 
 .ai-header {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 
   .ai-icon {
-    font-size: 32rpx;
+    font-size: $font-size-lg;
   }
 
   .ai-title {
     flex: 1;
-    font-size: 28rpx;
-    font-weight: 600;
-    color: #1E5FFF;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $primary;
   }
 
   .ai-time {
-    font-size: 24rpx;
-    color: #999;
+    font-size: $font-size-sm;
+    color: $gray-400;
   }
 }
 
 .ai-content {
-  font-size: 26rpx;
-  color: #666;
-  line-height: 1.8;
+  font-size: $font-size-sm + 2rpx;
+  color: $gray-600;
+  line-height: $line-height-loose;
   white-space: pre-wrap;
 }
 
@@ -1252,7 +1254,7 @@ const getCategoryIcon = (category: string): string => {
 // 回答列表区
 // ===================================
 .answers-section {
-  padding: 24rpx;
+  padding: $sp-6;
 }
 
 // 回答头部
@@ -1260,42 +1262,42 @@ const getCategoryIcon = (category: string): string => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24rpx;
+  margin-bottom: $sp-6;
 
   .answers-count {
-    font-size: 30rpx;
-    font-weight: 700;
-    color: #333;
+    font-size: $font-size-base + 2rpx;
+    font-weight: $font-weight-bold;
+    color: $gray-800;
   }
 
   .answers-sort {
     display: flex;
-    gap: 16rpx;
+    gap: $sp-4;
 
     .sort-btn {
       display: flex;
       align-items: center;
-      gap: 6rpx;
-      padding: 8rpx 16rpx;
-      background: #F5F5F5;
-      border-radius: 24rpx;
-      transition: all 0.3s;
+      gap: $sp-1;
+      padding: $sp-2 $sp-4;
+      background: $gray-100;
+      border-radius: $radius-xl;
+      transition: $transition-slow;
 
       .sort-icon {
-        font-size: 24rpx;
+        font-size: $font-size-sm;
       }
 
       .sort-label {
-        font-size: 24rpx;
-        color: #666;
+        font-size: $font-size-sm;
+        color: $gray-600;
       }
 
       &.active {
-        background: linear-gradient(135deg, #E8F4FF 0%, #F0F8FF 100%);
+        background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
 
         .sort-label {
-          color: #1E5FFF;
-          font-weight: 600;
+          color: $primary;
+          font-weight: $font-weight-semibold;
         }
       }
 
@@ -1310,15 +1312,15 @@ const getCategoryIcon = (category: string): string => {
 .answers-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 // 加载更多
 .load-more {
   text-align: center;
-  padding: 32rpx;
-  font-size: 26rpx;
-  color: #999;
+  padding: $sp-8;
+  font-size: $font-size-sm + 2rpx;
+  color: $gray-400;
 }
 
 // 空状态
@@ -1326,8 +1328,8 @@ const getCategoryIcon = (category: string): string => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16rpx;
-  padding: 120rpx 48rpx;
+  gap: $sp-4;
+  padding: $sp-30 $sp-12;
 
   .empty-icon {
     font-size: 120rpx;
@@ -1335,8 +1337,8 @@ const getCategoryIcon = (category: string): string => {
   }
 
   .empty-text {
-    font-size: 28rpx;
-    color: #999;
+    font-size: $font-size-base;
+    color: $gray-400;
   }
 }
 
@@ -1348,41 +1350,39 @@ const getCategoryIcon = (category: string): string => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #FFF;
-  padding: 16rpx 24rpx;
-  border-top: 1rpx solid #F0F0F0;
+  background: $white;
+  padding: $sp-4 $sp-6;
+  border-top: 1rpx solid $gray-100;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
-  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
-  z-index: 100;
+  gap: $sp-3;
+  box-shadow: 0 -4rpx 16rpx rgba($gray-900, 0.05);
+  z-index: $z-dropdown;
 
   .format-toolbar {
     display: flex;
     align-items: center;
-    gap: 8rpx;
-    padding: 8rpx 0;
-    border-bottom: 1rpx solid #F0F0F0;
+    gap: $sp-2;
+    padding: $sp-2 0;
+    border-bottom: 1rpx solid $gray-100;
 
     .toolbar-item {
       min-width: 60rpx;
       height: 48rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #F5F5F5;
-      border-radius: 8rpx;
-      padding: 0 12rpx;
-      transition: all 0.2s;
+      @include flex-center;
+      background: $gray-100;
+      border-radius: $radius-sm;
+      padding: 0 $sp-3;
+      transition: $transition-base;
 
       .toolbar-icon {
-        font-size: 24rpx;
-        font-weight: 600;
-        color: #333;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-semibold;
+        color: $gray-800;
       }
 
       &:active {
-        background: #E0E0E0;
+        background: $gray-200;
         transform: scale(0.95);
       }
     }
@@ -1393,68 +1393,66 @@ const getCategoryIcon = (category: string): string => {
     position: relative;
     display: flex;
     align-items: flex-end;
-    gap: 16rpx;
+    gap: $sp-4;
   }
 
   .answer-input {
     flex: 1;
     min-height: 72rpx;
     max-height: 200rpx;
-    padding: 16rpx 110rpx 16rpx 24rpx;
-    background: #F5F5F5;
-    border-radius: 16rpx;
-    font-size: 28rpx;
-    line-height: 1.5;
+    padding: $sp-4 110rpx $sp-4 $sp-6;
+    background: $gray-100;
+    border-radius: $radius-md;
+    font-size: $font-size-base;
+    line-height: $line-height-relaxed;
   }
 
   .char-count {
     position: absolute;
-    right: 24rpx;
-    bottom: 16rpx;
-    font-size: 22rpx;
-    color: #999;
+    right: $sp-6;
+    bottom: $sp-4;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-400;
   }
 
   .answer-actions {
     display: flex;
     align-items: center;
-    gap: 16rpx;
+    gap: $sp-4;
     flex-shrink: 0;
 
     .action-icon-btn {
       width: 72rpx;
       height: 72rpx;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #F5F5F5;
-      border-radius: 50%;
-      transition: all 0.3s;
+      @include flex-center;
+      background: $gray-100;
+      border-radius: $radius-full;
+      transition: $transition-slow;
 
       .icon {
-        font-size: 32rpx;
+        font-size: $font-size-lg;
       }
 
       &:active {
-        background: #E5E5E5;
+        background: $gray-200;
       }
     }
 
     .submit-btn {
-      padding: 16rpx 32rpx;
-      background: linear-gradient(135deg, #1E5FFF 0%, #4A90FF 100%);
-      color: #FFF;
-      font-size: 28rpx;
-      font-weight: 600;
-      border-radius: 36rpx;
-      transition: all 0.3s;
+      padding: $sp-4 $sp-8;
+      @include gradient-primary;
+      color: $white;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
+      border-radius: $radius-2xl;
+      transition: $transition-slow;
 
       &:active {
         transform: scale(0.95);
       }
 
       &.disabled {
-        background: #CCC;
+        background: $gray-300;
         opacity: 0.6;
       }
     }
@@ -1467,23 +1465,23 @@ const getCategoryIcon = (category: string): string => {
   bottom: 0;
   left: 0;
   right: 0;
-  background: linear-gradient(135deg, #ECFDF5 0%, #F0FDF9 100%);
-  padding: 24rpx;
+  background: linear-gradient(135deg, $success-50 0%, $success-100 100%);
+  padding: $sp-6;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12rpx;
-  border-top: 1rpx solid #10B981;
-  z-index: 100;
+  gap: $sp-3;
+  border-top: 1rpx solid $success;
+  z-index: $z-dropdown;
 
   .solved-icon {
-    font-size: 32rpx;
+    font-size: $font-size-lg;
   }
 
   .solved-text {
-    font-size: 28rpx;
-    color: #10B981;
-    font-weight: 600;
+    font-size: $font-size-base;
+    color: $success;
+    font-weight: $font-weight-semibold;
   }
 }
 </style>

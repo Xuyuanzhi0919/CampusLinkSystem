@@ -378,50 +378,56 @@ onLoad((options) => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .club-detail-page {
   min-height: 100vh;
-  background: #F5F5F5;
+  background: $bg-page;
 }
 
+// ===================================
 // 加载状态
+// ===================================
 .loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   padding: 160rpx 0;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #999999;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
+// ===================================
 // 详情内容
+// ===================================
 .detail-content {
-  padding-bottom: 32rpx;
+  padding-bottom: $sp-8;
 }
 
+// ===================================
 // 社团头部
+// ===================================
 .club-header {
-  background: #FFFFFF;
-  padding: 40rpx 32rpx;
+  background: $white;
+  padding: 40rpx $sp-8;
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .club-logo-wrapper {
   width: 160rpx;
   height: 160rpx;
-  margin-right: 32rpx;
+  margin-right: $sp-8;
   flex-shrink: 0;
 }
 
 .club-logo {
   width: 100%;
   height: 100%;
-  border-radius: 16rpx;
-  background: #F5F5F5;
+  border-radius: $radius-card;
+  background: $gray-100;
 }
 
 .club-basic-info {
@@ -432,50 +438,52 @@ onLoad((options) => {
 .club-name {
   display: block;
   font-size: 40rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 16rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-4;
 }
 
 .club-meta {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .meta-icon {
-  font-size: 28rpx;
+  font-size: $font-size-base;
 }
 
 .meta-text {
-  font-size: 28rpx;
-  color: #6B7280;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
+// ===================================
 // 操作按钮区
+// ===================================
 .action-section {
-  background: #FFFFFF;
-  padding: 24rpx 32rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-6 $sp-8;
+  margin-bottom: $sp-4;
 }
 
 .action-btn {
   width: 100%;
   height: 88rpx;
-  border-radius: 12rpx;
-  font-size: 32rpx;
-  font-weight: 600;
+  border-radius: $radius-md;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
   border: none;
 
   &.join-btn {
-    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-    color: #FFFFFF;
+    @include gradient-primary;
+    color: $white;
 
     &:active {
       opacity: 0.8;
@@ -483,76 +491,80 @@ onLoad((options) => {
   }
 
   &.quit-btn {
-    background: #FFFFFF;
-    color: #6B7280;
-    border: 2rpx solid #E5E7EB;
+    background: $white;
+    color: $gray-500;
+    border: 2rpx solid $gray-200;
 
     &:active {
-      background: #F9FAFB;
+      background: $gray-50;
     }
   }
 }
 
+// ===================================
 // 通用区块
+// ===================================
 .section {
-  background: #FFFFFF;
-  margin-bottom: 16rpx;
-  padding: 32rpx;
+  background: $white;
+  margin-bottom: $sp-4;
+  padding: $sp-8;
 }
 
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
+  @include flex-between;
+  margin-bottom: $sp-6;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .section-more {
-  font-size: 28rpx;
-  color: #2563EB;
+  font-size: $font-size-base;
+  color: $primary;
 }
 
 .section-count {
-  font-size: 28rpx;
-  color: #6B7280;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
 .section-content {
   // 内容样式
 }
 
+// ===================================
 // 简介文本
+// ===================================
 .description-text {
-  font-size: 28rpx;
-  color: #4B5563;
+  font-size: $font-size-base;
+  color: $gray-600;
   line-height: 1.8;
   display: block;
   white-space: pre-wrap;
 }
 
+// ===================================
 // 成员列表预览
+// ===================================
 .member-preview-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .member-preview-item {
   display: flex;
   align-items: center;
-  padding: 16rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  transition: all 0.2s ease;
+  padding: $sp-4;
+  background: $gray-50;
+  border-radius: $radius-md;
+  transition: $transition-base;
 
   &:active {
-    background: #F3F4F6;
+    background: $gray-100;
     transform: scale(0.98);
   }
 }
@@ -560,9 +572,9 @@ onLoad((options) => {
 .member-avatar {
   width: 80rpx;
   height: 80rpx;
-  border-radius: 50%;
-  margin-right: 20rpx;
-  background-color: #E5E7EB;
+  border-radius: $radius-full;
+  margin-right: $sp-5;
+  background-color: $gray-200;
   flex-shrink: 0;
 }
 
@@ -574,50 +586,50 @@ onLoad((options) => {
 .member-name-row {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .member-nickname {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: #1F2937;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $gray-800;
+  @include text-ellipsis(1);
 }
 
 .role-tag {
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
-  font-size: 22rpx;
-  font-weight: 500;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-base;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
   flex-shrink: 0;
 
   &.founder {
-    background: #FEF3C7;
-    color: #92400E;
+    background: $accent-100;
+    color: $accent-800;
   }
 
   &.admin {
-    background: #DBEAFE;
-    color: #1E40AF;
+    background: $primary-100;
+    color: $primary-700;
   }
 }
 
+// ===================================
 // 活动列表
+// ===================================
 .activity-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .activity-card {
   display: flex;
-  background: #F9FAFB;
-  border-radius: 12rpx;
+  background: $gray-50;
+  border-radius: $radius-md;
   overflow: hidden;
-  padding: 16rpx;
-  gap: 16rpx;
+  padding: $sp-4;
+  gap: $sp-4;
 
   &:active {
     opacity: 0.8;
@@ -627,8 +639,8 @@ onLoad((options) => {
 .activity-cover {
   width: 160rpx;
   height: 120rpx;
-  border-radius: 8rpx;
-  background: #E5E7EB;
+  border-radius: $radius-base;
+  background: $gray-200;
   flex-shrink: 0;
 }
 
@@ -637,103 +649,103 @@ onLoad((options) => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .activity-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #1F2937;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  @include text-ellipsis(1);
 }
 
 .activity-meta {
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: $sp-1;
 }
 
 .activity-meta-item {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: $sp-1 + 2rpx;
 }
 
 .activity-stats {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
   margin-top: auto;
 }
 
 .participants-text {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .status-badge {
-  padding: 4rpx 12rpx;
-  border-radius: 4rpx;
-  font-size: 22rpx;
-  font-weight: 500;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
 
   // 未开始 - 蓝色
   &.status-0 {
-    background: #DBEAFE;
-    color: #2563EB;
+    background: $primary-100;
+    color: $primary;
   }
 
   // 进行中 - 绿色
   &.status-1 {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $success-100;
+    color: $success;
   }
 
   // 已结束 - 灰色
   &.status-2 {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $gray-100;
+    color: $gray-500;
   }
 }
 
+// ===================================
 // 空状态
+// ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80rpx 32rpx;
+  padding: 80rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 96rpx;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
   opacity: 0.5;
 }
 
 .empty-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
+// ===================================
 // 错误状态
+// ===================================
 .error-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .error-icon {
   font-size: 120rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: $sp-6;
 }
 
 .error-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 </style>

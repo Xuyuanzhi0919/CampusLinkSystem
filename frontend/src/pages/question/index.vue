@@ -562,12 +562,14 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .question-page {
-  height: 100vh; // 固定高度，防止页面整体滚动
-  background: #FBFCFE;
+  height: 100vh;
+  background: $bg-page;
   box-sizing: border-box;
   width: 100%;
-  overflow: hidden; // 阻止外层滚动，只允许内层scroll-view滚动
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -576,15 +578,15 @@ onMounted(() => {
 // 🔍 搜索栏
 // ===================================
 .search-section {
-  padding: 20rpx 24rpx 16rpx;
-  background: #FFF;
+  padding: $sp-5 $sp-6 $sp-4;
+  background: $white;
   box-sizing: border-box;
 }
 
 .search-wrapper {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .search-bar {
@@ -592,63 +594,63 @@ onMounted(() => {
   align-items: center;
   flex: 1;
   height: 68rpx;
-  background: #F5F7FA;
-  border-radius: 34rpx;
-  padding: 0 20rpx;
+  background: $gray-100;
+  border-radius: $radius-2xl;
+  padding: 0 $sp-5;
 
   .search-icon {
-    font-size: 30rpx;
-    margin-right: 10rpx;
+    font-size: $font-size-lg;
+    margin-right: $sp-2;
   }
 
   .search-input {
     flex: 1;
-    font-size: 28rpx;
-    color: #333;
+    font-size: $font-size-base;
+    color: $gray-800;
   }
 
   .search-loading-icon {
-    font-size: 30rpx;
-    padding: 0 6rpx;
+    font-size: $font-size-lg;
+    padding: 0 $sp-1;
     animation: rotate 1.5s linear infinite;
   }
 
   .clear-icon {
-    font-size: 30rpx;
-    color: #999;
-    padding: 0 6rpx;
+    font-size: $font-size-lg;
+    color: $gray-400;
+    padding: 0 $sp-1;
   }
 }
 
 // PC端提问按钮
 .pc-ask-btn {
-  display: none; // 移动端默认隐藏
+  display: none;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
   height: 68rpx;
-  padding: 0 32rpx;
-  background: linear-gradient(135deg, #1E5FFF 0%, #4A90FF 100%);
-  color: #FFF;
+  padding: 0 $sp-8;
+  @include gradient-primary;
+  color: $white;
   border: none;
-  border-radius: 34rpx;
-  font-size: 28rpx;
-  font-weight: 500;
-  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.25);
+  border-radius: $radius-2xl;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: $transition-slow;
   white-space: nowrap;
 
   .ask-icon {
-    font-size: 32rpx;
+    font-size: $font-size-xl;
   }
 
   .ask-text {
-    font-size: 28rpx;
+    font-size: $font-size-base;
   }
 
   &:hover {
     transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 16rpx rgba(30, 95, 255, 0.35);
+    box-shadow: 0 6rpx 16rpx rgba($primary, 0.35);
   }
 
   &:active {
@@ -660,12 +662,12 @@ onMounted(() => {
 .search-history-panel {
   position: absolute;
   top: 96rpx;
-  left: 24rpx;
-  right: 24rpx;
-  background: #FFF;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  left: $sp-6;
+  right: $sp-6;
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
+  z-index: $z-dropdown;
   max-height: 400rpx;
   overflow-y: auto;
 
@@ -674,59 +676,55 @@ onMounted(() => {
   }
 
   .history-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16rpx 24rpx;
-    border-bottom: 1rpx solid #F0F0F0;
+    @include flex-between;
+    padding: $sp-4 $sp-6;
+    border-bottom: 1rpx solid $gray-100;
 
     .history-title {
-      font-size: 26rpx;
-      color: #666;
+      font-size: $font-size-sm;
+      color: $gray-600;
     }
 
     .history-clear {
-      font-size: 24rpx;
-      color: #1E5FFF;
+      font-size: $font-size-sm;
+      color: $primary;
     }
   }
 
   .history-list {
-    padding: 8rpx 0;
+    padding: $sp-2 0;
   }
 
   .history-item {
     display: flex;
     align-items: center;
-    gap: 12rpx;
-    padding: 12rpx 24rpx;
-    transition: background 0.2s;
+    gap: $sp-3;
+    padding: $sp-3 $sp-6;
+    transition: background $duration-base $ease-out;
 
     &:active {
-      background: #F5F5F5;
+      background: $gray-100;
     }
 
     .history-icon {
-      font-size: 28rpx;
-      color: #999;
+      font-size: $font-size-base;
+      color: $gray-400;
     }
 
     .history-text {
       flex: 1;
-      font-size: 28rpx;
-      color: #333;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      font-size: $font-size-base;
+      color: $gray-800;
+      @include text-ellipsis(1);
     }
 
     .history-remove {
-      font-size: 32rpx;
-      color: #CCC;
-      padding: 0 8rpx;
+      font-size: $font-size-xl;
+      color: $gray-300;
+      padding: 0 $sp-2;
 
       &:active {
-        color: #FF4D4F;
+        color: $error;
       }
     }
   }
@@ -736,9 +734,9 @@ onMounted(() => {
 // 📦 分类筛选栏
 // ===================================
 .filter-section {
-  background: #FFF;
-  padding: 0 24rpx 14rpx;
-  border-bottom: 1rpx solid #F0F0F0;
+  background: $white;
+  padding: 0 $sp-6 $sp-3;
+  border-bottom: 1rpx solid $gray-100;
   box-sizing: border-box;
 }
 
@@ -752,43 +750,43 @@ onMounted(() => {
 
 .filter-tabs {
   display: inline-flex;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .filter-tab {
   display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 10rpx 20rpx;
-  background: #F5F7FA;
-  border-radius: 20rpx;
-  transition: all 0.2s;
+  gap: $sp-1;
+  padding: $sp-2 $sp-5;
+  background: $gray-100;
+  border-radius: $radius-lg;
+  transition: $transition-base;
 
   &.active {
-    background: rgba(30, 95, 255, 0.12);
+    background: rgba($primary, 0.12);
 
     .tab-icon {
-      color: #1E5FFF;
+      color: $primary;
     }
 
     .tab-label {
-      color: #1E5FFF;
-      font-weight: 600;
+      color: $primary;
+      font-weight: $font-weight-semibold;
     }
   }
 
   .tab-icon {
-    font-size: 26rpx;
-    color: #6B7280;
-    transition: color 0.2s;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    transition: color $duration-base $ease-out;
   }
 
   .tab-label {
-    font-size: 26rpx;
-    color: #6B7280;
+    font-size: $font-size-sm;
+    color: $gray-500;
     white-space: nowrap;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-weight: $font-weight-medium;
+    transition: $transition-base;
   }
 }
 
@@ -801,12 +799,12 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1001;
+  background: rgba($gray-900, 0.5);
+  z-index: $z-modal;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  animation: fadeIn 0.3s ease;
+  animation: fadeIn $duration-slow $ease-out;
 }
 
 @keyframes fadeIn {
@@ -819,15 +817,15 @@ onMounted(() => {
 }
 
 .filter-modal-content {
-  background: #FFFFFF;
-  border-radius: 24rpx 24rpx 0 0;
+  background: $white;
+  border-radius: $radius-2xl $radius-2xl 0 0;
   width: 100%;
   max-height: calc(100vh - 180rpx);
   margin-bottom: 120rpx;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 -4rpx 24rpx rgba(0, 0, 0, 0.12);
-  animation: slideUp 0.3s ease;
+  box-shadow: 0 -4rpx 24rpx rgba($gray-900, 0.12);
+  animation: slideUp $duration-slow $ease-out;
 }
 
 @keyframes slideUp {
@@ -840,9 +838,8 @@ onMounted(() => {
 }
 
 .drag-handle {
-  display: flex;
-  justify-content: center;
-  padding: 12rpx 0;
+  @include flex-center;
+  padding: $sp-3 0;
   cursor: grab;
 
   &:active {
@@ -853,32 +850,30 @@ onMounted(() => {
 .drag-indicator {
   width: 80rpx;
   height: 8rpx;
-  background: #D1D5DB;
-  border-radius: 4rpx;
+  background: $gray-300;
+  border-radius: $radius-sm;
 }
 
 .modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 32rpx 32rpx 24rpx;
-  border-bottom: 1rpx solid #F0F0F0;
+  @include flex-between;
+  padding: $sp-8 $sp-8 $sp-6;
+  border-bottom: 1rpx solid $gray-100;
 
   .modal-title {
-    font-size: 32rpx;
-    font-weight: 600;
-    color: #1F2937;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $gray-800;
   }
 
   .modal-close {
     font-size: 48rpx;
-    color: #9CA3AF;
+    color: $gray-400;
     line-height: 1;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: color $duration-base $ease-out;
 
     &:active {
-      color: #6B7280;
+      color: $gray-500;
     }
   }
 }
@@ -886,7 +881,7 @@ onMounted(() => {
 .modal-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24rpx 32rpx;
+  padding: $sp-6 $sp-8;
 
   &::-webkit-scrollbar {
     display: none;
@@ -894,7 +889,7 @@ onMounted(() => {
 }
 
 .filter-group {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 
   &:last-child {
     margin-bottom: 0;
@@ -902,47 +897,47 @@ onMounted(() => {
 
   .group-title {
     display: block;
-    font-size: 28rpx;
-    font-weight: 600;
-    color: #374151;
-    margin-bottom: 16rpx;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: $sp-4;
   }
 }
 
 .group-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .option-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 20rpx;
-  background: #F3F4F6;
-  border-radius: 12rpx;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  background: $gray-100;
+  border-radius: $radius-md;
   border: 2rpx solid transparent;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   .option-icon {
-    font-size: 28rpx;
+    font-size: $font-size-base;
   }
 
   .option-label {
-    font-size: 26rpx;
-    color: #4B5563;
-    font-weight: 500;
+    font-size: $font-size-sm;
+    color: $gray-600;
+    font-weight: $font-weight-medium;
   }
 
   &.selected {
-    background: rgba(30, 95, 255, 0.1);
-    border-color: #1E5FFF;
+    background: rgba($primary, 0.1);
+    border-color: $primary;
 
     .option-label {
-      color: #1E5FFF;
-      font-weight: 600;
+      color: $primary;
+      font-weight: $font-weight-semibold;
     }
   }
 
@@ -953,36 +948,36 @@ onMounted(() => {
 
 .modal-footer {
   display: flex;
-  gap: 16rpx;
-  padding: 24rpx 32rpx;
-  border-top: 1rpx solid #F0F0F0;
+  gap: $sp-4;
+  padding: $sp-6 $sp-8;
+  border-top: 1rpx solid $gray-100;
 }
 
 .reset-btn,
 .confirm-btn {
   flex: 1;
   height: 80rpx;
-  border-radius: 16rpx;
-  font-size: 28rpx;
-  font-weight: 600;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
   border: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 }
 
 .reset-btn {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: $gray-100;
+  color: $gray-500;
 
   &:active {
-    background: #E5E7EB;
+    background: $gray-200;
   }
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #1E5FFF 0%, #3B82F6 100%);
-  color: #FFFFFF;
-  box-shadow: 0 4rpx 12rpx rgba(30, 95, 255, 0.25);
+  @include gradient-primary;
+  color: $white;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
 
   &:active {
     opacity: 0.9;
@@ -994,67 +989,65 @@ onMounted(() => {
 // 🎯 排序和状态筛选栏
 // ===================================
 .sort-section {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14rpx 24rpx;
-  background: #FFF;
-  border-bottom: 1rpx solid #F0F0F0;
+  @include flex-between;
+  padding: $sp-3 $sp-6;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: $z-sticky;
 }
 
 .sort-tabs {
   display: flex;
-  gap: 24rpx;
+  gap: $sp-6;
 }
 
 .sort-tab {
-  font-size: 26rpx;
-  color: #6B7280;
-  padding: 6rpx 12rpx;
-  border-radius: 8rpx;
-  font-weight: 500;
-  transition: all 0.2s;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-base;
+  font-weight: $font-weight-medium;
+  transition: $transition-base;
   background: transparent;
 
   &.active {
-    color: #1E5FFF;
-    font-weight: 600;
-    background: rgba(30, 95, 255, 0.08);
+    color: $primary;
+    font-weight: $font-weight-semibold;
+    background: rgba($primary, 0.08);
   }
 }
 
 .sort-right {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .status-filter {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 6rpx 14rpx;
-  background: #F5F7FA;
-  border-radius: 16rpx;
-  transition: all 0.2s;
+  gap: $sp-1;
+  padding: $sp-1 $sp-3;
+  background: $gray-100;
+  border-radius: $radius-lg;
+  transition: $transition-base;
   cursor: pointer;
 
   &:active {
-    background: #E5E7EB;
+    background: $gray-200;
   }
 
   .status-icon {
-    font-size: 22rpx;
+    font-size: $font-size-xs;
   }
 
   .status-label {
-    font-size: 24rpx;
-    color: #6B7280;
-    font-weight: 500;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
   }
 }
 
@@ -1064,9 +1057,9 @@ onMounted(() => {
   right: 2rpx;
   width: 12rpx;
   height: 12rpx;
-  background: #EF4444;
-  border-radius: 50%;
-  border: 2rpx solid #FFF;
+  background: $error;
+  border-radius: $radius-full;
+  border: 2rpx solid $white;
 }
 
 // ===================================
@@ -1076,7 +1069,7 @@ onMounted(() => {
   // H5 环境下 scroll-view 需要固定高度才能触发 scrolltolower 事件
   // 计算高度：100vh - 搜索栏(~96rpx) - 筛选栏(~60rpx) - 底部导航(~100rpx) = ~250rpx
   height: calc(100vh - 250rpx);
-  padding: 12rpx 24rpx;
+  padding: $sp-3 $sp-6;
   box-sizing: border-box;
 
   &::-webkit-scrollbar {
@@ -1087,55 +1080,55 @@ onMounted(() => {
 // 加载更多
 .load-more {
   text-align: center;
-  padding: 32rpx;
-  font-size: 24rpx;
-  color: #999;
+  padding: $sp-8;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 // 骨架屏
 .skeleton-card {
-  background: #FFF;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
 
   .skeleton-title {
     width: 80%;
     height: 40rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 16rpx;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-4;
   }
 
   .skeleton-content {
     width: 100%;
     height: 32rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 16rpx;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-4;
   }
 
   .skeleton-tags {
     width: 60%;
     height: 28rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 16rpx;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-4;
   }
 
   .skeleton-stats {
     width: 50%;
     height: 24rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
+    border-radius: $radius-sm;
   }
 }
 
@@ -1154,22 +1147,22 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 48rpx;
+  padding: $sp-30 $sp-12;
 
   .empty-icon {
     font-size: 120rpx;
-    margin-bottom: 24rpx;
+    margin-bottom: $sp-6;
   }
 
   .empty-text {
-    font-size: 32rpx;
-    color: #666;
-    margin-bottom: 12rpx;
+    font-size: $font-size-lg;
+    color: $gray-600;
+    margin-bottom: $sp-3;
   }
 
   .empty-hint {
-    font-size: 26rpx;
-    color: #999;
+    font-size: $font-size-sm;
+    color: $gray-400;
   }
 }
 
@@ -1178,31 +1171,31 @@ onMounted(() => {
 // ===================================
 .fab-btn {
   position: fixed;
-  right: 32rpx;
-  bottom: 120rpx;
+  right: $sp-8;
+  bottom: $sp-30;
   display: flex;
   align-items: center;
-  gap: 10rpx;
-  padding: 16rpx 28rpx;
-  background: #1E5FFF;
-  border-radius: 40rpx;
-  box-shadow: 0 4rpx 16rpx rgba(30, 95, 255, 0.25);
-  z-index: 100;
-  transition: all 0.2s;
+  gap: $sp-2;
+  padding: $sp-4 $sp-7;
+  background: $primary;
+  border-radius: $radius-2xl;
+  box-shadow: 0 4rpx 16rpx rgba($primary, 0.25);
+  z-index: $z-dropdown;
+  transition: $transition-base;
 
   .fab-icon {
-    font-size: 32rpx;
+    font-size: $font-size-lg;
   }
 
   .fab-label {
-    font-size: 26rpx;
-    color: #FFF;
-    font-weight: 600;
+    font-size: $font-size-sm;
+    color: $white;
+    font-weight: $font-weight-semibold;
   }
 
   &:active {
     transform: scale(0.96);
-    box-shadow: 0 2rpx 12rpx rgba(30, 95, 255, 0.2);
+    box-shadow: 0 2rpx 12rpx rgba($primary, 0.2);
   }
 }
 
@@ -1211,33 +1204,31 @@ onMounted(() => {
 // ===================================
 .back-to-top {
   position: fixed;
-  right: 32rpx;
+  right: $sp-8;
   bottom: 200rpx; // 在提问按钮上方
   width: 88rpx;
   height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #FFFFFF;
-  border-radius: 50%;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
-  z-index: 99;
+  @include flex-center;
+  background: $white;
+  border-radius: $radius-full;
+  box-shadow: $shadow-card;
+  z-index: $z-dropdown - 1;
   cursor: pointer;
-  transition: all 0.3s ease;
-  animation: fadeInUp 0.3s ease;
+  transition: $transition-slow;
+  animation: fadeInUp $duration-slow $ease-out;
 
   .back-icon {
-    font-size: 40rpx;
+    font-size: $font-size-2xl;
   }
 
   &:hover {
     transform: translateY(-4rpx);
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.15);
+    box-shadow: $shadow-lg;
   }
 
   &:active {
     transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+    box-shadow: $shadow-card;
   }
 }
 
@@ -1255,7 +1246,7 @@ onMounted(() => {
 // ===================================
 // 📱 响应式适配 - PC端
 // ===================================
-@media (min-width: 768px) {
+@include desktop {
   // PC端：显示搜索框右边的提问按钮
   .pc-ask-btn {
     display: flex;
@@ -1278,8 +1269,8 @@ onMounted(() => {
     max-height: 100vh;
     margin-bottom: 0;
     border-radius: 0;
-    box-shadow: -4rpx 0 24rpx rgba(0, 0, 0, 0.12);
-    animation: slideInRight 0.3s ease;
+    box-shadow: -4rpx 0 $sp-6 rgba($gray-900, 0.12);
+    animation: slideInRight $duration-slow $ease-out;
   }
 
   .modal-body {
@@ -1297,19 +1288,19 @@ onMounted(() => {
   }
 
   .modal-header {
-    padding: 40rpx 40rpx 32rpx;
+    padding: $sp-10 $sp-10 $sp-8;
   }
 
   .modal-body {
-    padding: 32rpx 40rpx;
+    padding: $sp-8 $sp-10;
   }
 
   .modal-footer {
-    padding: 32rpx 40rpx;
+    padding: $sp-8 $sp-10;
   }
 
   .option-item {
-    flex: 0 0 calc(50% - 8rpx);
+    flex: 0 0 calc(50% - $sp-2);
     justify-content: center;
   }
 
@@ -1320,7 +1311,7 @@ onMounted(() => {
 
   // PC端调整 header 顶部内边距
   .modal-header {
-    padding-top: 40rpx;
+    padding-top: $sp-10;
   }
 }
 </style>

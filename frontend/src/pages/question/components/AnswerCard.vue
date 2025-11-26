@@ -152,17 +152,19 @@ const formatTime = (timeStr: string): string => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .answer-card {
-  background: #FFF;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  transition: all 0.3s;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-6;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.04);
+  transition: $transition-slow;
   position: relative;
 
   &.accepted {
-    border: 2rpx solid #10B981;
-    background: linear-gradient(135deg, #FFFFFF 0%, #F0FDF9 100%);
+    border: 2rpx solid $success;
+    background: linear-gradient(135deg, $white 0%, $success-50 100%);
   }
 }
 
@@ -173,21 +175,21 @@ const formatTime = (timeStr: string): string => {
   right: 0;
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 8rpx 16rpx;
-  background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-  color: #FFF;
-  border-radius: 0 16rpx 0 16rpx;
-  font-size: 22rpx;
-  font-weight: 600;
-  box-shadow: 0 2rpx 8rpx rgba(16, 185, 129, 0.3);
+  gap: $sp-1;
+  padding: $sp-2 $sp-4;
+  @include gradient-success;
+  color: $white;
+  border-radius: 0 $radius-md 0 $radius-md;
+  font-size: $font-size-xs + 2rpx;
+  font-weight: $font-weight-semibold;
+  box-shadow: 0 2rpx 8rpx rgba($success, 0.3);
 
   .badge-icon {
-    font-size: 22rpx;
+    font-size: $font-size-xs + 2rpx;
   }
 
   .badge-label {
-    font-size: 22rpx;
+    font-size: $font-size-xs + 2rpx;
   }
 }
 
@@ -195,41 +197,41 @@ const formatTime = (timeStr: string): string => {
 .responder-info {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-4;
+  margin-bottom: $sp-4;
 
   .responder-avatar {
-    width: 64rpx;
-    height: 64rpx;
-    border-radius: 50%;
-    background: #F5F5F5;
+    width: $sp-16;
+    height: $sp-16;
+    border-radius: $radius-full;
+    background: $gray-100;
   }
 
   .responder-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 6rpx;
+    gap: $sp-1;
 
     .responder-name {
-      font-size: 26rpx;
-      font-weight: 600;
-      color: #333;
+      font-size: $font-size-sm + 2rpx;
+      font-weight: $font-weight-semibold;
+      color: $gray-800;
     }
 
     .responder-time {
-      font-size: 22rpx;
-      color: #999;
+      font-size: $font-size-xs + 2rpx;
+      color: $gray-400;
     }
   }
 }
 
 // 回答内容
 .answer-content {
-  font-size: 28rpx;
-  color: #333;
-  line-height: 1.8;
-  margin-bottom: 16rpx;
+  font-size: $font-size-base;
+  color: $gray-800;
+  line-height: $line-height-loose;
+  margin-bottom: $sp-4;
   white-space: pre-wrap;
 }
 
@@ -237,14 +239,14 @@ const formatTime = (timeStr: string): string => {
 .answer-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 
   .answer-image {
     width: 200rpx;
     height: 200rpx;
-    border-radius: 12rpx;
-    background: #F5F5F5;
+    border-radius: $radius-base;
+    background: $gray-100;
   }
 }
 
@@ -252,27 +254,27 @@ const formatTime = (timeStr: string): string => {
 .answer-actions {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  padding-top: 16rpx;
-  border-top: 1rpx solid #F0F0F0;
+  gap: $sp-6;
+  padding-top: $sp-4;
+  border-top: 1rpx solid $gray-100;
 
   .action-item {
     display: flex;
     align-items: center;
-    gap: 6rpx;
-    padding: 8rpx 16rpx;
-    background: #F5F5F5;
-    border-radius: 24rpx;
-    transition: all 0.3s;
-    font-size: 24rpx;
-    color: #666;
+    gap: $sp-1;
+    padding: $sp-2 $sp-4;
+    background: $gray-100;
+    border-radius: $radius-xl;
+    transition: $transition-slow;
+    font-size: $font-size-sm;
+    color: $gray-600;
 
     .action-icon {
-      font-size: 24rpx;
+      font-size: $font-size-sm;
     }
 
     .action-label {
-      font-size: 24rpx;
+      font-size: $font-size-sm;
     }
 
     &:active {
@@ -282,37 +284,37 @@ const formatTime = (timeStr: string): string => {
     // 点赞按钮
     &.like {
       &.liked {
-        background: rgba(30, 95, 255, 0.1);
-        color: #1E5FFF;
+        background: rgba($primary, 0.1);
+        color: $primary;
 
         .action-label {
-          font-weight: 600;
+          font-weight: $font-weight-semibold;
         }
       }
 
       &:active {
-        animation: like-bounce 0.3s ease;
+        animation: like-bounce $duration-slow $ease-out;
       }
     }
 
     // 采纳按钮
     &.accept {
-      background: rgba(16, 185, 129, 0.1);
-      color: #10B981;
-      font-weight: 600;
+      background: rgba($success, 0.1);
+      color: $success;
+      font-weight: $font-weight-semibold;
 
       &:active {
-        background: rgba(16, 185, 129, 0.2);
+        background: rgba($success, 0.2);
       }
     }
 
     // 删除按钮
     &.delete {
-      background: rgba(255, 77, 79, 0.1);
-      color: #FF4D4F;
+      background: rgba($error, 0.1);
+      color: $error;
 
       &:active {
-        background: rgba(255, 77, 79, 0.2);
+        background: rgba($error, 0.2);
       }
     }
   }

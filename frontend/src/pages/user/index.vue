@@ -262,28 +262,28 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .user-center-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $gray-50;
 }
 
 .loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   min-height: 100vh;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .content-container {
-  padding-bottom: 32rpx;
+  padding-bottom: $sp-8;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

@@ -497,12 +497,17 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .task-detail-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $bg-page;
   padding-bottom: 120rpx;
 }
 
+// ===================================
+// 加载/错误状态
+// ===================================
 .loading-container,
 .error-container {
   display: flex;
@@ -510,62 +515,65 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 32rpx;
+  padding: $sp-8;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .error-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .error-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 32rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-8;
 }
 
 .back-btn {
-  padding: 16rpx 48rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  border-radius: 8rpx;
+  padding: $sp-4 $sp-12;
+  background: $primary;
+  color: $white;
+  border-radius: $radius-base;
   border: none;
-  font-size: 28rpx;
+  font-size: $font-size-base;
 }
 
 .detail-container {
-  padding: 32rpx;
+  padding: $sp-8;
 }
 
+// ===================================
+// 状态标签
+// ===================================
 .status-badge {
   display: inline-block;
-  padding: 12rpx 24rpx;
-  border-radius: 8rpx;
-  font-size: 24rpx;
-  font-weight: 500;
-  margin-bottom: 24rpx;
+  padding: $sp-3 $sp-6;
+  border-radius: $radius-base;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  margin-bottom: $sp-6;
 
   // 待接单 - 蓝色
   &.status-0 {
-    background: #DBEAFE;
-    color: #2563EB;
+    background: $primary-100;
+    color: $primary;
   }
 
   // 已接取 - 橙色
   &.status-1 {
-    background: #FED7AA;
-    color: #EA580C;
+    background: $accent-100;
+    color: $accent-700;
   }
 
   // 进行中 - 青色
   &.status-2 {
-    background: #CFFAFE;
-    color: #0891B2;
+    background: $info-100;
+    color: $info;
   }
 
   // 待确认 - 紫色
@@ -576,67 +584,73 @@ onMounted(() => {
 
   // 已完成 - 绿色
   &.status-4 {
-    background: #D1FAE5;
-    color: #10B981;
+    background: $success-100;
+    color: $success;
   }
 
   // 已取消 - 红色
   &.status-5 {
-    background: #FEE2E2;
-    color: #EF4444;
+    background: $error-100;
+    color: $error;
   }
 
   // 已超时 - 灰色
   &.status-6 {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $gray-100;
+    color: $gray-500;
   }
 
   // 已截止状态（特殊处理）
   &.status-expired {
-    background: #F3F4F6;
-    color: #9CA3AF;
+    background: $gray-100;
+    color: $gray-400;
   }
 }
 
+// ===================================
+// 任务头部
+// ===================================
 .task-header {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .task-title {
   display: block;
   font-size: 40rpx;
-  font-weight: bold;
-  color: #1F2937;
-  line-height: 1.4;
-  margin-bottom: 16rpx;
+  font-weight: $font-weight-bold;
+  color: $gray-800;
+  line-height: $line-height-tight;
+  margin-bottom: $sp-4;
 }
 
 .task-meta {
   display: flex;
-  gap: 24rpx;
+  gap: $sp-6;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .meta-icon {
-  font-size: 24rpx;
+  font-size: $font-size-sm;
 }
 
 .meta-text {
-  font-size: 26rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
+// ===================================
+// 奖励区域
+// ===================================
 .reward-section {
-  background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 32rpx;
+  background: linear-gradient(135deg, $accent-100 0%, $accent-200 100%);
+  border-radius: $radius-card;
+  padding: $sp-8;
+  margin-bottom: $sp-8;
 }
 
 .reward-box {
@@ -645,64 +659,68 @@ onMounted(() => {
 
 .reward-label {
   display: block;
-  font-size: 26rpx;
-  color: #92400E;
-  margin-bottom: 12rpx;
+  font-size: $font-size-sm;
+  color: $accent-800;
+  margin-bottom: $sp-3;
 }
 
 .reward-amount {
   display: flex;
   align-items: baseline;
   justify-content: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .amount-number {
   font-size: 64rpx;
-  font-weight: bold;
-  color: #F59E0B;
+  font-weight: $font-weight-bold;
+  color: $accent;
 }
 
 .amount-unit {
-  font-size: 28rpx;
-  color: #F59E0B;
+  font-size: $font-size-base;
+  color: $accent;
 }
 
+// ===================================
+// 内容区块
+// ===================================
 .content-section,
 .info-section,
 .user-section {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-8;
+  margin-bottom: $sp-6;
 }
 
 .section-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 24rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-6;
 }
 
 .content-text {
-  font-size: 30rpx;
-  color: #4B5563;
-  line-height: 1.6;
+  font-size: $font-size-base + 2rpx;
+  color: $gray-600;
+  line-height: $line-height-relaxed;
   white-space: pre-wrap;
 }
 
+// ===================================
+// 信息列表
+// ===================================
 .info-list {
   display: flex;
   flex-direction: column;
-  gap: 20rpx;
+  gap: $sp-5;
 }
 
 .info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16rpx 0;
-  border-bottom: 1rpx solid #F3F4F6;
+  @include flex-between;
+  padding: $sp-4 0;
+  border-bottom: 1rpx solid $gray-100;
 
   &:last-child {
     border-bottom: none;
@@ -710,90 +728,94 @@ onMounted(() => {
 }
 
 .info-label {
-  font-size: 28rpx;
-  color: #6B7280;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
 .info-value {
-  font-size: 28rpx;
-  color: #1F2937;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
 
   &.expired-text {
-    color: #EF4444;
+    color: $error;
   }
 }
 
 .expired-tag {
-  margin-left: 8rpx;
-  font-size: 24rpx;
-  color: #EF4444;
-  background: #FEE2E2;
-  padding: 2rpx 8rpx;
-  border-radius: 4rpx;
+  margin-left: $sp-2;
+  font-size: $font-size-sm;
+  color: $error;
+  background: $error-100;
+  padding: 2rpx $sp-2;
+  border-radius: $radius-xs;
 }
 
+// ===================================
+// 用户卡片
+// ===================================
 .user-card {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .user-avatar {
   width: 80rpx;
   height: 80rpx;
-  border-radius: 40rpx;
-  background: #E5E7EB;
+  border-radius: $radius-full;
+  background: $gray-200;
 }
 
 .user-name {
-  font-size: 30rpx;
-  color: #1F2937;
-  font-weight: 500;
+  font-size: $font-size-base + 2rpx;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
 }
 
+// ===================================
+// 操作栏
+// ===================================
 .action-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #FFFFFF;
-  padding: 24rpx 32rpx;
-  border-top: 1rpx solid #E5E7EB;
+  background: $white;
+  padding: $sp-6 $sp-8;
+  border-top: 1rpx solid $gray-200;
   display: flex;
-  gap: 16rpx;
-  z-index: 999;
+  gap: $sp-4;
+  z-index: $z-modal - 1;
 }
 
 .action-btn {
   flex: 1;
   height: 88rpx;
-  border-radius: 12rpx;
+  border-radius: $radius-md;
   border: none;
-  font-size: 32rpx;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  @include flex-center;
 
   &.primary {
-    background: #2563EB;
-    color: #FFFFFF;
+    background: $primary;
+    color: $white;
   }
 
   &.success {
-    background: #10B981;
-    color: #FFFFFF;
+    background: $success;
+    color: $white;
   }
 
   &.danger {
-    background: #EF4444;
-    color: #FFFFFF;
+    background: $error;
+    color: $white;
   }
 
   &.secondary {
-    background: #F3F4F6;
-    color: #6B7280;
+    background: $gray-100;
+    color: $gray-500;
   }
 
   &:active {

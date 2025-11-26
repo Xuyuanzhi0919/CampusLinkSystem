@@ -522,116 +522,125 @@ const formatDeadline = (dateStr: string): string => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .publish-task-page {
   min-height: 100vh;
-  background: #F9FAFB;
-  padding: 32rpx;
+  background: $bg-page;
+  padding: $sp-8;
   padding-bottom: 120rpx;
 }
 
 .form-container {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 32rpx;
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-8;
 }
 
+// ===================================
+// 表单组
+// ===================================
 .form-group {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 
   &:last-of-type {
-    margin-bottom: 48rpx;
+    margin-bottom: $sp-12;
   }
 }
 
 .form-label {
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .label-text {
-  font-size: 28rpx;
-  color: #1F2937;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
 }
 
 .required {
-  color: #EF4444;
-  margin-left: 4rpx;
+  color: $error;
+  margin-left: $sp-1;
 }
 
 .optional {
-  font-size: 24rpx;
-  color: #9CA3AF;
-  margin-left: 8rpx;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-2;
 }
 
+// ===================================
+// 表单输入
+// ===================================
 .form-input {
   width: 100%;
   height: 88rpx;
-  padding: 0 24rpx;
-  background: #F9FAFB;
-  border: 2rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  font-size: 30rpx;
-  color: #1F2937;
+  padding: 0 $sp-6;
+  background: $gray-50;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base + 2rpx;
+  color: $gray-800;
 
   &::placeholder {
-    color: #9CA3AF;
+    color: $gray-400;
   }
 
   &:focus {
-    border-color: #2563EB;
-    background: #FFFFFF;
+    border-color: $primary;
+    background: $white;
   }
 }
 
 .form-textarea {
   width: 100%;
   min-height: 200rpx;
-  padding: 24rpx;
-  background: #F9FAFB;
-  border: 2rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  font-size: 30rpx;
-  color: #1F2937;
-  line-height: 1.6;
+  padding: $sp-6;
+  background: $gray-50;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base + 2rpx;
+  color: $gray-800;
+  line-height: $line-height-relaxed;
 
   &::placeholder {
-    color: #9CA3AF;
+    color: $gray-400;
   }
 
   &:focus {
-    border-color: #2563EB;
-    background: #FFFFFF;
+    border-color: $primary;
+    background: $white;
   }
 }
 
+// ===================================
+// 选择器
+// ===================================
 .picker-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
   height: 88rpx;
-  padding: 0 24rpx;
-  background: #F9FAFB;
-  border: 2rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  font-size: 30rpx;
-  color: #1F2937;
+  padding: 0 $sp-6;
+  background: $gray-50;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base + 2rpx;
+  color: $gray-800;
 
   .placeholder {
-    color: #9CA3AF;
+    color: $gray-400;
   }
 
   &.error {
-    border-color: #EF4444;
-    background: #FEF2F2;
+    border-color: $error;
+    background: $error-50;
   }
 }
 
 .arrow {
-  font-size: 20rpx;
-  color: #9CA3AF;
+  font-size: $font-size-xs;
+  color: $gray-400;
 }
 
 .input-with-unit {
@@ -642,55 +651,58 @@ const formatDeadline = (dateStr: string): string => {
 
 .input-unit {
   position: absolute;
-  right: 24rpx;
-  font-size: 28rpx;
-  color: #6B7280;
+  right: $sp-6;
+  font-size: $font-size-base;
+  color: $gray-500;
   pointer-events: none;
 }
 
 .input-hint {
   display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: #6B7280;
+  margin-top: $sp-3;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .error-text {
   display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: #EF4444;
+  margin-top: $sp-3;
+  font-size: $font-size-sm;
+  color: $error;
 }
 
+// ===================================
+// 提交按钮
+// ===================================
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  font-size: 32rpx;
-  font-weight: 600;
-  border-radius: 12rpx;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-md;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
 
   &:active:not(.disabled) {
     opacity: 0.8;
   }
 
   &.disabled {
-    background: #D1D5DB;
-    color: #9CA3AF;
+    background: $gray-300;
+    color: $gray-400;
   }
 }
 
+// ===================================
 // 奖励积分选择器
+// ===================================
 .reward-selector {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .reward-item {
@@ -698,19 +710,19 @@ const formatDeadline = (dateStr: string): string => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20rpx 12rpx;
-  background: #F5F7FA;
-  border-radius: 12rpx;
+  padding: $sp-5 $sp-3;
+  background: $gray-50;
+  border-radius: $radius-md;
   border: 2rpx solid transparent;
-  transition: all 0.3s;
+  transition: $transition-slow;
   cursor: pointer;
 
   &.active {
-    background: #EBF5FF;
-    border-color: #2563EB;
+    background: $primary-50;
+    border-color: $primary;
 
     .reward-points {
-      color: #2563EB;
+      color: $primary;
     }
   }
 
@@ -724,59 +736,62 @@ const formatDeadline = (dateStr: string): string => {
 }
 
 .reward-points {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 4rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-1;
 }
 
 .reward-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
+// ===================================
+// 自定义奖励输入
+// ===================================
 .custom-reward-input {
-  margin-top: 16rpx;
+  margin-top: $sp-4;
 }
 
 .custom-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .custom-input {
   flex: 1;
   height: 72rpx;
-  padding: 0 24rpx;
-  background: #F9FAFB;
-  border: 1rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  color: #1F2937;
+  padding: 0 $sp-6;
+  background: $gray-50;
+  border: 1rpx solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
+  color: $gray-800;
 
   &::placeholder {
-    color: #9CA3AF;
+    color: $gray-400;
   }
 }
 
 .input-unit {
-  font-size: 28rpx;
-  color: #6B7280;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
 .confirm-btn {
-  padding: 0 32rpx;
+  padding: 0 $sp-8;
   height: 72rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  border-radius: 8rpx;
-  font-size: 28rpx;
+  background: $primary;
+  color: $white;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
   border: none;
   cursor: pointer;
 
   &:disabled {
-    background: #9CA3AF;
+    background: $gray-400;
     cursor: not-allowed;
   }
 
@@ -787,39 +802,41 @@ const formatDeadline = (dateStr: string): string => {
 
 .custom-error {
   display: block;
-  margin-top: 8rpx;
-  font-size: 24rpx;
-  color: #EF4444;
-  padding-left: 4rpx;
+  margin-top: $sp-2;
+  font-size: $font-size-sm;
+  color: $error;
+  padding-left: $sp-1;
 }
 
 .reward-hint {
   display: flex;
   align-items: flex-start;
-  gap: 8rpx;
-  padding: 16rpx;
-  background: #F0F9FF;
-  border-radius: 8rpx;
-  margin-top: 16rpx;
+  gap: $sp-2;
+  padding: $sp-4;
+  background: $info-50;
+  border-radius: $radius-base;
+  margin-top: $sp-4;
 }
 
 .hint-icon {
-  font-size: 28rpx;
+  font-size: $font-size-base;
   line-height: 1;
 }
 
 .hint-text {
   flex: 1;
-  font-size: 24rpx;
-  color: #0369A1;
-  line-height: 1.5;
+  font-size: $font-size-sm;
+  color: $info;
+  line-height: $line-height-normal;
 }
 
+// ===================================
 // 地点输入
+// ===================================
 .location-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .location-input {
@@ -829,13 +846,13 @@ const formatDeadline = (dateStr: string): string => {
 .location-btn {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 0 24rpx;
+  gap: $sp-2;
+  padding: 0 $sp-6;
   height: 72rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  border-radius: 8rpx;
-  font-size: 28rpx;
+  background: $primary;
+  color: $white;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
   border: none;
   cursor: pointer;
 
@@ -849,19 +866,19 @@ const formatDeadline = (dateStr: string): string => {
 }
 
 .location-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
   line-height: 1;
 }
 
 .location-text {
-  font-size: 28rpx;
+  font-size: $font-size-base;
   line-height: 1;
 }
 
 .label-hint {
-  font-size: 24rpx;
-  color: #9CA3AF;
-  margin-left: 8rpx;
-  font-weight: normal;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-2;
+  font-weight: $font-weight-normal;
 }
 </style>

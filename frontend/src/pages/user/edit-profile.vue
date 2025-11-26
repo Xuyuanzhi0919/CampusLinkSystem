@@ -469,9 +469,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .edit-profile-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $gray-50;
 }
 
 // 自定义导航栏
@@ -480,43 +482,41 @@ onMounted(() => {
   top: 0;
   left: 0;
   right: 0;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
-  z-index: 1000;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  z-index: $z-modal;
 }
 
 .navbar-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
   height: 88rpx;
-  padding: 0 32rpx;
+  padding: 0 $sp-8;
   padding-top: env(safe-area-inset-top);
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .back-icon {
   font-size: 40rpx;
-  color: #1F2937;
+  color: $gray-800;
 }
 
 .back-text {
-  font-size: 28rpx;
-  color: #1F2937;
+  font-size: $font-size-base;
+  color: $gray-800;
 }
 
 .navbar-title {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .navbar-right {
@@ -526,17 +526,17 @@ onMounted(() => {
 }
 
 .save-button {
-  padding: 12rpx 24rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  font-size: 28rpx;
-  font-weight: 500;
-  border-radius: 8rpx;
+  padding: $sp-3 $sp-6;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  border-radius: $radius-base;
   border: none;
 
   &.disabled {
-    background: #E5E7EB;
-    color: #9CA3AF;
+    background: $gray-200;
+    color: $gray-400;
   }
 
   &::after {
@@ -552,16 +552,16 @@ onMounted(() => {
 
 // 头像区域
 .avatar-section {
-  padding: 48rpx 32rpx;
-  background: #FFFFFF;
-  margin-bottom: 20rpx;
+  padding: $sp-12 $sp-8;
+  background: $white;
+  margin-bottom: $sp-5;
 }
 
 .section-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 32rpx;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-8;
 }
 
 .avatar-container {
@@ -574,18 +574,16 @@ onMounted(() => {
 .avatar-image {
   width: 160rpx;
   height: 160rpx;
-  border-radius: 80rpx;
-  background: #F3F4F6;
+  border-radius: $radius-full;
+  background: $gray-100;
 }
 
 .avatar-placeholder {
   width: 160rpx;
   height: 160rpx;
-  border-radius: 80rpx;
-  background: #F3F4F6;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: $radius-full;
+  background: $gray-100;
+  @include flex-center;
 }
 
 .placeholder-text {
@@ -599,35 +597,33 @@ onMounted(() => {
   transform: translateX(-50%);
   width: 160rpx;
   height: 160rpx;
-  border-radius: 80rpx;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: $radius-full;
+  background: rgba($gray-900, 0.5);
+  @include flex-center;
 }
 
 .upload-text {
-  font-size: 24rpx;
-  color: #FFFFFF;
+  font-size: $font-size-sm;
+  color: $white;
 }
 
 .avatar-tip {
-  margin-top: 16rpx;
+  margin-top: $sp-4;
 }
 
 .tip-text {
-  font-size: 24rpx;
-  color: #2563EB;
+  font-size: $font-size-sm;
+  color: $primary;
 }
 
 // 表单区域
 .form-section {
-  background: #FFFFFF;
-  padding: 32rpx;
+  background: $white;
+  padding: $sp-8;
 }
 
 .form-item {
-  margin-bottom: 40rpx;
+  margin-bottom: $sp-10;
 
   &:last-child {
     margin-bottom: 0;
@@ -636,7 +632,7 @@ onMounted(() => {
   &.error {
     .item-input,
     .picker-input {
-      border-color: #EF4444;
+      border-color: $error;
     }
   }
 }
@@ -644,66 +640,64 @@ onMounted(() => {
 .item-label {
   display: flex;
   align-items: center;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .label-text {
-  font-size: 28rpx;
-  color: #1F2937;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
 }
 
 .required-mark {
-  color: #EF4444;
-  margin-left: 8rpx;
+  color: $error;
+  margin-left: $sp-2;
 }
 
 .item-input {
   width: 100%;
   height: 80rpx;
-  padding: 0 24rpx;
-  background: #F9FAFB;
-  border: 1rpx solid #E5E7EB;
-  border-radius: 8rpx;
-  font-size: 28rpx;
-  color: #1F2937;
+  padding: 0 $sp-6;
+  background: $gray-50;
+  border: 1rpx solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
+  color: $gray-800;
 }
 
 .picker-input {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
   height: 80rpx;
-  padding: 0 24rpx;
-  background: #F9FAFB;
-  border: 1rpx solid #E5E7EB;
-  border-radius: 8rpx;
+  padding: 0 $sp-6;
+  background: $gray-50;
+  border: 1rpx solid $gray-200;
+  border-radius: $radius-base;
 }
 
 .picker-text {
-  font-size: 28rpx;
-  color: #1F2937;
+  font-size: $font-size-base;
+  color: $gray-800;
 }
 
 .picker-placeholder {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .picker-arrow {
   font-size: 48rpx;
-  color: #9CA3AF;
+  color: $gray-400;
   transform: rotate(90deg);
 }
 
 .error-text {
   display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: #EF4444;
+  margin-top: $sp-3;
+  font-size: $font-size-sm;
+  color: $error;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

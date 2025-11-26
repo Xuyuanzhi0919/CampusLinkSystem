@@ -298,10 +298,12 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .my-question-page {
   min-height: 100vh;
-  background: #FBFCFE;
-  padding-bottom: 120rpx;
+  background: $bg-page;
+  padding-bottom: $sp-30;
   display: flex;
   flex-direction: column;
 }
@@ -311,11 +313,11 @@ onMounted(() => {
 // ===================================
 .tab-bar {
   display: flex;
-  background: #FFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
 }
 
 .tab-item {
@@ -323,19 +325,19 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6rpx;
+  gap: $sp-1;
   height: 88rpx;
   position: relative;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &.active {
     .tab-label {
-      color: #1E5FFF;
-      font-weight: 600;
+      color: $primary;
+      font-weight: $font-weight-semibold;
     }
 
     .tab-count {
-      color: #1E5FFF;
+      color: $primary;
     }
 
     &::after {
@@ -346,22 +348,22 @@ onMounted(() => {
       transform: translateX(-50%);
       width: 60rpx;
       height: 4rpx;
-      background: #1E5FFF;
+      background: $primary;
       border-radius: 2rpx 2rpx 0 0;
     }
   }
 
   .tab-label {
-    font-size: 28rpx;
-    color: #6B7280;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-size: $font-size-base;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+    transition: $transition-base;
   }
 
   .tab-count {
-    font-size: 24rpx;
-    color: #9CA3AF;
-    transition: color 0.2s;
+    font-size: $font-size-sm;
+    color: $gray-400;
+    transition: color $duration-base;
   }
 }
 
@@ -370,32 +372,32 @@ onMounted(() => {
 // ===================================
 .filter-bar {
   display: flex;
-  gap: 12rpx;
-  padding: 16rpx 24rpx;
-  background: #FFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  gap: $sp-3;
+  padding: $sp-4 $sp-6;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .filter-item {
-  padding: 8rpx 20rpx;
-  background: #F5F7FA;
-  border-radius: 18rpx;
-  transition: all 0.2s;
+  padding: $sp-2 $sp-5;
+  background: $gray-50;
+  border-radius: $radius-xl;
+  transition: $transition-base;
 
   &.active {
-    background: rgba(30, 95, 255, 0.12);
+    background: rgba($primary, 0.12);
 
     .filter-label {
-      color: #1E5FFF;
-      font-weight: 600;
+      color: $primary;
+      font-weight: $font-weight-semibold;
     }
   }
 
   .filter-label {
-    font-size: 26rpx;
-    color: #6B7280;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+    transition: $transition-base;
   }
 }
 
@@ -404,92 +406,83 @@ onMounted(() => {
 // ===================================
 .content-container {
   flex: 1;
-  padding: 12rpx 24rpx;
+  padding: $sp-3 $sp-6;
 }
 
 // ===================================
 // 回答卡片
 // ===================================
 .answer-card {
-  background: #FFF;
-  border-radius: 12rpx;
-  padding: 20rpx 18rpx;
-  margin-bottom: 12rpx;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-5 18rpx;
+  margin-bottom: $sp-3;
+  box-shadow: 0 1rpx 4rpx rgba($gray-900, 0.06);
+  transition: $transition-base;
 
   &:active {
     transform: translateY(1rpx);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
   }
 }
 
 .answer-question {
   display: flex;
   align-items: center;
-  gap: 10rpx;
-  margin-bottom: 12rpx;
+  gap: $sp-2 + 2rpx;
+  margin-bottom: $sp-3;
 
   .question-icon {
     width: 36rpx;
     height: 36rpx;
-    background: rgba(30, 95, 255, 0.12);
-    border-radius: 8rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 20rpx;
-    font-weight: 700;
-    color: #1E5FFF;
+    background: rgba($primary, 0.12);
+    border-radius: $radius-base;
+    @include flex-center;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-bold;
+    color: $primary;
     flex-shrink: 0;
   }
 
   .question-title {
     flex: 1;
-    font-size: 26rpx;
-    font-weight: 600;
-    color: #374151;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    @include text-ellipsis(1);
   }
 }
 
 .answer-content {
-  font-size: 28rpx;
-  color: #111827;
-  line-height: 1.6;
-  margin-bottom: 12rpx;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  overflow: hidden;
+  font-size: $font-size-base;
+  color: $gray-900;
+  line-height: $line-height-relaxed;
+  margin-bottom: $sp-3;
+  @include text-ellipsis(3);
 }
 
 .answer-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
 
   .answer-time {
-    font-size: 22rpx;
-    color: #9CA3AF;
+    font-size: $font-size-xs;
+    color: $gray-400;
   }
 
   .answer-stats {
     display: flex;
     align-items: center;
-    gap: 16rpx;
+    gap: $sp-4;
 
     .stat-item {
-      font-size: 22rpx;
-      color: #6B7280;
+      font-size: $font-size-xs;
+      color: $gray-500;
     }
 
     .stat-accepted {
-      font-size: 22rpx;
-      color: #10B981;
-      font-weight: 600;
+      font-size: $font-size-xs;
+      color: $success;
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -498,38 +491,38 @@ onMounted(() => {
 // 骨架屏
 // ===================================
 .skeleton-card {
-  background: #FFF;
-  border-radius: 12rpx;
-  padding: 20rpx 18rpx;
-  margin-bottom: 12rpx;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-5 18rpx;
+  margin-bottom: $sp-3;
 
   .skeleton-title {
     width: 80%;
     height: 40rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 16rpx;
+    border-radius: $radius-base;
+    margin-bottom: $sp-4;
   }
 
   .skeleton-content {
     width: 100%;
     height: 32rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
-    margin-bottom: 16rpx;
+    border-radius: $radius-base;
+    margin-bottom: $sp-4;
   }
 
   .skeleton-footer {
     width: 50%;
     height: 24rpx;
-    background: linear-gradient(90deg, #F0F0F0 25%, #E0E0E0 50%, #F0F0F0 75%);
+    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
     background-size: 200% 100%;
     animation: loading 1.5s infinite;
-    border-radius: 8rpx;
+    border-radius: $radius-base;
   }
 }
 
@@ -547,9 +540,9 @@ onMounted(() => {
 // ===================================
 .load-more {
   text-align: center;
-  padding: 32rpx;
-  font-size: 24rpx;
-  color: #999;
+  padding: $sp-8;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 // ===================================
@@ -560,28 +553,28 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx 48rpx;
+  padding: 120rpx $sp-12;
 
   .empty-icon {
     font-size: 120rpx;
-    margin-bottom: 24rpx;
+    margin-bottom: $sp-6;
   }
 
   .empty-text {
-    font-size: 32rpx;
-    color: #666;
-    margin-bottom: 16rpx;
+    font-size: $font-size-lg;
+    color: $gray-500;
+    margin-bottom: $sp-4;
   }
 
   .empty-hint {
-    font-size: 26rpx;
-    color: #1E5FFF;
-    padding: 12rpx 24rpx;
-    background: rgba(30, 95, 255, 0.08);
-    border-radius: 20rpx;
+    font-size: $font-size-sm;
+    color: $primary;
+    padding: $sp-3 $sp-6;
+    background: rgba($primary, 0.08);
+    border-radius: $radius-lg;
 
     &:active {
-      background: rgba(30, 95, 255, 0.12);
+      background: rgba($primary, 0.12);
     }
   }
 }

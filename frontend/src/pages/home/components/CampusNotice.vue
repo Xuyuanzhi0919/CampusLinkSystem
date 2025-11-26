@@ -239,6 +239,8 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 /* ========== 业务内容样式 ========== */
 
 /* 公告列表 */
@@ -257,33 +259,33 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15); /* 滑块颜色 - 浅灰色 */
+    background: rgba($gray-900, 0.15); /* 滑块颜色 - 浅灰色 */
     border-radius: 3px;
-    transition: background 0.2s ease;
+    transition: background $duration-base $ease-out;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25); /* hover 时加深 */
+    background: rgba($gray-900, 0.25); /* hover 时加深 */
   }
 
   /* 🎨 Firefox 滚动条样式 */
   scrollbar-width: thin; /* 细滚动条 */
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent; /* 滑块颜色 轨道颜色 */
+  scrollbar-color: rgba($gray-900, 0.15) transparent; /* 滑块颜色 轨道颜色 */
 }
 
 .notice-item {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  border-radius: 12rpx;
+  gap: $sp-4;
+  padding: $sp-4;
+  border-radius: $radius-base;
   cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 12rpx;
+  transition: $transition-base;
+  margin-bottom: $sp-3;
 }
 
 .notice-item:hover {
-  background: #F5F6FA;
+  background: $gray-50;
   transform: translateX(4rpx);
 }
 
@@ -291,16 +293,14 @@ onUnmounted(() => {
 .notice-avatar {
   width: 64rpx; /* 32px */
   height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #E6F0FF 0%, #C7DDFF 100%);
-  border-radius: 50%;
+  @include flex-center;
+  background: linear-gradient(135deg, $primary-100 0%, $primary-200 100%);
+  border-radius: $radius-full;
   flex-shrink: 0;
 }
 
 .avatar-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
   line-height: 1;
 }
 
@@ -309,23 +309,21 @@ onUnmounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
   overflow: hidden;
 }
 
 .notice-title {
-  font-size: 28rpx; /* 14px - 正文规范 */
-  color: #1D1D1F;
-  font-weight: 500;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base; /* 14px - 正文规范 */
+  color: $gray-900;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-tight;
+  @include text-ellipsis(1);
 }
 
 .notice-time {
-  font-size: 24rpx; /* 12px */
-  color: #86909C;
+  font-size: $font-size-sm; /* 12px */
+  color: $gray-500;
   line-height: 1;
 }
 
@@ -333,24 +331,24 @@ onUnmounted(() => {
 .important-tag {
   display: flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 6rpx 12rpx;
-  background: #FFF1F0;
-  border-radius: 12rpx;
+  gap: $sp-1;
+  padding: $sp-1 $sp-3;
+  background: $error-50;
+  border-radius: $radius-base;
   flex-shrink: 0;
 }
 
 .tag-dot {
-  width: 12rpx;
-  height: 12rpx;
-  background: #FF4D4F;
-  border-radius: 50%;
+  width: $sp-3;
+  height: $sp-3;
+  background: $error;
+  border-radius: $radius-full;
 }
 
 .tag-text {
-  font-size: 22rpx;
-  color: #FF4D4F;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  color: $error;
+  font-weight: $font-weight-semibold;
   line-height: 1;
 }
 </style>

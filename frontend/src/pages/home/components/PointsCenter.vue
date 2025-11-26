@@ -225,55 +225,57 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 /* ========== 业务内容样式 ========== */
 
 /* 积分进度条 - 增加间距 */
 .points-progress {
-  margin-bottom: 32rpx; /* 16px - 增加间距 */
-  padding: 32rpx; /* 16px - 增加内边距 */
-  background: linear-gradient(135deg, #E6F0FF 0%, #C7DDFF 100%);
-  border-radius: 16rpx;
+  margin-bottom: $sp-8; /* 16px - 增加间距 */
+  padding: $sp-8; /* 16px - 增加内边距 */
+  background: linear-gradient(135deg, $primary-100 0%, $primary-200 100%);
+  border-radius: $radius-md;
 }
 
 .progress-header {
   display: flex;
   align-items: baseline;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .current-points {
-  font-size: 48rpx; /* 24px */
-  font-weight: 700;
-  color: #1E5FFF;
+  font-size: $font-size-3xl; /* 24px */
+  font-weight: $font-weight-bold;
+  color: $primary;
   line-height: 1;
 }
 
 .points-label {
-  font-size: 24rpx;
-  color: #86909C;
+  font-size: $font-size-sm;
+  color: $gray-500;
   line-height: 1;
 }
 
 .progress-bar {
   width: 100%;
-  height: 16rpx; /* 8px */
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 8rpx;
+  height: $sp-4; /* 8px */
+  background: rgba($white, 0.5);
+  border-radius: $radius-sm;
   overflow: hidden;
-  margin-bottom: 12rpx;
+  margin-bottom: $sp-3;
 }
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #1E5FFF 0%, #FFA940 100%);
-  border-radius: 8rpx;
-  transition: width 0.5s ease;
+  background: linear-gradient(90deg, $primary 0%, $accent 100%);
+  border-radius: $radius-sm;
+  transition: width $duration-slow $ease-out;
 }
 
 .progress-tip {
-  font-size: 22rpx;
-  color: #1E5FFF;
+  font-size: $font-size-xs;
+  color: $primary;
   line-height: 1;
 }
 
@@ -293,42 +295,42 @@ onUnmounted(() => {
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.15); /* 滑块颜色 - 浅灰色 */
+    background: rgba($gray-900, 0.15); /* 滑块颜色 - 浅灰色 */
     border-radius: 3px;
-    transition: background 0.2s ease;
+    transition: background $duration-base $ease-out;
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: rgba(0, 0, 0, 0.25); /* hover 时加深 */
+    background: rgba($gray-900, 0.25); /* hover 时加深 */
   }
 
   /* 🎨 Firefox 滚动条样式 */
   scrollbar-width: thin; /* 细滚动条 */
-  scrollbar-color: rgba(0, 0, 0, 0.15) transparent; /* 滑块颜色 轨道颜色 */
+  scrollbar-color: rgba($gray-900, 0.15) transparent; /* 滑块颜色 轨道颜色 */
 }
 
 .list-title {
   display: block;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #1D2129;
-  margin-bottom: 16rpx;
-  line-height: 1.6; /* 优化行高 */
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+  margin-bottom: $sp-4;
+  line-height: $line-height-relaxed; /* 优化行高 */
 }
 
 .task-item {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  border-radius: 12rpx;
+  gap: $sp-4;
+  padding: $sp-4;
+  border-radius: $radius-base;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 12rpx;
+  transition: $transition-slow;
+  margin-bottom: $sp-3;
 }
 
 .task-item:hover {
-  background: #F5F7FA;
+  background: $gray-50;
 }
 
 .task-item.completed {
@@ -336,21 +338,21 @@ onUnmounted(() => {
 }
 
 .task-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
   line-height: 1;
 }
 
 .task-name {
   flex: 1;
-  font-size: 28rpx;
-  color: #1D2129;
-  line-height: 1.6; /* 优化行高 */
+  font-size: $font-size-base;
+  color: $gray-900;
+  line-height: $line-height-relaxed; /* 优化行高 */
 }
 
 .task-points {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #FF7D00;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $accent;
   line-height: 1;
 }
 

@@ -1,16 +1,379 @@
 /**
- * 这里是uni-app内置的常用样式变量
+ * uni.scss - 全局样式变量
  *
- * uni-app 官方扩展插件及插件市场（https://ext.dcloud.net.cn）上很多三方插件均使用了这些样式变量
- * 如果你是插件开发者，建议你使用scss预处理，并在插件代码中直接使用这些变量（无需 import 这个文件），方便用户通过搭积木的方式开发整体风格一致的App
+ * 此文件中的变量会自动注入到所有 SCSS 文件中，无需手动导入
+ * 包含：CampusLink 自定义设计系统 + uni-app 内置变量
  *
+ * 注意：uni-app 构建系统要求使用 @import 来传递变量到组件
+ * @use 语法在此场景不兼容，会导致变量无法注入
+ * 这里的 @import 警告可以忽略，因为这是 uni-app 的限制
  */
 
-/**
- * 如果你是App开发者（插件使用者），你可以通过修改这些变量来定制自己的插件主题，实现自定义主题功能
- *
- * 如果你的项目同样使用了scss预处理，你也可以直接在你的 scss 代码中使用如下变量，同时无需 import 这个文件
- */
+// ============================================
+// CampusLink 自定义设计系统
+// 注意：这里直接内联变量，避免相对路径在组件注入时失效
+// ============================================
+
+// ====== 从 variables.scss 内联的变量 ======
+
+// 基础色
+$white: #FFFFFF;
+$black: #000000;
+
+// 品牌主色 - 蓝色系
+$primary: #2563EB;
+$primary-light: #3B82F6;
+$primary-dark: #1D4ED8;
+$primary-50: #EFF6FF;
+$primary-100: #DBEAFE;
+$primary-200: #BFDBFE;
+$primary-300: #93C5FD;
+$primary-400: #60A5FA;
+$primary-500: #3B82F6;
+$primary-600: #2563EB;
+$primary-700: #1D4ED8;
+$primary-800: #1E40AF;
+$primary-900: #1E3A8A;
+
+// 强调色 - 橙色系（用于积分、资源等强调场景）
+$accent: #F59E0B;
+$accent-light: #FBBF24;
+$accent-dark: #D97706;
+$accent-50: #FFFBEB;
+$accent-100: #FEF3C7;
+$accent-200: #FDE68A;
+$accent-300: #FDBA74;
+$accent-400: #FB923C;
+$accent-500: #F59E0B;
+$accent-600: #D97706;
+$accent-700: #B45309;
+$accent-800: #92400E;
+$accent-900: #78350F;
+
+// 功能色
+$success: #16A34A;
+$success-light: #22C55E;
+$success-50: #F0FDF4;
+$success-100: #DCFCE7;
+
+$warning: #F59E0B;
+$warning-light: #FBBF24;
+$warning-dark: #CA8A04;
+$warning-50: #FFFBEB;
+$warning-100: #FEF3C7;
+
+$error: #EF4444;
+$error-light: #F87171;
+$error-50: #FEF2F2;
+$error-100: #FEE2E2;
+
+$info: #0EA5E9;
+$info-light: #38BDF8;
+$info-50: #F0F9FF;
+$info-100: #E0F2FE;
+
+// 中性色 - 灰色系
+$gray-900: #0F172A;
+$gray-800: #1E293B;
+$gray-700: #334155;
+$gray-600: #475569;
+$gray-500: #64748B;
+$gray-400: #94A3B8;
+$gray-300: #CBD5E1;
+$gray-200: #E2E8F0;
+$gray-100: #F1F5F9;
+$gray-50: #F8FAFC;
+
+// 语义化颜色别名
+$text-primary: $gray-900;
+$text-secondary: $gray-600;
+$text-tertiary: $gray-500;
+$text-placeholder: $gray-400;
+$text-disabled: $gray-300;
+$text-inverse: #FFFFFF;
+
+$border-color: $gray-200;
+$border-light: $gray-100;
+$divider: $gray-200;
+
+$bg-page: $gray-50;
+$bg-surface: #FFFFFF;
+$bg-elevated: #FFFFFF;
+$bg-input: $gray-100;
+$bg-hover: $gray-50;
+$bg-active: $gray-100;
+
+// 间距系统 - 8px 栅格
+$sp-0: 0;
+$sp-1: 4rpx;
+$sp-2: 8rpx;
+$sp-3: 12rpx;
+$sp-4: 16rpx;
+$sp-5: 20rpx;
+$sp-6: 24rpx;
+$sp-7: 28rpx;
+$sp-8: 32rpx;
+$sp-9: 36rpx;
+$sp-10: 40rpx;
+$sp-12: 48rpx;
+$sp-16: 64rpx;
+$sp-20: 80rpx;
+$sp-24: 96rpx;
+$sp-30: 120rpx;
+$sp-32: 128rpx;
+
+// 语义化间距
+$spacing-xs: $sp-4;
+$spacing-sm: $sp-6;
+$spacing-md: $sp-8;
+$spacing-lg: $sp-12;
+$spacing-xl: $sp-16;
+$spacing-2xl: $sp-24;
+
+$page-padding-x: $sp-8;
+$page-padding-y: $sp-6;
+$section-gap: $sp-12;
+$card-padding: $sp-8;
+$list-gap: $sp-6;
+
+// 字体系统
+$font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+
+$font-size-xs: 20rpx;
+$font-size-sm: 24rpx;
+$font-size-base: 28rpx;
+$font-size-md: 30rpx;
+$font-size-lg: 32rpx;
+$font-size-xl: 36rpx;
+$font-size-2xl: 40rpx;
+$font-size-3xl: 48rpx;
+$font-size-4xl: 56rpx;
+
+$font-weight-light: 300;
+$font-weight-regular: 400;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+$line-height-tight: 1.25;
+$line-height-snug: 1.375;
+$line-height-normal: 1.5;
+$line-height-relaxed: 1.625;
+$line-height-loose: 2;
+
+// 圆角系统
+$radius-none: 0;
+$radius-xs: 4rpx;
+$radius-sm: 8rpx;
+$radius-base: 12rpx;
+$radius-md: 16rpx;
+$radius-lg: 24rpx;
+$radius-xl: 32rpx;
+$radius-2xl: 48rpx;
+$radius-full: 9999px;
+
+$radius-button: 44rpx;
+$radius-button-sm: 32rpx;
+$radius-card: $radius-md;
+$radius-input: 36rpx;
+$radius-tag: $radius-sm;
+$radius-avatar: $radius-full;
+
+// 阴影系统
+$shadow-none: none;
+$shadow-xs: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow-base: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+$shadow-md: 0 8rpx 16rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 12rpx 24rpx rgba(0, 0, 0, 0.1);
+$shadow-xl: 0 16rpx 32rpx rgba(0, 0, 0, 0.12);
+
+$shadow-card: $shadow-sm;
+$shadow-card-hover: $shadow-base;
+$shadow-dropdown: $shadow-md;
+$shadow-modal: $shadow-lg;
+$shadow-fab: 0 8rpx 24rpx rgba(37, 99, 235, 0.3);
+
+// 动画系统
+$duration-fast: 150ms;
+$duration-base: 200ms;
+$duration-slow: 300ms;
+$duration-slower: 400ms;
+
+$ease-in: cubic-bezier(0.4, 0, 1, 1);
+$ease-out: cubic-bezier(0, 0, 0.2, 1);
+$ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+$ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+$transition-fast: all $duration-fast $ease-out;
+$transition-base: all $duration-base $ease-out;
+$transition-slow: all $duration-slow $ease-out;
+$transition-colors: color $duration-base $ease-out, background-color $duration-base $ease-out, border-color $duration-base $ease-out;
+$transition-transform: transform $duration-base $ease-out;
+$transition-opacity: opacity $duration-base $ease-out;
+
+// 尺寸系统
+$btn-height-xs: 56rpx;
+$btn-height-sm: 64rpx;
+$btn-height-base: 80rpx;
+$btn-height-lg: 88rpx;
+$btn-height-xl: 96rpx;
+
+$input-height-sm: 64rpx;
+$input-height-base: 72rpx;
+$input-height-lg: 80rpx;
+
+$icon-size-xs: 28rpx;
+$icon-size-sm: 32rpx;
+$icon-size-base: 40rpx;
+$icon-size-lg: 48rpx;
+$icon-size-xl: 56rpx;
+
+$avatar-size-xs: 48rpx;
+$avatar-size-sm: 64rpx;
+$avatar-size-base: 80rpx;
+$avatar-size-lg: 96rpx;
+$avatar-size-xl: 128rpx;
+
+// 层级系统
+$z-base: 0;
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-fixed: 300;
+$z-modal-backdrop: 400;
+$z-modal: 500;
+$z-popover: 600;
+$z-tooltip: 700;
+$z-toast: 800;
+$z-loading: 900;
+$z-max: 9999;
+
+// 响应式断点
+$breakpoint-sm: 750px;
+$breakpoint-md: 1024px;
+$breakpoint-lg: 1280px;
+$breakpoint-xl: 1536px;
+
+// 响应式 mixin
+@mixin mobile {
+  @media (max-width: #{$breakpoint-sm - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-sm) and (max-width: #{$breakpoint-md - 1px}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-md) {
+    @content;
+  }
+}
+
+@mixin large {
+  @media (min-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+// 工具 Mixins
+@mixin text-ellipsis($lines: 1) {
+  @if $lines == 1 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-align-center {
+  display: flex;
+  align-items: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin absolute-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@mixin safe-area-bottom {
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@mixin gradient-primary {
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+}
+
+@mixin gradient-accent {
+  background: linear-gradient(135deg, $accent 0%, $accent-light 100%);
+}
+
+@mixin gradient-success {
+  background: linear-gradient(135deg, $success 0%, $success-light 100%);
+}
+
+@mixin gradient-error {
+  background: linear-gradient(135deg, $error 0%, $error-light 100%);
+}
+
+@mixin focus-ring {
+  outline: none;
+  box-shadow: 0 0 0 4rpx rgba($primary, 0.2);
+}
+
+@mixin card-base {
+  background: $bg-surface;
+  border-radius: $radius-card;
+  box-shadow: $shadow-card;
+}
+
+@mixin input-base {
+  height: $input-height-base;
+  padding: 0 $sp-8;
+  background: $bg-input;
+  border: none;
+  border-radius: $radius-input;
+  font-size: $font-size-base;
+  color: $text-primary;
+  transition: $transition-base;
+
+  &::placeholder {
+    color: $text-placeholder;
+  }
+
+  &:focus {
+    @include focus-ring;
+  }
+}
+
+// ============================================
+// uni-app 内置变量（保留兼容性）
+// ============================================
 
 /* 颜色变量 */
 

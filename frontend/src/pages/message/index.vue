@@ -169,33 +169,39 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .message-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: $bg-page;
 }
 
+// ===================================
+// 头部
+// ===================================
 .header {
   position: sticky;
   top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 28rpx 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  z-index: $z-dropdown;
+  @include flex-center;
+  padding: 28rpx $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .header-title {
   font-size: 36rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .content-scroll {
   height: calc(100vh - 96rpx);
 }
 
+// ===================================
+// 会话列表
+// ===================================
 .conversation-list {
   padding: 0;
 }
@@ -203,27 +209,27 @@ onMounted(() => {
 .conversation-card {
   display: flex;
   align-items: center;
-  padding: 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #F3F4F6;
-  transition: all 0.3s;
+  padding: $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
+  transition: $transition-slow;
 
   &:active {
-    background: #F9FAFB;
+    background: $gray-50;
   }
 }
 
 .avatar-container {
   position: relative;
   flex-shrink: 0;
-  margin-right: 24rpx;
+  margin-right: $sp-6;
 }
 
 .avatar {
   width: 96rpx;
   height: 96rpx;
-  border-radius: 50%;
-  background: #E5E7EB;
+  border-radius: $radius-full;
+  background: $gray-200;
 }
 
 .unread-badge {
@@ -232,19 +238,17 @@ onMounted(() => {
   right: -8rpx;
   min-width: 36rpx;
   height: 36rpx;
-  background: #EF4444;
-  border-radius: 18rpx;
-  border: 4rpx solid #FFFFFF;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8rpx;
+  background: $error;
+  border-radius: $radius-xl;
+  border: 4rpx solid $white;
+  @include flex-center;
+  padding: 0 $sp-2;
 }
 
 .badge-text {
-  font-size: 20rpx;
-  color: #FFFFFF;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  color: $white;
+  font-weight: $font-weight-semibold;
   line-height: 1;
 }
 
@@ -252,29 +256,25 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: $sp-3;
   min-width: 0;
 }
 
 .top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
 }
 
 .nickname {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-size: $font-size-base + 2rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
   max-width: 400rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis(1);
 }
 
 .time {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
   flex-shrink: 0;
 }
 
@@ -284,45 +284,46 @@ onMounted(() => {
 }
 
 .last-message {
-  font-size: 26rpx;
-  color: #9CA3AF;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  line-height: $line-height-normal;
+  @include text-ellipsis(1);
   max-width: 100%;
 
   &.unread {
-    color: #374151;
-    font-weight: 500;
+    color: $gray-700;
+    font-weight: $font-weight-medium;
   }
 }
 
+// ===================================
+// 空状态
+// ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 
 .empty-tip {
-  font-size: 26rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

@@ -650,6 +650,150 @@ cache.clear()  // 清除所有缓存
 3. 用户操作（点赞、收藏）后使用乐观更新 + 缓存失效
 4. 图片资源使用 CDN + 懒加载，减少首屏加载时间
 
+## 6. UI 设计系统
+
+### 6.1 设计规范概述
+
+项目已建立统一的 UI 设计系统，包含全局变量、基础组件、布局组件三个层次。
+
+**设计原则**：
+- **主色调**：`#2563EB`（品牌蓝）为全站唯一主色
+- **强调色**：`#F59E0B`（橙色）仅用于积分、资源等强调场景
+- **间距系统**：8px 栅格，使用 `$sp-*` 变量
+- **响应式断点**：750px（移动端）/ 1024px（平板）/ 1280px（桌面）
+
+### 6.2 全局变量文件
+
+**文件路径**：`frontend/src/styles/variables.scss`
+
+**变量分类**：
+
+| 类别 | 变量前缀 | 示例 |
+|------|---------|------|
+| 主色系 | `$primary-*` | `$primary: #2563EB`、`$primary-50: #EFF6FF` |
+| 强调色 | `$accent-*` | `$accent: #F59E0B`、`$accent-50: #FFFBEB` |
+| 功能色 | `$success/$warning/$error/$info` | `$success: #16A34A` |
+| 中性色 | `$gray-*` | `$gray-900: #0F172A`（主文本）、`$gray-50: #F8FAFC`（背景） |
+| 语义色 | `$text-*/$bg-*/$border-*` | `$text-primary`、`$bg-page`、`$border-color` |
+| 间距 | `$sp-*` | `$sp-8: 32rpx`（16px）、`$sp-16: 64rpx`（32px） |
+| 字号 | `$font-size-*` | `$font-size-base: 28rpx`（14px） |
+| 圆角 | `$radius-*` | `$radius-card: 16rpx`、`$radius-button: 44rpx` |
+| 阴影 | `$shadow-*` | `$shadow-card`、`$shadow-modal` |
+| 层级 | `$z-*` | `$z-modal: 500`、`$z-toast: 800` |
+
+**常用 Mixin**：
+```scss
+@include text-ellipsis($lines)     // 文本截断（支持多行）
+@include flex-center               // Flex 居中
+@include flex-between              // Flex 两端对齐
+@include gradient-primary          // 主色渐变背景
+@include focus-ring                // 焦点环样式
+@include card-base                 // 卡片基础样式
+@include input-base                // 输入框基础样式
+@include mobile / @include desktop // 响应式断点
+```
+
+### 6.3 基础 UI 组件
+
+**文件路径**：`frontend/src/components/ui/`
+
+| 组件 | 文件 | 功能 |
+|------|------|------|
+| **CButton** | `CButton.vue` | 统一按钮，8 种类型（primary/secondary/accent/success/warning/danger/text/ghost），5 种尺寸（xs/sm/md/lg/xl），支持 loading/disabled/block/round/plain |
+| **CCard** | `CCard.vue` | 统一卡片，4 种变体（default/elevated/outlined/flat），支持 header/footer 插槽，hoverable/clickable 交互 |
+| **CSearchInput** | `CSearchInput.vue` | 统一搜索框，3 种尺寸，支持清除/语音按钮/搜索按钮，焦点样式 |
+| **CTag** | `CTag.vue` | 统一标签，7 种类型（default/primary/accent/success/warning/danger/info），3 种尺寸，支持 closable/clickable |
+
+**使用示例**：
+```vue
+<script setup>
+import { CButton, CCard, CSearchInput, CTag } from '@/components/ui'
+</script>
+
+<template>
+  <!-- 主要按钮 -->
+  <CButton type="primary" size="lg" @click="handleSubmit">提交</CButton>
+
+  <!-- 强调按钮（橙色，用于积分相关） -->
+  <CButton type="accent">兑换积分</CButton>
+
+  <!-- 卡片 -->
+  <CCard title="资源详情" hoverable>
+    <template #extra><CButton type="text" size="sm">更多</CButton></template>
+    卡片内容
+  </CCard>
+
+  <!-- 搜索框 -->
+  <CSearchInput v-model="keyword" placeholder="搜索资源" show-voice />
+
+  <!-- 标签 -->
+  <CTag type="success">已完成</CTag>
+  <CTag type="warning">进行中</CTag>
+</template>
+```
+
+### 6.4 布局组件
+
+**文件路径**：`frontend/src/components/layout/`
+
+| 组件 | 文件 | 功能 |
+|------|------|------|
+| **PageContainer** | `PageContainer.vue` | 页面容器，集成导航栏/scroll-view/下拉刷新/安全区适配，支持 float 插槽（FAB/返回顶部） |
+| **CNavBar** | `CNavBar.vue` | 导航栏，自动适配状态栏高度，支持自定义左/中/右区域，透明背景模式 |
+
+**使用示例**：
+```vue
+<script setup>
+import { PageContainer } from '@/components/layout'
+import { CButton } from '@/components/ui'
+</script>
+
+<template>
+  <PageContainer
+    nav-title="资源广场"
+    :show-back="false"
+    show-tabbar
+    refresher-enabled
+    :refresher-triggered="isRefreshing"
+    @refresh="handleRefresh"
+    @scroll-to-lower="handleLoadMore"
+  >
+    <!-- 导航栏右侧 -->
+    <template #navbar-right>
+      <CButton type="text" size="sm">筛选</CButton>
+    </template>
+
+    <!-- 页面内容 -->
+    <view class="content">
+      ...
+    </view>
+
+    <!-- 浮动按钮 -->
+    <template #float>
+      <CButton type="primary" round>+</CButton>
+    </template>
+
+    <!-- 底部 TabBar -->
+    <template #tabbar>
+      <CustomTabBar />
+    </template>
+  </PageContainer>
+</template>
+```
+
+### 6.5 页面重构进度
+
+**重构顺序**：Home → Resource → Question → Task → Club/Message/User
+
+**重构要点**：
+1. 替换硬编码色值为 `$primary`、`$accent` 等变量
+2. 使用 `CButton`、`CCard`、`CTag` 替换自定义按钮/卡片/标签
+3. 使用 `PageContainer` 统一页面结构
+4. 统一间距为 `$sp-*` 变量
+5. 统一响应式断点为 750px / 1024px
+
+**当前状态**：基础设施已完成，页面重构待进行
+
 ## 参考文档
 
 - [API 接口设计文档](docs/api-design.md) - 完整的 56 个 API 端点说明

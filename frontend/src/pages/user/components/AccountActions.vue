@@ -89,19 +89,21 @@ const handleActionClick = (action: ActionItem) => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .account-actions {
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  margin: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  background: $white;
+  border-radius: $radius-2xl;
+  padding: $sp-8;
+  margin: $sp-6;
+  box-shadow: $shadow-card;
 }
 
 .actions-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 24rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-6;
 }
 
 .actions-list {
@@ -110,26 +112,24 @@ const handleActionClick = (action: ActionItem) => {
 }
 
 .action-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 28rpx 0;
+  @include flex-between;
+  padding: $sp-7 0;
   cursor: pointer;
-  transition: background 0.2s;
-  border-radius: 12rpx;
+  transition: $transition-base;
+  border-radius: $radius-md;
 
   &:not(:last-child) {
-    border-bottom: 1rpx solid #F3F4F6;
+    border-bottom: 1rpx solid $gray-100;
   }
 
   &:active {
-    background: #F9FAFB;
+    background: $gray-50;
   }
 
   // 危险操作(退出登录)
   &.danger {
     .action-label {
-      color: #EF4444;
+      color: $error;
     }
 
     .action-icon {
@@ -141,7 +141,7 @@ const handleActionClick = (action: ActionItem) => {
 .action-left {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: $sp-4;
 }
 
 .action-icon {
@@ -149,14 +149,14 @@ const handleActionClick = (action: ActionItem) => {
 }
 
 .action-label {
-  font-size: 28rpx;
-  color: #1F2937;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
 }
 
 .action-arrow {
   font-size: 48rpx;
-  color: #D1D5DB;
+  color: $gray-300;
   line-height: 1;
   transform: translateY(-2rpx);
 }

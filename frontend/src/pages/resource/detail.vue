@@ -1125,51 +1125,51 @@ const closePreview = () => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 .resource-detail-page {
   min-height: 100vh;
-  background: #F5F5F5;
+  background: $bg-page;
   padding-bottom: 100rpx; // 移动端：底部占位（为固定栏留空间）
 
   // PC端适配：全屏布局，无左右间隔
   // #ifdef H5
-  @media (min-width: 768px) {
-    padding-bottom: 24rpx; // PC端：正常底部间距
+  @include desktop {
+    padding-bottom: $sp-6; // PC端：正常底部间距
   }
   // #endif
 }
 
 // 顶部导航栏
 .nav-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 32rpx;  // 增加左右padding：24rpx → 32rpx
-  background: #FFFFFF;
+  @include flex-between;
+  height: $btn-height-lg;
+  padding: 0 $sp-8;  // 增加左右padding：24rpx → 32rpx
+  background: $white;
   border-bottom: none;  // 移除下边框，使用阴影代替
-  box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.05);  // 添加轻微底部阴影
+  box-shadow: 0 2rpx 16rpx rgba($gray-900, 0.05);  // 添加轻微底部阴影
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
 }
 
 .nav-left,
 .nav-right {
   display: flex;
   align-items: center;
-  padding: 8rpx;
+  padding: $sp-2;
   cursor: pointer;
 }
 
 .nav-icon {
-  font-size: 40rpx;
-  color: #333333;
+  font-size: $font-size-2xl;
+  color: $gray-800;
 }
 
 .nav-text {
-  font-size: 28rpx;
-  color: #333333;
-  margin-left: 4rpx;
+  font-size: $font-size-base;
+  color: $gray-800;
+  margin-left: $sp-1;
 }
 
 .nav-center {
@@ -1178,9 +1178,9 @@ const closePreview = () => {
 }
 
 .nav-title {
-  font-size: 36rpx;  // 增大标题字体：32rpx → 36rpx
-  font-weight: 600;
-  color: #333333;
+  font-size: $font-size-xl;  // 增大标题字体：32rpx → 36rpx
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 // 加载状态
@@ -1190,43 +1190,42 @@ const closePreview = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 0;
+  padding: $sp-20 0;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #999999;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .error-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .error-text {
-  font-size: 28rpx;
-  color: #666666;
-  margin-bottom: 48rpx;
+  font-size: $font-size-base;
+  color: $gray-600;
+  margin-bottom: $sp-12;
 }
 
 .error-btn {
-  padding: 16rpx 48rpx;
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-  color: #FFFFFF;
+  padding: $sp-4 $sp-12;
+  @include gradient-accent;
+  color: $white;
   border: none;
-  border-radius: 32rpx;
-  font-size: 28rpx;
+  border-radius: $radius-2xl;
+  font-size: $font-size-base;
 }
 
 // 内容滚动区
 .content-scroll {
   // 移除固定高度，使用自然滚动（避免双滚动条）
-  // height: calc(100vh - 88rpx - 100rpx);  // ❌ 会导致双滚动条
-  min-height: calc(100vh - 88rpx - 100rpx);  // ✅ 最小高度，自然滚动
+  min-height: calc(100vh - 88rpx - 100rpx);
 
-  // PC端适配：优化滚动体验（应用于body滚动条）
+  // PC端适配：优化滚动体验
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     // 移除容器自身滚动条样式，改为在全局设置body滚动条样式
   }
   // #endif
@@ -1237,15 +1236,15 @@ const closePreview = () => {
   // 移动端：单栏布局
   display: block;
 
-  // PC端：限制最大宽度的双栏布局（真正的阅读体验）
+  // PC端：限制最大宽度的双栏布局
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     display: flex;
-    gap: 40rpx;  // 左右栏间距：20rpx → 40rpx，更清晰的分隔
-    padding: 20rpx 40rpx;
-    max-width: 2400rpx;  // 限制最大宽度：1200px（rpx单位）
-    margin: 0 auto;  // 居中显示
-    align-items: flex-start; // 顶部对齐
+    gap: $sp-10;
+    padding: $sp-5 $sp-10;
+    max-width: 2400rpx;
+    margin: 0 auto;
+    align-items: flex-start;
   }
   // #endif
 }
@@ -1255,9 +1254,9 @@ const closePreview = () => {
   // 移动端：全宽
   width: 100%;
 
-  // PC端：68%宽度，调整比例让内容更集中
+  // PC端：68%宽度
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     flex: 0 0 68%;
     max-width: 68%;
   }
@@ -1266,19 +1265,17 @@ const closePreview = () => {
 
 // 右侧侧边栏
 .sidebar {
-  // 移动端：隐藏（内容在左侧主区域显示）
+  // 移动端：隐藏
   display: none;
 
-  // PC端：显示，30%宽度，固定定位效果
+  // PC端：显示，30%宽度，粘性定位
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     display: block;
     flex: 0 0 30%;
     max-width: 30%;
-
-    // 添加粘性定位，滚动时保持可见
     position: sticky;
-    top: 20rpx;
+    top: $sp-5;
     align-self: flex-start;
   }
   // #endif
@@ -1286,47 +1283,47 @@ const closePreview = () => {
 
 // ============ 方案A：PC端操作卡片（右侧） ============
 .operation-card {
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  padding: 20rpx;  // 减少padding：24rpx → 20rpx
-  margin-bottom: 16rpx;
-  overflow: hidden;  // 防止内容溢出
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+  padding: $sp-5;
+  margin-bottom: $sp-4;
+  overflow: hidden;
 
   // 移动端：隐藏
   display: none;
 
   // PC端：显示，并允许Popover溢出
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     display: block;
-    overflow: visible;  // ✅ 关键修复：允许Popover菜单溢出显示
+    overflow: visible;
   }
   // #endif
 }
 
 .operation-title {
-  font-size: 26rpx;  // 缩小字体：28rpx → 26rpx
-  font-weight: 600;
-  color: #333333;
-  margin-bottom: 16rpx;  // 减少间距：20rpx → 16rpx
-  padding-bottom: 12rpx;  // 减少间距：16rpx → 12rpx
-  border-bottom: 1rpx solid #F0F0F0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-4;
+  padding-bottom: $sp-3;
+  border-bottom: 1rpx solid $gray-100;
 }
 
 .operation-btn {
   display: flex;
   align-items: center;
-  gap: 10rpx;  // 减少gap：12rpx → 10rpx
+  gap: $sp-2;
   width: 100%;
-  padding: 12rpx 16rpx;  // 减少padding：14rpx 20rpx → 12rpx 16rpx
-  margin-bottom: 10rpx;  // 减少间距：12rpx → 10rpx
-  border-radius: 8rpx;
+  padding: $sp-3 $sp-4;
+  margin-bottom: $sp-2;
+  border-radius: $radius-base;
   cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 24rpx;  // 缩小字体：26rpx → 24rpx
-  box-sizing: border-box;  // 确保border不会增加宽度
-  overflow: hidden;  // 防止内容溢出
+  transition: $transition-base;
+  font-size: $font-size-sm;
+  box-sizing: border-box;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 
@@ -1335,14 +1332,14 @@ const closePreview = () => {
   }
 
   .operation-icon {
-    font-size: 22rpx;  // 缩小图标：24rpx → 22rpx
+    font-size: 22rpx;
     line-height: 1;
-    flex-shrink: 0;  // 图标不缩放
+    flex-shrink: 0;
   }
 
   .operation-text {
     flex: 1;
-    font-size: 24rpx;  // 缩小字体：26rpx → 24rpx
+    font-size: $font-size-sm;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1351,40 +1348,40 @@ const closePreview = () => {
 
 // 预览按钮（次操作 - 轻边框）
 .operation-preview {
-  background: #FFFFFF;
-  border: 2rpx solid #D1D5DB;
-  color: #374151;
+  background: $white;
+  border: 2rpx solid $gray-300;
+  color: $gray-700;
 
   .operation-icon {
-    color: #6B7280;
+    color: $gray-500;
   }
 
   &:hover {
-    background: #F9FAFB;
-    border-color: #9CA3AF;
+    background: $gray-50;
+    border-color: $gray-400;
   }
 
   &:active {
-    background: #F3F4F6;
+    background: $gray-100;
   }
 }
 
 // 下载按钮（主操作 - 橙色）
 .operation-download {
-  background: #FF7A00;
-  color: #FFFFFF;
+  background: $accent;
+  color: $white;
   border: none;
-  font-weight: 500;
-  box-shadow: 0 2rpx 6rpx rgba(255, 122, 0, 0.2);
+  font-weight: $font-weight-medium;
+  box-shadow: 0 2rpx 6rpx rgba($accent, 0.2);
 
   .operation-icon {
-    color: #FFFFFF;
+    color: $white;
   }
 
   &:hover {
-    background: #FF8C1A;
+    background: $accent-dark;
     transform: translateY(-1rpx);
-    box-shadow: 0 3rpx 8rpx rgba(255, 122, 0, 0.3);
+    box-shadow: 0 3rpx 8rpx rgba($accent, 0.3);
   }
 
   &:active {
@@ -1393,16 +1390,16 @@ const closePreview = () => {
 
   // 已下载状态
   &.downloaded {
-    background: #E5E7EB;
-    color: #9CA3AF;
+    background: $gray-200;
+    color: $gray-400;
     box-shadow: none;
 
     .operation-icon {
-      color: #9CA3AF;
+      color: $gray-400;
     }
 
     &:hover {
-      background: #E5E7EB;
+      background: $gray-200;
       transform: none;
       cursor: not-allowed;
     }
@@ -1411,133 +1408,131 @@ const closePreview = () => {
 
 // 收藏按钮（次操作 - 轻背景）
 .operation-favorite {
-  background: #F8F8F8;
-  color: #6B7280;
+  background: $gray-50;
+  color: $gray-500;
 
   .operation-icon {
-    color: #6B7280;
-    font-size: 26rpx;
+    color: $gray-500;
+    font-size: $font-size-sm;
   }
 
   &:hover {
-    background: #F0F0F0;
+    background: $gray-100;
   }
 
   &:active {
-    background: #E8E8E8;
+    background: $gray-200;
   }
 
   // 已收藏状态
   &.is-favorited {
-    background: #FFF7ED;
-    color: #F59E0B;
+    background: $accent-50;
+    color: $accent;
 
     .operation-icon {
-      color: #F59E0B;
+      color: $accent;
     }
 
     &:hover {
-      background: #FFEDD5;
+      background: $accent-100;
     }
   }
 }
 
 // 更多按钮（文本按钮）
 .operation-more-wrapper {
-  position: relative;  // 为Popover定位
+  position: relative;
 }
 
 .operation-more {
   background: transparent;
-  color: #6B7280;
-  padding: 12rpx 20rpx;
+  color: $gray-500;
+  padding: $sp-3 $sp-5;
 
   .operation-icon {
-    color: #6B7280;
+    color: $gray-500;
   }
 
   &:hover {
-    background: #F8F8F8;
+    background: $gray-50;
   }
 
   &:active {
-    background: #F0F0F0;
+    background: $gray-100;
   }
 }
 
 // Web端Popover菜单（右侧就地弹出）
 .more-popover {
   position: absolute;
-  top: 100%;  // 紧贴按钮下方（使用百分比而不是calc）
-  margin-top: 4px;  // 间距改用margin
-  right: 0;  // 右对齐
-  min-width: 180px;  // 使用px而不是rpx
-  background: #FFFFFF;
-  border-radius: 10px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  top: 100%;
+  margin-top: 4px;
+  right: 0;
+  min-width: 180px;
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-lg;
   overflow: hidden;
-  z-index: 1000;  // 提高z-index：100 → 1000
+  z-index: $z-modal;
 
   // 移动端：隐藏（使用底部Action Sheet）
   display: none;
 
-  // PC端：显示（降低断点到540px，适配更多设备）
+  // PC端：显示
   @media (min-width: 540px) {
-    display: block !important;  // 添加!important确保优先级
+    display: block !important;
   }
 
   .menu-item {
     display: flex;
     align-items: center;
-    gap: 8px;  // rpx → px
-    padding: 12px 16px;  // rpx → px
+    gap: 8px;
+    padding: 12px 16px;
     cursor: pointer;
-    transition: background 0.15s ease;
+    transition: background $duration-fast $ease-out;
     white-space: nowrap;
 
     &:hover {
-      background: #F9FAFB;
+      background: $gray-50;
     }
 
     &:active {
-      background: #F3F4F6;
+      background: $gray-100;
     }
 
     .menu-icon {
-      font-size: 18px;  // rpx → px
+      font-size: 18px;
       flex-shrink: 0;
     }
 
     .menu-text {
-      font-size: 14px;  // rpx → px
-      color: #374151;
+      font-size: 14px;
+      color: $gray-700;
     }
   }
 }
 
-// 资源头图区 - 优化后：降低高度，轻渐变，避免"错误横幅"感
+// 资源头图区
 .resource-header {
   width: 100%;
-  height: 140rpx;  // 降低高度：180rpx → 140rpx
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 140rpx;
+  @include flex-center;
   position: relative;
 
-  // PC端：更紧凑的高度，增加圆角，与内容区对齐
+  // PC端：更紧凑的高度，增加圆角
   // #ifdef H5
-  @media (min-width: 768px) {
-    height: 120rpx;  // 降低高度：160rpx → 120rpx
-    max-width: 2400rpx;  // 与内容区相同的最大宽度
-    margin: 20rpx auto 0;  // 居中显示
-    padding: 0 40rpx;  // 左右内边距
-    border-radius: 12rpx;
+  @include desktop {
+    height: 120rpx;
+    max-width: 2400rpx;
+    margin: $sp-5 auto 0;
+    padding: 0 $sp-10;
+    border-radius: $radius-md;
     overflow: hidden;
     box-sizing: border-box;
   }
   // #endif
 
-  // 添加微妙的纹理效果，增强专业感
+  // 添加微妙的纹理效果
   &::after {
     content: '';
     position: absolute;
@@ -1545,24 +1540,24 @@ const closePreview = () => {
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, transparent 100%);
+    background: linear-gradient(180deg, rgba($gray-900, 0.05) 0%, transparent 100%);
     pointer-events: none;
   }
 }
 
 .file-type-icon {
-  font-size: 48rpx;  // 缩小图标：56rpx → 48rpx
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.98);
+  font-size: $font-size-3xl;
+  font-weight: $font-weight-bold;
+  color: rgba($white, 0.98);
   letter-spacing: 2rpx;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);  // 添加轻微阴影，增强可读性
+  text-shadow: 0 2rpx 8rpx rgba($gray-900, 0.15);
   position: relative;
   z-index: 1;
 
   // PC端：稍微大一点
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     font-size: 52rpx;
   }
   // #endif
@@ -1570,94 +1565,92 @@ const closePreview = () => {
 
 // 信息头区
 .info-header {
-  background: #FFFFFF;
-  padding: 24rpx 24rpx 20rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-6 $sp-6 $sp-5;
+  margin-bottom: $sp-4;
 
-  // PC端：增加圆角和阴影，增强卡片感
+  // PC端：增加圆角和阴影
   // #ifdef H5
-  @media (min-width: 768px) {
-    border-radius: 12rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-    padding: 28rpx 32rpx 24rpx;
+  @include desktop {
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    padding: $sp-7 $sp-8 $sp-6;
   }
   // #endif
 }
 
-// 标题行（PC端包含下载按钮）- 紧凑间距优化
+// 标题行
 .title-row {
-  display: flex;
+  @include flex-between;
   align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
-  margin-bottom: 16rpx;  // 紧凑间距：与标签组更近，视觉上形成整体
+  gap: $sp-4;
+  margin-bottom: $sp-4;
 }
 
 .resource-title {
   flex: 1;
-  font-size: 36rpx;
-  font-weight: 600;
-  color: #333333;
-  line-height: 1.4;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  line-height: $line-height-relaxed;
 }
 
 .tag-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 12rpx;  // 减少间距：16rpx → 12rpx
+  gap: $sp-3;
+  margin-bottom: $sp-3;
 }
 
 .tag {
-  padding: 8rpx 20rpx;
-  border-radius: 32rpx;
-  font-size: 22rpx;
-  font-weight: 500;
+  padding: $sp-2 $sp-5;
+  border-radius: $radius-2xl;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
 }
 
-// 淡化标签：使用透明背景(0.12-0.15)，避免抢标题
+// 淡化标签
 .tag-category {
-  background: rgba(255, 107, 53, 0.12);  // 橙色主题色透明版
-  color: #FF6B35;
+  background: rgba($accent, 0.12);
+  color: $accent;
 }
 
 .tag-course {
-  background: rgba(33, 150, 243, 0.12);  // 蓝色透明版
-  color: #2196F3;
+  background: rgba($primary, 0.12);
+  color: $primary;
 }
 
 .tag-hot {
-  background: rgba(244, 67, 54, 0.15);  // 红色透明版，稍深一点
-  color: #F44336;
-  font-weight: 600;
+  background: rgba($error, 0.15);
+  color: $error;
+  font-weight: $font-weight-semibold;
   letter-spacing: 1rpx;
 }
 
 .stats-compact {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  font-size: 24rpx;
-  color: #666666;
+  gap: $sp-3;
+  font-size: $font-size-sm;
+  color: $gray-600;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4rpx;  // 图标与数字之间的间距
+  gap: $sp-1;
 }
 
-// 统计栏图标 - 统一线性风格，细描边
+// 统计栏图标
 .stat-icon {
-  font-size: 20rpx;  // 缩小图标：22rpx → 20rpx
-  color: #999999;
+  font-size: $font-size-xs;
+  color: $gray-400;
   line-height: 1;
-  font-weight: 300;  // 更细的字重
-  opacity: 0.85;  // 轻微透明，更柔和
+  font-weight: $font-weight-light;
+  opacity: 0.85;
 
-  // 为每种图标类型优化显示
   &.stat-icon-view {
-    font-size: 20rpx;
+    font-size: $font-size-xs;
   }
 
   &.stat-icon-download {
@@ -1665,7 +1658,7 @@ const closePreview = () => {
   }
 
   &.stat-icon-like {
-    font-size: 20rpx;
+    font-size: $font-size-xs;
   }
 
   &.stat-icon-comment {
@@ -1675,22 +1668,22 @@ const closePreview = () => {
 }
 
 .stat-divider {
-  color: #CCCCCC;
+  color: $gray-300;
   opacity: 0.6;
 }
 
 .text-liked {
-  color: #F87171;
-  opacity: 1 !important;  // 点赞状态不透明
+  color: $error-light;
+  opacity: 1 !important;
 }
 
 // ============ 方案A：移动端预览按钮 ============
 .mobile-preview-btn-wrapper {
-  margin-top: 16rpx;
+  margin-top: $sp-4;
 
   // PC端：隐藏
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     display: none;
   }
   // #endif
@@ -1699,28 +1692,28 @@ const closePreview = () => {
 .mobile-preview-btn {
   display: inline-flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 10rpx 24rpx;
-  background: #FFFFFF;
-  border: 2rpx solid #D1D5DB;
-  border-radius: 12rpx;  // 6-8px
-  font-size: 26rpx;
-  font-weight: 400;
+  gap: $sp-2;
+  padding: $sp-2 $sp-6;
+  background: $white;
+  border: 2rpx solid $gray-300;
+  border-radius: $radius-md;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-normal;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: $transition-fast;
 
   &:active {
-    background: #F9FAFB;
+    background: $gray-50;
   }
 
   .btn-icon {
-    font-size: 22rpx;
-    color: #6B7280;
+    font-size: $font-size-xs;
+    color: $gray-500;
   }
 
   .btn-text {
-    font-size: 26rpx;
-    color: #374151;
+    font-size: $font-size-sm;
+    color: $gray-700;
   }
 }
 
@@ -1728,18 +1721,18 @@ const closePreview = () => {
 .rating-section {
   display: flex;
   flex-direction: column;
-  gap: 24rpx;
-  margin-top: 20rpx;
-  padding: 24rpx 0;
-  border-top: 1rpx solid #F0F0F0;
-  border-bottom: 1rpx solid #F0F0F0;
+  gap: $sp-6;
+  margin-top: $sp-5;
+  padding: $sp-6 0;
+  border-top: 1rpx solid $gray-100;
+  border-bottom: 1rpx solid $gray-100;
 
   // PC端：增加内边距
   // #ifdef H5
-  @media (min-width: 768px) {
-    margin-top: 24rpx;
-    padding: 28rpx 0;
-    gap: 28rpx;
+  @include desktop {
+    margin-top: $sp-6;
+    padding: $sp-7 0;
+    gap: $sp-7;
   }
   // #endif
 }
@@ -1748,47 +1741,47 @@ const closePreview = () => {
 .average-rating {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
-  border-radius: 12rpx;
-  border: 1rpx solid #FED7AA;
+  gap: $sp-4;
+  padding: $sp-4;
+  background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
+  border-radius: $radius-md;
+  border: 1rpx solid $accent-200;
 }
 
 // 用户评分区域
 .user-rating {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  padding: 16rpx;
-  background: #FAFAFA;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E5E5;
+  gap: $sp-4;
+  padding: $sp-4;
+  background: $gray-50;
+  border-radius: $radius-md;
+  border: 1rpx solid $gray-200;
 }
 
 .user-rating-label {
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: $sp-1;
 
   .label-text {
-    font-size: 28rpx;
-    font-weight: 600;
-    color: #333333;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $gray-800;
     white-space: nowrap;
   }
 
   .label-hint {
-    font-size: 22rpx;
-    color: #999999;
+    font-size: $font-size-xs;
+    color: $gray-400;
     white-space: nowrap;
   }
 }
 
 .rating-label {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #333333;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
   white-space: nowrap;
 }
 
@@ -1796,36 +1789,36 @@ const closePreview = () => {
 .uploader-card {
   display: flex;
   align-items: center;
-  background: #FFFFFF;
-  padding: 20rpx 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-5 $sp-6;
+  margin-bottom: $sp-4;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   // PC端：增加圆角、阴影和悬停效果
   // #ifdef H5
-  @media (min-width: 768px) {
-    border-radius: 12rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-    padding: 24rpx 28rpx;
+  @include desktop {
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    padding: $sp-6 $sp-7;
 
     &:hover {
-      box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+      box-shadow: $shadow-md;
       transform: translateY(-2rpx);
     }
   }
   // #endif
 
   &:active {
-    background: #F8F8F8;
+    background: $gray-50;
   }
 }
 
 .uploader-avatar {
-  width: 72rpx;  // 稍微缩小：80rpx → 72rpx
+  width: 72rpx;
   height: 72rpx;
-  border-radius: 50%;
-  margin-right: 16rpx;
+  border-radius: $radius-full;
+  margin-right: $sp-4;
   flex-shrink: 0;
 }
 
@@ -1833,54 +1826,52 @@ const closePreview = () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;  // 减少间距：8rpx → 6rpx
-  min-width: 0;  // 允许文本截断
+  gap: $sp-1;
+  min-width: 0;
 }
 
 .uploader-name {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #333333;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  @include text-ellipsis(1);
 }
 
 .uploader-points {
-  font-size: 24rpx;
-  color: #FF6B35;
-  font-weight: 500;
+  font-size: $font-size-sm;
+  color: $accent;
+  font-weight: $font-weight-medium;
 }
 
 .uploader-meta {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  margin-right: 8rpx;
+  margin-right: $sp-2;
 }
 
 .upload-time {
-  font-size: 22rpx;
-  color: #999999;
+  font-size: $font-size-xs;
+  color: $gray-400;
 }
 
 .arrow-icon {
   font-size: 40rpx;
-  color: #CCCCCC;
+  color: $gray-300;
 }
 
 // 资源详情卡片
 .detail-card {
-  background: #FFFFFF;
-  padding: 20rpx 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-5 $sp-6;
+  margin-bottom: $sp-4;
 
   // PC端：增加圆角和阴影
   // #ifdef H5
-  @media (min-width: 768px) {
-    border-radius: 12rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-    padding: 24rpx 32rpx;
+  @include desktop {
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    padding: $sp-6 $sp-8;
   }
   // #endif
 }
@@ -1888,7 +1879,7 @@ const closePreview = () => {
 .detail-row {
   display: flex;
   align-items: flex-start;
-  margin-bottom: 16rpx;  // 减少行间距：24rpx → 16rpx
+  margin-bottom: $sp-4;
 
   &:last-child {
     margin-bottom: 0;
@@ -1896,30 +1887,30 @@ const closePreview = () => {
 }
 
 .detail-label {
-  width: 140rpx;  // 缩小标签宽度：160rpx → 140rpx
-  font-size: 26rpx;
-  color: #999999;
+  width: 140rpx;
+  font-size: $font-size-sm;
+  color: $gray-400;
   flex-shrink: 0;
-  line-height: 1.5;
+  line-height: $line-height-normal;
 }
 
 .detail-value {
   flex: 1;
-  font-size: 26rpx;
-  color: #333333;
-  line-height: 1.5;
+  font-size: $font-size-sm;
+  color: $gray-800;
+  line-height: $line-height-normal;
 }
 
 .file-type-badge {
-  padding: 4rpx 16rpx;
-  background: #F5F5F5;
-  border-radius: 8rpx;
+  padding: $sp-1 $sp-4;
+  background: $gray-100;
+  border-radius: $radius-base;
 }
 
 .file-type-text {
-  font-size: 22rpx;
-  color: #666666;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  color: $gray-600;
+  font-weight: $font-weight-semibold;
 }
 
 .description-row {
@@ -1928,116 +1919,109 @@ const closePreview = () => {
 }
 
 .description-text {
-  font-size: 26rpx;
-  color: #333333;
-  line-height: 1.6;
+  font-size: $font-size-sm;
+  color: $gray-800;
+  line-height: $line-height-relaxed;
   word-break: break-all;
-  margin-top: 8rpx;
+  margin-top: $sp-2;
 
   &:not(.expanded) {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    @include text-ellipsis(3);
   }
 }
 
 .expand-btn {
-  font-size: 24rpx;
-  color: #FF6B35;
-  margin-top: 12rpx;
+  font-size: $font-size-sm;
+  color: $accent;
+  margin-top: $sp-3;
   cursor: pointer;
 }
 
 // 评论区
 .comment-section {
-  background: #FFFFFF;
-  margin-bottom: 16rpx;
+  background: $white;
+  margin-bottom: $sp-4;
 
   // PC端：增加圆角和阴影
   // #ifdef H5
-  @media (min-width: 768px) {
-    border-radius: 12rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  @include desktop {
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
   }
   // #endif
 }
 
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 20rpx 24rpx 16rpx;  // 减少padding，更紧凑
-  border-bottom: 2rpx solid #F0F0F0;  // 加粗分隔线，增强层次感
-  background: #FAFAFA;  // 添加浅色背景，区分标题区域
+  @include flex-between;
+  padding: $sp-5 $sp-6 $sp-4;
+  border-bottom: 2rpx solid $gray-100;
+  background: $gray-50;
 }
 
 .section-title {
-  font-size: 30rpx;  // 稍微缩小：32rpx → 30rpx
-  font-weight: 600;
-  color: #333333;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .comment-count-text {
-  font-size: 24rpx;  // 缩小计数文字：26rpx → 24rpx
-  color: #999999;
-  margin-left: 8rpx;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-2;
 }
 
 // 相关推荐区
 .recommend-section {
-  background: #FFFFFF;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
 
   // PC端：增加圆角和阴影
   // #ifdef H5
-  @media (min-width: 768px) {
-    border-radius: 12rpx;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-    padding: 28rpx;
+  @include desktop {
+    border-radius: $radius-md;
+    box-shadow: $shadow-sm;
+    padding: $sp-7;
   }
   // #endif
 }
 
 .more-link {
-  font-size: 24rpx;
-  color: #FF6B35;
+  font-size: $font-size-sm;
+  color: $accent;
   cursor: pointer;
 }
 
 .recommend-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
-  margin-top: 16rpx;
+  gap: $sp-4;
+  margin-top: $sp-4;
 }
 
 // 底部占位
 .bottom-placeholder {
-  height: 40rpx;
+  height: $sp-10;
 }
 
-// 固定底部操作栏 - 重构布局
+// 固定底部操作栏
 .action-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16rpx;
-  padding: 12rpx 24rpx;  // 减少padding
-  background: #FFFFFF;
-  border-top: 1rpx solid #E0E0E0;
-  padding-bottom: calc(12rpx + env(safe-area-inset-bottom));
-  z-index: 100;
-  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.05);  // 添加顶部阴影
+  @include flex-between;
+  gap: $sp-4;
+  padding: $sp-3 $sp-6;
+  background: $white;
+  border-top: 1rpx solid $gray-200;
+  padding-bottom: calc(#{$sp-3} + env(safe-area-inset-bottom));
+  z-index: $z-dropdown;
+  box-shadow: 0 -2rpx 12rpx rgba($gray-900, 0.05);
 
-  // PC端适配：隐藏底部栏，改用内联按钮
+  // PC端适配：隐藏底部栏
   // #ifdef H5
-  @media (min-width: 768px) {
+  @include desktop {
     display: none;
   }
   // #endif
@@ -2047,19 +2031,17 @@ const closePreview = () => {
 .action-left {
   display: flex;
   align-items: center;
-  gap: 8rpx;  // 按钮之间的间距
+  gap: $sp-2;
 }
 
 .action-icon-btn {
-  display: flex;
+  @include flex-center;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 64rpx;  // 缩小按钮：80rpx → 64rpx
+  width: 64rpx;
   height: 64rpx;
-  padding: 8rpx;
+  padding: $sp-2;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &:active {
     opacity: 0.7;
@@ -2068,26 +2050,26 @@ const closePreview = () => {
 }
 
 .action-icon {
-  font-size: 28rpx;  // 缩小图标
-  color: #666666;
+  font-size: $font-size-base;
+  color: $gray-600;
   line-height: 1;
 }
 
 .action-label {
-  font-size: 20rpx;
-  color: #999999;
-  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $gray-400;
+  margin-top: $sp-1;
   line-height: 1;
 }
 
 .like-btn {
   &.is-liked {
     .action-icon {
-      color: #F87171;
+      color: $error-light;
     }
 
     .action-label {
-      color: #F87171;
+      color: $error-light;
     }
   }
 }
@@ -2095,30 +2077,30 @@ const closePreview = () => {
 .favorite-btn {
   &.is-favorited {
     .action-icon {
-      color: #F59E0B;
+      color: $accent;
     }
 
     .action-label {
-      color: #F59E0B;
+      color: $accent;
     }
   }
 }
 
 .preview-btn {
   .action-icon {
-    color: #475467;
+    color: $gray-600;
   }
 
   .action-label {
-    color: #475467;
+    color: $gray-600;
   }
 
   &:active {
     .action-icon {
-      color: #344054;
+      color: $gray-700;
     }
     .action-label {
-      color: #344054;
+      color: $gray-700;
     }
   }
 }
@@ -2126,20 +2108,18 @@ const closePreview = () => {
 // 右侧：主下载按钮
 .primary-download-btn {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
-  height: 68rpx;  // 缩小高度：80rpx → 68rpx
-  max-width: 400rpx;  // 限制最大宽度
-  background: linear-gradient(135deg, #FF6B35 0%, #FF8C42 100%);
-  color: #FFFFFF;
-  border-radius: 34rpx;
-  font-size: 28rpx;
-  font-weight: 600;
+  @include flex-center;
+  gap: $sp-2;
+  height: 68rpx;
+  max-width: 400rpx;
+  @include gradient-accent;
+  color: $white;
+  border-radius: $radius-2xl;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
-  box-shadow: 0 2rpx 12rpx rgba(255, 107, 53, 0.3);
-  transition: all 0.2s;
+  box-shadow: 0 2rpx 12rpx rgba($accent, 0.3);
+  transition: $transition-base;
 
   &:active:not(.downloaded) {
     opacity: 0.9;
@@ -2147,18 +2127,18 @@ const closePreview = () => {
   }
 
   &.downloaded {
-    background: #E8E8E8;
-    color: #999999;
+    background: $gray-200;
+    color: $gray-400;
     box-shadow: none;
   }
 }
 
 .btn-icon {
-  font-size: 28rpx;  // 缩小图标
+  font-size: $font-size-base;
 }
 
 .btn-text {
-  font-size: 28rpx;
+  font-size: $font-size-base;
 }
 
 // 更多菜单弹窗
@@ -2169,13 +2149,13 @@ const closePreview = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 200;
+  background: rgba($gray-900, 0.5);
+  z-index: $z-overlay;
   display: flex;
   align-items: flex-end;
 
   // PC端：隐藏（使用Popover代替）
-  @media (min-width: 768px) {
+  @include desktop {
     &.mobile-only {
       display: none;
     }
@@ -2184,45 +2164,45 @@ const closePreview = () => {
 
 .more-menu {
   width: 100%;
-  background: #FFFFFF;
-  border-radius: 32rpx 32rpx 0 0;
+  background: $white;
+  border-radius: $radius-2xl $radius-2xl 0 0;
   padding-bottom: env(safe-area-inset-bottom);
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 32rpx 24rpx;
-  border-bottom: 1rpx solid #F0F0F0;
+  padding: $sp-8 $sp-6;
+  border-bottom: 1rpx solid $gray-100;
   cursor: pointer;
 
   &:active {
-    background: #F8F8F8;
+    background: $gray-50;
   }
 
   &.cancel {
     justify-content: center;
     border-bottom: none;
-    margin-top: 16rpx;
+    margin-top: $sp-4;
 
     .menu-text {
-      color: #999999;
+      color: $gray-400;
     }
   }
 }
 
 .menu-icon {
-  font-size: 32rpx;  // 缩小图标：40rpx → 32rpx
-  margin-right: 16rpx;
-  color: #666666;
-  font-weight: 500;
-  width: 40rpx;  // 固定宽度，保持对齐
+  font-size: $font-size-xl;
+  margin-right: $sp-4;
+  color: $gray-600;
+  font-weight: $font-weight-medium;
+  width: 40rpx;
   text-align: center;
 }
 
 .menu-text {
-  font-size: 28rpx;
-  color: #333333;
+  font-size: $font-size-base;
+  color: $gray-800;
 }
 
 // ============ PDF预览功能样式 ============
@@ -2234,12 +2214,10 @@ const closePreview = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
-  z-index: 2000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40rpx;
+  background: rgba($gray-900, 0.85);
+  z-index: $z-fullscreen;
+  @include flex-center;
+  padding: $sp-10;
 }
 
 // 预览容器
@@ -2247,52 +2225,46 @@ const closePreview = () => {
   width: 100%;
   max-width: 1400rpx;
   height: 90vh;
-  background: #FFFFFF;
-  border-radius: 16rpx;
+  background: $white;
+  border-radius: $radius-lg;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20rpx 60rpx rgba($gray-900, 0.3);
 }
 
 // 预览头部
 .preview-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24rpx 32rpx;
-  border-bottom: 1rpx solid #E0E0E0;
-  background: #FAFAFA;
+  @include flex-between;
+  padding: $sp-6 $sp-8;
+  border-bottom: 1rpx solid $gray-200;
+  background: $gray-50;
 }
 
 .preview-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #333333;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
   flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  @include text-ellipsis(1);
 }
 
 .preview-close {
   width: 64rpx;
   height: 64rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   cursor: pointer;
-  border-radius: 50%;
-  transition: all 0.2s ease;
+  border-radius: $radius-full;
+  transition: $transition-base;
 
   &:hover {
-    background: #E0E0E0;
+    background: $gray-200;
   }
 
   .close-icon {
     font-size: 40rpx;
-    color: #666666;
-    font-weight: 300;
+    color: $gray-600;
+    font-weight: $font-weight-light;
   }
 }
 
@@ -2300,21 +2272,19 @@ const closePreview = () => {
 .preview-content {
   flex: 1;
   overflow: hidden;
-  background: #525659; // 深色背景，与PDF.js查看器一致
+  background: #525659; // PDF.js 深色背景
 }
 
 // 预览底部
 .preview-footer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20rpx;
-  border-top: 1rpx solid #E0E0E0;
-  background: #FAFAFA;
+  @include flex-center;
+  padding: $sp-5;
+  border-top: 1rpx solid $gray-200;
+  background: $gray-50;
 }
 
 .preview-tip {
-  font-size: 24rpx;
-  color: #999999;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 </style>

@@ -188,55 +188,63 @@ const goToUserProfile = (userId: number) => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .members-page {
   min-height: 100vh;
-  background-color: #f5f5f5;
+  background-color: $bg-page;
 }
 
+// ===================================
+// 头部信息
+// ===================================
 .header {
-  background-color: #fff;
-  padding: 32rpx;
-  margin-bottom: 16rpx;
+  background-color: $white;
+  padding: $sp-8;
+  margin-bottom: $sp-4;
 
   .club-name {
     display: block;
     font-size: 36rpx;
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 12rpx;
+    font-weight: $font-weight-semibold;
+    color: $gray-800;
+    margin-bottom: $sp-3;
   }
 
   .member-count {
-    font-size: 28rpx;
-    color: #6b7280;
+    font-size: $font-size-base;
+    color: $gray-500;
   }
 }
 
+// ===================================
+// 成员列表
+// ===================================
 .member-list {
   height: calc(100vh - 140rpx);
-  padding: 0 16rpx;
+  padding: 0 $sp-4;
 }
 
 .member-item {
   display: flex;
   align-items: center;
-  background-color: #fff;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
-  border-radius: 16rpx;
-  transition: all 0.2s ease;
+  background-color: $white;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
+  border-radius: $radius-card;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.98);
-    background-color: #f9fafb;
+    background-color: $gray-50;
   }
 
   .avatar {
     width: 96rpx;
     height: 96rpx;
-    border-radius: 50%;
-    margin-right: 24rpx;
-    background-color: #e5e7eb;
+    border-radius: $radius-full;
+    margin-right: $sp-6;
+    background-color: $gray-200;
   }
 
   .member-info {
@@ -246,47 +254,50 @@ const goToUserProfile = (userId: number) => {
     .member-header {
       display: flex;
       align-items: center;
-      margin-bottom: 8rpx;
+      margin-bottom: $sp-2;
 
       .nickname {
-        font-size: 32rpx;
-        font-weight: 500;
-        color: #1f2937;
-        margin-right: 12rpx;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-medium;
+        color: $gray-800;
+        margin-right: $sp-3;
       }
 
       .role-badge {
-        padding: 4rpx 12rpx;
-        border-radius: 8rpx;
-        font-size: 22rpx;
-        font-weight: 500;
+        padding: $sp-1 $sp-3;
+        border-radius: $radius-base;
+        font-size: $font-size-xs;
+        font-weight: $font-weight-medium;
 
         &.founder {
-          background-color: #fef3c7;
-          color: #92400e;
+          background-color: $accent-100;
+          color: $accent-800;
         }
 
         &.admin {
-          background-color: #dbeafe;
-          color: #1e40af;
+          background-color: $primary-100;
+          color: $primary-700;
         }
       }
     }
 
     .join-time {
-      font-size: 26rpx;
-      color: #9ca3af;
+      font-size: $font-size-sm;
+      color: $gray-400;
     }
   }
 }
 
+// ===================================
+// 加载状态
+// ===================================
 .loading-text,
 .no-more-text,
 .empty-text {
   text-align: center;
   padding: 40rpx 0;
-  font-size: 28rpx;
-  color: #9ca3af;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 .empty-text {

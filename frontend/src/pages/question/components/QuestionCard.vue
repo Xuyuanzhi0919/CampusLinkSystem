@@ -155,22 +155,24 @@ const handleClick = () => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .question-card {
-  background: #FFF;
-  border-radius: 12rpx;
-  padding: 20rpx 18rpx;
-  margin-bottom: 12rpx;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
+  background: $white;
+  border-radius: $radius-base;
+  padding: $sp-5 18rpx;
+  margin-bottom: $sp-3;
+  box-shadow: 0 1rpx 4rpx rgba($gray-900, 0.06);
+  transition: $transition-base;
   cursor: pointer;
 
   &:active {
     transform: translateY(1rpx);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
   }
 
   &:hover {
-    box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.1);
   }
 }
 
@@ -178,18 +180,18 @@ const handleClick = () => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-bottom: 12rpx;
+  gap: $sp-2;
+  margin-bottom: $sp-3;
 }
 
 .category-tag,
 .solved-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 4rpx 12rpx;
-  border-radius: 8rpx;
-  font-size: 20rpx;
+  gap: $sp-1;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
   line-height: 1;
 
   .tag-icon {
@@ -197,84 +199,78 @@ const handleClick = () => {
   }
 
   .tag-label {
-    font-size: 20rpx;
-    font-weight: 500;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
   }
 }
 
 // 分类标签配色（轻量）
 .category-tag {
   &.category-study {
-    background: rgba(30, 95, 255, 0.08);
-    color: #1E5FFF;
+    background: rgba($primary, 0.08);
+    color: $primary;
   }
 
   &.category-life {
-    background: rgba(255, 122, 0, 0.08);
-    color: #FF7A00;
+    background: rgba($accent, 0.08);
+    color: $accent;
   }
 
   &.category-tech {
-    background: rgba(16, 185, 129, 0.08);
-    color: #10B981;
+    background: rgba($success, 0.08);
+    color: $success;
   }
 
   &.category-other {
-    background: rgba(107, 114, 128, 0.08);
-    color: #6B7280;
+    background: rgba($gray-500, 0.08);
+    color: $gray-500;
   }
 }
 
 // 已解决标签
 .solved-tag {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10B981;
+  background: rgba($success, 0.1);
+  color: $success;
 }
 
 // 层级 1：标题
 .card-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #1D1D1F;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  margin-bottom: 10rpx;
+  font-size: $font-size-base + 2rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+  line-height: $line-height-tight;
+  @include text-ellipsis(2);
+  margin-bottom: $sp-2;
 }
 
 // 层级 2：内容摘要
 .card-content {
-  font-size: 24rpx;
-  color: #6B7280;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-bottom: 10rpx;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  line-height: $line-height-relaxed;
+  @include text-ellipsis(1);
+  margin-bottom: $sp-2;
 }
 
 // 层级 3：标签列表
 .card-tags {
   display: flex;
-  gap: 8rpx;
-  margin-bottom: 12rpx;
+  gap: $sp-2;
+  margin-bottom: $sp-3;
   flex-wrap: wrap;
 
   .tag {
-    padding: 4rpx 10rpx;
-    background: rgba(30, 95, 255, 0.06);
-    color: #1E5FFF;
-    font-size: 20rpx;
-    border-radius: 6rpx;
+    padding: $sp-1 $sp-2;
+    background: rgba($primary, 0.06);
+    color: $primary;
+    font-size: $font-size-xs;
+    border-radius: $radius-xs;
     line-height: 1;
 
     &.tag-more {
-      background: rgba(107, 114, 128, 0.08);
-      color: #6B7280;
-      font-weight: 600;
+      background: rgba($gray-500, 0.08);
+      color: $gray-500;
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -283,30 +279,30 @@ const handleClick = () => {
 .card-stats {
   display: flex;
   align-items: center;
-  gap: 20rpx;
-  margin-bottom: 12rpx;
+  gap: $sp-5;
+  margin-bottom: $sp-3;
 
   .stat-item {
     display: flex;
     align-items: center;
-    gap: 4rpx;
-    font-size: 22rpx;
-    color: #9CA3AF;
+    gap: $sp-1;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-400;
 
     .stat-icon {
-      font-size: 20rpx;
+      font-size: $font-size-xs;
     }
 
     .stat-value {
-      font-size: 22rpx;
+      font-size: $font-size-xs + 2rpx;
     }
 
     &.reward {
-      color: #FF7A00;
-      font-weight: 600;
+      color: $accent;
+      font-weight: $font-weight-semibold;
 
       .stat-value {
-        font-weight: 600;
+        font-weight: $font-weight-semibold;
       }
     }
   }
@@ -316,28 +312,28 @@ const handleClick = () => {
 .card-footer {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
 
   .avatar {
-    width: 32rpx;
-    height: 32rpx;
-    border-radius: 50%;
-    background: #F5F5F5;
+    width: $sp-8;
+    height: $sp-8;
+    border-radius: $radius-full;
+    background: $gray-100;
   }
 
   .user-name {
-    font-size: 22rpx;
-    color: #6B7280;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-500;
   }
 
   .separator {
-    font-size: 22rpx;
-    color: #D1D5DB;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-300;
   }
 
   .user-time {
-    font-size: 22rpx;
-    color: #9CA3AF;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-400;
   }
 }
 </style>

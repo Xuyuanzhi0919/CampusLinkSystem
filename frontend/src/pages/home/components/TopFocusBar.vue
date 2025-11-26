@@ -1013,6 +1013,8 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 /* 企业级重构：第一层 - 品牌渐变区（顶部背景）- 优化：缩减高度增强紧凑感 */
 .top-focus-bar {
   position: relative;
@@ -1020,19 +1022,19 @@ defineExpose({
   height: 640rpx; /* 320px - 优化：从800rpx减小到640rpx，减少20% */
   /* 优化：径向渐变，从中心向外扩散，增强纵深感 */
   background:
-    radial-gradient(ellipse at 50% 0%, #E8F1FF 0%, transparent 70%),
+    radial-gradient(ellipse at 50% 0%, $primary-100 0%, transparent 70%),
     linear-gradient(180deg,
-      #E8F0FF 0%,      /* 顶部更亮的蓝 */
+      $primary-50 0%,      /* 顶部更亮的蓝 */
       #EEF4FF 25%,     /* 中上 */
       #F5F8FF 50%,     /* 中部 */
-      #F9FAFB 75%,     /* 中下略深 */
-      #FFFFFF 100%     /* 底部纯白 */
+      $gray-50 75%,     /* 中下略深 */
+      $bg-surface 100%     /* 底部纯白 */
     );
   overflow: visible; /* 允许内容溢出，实现自然过渡 */
   z-index: auto; /* 关键修复：移除固定z-index，避免限制内部移动端菜单的层级 */
 
   /* 优化：增强阴影，提升浮层感 */
-  box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.08);
+  box-shadow: 0 12rpx 40rpx rgba($primary, 0.08);
 }
 
 /* 企业级重构：几何线条、模糊圆点、光晕装饰（10% 不透明度）*/
@@ -1048,13 +1050,13 @@ defineExpose({
   /* 添加整体光晕效果 + 白光透明渐层（增强视觉纵深）*/
   background:
     /* 顶部发光晕圈（白光透明渐层）*/
-    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.4) 0%, transparent 40%),
+    radial-gradient(circle at 50% 0%, rgba($bg-surface, 0.4) 0%, transparent 40%),
     /* 右上光晕（45° 光线方向）*/
-    radial-gradient(circle at 85% 15%, rgba(37, 99, 235, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 85% 15%, rgba($primary, 0.12) 0%, transparent 50%),
     /* 左下光晕 */
-    radial-gradient(circle at 15% 85%, rgba(220, 235, 255, 0.10) 0%, transparent 50%),
+    radial-gradient(circle at 15% 85%, rgba($primary-100, 0.10) 0%, transparent 50%),
     /* 中央柔光 */
-    radial-gradient(circle at 50% 40%, rgba(232, 240, 255, 0.08) 0%, transparent 60%);
+    radial-gradient(circle at 50% 40%, rgba($primary-50, 0.08) 0%, transparent 60%);
 }
 
 /* 几何线条装饰 1 - 右上角（10% 不透明度）*/
@@ -1066,8 +1068,8 @@ defineExpose({
   height: 500rpx;
   background:
     /* 模糊圆点 */
-    radial-gradient(circle, rgba(37, 99, 235, 0.10) 0%, transparent 60%);
-  border-radius: 50%;
+    radial-gradient(circle, rgba($primary, 0.10) 0%, transparent 60%);
+  border-radius: $radius-full;
   filter: blur(40rpx); /* 20px 模糊 */
 }
 
@@ -1080,8 +1082,8 @@ defineExpose({
   height: 400rpx;
   background:
     /* 模糊圆点 */
-    radial-gradient(circle, rgba(220, 235, 255, 0.10) 0%, transparent 60%);
-  border-radius: 50%;
+    radial-gradient(circle, rgba($primary-100, 0.10) 0%, transparent 60%);
+  border-radius: $radius-full;
   filter: blur(30rpx); /* 15px 模糊 */
 }
 
@@ -1092,7 +1094,7 @@ defineExpose({
   left: 0;
   width: 100%;
   height: 120rpx; /* 60px */
-  background: linear-gradient(180deg, transparent 0%, rgba(249, 251, 255, 0.6) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba($gray-50, 0.6) 100%);
   border-radius: 50% 50% 0 0 / 100% 100% 0 0;
 }
 
@@ -1124,7 +1126,7 @@ defineExpose({
   flex-direction: column;
   gap: 2rpx;
   position: relative;
-  padding-left: 16rpx; /* 为分割线留出空间 */
+  padding-left: $sp-4; /* 为分割线留出空间 */
 
   /* 优化：增加品牌色分割线，强化品牌识别 */
   &::before {
@@ -1134,26 +1136,26 @@ defineExpose({
     top: 0;
     bottom: 0;
     width: 6rpx; /* 3px */
-    background: linear-gradient(180deg, var(--cl-primary, #2563EB) 0%, rgba(37, 99, 235, 0.3) 100%);
-    border-radius: 3rpx;
+    background: linear-gradient(180deg, $primary 0%, rgba($primary, 0.3) 100%);
+    border-radius: $radius-sm;
   }
 }
 
 .brand-logo {
-  font-size: 48rpx; /* 24px - 增大字号，增强品牌识别 */
-  font-weight: 700;
-  color: var(--cl-primary, #2563EB);
-  line-height: 1.2;
+  font-size: $font-size-3xl; /* 24px - 增大字号，增强品牌识别 */
+  font-weight: $font-weight-bold;
+  color: $primary;
+  line-height: $line-height-tight;
   letter-spacing: 1rpx;
   /* 优化：增加文字阴影，增强立体感 */
-  text-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.15);
+  text-shadow: 0 2rpx 8rpx rgba($primary, 0.15);
 }
 
 .brand-slogan {
-  font-size: 24rpx; /* 12px - 增大字号 */
-  font-weight: 500;
-  color: var(--cl-gray-600, #64748B);
-  line-height: 1.2;
+  font-size: $font-size-sm; /* 12px - 增大字号 */
+  font-weight: $font-weight-medium;
+  color: $text-secondary;
+  line-height: $line-height-tight;
   /* 优化：增加轻微透明度 */
   opacity: 0.9;
 }
@@ -1162,75 +1164,75 @@ defineExpose({
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: 20rpx; /* 增大间距 */
+  gap: $sp-5; /* 增大间距 */
   /* 优化：移除背景容器，让按钮更突出 */
   padding: 0;
 }
 
 .action-btn {
-  padding: 16rpx 32rpx; /* 增大内边距 */
-  background: rgba(255, 255, 255, 0.9);
+  padding: $sp-4 $sp-8; /* 增大内边距 */
+  background: rgba($bg-surface, 0.9);
   backdrop-filter: blur(12px);
-  border-radius: 28rpx; /* 14px - 更圆润 */
+  border-radius: $radius-xl; /* 14px - 更圆润 */
   border: 2px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
+  transition: $transition-fast;
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
   /* 优化：增加阴影 */
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  box-shadow: $shadow-sm;
 }
 
 /* 优化：次操作按钮（登录/注册）- 白色背景 + 蓝色描边 */
 .action-btn-secondary {
-  background: rgba(255, 255, 255, 0.95); /* 白色背景 */
-  border: 2px solid var(--cl-primary, #2563EB); /* 蓝色描边 */
+  background: rgba($bg-surface, 0.95); /* 白色背景 */
+  border: 2px solid $primary; /* 蓝色描边 */
 }
 
 .action-btn-secondary .action-btn-text {
-  color: var(--cl-primary, #2563EB); /* 蓝色文字 */
-  font-size: 30rpx; /* 15px - 增大 */
-  font-weight: 600;
+  color: $primary; /* 蓝色文字 */
+  font-size: $font-size-md; /* 15px - 增大 */
+  font-weight: $font-weight-semibold;
 }
 
 .action-btn-secondary:hover {
-  background: rgba(37, 99, 235, 0.08); /* 轻微蓝色背景 */
-  border-color: var(--cl-primary, #2563EB);
+  background: rgba($primary, 0.08); /* 轻微蓝色背景 */
+  border-color: $primary;
   transform: translateY(-2rpx);
-  box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.2);
+  box-shadow: 0 6rpx 20rpx rgba($primary, 0.2);
 }
 
 /* 优化：主操作按钮（发布）- 蓝色实心按钮 + 渐变 */
 .action-btn-primary {
-  background: linear-gradient(135deg, var(--cl-primary, #2563EB) 0%, #3B82F6 100%); /* 蓝色渐变 */
+  @include gradient-primary; /* 蓝色渐变 */
   border: none;
   /* 优化：增强阴影 */
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.35);
+  box-shadow: $shadow-fab;
 }
 
 .action-btn-primary .action-btn-text {
-  color: #FFFFFF; /* 白色文字 */
-  font-size: 30rpx; /* 15px */
-  font-weight: 600;
+  color: $text-inverse; /* 白色文字 */
+  font-size: $font-size-md; /* 15px */
+  font-weight: $font-weight-semibold;
 }
 
 .action-btn-primary .action-btn-icon {
-  color: #FFFFFF;
-  font-size: 28rpx;
+  color: $text-inverse;
+  font-size: $font-size-base;
 }
 
 .action-btn-primary:hover {
   /* 优化：hover 时渐变更亮 */
-  background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+  background: linear-gradient(135deg, $primary-light 0%, #60A5FA 100%);
   transform: translateY(-2rpx) scale(1.03);
-  box-shadow: 0 12rpx 32rpx rgba(37, 99, 235, 0.45);
+  box-shadow: 0 12rpx 32rpx rgba($primary, 0.45);
 }
 
 .action-btn-text {
   font-size: 26rpx; /* 13px - 减小字号 */
-  font-weight: 500;
-  color: var(--cl-gray-700, #475569);
+  font-weight: $font-weight-medium;
+  color: $gray-700;
   line-height: 1;
 }
 
@@ -1318,42 +1320,42 @@ defineExpose({
   width: 100%;
   height: 92rpx; /* 46px - 优化：从100rpx减小到92rpx */
   /* 半透明玻璃效果（文档规范）*/
-  background: rgba(255, 255, 255, 0.88);
+  background: rgba($bg-surface, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border-radius: 46rpx; /* 23px - 匹配高度的一半 */
+  border-radius: $radius-2xl; /* 23px - 匹配高度的一半 */
   display: flex;
   align-items: center;
-  padding: 0 28rpx;
+  padding: 0 $sp-6;
   gap: 14rpx;
   /* 优化：柔和阴影，增强浮层感 */
-  box-shadow: 0 10rpx 36rpx rgba(0, 0, 0, 0.10);
-  transition: all var(--transition-hover, 150ms ease);
+  box-shadow: $shadow-md;
+  transition: $transition-fast;
   /* 描边（文档规范）*/
-  border: 2px solid rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba($bg-surface, 0.9);
 }
 
 .search-box:hover {
-  background: rgba(255, 255, 255, 0.95);
+  background: rgba($bg-surface, 0.95);
   /* 优化：hover 时阴影更深 */
-  box-shadow: 0 14rpx 44rpx rgba(0, 0, 0, 0.14);
+  box-shadow: $shadow-lg;
   transform: translateY(-3rpx);
-  border-color: rgba(37, 99, 235, 0.4);
+  border-color: rgba($primary, 0.4);
 }
 
 .search-box:focus-within {
-  background: rgba(255, 255, 255, 0.98);
+  background: rgba($bg-surface, 0.98);
   /* 优化：聚焦时发光蓝边 */
-  box-shadow: 0 14rpx 48rpx rgba(37, 99, 235, 0.28), 0 0 0 4rpx rgba(37, 99, 235, 0.15);
-  border-color: var(--cl-primary, #2563EB);
+  box-shadow: $shadow-lg, 0 0 0 4rpx rgba($primary, 0.15);
+  border-color: $primary;
   transform: translateY(-3rpx) scale(1.01);
 }
 
 /* 搜索图标 - 优化：增大尺寸 */
 .search-icon {
-  font-size: 40rpx; /* 20px - 增大 */
+  font-size: $font-size-2xl; /* 20px - 增大 */
   line-height: 1;
-  color: var(--cl-primary, #2563EB); /* 改为品牌蓝 */
+  color: $primary; /* 改为品牌蓝 */
   flex-shrink: 0;
 }
 
@@ -1361,16 +1363,16 @@ defineExpose({
 .search-input {
   flex: 1;
   height: 100%;
-  font-size: 32rpx; /* 16px - 增大 */
-  color: #1D2129;
+  font-size: $font-size-lg; /* 16px - 增大 */
+  color: $text-primary;
   border: none;
   outline: none;
   background: transparent;
 }
 
 .search-input::placeholder {
-  color: #C9CDD4; /* 浅灰色 */
-  font-size: 32rpx; /* 16px - 增大 */
+  color: $text-placeholder; /* 浅灰色 */
+  font-size: $font-size-lg; /* 16px - 增大 */
 }
 
 /* 热门搜索标签 */
@@ -1380,25 +1382,25 @@ defineExpose({
   top: 50%;
   transform: translateY(-50%);
   display: flex;
-  gap: 12rpx;
+  gap: $sp-3;
   z-index: 10;
 }
 
 .hot-tag {
-  font-size: 24rpx; /* 12px */
-  font-weight: 500;
-  color: #1E5FFF;
-  padding: 8rpx 16rpx;
-  background: #E6F0FF;
-  border-radius: 16rpx;
+  font-size: $font-size-sm; /* 12px */
+  font-weight: $font-weight-medium;
+  color: $primary;
+  padding: $sp-2 $sp-4;
+  background: $primary-50;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: $transition-base;
   white-space: nowrap;
 }
 
 .hot-tag:hover {
-  background: #1E5FFF;
-  color: white;
+  background: $primary;
+  color: $text-inverse;
   transform: scale(1.05);
 }
 
@@ -1410,23 +1412,21 @@ defineExpose({
 .search-btn-primary {
   position: relative;
   height: 68rpx; /* 34px */
-  padding: 0 40rpx; /* 左右内边距 */
-  background: linear-gradient(135deg, #F59E0B 0%, #FB923C 100%); /* 橙色渐变 */
-  border-radius: 34rpx; /* 17px - 圆角 */
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 0 $sp-10; /* 左右内边距 */
+  @include gradient-accent; /* 橙色渐变 */
+  border-radius: $radius-button-sm; /* 17px - 圆角 */
+  @include flex-center;
   cursor: pointer;
-  transition: all var(--transition-hover, 150ms ease);
+  transition: $transition-fast;
   flex-shrink: 0;
-  box-shadow: 0 6rpx 20rpx rgba(245, 158, 11, 0.3);
+  box-shadow: 0 6rpx 20rpx rgba($accent, 0.3);
   border: none;
 }
 
 .search-btn-primary:hover {
-  background: linear-gradient(135deg, #E67000 0%, #FF9020 100%);
+  background: linear-gradient(135deg, $accent-dark 0%, $accent 100%);
   transform: translateY(-2rpx) scale(1.05);
-  box-shadow: 0 8rpx 28rpx rgba(245, 158, 11, 0.4);
+  box-shadow: 0 8rpx 28rpx rgba($accent, 0.4);
 }
 
 .search-btn-primary:active {
@@ -1434,9 +1434,9 @@ defineExpose({
 }
 
 .search-btn-text {
-  font-size: 32rpx; /* 16px */
-  font-weight: 600;
-  color: #FFFFFF;
+  font-size: $font-size-lg; /* 16px */
+  font-weight: $font-weight-semibold;
+  color: $text-inverse;
   line-height: 1;
   letter-spacing: 1rpx;
 }
@@ -1458,7 +1458,7 @@ defineExpose({
 }
 
 .voice-search-btn-inline:hover {
-  background: rgba(245, 158, 11, 0.1);
+  background: rgba($accent, 0.1);
   transform: scale(1.1);
 }
 
@@ -1468,7 +1468,7 @@ defineExpose({
 
 /* 语音激活状态 */
 .voice-search-btn-inline.voice-active {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba($accent, 0.2);
   animation: voice-pulse-inline 1.5s ease-in-out infinite;
 }
 
@@ -1476,13 +1476,13 @@ defineExpose({
 .voice-icon-inline {
   width: 28rpx; /* 14px */
   height: 28rpx;
-  color: var(--cl-warning, #F59E0B); /* 橙色 */
+  color: $accent; /* 橙色 */
   position: relative;
   z-index: 2;
 }
 
 .voice-search-btn-inline.voice-active .voice-icon-inline {
-  color: #FF4D4F; /* 激活时变红 */
+  color: $error; /* 激活时变红 */
 }
 
 /* 语音波纹效果 - 内联样式 */
@@ -1494,7 +1494,7 @@ defineExpose({
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  border: 2rpx solid #F59E0B;
+  border: 2rpx solid $accent;
   opacity: 0.6;
   animation: ripple-inline 1.5s ease-out infinite;
 }
@@ -1507,11 +1507,11 @@ defineExpose({
 @keyframes voice-pulse-inline {
   0%, 100% {
     transform: scale(1);
-    background: rgba(245, 158, 11, 0.2);
+    background: rgba($accent, 0.2);
   }
   50% {
     transform: scale(1.1);
-    background: rgba(245, 158, 11, 0.3);
+    background: rgba($accent, 0.3);
   }
 }
 
@@ -1533,9 +1533,9 @@ defineExpose({
 .search-tips {
   display: flex;
   align-items: center;
-  gap: 12rpx; /* 6px - 优化：减小间距，更紧凑 */
-  font-size: 24rpx; /* 12px - 优化：从28rpx减小到24rpx */
-  color: var(--cl-gray-500, #94A3B8); /* 降低灰度，减弱视觉权重 */
+  gap: $sp-3; /* 6px - 优化：减小间距，更紧凑 */
+  font-size: $font-size-xs; /* 12px - 优化：从28rpx减小到24rpx */
+  color: $gray-500; /* 降低灰度，减弱视觉权重 */
   line-height: 40rpx; /* 20px - 优化：减小行高 */
   /* 优化：添加淡入动画 */
   opacity: 0;
@@ -1543,15 +1543,15 @@ defineExpose({
 }
 
 .search-tip-item {
-  font-weight: 400;
-  color: var(--cl-gray-500, #94A3B8);
+  font-weight: $font-weight-regular;
+  color: $gray-500;
   /* 优化：添加轻微透明度 */
   opacity: 0.85;
 }
 
 .search-tip-divider {
-  color: var(--cl-gray-400, #CBD5E1);
-  font-weight: 300;
+  color: $gray-400;
+  font-weight: $font-weight-light;
   opacity: 0.6; /* 优化：进一步降低透明度 */
 }
 
@@ -1823,25 +1823,25 @@ defineExpose({
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 10rpx;
+    gap: $sp-2;
     cursor: pointer;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
-    transition: all 0.3s ease;
+    border-radius: $radius-full;
+    background: rgba($bg-surface, 0.9);
+    box-shadow: $shadow-sm;
+    transition: $transition-base;
   }
 
   .mobile-menu-icon:active {
     transform: scale(0.95);
-    background: rgba(255, 255, 255, 1);
+    background: rgba($bg-surface, 1);
   }
 
   .hamburger-line {
     width: 40rpx; /* 20px */
     height: 4rpx; /* 2px */
-    background: var(--cl-primary, #2563EB);
-    border-radius: 2rpx;
-    transition: all 0.3s ease;
+    background: $primary;
+    border-radius: $radius-xs;
+    transition: $transition-base;
   }
 
   /* 搜索区域 */
@@ -1938,11 +1938,11 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba($gray-900, 0.6);
   /* 锦上添花: 增强背景模糊效果 backdrop-filter: blur(12px) */
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  z-index: 99999;
+  z-index: $z-modal;
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
@@ -1956,17 +1956,17 @@ defineExpose({
   max-width: 85%;
   height: 100vh;
   /* 优化: 添加淡蓝到白渐变背景 */
-  background: linear-gradient(180deg, #F9FAFB 0%, #FFFFFF 100%);
-  box-shadow: -16rpx 0 48rpx rgba(0, 0, 0, 0.12); /* 优化: 增强阴影 */
+  background: linear-gradient(180deg, $gray-50 0%, $bg-surface 100%);
+  box-shadow: -16rpx 0 48rpx rgba($gray-900, 0.12); /* 优化: 增强阴影 */
   display: flex;
   flex-direction: column;
   animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* 优化: 更流畅的缓动 */
   position: relative;
-  z-index: 100000;
+  z-index: $z-modal + 1;
   transform: translateZ(0);
   will-change: transform;
   /* 优化: 统一圆角 - 左上和左下圆角 */
-  border-radius: 24rpx 0 0 24rpx; /* 12px */
+  border-radius: $radius-xl 0 0 $radius-xl;
 }
 
 @keyframes slideInRight {
@@ -1985,18 +1985,18 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 40rpx 32rpx;
-  border-bottom: 1px solid rgba(100, 116, 139, 0.1); /* 优化: 更柔和的分割线 */
-  background: linear-gradient(180deg, rgba(232, 240, 255, 0.3) 0%, transparent 100%); /* 优化: 轻微蓝色渐变 */
+  padding: $sp-10 $sp-8;
+  border-bottom: 1px solid rgba($gray-500, 0.1); /* 优化: 更柔和的分割线 */
+  background: linear-gradient(180deg, rgba($primary-100, 0.3) 0%, transparent 100%); /* 优化: 轻微蓝色渐变 */
 }
 
 /* 优化: 品牌区域 */
 .mobile-menu-brand {
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: $sp-1;
   position: relative;
-  padding-left: 16rpx;
+  padding-left: $sp-4;
 
   /* 优化: 品牌色分割线 */
   &::before {
@@ -2006,56 +2006,54 @@ defineExpose({
     top: 0;
     bottom: 0;
     width: 6rpx; /* 3px */
-    background: linear-gradient(180deg, var(--cl-primary, #2563EB) 0%, rgba(37, 99, 235, 0.3) 100%);
-    border-radius: 3rpx;
+    background: linear-gradient(180deg, $primary 0%, rgba($primary, 0.3) 100%);
+    border-radius: $radius-sm;
   }
 }
 
 .mobile-menu-logo {
-  font-size: 36rpx; /* 18px */
-  font-weight: 700;
-  color: var(--cl-primary, #2563EB);
-  line-height: 1.2;
+  font-size: $font-size-2xl; /* 18px */
+  font-weight: $font-weight-bold;
+  color: $primary;
+  line-height: $line-height-tight;
   letter-spacing: 0.5rpx;
 }
 
 .mobile-menu-subtitle {
-  font-size: 24rpx; /* 12px */
-  font-weight: 500;
-  color: #64748B;
-  line-height: 1.2;
+  font-size: $font-size-xs; /* 12px */
+  font-weight: $font-weight-medium;
+  color: $gray-500;
+  line-height: $line-height-tight;
   opacity: 0.9;
 }
 
 .mobile-menu-close {
   width: 88rpx; /* 44px */
   height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   cursor: pointer;
-  border-radius: 50%;
-  background: rgba(100, 116, 139, 0.08); /* 优化: 浅灰底色 */
-  border: 2rpx solid rgba(100, 116, 139, 0.1); /* 优化: 线框风格 */
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: $radius-full;
+  background: rgba($gray-500, 0.08); /* 优化: 浅灰底色 */
+  border: 2rpx solid rgba($gray-500, 0.1); /* 优化: 线框风格 */
+  transition: $transition-fast;
 }
 
 .mobile-menu-close:active {
-  background: rgba(0, 0, 0, 0.12); /* 优化：增强按下反馈 */
+  background: rgba($gray-900, 0.12); /* 优化：增强按下反馈 */
   transform: scale(0.92);
 }
 
 .close-icon {
-  font-size: 56rpx; /* 28px - 优化：增大图标尺寸 */
-  font-weight: 300;
-  color: #4E5969;
+  font-size: $font-size-4xl; /* 28px - 优化：增大图标尺寸 */
+  font-weight: $font-weight-light;
+  color: $gray-600;
   line-height: 1;
 }
 
 /* 菜单内容 */
 .mobile-menu-content {
   flex: 1;
-  padding: 32rpx 0;
+  padding: $sp-8 0;
   overflow-y: auto;
 }
 
@@ -2063,18 +2061,18 @@ defineExpose({
 .mobile-user-card {
   display: flex;
   align-items: center;
-  gap: 28rpx;
-  padding: 36rpx;
-  margin: 0 24rpx 32rpx;
+  gap: $sp-7;
+  padding: $sp-9;
+  margin: 0 $sp-6 $sp-8;
   /* 锦上添花: 更柔和的180°渐变 */
-  background: linear-gradient(180deg, #F8FAFF 0%, #FFFFFF 100%);
+  background: linear-gradient(180deg, $primary-50 0%, $bg-surface 100%);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border-radius: 24rpx;
-  border: 2rpx solid rgba(255, 255, 255, 0.6);
+  border-radius: $radius-xl;
+  border: 2rpx solid rgba($bg-surface, 0.6);
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.05);
+  transition: $transition-base;
+  box-shadow: $shadow-sm;
   position: relative;
   overflow: hidden;
 
@@ -2086,9 +2084,9 @@ defineExpose({
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba($bg-surface, 0.2) 0%, transparent 70%);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: $transition-base;
   }
 
   &:active::before {
@@ -2098,67 +2096,61 @@ defineExpose({
 
 .mobile-user-card:active {
   transform: scale(0.97);
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  box-shadow: $shadow-sm;
 }
 
 .mobile-user-avatar {
   width: 96rpx;
   height: 96rpx;
-  border-radius: 50%;
+  border-radius: $radius-full;
   flex-shrink: 0;
-  border: 4rpx solid rgba(255, 255, 255, 0.8);
+  border: 4rpx solid rgba($bg-surface, 0.8);
   /* 锦上添花: 增强头像阴影,提升空间感 */
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+  box-shadow: $shadow-sm;
 }
 
 .mobile-user-avatar-default {
-  background: var(--cl-primary, #2563EB);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: $primary;
+  @include flex-center;
 }
 
 .avatar-text {
-  font-size: 40rpx; /* 20px */
-  font-weight: 700;
-  color: #FFFFFF;
+  font-size: $font-size-2xl; /* 20px */
+  font-weight: $font-weight-bold;
+  color: $text-inverse;
 }
 
 .mobile-user-info {
   display: flex;
   flex-direction: column;
-  gap: 12rpx; /* 优化：增加昵称与邮箱的间距，从 8rpx 调整为 12rpx */
+  gap: $sp-3; /* 优化：增加昵称与邮箱的间距 */
   flex: 1;
   min-width: 0;
 }
 
 .mobile-user-name {
-  font-size: 34rpx; /* 17px - 优化：略微增大字号 */
-  font-weight: 600;
-  color: #1D2129;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.3; /* 优化：增加行高 */
+  font-size: $font-size-lg; /* 17px - 优化：略微增大字号 */
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+  @include text-ellipsis;
+  line-height: $line-height-tight; /* 优化：增加行高 */
 }
 
 .mobile-user-email {
-  font-size: 26rpx;
-  color: #8B95A1; /* 锦上添花: 更浅的灰色,增强层次区分 */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.4;
+  font-size: $font-size-sm;
+  color: $gray-400; /* 锦上添花: 更浅的灰色,增强层次区分 */
+  @include text-ellipsis;
+  line-height: $line-height-normal;
   opacity: 0.85; /* 锦上添花: 降低不透明度 */
 }
 
 /* ==========  分组标题 - 锦上添花优化 ========== */
 .mobile-menu-section-title {
   position: relative;
-  font-size: 24rpx;
-  font-weight: 600;
-  color: #7B8190; /* 锦上添花: 更浅的灰色,增强轻量感 */
-  padding: 24rpx 48rpx 12rpx 56rpx; /* 锦上添花: 左侧增加空间给竖条 */
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $gray-500; /* 锦上添花: 更浅的灰色,增强轻量感 */
+  padding: $sp-6 $sp-12 $sp-3 56rpx; /* 锦上添花: 左侧增加空间给竖条 */
   letter-spacing: 1rpx;
   text-transform: uppercase;
 
@@ -2166,54 +2158,54 @@ defineExpose({
   &::before {
     content: '';
     position: absolute;
-    left: 40rpx;
+    left: $sp-10;
     top: 50%;
     transform: translateY(-50%);
     width: 4rpx; /* 2px */
     height: 28rpx; /* 14px */
-    background: linear-gradient(180deg, #3478F6 0%, rgba(52, 120, 246, 0.3) 100%);
-    border-radius: 2rpx;
+    background: linear-gradient(180deg, $primary 0%, rgba($primary, 0.3) 100%);
+    border-radius: $radius-xs;
   }
 }
 
 /* ==========  分组分割线 ========== */
 .mobile-menu-divider {
   height: 2rpx;
-  background: linear-gradient(90deg, transparent 0%, rgba(100, 116, 139, 0.12) 50%, transparent 100%);
-  margin: 20rpx 24rpx;
+  background: linear-gradient(90deg, transparent 0%, rgba($gray-500, 0.12) 50%, transparent 100%);
+  margin: $sp-5 $sp-6;
 }
 
 /* ==========  菜单项 - 锦上添花交互优化 ========== */
 .mobile-menu-item {
   display: flex;
   align-items: center;
-  gap: 20rpx;
+  gap: $sp-5;
   min-height: 96rpx;
-  padding: 24rpx 48rpx;
-  margin: 0 16rpx;
-  border-radius: 24rpx;
+  padding: $sp-6 $sp-12;
+  margin: 0 $sp-4;
+  border-radius: $radius-xl;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: $transition-fast;
   position: relative;
 
-  /* 锦上添花: hover时添加浅蓝背景 #F5F8FF */
+  /* 锦上添花: hover时添加浅蓝背景 */
   &:hover {
-    background: rgba(245, 248, 255, 0.6); /* #F5F8FF */
+    background: rgba($primary-50, 0.6);
   }
 }
 
 .mobile-menu-item:active {
-  background: rgba(241, 245, 255, 0.8); /* #F1F5FF - 更深的按压反馈 */
+  background: rgba($primary-100, 0.8); /* 更深的按压反馈 */
   transform: scale(0.98);
 }
 
 .mobile-menu-item-icon {
-  font-size: 40rpx;
+  font-size: $font-size-2xl;
   line-height: 1;
   flex-shrink: 0;
   width: 40rpx;
   text-align: center;
-  transition: transform 0.2s ease;
+  transition: $transition-fast;
   /* 锦上添花: 默认轻微上浮 */
   transform: translateY(-1rpx);
 }
@@ -2228,38 +2220,38 @@ defineExpose({
 }
 
 .mobile-menu-item-text {
-  font-size: 30rpx;
-  font-weight: 500;
-  color: #5E6472; /* 锦上添花: 稍深的灰色,增强可读性 */
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $gray-600; /* 锦上添花: 稍深的灰色,增强可读性 */
   flex: 1;
-  line-height: 1.5;
+  line-height: $line-height-relaxed;
 }
 
 .mobile-menu-item-badge {
-  font-size: 22rpx; /* 11px */
-  font-weight: 600;
-  color: #10B981;
-  padding: 6rpx 16rpx;
-  background: rgba(16, 185, 129, 0.15);
-  border-radius: 12rpx; /* 优化: 统一圆角 */
+  font-size: $font-size-xs; /* 11px */
+  font-weight: $font-weight-semibold;
+  color: $success;
+  padding: $sp-1 $sp-4;
+  background: rgba($success, 0.15);
+  border-radius: $radius-md; /* 优化: 统一圆角 */
   white-space: nowrap;
 }
 
 .mobile-menu-item-badge.checked {
-  color: #22C55E;
-  background: rgba(34, 197, 94, 0.15);
+  color: $success;
+  background: rgba($success, 0.15);
   /* 锦上添花: 微光晕动画效果 */
-  box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 12rpx rgba($success, 0.4);
   animation: badge-glow 2s ease-in-out infinite;
 }
 
 /* 锦上添花: 徽章光晕脉动动画 */
 @keyframes badge-glow {
   0%, 100% {
-    box-shadow: 0 0 12rpx rgba(34, 197, 94, 0.4);
+    box-shadow: 0 0 12rpx rgba($success, 0.4);
   }
   50% {
-    box-shadow: 0 0 20rpx rgba(34, 197, 94, 0.6);
+    box-shadow: 0 0 20rpx rgba($success, 0.6);
   }
 }
 
@@ -2312,28 +2304,28 @@ defineExpose({
 /* ==========  退出登录 - 锦上添花透明红描边风格 ========== */
 .mobile-menu-item-danger {
   /* 锦上添花: 透明红渐变描边风格 */
-  background: rgba(255, 77, 79, 0.05);
-  margin: 16rpx 24rpx 24rpx;
-  border-radius: 24rpx;
-  border: 2rpx solid rgba(255, 77, 79, 0.3);
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba($error, 0.05);
+  margin: $sp-4 $sp-6 $sp-6;
+  border-radius: $radius-xl;
+  border: 2rpx solid rgba($error, 0.3);
+  transition: $transition-fast;
 
   /* 锦上添花: hover效果 */
   &:hover {
-    background: rgba(255, 77, 79, 0.08);
-    border-color: rgba(255, 77, 79, 0.4);
+    background: rgba($error, 0.08);
+    border-color: rgba($error, 0.4);
   }
 }
 
 .mobile-menu-item-danger:active {
-  background: rgba(255, 77, 79, 0.12);
-  border-color: rgba(255, 77, 79, 0.5);
+  background: rgba($error, 0.12);
+  border-color: rgba($error, 0.5);
   transform: scale(0.98);
 }
 
 .mobile-menu-item-danger .mobile-menu-item-text {
-  color: #FF4D4F; /* 锦上添花: 更鲜艳的红色 */
-  font-weight: 600; /* 锦上添花: 加粗文字 */
+  color: $error; /* 锦上添花: 更鲜艳的红色 */
+  font-weight: $font-weight-semibold; /* 锦上添花: 加粗文字 */
 }
 
 .mobile-menu-item-danger .mobile-menu-item-icon {

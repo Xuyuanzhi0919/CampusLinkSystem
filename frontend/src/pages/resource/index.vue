@@ -1232,9 +1232,11 @@ onShow(() => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 .resource-square-page {
   min-height: 100vh;
-  background: #F5F6FA;
+  background: $bg-page;
   padding-bottom: 120rpx;
 }
 
@@ -1245,9 +1247,9 @@ onShow(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 99;
-  animation: fadeIn 0.2s ease;
+  background: rgba($gray-900, 0.3);
+  z-index: $z-dropdown;
+  animation: fadeIn $duration-base $ease-out;
 }
 
 @keyframes fadeIn {
@@ -1262,60 +1264,60 @@ onShow(() => {
 // 🎯 搜索区域
 .search-section {
   position: relative;
-  padding: 16rpx 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  padding: $sp-4 $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .search-container {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .search-box {
   flex: 1;
   display: flex;
   align-items: center;
-  background: #F5F6FA;
-  border-radius: 48rpx;
-  padding: 16rpx 24rpx;
-  transition: all 0.3s ease;
+  background: $bg-page;
+  border-radius: $radius-2xl;
+  padding: $sp-4 $sp-6;
+  transition: $transition-slow;
 
   &:focus-within {
-    background: #EEF0F5;
-    box-shadow: 0 0 0 4rpx rgba(255, 107, 53, 0.1);
+    background: $gray-100;
+    box-shadow: 0 0 0 4rpx rgba($accent, 0.1);
   }
 }
 
 .search-icon {
-  font-size: 32rpx;
-  margin-right: 12rpx;
+  font-size: $font-size-lg;
+  margin-right: $sp-3;
   opacity: 0.6;
 }
 
 .search-input {
   flex: 1;
-  font-size: 28rpx;
-  color: #333;
+  font-size: $font-size-base;
+  color: $gray-800;
   border: none;
   background: transparent;
 
   &::placeholder {
-    color: #999;
+    color: $text-placeholder;
   }
 }
 
 .clear-icon {
-  font-size: 28rpx;
-  color: #999;
-  padding: 0 8rpx;
+  font-size: $font-size-base;
+  color: $text-placeholder;
+  padding: 0 $sp-2;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: color $duration-base;
 
   &:hover {
-    color: #666;
+    color: $gray-600;
   }
 }
 
@@ -1323,34 +1325,32 @@ onShow(() => {
 .search-history-panel {
   position: absolute;
   top: 100%;
-  left: 32rpx;
-  right: 32rpx;
-  margin-top: 8rpx;
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
-  z-index: 100;
+  left: $sp-8;
+  right: $sp-8;
+  margin-top: $sp-2;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-dropdown;
+  z-index: $z-dropdown;
   max-height: 600rpx;
   overflow: hidden;
 
   .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24rpx 32rpx;
-    border-bottom: 1rpx solid #F0F0F0;
+    @include flex-between;
+    padding: $sp-6 $sp-8;
+    border-bottom: 1rpx solid $gray-100;
 
     .history-title {
-      font-size: 28rpx;
-      font-weight: 500;
-      color: #333;
+      font-size: $font-size-base;
+      font-weight: $font-weight-medium;
+      color: $gray-800;
     }
 
     .history-clear {
-      font-size: 24rpx;
-      color: #FF6B35;
+      font-size: $font-size-sm;
+      color: $accent;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity $duration-base;
 
       &:hover {
         opacity: 0.8;
@@ -1366,34 +1366,34 @@ onShow(() => {
   .history-item {
     display: flex;
     align-items: center;
-    padding: 24rpx 32rpx;
+    padding: $sp-6 $sp-8;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: background $duration-base;
 
     &:hover {
-      background: #F5F6FA;
+      background: $bg-page;
     }
 
     .history-icon {
-      font-size: 32rpx;
-      margin-right: 16rpx;
+      font-size: $font-size-lg;
+      margin-right: $sp-4;
       opacity: 0.5;
     }
 
     .history-text {
       flex: 1;
-      font-size: 28rpx;
-      color: #666;
+      font-size: $font-size-base;
+      color: $gray-600;
     }
 
     .history-delete {
-      font-size: 32rpx;
-      color: #999;
-      padding: 0 8rpx;
-      transition: color 0.2s;
+      font-size: $font-size-lg;
+      color: $text-placeholder;
+      padding: 0 $sp-2;
+      transition: color $duration-base;
 
       &:hover {
-        color: #FF6B35;
+        color: $accent;
       }
     }
   }
@@ -1402,13 +1402,11 @@ onShow(() => {
 .voice-search-btn {
   width: 80rpx;
   height: 80rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-  border-radius: 50%;
+  @include flex-center;
+  @include gradient-accent;
+  border-radius: $radius-full;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: $transition-slow;
 
   &:active {
     transform: scale(0.95);
@@ -1416,23 +1414,23 @@ onShow(() => {
 }
 
 .voice-icon {
-  font-size: 36rpx;
+  font-size: $font-size-xl;
 }
 
 // 🎯 PC 端上传按钮
 .upload-btn-pc {
   display: none;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 24rpx;
-  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
-  border-radius: 48rpx;
+  gap: $sp-2;
+  padding: $sp-3 $sp-6;
+  @include gradient-accent;
+  border-radius: $radius-2xl;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: $transition-slow;
 
   &:hover {
     transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 12rpx rgba(255, 122, 0, 0.3);
+    box-shadow: 0 4rpx 12rpx rgba($accent, 0.3);
   }
 
   &:active {
@@ -1441,29 +1439,29 @@ onShow(() => {
 }
 
 .upload-icon {
-  font-size: 32rpx;
-  font-weight: 300;
-  color: #FFFFFF;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-light;
+  color: $white;
   line-height: 1;
 }
 
 .upload-text {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: #FFFFFF;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $white;
   white-space: nowrap;
 }
 
 // 🎯 筛选区域
 .filter-section {
-  padding: 10rpx 32rpx 12rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  padding: $sp-2 $sp-8 $sp-3;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .filter-tabs {
   display: flex;
-  gap: 10rpx;
+  gap: $sp-2;
 }
 
 .filter-tab {
@@ -1471,68 +1469,66 @@ onShow(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4rpx;
-  padding: 10rpx 8rpx;
+  gap: $sp-1;
+  padding: $sp-2 $sp-2;
   background: transparent;
-  border-radius: 12rpx;
-  border: 1rpx solid #E5E7EB;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: $radius-base;
+  border: 1rpx solid $gray-200;
+  transition: all $duration-slow $ease-smooth;
   cursor: pointer;
 
   &:hover {
-    background: #F9FAFB;
-    border-color: #FFD4BB;
+    background: $gray-50;
+    border-color: $accent-200;
   }
 
   &.active {
-    background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
-    border-color: #FF6B35;
+    @include gradient-accent;
+    border-color: $accent;
 
     .tab-icon,
     .tab-label {
-      color: #FFFFFF;
+      color: $white;
     }
   }
 }
 
 .tab-icon {
-  font-size: 28rpx;
+  font-size: $font-size-base;
 }
 
 .tab-label {
-  font-size: 24rpx;
-  font-weight: 500;
-  color: #666;
-  transition: color 0.3s;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  transition: color $duration-slow;
 }
 
 // 🎯 排序选择器
 .sort-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10rpx 32rpx;
-  background: #FFFFFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  @include flex-between;
+  padding: $sp-2 $sp-8;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 
   .sort-tabs {
     display: flex;
-    gap: 24rpx;
+    gap: $sp-6;
   }
 
   .sort-tab {
-    padding: 8rpx 16rpx;
-    border-radius: 8rpx;
+    padding: $sp-2 $sp-4;
+    border-radius: $radius-sm;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: $transition-slow;
     position: relative;
 
     &.active {
-      background: linear-gradient(135deg, #FFF4E6 0%, #FFE9CC 100%);
+      background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
 
       .sort-label {
-        color: #FF7A00;
-        font-weight: 700;
+        color: $accent;
+        font-weight: $font-weight-bold;
       }
 
       // 🎯 激活态下划线
@@ -1542,34 +1538,34 @@ onShow(() => {
         bottom: 0;
         left: 50%;
         transform: translateX(-50%);
-        width: 24rpx;
+        width: $sp-6;
         height: 4rpx;
-        background: linear-gradient(90deg, #FF7A00 0%, #FF9933 100%);
+        background: linear-gradient(90deg, $accent 0%, $accent-light 100%);
         border-radius: 2rpx;
       }
     }
 
     &:hover:not(.active) {
-      background: #F5F6FA;
+      background: $bg-page;
     }
   }
 
   .sort-label {
-    font-size: 26rpx;
-    color: #666;
-    font-weight: 500;
-    transition: all 0.3s;
+    font-size: $font-size-sm;
+    color: $gray-600;
+    font-weight: $font-weight-medium;
+    transition: $transition-slow;
   }
 
   .result-count {
-    font-size: 24rpx;
-    color: #999;
+    font-size: $font-size-sm;
+    color: $text-placeholder;
   }
 
   .sort-right {
     display: flex;
     align-items: center;
-    gap: 16rpx;
+    gap: $sp-4;
   }
 
   // 筛选按钮
@@ -1577,20 +1573,20 @@ onShow(() => {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 6rpx;
-    padding: 10rpx 16rpx;
-    background: #F5F6FA;
-    border-radius: 32rpx;
+    gap: $sp-1;
+    padding: $sp-2 $sp-4;
+    background: $bg-page;
+    border-radius: $sp-8;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: $transition-slow;
 
     &.has-filter {
-      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 122, 0, 0.1) 100%);
-      border: 1rpx solid rgba(255, 107, 53, 0.2);
+      background: linear-gradient(135deg, rgba($accent, 0.1) 0%, rgba($accent, 0.1) 100%);
+      border: 1rpx solid rgba($accent, 0.2);
     }
 
     &:hover {
-      background: rgba(255, 107, 53, 0.15);
+      background: rgba($accent, 0.15);
       transform: translateY(-1rpx);
     }
 
@@ -1599,25 +1595,25 @@ onShow(() => {
     }
 
     .filter-icon {
-      font-size: 28rpx;
+      font-size: $font-size-base;
     }
 
     .filter-label {
-      font-size: 24rpx;
-      color: #333;
-      font-weight: 500;
+      font-size: $font-size-sm;
+      color: $gray-800;
+      font-weight: $font-weight-medium;
     }
 
     .filter-badge {
-      min-width: 28rpx;
-      height: 28rpx;
-      line-height: 28rpx;
-      padding: 0 6rpx;
-      background: linear-gradient(135deg, #FF6B35 0%, #FF7A00 100%);
-      color: #FFF;
-      font-size: 20rpx;
-      font-weight: 700;
-      border-radius: 50%;
+      min-width: $sp-7;
+      height: $sp-7;
+      line-height: $sp-7;
+      padding: 0 $sp-1;
+      @include gradient-accent;
+      color: $white;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      border-radius: $radius-full;
       text-align: center;
     }
   }
@@ -1630,9 +1626,9 @@ onShow(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  background: rgba($gray-900, 0.5);
+  z-index: $z-modal-backdrop;
+  animation: fadeIn $duration-slow $ease-out;
 }
 
 .filter-drawer {
@@ -1641,11 +1637,11 @@ onShow(() => {
   left: 0;
   right: 0;
   max-height: 70vh;
-  background: #FFF;
-  border-radius: 32rpx 32rpx 0 0;
-  z-index: 1001;
+  background: $white;
+  border-radius: $sp-8 $sp-8 0 0;
+  z-index: $z-modal;
   transform: translateY(100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform $duration-slow $ease-smooth;
   display: flex;
   flex-direction: column;
 
@@ -1654,29 +1650,27 @@ onShow(() => {
   }
 
   .drawer-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 32rpx 32rpx 24rpx;
-    border-bottom: 1rpx solid #F0F0F0;
+    @include flex-between;
+    padding: $sp-8 $sp-8 $sp-6;
+    border-bottom: 1rpx solid $gray-100;
 
     .drawer-title {
-      font-size: 32rpx;
-      font-weight: 700;
-      color: #111;
+      font-size: $font-size-lg;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
     }
 
     .drawer-actions {
       display: flex;
       align-items: center;
-      gap: 24rpx;
+      gap: $sp-6;
     }
 
     .drawer-reset {
-      font-size: 26rpx;
-      color: #FF6B35;
+      font-size: $font-size-sm;
+      color: $accent;
       cursor: pointer;
-      transition: opacity 0.2s;
+      transition: opacity $duration-base;
 
       &:active {
         opacity: 0.7;
@@ -1684,13 +1678,13 @@ onShow(() => {
     }
 
     .drawer-close {
-      font-size: 36rpx;
-      color: #999;
+      font-size: $font-size-xl;
+      color: $text-placeholder;
       cursor: pointer;
-      transition: color 0.2s;
+      transition: color $duration-base;
 
       &:active {
-        color: #666;
+        color: $gray-600;
       }
     }
   }
@@ -1698,30 +1692,30 @@ onShow(() => {
   .drawer-content {
     flex: 1;
     overflow-y: auto;
-    padding: 24rpx 32rpx;
+    padding: $sp-6 $sp-8;
   }
 
   .drawer-footer {
     display: flex;
-    gap: 16rpx;
-    padding: 24rpx 32rpx;
-    border-top: 1rpx solid #F0F0F0;
-    background: #FFF;
+    gap: $sp-4;
+    padding: $sp-6 $sp-8;
+    border-top: 1rpx solid $gray-100;
+    background: $white;
 
     button {
       flex: 1;
-      height: 88rpx;
-      border-radius: 44rpx;
-      font-size: 28rpx;
-      font-weight: 600;
+      height: $btn-height-lg;
+      border-radius: $radius-button;
+      font-size: $font-size-base;
+      font-weight: $font-weight-semibold;
       border: none;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: $transition-slow;
     }
 
     .drawer-cancel-btn {
-      background: #F5F6FA;
-      color: #666;
+      background: $bg-page;
+      color: $gray-600;
 
       &:active {
         opacity: 0.8;
@@ -1729,9 +1723,9 @@ onShow(() => {
     }
 
     .drawer-confirm-btn {
-      background: linear-gradient(135deg, #FF6B35 0%, #FF7A00 100%);
-      color: #FFF;
-      box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.3);
+      @include gradient-accent;
+      color: $white;
+      box-shadow: 0 4rpx 12rpx rgba($accent, 0.3);
 
       &:active {
         opacity: 0.9;
@@ -1742,48 +1736,48 @@ onShow(() => {
 
 // 筛选组
 .filter-group {
-  margin-bottom: 40rpx;
+  margin-bottom: $sp-10;
 
   &:last-child {
     margin-bottom: 0;
   }
 
   .filter-group-title {
-    font-size: 28rpx;
-    font-weight: 700;
-    color: #111;
-    margin-bottom: 20rpx;
+    font-size: $font-size-base;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $sp-5;
   }
 
   .filter-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16rpx;
+    gap: $sp-4;
   }
 
   .filter-option {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6rpx;
-    padding: 20rpx 12rpx;
-    background: #F5F6FA;
-    border-radius: 16rpx;
+    gap: $sp-1;
+    padding: $sp-5 $sp-3;
+    background: $bg-page;
+    border-radius: $radius-md;
     border: 2rpx solid transparent;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: $transition-slow;
 
     &.active {
-      background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 122, 0, 0.1) 100%);
-      border-color: #FF6B35;
+      background: linear-gradient(135deg, rgba($accent, 0.1) 0%, rgba($accent, 0.1) 100%);
+      border-color: $accent;
 
       .option-label {
-        color: #FF6B35;
-        font-weight: 700;
+        color: $accent;
+        font-weight: $font-weight-bold;
       }
 
       .option-desc {
-        color: #FF6B35;
+        color: $accent;
       }
     }
 
@@ -1792,49 +1786,38 @@ onShow(() => {
     }
 
     .option-label {
-      font-size: 26rpx;
-      color: #333;
-      font-weight: 600;
-      transition: all 0.3s;
+      font-size: $font-size-sm;
+      color: $gray-800;
+      font-weight: $font-weight-semibold;
+      transition: $transition-slow;
     }
 
     .option-desc {
-      font-size: 20rpx;
-      color: #999;
-      transition: all 0.3s;
+      font-size: $font-size-xs;
+      color: $text-placeholder;
+      transition: $transition-slow;
     }
   }
 
   .filter-switch-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 24rpx;
-    background: #F5F6FA;
-    border-radius: 16rpx;
-    margin-bottom: 16rpx;
+    @include flex-between;
+    padding: $sp-6;
+    background: $bg-page;
+    border-radius: $radius-md;
+    margin-bottom: $sp-4;
 
     .switch-label {
-      font-size: 28rpx;
-      color: #333;
-      font-weight: 600;
+      font-size: $font-size-base;
+      color: $gray-800;
+      font-weight: $font-weight-semibold;
     }
   }
 
   .filter-hint {
-    font-size: 22rpx;
-    color: #999;
-    line-height: 1.6;
-    padding: 0 24rpx;
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
+    font-size: $font-size-xs;
+    color: $text-placeholder;
+    line-height: $line-height-relaxed;
+    padding: 0 $sp-6;
   }
 }
 
@@ -1851,38 +1834,36 @@ onShow(() => {
 
 .skeleton-list,
 .resource-list {
-  padding: 24rpx 32rpx;
+  padding: $sp-6 $sp-8;
 }
 
 .loading-more,
 .no-more {
-  padding: 32rpx;
+  padding: $sp-8;
   text-align: center;
 }
 
 .loading-text,
 .no-more-text {
-  font-size: 24rpx;
-  color: #999;
+  font-size: $font-size-sm;
+  color: $text-placeholder;
 }
 
 // 🎯 上传悬浮按钮 (移动端)
 .upload-fab {
   position: fixed;
-  right: 32rpx;
+  right: $sp-8;
   bottom: 140rpx;
-  width: 88rpx;
-  height: 88rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FF7A00 0%, #FF9933 100%);
-  border-radius: 50%;
-  box-shadow: 0 8rpx 24rpx rgba(255, 122, 0, 0.3);
+  width: $btn-height-lg;
+  height: $btn-height-lg;
+  @include flex-center;
+  @include gradient-accent;
+  border-radius: $radius-full;
+  box-shadow: $shadow-fab;
   cursor: pointer;
-  z-index: 999;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeIn 0.3s ease-out;
+  z-index: $z-fixed;
+  transition: all $duration-slow $ease-smooth;
+  animation: fadeInUp $duration-slow $ease-out;
 
   &:active {
     transform: translateY(-4rpx) scale(0.95);
@@ -1890,11 +1871,11 @@ onShow(() => {
 
   &:hover {
     transform: translateY(-8rpx);
-    box-shadow: 0 12rpx 32rpx rgba(255, 122, 0, 0.4);
+    box-shadow: 0 12rpx 32rpx rgba($accent, 0.4);
   }
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20rpx);
@@ -1907,28 +1888,26 @@ onShow(() => {
 
 .fab-icon {
   font-size: 56rpx;
-  font-weight: 300;
-  color: #FFFFFF;
+  font-weight: $font-weight-light;
+  color: $white;
   line-height: 1;
 }
 
 // 🎯 返回顶部按钮
 .back-to-top-btn {
   position: fixed;
-  right: 32rpx;
+  right: $sp-8;
   bottom: 250rpx;
-  width: 72rpx;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #6366F1 0%, #4F46E5 100%);
-  border-radius: 50%;
-  box-shadow: 0 6rpx 20rpx rgba(99, 102, 241, 0.3);
+  width: $btn-height-base;
+  height: $btn-height-base;
+  @include flex-center;
+  @include gradient-primary;
+  border-radius: $radius-full;
+  box-shadow: 0 6rpx 20rpx rgba($primary, 0.3);
   cursor: pointer;
-  z-index: 998;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: slideInUp 0.3s ease-out;
+  z-index: $z-fixed;
+  transition: all $duration-slow $ease-smooth;
+  animation: slideInUp $duration-slow $ease-out;
 
   &:active {
     transform: translateY(-4rpx) scale(0.95);
@@ -1936,8 +1915,8 @@ onShow(() => {
 
   &:hover {
     transform: translateY(-8rpx);
-    box-shadow: 0 10rpx 28rpx rgba(99, 102, 241, 0.4);
-    background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+    box-shadow: 0 10rpx 28rpx rgba($primary, 0.4);
+    background: linear-gradient(135deg, $primary-dark 0%, $primary 100%);
   }
 }
 
@@ -1953,14 +1932,14 @@ onShow(() => {
 }
 
 .back-to-top-icon {
-  font-size: 40rpx;
-  font-weight: 700;
-  color: #FFFFFF;
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $white;
   line-height: 1;
 }
 
 // 🎯 响应式适配 - PC端优化
-@media (min-width: 768px) {
+@include desktop {
   .scroll-container {
     // 移除固定高度，使用自然滚动
     // height: calc(100vh - 280rpx);  // ❌ 会导致双滚动条
@@ -1997,7 +1976,7 @@ onShow(() => {
 
   // PC 端返回顶部按钮位置调整
   .back-to-top-btn {
-    right: 48rpx;
+    right: $sp-12;
     bottom: 80rpx;
     width: 80rpx;
     height: 80rpx;
@@ -2008,11 +1987,11 @@ onShow(() => {
   }
 
   .back-to-top-icon {
-    font-size: 44rpx;
+    font-size: $font-size-3xl;
   }
 }
 
-@media (max-width: 768px) {
+@include mobile {
   // 移动端隐藏 PC 端上传按钮
   .upload-btn-pc {
     display: none;
@@ -2025,44 +2004,44 @@ onShow(() => {
 
   // 移动端优化搜索区域
   .search-section {
-    padding: 12rpx 24rpx;
+    padding: $sp-3 $sp-6;
   }
 
   .search-container {
-    gap: 10rpx;
+    gap: $sp-2;
   }
 
   // 移动端优化筛选区域
   .filter-section {
-    padding: 10rpx 24rpx 12rpx;
+    padding: $sp-2 $sp-6 $sp-3;
   }
 
   .filter-tab {
-    padding: 10rpx 8rpx;
-    gap: 4rpx;
+    padding: $sp-2 $sp-2;
+    gap: $sp-1;
   }
 
   .tab-icon {
-    font-size: 28rpx;
+    font-size: $font-size-base;
   }
 
   .tab-label {
-    font-size: 20rpx;
+    font-size: $font-size-xs;
   }
 
   // 移动端优化结果信息栏
   .result-info {
-    padding: 10rpx 24rpx;
+    padding: $sp-2 $sp-6;
   }
 
   .info-text {
-    font-size: 24rpx;
+    font-size: $font-size-sm;
   }
 
   // 移动端优化列表容器
   .skeleton-list,
   .resource-list {
-    padding: 24rpx 24rpx;
+    padding: $sp-6 $sp-6;
   }
 }
 </style>

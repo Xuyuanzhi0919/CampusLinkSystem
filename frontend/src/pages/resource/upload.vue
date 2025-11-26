@@ -638,73 +638,63 @@ onLoad(() => {
 </template>
 
 <style scoped lang="scss">
-// 变量定义
-$primary-color: #ff6b35;
-$success-color: #52c41a;
-$error-color: #ff4d4f;
-$text-primary: #333;
-$text-secondary: #666;
-$text-tertiary: #999;
-$border-color: #e8e8e8;
-$bg-gray: #f5f5f5;
+// 变量已通过 uni.scss 全局注入
 
 .upload-page {
   min-height: 100vh;
-  background: $bg-gray;
+  background: $bg-page;
 }
 
 // 顶部导航栏
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  z-index: $z-dropdown;
+  @include flex-between;
   height: 44px;
-  padding: 0 16px;
-  background: #fff;
-  border-bottom: 1px solid $border-color;
+  padding: 0 $sp-4;
+  background: $white;
+  border-bottom: 1px solid $gray-200;
 
   .nav-left {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: $sp-1;
     cursor: pointer;
 
     .back-icon {
-      font-size: 20px;
-      color: $text-primary;
+      font-size: $font-size-xl;
+      color: $gray-800;
     }
 
     .back-text {
-      font-size: 16px;
-      color: $text-primary;
+      font-size: $font-size-lg;
+      color: $gray-800;
     }
   }
 
   .nav-title {
-    font-size: 18px;
-    font-weight: 500;
-    color: $text-primary;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-medium;
+    color: $gray-800;
   }
 
   .nav-right {
-    width: 60px; // 占位，保持标题居中
+    width: 60px;
   }
 }
 
 // 主容器
 .upload-container {
-  padding: 20px;
+  padding: $sp-5;
 
-  @media (min-width: 768px) {
+  @include desktop {
     max-width: 800px;
-    margin: 24px auto;
-    border-radius: 12px;
-    background: #fff;
-    padding: 40px;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    margin: $sp-6 auto;
+    border-radius: $radius-md;
+    background: $white;
+    padding: $sp-10;
+    box-shadow: $shadow-md;
   }
 
   @media (min-width: 1024px) {
@@ -714,36 +704,36 @@ $bg-gray: #f5f5f5;
 
 // 区块
 .section {
-  margin-bottom: 20px;
+  margin-bottom: $sp-5;
 
-  @media (min-width: 768px) {
-    margin-bottom: 24px;
+  @include desktop {
+    margin-bottom: $sp-6;
   }
 
   .section-title {
-    font-size: 16px;
-    font-weight: 500;
-    color: $text-primary;
-    margin-bottom: 12px;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    color: $gray-800;
+    margin-bottom: $sp-3;
   }
 }
 
 // 文件上传区域
 .upload-area {
-  border: 2px dashed #d9d9d9;
-  border-radius: 8px;
-  padding: 40px 20px;
+  border: 2px dashed $gray-300;
+  border-radius: $radius-base;
+  padding: $sp-10 $sp-5;
   text-align: center;
   cursor: pointer;
-  transition: all 0.3s ease;
-  background: #fafafa;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  transition: $transition-slow;
+  background: $gray-50;
+  box-shadow: 0 1px 2px rgba($gray-900, 0.03);
 
   &:hover {
-    border-color: $primary-color;
-    background: #fff9f5;
+    border-color: $accent;
+    background: $accent-50;
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.15);
+    box-shadow: 0 4px 12px rgba($accent, 0.15);
   }
 
   &:active {
@@ -752,74 +742,72 @@ $bg-gray: #f5f5f5;
 
   .upload-icon {
     font-size: 52px;
-    margin-bottom: 16px;
+    margin-bottom: $sp-4;
   }
 
   .upload-title {
     display: block;
-    font-size: 16px;
-    font-weight: 500;
-    color: $text-primary;
-    margin-bottom: 8px;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-medium;
+    color: $gray-800;
+    margin-bottom: $sp-2;
   }
 
   .upload-hint {
     display: block;
-    font-size: 13px;
-    color: $text-secondary;
-    margin-bottom: 4px;
+    font-size: $font-size-sm;
+    color: $gray-600;
+    margin-bottom: $sp-1;
   }
 
   .upload-limit {
     display: block;
-    font-size: 12px;
-    color: $text-tertiary;
+    font-size: $font-size-xs;
+    color: $gray-400;
   }
 }
 
 // 上传进度
 .upload-progress {
-  padding: 24px;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid $border-color;
+  padding: $sp-6;
+  background: $white;
+  border-radius: $radius-base;
+  border: 1px solid $gray-200;
 
   .file-name {
     display: block;
-    font-size: 14px;
-    color: $text-primary;
-    margin-bottom: 12px;
+    font-size: $font-size-base;
+    color: $gray-800;
+    margin-bottom: $sp-3;
     word-break: break-all;
   }
 
   .progress-text {
     display: block;
-    font-size: 12px;
-    color: $text-secondary;
+    font-size: $font-size-xs;
+    color: $gray-600;
     text-align: center;
-    margin-top: 8px;
+    margin-top: $sp-2;
   }
 }
 
 // 上传成功
 .upload-success {
-  padding: 20px;
-  background: #fff;
-  border-radius: 8px;
-  border: 1px solid $success-color;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  padding: $sp-5;
+  background: $white;
+  border-radius: $radius-base;
+  border: 1px solid $success;
+  @include flex-between;
 
   .file-info {
     flex: 1;
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: $sp-3;
 
     .file-icon {
-      font-size: 24px;
-      color: $success-color;
+      font-size: $font-size-2xl;
+      color: $success;
     }
 
     .file-details {
@@ -827,54 +815,52 @@ $bg-gray: #f5f5f5;
 
       .file-name {
         display: block;
-        font-size: 14px;
-        color: $text-primary;
+        font-size: $font-size-base;
+        color: $gray-800;
         word-break: break-all;
-        margin-bottom: 4px;
+        margin-bottom: $sp-1;
       }
 
       .file-size {
         display: block;
-        font-size: 12px;
-        color: $text-secondary;
+        font-size: $font-size-xs;
+        color: $gray-600;
       }
     }
   }
 
   .re-upload-btn {
-    padding: 8px 16px;
-    font-size: 14px;
-    color: $primary-color;
-    background: #fff;
-    border: 1px solid $primary-color;
-    border-radius: 4px;
+    padding: $sp-2 $sp-4;
+    font-size: $font-size-base;
+    color: $accent;
+    background: $white;
+    border: 1px solid $accent;
+    border-radius: $radius-sm;
   }
 }
 
 // 表单项
 .form-item {
-  margin-bottom: 16px;
+  margin-bottom: $sp-4;
 
-  @media (min-width: 768px) {
-    margin-bottom: 20px;
+  @include desktop {
+    margin-bottom: $sp-5;
   }
 
   .form-label {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 14px;
-    color: $text-primary;
-    margin-bottom: 8px;
+    @include flex-between;
+    font-size: $font-size-base;
+    color: $gray-800;
+    margin-bottom: $sp-2;
 
     .required {
-      color: $error-color;
-      margin-left: 4px;
+      color: $error;
+      margin-left: $sp-1;
     }
 
     .char-count {
-      font-size: 12px;
-      color: $text-tertiary;
+      font-size: $font-size-xs;
+      color: $gray-400;
       margin-left: auto;
     }
   }
@@ -883,67 +869,65 @@ $bg-gray: #f5f5f5;
   .form-textarea,
   .picker-input {
     width: 100%;
-    padding: 10px 12px;
-    border: 1px solid $border-color;
-    border-radius: 6px;
-    font-size: 14px;
-    background: #fff;
+    padding: $sp-2 $sp-3;
+    border: 1px solid $gray-200;
+    border-radius: $radius-base;
+    font-size: $font-size-base;
+    background: $white;
 
     &:focus {
-      border-color: $primary-color;
+      border-color: $accent;
       outline: none;
     }
   }
 
   .form-textarea {
     min-height: 120px;
-    line-height: 1.6;
+    line-height: $line-height-relaxed;
   }
 
   .picker-input {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: $text-primary;
+    @include flex-between;
+    color: $gray-800;
 
     .picker-arrow {
-      font-size: 12px;
-      color: $text-tertiary;
+      font-size: $font-size-xs;
+      color: $gray-400;
     }
   }
 
   .error-text {
     display: block;
-    font-size: 12px;
-    color: $error-color;
-    margin-top: 4px;
+    font-size: $font-size-xs;
+    color: $error;
+    margin-top: $sp-1;
   }
 }
 
 // 上传须知
 .notice-section {
-  padding: 12px 0;
-  border-top: 1px solid #f0f0f0;
+  padding: $sp-3 0;
+  border-top: 1px solid $gray-100;
 
   .notice-content {
     .notice-item {
       display: block;
-      font-size: 13px;
-      color: $text-tertiary;
-      line-height: 1.8;
+      font-size: $font-size-sm;
+      color: $gray-400;
+      line-height: $line-height-loose;
 
       .highlight {
-        color: $primary-color;
-        font-weight: 500;
+        color: $accent;
+        font-weight: $font-weight-medium;
       }
     }
   }
 
   .notice-link {
     display: inline-block;
-    font-size: 13px;
-    color: $primary-color;
-    margin-top: 8px;
+    font-size: $font-size-sm;
+    color: $accent;
+    margin-top: $sp-2;
     cursor: pointer;
 
     &:hover {
@@ -955,49 +939,49 @@ $bg-gray: #f5f5f5;
 // 底部按钮
 .submit-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 32px;
+  gap: $sp-3;
+  margin-top: $sp-8;
 
   button {
     flex: 1;
     height: 44px;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: $radius-base;
+    font-size: $font-size-lg;
     border: none;
 
     &.submit-btn {
-      background: $primary-color;
-      color: #fff;
-      transition: all 0.3s ease;
+      background: $accent;
+      color: $white;
+      transition: $transition-slow;
 
       &:hover:not(:disabled) {
-        background: darken($primary-color, 5%);
+        background: $accent-dark;
         transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+        box-shadow: 0 4px 12px rgba($accent, 0.3);
       }
 
       &:disabled {
-        background: #d9d9d9;
-        color: rgba(0, 0, 0, 0.25);
+        background: $gray-300;
+        color: rgba($gray-900, 0.25);
         cursor: not-allowed;
       }
     }
 
     &.cancel-btn {
-      background: #fff;
-      color: $text-primary;
-      border: 1px solid $border-color;
+      background: $white;
+      color: $gray-800;
+      border: 1px solid $gray-200;
     }
   }
 
-  @media (max-width: 767px) {
+  @include mobile {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 12px 20px;
-    background: #fff;
-    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    padding: $sp-3 $sp-5;
+    background: $white;
+    box-shadow: 0 -2px 8px rgba($gray-900, 0.1);
     margin: 0;
   }
 }

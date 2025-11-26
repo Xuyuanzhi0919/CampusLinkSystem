@@ -149,83 +149,91 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .club-list-page {
   min-height: 100vh;
-  background: #F5F5F5;
-  padding-bottom: 32rpx;
+  background: $bg-page;
+  padding-bottom: $sp-8;
 }
 
+// ===================================
 // 搜索栏
+// ===================================
 .search-bar {
-  background: #FFFFFF;
-  padding: 24rpx 32rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  padding: $sp-6 $sp-8;
+  margin-bottom: $sp-4;
 }
 
 .search-input {
   display: flex;
   align-items: center;
-  background: #F5F5F5;
-  border-radius: 48rpx;
-  padding: 16rpx 32rpx;
+  background: $gray-100;
+  border-radius: $radius-2xl;
+  padding: $sp-4 $sp-8;
 }
 
 .search-icon {
-  font-size: 32rpx;
-  margin-right: 16rpx;
+  font-size: $font-size-lg;
+  margin-right: $sp-4;
 }
 
 .input {
   flex: 1;
-  font-size: 28rpx;
+  font-size: $font-size-base;
   background: transparent;
 }
 
 .clear-icon {
   font-size: 40rpx;
-  color: #999999;
-  padding: 0 12rpx;
+  color: $gray-400;
+  padding: 0 $sp-3;
 }
 
+// ===================================
 // 结果信息
+// ===================================
 .result-info {
-  padding: 16rpx 32rpx;
+  padding: $sp-4 $sp-8;
   display: flex;
   align-items: center;
 }
 
 .result-count {
-  font-size: 28rpx;
-  color: #666666;
+  font-size: $font-size-base;
+  color: $gray-500;
 }
 
+// ===================================
 // 加载状态
+// ===================================
 .loading-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
   padding: 160rpx 0;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #999999;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
+// ===================================
 // 社团列表
+// ===================================
 .club-list {
-  padding: 0 32rpx;
+  padding: 0 $sp-8;
 }
 
 .club-card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 32rpx;
-  margin-bottom: 24rpx;
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-8;
+  margin-bottom: $sp-6;
   display: flex;
   align-items: center;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.05);
+  transition: $transition-slow;
 
   &:active {
     transform: scale(0.98);
@@ -236,15 +244,15 @@ onMounted(() => {
 .club-logo-wrapper {
   width: 120rpx;
   height: 120rpx;
-  margin-right: 24rpx;
+  margin-right: $sp-6;
   flex-shrink: 0;
 }
 
 .club-logo {
   width: 100%;
   height: 100%;
-  border-radius: 16rpx;
-  background: #F5F5F5;
+  border-radius: $radius-card;
+  background: $gray-100;
 }
 
 .club-info {
@@ -255,66 +263,64 @@ onMounted(() => {
 .club-header {
   display: flex;
   align-items: center;
-  margin-bottom: 12rpx;
+  margin-bottom: $sp-3;
 }
 
 .club-name {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 12rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-3;
 }
 
 .club-desc {
-  font-size: 26rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  margin-bottom: $sp-4;
+  @include text-ellipsis(2);
 }
 
 .club-stats {
   display: flex;
-  gap: 32rpx;
+  gap: $sp-8;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .stat-icon {
-  margin-right: 8rpx;
+  margin-right: $sp-2;
 }
 
 .arrow-icon {
   font-size: 48rpx;
-  color: #D1D5DB;
-  margin-left: 16rpx;
+  color: $gray-300;
+  margin-left: $sp-4;
 }
 
+// ===================================
 // 空状态
+// ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 24rpx;
+  margin-bottom: $sp-6;
   opacity: 0.5;
 }
 
 .empty-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 </style>

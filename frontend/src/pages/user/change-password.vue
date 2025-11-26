@@ -337,10 +337,12 @@ onBeforeUnmount(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .change-password-page {
   min-height: 100vh;
-  background: #F9FAFB;
-  padding: 32rpx;
+  background: $gray-50;
+  padding: $sp-8;
 }
 
 .container {
@@ -349,59 +351,59 @@ onBeforeUnmount(() => {
 
 // 表单卡片
 .form-card {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 48rpx 32rpx;
-  margin-bottom: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-12 $sp-8;
+  margin-bottom: $sp-6;
+  box-shadow: $shadow-card;
 }
 
 // 表单组
 .form-group {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 
   &:last-of-type {
-    margin-bottom: 48rpx;
+    margin-bottom: $sp-12;
   }
 }
 
 .form-label {
   display: block;
-  font-size: 28rpx;
-  color: #1F2937;
-  margin-bottom: 16rpx;
-  font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-800;
+  margin-bottom: $sp-4;
+  font-weight: $font-weight-medium;
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  border: 2rpx solid #E5E7EB;
-  border-radius: 8rpx;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-base;
   overflow: hidden;
-  background: #FFFFFF;
+  background: $white;
 
   &:focus-within {
-    border-color: #2563EB;
+    border-color: $primary;
   }
 }
 
 .form-input {
   flex: 1;
   height: 88rpx;
-  padding: 0 48rpx 0 24rpx;
-  font-size: 32rpx;
-  color: #1F2937;
+  padding: 0 $sp-12 0 $sp-6;
+  font-size: $font-size-lg;
+  color: $gray-800;
 
   &::placeholder {
-    color: #9CA3AF;
+    color: $gray-400;
   }
 }
 
 .eye-icon {
   position: absolute;
-  right: 24rpx;
+  right: $sp-6;
   font-size: 40rpx;
   cursor: pointer;
   user-select: none;
@@ -409,64 +411,64 @@ onBeforeUnmount(() => {
 
 .error-text {
   display: block;
-  font-size: 24rpx;
-  color: #EF4444;
-  margin-top: 12rpx;
+  font-size: $font-size-sm;
+  color: $error;
+  margin-top: $sp-3;
 }
 
 // 密码强度指示器
 .strength-indicator {
   display: flex;
   align-items: center;
-  margin-top: 16rpx;
-  gap: 12rpx;
+  margin-top: $sp-4;
+  gap: $sp-3;
 }
 
 .strength-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .strength-bar {
   flex: 1;
   height: 8rpx;
-  background: #E5E7EB;
-  border-radius: 4rpx;
+  background: $gray-200;
+  border-radius: $radius-xs;
   overflow: hidden;
 }
 
 .strength-fill {
   height: 100%;
-  transition: width 0.3s, background-color 0.3s;
+  transition: $transition-slow;
 
   &.strength-weak {
-    background: #EF4444;
+    background: $error;
   }
 
   &.strength-medium {
-    background: #F59E0B;
+    background: $accent;
   }
 
   &.strength-strong {
-    background: #10B981;
+    background: $success;
   }
 }
 
 .strength-text {
-  font-size: 24rpx;
-  font-weight: 500;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
   min-width: 48rpx;
 
   &.strength-weak {
-    color: #EF4444;
+    color: $error;
   }
 
   &.strength-medium {
-    color: #F59E0B;
+    color: $accent;
   }
 
   &.strength-strong {
-    color: #10B981;
+    color: $success;
   }
 }
 
@@ -474,46 +476,44 @@ onBeforeUnmount(() => {
 .submit-btn {
   width: 100%;
   height: 88rpx;
-  background: #2563EB;
-  color: #FFFFFF;
-  font-size: 32rpx;
-  font-weight: 600;
-  border-radius: 12rpx;
+  background: $primary;
+  color: $white;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-md;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include flex-center;
 
   &:active:not(.disabled) {
     opacity: 0.8;
   }
 
   &.disabled {
-    background: #D1D5DB;
-    color: #9CA3AF;
+    background: $gray-300;
+    color: $gray-400;
   }
 }
 
 // 提示卡片
 .tips-card {
-  background: #FEF3C7;
-  border-radius: 12rpx;
-  padding: 24rpx 32rpx;
-  border-left: 4rpx solid #F59E0B;
+  background: $accent-100;
+  border-radius: $radius-md;
+  padding: $sp-6 $sp-8;
+  border-left: 4rpx solid $accent;
 }
 
 .tips-title {
   display: block;
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #92400E;
-  margin-bottom: 12rpx;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $accent-900;
+  margin-bottom: $sp-3;
 }
 
 .tips-item {
   display: block;
-  font-size: 24rpx;
-  color: #78350F;
+  font-size: $font-size-sm;
+  color: $accent-800;
   line-height: 40rpx;
 }
 </style>

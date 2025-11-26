@@ -175,29 +175,31 @@ const handlePointsClick = () => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .profile-header {
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  margin: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  background: $white;
+  border-radius: $radius-2xl;
+  padding: $sp-8;
+  margin: $sp-6;
+  box-shadow: $shadow-card;
 }
 
 // 用户基本信息
 .user-info {
   display: flex;
-  gap: 24rpx;
-  margin-bottom: 32rpx;
+  gap: $sp-6;
+  margin-bottom: $sp-8;
 }
 
 .avatar {
   width: 120rpx;
   height: 120rpx;
-  border-radius: 60rpx;
-  background: #F3F4F6;
+  border-radius: $radius-full;
+  background: $gray-100;
   flex-shrink: 0;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.95);
@@ -215,91 +217,89 @@ const handlePointsClick = () => {
 .name-row {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .nickname {
   font-size: 36rpx;
-  font-weight: 600;
-  color: #1F2937;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  @include text-ellipsis(1);
 }
 
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  margin-top: 8rpx;
+  gap: $sp-4;
+  margin-top: $sp-2;
 }
 
 .student-id,
 .school-name {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .school-name {
   &::before {
     content: '•';
-    margin-right: 8rpx;
+    margin-right: $sp-2;
   }
 }
 
 .points-row {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-top: 12rpx;
-  padding: 8rpx 12rpx 8rpx 0;
+  gap: $sp-2;
+  margin-top: $sp-3;
+  padding: $sp-2 $sp-3 $sp-2 0;
   cursor: pointer;
-  transition: all 0.2s;
-  border-radius: 8rpx;
-  margin-left: -12rpx;
-  padding-left: 12rpx;
+  transition: $transition-base;
+  border-radius: $radius-base;
+  margin-left: -$sp-3;
+  padding-left: $sp-3;
 
   &:active {
-    background: #FEF3C7;
+    background: $accent-100;
     transform: scale(0.98);
   }
 }
 
 .points-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .points-value {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #F59E0B;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $accent;
 }
 
 .points-arrow {
-  font-size: 32rpx;
-  color: #D97706;
-  font-weight: bold;
-  margin-left: 4rpx;
+  font-size: $font-size-lg;
+  color: $accent-600;
+  font-weight: $font-weight-bold;
+  margin-left: $sp-1;
 }
 
 // 统计数据
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 24rpx;
-  padding: 24rpx 0;
-  border-top: 1rpx solid #F3F4F6;
-  border-bottom: 1rpx solid #F3F4F6;
+  gap: $sp-6;
+  padding: $sp-6 0;
+  border-top: 1rpx solid $gray-100;
+  border-bottom: 1rpx solid $gray-100;
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
+  gap: $sp-2;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.95);
@@ -307,34 +307,32 @@ const handlePointsClick = () => {
 }
 
 .stat-value {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #2563EB;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $primary;
 }
 
 .stat-label {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 // 操作按钮
 .action-buttons {
   display: flex;
-  gap: 16rpx;
-  margin-top: 24rpx;
+  gap: $sp-4;
+  margin-top: $sp-6;
 }
 
 .btn {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8rpx;
+  @include flex-center;
+  gap: $sp-2;
   height: 72rpx;
-  border-radius: 12rpx;
-  font-size: 28rpx;
+  border-radius: $radius-md;
+  font-size: $font-size-base;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.98);
@@ -342,21 +340,21 @@ const handlePointsClick = () => {
 }
 
 .btn-edit {
-  background: #EFF6FF;
-  color: #2563EB;
+  background: $primary-50;
+  color: $primary;
 
   &:active {
-    background: #DBEAFE;
+    background: $primary-100;
   }
 }
 
 .btn-checkin {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-  color: #FFFFFF;
+  @include gradient-primary;
+  color: $white;
 
   &.disabled {
-    background: #E5E7EB;
-    color: #9CA3AF;
+    background: $gray-200;
+    color: $gray-400;
     cursor: not-allowed;
 
     &:active {
@@ -366,10 +364,10 @@ const handlePointsClick = () => {
 }
 
 .btn-icon {
-  font-size: 32rpx;
+  font-size: $font-size-lg;
 }
 
 .btn-text {
-  font-weight: 500;
+  font-weight: $font-weight-medium;
 }
 </style>

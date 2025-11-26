@@ -281,13 +281,15 @@ page {
 </style>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .points-history-page {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: #F9FAFB;
+  background: $gray-50;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -295,37 +297,37 @@ page {
 
 // 顶部积分概览
 .points-overview {
-  padding: 32rpx;
+  padding: $sp-8;
   flex-shrink: 0;
 }
 
 .overview-card {
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-  border-radius: 16rpx;
-  padding: 48rpx 32rpx;
+  @include gradient-primary;
+  border-radius: $radius-card;
+  padding: $sp-12 $sp-8;
   text-align: center;
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.2);
+  box-shadow: 0 8rpx 24rpx rgba($primary, 0.2);
 }
 
 .overview-title {
   display: block;
-  font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 16rpx;
+  font-size: $font-size-base;
+  color: rgba($white, 0.9);
+  margin-bottom: $sp-4;
 }
 
 .overview-points {
   display: block;
   font-size: 64rpx;
-  font-weight: bold;
-  color: #FFFFFF;
-  margin-bottom: 12rpx;
+  font-weight: $font-weight-bold;
+  color: $white;
+  margin-bottom: $sp-3;
 }
 
 .overview-desc {
   display: block;
-  font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: $font-size-sm;
+  color: rgba($white, 0.7);
 }
 
 // 滚动区域
@@ -336,19 +338,17 @@ page {
 
 // 积分记录列表
 .points-list {
-  padding: 0 32rpx 24rpx;
+  padding: 0 $sp-8 $sp-6;
 }
 
 // 积分卡片
 .points-card {
-  background: #FFFFFF;
-  border-radius: 12rpx;
-  padding: 32rpx;
-  margin-bottom: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.05);
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-8;
+  margin-bottom: $sp-5;
+  @include flex-between;
+  box-shadow: $shadow-card;
 
   &:active {
     opacity: 0.8;
@@ -359,7 +359,7 @@ page {
   flex: 1;
   display: flex;
   align-items: flex-start;
-  gap: 20rpx;
+  gap: $sp-5;
 }
 
 .reason-icon {
@@ -371,33 +371,33 @@ page {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .card-reason {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
 }
 
 .card-after {
   font-size: 26rpx;
-  color: #6B7280;
+  color: $gray-500;
 }
 
 .card-time {
-  font-size: 24rpx;
-  color: #9CA3AF;
+  font-size: $font-size-sm;
+  color: $gray-400;
 }
 
 .card-right {
   flex-shrink: 0;
-  margin-left: 20rpx;
+  margin-left: $sp-5;
 }
 
 .points-change {
   font-size: 36rpx;
-  font-weight: bold;
+  font-weight: $font-weight-bold;
 }
 
 // 空状态
@@ -406,52 +406,48 @@ page {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx 32rpx;
+  padding: 160rpx $sp-8;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 }
 
 .empty-text {
-  font-size: 32rpx;
-  color: #6B7280;
-  margin-bottom: 16rpx;
+  font-size: $font-size-lg;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 
 .empty-tip {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 // 加载状态
 .loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 160rpx 32rpx;
+  @include flex-center;
+  padding: 160rpx $sp-8;
 }
 
 .loading-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
+  font-size: $font-size-base;
+  color: $gray-400;
 }
 
 // 加载更多
 .load-more {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32rpx;
+  @include flex-center;
+  padding: $sp-8;
 }
 
 .load-more-text {
   font-size: 26rpx;
-  color: #9CA3AF;
+  color: $gray-400;
 }
 
 .safe-area-bottom {
-  height: 32rpx;
+  height: $sp-8;
 }
 </style>

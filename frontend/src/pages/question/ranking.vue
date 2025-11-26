@@ -123,27 +123,29 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+// 变量已通过 uni.scss 全局注入
+
 .ranking-page {
   min-height: 100vh;
-  background: #FBFCFE;
+  background: $bg-page;
   padding-bottom: 120rpx;
 }
 
-/* 导航栏 */
+// ===================================
+// 导航栏
+// ===================================
 .navbar {
   position: sticky;
   top: 0;
-  z-index: 100;
-  background: #FFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  z-index: $z-dropdown;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
 }
 
 .nav-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  @include flex-between;
   height: 88rpx;
-  padding: 0 24rpx;
+  padding: 0 $sp-6;
 }
 
 .nav-left {
@@ -152,74 +154,81 @@ onMounted(() => {
 
 .back-icon {
   font-size: 36rpx;
-  color: #111827;
+  color: $gray-900;
 }
 
 .nav-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #111827;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
 }
 
 .nav-right {
   width: 80rpx;
 }
 
-/* 内容区 */
+// ===================================
+// 内容区
+// ===================================
 .content-container {
-  padding: 12rpx 24rpx;
+  padding: $sp-3 $sp-6;
 }
 
 .loading-container {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
-/* 榜单列表 */
+// ===================================
+// 榜单列表
+// ===================================
 .ranking-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .ranking-item {
   display: flex;
   align-items: center;
-  gap: 16rpx;
-  background: #FFF;
-  border-radius: 12rpx;
-  padding: 20rpx 18rpx;
-  box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
+  gap: $sp-4;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-5 18rpx;
+  box-shadow: 0 1rpx 4rpx rgba($gray-900, 0.06);
+  transition: $transition-base;
 
   &:active {
     transform: translateY(1rpx);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
   }
 }
 
-/* 排名徽章 */
+// ===================================
+// 排名徽章
+// ===================================
 .rank-badge {
   width: 56rpx;
   height: 56rpx;
-  border-radius: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F5F7FA;
+  border-radius: $radius-md;
+  @include flex-center;
+  background: $gray-50;
   flex-shrink: 0;
 
+  // 金牌
   &.rank-1 {
     background: linear-gradient(135deg, #FFD700, #FFA500);
     box-shadow: 0 2rpx 8rpx rgba(255, 215, 0, 0.25);
   }
 
+  // 银牌
   &.rank-2 {
     background: linear-gradient(135deg, #C0C0C0, #A8A8A8);
     box-shadow: 0 2rpx 8rpx rgba(192, 192, 192, 0.25);
   }
 
+  // 铜牌
   &.rank-3 {
     background: linear-gradient(135deg, #CD7F32, #B8860B);
     box-shadow: 0 2rpx 8rpx rgba(205, 127, 50, 0.25);
@@ -227,77 +236,81 @@ onMounted(() => {
 }
 
 .rank-text {
-  font-size: 26rpx;
-  font-weight: 700;
-  color: #FFF;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: $white;
 
   .rank-badge:not(.rank-1):not(.rank-2):not(.rank-3) & {
-    color: #6B7280;
+    color: $gray-500;
   }
 }
 
-/* 用户头像 */
+// ===================================
+// 用户头像
+// ===================================
 .user-avatar {
   width: 72rpx;
   height: 72rpx;
-  border-radius: 50%;
-  background: #F5F5F5;
+  border-radius: $radius-full;
+  background: $gray-100;
   flex-shrink: 0;
 }
 
-/* 内容 */
+// ===================================
+// 内容
+// ===================================
 .item-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 8rpx;
+  gap: $sp-2;
 }
 
 .item-title {
-  font-size: 28rpx;
-  font-weight: 600;
-  color: #111827;
-  line-height: 1.4;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+  line-height: $line-height-tight;
+  @include text-ellipsis(1);
 }
 
 .item-meta {
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .meta-item {
-  font-size: 22rpx;
-  color: #9CA3AF;
+  font-size: $font-size-xs;
+  color: $gray-400;
 }
 
 .meta-dot {
-  font-size: 22rpx;
-  color: #D1D5DB;
+  font-size: $font-size-xs;
+  color: $gray-300;
 }
 
-/* 积分徽章 */
+// ===================================
+// 积分徽章
+// ===================================
 .points-badge {
   display: flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 6rpx 12rpx;
-  background: rgba(255, 193, 7, 0.1);
-  border-radius: 16rpx;
+  gap: $sp-1;
+  padding: $sp-1 + 2rpx $sp-3;
+  background: rgba($accent, 0.1);
+  border-radius: $radius-lg;
   flex-shrink: 0;
 }
 
 .points-icon {
-  font-size: 22rpx;
+  font-size: $font-size-xs;
 }
 
 .points-text {
-  font-size: 22rpx;
-  font-weight: 600;
-  color: #FF9800;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $accent;
 }
 </style>
 

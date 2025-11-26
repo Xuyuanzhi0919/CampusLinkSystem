@@ -637,9 +637,11 @@ const handleSubmit = async () => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .ask-page {
   min-height: 100vh;
-  background: #FBFCFE;
+  background: $bg-page;
   display: flex;
   flex-direction: column;
 }
@@ -652,12 +654,12 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: space-between;
   height: 88rpx;
-  padding: 0 24rpx;
-  background: #FFF;
-  border-bottom: 1rpx solid #E5E7EB;
+  padding: 0 $sp-6;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: $z-dropdown;
 }
 
 .nav-left,
@@ -674,22 +676,22 @@ const handleSubmit = async () => {
 }
 
 .nav-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #111827;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
 }
 
 .nav-btn {
-  font-size: 28rpx;
-  color: #6B7280;
-  padding: 8rpx 16rpx;
+  font-size: $font-size-base;
+  color: $gray-500;
+  padding: $sp-2 $sp-4;
 
   &--primary {
-    color: #1E5FFF;
-    font-weight: 600;
+    color: $primary;
+    font-weight: $font-weight-semibold;
 
     &.disabled {
-      color: #D1D5DB;
+      color: $gray-300;
     }
   }
 }
@@ -699,43 +701,43 @@ const handleSubmit = async () => {
 // ===================================
 .form-container {
   flex: 1;
-  padding: 20rpx 24rpx;
+  padding: $sp-5 $sp-6;
 }
 
 .form-section {
-  background: #FFF;
-  border-radius: 12rpx;
-  padding: 24rpx;
-  margin-bottom: 16rpx;
+  background: $white;
+  border-radius: $radius-base;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
 }
 
 // 标签栏
 .section-label {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-2;
+  margin-bottom: $sp-4;
 
   .label-text {
-    font-size: 28rpx;
-    font-weight: 600;
-    color: #111827;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $gray-900;
   }
 
   .label-required {
-    font-size: 28rpx;
-    color: #EF4444;
+    font-size: $font-size-base;
+    color: $error;
   }
 
   .label-count {
     margin-left: auto;
-    font-size: 24rpx;
-    color: #9CA3AF;
+    font-size: $font-size-sm;
+    color: $gray-400;
   }
 
   .label-hint {
-    font-size: 24rpx;
-    color: #9CA3AF;
+    font-size: $font-size-sm;
+    color: $gray-400;
   }
 }
 
@@ -744,10 +746,10 @@ const handleSubmit = async () => {
 // ===================================
 .title-input {
   width: 100%;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #111827;
-  line-height: 1.5;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+  line-height: $line-height-relaxed;
   min-height: 80rpx;
 }
 
@@ -756,9 +758,9 @@ const handleSubmit = async () => {
 // ===================================
 .content-input {
   width: 100%;
-  font-size: 28rpx;
-  color: #374151;
-  line-height: 1.6;
+  font-size: $font-size-base;
+  color: $gray-700;
+  line-height: $line-height-relaxed;
   min-height: 300rpx;
 }
 
@@ -767,43 +769,43 @@ const handleSubmit = async () => {
 // ===================================
 .category-selector {
   display: flex;
-  gap: 12rpx;
+  gap: $sp-3;
   flex-wrap: wrap;
 }
 
 .category-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 20rpx;
-  background: #F5F7FA;
-  border-radius: 20rpx;
-  transition: all 0.2s;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  background: $gray-100;
+  border-radius: $radius-lg;
+  transition: $transition-base;
 
   &.active {
-    background: rgba(30, 95, 255, 0.12);
+    background: rgba($primary, 0.12);
 
     .category-icon {
-      color: #1E5FFF;
+      color: $primary;
     }
 
     .category-label {
-      color: #1E5FFF;
-      font-weight: 600;
+      color: $primary;
+      font-weight: $font-weight-semibold;
     }
   }
 
   .category-icon {
-    font-size: 28rpx;
-    color: #6B7280;
-    transition: color 0.2s;
+    font-size: $font-size-base;
+    color: $gray-500;
+    transition: color $duration-base;
   }
 
   .category-label {
-    font-size: 26rpx;
-    color: #6B7280;
-    font-weight: 500;
-    transition: all 0.2s;
+    font-size: $font-size-sm + 2rpx;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+    transition: $transition-base;
   }
 }
 
@@ -813,31 +815,31 @@ const handleSubmit = async () => {
 .tags-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .tag-item {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 8rpx 16rpx;
-  background: rgba(30, 95, 255, 0.08);
-  border-radius: 16rpx;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  background: rgba($primary, 0.08);
+  border-radius: $radius-md;
 
   .tag-text {
-    font-size: 24rpx;
-    color: #1E5FFF;
+    font-size: $font-size-sm;
+    color: $primary;
   }
 
   .tag-remove {
-    font-size: 32rpx;
-    color: #9CA3AF;
+    font-size: $font-size-lg;
+    color: $gray-400;
     line-height: 1;
-    padding: 0 4rpx;
+    padding: 0 $sp-1;
 
     &:active {
-      color: #EF4444;
+      color: $error;
     }
   }
 }
@@ -845,23 +847,23 @@ const handleSubmit = async () => {
 .tag-input-wrapper {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 16rpx;
-  background: #F5F7FA;
-  border-radius: 12rpx;
-  margin-bottom: 16rpx;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  background: $gray-100;
+  border-radius: $radius-base;
+  margin-bottom: $sp-4;
 
   .tag-input {
     flex: 1;
-    font-size: 26rpx;
-    color: #111827;
+    font-size: $font-size-sm + 2rpx;
+    color: $gray-900;
   }
 
   .tag-add-btn {
-    font-size: 24rpx;
-    color: #1E5FFF;
-    font-weight: 600;
-    padding: 4rpx 12rpx;
+    font-size: $font-size-sm;
+    color: $primary;
+    font-weight: $font-weight-semibold;
+    padding: $sp-1 $sp-3;
   }
 }
 
@@ -869,30 +871,30 @@ const handleSubmit = async () => {
 .recommend-tags {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: $sp-3;
 
   .recommend-title {
-    font-size: 24rpx;
-    color: #6B7280;
+    font-size: $font-size-sm;
+    color: $gray-500;
   }
 
   .recommend-list {
     display: flex;
     flex-wrap: wrap;
-    gap: 10rpx;
+    gap: $sp-2;
   }
 
   .recommend-tag {
-    font-size: 24rpx;
-    color: #6B7280;
-    padding: 6rpx 14rpx;
-    background: #F5F7FA;
-    border-radius: 14rpx;
-    transition: all 0.2s;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    padding: $sp-1 $sp-3;
+    background: $gray-100;
+    border-radius: $radius-base;
+    transition: $transition-base;
 
     &:active {
-      background: rgba(30, 95, 255, 0.08);
-      color: #1E5FFF;
+      background: rgba($primary, 0.08);
+      color: $primary;
     }
   }
 }
@@ -903,14 +905,14 @@ const handleSubmit = async () => {
 .image-upload {
   display: flex;
   flex-wrap: wrap;
-  gap: 12rpx;
+  gap: $sp-3;
 }
 
 .image-item {
   position: relative;
   width: 200rpx;
   height: 200rpx;
-  border-radius: 12rpx;
+  border-radius: $radius-base;
   overflow: hidden;
 
   .image-preview {
@@ -920,19 +922,17 @@ const handleSubmit = async () => {
 
   .image-remove {
     position: absolute;
-    top: 8rpx;
-    right: 8rpx;
+    top: $sp-2;
+    right: $sp-2;
     width: 48rpx;
     height: 48rpx;
-    background: rgba(0, 0, 0, 0.6);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: rgba($gray-900, 0.6);
+    border-radius: $radius-full;
+    @include flex-center;
 
     .remove-icon {
-      font-size: 32rpx;
-      color: #FFF;
+      font-size: $font-size-lg;
+      color: $white;
       line-height: 1;
     }
   }
@@ -941,26 +941,26 @@ const handleSubmit = async () => {
 .image-add {
   width: 200rpx;
   height: 200rpx;
-  background: #F5F7FA;
-  border-radius: 12rpx;
+  background: $gray-100;
+  border-radius: $radius-base;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 8rpx;
+  gap: $sp-2;
 
   .add-icon {
     font-size: 64rpx;
-    color: #9CA3AF;
+    color: $gray-400;
   }
 
   .add-text {
-    font-size: 24rpx;
-    color: #6B7280;
+    font-size: $font-size-sm;
+    color: $gray-500;
   }
 
   &:active {
-    background: #E5E7EB;
+    background: $gray-200;
   }
 }
 
@@ -969,9 +969,9 @@ const handleSubmit = async () => {
 // ===================================
 .reward-selector {
   display: flex;
-  gap: 12rpx;
+  gap: $sp-3;
   flex-wrap: wrap;
-  margin-bottom: 16rpx;
+  margin-bottom: $sp-4;
 }
 
 .reward-item {
@@ -981,42 +981,42 @@ const handleSubmit = async () => {
   justify-content: center;
   width: 120rpx;
   height: 100rpx;
-  background: #F5F7FA;
-  border-radius: 12rpx;
-  transition: all 0.2s;
+  background: $gray-100;
+  border-radius: $radius-base;
+  transition: $transition-base;
 
   &.active {
-    background: rgba(249, 115, 22, 0.12);
+    background: rgba($accent, 0.12);
 
     .reward-points {
-      color: #F97316;
-      font-weight: 700;
+      color: $accent;
+      font-weight: $font-weight-bold;
     }
 
     .reward-label {
-      color: #F97316;
+      color: $accent;
     }
   }
 
   .reward-points {
-    font-size: 36rpx;
-    font-weight: 600;
-    color: #6B7280;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $gray-500;
     line-height: 1.2;
-    transition: all 0.2s;
+    transition: $transition-base;
   }
 
   .reward-label {
-    font-size: 22rpx;
-    color: #9CA3AF;
-    margin-top: 4rpx;
-    transition: color 0.2s;
+    font-size: $font-size-xs + 2rpx;
+    color: $gray-400;
+    margin-top: $sp-1;
+    transition: color $duration-base;
   }
 
   &.custom {
     &:not(.active) {
       .reward-points {
-        font-size: 26rpx;
+        font-size: $font-size-sm + 2rpx;
       }
     }
   }
@@ -1024,55 +1024,55 @@ const handleSubmit = async () => {
 
 // 自定义悬赏输入
 .custom-input-wrapper {
-  margin-top: 16rpx;
-  padding: 20rpx;
-  background: #F9FAFB;
-  border-radius: 12rpx;
-  border: 2rpx solid #E5E7EB;
+  margin-top: $sp-4;
+  padding: $sp-5;
+  background: $gray-50;
+  border-radius: $radius-base;
+  border: 2rpx solid $gray-200;
 }
 
 .custom-input-box {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 16rpx;
-  background: #FFFFFF;
-  border-radius: 8rpx;
-  border: 2rpx solid #D1D5DB;
-  transition: border-color 0.2s;
+  gap: $sp-3;
+  padding: $sp-3 $sp-4;
+  background: $white;
+  border-radius: $radius-sm;
+  border: 2rpx solid $gray-300;
+  transition: border-color $duration-base;
 
   &:focus-within {
-    border-color: #F97316;
+    border-color: $accent;
   }
 }
 
 .custom-input {
   flex: 1;
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #111827;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
   text-align: center;
 }
 
 .input-unit {
-  font-size: 24rpx;
-  color: #6B7280;
+  font-size: $font-size-sm;
+  color: $gray-500;
 }
 
 .custom-input-actions {
   display: flex;
-  gap: 12rpx;
-  margin-top: 16rpx;
+  gap: $sp-3;
+  margin-top: $sp-4;
 }
 
 .cancel-btn,
 .confirm-btn {
   flex: 1;
-  padding: 14rpx 0;
-  border-radius: 8rpx;
-  font-size: 28rpx;
+  padding: $sp-3 0;
+  border-radius: $radius-sm;
+  font-size: $font-size-base;
   border: none;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &::after {
     border: none;
@@ -1080,18 +1080,18 @@ const handleSubmit = async () => {
 }
 
 .cancel-btn {
-  background: #F3F4F6;
-  color: #6B7280;
+  background: $gray-200;
+  color: $gray-500;
 
   &:active {
-    background: #E5E7EB;
+    background: $gray-300;
   }
 }
 
 .confirm-btn {
-  background: linear-gradient(135deg, #F97316 0%, #FB923C 100%);
-  color: #FFFFFF;
-  font-weight: 600;
+  @include gradient-accent;
+  color: $white;
+  font-weight: $font-weight-semibold;
 
   &:disabled {
     opacity: 0.5;
@@ -1104,29 +1104,29 @@ const handleSubmit = async () => {
 
 .custom-error {
   display: block;
-  margin-top: 12rpx;
-  font-size: 24rpx;
-  color: #EF4444;
+  margin-top: $sp-3;
+  font-size: $font-size-sm;
+  color: $error;
   text-align: center;
 }
 
 .reward-hint {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 16rpx;
-  background: #FEF3C7;
-  border-radius: 8rpx;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  background: $warning-100;
+  border-radius: $radius-sm;
 
   .hint-icon {
-    font-size: 28rpx;
+    font-size: $font-size-base;
   }
 
   .hint-text {
     flex: 1;
-    font-size: 24rpx;
-    color: #92400E;
-    line-height: 1.5;
+    font-size: $font-size-sm;
+    color: $warning-800;
+    line-height: $line-height-relaxed;
   }
 }
 
@@ -1139,21 +1139,19 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  background: rgba($gray-900, 0.4);
+  @include flex-center;
+  z-index: $z-modal;
 }
 
 .loading-content {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16rpx;
-  padding: 48rpx;
-  background: #FFF;
-  border-radius: 16rpx;
+  gap: $sp-4;
+  padding: $sp-12;
+  background: $white;
+  border-radius: $radius-md;
 
   .loading-spinner {
     font-size: 64rpx;
@@ -1161,8 +1159,8 @@ const handleSubmit = async () => {
   }
 
   .loading-text {
-    font-size: 28rpx;
-    color: #6B7280;
+    font-size: $font-size-base;
+    color: $gray-500;
   }
 }
 
@@ -1177,6 +1175,6 @@ const handleSubmit = async () => {
 
 // 底部安全区域
 .bottom-safe-area {
-  height: 40rpx;
+  height: $sp-10;
 }
 </style>

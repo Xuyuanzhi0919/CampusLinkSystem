@@ -168,34 +168,36 @@ const handleItemClick = (item: FunctionItem) => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .function-grid {
-  background: #FFFFFF;
-  border-radius: 24rpx;
-  padding: 32rpx;
-  margin: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  background: $white;
+  border-radius: $radius-2xl;
+  padding: $sp-8;
+  margin: $sp-6;
+  box-shadow: $shadow-card;
 }
 
 .grid-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: #1F2937;
-  margin-bottom: 24rpx;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-6;
 }
 
 .grid-container {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32rpx 24rpx;
+  gap: $sp-8 $sp-6;
 }
 
 .function-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12rpx;
+  gap: $sp-3;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: $transition-base;
 
   &:active {
     transform: scale(0.95);
@@ -206,11 +208,9 @@ const handleItemClick = (item: FunctionItem) => {
   position: relative;
   width: 96rpx;
   height: 96rpx;
-  border-radius: 20rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
+  border-radius: $radius-lg;
+  @include flex-center;
+  transition: $transition-base;
 }
 
 .icon {
@@ -219,29 +219,27 @@ const handleItemClick = (item: FunctionItem) => {
 
 .badge {
   position: absolute;
-  top: -8rpx;
-  right: -8rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  padding: 0 8rpx;
-  background: #EF4444;
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2rpx solid #FFFFFF;
+  top: -$sp-2;
+  right: -$sp-2;
+  min-width: $sp-8;
+  height: $sp-8;
+  padding: 0 $sp-2;
+  background: $error;
+  border-radius: $radius-card;
+  @include flex-center;
+  border: 2rpx solid $white;
 }
 
 .badge-text {
   font-size: 20rpx;
-  font-weight: 600;
-  color: #FFFFFF;
+  font-weight: $font-weight-semibold;
+  color: $white;
   line-height: 1;
 }
 
 .label {
-  font-size: 24rpx;
-  color: #4B5563;
+  font-size: $font-size-sm;
+  color: $gray-600;
   text-align: center;
   white-space: nowrap;
 }
@@ -249,8 +247,8 @@ const handleItemClick = (item: FunctionItem) => {
 // 学习相关 (蓝色)
 .type-study {
   .icon-wrapper {
-    background: #EFF6FF;
-    border: 1rpx solid #DBEAFE;
+    background: $primary-50;
+    border: 1rpx solid $primary-100;
   }
 
   .icon {
@@ -258,15 +256,15 @@ const handleItemClick = (item: FunctionItem) => {
   }
 
   &:active .icon-wrapper {
-    background: #DBEAFE;
+    background: $primary-100;
   }
 }
 
 // 个人资产 (黄色)
 .type-asset {
   .icon-wrapper {
-    background: #FFFBEB;
-    border: 1rpx solid #FEF3C7;
+    background: $accent-50;
+    border: 1rpx solid $accent-100;
   }
 
   .icon {
@@ -274,15 +272,15 @@ const handleItemClick = (item: FunctionItem) => {
   }
 
   &:active .icon-wrapper {
-    background: #FEF3C7;
+    background: $accent-100;
   }
 }
 
 // 系统功能 (灰色)
 .type-system {
   .icon-wrapper {
-    background: #F3F4F6;
-    border: 1rpx solid #E5E7EB;
+    background: $gray-100;
+    border: 1rpx solid $gray-200;
   }
 
   .icon {
@@ -290,7 +288,7 @@ const handleItemClick = (item: FunctionItem) => {
   }
 
   &:active .icon-wrapper {
-    background: #E5E7EB;
+    background: $gray-200;
   }
 }
 </style>

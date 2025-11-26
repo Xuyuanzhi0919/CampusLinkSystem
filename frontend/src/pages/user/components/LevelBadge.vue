@@ -41,15 +41,17 @@ const levelIcon = computed(() => {
 </script>
 
 <style lang="scss" scoped>
+// 变量已通过 uni.scss 全局注入
+
 .level-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 4rpx 12rpx;
-  border-radius: 16rpx;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-card;
   height: 28rpx;
-  font-size: 22rpx;
-  font-weight: 600;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
   white-space: nowrap;
 
   .badge-text {
@@ -59,31 +61,31 @@ const levelIcon = computed(() => {
   // 青铜段位 (1-2级)
   &.level-bronze {
     background: linear-gradient(135deg, #B45309 0%, #F97316 100%);
-    color: #FFFFFF;
+    color: $white;
   }
 
   // 白银段位 (3-4级)
   &.level-silver {
-    background: linear-gradient(135deg, #9CA3AF 0%, #E5E7EB 100%);
-    color: #666666;
+    background: linear-gradient(135deg, $gray-400 0%, $gray-200 100%);
+    color: $gray-600;
   }
 
   // 黄金段位 (5-6级)
   &.level-gold {
-    background: linear-gradient(135deg, #D97706 0%, #FBBF24 100%);
+    background: linear-gradient(135deg, $accent-600 0%, $accent-400 100%);
     color: #B8860B;
   }
 
   // 钻石段位 (7-8级)
   &.level-diamond {
-    background: linear-gradient(135deg, #0EA5E9 0%, #E0F2FE 100%);
+    background: linear-gradient(135deg, $info 0%, $info-100 100%);
     color: #0277BD;
   }
 
   // 大师段位 (9级+)
   &.level-master {
     background: linear-gradient(135deg, #8B5CF6 0%, #DDD6FE 100%);
-    color: #FFFFFF;
+    color: $white;
   }
 }
 </style>

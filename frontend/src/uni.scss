@@ -35,20 +35,12 @@ $primary-700: #1D4ED8;
 $primary-800: #1E40AF;
 $primary-900: #1E3A8A;
 
-// 强调色 - 橙色系（用于积分、资源等强调场景）
-$accent: #F59E0B;
-$accent-light: #FBBF24;
-$accent-dark: #D97706;
-$accent-50: #FFFBEB;
-$accent-100: #FEF3C7;
-$accent-200: #FDE68A;
-$accent-300: #FDBA74;
-$accent-400: #FB923C;
-$accent-500: #F59E0B;
-$accent-600: #D97706;
-$accent-700: #B45309;
-$accent-800: #92400E;
-$accent-900: #78350F;
+// 强调色 - 全新橙色系（用于积分、奖励等）
+$accent: #FF6B35;
+$accent-light: #FF8a66;
+$accent-dark: #E65A29;
+$accent-50: #FFF0EB;
+$accent-100: #FFE2D9;
 
 // 功能色
 $success: #16A34A;
@@ -72,6 +64,27 @@ $info-light: #38BDF8;
 $info-50: #F0F9FF;
 $info-100: #E0F2FE;
 
+// 收藏/待确认主题色 - 紫色系
+$purple: #9333EA;
+$purple-light: #A855F7;
+$purple-50: #FAF5FF;
+$purple-100: #E9D5FF;
+$purple-200: #DDD6FE;
+
+// 收藏主题色 - 紫色系（使用同一色系）
+$favorite: #8B5CF6;
+$favorite-light: #A78BFA;
+$favorite-50: #EDE9FE;
+$favorite-100: #DDD6FE;
+
+// 排名徽章色 - 金银铜牌
+$rank-gold: #FFD700;
+$rank-gold-dark: #FFA500;
+$rank-silver: #C0C0C0;
+$rank-silver-dark: #A8A8A8;
+$rank-bronze: #CD7F32;
+$rank-bronze-dark: #B8860B;
+
 // 中性色 - 灰色系
 $gray-900: #0F172A;
 $gray-800: #1E293B;
@@ -88,6 +101,7 @@ $gray-50: #F8FAFC;
 $text-primary: $gray-900;
 $text-secondary: $gray-600;
 $text-tertiary: $gray-500;
+$text-quaternary: $gray-400; // 新增，用于更次要的文本
 $text-placeholder: $gray-400;
 $text-disabled: $gray-300;
 $text-inverse: #FFFFFF;
@@ -97,6 +111,7 @@ $border-light: $gray-100;
 $divider: $gray-200;
 
 $bg-page: $gray-50;
+$bg-page-deep: $gray-100; // 新增，用于提升层次感
 $bg-surface: #FFFFFF;
 $bg-elevated: #FFFFFF;
 $bg-input: $gray-100;
@@ -132,8 +147,8 @@ $spacing-2xl: $sp-24;
 
 $page-padding-x: $sp-8;
 $page-padding-y: $sp-6;
-$section-gap: $sp-12;
-$card-padding: $sp-8;
+$section-gap: $sp-24;       // 96rpx - 区块间距（已按P0规范重构）
+$card-padding: $sp-6;       // 24rpx - 卡片内边距（已按文档重构）
 $list-gap: $sp-6;
 
 // 字体系统
@@ -158,7 +173,7 @@ $font-weight-bold: 700;
 
 $line-height-tight: 1.25;
 $line-height-snug: 1.375;
-$line-height-normal: 1.5;
+$line-height-normal: 1.55; // 已按文档重构
 $line-height-relaxed: 1.625;
 $line-height-loose: 2;
 

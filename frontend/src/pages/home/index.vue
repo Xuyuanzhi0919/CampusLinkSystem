@@ -10,7 +10,7 @@
     />
 
     <!-- 核心功能区 -->
-    <FunctionCards @navigate="handleNavigate" />
+    <FunctionCards class="main-function-cards" @navigate="handleNavigate" />
 
     <!-- 个性化内容区 -->
     <view class="content-section">
@@ -751,6 +751,25 @@ onReachBottom(() => {
       height: 72rpx;
       min-width: 72rpx;
     }
+  }
+}
+
+
+/* Phase 4.5: 功能卡片区域 - 紧贴顶部 */
+.main-function-cards {
+  max-width: 1400px;
+  margin: -40px auto 0;
+  padding: 0 $sp-16;
+  position: relative;
+  z-index: 20;
+
+  @media (max-width: 1440px) {
+    padding: 0 $sp-12;
+  }
+
+  @include mobile {
+    margin-top: $sp-4;
+    padding: 0 $sp-4;
   }
 }
 

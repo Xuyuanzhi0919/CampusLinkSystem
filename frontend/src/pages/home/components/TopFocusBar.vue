@@ -20,13 +20,12 @@
           <text class="brand-slogan brand-slogan-short">大学生互助圈</text>
         </view>
 
-        <!-- 右侧：操作按钮（桌面端和平板端显示）-->
-        <view class="action-buttons desktop-tablet-only">
-          <!-- 登录/注册按钮（未登录时显示）-->
+        <!-- 右侧：操作按钮 -->
+        <view class="action-buttons">
+          <!-- 登录/注册按钮（未登录时在桌面端显示）-->
           <view
             v-if="showLoginButton"
-            class="action-btn action-btn-secondary login-btn-fade"
-            :class="{ 'btn-fade-out': !showLoginButton }"
+            class="action-btn action-btn-secondary desktop-only"
             @click="handleLoginRegister"
           >
             <text class="action-btn-text">登录 / 注册</text>
@@ -35,8 +34,7 @@
           <!-- 用户头像按钮（登录后显示）-->
           <view
             v-if="showAvatarButton"
-            class="avatar-wrapper avatar-fade"
-            :class="{ 'btn-fade-in': showAvatarButton }"
+            class="avatar-wrapper"
           >
             <UserAvatar
               :avatar-url="userInfo.avatar"
@@ -49,16 +47,12 @@
           <!-- 发布按钮（主操作）-->
           <view class="action-btn action-btn-primary" @click="handlePublish">
             <text class="action-btn-icon">✨</text>
-            <text class="action-btn-text">发布</text>
+            <text class="action-btn-text desktop-only">发布</text>
           </view>
         </view>
 
-        <!-- 移动端：汉堡菜单图标 -->
-        <view class="mobile-menu-icon mobile-only" @click="toggleMobileMenu">
-          <view class="hamburger-line"></view>
-          <view class="hamburger-line"></view>
-          <view class="hamburger-line"></view>
-        </view>
+        <!-- 移动端：汉堡菜单图标 (已废弃) -->
+        <!-- <view class="mobile-menu-icon mobile-only" @click="toggleMobileMenu"> ... </view> -->
 
         <!-- 用户下拉菜单 -->
         <UserDropdownMenu
@@ -85,7 +79,7 @@
                 class="search-input"
                 type="text"
                 v-model="searchKeyword"
-                placeholder="搜课件/问问题/找活动"
+                placeholder="搜索课程资料 / 问题 / 活动"
                 @confirm="handleSearch"
                 @focus="showHotTags = true"
                 @blur="handleBlur"
@@ -1015,584 +1009,318 @@ defineExpose({
 <style scoped lang="scss">
 // 变量已通过 uni.scss 全局注入
 
-/* Phase 1 重构：顶部区域 - 专业化、紧凑化 */
+// Web 端重构样式
+// 核心目标：压缩高度、强化导航、统一组件样式
+
 .top-focus-bar {
   position: relative;
   width: 100%;
-  height: 400rpx; /* 200px - 大幅缩减高度，从 640rpx 减少到 400rpx（减少 37%）*/
-  /* 专业化配色：更简洁的渐变，减少花哨感 */
-  background: linear-gradient(180deg,
-    $gray-50 0%,           /* 顶部极淡灰 */
-    $bg-surface 100%       /* 底部纯白 */
-  );
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%); // 使用更专业的淡色渐变
   overflow: visible;
-  z-index: auto;
-  /* 移除过重的阴影，改用轻微分割线 */
-  border-bottom: 1px solid $border-light;
+  z-index: 10; // 确保在页面内容之上
+  border-bottom: 1px solid #E2E8F0; // 轻微分割线
 }
 
-/* Phase 1：极简装饰层 - 移除过多背景元素 */
-.bg-decoration-layer {
-  display: none; /* 移除复杂装饰，保持专业简洁 */
-}
-
-/* 移除几何装饰 */
-.bg-circle-1,
-.bg-circle-2,
-.bg-wave {
-  display: none;
-}
-
-/* Phase 1：内容容器 - 紧凑布局 */
 .focus-container {
-  position: relative;
-  max-width: 2400rpx; /* 1200px */
-  height: 100%;
+  max-width: 1280px; // 适配主流屏幕
   margin: 0 auto;
-  padding: 0 $sp-16; /* 64rpx = 32px */
+  padding: 16px 32px; // 统一内边距
   display: flex;
   flex-direction: column;
-  justify-content: center; /* 垂直居中 */
-  gap: $sp-8; /* 导航栏与搜索区间距 */
-  z-index: 2;
+  gap: 24px; // 品牌区与搜索区的间距
 }
 
-/* Phase 1：顶部导航栏 - 紧凑专业 */
+/* 第一行：品牌区 + 用户操作区 */
 .top-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 64rpx; /* 32px - 更紧凑 */
+  height: 72px; // 建议高度
 }
 
-/* Phase 1：品牌标识 - 扁平化布局 */
 .brand-section {
   display: flex;
-  flex-direction: row; /* 横向排列 */
   align-items: center;
-  gap: $sp-4;
-  position: relative;
-  padding-left: $sp-4;
-
-  /* 左侧品牌色竖条 - 更细 */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 4rpx; /* 2px */
-    height: 32rpx; /* 16px */
-    background: $primary;
-    border-radius: $radius-xs;
-  }
+  gap: 12px;
 }
 
 .brand-logo {
-  font-size: $font-size-xl; /* 18px - 缩小字号 */
-  font-weight: $font-weight-bold;
-  color: $text-primary; /* 改为深灰色，更专业 */
-  line-height: 1;
-  letter-spacing: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.5px;
 }
 
-.brand-slogan {
-  font-size: $font-size-xs; /* 10px */
-  font-weight: $font-weight-regular;
-  color: $text-tertiary;
-  line-height: 1;
+.brand-slogan-full {
+  font-size: 14px;
+  font-weight: 400; // 按建议调整
+  color: #64748B; // 按建议调整
+  padding-left: 12px;
+  border-left: 1px solid #CBD5E1;
+  line-height: 1.2;
 }
 
-/* Phase 1：操作按钮组 - 简洁专业 */
+.brand-slogan-short {
+  display: none; // 移动端专用, Web端隐藏
+}
+
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: 16px; // 按建议调整
 }
 
 .action-btn {
-  padding: $sp-3 $sp-6;
-  background: $bg-surface;
-  border-radius: $radius-md; /* 8px - 减小圆角 */
-  border: 1px solid $border-color;
-  cursor: pointer;
-  transition: $transition-fast;
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-}
-
-/* 次操作按钮（登录/注册）*/
-.action-btn-secondary {
-  background: $bg-surface;
-  border: 1px solid $primary;
-}
-
-.action-btn-secondary .action-btn-text {
-  color: $primary;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-}
-
-.action-btn-secondary:hover {
-  background: $primary-50;
-  border-color: $primary;
-}
-
-/* 主操作按钮（发布）*/
-.action-btn-primary {
-  background: $primary;
-  border: none;
-}
-
-.action-btn-primary .action-btn-text {
-  color: $text-inverse;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-}
-
-.action-btn-primary .action-btn-icon {
-  color: $text-inverse;
-  font-size: $font-size-sm;
-}
-
-.action-btn-primary:hover {
-  background: $primary-dark;
-}
-
-.action-btn-text {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-secondary;
-  line-height: 1;
-}
-
-.action-btn-icon {
-  font-size: $font-size-sm;
-  line-height: 1;
-}
-
-/* 淡入淡出动画 */
-.login-btn-fade {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.btn-fade-out {
-  animation: fadeOut 0.3s ease-in-out;
-}
-
-.avatar-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.avatar-fade {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.btn-fade-in {
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(-10rpx);
-  }
-}
-
-
-/* Phase 1：主内容区 - 搜索区域 */
-.main-content-area {
   display: flex;
   align-items: center;
   justify-content: center;
+  height: 44px; // 统一按钮高度
+  padding: 0 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
 }
 
-/* Phase 1：搜索栏 - 核心入口，权重最高 */
-.search-section {
+.action-btn-secondary { // 登录/注册按钮
+  color: #334155;
+  background-color: #FFFFFF;
+  border-color: #CBD5E1;
+
+  &:hover {
+    background-color: #F8FAFC;
+    border-color: #94A3B8;
+  }
+}
+
+.action-btn-primary { // 发布按钮
+  color: #FFFFFF;
+  background-color: #2563EB; // 统一主色
+  gap: 8px;
+
+  .action-btn-icon {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background-color: #1D4ED8; // Hover深一阶
+  }
+}
+
+.avatar-wrapper {
+  cursor: pointer;
+}
+
+/* 第二行：搜索区 */
+.main-content-area {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-width: 1200rpx; /* 600px */
-  width: 100%;
-  gap: $sp-4;
+  justify-content: center;
 }
 
-/* 搜索框包装器 */
+.search-section {
+  width: 80%; // 占容器80%宽度
+  max-width: 960px;
+}
+
 .search-box-wrapper {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $sp-6;
 }
 
-/* Phase 1：搜索框 - 专业简洁风格 */
 .search-box {
-  position: relative;
-  width: 100%;
-  height: 88rpx; /* 44px */
-  background: $bg-surface;
-  border-radius: $radius-lg; /* 12px - 减小圆角 */
   display: flex;
   align-items: center;
-  padding: 0 $sp-4;
-  gap: $sp-3;
-  box-shadow: $shadow-sm;
-  transition: $transition-fast;
-  border: 1px solid $border-color;
+  height: 56px; // 建议高度
+  width: 100%;
+  background: #FFFFFF;
+  border-radius: 999px; // 胶囊形状
+  padding: 0 8px 0 20px; // 内边距调整
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04); // 建议阴影
+  border: 1px solid #E2E8F0;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #A7C5F9;
+    box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+  }
+
+  &:focus-within {
+    border-color: #2563EB;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
 }
 
-.search-box:hover {
-  border-color: $primary-300;
-  box-shadow: $shadow-base;
-}
-
-.search-box:focus-within {
-  border-color: $primary;
-  box-shadow: 0 0 0 3rpx rgba($primary, 0.1);
-}
-
-/* Phase 1：搜索图标 */
 .search-icon {
-  font-size: $font-size-lg;
-  line-height: 1;
-  color: $text-placeholder;
-  flex-shrink: 0;
+  font-size: 20px;
+  color: #94A3B8;
+  margin-right: 12px;
 }
 
-/* Phase 1：搜索输入框 */
 .search-input {
-  flex: 1;
+  flex-grow: 1;
   height: 100%;
-  font-size: $font-size-base;
-  color: $text-primary;
   border: none;
   outline: none;
   background: transparent;
+  font-size: 16px;
+  color: #0F172A;
+
+  &::placeholder {
+    color: #94A3B8;
+  }
 }
 
-.search-input::placeholder {
-  color: $text-placeholder;
-  font-size: $font-size-base;
-}
-
-/* Phase 1：热门搜索标签 */
-.hot-tags {
-  position: absolute;
-  left: 56rpx;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  gap: $sp-2;
-  z-index: 10;
-}
-
-.hot-tag {
-  font-size: $font-size-xs;
-  font-weight: $font-weight-regular;
-  color: $text-tertiary;
-  padding: $sp-1 $sp-3;
-  background: $gray-100;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  transition: $transition-fast;
-  white-space: nowrap;
-}
-
-.hot-tag:hover {
-  background: $primary-50;
-  color: $primary;
-}
-
-.hot-tag:active {
-  transform: scale(0.98);
-}
-
-/* Phase 1：搜索按钮 - 品牌蓝色 */
-.search-btn-primary {
-  position: relative;
-  height: 64rpx; /* 32px */
-  padding: 0 $sp-8;
-  background: $primary;
-  border-radius: $radius-md;
-  @include flex-center;
-  cursor: pointer;
-  transition: $transition-fast;
-  flex-shrink: 0;
-  border: none;
-}
-
-.search-btn-primary:hover {
-  background: $primary-dark;
-}
-
-.search-btn-primary:active {
-  transform: scale(0.98);
-}
-
-.search-btn-text {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $text-inverse;
-  line-height: 1;
-}
-
-/* Phase 1：语音搜索按钮 - 简洁风格 */
 .voice-search-btn-inline {
-  position: relative;
-  width: 40rpx;
-  height: 40rpx;
-  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  @include flex-center;
   cursor: pointer;
-  transition: $transition-fast;
-  flex-shrink: 0;
-}
+  color: #64748B;
+  transition: background-color 0.2s ease;
 
-.voice-search-btn-inline:hover {
-  background: $gray-100;
-}
-
-.voice-search-btn-inline:active {
-  transform: scale(0.95);
-}
-
-.voice-search-btn-inline.voice-active {
-  background: $error-50;
+  &:hover {
+    background-color: #F1F5F9;
+  }
 }
 
 .voice-icon-inline {
-  width: 24rpx;
-  height: 24rpx;
-  color: $text-tertiary;
+  width: 20px;
+  height: 20px;
 }
 
-.voice-search-btn-inline.voice-active .voice-icon-inline {
-  color: $error;
-}
-
-.voice-ripple-inline {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 32rpx;
-  height: 32rpx;
-  border-radius: 50%;
-  border: 1px solid $error;
-  opacity: 0.5;
-  animation: ripple-inline 1.5s ease-out infinite;
-}
-
-.voice-ripple-inline.voice-ripple-2 {
-  animation-delay: 0.75s;
-}
-
-@keyframes ripple-inline {
-  0% {
-    width: 32rpx;
-    height: 32rpx;
-    opacity: 0.5;
-  }
-  100% {
-    width: 64rpx;
-    height: 64rpx;
-    opacity: 0;
-  }
-}
-
-/* Phase 1：搜索框下方提示文字 */
-.search-tips {
+.search-btn-primary {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  font-size: $font-size-xs;
-  color: $text-placeholder;
-  line-height: 1;
+  justify-content: center;
+  height: 48px;
+  padding: 0 28px;
+  border-radius: 999px; // 胶囊形状
+  background-color: #2563EB;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 8px;
+
+  &:hover {
+    background-color: #1D4ED8;
+  }
 }
 
-.search-tip-item {
-  font-weight: $font-weight-regular;
-  color: $text-placeholder;
+.search-tips { // 搜索框下方提示
+  margin-top: 12px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #94A3B8;
 }
 
-.search-tip-divider {
-  color: $gray-300;
+.hot-tags {
+  display: none; // 在新设计中，暂时隐藏输入框内的热门标签以简化
 }
 
 
-
-/* Phase 1：移除插画元素层 - 保持专业简洁 */
-.illustration-layer {
-  display: none; /* 移除过度装饰 */
-}
-
-.campus-building,
-.student-illustration,
-.decoration-element,
-.decoration-book,
-.decoration-bulb,
-.decoration-pencil,
-.decoration-cap {
+/* 移除不再需要的元素 */
+.bg-decoration-layer, .illustration-layer {
   display: none;
 }
 
-/* ========== 响应式设计 ========== */
-
-/* 通用工具类 */
-.desktop-tablet-only {
-  display: flex !important;
-}
-
+/* 响应式设计保留，但主要针对移动端，Web样式已在上面重构 */
 .mobile-only {
   display: none !important;
 }
 
-/* 桌面端默认 */
-.brand-slogan-full {
-  display: inline;
-}
-
-.brand-slogan-short {
-  display: none;
-}
-
-/* 平板端（768px - 1024px）*/
-@media (min-width: 768px) and (max-width: 1024px) {
-  .top-focus-bar {
-    height: 360rpx; /* 180px */
+@media (max-width: 1024px) {
+  .focus-container {
+    padding: 16px;
   }
-
   .brand-slogan-full {
-    display: none !important;
+    display: none;
   }
-
-  .brand-slogan-short {
-    display: inline !important;
-  }
-
   .search-section {
-    max-width: 1000rpx;
+    width: 100%;
   }
 }
 
-/* 移动端（<768px）*/
-@media (max-width: 768px) {
-  .desktop-tablet-only {
-    display: none !important;
-  }
 
-  .mobile-only {
-    display: flex !important;
-  }
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
 
   .top-focus-bar {
-    height: 160rpx; /* 80px */
-    background: $bg-surface;
-    border-bottom: 1px solid $border-light;
+    height: 128px; // 整体高度
+    background: #FFFFFF;
+    border-bottom: 1px solid #F1F5F9;
   }
 
   .focus-container {
-    padding: $sp-4 $sp-6;
-    gap: $sp-4;
+    padding: 0 16px;
+    gap: 8px;
+    height: 100%;
+    justify-content: center;
   }
 
   .top-nav-bar {
-    height: auto;
+    height: 56px; // 第一行高度
+  }
+  
+  .brand-logo { font-size: 20px; }
+  .brand-slogan-full { display: none; }
+
+  .action-buttons {
+    gap: 0; // 移动端按钮更紧凑
+  }
+  
+  // 修正对UserAvatar子组件的选择器
+  .avatar-wrapper :deep(.user-avatar-comp) {
+    width: 36px;
+    height: 36px;
   }
 
-  .brand-section {
-    padding-left: $sp-3;
+  .action-btn.action-btn-primary {
+    height: 36px;
+    width: 36px;
+    padding: 0; // 移除内边距，使其为纯图标按钮
+    .action-btn-icon { font-size: 18px; }
   }
 
-  .brand-logo {
-    font-size: $font-size-lg;
-  }
-
-  .brand-slogan {
-    display: none !important;
-  }
-
-  /* 汉堡菜单 */
-  .mobile-menu-icon {
-    width: 72rpx;
-    height: 72rpx;
-    @include flex-center;
-    flex-direction: column;
-    gap: $sp-1;
-    cursor: pointer;
-    border-radius: $radius-md;
-    background: $gray-50;
-    transition: $transition-fast;
-  }
-
-  .mobile-menu-icon:active {
-    background: $gray-100;
-  }
-
-  .hamburger-line {
-    width: 32rpx;
-    height: 3rpx;
-    background: $text-secondary;
-    border-radius: $radius-xs;
-  }
-
-  /* 搜索区域 */
-  .search-section {
+  .main-content-area, .search-section {
     width: 100%;
-    max-width: 100%;
   }
 
   .search-box {
-    height: 72rpx;
-    padding: 0 $sp-3;
-    gap: $sp-2;
+    height: 44px; // 搜索框高度
+    border-radius: 999px; // 胶囊圆角
+    padding: 0 4px 0 16px;
+    box-shadow: none;
+    background: #F1F5F9;
+    border-color: transparent;
+    
+    &:hover, &:focus-within {
+      background: #E2E8F0;
+    }
   }
-
-  .search-icon {
-    font-size: $font-size-base;
-  }
-
-  .search-input {
-    font-size: $font-size-sm;
-  }
-
-  .search-input::placeholder {
-    font-size: $font-size-sm;
-  }
+  
+  .search-icon { font-size: 18px; margin-right: 8px; }
+  .search-input { font-size: 15px; }
 
   .search-btn-primary {
-    height: 56rpx;
-    padding: 0 $sp-6;
+    height: 36px;
+    padding: 0 16px;
+    font-size: 14px;
+    margin-left: 4px;
   }
-
-  .search-btn-text {
-    font-size: $font-size-xs;
-  }
-
-  .search-tips {
-    display: none; /* 移动端隐藏提示 */
-  }
+  
+  .search-tips { display: none; }
 }
 
+// ... 此处省略移动端菜单等未改动样式 ...
+// 保持原有的 .mobile-menu-overlay, .mobile-menu-panel 等样式不变
 /* ========== 移动端折叠菜单样式 - 锦上添花优化 ========== */
 .mobile-menu-overlay {
   position: fixed;

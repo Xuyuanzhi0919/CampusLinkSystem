@@ -21,14 +21,12 @@ $primary-200: #BFDBFE;
 $primary-300: #93C5FD;
 $primary-400: #60A5FA;
 
-// 强调色 - 橙色系（用于积分、资源等强调场景）
-$accent: #F59E0B;
-$accent-light: #FBBF24;
-$accent-dark: #D97706;
-$accent-50: #FFFBEB;
-$accent-100: #FEF3C7;
-$accent-200: #FDE68A;
-$accent-300: #FDBA74;
+// 强调色 - 全新橙色系（用于积分、奖励等）
+$accent: #FF6B35;
+$accent-light: #FF8a66;
+$accent-dark: #E65A29;
+$accent-50: #FFF0EB;
+$accent-100: #FFE2D9;
 
 // 功能色
 $success: #16A34A;
@@ -103,6 +101,7 @@ $gray-50: #F8FAFC;    // 页面背景
 $text-primary: $gray-900;
 $text-secondary: $gray-600;
 $text-tertiary: $gray-500;
+$text-quaternary: $gray-400; // 新增，用于更次要的文本
 $text-placeholder: $gray-400;
 $text-disabled: $gray-300;
 $text-inverse: #FFFFFF;
@@ -112,6 +111,7 @@ $border-light: $gray-100;
 $divider: $gray-200;
 
 $bg-page: $gray-50;
+$bg-page-deep: $gray-100; // 新增，用于提升层次感
 $bg-surface: #FFFFFF;
 $bg-elevated: #FFFFFF;
 $bg-input: $gray-100;
@@ -150,8 +150,8 @@ $spacing-2xl: $sp-24;   // 96rpx
 // 页面级间距
 $page-padding-x: $sp-8;     // 32rpx - 页面左右内边距
 $page-padding-y: $sp-6;     // 24rpx - 页面上下内边距
-$section-gap: $sp-12;       // 48rpx - 区块间距
-$card-padding: $sp-8;       // 32rpx - 卡片内边距
+$section-gap: $sp-24;       // 96rpx - 区块间距（已按P0规范重构）
+$card-padding: $sp-6;       // 24rpx - 卡片内边距（已按文档重构）
 $list-gap: $sp-6;           // 24rpx - 列表项间距
 
 // ============================================
@@ -183,7 +183,7 @@ $font-weight-bold: 700;
 // 行高
 $line-height-tight: 1.25;
 $line-height-snug: 1.375;
-$line-height-normal: 1.5;
+$line-height-normal: 1.55; // 已按文档重构
 $line-height-relaxed: 1.625;
 $line-height-loose: 2;
 

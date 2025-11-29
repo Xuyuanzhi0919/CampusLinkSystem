@@ -381,14 +381,12 @@ defineExpose({
 </script>
 
 <style scoped lang="scss">
-/* Final Top Nav - Professional Spec v2 */
+/* Final Top Nav - Professional Spec v3 */
 .final-top-nav {
   width: 100%;
-  height: 72px; 
-  background-color: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  height: 64px;
+  background-color: #F9FAFB;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   position: fixed;
   top: 0;
   left: 0;
@@ -403,64 +401,92 @@ defineExpose({
   width: 100%;
   max-width: 1400px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 24px;
 }
 
 /* 1. Left: Logo */
 .nav-left {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
+  margin-right: 12px;
 }
 .logo-text {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: $primary;
   cursor: pointer;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.3px;
+  line-height: 1.2;
+  user-select: none;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:active {
+    opacity: 0.6;
+  }
 }
 
 /* 2. Center: Search Bar */
 .nav-center {
-  flex: 1 1 640px;
-  min-width: 200px;
+  flex: 1 1 auto;
   display: flex;
   justify-content: center;
-  padding: 0 40px;
+  min-width: 0;
 }
 .social-search-bar {
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 640px;
-  height: 48px;
-  background-color: #fff;
-  border-radius: 100px;
-  padding: 0 20px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.02);
-  transition: all 0.2s ease-in-out;
+  max-width: min(640px, 50vw);
+  height: 44px;
+  background-color: #FFFFFF;
+  border-radius: 999px;
+  padding: 0 18px;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
 
   &:hover {
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-    border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.10);
+    border-color: rgba(37, 99, 235, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &:focus-within {
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+    border-color: rgba(37, 99, 235, 0.20);
+    transform: translateY(-1px);
   }
 }
 .search-icon {
   stroke: #94A3B8;
-  margin-right: 12px;
+  flex-shrink: 0;
+  margin-right: 10px;
+  transition: stroke 0.2s ease;
+
+  .social-search-bar:focus-within & {
+    stroke: $primary;
+  }
 }
 .search-input {
-  width: 100%;
+  flex: 1;
   height: 100%;
   border: none;
   outline: none;
   background: transparent;
-  font-size: 15px;
-  color: #333;
+  font-size: 14px;
+  color: #0F172A;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+
   &::placeholder {
     color: #94A3B8;
+    font-weight: 400;
   }
 }
 
@@ -470,40 +496,53 @@ defineExpose({
 
 /* 3. Right: Actions */
 .nav-right {
-  flex: 0 1 auto;
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  gap: 16px;
 }
 
 .user-section {
   position: relative;
   display: flex;
   align-items: center;
-  // No margin-left here
   :deep(.user-avatar-comp) {
     width: 32px;
     height: 32px;
   }
 }
 .login-button {
-    background: none;
-    border: none;
-    color: $text-secondary;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    padding: 8px 12px;
-    &:hover {
-      color: $primary;
-    }
+  height: 40px;
+  padding: 0 20px;
+  background: transparent;
+  border: 1px solid #CBD5E1;
+  border-radius: 12px;
+  color: #475569;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
+  letter-spacing: 0.2px;
+
+  &:hover {
+    background: rgba(37, 99, 235, 0.04);
+    border-color: $primary;
+    color: $primary;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.12);
+  }
+
+  &:active {
+    transform: translateY(0);
+    background: rgba(37, 99, 235, 0.08);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+  }
 }
 
 .notification-section {
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: 12px; // Avatar -> 12px -> Notification
 }
 
 .messages-button {
@@ -511,24 +550,33 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   background-color: transparent;
   border: none;
-  border-radius: 50%;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
 
   .messages-icon {
-    stroke: $text-secondary;
+    width: 20px;
+    height: 20px;
+    stroke: #64748B;
+    stroke-width: 2;
     transition: stroke 0.2s ease;
   }
 
   &:hover {
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
     .messages-icon {
-      stroke: $text-primary;
+      stroke: $primary;
     }
+  }
+
+  &:active {
+    transform: translateY(0);
+    background-color: rgba(0, 0, 0, 0.06);
   }
 
   // 未登录状态：线框图标 + 浅灰色
@@ -538,7 +586,7 @@ defineExpose({
     }
 
     &:hover {
-      background-color: rgba(0,0,0,0.03);
+      background-color: rgba(0, 0, 0, 0.03);
       .messages-icon {
         stroke: #64748B;
       }
@@ -546,44 +594,58 @@ defineExpose({
 
     &:active {
       background-color: transparent;
+      transform: none;
     }
   }
 }
 .notification-dot {
   position: absolute;
-  top: 10px;
-  right: 10px;
+  top: 6px;
+  right: 6px;
   width: 8px;
   height: 8px;
-  background-color: #EF4444;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
   border-radius: 50%;
-  border: 1.5px solid white;
+  border: 2px solid #F9FAFB;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.35);
 }
 
 .publish-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 44px;
-  padding: 0 24px;
-  border-radius: 16px;
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 999px;
   border: none;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: white;
-  background: linear-gradient(45deg, #FF9A3C, #FF6F3C);
-  box-shadow: 0 6px 20px rgba(255,140,80,0.25);
-  transition: all 0.3s $ease-in-out;
-  margin-left: 20px; // Bell -> 20px -> Publish
-}
-.publish-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(255, 140, 80, 0.35);
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #FF9B4A 0%, #FF7A2F 100%);
+  box-shadow: 0 6px 18px rgba(255, 140, 80, 0.28);
+  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
+  letter-spacing: 0.3px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(255, 140, 80, 0.38);
+    background: linear-gradient(135deg, #FFA65A 0%, #FF843F 100%);
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(255, 140, 80, 0.24);
+    background: linear-gradient(135deg, #FF8F3A 0%, #FF6F2F 100%);
+  }
 }
 .publish-icon {
-  font-size: 22px;
-  margin-right: 8px;
+  font-size: 18px;
+  margin-right: 6px;
+  font-weight: 400;
+}
+.publish-text {
+  font-weight: 600;
 }
 
 /* H5 Responsive Spec */
@@ -593,7 +655,7 @@ defineExpose({
     padding: 0 12px;
   }
   .nav-container {
-    gap: 8px;
+    gap: 12px;
   }
   .logo-text {
     display: none;
@@ -604,59 +666,96 @@ defineExpose({
 
   .fake-search-bar-h5 {
     display: flex;
-    flex-grow: 1;
+    flex: 1;
     align-items: center;
-    height: 40px;
-    background: #fff;
-    border-radius: 100px;
-    padding: 0 12px;
-    margin: 0 8px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    height: 36px;
+    background: #FFFFFF;
+    border-radius: 999px;
+    padding: 0 14px;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    transition: all 0.2s ease;
+
+    &:active {
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+      border-color: rgba(37, 99, 235, 0.12);
+    }
+
     .search-icon {
-      stroke: $text-placeholder;
+      width: 16px;
+      height: 16px;
+      stroke: #94A3B8;
+      flex-shrink: 0;
       margin-right: 8px;
     }
     .fake-search-text {
-      color: $text-placeholder;
-      font-size: 14px;
+      color: #94A3B8;
+      font-size: 13px;
+      font-weight: 500;
     }
   }
 
   .nav-right {
-    gap: 0;
+    flex-shrink: 0;
+    gap: 8px;
   }
-  
+
   .user-section :deep(.user-avatar-comp) {
-    width: 30px;
-    height: 30px;
+    width: 32px;
+    height: 32px;
   }
+
+  .login-button {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 13px;
+    border-radius: 10px;
+  }
+
   .messages-button {
-    width: 40px;
-    height: 40px;
-    margin-left: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+
+    .messages-icon {
+      width: 18px;
+      height: 18px;
+    }
   }
-  .messages-icon {
-    width: 22px;
-    height: 22px;
+
+  .notification-dot {
+    top: 5px;
+    right: 5px;
+    width: 7px;
+    height: 7px;
+    border-width: 1.5px;
   }
 
   .publish-button {
     position: fixed;
     bottom: 80px;
-    right: 20px;
-    width: 56px;
-    height: 56px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
     border-radius: 50%;
     padding: 0;
-    margin-left: 0;
-    box-shadow: 0 8px 24px rgba(255, 140, 80, 0.35);
+    box-shadow: 0 8px 24px rgba(255, 140, 80, 0.40);
     z-index: 1001;
+
+    &:hover {
+      transform: translateY(-2px);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
     .publish-text {
       display: none;
     }
     .publish-icon {
       margin-right: 0;
-      font-size: 28px;
+      font-size: 24px;
     }
   }
 }

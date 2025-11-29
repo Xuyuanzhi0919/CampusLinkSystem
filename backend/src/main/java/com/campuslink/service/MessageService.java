@@ -7,6 +7,7 @@ import com.campuslink.common.ResultCode;
 import com.campuslink.dto.message.ConversationResponse;
 import com.campuslink.dto.message.MessageResponse;
 import com.campuslink.dto.message.SendMessageRequest;
+import com.campuslink.dto.notification.SendNotificationRequest;
 import com.campuslink.entity.Message;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
@@ -32,6 +33,7 @@ public class MessageService {
 
     private final MessageMapper messageMapper;
     private final UserMapper userMapper;
+    private final NotificationService notificationService;
 
     /**
      * 发送私信
@@ -49,6 +51,9 @@ public class MessageService {
             throw new BusinessException(ResultCode.BAD_REQUEST, "不能给自己发送消息");
         }
 
+        // 获取发送者信息(用于通知内容)
+        User sender = userMapper.selectById(senderId);
+
         // 创建消息
         Message message = new Message();
         message.setSenderId(senderId);
@@ -60,7 +65,19 @@ public class MessageService {
 
         messageMapper.insert(message);
 
-        log.info("用户 {} 向用户 {} 发送了消息", senderId, request.getReceiverId());
+        // 创建私信通知
+        SendNotificationRequest notificationRequest = new SendNotificationRequest();
+        notificationRequest.setUserId(request.getReceiverId());
+        notificationRequest.setTitle("您收到了新私信");
+        notificationRequest.setContent(String.format("%s 给您发送了私信",
+            sender != null && sender.getNickname() != null ? sender.getNickname() : "用户" + senderId));
+        notificationRequest.setNotifyType("message");
+        notificationRequest.setRelatedType("MESSAGE");
+        notificationRequest.setRelatedId(senderId);  // 关联发送者ID,方便跳转到聊天页面
+
+        notificationService.sendToUser(request.getReceiverId(), notificationRequest);
+
+        log.info("用户 {} 向用户 {} 发送了消息并创建通知", senderId, request.getReceiverId());
         return message.getMId();
     }
 

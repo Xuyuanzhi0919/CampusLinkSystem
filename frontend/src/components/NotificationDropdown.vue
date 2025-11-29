@@ -16,7 +16,15 @@
 
       <!-- Notification List -->
       <view class="notification-list">
-        <view v-if="notifications.length === 0" class="empty-state">
+        <!-- 未登录空状态 -->
+        <view v-if="!isLoggedIn" class="empty-state empty-state-guest">
+          <text class="empty-icon">🔔</text>
+          <text class="empty-text">登录后即可查看通知</text>
+          <text class="empty-hint">系统通知、评论提醒、收藏更新等内容</text>
+        </view>
+
+        <!-- 已登录但无通知 -->
+        <view v-else-if="notifications.length === 0" class="empty-state">
           <text class="empty-icon">🔕</text>
           <text class="empty-text">暂无新通知</text>
           <text class="empty-hint">看看校园里发生了什么吧</text>
@@ -43,7 +51,10 @@
 
       <!-- Footer -->
       <view class="notification-footer">
-        <button class="view-all-btn" @click="handleViewAll">
+        <button v-if="!isLoggedIn" class="view-all-btn login-btn" @click="emit('login')">
+          登录 / 注册
+        </button>
+        <button v-else class="view-all-btn" @click="handleViewAll">
           进入通知中心
         </button>
       </view>
@@ -69,15 +80,17 @@ interface Props {
   visible: boolean;
   position: { top: number; left: number };
   notifications?: Notification[];
+  isLoggedIn?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
   visible: false,
   position: () => ({ top: 0, left: 0 }),
   notifications: () => [],
+  isLoggedIn: true,
 });
 
-const emit = defineEmits(['update:visible', 'mark-all-read', 'notification-click', 'view-all']);
+const emit = defineEmits(['update:visible', 'mark-all-read', 'notification-click', 'view-all', 'login']);
 const showAnimation = ref(false);
 
 const unreadCount = computed(() =>
@@ -296,6 +309,29 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
+// 未登录专属空状态
+.empty-state-guest {
+  padding: 60px 20px 40px 20px;
+
+  .empty-icon {
+    font-size: 48px;
+    opacity: 0.38;
+    margin-bottom: 6px;
+  }
+
+  .empty-text {
+    font-size: 16px;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  .empty-hint {
+    font-size: 13px;
+    color: #94A3B8;
+    margin-top: 4px;
+  }
+}
+
 .notification-item {
   display: flex;
   gap: 14px;
@@ -412,6 +448,20 @@ onUnmounted(() => {
   &:active {
     transform: translateY(0);
     box-shadow: 0 2px 8px rgba($primary, 0.2);
+  }
+
+  // 登录按钮：橙色渐变，提升转化率
+  &.login-btn {
+    background: linear-gradient(135deg, #FF9A3C 0%, #FF6F3C 100%);
+    box-shadow: 0 4px 14px rgba(255, 140, 80, 0.28);
+
+    &:hover {
+      box-shadow: 0 6px 18px rgba(255, 140, 80, 0.38);
+    }
+
+    &:active {
+      box-shadow: 0 2px 8px rgba(255, 140, 80, 0.2);
+    }
   }
 }
 </style>

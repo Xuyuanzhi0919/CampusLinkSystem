@@ -54,18 +54,24 @@
 
         <!-- 消息按钮 -->
         <div class="notification-section" ref="notificationContainer">
-          <button class="messages-button" @click="handleMessagesClick">
+          <button
+            class="messages-button"
+            :class="{ 'is-logged-out': !isLoggedIn }"
+            @click="handleMessagesClick"
+          >
             <svg class="messages-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M13.73 21a2 2 0 0 1-3.46 0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-            <span v-if="unreadNotificationCount > 0" class="notification-dot"></span>
+            <span v-if="isLoggedIn && unreadNotificationCount > 0" class="notification-dot"></span>
           </button>
           <NotificationDropdown
             :visible="showNotificationMenu"
             :position="notificationPosition"
             :notifications="displayNotifications"
+            :is-logged-in="isLoggedIn"
             @update:visible="showNotificationMenu = $event"
             @mark-all-read="handleMarkAllRead"
             @notification-click="handleNotificationClick"
             @view-all="handleViewAllNotifications"
+            @login="handleLogin"
           />
         </div>
         
@@ -511,12 +517,36 @@ defineExpose({
   border: none;
   border-radius: 50%;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
+
   .messages-icon {
     stroke: $text-secondary;
+    transition: stroke 0.2s ease;
   }
+
   &:hover {
     background-color: rgba(0,0,0,0.05);
+    .messages-icon {
+      stroke: $text-primary;
+    }
+  }
+
+  // 未登录状态：线框图标 + 浅灰色
+  &.is-logged-out {
+    .messages-icon {
+      stroke: #94A3B8;
+    }
+
+    &:hover {
+      background-color: rgba(0,0,0,0.03);
+      .messages-icon {
+        stroke: #64748B;
+      }
+    }
+
+    &:active {
+      background-color: transparent;
+    }
   }
 }
 .notification-dot {

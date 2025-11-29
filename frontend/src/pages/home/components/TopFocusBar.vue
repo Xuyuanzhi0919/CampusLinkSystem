@@ -93,7 +93,7 @@ import NotificationDropdown from '@/components/NotificationDropdown.vue';
 import config from '@/config';
 import { checkIn, getCheckInStatus } from '@/services/user';
 import { logout } from '@/services/auth';
-import { getUnreadNotifications, getTotalUnreadCount, markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification';
+import { getUnreadNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification';
 import type { NotificationResponse } from '@/services/notification';
 
 // 通知接口类型（与 NotificationDropdown 组件保持一致）
@@ -213,12 +213,12 @@ const handleLogin = () => {
 };
 
 /**
- * 加载未读通知数量 (包含私信)
+ * 加载未读通知数量
  */
 const loadUnreadCount = async () => {
   if (!isLoggedIn.value) return;
   try {
-    const count = await getTotalUnreadCount();
+    const count = await getUnreadCount();
     unreadCount.value = count;
   } catch (error) {
     console.error('加载未读数量失败:', error);

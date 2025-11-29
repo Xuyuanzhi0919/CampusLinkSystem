@@ -117,6 +117,7 @@ export const getUnreadCount = () => {
 
 /**
  * 获取总未读数 (通知 + 私信)
+ * @deprecated 建议分别显示通知和私信未读数,避免用户困惑
  */
 export const getTotalUnreadCount = async (): Promise<number> => {
   try {

@@ -31,6 +31,8 @@ export const NOTIFICATION_ICONS: Record<string, string> = {
   'RESOURCE': '📄',
   'QUESTION': '❓',
   'ACTIVITY': '🎉',
+  'MESSAGE': '✉️',
+  'ANSWER': '💡',
   'DEFAULT': '📢'
 }
 
@@ -79,6 +81,7 @@ export function buildNotificationLink(notification: NotificationResponse): strin
     'TASK': `/pages/task/detail?id=${notification.relatedId}`,
     'ACTIVITY': `/pages/club/activity-detail?id=${notification.relatedId}`,
     'COMMENT': `/pages/resource/detail?id=${notification.relatedId}`,
+    'MESSAGE': `/pages/message/chat?userId=${notification.relatedId}`,
   }
 
   return linkMap[notification.relatedType] || null
@@ -110,6 +113,22 @@ export const getUnreadNotifications = (params: {
  */
 export const getUnreadCount = () => {
   return request.get<number>('/notification/unread-count')
+}
+
+/**
+ * 获取总未读数 (通知 + 私信)
+ */
+export const getTotalUnreadCount = async (): Promise<number> => {
+  try {
+    const [notificationCount, messageCount] = await Promise.all([
+      request.get<number>('/notification/unread-count'),
+      request.get<number>('/message/unread-count')
+    ])
+    return notificationCount + messageCount
+  } catch (error) {
+    console.error('获取总未读数失败:', error)
+    return 0
+  }
 }
 
 /**

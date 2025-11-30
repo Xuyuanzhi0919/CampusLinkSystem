@@ -7,20 +7,23 @@ import com.campuslink.common.ResultCode;
 import com.campuslink.dto.message.ConversationResponse;
 import com.campuslink.dto.message.MessageResponse;
 import com.campuslink.dto.message.SendMessageRequest;
-import com.campuslink.dto.notification.SendNotificationRequest;
 import com.campuslink.entity.Message;
 import com.campuslink.entity.User;
+import com.campuslink.event.MessageSentEvent;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.MessageMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -33,25 +36,68 @@ public class MessageService {
 
     private final MessageMapper messageMapper;
     private final UserMapper userMapper;
-    private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final RedisTemplate<String, String> redisTemplate;
+
+    /**
+     * 消息发送限流: 每分钟最多发送条数
+     */
+    private static final int MAX_MESSAGES_PER_MINUTE = 20;
+
+    /**
+     * 群发检测阈值: 1分钟内给不同用户发送消息的数量
+     */
+    private static final int MASS_SEND_THRESHOLD = 30;
 
     /**
      * 发送私信
+     *
+     * 优化点:
+     * 1. 使用事件驱动模式,通知创建在事务提交后异步执行
+     * 2. 提升性能: 私信发送不再被通知创建阻塞
+     * 3. 解耦: MessageService 不再依赖 NotificationService
+     * 4. 限流防护: 防止消息轰炸和群发滥用
      */
     @Transactional
     public Long sendMessage(Long senderId, SendMessageRequest request) {
-        // 验证接收者存在
+        // 1. 消息发送限流: 每分钟最多发送 20 条
+        String msgRateKey = String.format("msg:rate:%d:%d", senderId, request.getReceiverId());
+        Long msgCount = redisTemplate.opsForValue().increment(msgRateKey);
+
+        if (msgCount == 1) {
+            redisTemplate.expire(msgRateKey, 1, TimeUnit.MINUTES);
+        }
+
+        if (msgCount > MAX_MESSAGES_PER_MINUTE) {
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS,
+                "发送消息过于频繁,请稍后再试");
+        }
+
+        // 2. 群发检测: 1分钟内给超过 30 个不同用户发消息
+        String massSendKey = String.format("msg:receivers:%d", senderId);
+        redisTemplate.opsForSet().add(massSendKey, request.getReceiverId().toString());
+        redisTemplate.expire(massSendKey, 1, TimeUnit.MINUTES);
+
+        Long uniqueReceiverCount = redisTemplate.opsForSet().size(massSendKey);
+        if (uniqueReceiverCount != null && uniqueReceiverCount > MASS_SEND_THRESHOLD) {
+            log.warn("检测到疑似群发行为: senderId={}, uniqueReceivers={}",
+                senderId, uniqueReceiverCount);
+            throw new BusinessException(ResultCode.TOO_MANY_REQUESTS,
+                "您的消息发送过于频繁,已被系统限制");
+        }
+
+        // 3. 验证接收者存在
         User receiver = userMapper.selectById(request.getReceiverId());
         if (receiver == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
         }
 
-        // 不能给自己发消息
+        // 4. 不能给自己发消息
         if (senderId.equals(request.getReceiverId())) {
             throw new BusinessException(ResultCode.BAD_REQUEST, "不能给自己发送消息");
         }
 
-        // 获取发送者信息(用于通知内容)
+        // 获取发送者信息(用于事件)
         User sender = userMapper.selectById(senderId);
 
         // 创建消息
@@ -65,19 +111,19 @@ public class MessageService {
 
         messageMapper.insert(message);
 
-        // 创建私信通知
-        SendNotificationRequest notificationRequest = new SendNotificationRequest();
-        notificationRequest.setUserId(request.getReceiverId());
-        notificationRequest.setTitle("您收到了新私信");
-        notificationRequest.setContent(String.format("%s 给您发送了私信",
-            sender != null && sender.getNickname() != null ? sender.getNickname() : "用户" + senderId));
-        notificationRequest.setNotifyType("message");
-        notificationRequest.setRelatedType("MESSAGE");
-        notificationRequest.setRelatedId(senderId);  // 关联发送者ID,方便跳转到聊天页面
+        // 发布私信发送事件 (事务提交后才会触发监听器)
+        MessageSentEvent event = new MessageSentEvent(
+            this,
+            message.getMId(),
+            senderId,
+            sender != null ? sender.getNickname() : null,
+            request.getReceiverId(),
+            request.getMsgType(),
+            request.getContent()
+        );
+        eventPublisher.publishEvent(event);
 
-        notificationService.sendToUser(request.getReceiverId(), notificationRequest);
-
-        log.info("用户 {} 向用户 {} 发送了消息并创建通知", senderId, request.getReceiverId());
+        log.info("用户 {} 向用户 {} 发送了消息", senderId, request.getReceiverId());
         return message.getMId();
     }
 

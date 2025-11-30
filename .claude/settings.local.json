@@ -56,7 +56,11 @@
       "Bash(src/main/java/com/campuslink/service/QuestionService.java)",
       "Bash(ren:*)",
       "Bash(move \"F:\\Cluade Code Project\\CampusLink\\frontend\\src\\pages\\club\\list.vue\" \"F:\\Cluade Code Project\\CampusLink\\frontend\\src\\pages\\club\\activity-list.vue\")",
-      "Bash(cmd //c taskkill //F //PID 76532)"
+      "Bash(cmd //c taskkill //F //PID 76532)",
+      "Bash(rm:*)",
+      "Bash(for file in ActivityScroll BannerSwiper BottomTabBar ClubCard PointsAnimation RecommendCards)",
+      "Bash(do echo '=== $file ===')",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

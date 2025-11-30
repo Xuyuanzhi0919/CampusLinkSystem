@@ -149,11 +149,9 @@ onUnmounted(() => {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 9998;
-  // 极致优化: 降低透明度 + 增强模糊，让背景更"安静"
-  background: rgba(245, 247, 250, 0.30); // 降低到 30%
-  backdrop-filter: blur(18px); // 提升到 18px
-  -webkit-backdrop-filter: blur(18px);
-  transition: background 0.28s cubic-bezier(0.34, 1.26, 0.64, 1);
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .menu-final {

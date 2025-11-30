@@ -1,16 +1,14 @@
 <template>
   <view class="home-new">
-    <!-- 顶部聚焦区 -->
-    <TopFocusBar
-      ref="topFocusBarRef"
-      @search="handleSearch"
-      @upload="handleUpload"
-      @ai-answer="handleAIAnswer"
-      @login="showLoginModal = true"
-    />
+    <!-- 响应式头部 -->
+    <WebHeader v-if="isDesktop" @search="handleSearch" @upload="handleUpload" @login="showLoginModal = true" />
+    <MobileHeader v-else @search="handleSearch" />
 
-    <!-- 核心功能区 -->
-    <FunctionCards class="main-function-cards" @navigate="handleNavigate" />
+    <!-- 移动端金刚区导航 -->
+    <GridNavigation v-if="!isDesktop" />
+
+    <!-- 核心功能区 (原 FunctionCards) - Web端保留, 移动端由GridNavigation替代 -->
+    <FunctionCards v-if="isDesktop" class="main-function-cards" @navigate="handleNavigate" />
 
     <!-- 个性化内容区 -->
     <view class="content-section">
@@ -91,10 +89,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import type { ComponentPublicInstance } from 'vue'
-import { onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
-import TopFocusBar from './components/TopFocusBar.vue'
+import { onPullDownRefresh, onReachBottom, onPageScroll } from '@dcloudio/uni-app'
+import WebHeader from '@/components/layout/WebHeader.vue'
+import MobileHeader from '@/components/layout/MobileHeader.vue'
+import GridNavigation from '@/components/layout/GridNavigation.vue'
 import FunctionCards from './components/FunctionCards.vue'
 import RecommendSection from './components/RecommendSection.vue'
 import HotRankingPanel from './components/HotRankingPanel.vue'
@@ -107,17 +107,27 @@ import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
 import CButton from '@/components/ui/CButton.vue'
 
+// 平台判断
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth > 768;
+  // #endif
+  // #ifndef H5
+  return false; // 非H5环境（如小程序）始终视为移动端
+  // #endif
+});
+
 // 登录弹窗状态
 const showLoginModal = ref(false)
 
 // 注册弹窗状态
 const showRegisterModal = ref(false)
 
-// TopFocusBar 引用 - 添加类型声明
-type TopFocusBarInstance = ComponentPublicInstance & {
+// WebHeader 引用 - 添加类型声明
+type WebHeaderInstance = ComponentPublicInstance & {
   checkLoginStatus: () => void
 }
-const topFocusBarRef = ref<TopFocusBarInstance | null>(null)
+const webHeaderRef = ref<WebHeaderInstance | null>(null)
 
 // 返回顶部按钮状态
 const showBackToTop = ref(false)
@@ -390,10 +400,10 @@ const handleLoginSuccess = (response: any) => {
   // 显示欢迎提示（品牌化设计）- 移除图标,配置中已有
   showWelcomeToast(`欢迎回来,${response.user.nickname}!`)
 
-  // 刷新 TopFocusBar 状态
+  // 刷新 WebHeader 状态（仅桌面端）
   setTimeout(() => {
-    if (topFocusBarRef.value && topFocusBarRef.value.checkLoginStatus) {
-      topFocusBarRef.value.checkLoginStatus()
+    if (isDesktop.value && webHeaderRef.value && webHeaderRef.value.checkLoginStatus) {
+      webHeaderRef.value.checkLoginStatus()
     }
   }, 100)
 }
@@ -413,10 +423,10 @@ const handleRegisterSuccess = (response: any) => {
   // 显示欢迎提示（品牌化设计）- 移除图标,配置中已有
   showWelcomeToast(`欢迎加入 CampusLink,${response.user.nickname}!`)
 
-  // 刷新 TopFocusBar 状态
+  // 刷新 WebHeader 状态（仅桌面端）
   setTimeout(() => {
-    if (topFocusBarRef.value && topFocusBarRef.value.checkLoginStatus) {
-      topFocusBarRef.value.checkLoginStatus()
+    if (isDesktop.value && webHeaderRef.value && webHeaderRef.value.checkLoginStatus) {
+      webHeaderRef.value.checkLoginStatus()
     }
   }, 100)
 }

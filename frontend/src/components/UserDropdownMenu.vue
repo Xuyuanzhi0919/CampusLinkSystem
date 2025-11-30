@@ -1,6 +1,6 @@
 <template>
   <view v-if="visible" class="dropdown-mask" @click="handleMaskClick">
-    <view class="dropdown-menu" :class="{ 'menu-show': showAnimation }" @tap.stop>
+    <view class="menu-final" :class="{ 'menu-show': showAnimation }" :style="menuStyle" @tap.stop>
       <!-- 用户信息卡片 -->
       <view class="user-info-card">
         <view class="user-avatar-large">
@@ -55,7 +55,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 
 interface UserInfo {
   nickname?: string
@@ -75,17 +75,31 @@ interface Props {
   visible: boolean
   userInfo: UserInfo
   isCheckedIn?: boolean
+  position: { top: number; left: number };
 }
 
 const props = withDefaults(defineProps<Props>(), {
   visible: false,
   userInfo: () => ({}),
-  isCheckedIn: false
+  isCheckedIn: false,
+  position: () => ({ top: 0, left: 0 }),
 })
 
 const emit = defineEmits(['update:visible', 'menu-click', 'check-in'])
 
 const showAnimation = ref(false)
+
+const menuStyle = computed(() => {
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
+  // 计算右侧偏移量, 使菜单右侧与 avatar 图标中心对齐,再向右偏移20px
+  const rightOffset = windowWidth - props.position.left - 20;
+
+  return {
+    top: `${props.position.top}px`,
+    right: `${rightOffset}px`,
+    left: 'auto',
+  };
+});
 
 // 菜单项配置
 const menuItems: MenuItem[] = [
@@ -147,25 +161,32 @@ const handleCheckIn = () => {
 }
 
 /* ==========  下拉菜单容器 ========== */
-.dropdown-menu {
-  position: fixed;
-  top: 128rpx;
-  right: 100rpx;
-  width: 480rpx; /* 240px */
-  background: rgba(255, 255, 255, 0.70); /* 优化: 提高不透明度 */
-  backdrop-filter: blur(32rpx); /* 优化: 16px 更强模糊 */
-  -webkit-backdrop-filter: blur(32rpx);
-  border-radius: 24rpx; /* 12px */
-  box-shadow: 0 20rpx 56rpx rgba(0, 0, 0, 0.10); /* 优化: 更深阴影 */
-  padding: 32rpx; /* 16px */
+.menu-final {
+  position: absolute;
+  width: 360px;
+  // 优化: 自适应内容高度, 同时给予最大高度限制
+  max-height: calc(100vh - 80px);
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.16),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 0 0 1px rgba(255, 255, 255, 0.9);
   z-index: 9999;
   opacity: 0;
-  transform: translateY(-16rpx) scale(0.98);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateX(0) translateY(-10px) scale(0.98);
+  transform-origin: top right;
+  transition: all 0.28s cubic-bezier(0.34, 1.26, 0.64, 1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px; // 统一内边距
 
   &.menu-show {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateX(0) translateY(0) scale(1);
   }
 }
 

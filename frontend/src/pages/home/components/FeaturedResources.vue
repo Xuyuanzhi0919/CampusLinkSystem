@@ -1,10 +1,24 @@
 <template>
   <view class="featured-resources">
+    <!-- 装饰元素 -->
+    <view class="section-decoration">
+      <text class="deco-emoji left">📚</text>
+      <text class="deco-emoji right">✨</text>
+    </view>
+
     <view class="section-header">
-      <text class="section-title">精选资料</text>
+      <view class="title-wrap">
+        <text class="section-title">精选资料</text>
+        <view class="share-badge">
+          <text class="badge-emoji">🔥</text>
+          <text class="badge-text">同学们都在看</text>
+        </view>
+      </view>
       <view class="view-more" @click="handleViewMore">
-        <text class="more-text">查看更多</text>
-        <text class="more-arrow">→</text>
+        <text class="more-text">发现更多</text>
+        <svg class="more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </view>
     </view>
 
@@ -29,7 +43,29 @@
       >
         <!-- 封面图 -->
         <view class="resource-cover" :class="item.category">
-          <text class="cover-icon">{{ getCategoryIcon(item.category) }}</text>
+          <!-- 课件图标 -->
+          <svg v-if="item.category === 'course'" class="cover-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19.5V4.5C4 3.67157 4.67157 3 5.5 3H18.5C19.3284 3 20 3.67157 20 4.5V19.5C20 20.3284 19.3284 21 18.5 21H5.5C4.67157 21 4 20.3284 4 19.5Z" stroke="currentColor" stroke-width="2"/>
+            <path d="M8 7H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 11H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M8 15H12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <!-- 试题图标 -->
+          <svg v-else-if="item.category === 'exam'" class="cover-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 15L11 17L15 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <!-- 笔记图标 -->
+          <svg v-else-if="item.category === 'notes'" class="cover-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 20H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16.5 3.50001C16.8978 3.10219 17.4374 2.87869 18 2.87869C18.2786 2.87869 18.5544 2.93356 18.8118 3.04017C19.0692 3.14677 19.303 3.30303 19.5 3.50001C19.697 3.697 19.8532 3.93085 19.9598 4.18822C20.0665 4.44559 20.1213 4.72144 20.1213 5.00001C20.1213 5.27859 20.0665 5.55444 19.9598 5.81181C19.8532 6.06918 19.697 6.30303 19.5 6.50001L7 19L3 20L4 16L16.5 3.50001Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <!-- 代码图标 -->
+          <svg v-else class="cover-icon" width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M16 18L22 12L16 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 6L2 12L8 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           <view class="cover-badge">
             <text class="badge-text">{{ item.format }}</text>
           </view>
@@ -43,11 +79,17 @@
           <!-- 统计数据 -->
           <view class="resource-stats">
             <view class="stat-item">
-              <text class="stat-icon">⬇️</text>
+              <svg class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M7 10L12 15L17 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M12 15V3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
               <text class="stat-value">{{ item.downloads }}</text>
             </view>
             <view class="stat-item">
-              <text class="stat-icon">⭐</text>
+              <svg class="stat-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
               <text class="stat-value">{{ item.rating }}</text>
             </view>
           </view>
@@ -85,16 +127,7 @@ const emit = defineEmits<{
 const loading = ref(true)
 const resourceList = ref<Resource[]>([])
 
-// 获取分类图标
-const getCategoryIcon = (category: string) => {
-  const icons: Record<string, string> = {
-    'course': '📖',
-    'exam': '📝',
-    'notes': '📒',
-    'code': '💻'
-  }
-  return icons[category] || '📄'
-}
+// 图标现在直接在模板中使用 SVG
 
 const handleResourceClick = (item: Resource) => {
   emit('resource-click', item)
@@ -155,57 +188,106 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .featured-resources {
-  margin-bottom: $sp-12;
+  margin-bottom: $module-gap-md;
+  padding: 40px 0;
+  position: relative;
+  // 使用青绿色调（$campus-teal）作为资料区调味色
+  background: linear-gradient(180deg, transparent 0%, rgba($campus-teal, 0.04) 30%, rgba($campus-teal, 0.06) 60%, transparent 100%);
+  border-radius: $campus-radius-lg;
+
+  // 装饰光斑
+  &::before {
+    content: '';
+    position: absolute;
+    top: 10%;
+    right: 5%;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba($campus-teal, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+
+// 装饰emoji
+.section-decoration {
+  position: absolute;
+  top: 24px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+
+  .deco-emoji {
+    position: absolute;
+    font-size: 20px;
+    opacity: 0.5;
+    animation: floatEmoji 3s ease-in-out infinite;
+
+    &.left {
+      left: 5%;
+      animation-delay: 0s;
+    }
+
+    &.right {
+      right: 5%;
+      animation-delay: 1.5s;
+    }
+  }
+}
+
+@keyframes floatEmoji {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(3deg); }
 }
 
 .section-header {
+  @include section-header;
+  position: relative;
+  z-index: 1;
+}
+
+.title-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: $sp-6;
+  gap: 12px;
 }
 
 .section-title {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
+  @include heading-h2;
+}
+
+.share-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba($campus-teal, 0.12), rgba($campus-teal, 0.2));
+  border-radius: $campus-radius-sm;
+
+  .badge-emoji {
+    font-size: 12px;
+  }
+
+  .badge-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: $campus-teal;
+  }
 }
 
 .view-more {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  cursor: pointer;
-  transition: $transition-fast;
+  @include view-more-link;
+  color: $campus-teal;
 
   &:hover {
-    .more-text,
-    .more-arrow {
-      color: $primary;
-    }
-
-    .more-arrow {
-      transform: translateX(4rpx);
-    }
-  }
-
-  .more-text {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
-  }
-
-  .more-arrow {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
+    color: darken($campus-teal, 10%);
   }
 }
 
 .resources-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: $sp-6;
+  gap: $module-gap-sm;
 
   @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
@@ -213,22 +295,24 @@ onMounted(() => {
 
   @include mobile {
     grid-template-columns: 1fr;
-    gap: $sp-4;
+    gap: 16px;
   }
 }
 
 .resource-card {
-  background: $bg-surface;
-  border-radius: $radius-md;
+  background: $white;
+  border-radius: $campus-radius;
+  box-shadow: $campus-shadow-card;
   overflow: hidden;
   cursor: pointer;
-  transition: $transition-base;
-  border: 1px solid $border-light;
+  height: 240px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
 
   &:hover {
-    border-color: $primary-200;
-    box-shadow: $shadow-md;
-    transform: translateY(-4rpx);
+    transform: translateY(-4px);
+    box-shadow: $campus-shadow-hover;
 
     .resource-cover {
       .cover-icon {
@@ -242,33 +326,35 @@ onMounted(() => {
     pointer-events: none;
 
     .skeleton-cover {
-      height: 160rpx;
+      height: 100px;
+      flex-shrink: 0;
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
     }
 
     .skeleton-content {
-      padding: $sp-5;
+      padding: 16px;
+      flex: 1;
     }
 
     .skeleton-title {
-      height: 32rpx;
+      height: 20px;
       width: 80%;
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-      margin-bottom: 12rpx;
+      border-radius: $campus-radius-sm;
+      margin-bottom: 8px;
     }
 
     .skeleton-meta {
-      height: 24rpx;
+      height: 16px;
       width: 50%;
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
+      border-radius: $campus-radius-sm;
     }
   }
 }
@@ -283,43 +369,54 @@ onMounted(() => {
 }
 
 .resource-cover {
-  height: 160rpx;
+  height: 100px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  background: $gray-50;
 
+  // 课件 - 使用主色蓝
   &.course {
-    background: linear-gradient(135deg, $primary-100, $primary-50);
+    background: rgba($campus-blue, 0.08);
+    color: $campus-blue;
   }
 
+  // 试题 - 使用强调色橙
   &.exam {
-    background: linear-gradient(135deg, $warning-100, $warning-50);
+    background: rgba($campus-amber, 0.1);
+    color: $campus-amber;
   }
 
+  // 笔记 - 使用辅助色青绿
   &.notes {
-    background: linear-gradient(135deg, $success-100, $success-50);
+    background: rgba($campus-teal, 0.1);
+    color: $campus-teal;
   }
 
+  // 代码 - 使用信息色紫
   &.code {
-    background: linear-gradient(135deg, $info-100, $info-50);
+    background: rgba($campus-violet, 0.1);
+    color: $campus-violet;
   }
 
   .cover-icon {
-    font-size: 56rpx;
+    width: 32px;
+    height: 32px;
     transition: $transition-base;
   }
 
   .cover-badge {
     position: absolute;
-    top: 12rpx;
-    right: 12rpx;
-    padding: 4rpx 12rpx;
+    top: 8px;
+    right: 8px;
+    padding: 2px 8px;
     background: rgba($black, 0.6);
-    border-radius: $radius-xs;
+    border-radius: $campus-radius-sm;
 
     .badge-text {
-      font-size: $font-size-xs;
+      font-size: 11px;
       color: $white;
       font-weight: $font-weight-medium;
     }
@@ -327,59 +424,67 @@ onMounted(() => {
 }
 
 .resource-info {
-  padding: $sp-5;
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .resource-title {
   display: block;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
+  font-size: 16px;
+  font-weight: $font-weight-semibold;
   color: $text-primary;
-  line-height: $line-height-snug;
-  margin-bottom: 8rpx;
+  line-height: 1.4;
+  margin-bottom: 6px;
   @include text-ellipsis(1);
 }
 
 .resource-desc {
   display: block;
-  font-size: $font-size-sm;
+  font-size: 14px;
   color: $text-tertiary;
-  line-height: $line-height-normal;
-  margin-bottom: 12rpx;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  height: 42px;
   @include text-ellipsis(2);
 }
 
 .resource-stats {
   display: flex;
-  gap: 16rpx;
-  margin-bottom: 12rpx;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4rpx;
+  gap: 4px;
 
   .stat-icon {
-    font-size: 20rpx;
+    width: 14px;
+    height: 14px;
+    color: $text-quaternary;
   }
 
   .stat-value {
-    font-size: $font-size-xs;
+    font-size: 12px;
     color: $text-quaternary;
   }
 }
 
 .resource-price {
+  margin-left: auto;
+
   .price-free {
-    font-size: $font-size-sm;
-    color: $success;
+    font-size: 13px;
+    color: $campus-teal;
     font-weight: $font-weight-medium;
   }
 
   .price-points {
-    font-size: $font-size-sm;
-    color: $accent;
+    font-size: 13px;
+    color: $campus-amber;
     font-weight: $font-weight-medium;
   }
 }

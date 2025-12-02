@@ -61,6 +61,7 @@
             @question-click="handleHotQuestionClick"
             @tag-click="handleTagClick"
             @ai-click="handleAIClick"
+            @quick-link="handleQuickLink"
           />
         </view>
       </view>
@@ -96,6 +97,7 @@
     <view
       v-if="showBackToTop"
       class="back-to-top-btn"
+      :class="{ hidden: hideForFooter }"
       @click="scrollToTop"
     >
       <text class="back-to-top-icon">↑</text>
@@ -143,6 +145,7 @@ const showRegisterModal = ref(false)
 
 // 返回顶部
 const showBackToTop = ref(false)
+const hideForFooter = ref(false)
 let scrollTimer: any = null
 
 // 组件引用
@@ -237,6 +240,19 @@ const handleAIClick = () => {
     url: '/pages/ai/chat',
     fail: () => uni.showToast({ title: 'AI 助手开发中', icon: 'none' })
   })
+}
+
+const handleQuickLink = (type: string) => {
+  const routes: Record<string, string> = {
+    upload: '/pages/resource/upload',
+    ask: '/pages/question/ask',
+    task: '/pages/task/publish',
+    activity: '/pages/club/activity-list'
+  }
+  const url = routes[type]
+  if (url) {
+    uni.navigateTo({ url, fail: () => uni.showToast({ title: '功能开发中', icon: 'none' }) })
+  }
 }
 
 // ===================== 查看更多 =====================
@@ -339,6 +355,15 @@ const handlePageScroll = () => {
   scrollTimer = setTimeout(() => {
     const scrollTop = window.pageYOffset || document.documentElement.scrollTop
     showBackToTop.value = scrollTop > 300
+
+    // 检测是否滚动到 Footer 区域
+    const footer = document.querySelector('.home-footer')
+    if (footer) {
+      const footerTop = footer.getBoundingClientRect().top
+      const windowHeight = window.innerHeight
+      // 当 Footer 进入视口时隐藏 FAB
+      hideForFooter.value = footerTop < windowHeight - 100
+    }
   }, 100)
   // #endif
 }
@@ -398,10 +423,10 @@ onUnmounted(() => {
 
 // 主内容区
 .main-content {
-  padding: $sp-12 0;
+  padding: $module-gap-md 0;
 
   @include mobile {
-    padding: $sp-6 0;
+    padding: 24px 0;
   }
 }
 
@@ -428,61 +453,69 @@ onUnmounted(() => {
 .main-area {
   flex: 8;
   min-width: 0;
+  // 为分区背景提供溢出空间
+  overflow: visible;
 
   @include mobile {
     flex: 1;
   }
 }
 
-// 右侧栏（4栅格 = 33.33%）
+// 右侧栏（固定340px宽度）
 .sidebar-area {
-  flex: 4;
-  min-width: 280px;
-  max-width: 360px;
+  width: 340px;
+  flex-shrink: 0;
 
   @include mobile {
     display: none;
   }
 }
 
-// 返回顶部按钮
+// 返回顶部按钮（使用统一校园样式）
 .back-to-top-btn {
   position: fixed;
-  right: $sp-8;
-  bottom: $sp-16;
-  width: 88rpx;
-  height: 88rpx;
-  background: $primary;
-  border-radius: 50%;
+  right: 32px;
+  bottom: 80px;
+  width: 48px;
+  height: 48px;
+  background: $white;
+  border-radius: $campus-radius;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: $shadow-md;
+  box-shadow: $campus-shadow;
   cursor: pointer;
   z-index: $z-fixed;
   transition: $transition-base;
+  border: 1px solid rgba($campus-blue, 0.1);
 
   &:hover {
-    background: $primary-dark;
-    transform: translateY(-4rpx);
-    box-shadow: $shadow-lg;
+    box-shadow: $campus-shadow-hover;
+    transform: translateY(-2px);
+    border-color: rgba($campus-blue, 0.2);
+  }
+
+  &.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px);
   }
 
   @include mobile {
-    right: $sp-4;
-    bottom: 160rpx;
-    width: 80rpx;
-    height: 80rpx;
+    right: 16px;
+    bottom: 100px;
+    width: 44px;
+    height: 44px;
   }
 }
 
 .back-to-top-icon {
-  font-size: 40rpx;
-  color: $white;
+  font-size: 20px;
+  color: $campus-blue;
   font-weight: $font-weight-bold;
 
   @include mobile {
-    font-size: 36rpx;
+    font-size: 18px;
   }
 }
 </style>

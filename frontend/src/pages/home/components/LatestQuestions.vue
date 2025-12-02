@@ -4,7 +4,9 @@
       <text class="section-title">最新问答</text>
       <view class="view-more" @click="handleViewMore">
         <text class="more-text">查看更多</text>
-        <text class="more-arrow">→</text>
+        <svg class="more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </view>
     </view>
 
@@ -37,10 +39,13 @@
         <view class="question-content">
           <text class="question-title">{{ item.title }}</text>
 
-          <!-- 标签 -->
+          <!-- 标签（限制最多3个） -->
           <view class="question-tags">
-            <view v-for="tag in item.tags" :key="tag" class="tag-item">
+            <view v-for="tag in item.tags.slice(0, 3)" :key="tag" class="tag-item">
               <text class="tag-text">{{ tag }}</text>
+            </view>
+            <view v-if="item.tags.length > 3" class="tag-more">
+              <text class="more-text">+{{ item.tags.length - 3 }}</text>
             </view>
           </view>
 
@@ -50,14 +55,19 @@
             <text class="meta-dot">·</text>
             <text class="meta-time">{{ item.time }}</text>
             <text class="meta-dot">·</text>
-            <text class="meta-item">
-              <text class="meta-icon">💬</text>
-              {{ item.answers }} 回答
-            </text>
-            <text class="meta-item">
-              <text class="meta-icon">👁️</text>
-              {{ item.views }} 浏览
-            </text>
+            <view class="meta-item">
+              <svg class="meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <text>{{ item.answers }} 回答</text>
+            </view>
+            <view class="meta-item">
+              <svg class="meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
+              <text>{{ item.views }} 浏览</text>
+            </view>
           </view>
         </view>
 
@@ -151,73 +161,69 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .latest-questions {
-  margin-bottom: $sp-12;
+  margin: 0 calc(-1 * $sp-16);
+  padding: 48px $sp-16;
+  // 问答区使用浅蓝过渡背景
+  background: linear-gradient(180deg, rgba($campus-blue, 0.02) 0%, $white 100%);
+  border-radius: $campus-radius-lg;
+  position: relative;
+
+  // 顶部分割线 - 使用校园蓝
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, $campus-blue 0%, lighten($campus-blue, 15%) 100%);
+    border-radius: 2px;
+  }
+
+  @media (max-width: 1440px) {
+    margin: 0 calc(-1 * $sp-12);
+    padding: 40px $sp-12;
+  }
+
+  @include mobile {
+    margin: 0 calc(-1 * $sp-4);
+    padding: 32px $sp-4;
+  }
 }
 
 .section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: $sp-6;
+  @include section-header;
 }
 
 .section-title {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
+  @include heading-h2;
 }
 
 .view-more {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  cursor: pointer;
-  transition: $transition-fast;
-
-  &:hover {
-    .more-text,
-    .more-arrow {
-      color: $primary;
-    }
-
-    .more-arrow {
-      transform: translateX(4rpx);
-    }
-  }
-
-  .more-text {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
-  }
-
-  .more-arrow {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
-  }
+  @include view-more-link;
 }
 
 .questions-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-4;
+  gap: 16px;
 }
 
 .question-card {
-  background: $bg-surface;
-  border-radius: $radius-md;
-  padding: $sp-6;
+  background: $white;
+  border-radius: $campus-radius;
+  box-shadow: $campus-shadow-card;
+  padding: 20px;
   display: flex;
-  gap: $sp-4;
+  gap: 16px;
   cursor: pointer;
-  transition: $transition-base;
-  border: 1px solid $border-light;
   position: relative;
+  transition: all 0.3s ease;
 
   &:hover {
-    border-color: $primary-200;
-    box-shadow: $shadow-sm;
+    transform: translateY(-2px);
+    box-shadow: $campus-shadow;
   }
 
   // 骨架屏
@@ -281,7 +287,7 @@ onMounted(() => {
   width: 72rpx;
   height: 72rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, $primary, $primary-light);
+  background: $campus-blue;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -302,29 +308,40 @@ onMounted(() => {
 
 .question-title {
   display: block;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
+  font-size: 16px;
+  font-weight: $font-weight-semibold;
   color: $text-primary;
-  line-height: $line-height-snug;
-  margin-bottom: 12rpx;
+  line-height: 1.4;
+  margin-bottom: 12px;
   @include text-ellipsis(2);
 }
 
 .question-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8rpx;
-  margin-bottom: 12rpx;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
 .tag-item {
-  padding: 4rpx 12rpx;
-  background: $primary-50;
-  border-radius: $radius-xs;
+  padding: 4px 10px;
+  background: rgba($campus-blue, 0.08);
+  border-radius: $campus-radius-sm;
 
   .tag-text {
-    font-size: $font-size-xs;
-    color: $primary;
+    font-size: 12px;
+    color: $campus-blue;
+  }
+}
+
+.tag-more {
+  padding: 4px 8px;
+  background: $gray-100;
+  border-radius: $campus-radius-sm;
+
+  .more-text {
+    font-size: 12px;
+    color: $text-tertiary;
   }
 }
 
@@ -332,55 +349,57 @@ onMounted(() => {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8rpx;
+  gap: 8px;
 }
 
 .meta-author {
-  font-size: $font-size-xs;
+  font-size: 12px;
   color: $text-secondary;
   font-weight: $font-weight-medium;
 }
 
 .meta-dot {
-  font-size: $font-size-xs;
+  font-size: 12px;
   color: $text-quaternary;
 }
 
 .meta-time {
-  font-size: $font-size-xs;
+  font-size: 12px;
   color: $text-quaternary;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
-  gap: 4rpx;
-  font-size: $font-size-xs;
+  gap: 4px;
+  font-size: 12px;
   color: $text-quaternary;
 
   .meta-icon {
-    font-size: 18rpx;
+    width: 14px;
+    height: 14px;
+    color: $campus-blue;
   }
 }
 
 .status-badge {
   position: absolute;
-  top: $sp-6;
-  right: $sp-6;
-  padding: 6rpx 16rpx;
-  border-radius: $radius-full;
+  top: 16px;
+  right: 16px;
+  padding: 4px 12px;
+  border-radius: $campus-radius-sm;
   background: $gray-100;
 
   &.solved {
-    background: $success-100;
+    background: rgba($campus-teal, 0.12);
 
     .status-text {
-      color: $success;
+      color: $campus-teal;
     }
   }
 
   .status-text {
-    font-size: $font-size-xs;
+    font-size: 12px;
     color: $text-tertiary;
     font-weight: $font-weight-medium;
   }

@@ -1,10 +1,24 @@
 <template>
   <view class="activity-recommend">
+    <!-- 装饰元素 -->
+    <view class="section-decoration">
+      <text class="deco-emoji left">🎉</text>
+      <text class="deco-emoji right">🎊</text>
+    </view>
+
     <view class="section-header">
-      <text class="section-title">社团活动推荐</text>
+      <view class="title-wrap">
+        <text class="section-title">社团活动推荐</text>
+        <view class="title-badge">
+          <text class="badge-dot"></text>
+          <text class="badge-text">热门</text>
+        </view>
+      </view>
       <view class="view-more" @click="handleViewMore">
-        <text class="more-text">查看更多</text>
-        <text class="more-arrow">→</text>
+        <text class="more-text">探索更多</text>
+        <svg class="more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </view>
     </view>
 
@@ -28,9 +42,38 @@
         @click="handleActivityClick(item)"
       >
         <!-- 封面图 -->
-        <view class="activity-cover">
+        <view class="activity-cover" :class="getActivityType(item.icon)">
           <view class="cover-placeholder">
-            <text class="cover-icon">{{ item.icon }}</text>
+            <!-- 电脑/编程活动 -->
+            <svg v-if="item.icon === '💻'" class="cover-icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <rect x="2" y="3" width="20" height="14" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M8 21H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M12 17V21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M7 10L9 12L7 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M13 14H17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <!-- 英语/交流活动 -->
+            <svg v-else-if="item.icon === '🗣️'" class="cover-icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="8" cy="10" r="1" fill="currentColor"/>
+              <circle cx="12" cy="10" r="1" fill="currentColor"/>
+              <circle cx="16" cy="10" r="1" fill="currentColor"/>
+            </svg>
+            <!-- 摄影活动 -->
+            <svg v-else-if="item.icon === '📷'" class="cover-icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <path d="M23 19C23 19.5304 22.7893 20.0391 22.4142 20.4142C22.0391 20.7893 21.5304 21 21 21H3C2.46957 21 1.96086 20.7893 1.58579 20.4142C1.21071 20.0391 1 19.5304 1 19V8C1 7.46957 1.21071 6.96086 1.58579 6.58579C1.96086 6.21071 2.46957 6 3 6H7L9 3H15L17 6H21C21.5304 6 22.0391 6.21071 22.4142 6.58579C22.7893 6.96086 23 7.46957 23 8V19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="13" r="4" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            <!-- 默认活动 -->
+            <svg v-else class="cover-icon" width="40" height="40" viewBox="0 0 24 24" fill="none">
+              <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+              <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 10H21" stroke="currentColor" stroke-width="2"/>
+              <path d="M8 14H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M14 14H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M8 18H10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
           </view>
           <!-- 状态标签 -->
           <view class="status-tag" :class="getStatusClass(item.status)">
@@ -53,11 +96,19 @@
           <!-- 时间地点 -->
           <view class="activity-meta">
             <view class="meta-row">
-              <text class="meta-icon">📅</text>
+              <svg class="meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+                <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                <path d="M3 10H21" stroke="currentColor" stroke-width="2"/>
+              </svg>
               <text class="meta-text">{{ item.time }}</text>
             </view>
             <view class="meta-row">
-              <text class="meta-icon">📍</text>
+              <svg class="meta-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
+              </svg>
               <text class="meta-text">{{ item.location }}</text>
             </view>
           </view>
@@ -100,6 +151,16 @@ const emit = defineEmits<{
 
 const loading = ref(true)
 const activityList = ref<Activity[]>([])
+
+// 获取活动类型样式
+const getActivityType = (icon: string) => {
+  const types: Record<string, string> = {
+    '💻': 'type-code',
+    '🗣️': 'type-talk',
+    '📷': 'type-photo'
+  }
+  return types[icon] || 'type-default'
+}
 
 // 获取状态样式类
 const getStatusClass = (status: string) => {
@@ -180,57 +241,138 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .activity-recommend {
-  margin-bottom: $sp-12;
+  margin: 0 calc(-1 * $sp-16);
+  padding: 48px $sp-16 56px;
+  // 使用橙色调（$campus-amber）作为活动区调味色
+  background: linear-gradient(180deg, rgba($campus-amber, 0.04) 0%, rgba($campus-amber, 0.08) 30%, rgba($campus-amber, 0.04) 60%, $white 100%);
+  border-radius: $campus-radius-lg;
+  position: relative;
+  overflow: hidden;
+
+  // 装饰性背景光斑
+  &::before {
+    content: '';
+    position: absolute;
+    top: 20%;
+    left: -5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba($campus-amber, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 10%;
+    right: -5%;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba($campus-violet, 0.08) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  @media (max-width: 1440px) {
+    margin: 0 calc(-1 * $sp-12);
+    padding: 40px $sp-12 48px;
+  }
+
+  @include mobile {
+    margin: 0 calc(-1 * $sp-4);
+    padding: 32px $sp-4 40px;
+  }
+}
+
+// 装饰emoji
+.section-decoration {
+  position: absolute;
+  top: 32px;
+  left: 0;
+  right: 0;
+  pointer-events: none;
+
+  .deco-emoji {
+    position: absolute;
+    font-size: 24px;
+    opacity: 0.6;
+    animation: floatEmoji 3s ease-in-out infinite;
+
+    &.left {
+      left: 10%;
+      animation-delay: 0s;
+    }
+
+    &.right {
+      right: 10%;
+      animation-delay: 1.5s;
+    }
+  }
+}
+
+@keyframes floatEmoji {
+  0%, 100% { transform: translateY(0) rotate(-5deg); }
+  50% { transform: translateY(-8px) rotate(5deg); }
 }
 
 .section-header {
+  @include section-header;
+  position: relative;
+  z-index: 1;
+}
+
+.title-wrap {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  margin-bottom: $sp-6;
+  gap: 12px;
 }
 
 .section-title {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
+  @include heading-h2;
+}
+
+.title-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, rgba($campus-amber, 0.12), rgba($campus-amber, 0.2));
+  border-radius: $campus-radius-sm;
+
+  .badge-dot {
+    width: 6px;
+    height: 6px;
+    background: $campus-amber;
+    border-radius: 50%;
+    animation: pulseDot 1.5s ease-in-out infinite;
+  }
+
+  .badge-text {
+    font-size: 11px;
+    font-weight: 500;
+    color: $campus-amber;
+  }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.9); }
 }
 
 .view-more {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  cursor: pointer;
-  transition: $transition-fast;
+  @include view-more-link;
+  color: $campus-amber;
 
   &:hover {
-    .more-text,
-    .more-arrow {
-      color: $primary;
-    }
-
-    .more-arrow {
-      transform: translateX(4rpx);
-    }
-  }
-
-  .more-text {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
-  }
-
-  .more-arrow {
-    font-size: $font-size-sm;
-    color: $text-tertiary;
-    transition: $transition-fast;
+    color: darken($campus-amber, 10%);
   }
 }
 
 .activities-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: $sp-6;
+  gap: $module-gap-sm;
 
   @media (max-width: 1200px) {
     grid-template-columns: repeat(2, 1fr);
@@ -238,22 +380,21 @@ onMounted(() => {
 
   @include mobile {
     grid-template-columns: 1fr;
-    gap: $sp-4;
+    gap: 16px;
   }
 }
 
 .activity-card {
-  background: $bg-surface;
-  border-radius: $radius-md;
+  background: $white;
+  border-radius: $campus-radius;
+  box-shadow: $campus-shadow-card;
   overflow: hidden;
   cursor: pointer;
-  transition: $transition-base;
-  border: 1px solid $border-light;
+  transition: all 0.3s ease;
 
   &:hover {
-    border-color: $primary-200;
-    box-shadow: $shadow-md;
-    transform: translateY(-4rpx);
+    transform: translateY(-4px);
+    box-shadow: $campus-shadow-hover;
   }
 
   // 骨架屏
@@ -277,7 +418,7 @@ onMounted(() => {
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
+      border-radius: $campus-radius-sm;
       margin-bottom: 12rpx;
     }
 
@@ -287,7 +428,7 @@ onMounted(() => {
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
       animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
+      border-radius: $campus-radius-sm;
     }
   }
 }
@@ -304,7 +445,31 @@ onMounted(() => {
 .activity-cover {
   height: 180rpx;
   position: relative;
-  background: linear-gradient(135deg, $pink-100, $pink-50);
+  background: $gray-50;
+
+  // 编程活动 - 使用主色蓝
+  &.type-code {
+    background: linear-gradient(135deg, rgba($campus-blue, 0.08), rgba($campus-blue, 0.15));
+    color: $campus-blue;
+  }
+
+  // 交流活动 - 使用强调色橙
+  &.type-talk {
+    background: linear-gradient(135deg, rgba($campus-amber, 0.1), rgba($campus-amber, 0.18));
+    color: $campus-amber;
+  }
+
+  // 摄影活动 - 使用信息色紫
+  &.type-photo {
+    background: linear-gradient(135deg, rgba($campus-violet, 0.1), rgba($campus-violet, 0.18));
+    color: $campus-violet;
+  }
+
+  // 默认活动 - 使用辅助色青绿
+  &.type-default {
+    background: linear-gradient(135deg, rgba($campus-teal, 0.1), rgba($campus-teal, 0.18));
+    color: $campus-teal;
+  }
 
   .cover-placeholder {
     width: 100%;
@@ -314,7 +479,8 @@ onMounted(() => {
     justify-content: center;
 
     .cover-icon {
-      font-size: 64rpx;
+      width: 40px;
+      height: 40px;
     }
   }
 
@@ -323,24 +489,27 @@ onMounted(() => {
     top: 12rpx;
     left: 12rpx;
     padding: 4rpx 12rpx;
-    border-radius: $radius-xs;
+    border-radius: $campus-radius-sm;
 
+    // 即将开始 - 使用主色蓝
     &.status-upcoming {
-      background: $primary;
+      background: $campus-blue;
 
       .tag-text {
         color: $white;
       }
     }
 
+    // 进行中 - 使用辅助色青绿
     &.status-ongoing {
-      background: $success;
+      background: $campus-teal;
 
       .tag-text {
         color: $white;
       }
     }
 
+    // 已结束 - 使用灰色
     &.status-ended {
       background: $gray-400;
 
@@ -362,11 +531,11 @@ onMounted(() => {
 
 .activity-title {
   display: block;
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
+  font-size: 16px;
+  font-weight: $font-weight-semibold;
   color: $text-primary;
-  line-height: $line-height-snug;
-  margin-bottom: 12rpx;
+  line-height: 1.4;
+  margin-bottom: 12px;
   @include text-ellipsis(1);
 }
 
@@ -381,7 +550,7 @@ onMounted(() => {
   width: 36rpx;
   height: 36rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, $accent, $accent-light);
+  background: $campus-blue;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -405,7 +574,7 @@ onMounted(() => {
 .meta-row {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 6px;
   margin-bottom: 4rpx;
 
   &:last-child {
@@ -413,7 +582,10 @@ onMounted(() => {
   }
 
   .meta-icon {
-    font-size: 20rpx;
+    width: 14px;
+    height: 14px;
+    color: $text-tertiary;
+    flex-shrink: 0;
   }
 
   .meta-text {

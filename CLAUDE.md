@@ -256,16 +256,68 @@ docker-compose down
 2. **Redis 配置**：
    - 确保 Redis 已安装并运行（推荐 7.0+）
    - 或使用 Docker：`docker run -d -p 6379:6379 redis:7-alpine`
+   - **注意**：项目根目录没有 `docker-compose.yml` 文件，需要手动启动 MySQL 和 Redis
 
 3. **后端配置**：
    - 修改 `backend/src/main/resources/application.yml` 中的数据库连接信息
    - 配置 Redis 连接信息
-   - 配置阿里云 OSS 凭证（文件上传必需）
-   - 配置微信小程序 appid 和 secret（可选）
+   - **推荐做法**：创建 `application-local.yml` 存储本地敏感配置（该文件已在 `.gitignore` 中）
+
+   **创建 `backend/src/main/resources/application-local.yml`**：
+   ```yaml
+   spring:
+     profiles:
+       active: local
+
+     datasource:
+       url: jdbc:mysql://localhost:3306/campuslink?serverTimezone=Asia/Shanghai&useSSL=false
+       username: root
+       password: your_actual_password
+
+     data:
+       redis:
+         host: localhost
+         port: 6379
+         password: your_redis_password  # 如果没有密码则留空
+
+   # JWT 配置
+   jwt:
+     secret: your-production-secret-key-min-256-bits-change-this
+     expiration: 7200
+     refresh-expiration: 604800
+
+   # 阿里云 OSS 配置（文件上传必需）
+   aliyun:
+     oss:
+       endpoint: oss-cn-hangzhou.aliyuncs.com
+       access-key-id: your_actual_access_key_id
+       access-key-secret: your_actual_access_key_secret
+       bucket-name: campuslink-resources
+       upload-dir: uploads/
+   ```
 
 4. **前端配置**：
-   - 修改 `frontend/src/config.ts` 中的 API 地址
-   - 如需微信小程序开发，配置小程序 appid
+   - 修改 `frontend/src/config.ts` 中的生产环境 API 地址（可选）
+   - **开发环境无需修改**：已配置 Vite 代理转发到 `http://localhost:8080`
+
+   **Vite 代理配置**（已配置，无需修改）：
+   `frontend/vite.config.ts` 中已包含以下代理规则：
+   ```typescript
+   server: {
+     port: 5173,
+     proxy: {
+       '/api': {
+         target: 'http://localhost:8080',
+         changeOrigin: true,
+         // 不重写路径，后端context-path已经是/api/v1
+       }
+     }
+   }
+   ```
+
+   这意味着前端请求 `/api/v1/xxx` 会自动转发到 `http://localhost:8080/api/v1/xxx`
+
+   - 如需微信小程序开发，配置小程序 appid（在 `manifest.json` 中）
 
 ## 开发注意事项
 
@@ -658,9 +710,14 @@ cache.clear()  // 清除所有缓存
 
 **设计原则**：
 - **主色调**：`#2563EB`（品牌蓝）为全站唯一主色
-- **强调色**：`#F59E0B`（橙色）仅用于积分、资源等强调场景
+- **强调色**：`#FF6B35`（全新橙色）用于积分、奖励等强调场景
 - **间距系统**：8px 栅格，使用 `$sp-*` 变量
 - **响应式断点**：750px（移动端）/ 1024px（平板）/ 1280px（桌面）
+
+**⚠️ 设计系统迁移说明**：
+- **variables.scss**（设计规范）使用 `#2563EB`（品牌蓝）+ `#FF6B35`（全新橙色）
+- **config.ts**（实际应用）当前使用 `#409EFF`（青春蓝）+ `#FF7D00`（活力橙）
+- 项目正在逐步迁移到 variables.scss 定义的规范色系，未来将统一为 `#2563EB` + `#FF6B35`
 
 ### 6.2 全局变量文件
 
@@ -671,8 +728,8 @@ cache.clear()  // 清除所有缓存
 | 类别 | 变量前缀 | 示例 |
 |------|---------|------|
 | 主色系 | `$primary-*` | `$primary: #2563EB`、`$primary-50: #EFF6FF` |
-| 强调色 | `$accent-*` | `$accent: #F59E0B`、`$accent-50: #FFFBEB` |
-| 功能色 | `$success/$warning/$error/$info` | `$success: #16A34A` |
+| 强调色 | `$accent-*` | `$accent: #FF6B35`（全新橙色）、`$accent-50: #FFF0EB` |
+| 功能色 | `$success/$warning/$error/$info` | `$success: #16A34A`、`$warning: #F59E0B` |
 | 中性色 | `$gray-*` | `$gray-900: #0F172A`（主文本）、`$gray-50: #F8FAFC`（背景） |
 | 语义色 | `$text-*/$bg-*/$border-*` | `$text-primary`、`$bg-page`、`$border-color` |
 | 间距 | `$sp-*` | `$sp-8: 32rpx`（16px）、`$sp-16: 64rpx`（32px） |
@@ -680,6 +737,8 @@ cache.clear()  // 清除所有缓存
 | 圆角 | `$radius-*` | `$radius-card: 16rpx`、`$radius-button: 44rpx` |
 | 阴影 | `$shadow-*` | `$shadow-card`、`$shadow-modal` |
 | 层级 | `$z-*` | `$z-modal: 500`、`$z-toast: 800` |
+
+**注意**：variables.scss 还定义了校园社交风格的 4 色体系（`$campus-*` 系列），用于统一社交卡片、标签等组件样式
 
 **常用 Mixin**：
 ```scss
@@ -793,6 +852,127 @@ import { CButton } from '@/components/ui'
 5. 统一响应式断点为 750px / 1024px
 
 **当前状态**：基础设施已完成，页面重构待进行
+
+## 7. 调试技巧
+
+### 7.1 后端调试
+
+**查看 Swagger API 文档**：
+```bash
+# 启动后端后访问
+http://localhost:8080/doc.html
+
+# 或者使用原生 Swagger UI
+http://localhost:8080/swagger-ui.html
+```
+
+**快速测试 API 端点**：
+```bash
+# 使用 curl 测试登录
+curl -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"admin123"}'
+
+# 使用 Token 访问受保护端点
+TOKEN="eyJhbGc..."
+curl -X GET http://localhost:8080/api/v1/user/profile \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+**查看数据库连接状态**：
+```bash
+# 检查 MySQL 连接
+mysql -u root -p -e "SHOW PROCESSLIST;"
+
+# 查看 Redis 连接
+redis-cli ping
+redis-cli info clients
+```
+
+**日志调试**：
+- 默认日志级别：`INFO`（全局）、`DEBUG`（com.campuslink 包）
+- 修改日志级别：在 `application.yml` 中调整 `logging.level`
+- 查看 SQL 执行：`show-sql: true` 和 `log-impl: org.apache.ibatis.logging.stdout.StdOutImpl`
+
+### 7.2 前端调试
+
+**浏览器开发者工具**：
+```javascript
+// 在控制台查看当前用户信息
+uni.$store.userStore
+
+// 查看请求拦截器日志
+// 所有请求/响应都会在 Console 中打印（开发环境）
+
+// 调试 Token 刷新逻辑
+localStorage.getItem('campuslink_token')
+localStorage.getItem('campuslink_refresh_token')
+```
+
+**调试 WebSocket 私信功能**：
+
+1. **使用浏览器 WebSocket 测试**：
+   ```javascript
+   // 在浏览器控制台
+   const ws = new WebSocket('ws://localhost:8080/ws?token=YOUR_JWT_TOKEN&type=chat')
+   ws.onopen = () => console.log('Connected')
+   ws.onmessage = (e) => console.log('Message:', e.data)
+   ws.send(JSON.stringify({ to: 2, content: 'Hello' }))
+   ```
+
+2. **使用 Postman 测试 WebSocket**：
+   - URL: `ws://localhost:8080/ws?token=YOUR_JWT_TOKEN&type=chat`
+   - 发送 JSON 消息：`{"to": 2, "content": "Hello"}`
+
+3. **查看 WebSocket 连接状态**：
+   ```bash
+   # 后端日志会显示 WebSocket 连接/断开信息
+   # 格式: "[WebSocket] User {userId} connected"
+   ```
+
+**调试语音搜索功能**：
+- H5 端：打开浏览器控制台，查看 `SpeechRecognition` API 日志
+- 微信小程序：使用微信开发者工具的 Console 面板，查看 RecorderManager 事件
+
+**调试多端适配问题**：
+```vue
+<!-- 使用条件编译查看当前平台 -->
+<template>
+  <!-- #ifdef H5 -->
+  <view>H5 平台</view>
+  <!-- #endif -->
+  <!-- #ifdef MP-WEIXIN -->
+  <view>微信小程序</view>
+  <!-- #endif -->
+</template>
+```
+
+### 7.3 常见问题排查
+
+**问题 1：前端请求 404**
+- 检查后端是否启动（`http://localhost:8080/api/v1/health`）
+- 检查 Vite 代理配置是否正确（`vite.config.ts`）
+- 确认请求路径包含 `/api/v1` 前缀
+
+**问题 2：Token 过期/401 错误**
+- 检查 JWT Secret 是否配置（`application.yml` 或 `application-local.yml`）
+- 查看 Token 有效期（默认 2 小时）
+- 前端会自动刷新 Token，检查 `utils/request.ts` 的刷新逻辑
+
+**问题 3：Redis 连接失败**
+- 检查 Redis 是否启动：`redis-cli ping`
+- 检查 Redis 密码配置（如果没有密码，设置为空字符串）
+- 查看后端日志中的 Redis 连接错误
+
+**问题 4：文件上传失败**
+- 检查阿里云 OSS 配置是否正确（endpoint、accessKey、bucketName）
+- 测试 OSS 连接：使用 OSS 控制台或 ossutil 工具
+- 前端上传限制：单文件最大 10MB（`application.yml` 配置）
+
+**问题 5：微信小程序登录失败**
+- 检查微信小程序 appid 和 secret 配置
+- 确认小程序已在微信公众平台配置服务器域名
+- 查看后端日志中的微信 API 调用错误
 
 ## 参考文档
 

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(claude mcp add junmer-mcp-server-lottiefiles -- npx -y @smithery/cli@latest run @junmer/mcp-server-lottiefiles --key 7ee4031c-ae5b-490c-8eae-c129baa72e28)",
+      "Bash(where claude)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

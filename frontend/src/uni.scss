@@ -537,16 +537,41 @@ $breakpoint-xl: 1536px;
 }
 
 // ============================================
+// uni-ui 主题色覆盖（使用 CampusLink 品牌色）
+// ============================================
+
+/* uni-ui 组件主题色 - 覆盖默认值 */
+$uni-primary: #2563EB !default;           // 品牌蓝
+$uni-primary-disable: #94A3B8 !default;   // 禁用态
+$uni-primary-light: #EFF6FF !default;     // 浅蓝背景
+
+$uni-success: #16A34A !default;           // 成功绿
+$uni-success-disable: #BBF7D0 !default;
+$uni-success-light: #F0FDF4 !default;
+
+$uni-warning: #F59E0B !default;           // 警告橙
+$uni-warning-disable: #FEF3C7 !default;
+$uni-warning-light: #FFFBEB !default;
+
+$uni-error: #EF4444 !default;             // 错误红
+$uni-error-disable: #FEE2E2 !default;
+$uni-error-light: #FEF2F2 !default;
+
+$uni-info: #0EA5E9 !default;              // 信息蓝
+$uni-info-disable: #E0F2FE !default;
+$uni-info-light: #F0F9FF !default;
+
+// ============================================
 // uni-app 内置变量（保留兼容性）
 // ============================================
 
 /* 颜色变量 */
 
-/* 行为相关颜色 */
-$uni-color-primary: #007aff;
-$uni-color-success: #4cd964;
-$uni-color-warning: #f0ad4e;
-$uni-color-error: #dd524d;
+/* 行为相关颜色 - 使用品牌色 */
+$uni-color-primary: $primary;
+$uni-color-success: $success;
+$uni-color-warning: $warning;
+$uni-color-error: $error;
 
 /* 文字基本颜色 */
 $uni-text-color: #333; // 基本色

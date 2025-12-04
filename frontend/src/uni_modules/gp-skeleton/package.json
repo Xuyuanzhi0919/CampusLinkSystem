@@ -1,0 +1,92 @@
+{
+  "id": "gp-skeleton",
+  "displayName": "gp-skeleton 轻量级骨架屏 ",
+  "version": "1.0.0",
+  "description": "高度可定制的骨架屏组件，支持多种预设类型，可自定义，支持Vue3和TypeScript",
+  "keywords": [
+    "skeleton",
+    "骨架屏",
+    "加载效果",
+    "vue3",
+    "typescript"
+],
+"engines": {
+  },
+  "dcloudext": {
+    "type": "component-vue",
+    "sale": {
+      "regular": {
+        "price": "0.00"
+      },
+      "sourcecode": {
+        "price": "0.00"
+      }
+    },
+    "contact": {
+      "qq": ""
+    },
+    "declaration": {
+      "ads": "无",
+      "data": "插件不采集任何数据",
+      "permissions": "无"
+    },
+    "npmurl": ""
+  },
+  "uni_modules": {
+    "dependencies": [],
+    "encrypt": [],
+    "platforms": {
+      "cloud": {
+        "tcb": "y",
+        "aliyun": "y",
+        "alipay": "n"
+      },
+      "client": {
+        "Vue": {
+          "vue2": "y",
+          "vue3": "y"
+        },
+        "App": {
+            "app-vue": "y",
+            "app-nvue": "y",
+            "app-harmony": "u",
+            "app-uvue": "u"
+        },
+        "H5-mobile": {
+          "Safari": "y",
+          "Android Browser": "y",
+          "微信浏览器(Android)": "y",
+          "QQ浏览器(Android)": "y"
+        },
+        "H5-pc": {
+          "Chrome": "y",
+          "IE": "n",
+          "Edge": "y",
+          "Firefox": "y",
+          "Safari": "y"
+        },
+        "小程序": {
+          "微信": "y",
+          "阿里": "y",
+          "百度": "y",
+          "字节跳动": "y",
+          "QQ": "y",
+          "钉钉": "y",
+          "快手": "y",
+          "飞书": "y",
+          "京东": "y"
+        },
+        "快应用": {
+          "华为": "y",
+          "联盟": "y"
+        }
+      }
+    }
+  },
+  "author": {
+    "name": "Your Name",
+    "email": "your.email@example.com"
+  },
+"license": "MIT",
+"repository": ""
+}

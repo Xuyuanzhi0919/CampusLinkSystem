@@ -10,26 +10,39 @@
       </view>
     </view>
 
-    <!-- 骨架屏 -->
-    <view v-if="loading" class="questions-list">
-      <view v-for="i in 3" :key="i" class="question-card skeleton">
-        <view class="skeleton-avatar"></view>
-        <view class="skeleton-content">
-          <view class="skeleton-title"></view>
-          <view class="skeleton-tags"></view>
-          <view class="skeleton-meta"></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 问答列表 -->
-    <view v-else class="questions-list">
-      <view
-        v-for="item in questionList"
-        :key="item.id"
-        class="question-card"
-        @click="handleQuestionClick(item)"
-      >
+    <!-- 使用 gp-skeleton 骨架屏 -->
+    <gp-skeleton
+      type="list"
+      :loading="loading"
+      :configs="{
+        padding: '0',
+        gridRows: 3,
+        gridColumns: 1,
+        gridRowsGap: '32rpx',
+        gridColumnsGap: '0',
+        itemDirection: 'row',
+        itemGap: '24rpx',
+        itemAlign: 'flex-start',
+        headShow: true,
+        headWidth: '72rpx',
+        headHeight: '72rpx',
+        headBorderRadius: '50%',
+        textShow: true,
+        textRows: 4,
+        textRowsGap: '20rpx',
+        textWidth: ['85%', '50%', '60%', '40%'],
+        textHeight: ['32rpx', '24rpx', '24rpx', '20rpx'],
+        textBorderRadius: '6rpx'
+      }"
+    >
+      <!-- 问答列表 -->
+      <view class="questions-list">
+        <view
+          v-for="item in questionList"
+          :key="item.id"
+          class="question-card"
+          @click="handleQuestionClick(item)"
+        >
         <!-- 用户头像 -->
         <view class="user-avatar">
           <text class="avatar-text">{{ item.author.charAt(0) }}</text>
@@ -75,8 +88,9 @@
         <view class="status-badge" :class="{ solved: item.solved }">
           <text class="status-text">{{ item.solved ? '已解决' : '待解答' }}</text>
         </view>
+        </view>
       </view>
-    </view>
+    </gp-skeleton>
   </view>
 </template>
 
@@ -226,61 +240,6 @@ onMounted(() => {
     box-shadow: $campus-shadow;
   }
 
-  // 骨架屏
-  &.skeleton {
-    pointer-events: none;
-
-    .skeleton-avatar {
-      width: 72rpx;
-      height: 72rpx;
-      border-radius: 50%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-content {
-      flex: 1;
-    }
-
-    .skeleton-title {
-      height: 32rpx;
-      width: 85%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-      margin-bottom: 12rpx;
-    }
-
-    .skeleton-tags {
-      height: 24rpx;
-      width: 50%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-      margin-bottom: 12rpx;
-    }
-
-    .skeleton-meta {
-      height: 20rpx;
-      width: 60%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-    }
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 .user-avatar {

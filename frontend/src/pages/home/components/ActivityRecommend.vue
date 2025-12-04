@@ -22,25 +22,39 @@
       </view>
     </view>
 
-    <!-- 骨架屏 -->
-    <view v-if="loading" class="activities-grid">
-      <view v-for="i in 3" :key="i" class="activity-card skeleton">
-        <view class="skeleton-cover"></view>
-        <view class="skeleton-content">
-          <view class="skeleton-title"></view>
-          <view class="skeleton-info"></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 活动列表 -->
-    <view v-else class="activities-grid">
-      <view
-        v-for="item in activityList"
-        :key="item.id"
-        class="activity-card"
-        @click="handleActivityClick(item)"
-      >
+    <!-- 使用 gp-skeleton 骨架屏 -->
+    <gp-skeleton
+      type="waterfall"
+      :loading="loading"
+      :configs="{
+        padding: '0',
+        gridRows: 1,
+        gridColumns: 3,
+        gridRowsGap: '24rpx',
+        gridColumnsGap: '24rpx',
+        itemDirection: 'column',
+        itemGap: '16rpx',
+        itemAlign: 'stretch',
+        headShow: true,
+        headWidth: '100%',
+        headHeight: '180rpx',
+        headBorderRadius: '12rpx',
+        textShow: true,
+        textRows: 4,
+        textRowsGap: '16rpx',
+        textWidth: ['100%', '60%', '80%', '50%'],
+        textHeight: ['28rpx', '24rpx', '20rpx', '20rpx'],
+        textBorderRadius: '6rpx'
+      }"
+    >
+      <!-- 活动列表 -->
+      <view class="activities-grid">
+        <view
+          v-for="item in activityList"
+          :key="item.id"
+          class="activity-card"
+          @click="handleActivityClick(item)"
+        >
         <!-- 封面图 -->
         <view class="activity-cover" :class="getActivityType(item.icon)">
           <view class="cover-placeholder">
@@ -127,6 +141,7 @@
         </view>
       </view>
     </view>
+    </gp-skeleton>
   </view>
 </template>
 
@@ -397,43 +412,24 @@ onMounted(() => {
     box-shadow: $campus-shadow-hover;
   }
 
-  // 骨架屏
-  &.skeleton {
+  // 骨架屏卡片样式
+  &.skeleton-card {
     pointer-events: none;
 
-    .skeleton-cover {
+    .skeleton-cover-placeholder {
       height: 180rpx;
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-content {
-      padding: $sp-5;
-    }
-
-    .skeleton-title {
-      height: 32rpx;
-      width: 80%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $campus-radius-sm;
-      margin-bottom: 12rpx;
+      animation: skeletonShimmer 1.5s infinite;
     }
 
     .skeleton-info {
-      height: 60rpx;
-      width: 100%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $campus-radius-sm;
+      padding: $sp-5;
     }
   }
 }
 
-@keyframes shimmer {
+@keyframes skeletonShimmer {
   0% {
     background-position: 200% 0;
   }

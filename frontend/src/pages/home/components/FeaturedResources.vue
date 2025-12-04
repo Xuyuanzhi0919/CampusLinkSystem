@@ -22,25 +22,39 @@
       </view>
     </view>
 
-    <!-- 骨架屏 -->
-    <view v-if="loading" class="resources-grid">
-      <view v-for="i in 3" :key="i" class="resource-card skeleton">
-        <view class="skeleton-cover"></view>
-        <view class="skeleton-content">
-          <view class="skeleton-title"></view>
-          <view class="skeleton-meta"></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 资料列表 -->
-    <view v-else class="resources-grid">
-      <view
-        v-for="item in resourceList"
-        :key="item.id"
-        class="resource-card"
-        @click="handleResourceClick(item)"
-      >
+    <!-- 使用 gp-skeleton 骨架屏 -->
+    <gp-skeleton
+      type="waterfall"
+      :loading="loading"
+      :configs="{
+        padding: '0',
+        gridRows: 1,
+        gridColumns: 3,
+        gridRowsGap: '24rpx',
+        gridColumnsGap: '24rpx',
+        itemDirection: 'column',
+        itemGap: '16rpx',
+        itemAlign: 'stretch',
+        headShow: true,
+        headWidth: '100%',
+        headHeight: '200rpx',
+        headBorderRadius: '12rpx',
+        textShow: true,
+        textRows: 3,
+        textRowsGap: '16rpx',
+        textWidth: ['100%', '80%', '50%'],
+        textHeight: ['28rpx', '48rpx', '24rpx'],
+        textBorderRadius: '6rpx'
+      }"
+    >
+      <!-- 资料列表 -->
+      <view class="resources-grid">
+        <view
+          v-for="item in resourceList"
+          :key="item.id"
+          class="resource-card"
+          @click="handleResourceClick(item)"
+        >
         <!-- 封面图 -->
         <view class="resource-cover" :class="item.category">
           <!-- 课件图标 -->
@@ -100,8 +114,9 @@
             <text v-else class="price-points">{{ item.points }} 积分</text>
           </view>
         </view>
+        </view>
       </view>
-    </view>
+    </gp-skeleton>
   </view>
 </template>
 
@@ -321,45 +336,26 @@ onMounted(() => {
     }
   }
 
-  // 骨架屏
-  &.skeleton {
+  // 骨架屏卡片样式
+  &.skeleton-card {
     pointer-events: none;
 
-    .skeleton-cover {
+    .skeleton-cover-placeholder {
       height: 100px;
       flex-shrink: 0;
       background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
       background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
+      animation: skeletonShimmer 1.5s infinite;
     }
 
-    .skeleton-content {
+    .skeleton-info {
       padding: 16px;
       flex: 1;
-    }
-
-    .skeleton-title {
-      height: 20px;
-      width: 80%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $campus-radius-sm;
-      margin-bottom: 8px;
-    }
-
-    .skeleton-meta {
-      height: 16px;
-      width: 50%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $campus-radius-sm;
     }
   }
 }
 
-@keyframes shimmer {
+@keyframes skeletonShimmer {
   0% {
     background-position: 200% 0;
   }

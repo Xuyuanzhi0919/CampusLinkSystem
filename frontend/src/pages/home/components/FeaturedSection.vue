@@ -5,20 +5,33 @@
       <text class="section-subtitle">AI 推荐 + 精选内容</text>
     </view>
 
-    <!-- 骨架屏 -->
-    <view v-if="loading" class="featured-grid">
-      <view v-for="i in 4" :key="i" class="featured-card skeleton">
-        <view class="skeleton-image"></view>
-        <view class="skeleton-content">
-          <view class="skeleton-title"></view>
-          <view class="skeleton-desc"></view>
-          <view class="skeleton-meta"></view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 内容列表 -->
-    <view v-else class="featured-grid">
+    <!-- 使用 gp-skeleton 骨架屏 -->
+    <gp-skeleton
+      type="list"
+      :loading="loading"
+      :configs="{
+        padding: '0',
+        gridRows: 2,
+        gridColumns: 2,
+        gridRowsGap: '24rpx',
+        gridColumnsGap: '24rpx',
+        itemDirection: 'row',
+        itemGap: '24rpx',
+        itemAlign: 'flex-start',
+        headShow: true,
+        headWidth: '80rpx',
+        headHeight: '80rpx',
+        headBorderRadius: '12rpx',
+        textShow: true,
+        textRows: 3,
+        textRowsGap: '16rpx',
+        textWidth: ['40%', '100%', '60%'],
+        textHeight: ['24rpx', '28rpx', '20rpx'],
+        textBorderRadius: '6rpx'
+      }"
+    >
+      <!-- 内容列表 -->
+      <view class="featured-grid">
       <view
         v-for="item in featuredList"
         :key="item.id"
@@ -72,7 +85,8 @@
           </view>
         </view>
       </view>
-    </view>
+      </view>
+    </gp-skeleton>
   </view>
 </template>
 
@@ -207,61 +221,6 @@ onMounted(() => {
     @include card-hover;
   }
 
-  // 骨架屏样式
-  &.skeleton {
-    pointer-events: none;
-
-    .skeleton-image {
-      width: 80rpx;
-      height: 80rpx;
-      border-radius: $radius-md;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-    }
-
-    .skeleton-content {
-      flex: 1;
-    }
-
-    .skeleton-title {
-      height: 32rpx;
-      width: 80%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-      margin-bottom: 12rpx;
-    }
-
-    .skeleton-desc {
-      height: 24rpx;
-      width: 100%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-      margin-bottom: 12rpx;
-    }
-
-    .skeleton-meta {
-      height: 20rpx;
-      width: 40%;
-      background: linear-gradient(90deg, $gray-100 25%, $gray-50 50%, $gray-100 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: $radius-xs;
-    }
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
 }
 
 .card-icon-wrapper {

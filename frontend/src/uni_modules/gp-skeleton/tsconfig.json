@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "lib": ["esnext", "dom"],
+    "types": ["@dcloudio/types", "@vue/runtime-core"]
+  },
+  "include": ["**/*.ts", "**/*.vue"],
+  "exclude": ["node_modules"]
+} 

@@ -236,6 +236,7 @@
 		"autoscan": true,
 		"custom": {
 			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+			"^gp-skeleton$": "@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue",
 			"^LazyImage$": "@/components/LazyImage.vue",
 			"^SkeletonScreen$": "@/components/SkeletonScreen.vue",
 			"^SkeletonCard$": "@/components/SkeletonCard.vue",

@@ -418,11 +418,58 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .home-page {
   min-height: 100vh;
-  background: $bg-page;
+  // 统一雾化渐变背景 - 解决左右断层问题
+  background: #FAFBFC;
+  position: relative;
+
+  // 主背景层：径向微雾 + 大范围柔光（统一左右风格）
+  &::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background:
+      // 左上角主光斑（蓝色系）
+      radial-gradient(ellipse 120% 80% at 10% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+      // 右上角辅助光斑（青绿色系）
+      radial-gradient(ellipse 100% 70% at 90% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+      // 中部过渡光斑（柔和蓝）
+      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+      // 底部渐隐
+      linear-gradient(180deg, transparent 0%, rgba(250, 251, 252, 0.8) 70%, #FAFBFC 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // 顶部柔光装饰层
+  &::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 600px;
+    background:
+      // 横跨左右的统一雾化带
+      linear-gradient(135deg,
+        rgba(239, 246, 255, 0.7) 0%,
+        rgba(240, 253, 244, 0.4) 30%,
+        rgba(239, 246, 255, 0.5) 60%,
+        rgba(250, 251, 252, 0.3) 100%
+      );
+    pointer-events: none;
+    z-index: 0;
+    mask-image: linear-gradient(180deg, black 0%, transparent 100%);
+    -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 100%);
+  }
 }
 
 // 主内容区
 .main-content {
+  position: relative;
+  z-index: 1;
   padding: $module-gap-md 0;
 
   @include mobile {

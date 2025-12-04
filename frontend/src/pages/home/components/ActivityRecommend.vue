@@ -47,8 +47,30 @@
         textBorderRadius: '6rpx'
       }"
     >
+      <!-- 错误状态 -->
+      <EmptyState
+        v-if="hasError"
+        type="error"
+        title="活动加载失败"
+        description="活动日历暂时休息了～ 稍后再来"
+        button-text="刷新试试"
+        :show-recommendations="false"
+        @action="loadData"
+      />
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="!loading && activityList.length === 0"
+        type="empty"
+        title="暂无进行中的活动"
+        description="去发现有趣的社团，不错过任何精彩活动！"
+        button-text="探索社团"
+        :show-recommendations="false"
+        @action="handleViewMore"
+      />
+
       <!-- 活动列表 -->
-      <view class="activities-grid">
+      <view v-else class="activities-grid">
         <view
           v-for="item in activityList"
           :key="item.id"
@@ -147,6 +169,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { getActivityList } from '@/services/activity'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface Activity {
   id: number
@@ -166,6 +190,7 @@ const emit = defineEmits<{
 
 const loading = ref(true)
 const activityList = ref<Activity[]>([])
+const hasError = ref(false)
 
 // 获取活动类型样式
 const getActivityType = (icon: string) => {
@@ -197,6 +222,51 @@ const getStatusText = (status: string) => {
   return texts[status] || ''
 }
 
+// 根据后端活动状态转换为前端状态
+const mapActivityStatus = (status: number): 'upcoming' | 'ongoing' | 'ended' => {
+  // 后端状态: 0=未开始, 1=进行中, 2=已结束
+  const statusMap: Record<number, 'upcoming' | 'ongoing' | 'ended'> = {
+    0: 'upcoming',
+    1: 'ongoing',
+    2: 'ended'
+  }
+  return statusMap[status] || 'upcoming'
+}
+
+// 格式化活动时间
+const formatActivityTime = (startTime: string): string => {
+  if (!startTime) return '待定'
+  const date = new Date(startTime)
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const hour = String(date.getHours()).padStart(2, '0')
+  const minute = String(date.getMinutes()).padStart(2, '0')
+  return `${month}月${day}日 ${hour}:${minute}`
+}
+
+// 根据活动名称猜测图标
+const guessActivityIcon = (title: string): string => {
+  if (title.includes('程序') || title.includes('编程') || title.includes('代码') || title.includes('ACM')) {
+    return '💻'
+  }
+  if (title.includes('英语') || title.includes('演讲') || title.includes('交流')) {
+    return '🗣️'
+  }
+  if (title.includes('摄影') || title.includes('照片') || title.includes('图片')) {
+    return '📷'
+  }
+  if (title.includes('音乐') || title.includes('演奏') || title.includes('乐器')) {
+    return '🎵'
+  }
+  if (title.includes('运动') || title.includes('篮球') || title.includes('足球')) {
+    return '⚽'
+  }
+  if (title.includes('读书') || title.includes('阅读') || title.includes('书籍')) {
+    return '📚'
+  }
+  return '🎯'
+}
+
 const handleActivityClick = (item: Activity) => {
   emit('activity-click', item)
 }
@@ -205,46 +275,40 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
-// 模拟数据加载
+// 从后端加载活动数据
 const loadData = async () => {
   loading.value = true
+  hasError.value = false
 
-  await new Promise(resolve => setTimeout(resolve, 700))
+  try {
+    const res = await getActivityList({
+      page: 1,
+      pageSize: 3,
+      status: 1 // 获取进行中的活动，或者可以不传获取全部
+    })
 
-  activityList.value = [
-    {
-      id: 1,
-      title: 'ACM 程序设计竞赛集训',
-      clubName: '计算机协会',
-      icon: '💻',
-      time: '12月15日 14:00',
-      location: '信息楼 A301',
-      participants: 45,
-      status: 'upcoming'
-    },
-    {
-      id: 2,
-      title: '英语角周末交流会',
-      clubName: '英语社',
-      icon: '🗣️',
-      time: '12月16日 19:00',
-      location: '外语楼 B201',
-      participants: 32,
-      status: 'upcoming'
-    },
-    {
-      id: 3,
-      title: '摄影技巧分享沙龙',
-      clubName: '摄影社',
-      icon: '📷',
-      time: '12月17日 15:00',
-      location: '艺术楼 C102',
-      participants: 28,
-      status: 'ongoing'
+    const dataList = res?.list || res?.records || []
+    if (dataList.length) {
+      activityList.value = dataList.map((a: any) => ({
+        id: a.activityId || a.id,
+        title: a.title || a.name || '未命名活动',
+        clubName: a.clubName || a.organizerName || '校园社团',
+        icon: guessActivityIcon(a.title || a.name || ''),
+        time: formatActivityTime(a.startTime || a.activityTime),
+        location: a.location || a.address || '待定',
+        participants: a.currentParticipants || a.participants || 0,
+        status: mapActivityStatus(a.status)
+      }))
+    } else {
+      activityList.value = []
     }
-  ]
-
-  loading.value = false
+  } catch (error) {
+    console.error('[ActivityRecommend] 加载活动推荐失败:', error)
+    hasError.value = true
+    activityList.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 defineExpose({ loadData })

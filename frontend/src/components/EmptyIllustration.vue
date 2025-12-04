@@ -20,38 +20,76 @@
       </circle>
     </svg>
 
-    <!-- 错误插画 -->
+    <!-- 错误插画 - 校园风格：书本+云朵+问号 -->
     <svg v-else-if="type === 'error'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- 背景圆 -->
-      <circle cx="100" cy="100" r="80" fill="#FFF0F0" opacity="0.5"/>
-      
-      <!-- 警告图标 -->
-      <circle cx="100" cy="100" r="40" fill="none" stroke="#DC2626" stroke-width="3"/>
-      <path d="M 100 80 L 100 110" stroke="#DC2626" stroke-width="4" stroke-linecap="round"/>
-      <circle cx="100" cy="125" r="3" fill="#DC2626"/>
-      
-      <!-- 装饰线 -->
-      <path d="M 70 70 L 60 60" stroke="#DC2626" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-      <path d="M 130 70 L 140 60" stroke="#DC2626" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+      <!-- 背景渐变圆 -->
+      <defs>
+        <linearGradient id="errorBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#EBF4FF;stop-opacity:0.6"/>
+          <stop offset="100%" style="stop-color:#E0EEFF;stop-opacity:0.4"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="80" fill="url(#errorBgGradient)"/>
+
+      <!-- 书本图标 -->
+      <path d="M 60 120 L 60 75 Q 100 65 140 75 L 140 120 Q 100 110 60 120 Z" fill="#E8F0FE" stroke="#4F85F0" stroke-width="2"/>
+      <path d="M 100 70 L 100 115" stroke="#4F85F0" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
+
+      <!-- 可爱的云朵（飘走的感觉） -->
+      <g opacity="0.7">
+        <ellipse cx="75" cy="55" rx="18" ry="12" fill="#4F85F0" opacity="0.15">
+          <animate attributeName="cx" values="75;78;75" dur="3s" repeatCount="indefinite"/>
+        </ellipse>
+        <ellipse cx="85" cy="50" rx="12" ry="8" fill="#4F85F0" opacity="0.2">
+          <animate attributeName="cx" values="85;88;85" dur="2.5s" repeatCount="indefinite"/>
+        </ellipse>
+      </g>
+
+      <!-- 问号气泡 -->
+      <circle cx="130" cy="60" r="16" fill="#4F85F0" opacity="0.12"/>
+      <text x="130" y="66" font-size="18" fill="#4F85F0" text-anchor="middle" font-weight="600">?</text>
+
+      <!-- 装饰小点 -->
+      <circle cx="50" cy="90" r="3" fill="#4F85F0" opacity="0.25">
+        <animate attributeName="cy" values="90;85;90" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="150" cy="85" r="2" fill="#4F85F0" opacity="0.2">
+        <animate attributeName="cy" values="85;80;85" dur="2.3s" repeatCount="indefinite"/>
+      </circle>
     </svg>
 
-    <!-- 网络错误插画 -->
+    <!-- 网络错误插画 - 校园风格：温和的连接提示 -->
     <svg v-else-if="type === 'network'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- 背景圆 -->
-      <circle cx="100" cy="100" r="80" fill="#FFF7E6" opacity="0.5"/>
-      
-      <!-- WiFi 图标（断开） -->
-      <path d="M 100 120 L 100 125" stroke="#F59E0B" stroke-width="4" stroke-linecap="round"/>
-      <path d="M 80 100 Q 100 80 120 100" fill="none" stroke="#F59E0B" stroke-width="3" opacity="0.3" stroke-dasharray="5,5">
-        <animate attributeName="stroke-dashoffset" values="0;10" dur="1s" repeatCount="indefinite"/>
+      <!-- 背景渐变圆 -->
+      <defs>
+        <linearGradient id="networkBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" style="stop-color:#EBF4FF;stop-opacity:0.6"/>
+          <stop offset="100%" style="stop-color:#E0EEFF;stop-opacity:0.4"/>
+        </linearGradient>
+      </defs>
+      <circle cx="100" cy="100" r="80" fill="url(#networkBgGradient)"/>
+
+      <!-- WiFi 图标（品牌蓝色） -->
+      <circle cx="100" cy="125" r="5" fill="#4F85F0"/>
+      <path d="M 80 105 Q 100 85 120 105" fill="none" stroke="#4F85F0" stroke-width="3" stroke-linecap="round" opacity="0.6">
+        <animate attributeName="opacity" values="0.6;0.3;0.6" dur="2s" repeatCount="indefinite"/>
       </path>
-      <path d="M 65 85 Q 100 55 135 85" fill="none" stroke="#F59E0B" stroke-width="3" opacity="0.2" stroke-dasharray="5,5">
-        <animate attributeName="stroke-dashoffset" values="0;10" dur="1s" repeatCount="indefinite"/>
+      <path d="M 65 90 Q 100 60 135 90" fill="none" stroke="#4F85F0" stroke-width="3" stroke-linecap="round" opacity="0.4">
+        <animate attributeName="opacity" values="0.4;0.2;0.4" dur="2s" repeatCount="indefinite"/>
       </path>
-      
-      <!-- X 标记 -->
-      <path d="M 130 60 L 150 80" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
-      <path d="M 150 60 L 130 80" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+
+      <!-- 休息中的小云朵 -->
+      <g opacity="0.5">
+        <ellipse cx="55" cy="65" rx="15" ry="10" fill="#4F85F0" opacity="0.2">
+          <animate attributeName="cx" values="55;58;55" dur="3s" repeatCount="indefinite"/>
+        </ellipse>
+        <text x="55" y="70" font-size="14" fill="#4F85F0" text-anchor="middle">💤</text>
+      </g>
+
+      <!-- 装饰小点 -->
+      <circle cx="145" cy="75" r="3" fill="#4F85F0" opacity="0.25">
+        <animate attributeName="cy" values="75;70;75" dur="2s" repeatCount="indefinite"/>
+      </circle>
     </svg>
 
     <!-- 搜索无结果插画 -->

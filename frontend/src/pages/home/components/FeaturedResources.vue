@@ -47,8 +47,30 @@
         textBorderRadius: '6rpx'
       }"
     >
+      <!-- 错误状态 -->
+      <EmptyState
+        v-if="hasError"
+        type="error"
+        title="资料加载失败"
+        description="资料库暂时打盹了～ 稍后再来看看"
+        button-text="刷新试试"
+        :show-recommendations="false"
+        @action="loadData"
+      />
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="!loading && resourceList.length === 0"
+        type="empty"
+        title="暂无精选资料"
+        description="成为第一个分享者，让知识传递起来！"
+        button-text="分享资料"
+        :show-recommendations="false"
+        @action="handleViewMore"
+      />
+
       <!-- 资料列表 -->
-      <view class="resources-grid">
+      <view v-else class="resources-grid">
         <view
           v-for="item in resourceList"
           :key="item.id"
@@ -122,6 +144,9 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { getResourceList } from '@/services/resource'
+import type { ResourceItem } from '@/types/resource'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface Resource {
   id: number
@@ -141,8 +166,27 @@ const emit = defineEmits<{
 
 const loading = ref(true)
 const resourceList = ref<Resource[]>([])
+const hasError = ref(false)
 
-// 图标现在直接在模板中使用 SVG
+// 分类映射：后端字符串 -> 前端展示类名
+const getCategoryClass = (category: string | number): string => {
+  // 支持数字和字符串两种格式
+  const categoryMap: Record<string | number, string> = {
+    0: 'course',   // 课件
+    1: 'exam',     // 试题
+    2: 'notes',    // 笔记
+    '课件': 'course',
+    '试题': 'exam',
+    '笔记': 'notes',
+    '其他': 'code'
+  }
+  return categoryMap[category] || 'code'
+}
+
+// 文件类型格式化
+const formatFileType = (fileType: string): string => {
+  return (fileType || 'PDF').toUpperCase()
+}
 
 const handleResourceClick = (item: Resource) => {
   emit('resource-click', item)
@@ -152,46 +196,41 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
-// 模拟数据加载
+// 从后端加载精选资料
 const loadData = async () => {
   loading.value = true
+  hasError.value = false
 
-  await new Promise(resolve => setTimeout(resolve, 700))
+  try {
+    const res = await getResourceList({
+      page: 1,
+      pageSize: 3,
+      sortBy: 'download_count',
+      sortOrder: 'desc'
+    })
 
-  resourceList.value = [
-    {
-      id: 1,
-      title: '操作系统期末复习精华',
-      description: '涵盖进程管理、内存管理、文件系统等核心章节',
-      category: 'notes',
-      format: 'PDF',
-      downloads: 1234,
-      rating: 4.8,
-      points: 0
-    },
-    {
-      id: 2,
-      title: '数据库原理实验报告模板',
-      description: 'MySQL 实验报告完整模板，包含 SQL 语句示例',
-      category: 'exam',
-      format: 'DOCX',
-      downloads: 856,
-      rating: 4.5,
-      points: 5
-    },
-    {
-      id: 3,
-      title: 'Spring Boot 项目实战代码',
-      description: '完整的电商项目后端代码，含详细注释',
-      category: 'code',
-      format: 'ZIP',
-      downloads: 2341,
-      rating: 4.9,
-      points: 10
+    const dataList = res?.list || res?.records || []
+    if (dataList.length) {
+      resourceList.value = dataList.map((r: ResourceItem) => ({
+        id: r.resourceId,
+        title: r.title,
+        description: r.description || '',
+        category: getCategoryClass(r.category),
+        format: formatFileType(r.fileType),
+        downloads: r.downloads || 0,
+        rating: r.averageRating || 4.5,
+        points: r.score || 0
+      }))
+    } else {
+      resourceList.value = []
     }
-  ]
-
-  loading.value = false
+  } catch (error) {
+    console.error('[FeaturedResources] 加载精选资料失败:', error)
+    hasError.value = true
+    resourceList.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 defineExpose({ loadData })

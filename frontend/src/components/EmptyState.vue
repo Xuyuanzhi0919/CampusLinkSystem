@@ -243,8 +243,9 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80rpx 40rpx;
-  min-height: 400rpx;
+  padding: 48rpx 32rpx;
+  min-height: 260rpx;
+  max-height: 360rpx;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -261,8 +262,9 @@ onMounted(() => {
 
 /* SVG 插画 */
 .empty-illustration {
-  margin-bottom: 32rpx;
+  margin-bottom: 20rpx;
   animation: float 3s ease-in-out infinite;
+  transform: scale(0.85);
 }
 
 @keyframes float {
@@ -276,20 +278,20 @@ onMounted(() => {
 
 /* 文案 */
 .empty-title {
-  font-size: 32rpx;
+  font-size: 28rpx;
   font-weight: 600;
-  color: var(--cl-gray-900, #1F2937);
-  margin-bottom: 16rpx;
+  color: var(--cl-gray-700, #374151);
+  margin-bottom: 12rpx;
   text-align: center;
 }
 
 .empty-description {
-  font-size: 28rpx;
-  color: var(--cl-gray-600, #4B5563);
-  line-height: 1.6;
+  font-size: 24rpx;
+  color: var(--cl-gray-500, #6B7280);
+  line-height: 1.5;
   text-align: center;
-  margin-bottom: 40rpx;
-  max-width: 500rpx;
+  margin-bottom: 24rpx;
+  max-width: 440rpx;
 }
 
 /* 智能推荐 */
@@ -463,25 +465,59 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 不同类型的样式 */
+/* 不同类型的样式 - 统一使用品牌蓝色调，保持校园清新风格 */
+
+/* 错误状态 - 使用品牌蓝（轻错误，非严重警告） */
 .type-error .empty-icon {
-  background: rgba(220, 38, 38, 0.08);
+  background: rgba(46, 124, 246, 0.08);
 }
 
 .type-error .action-btn {
-  background: var(--cl-error, #DC2626);
-  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+  background: transparent;
+  border: 1.5px solid var(--cl-primary, #4F85F0);
+  color: var(--cl-primary, #4F85F0);
+  box-shadow: none;
+
+  .btn-text {
+    color: var(--cl-primary, #4F85F0);
+  }
+
+  .icon-svg {
+    color: var(--cl-primary, #4F85F0);
+  }
+
+  &:hover {
+    background: rgba(79, 133, 240, 0.08);
+    box-shadow: 0 4px 12px rgba(79, 133, 240, 0.15);
+  }
 }
 
+/* 网络错误 - 使用品牌蓝（温和提示） */
 .type-network .empty-icon {
-  background: rgba(245, 158, 11, 0.08);
+  background: rgba(46, 124, 246, 0.08);
 }
 
 .type-network .action-btn {
-  background: var(--cl-warning, #F59E0B);
-  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+  background: transparent;
+  border: 1.5px solid var(--cl-primary, #4F85F0);
+  color: var(--cl-primary, #4F85F0);
+  box-shadow: none;
+
+  .btn-text {
+    color: var(--cl-primary, #4F85F0);
+  }
+
+  .icon-svg {
+    color: var(--cl-primary, #4F85F0);
+  }
+
+  &:hover {
+    background: rgba(79, 133, 240, 0.08);
+    box-shadow: 0 4px 12px rgba(79, 133, 240, 0.15);
+  }
 }
 
+/* 创建状态 - 使用辅助青绿色 */
 .type-create .empty-icon {
   background: rgba(16, 185, 129, 0.08);
 }

@@ -30,8 +30,30 @@
         textBorderRadius: '6rpx'
       }"
     >
+      <!-- 错误状态 -->
+      <EmptyState
+        v-if="hasError"
+        type="error"
+        title="推荐内容加载失败"
+        description="小助手暂时离开一下～ 稍后再试试吧"
+        button-text="刷新试试"
+        :show-recommendations="false"
+        @action="loadData"
+      />
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="!loading && featuredList.length === 0"
+        type="empty"
+        title="暂无推荐内容"
+        description="AI 小助手正在为你准备精彩内容..."
+        button-text="刷新看看"
+        :show-recommendations="false"
+        @action="loadData"
+      />
+
       <!-- 内容列表 -->
-      <view class="featured-grid">
+      <view v-else class="featured-grid">
       <view
         v-for="item in featuredList"
         :key="item.id"
@@ -92,6 +114,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { getQuestionList } from '@/services/question'
+import { getResourceList } from '@/services/resource'
+import { getActivityList } from '@/services/activity'
+import type { QuestionItem } from '@/types/question'
+import type { ResourceItem } from '@/types/resource'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface FeaturedItem {
   id: number
@@ -108,8 +136,7 @@ const emit = defineEmits<{
 
 const loading = ref(true)
 const featuredList = ref<FeaturedItem[]>([])
-
-// 图标现在直接在模板中使用 SVG
+const hasError = ref(false)
 
 // 获取类型标签
 const getTypeLabel = (type: string) => {
@@ -125,49 +152,79 @@ const handleItemClick = (item: FeaturedItem) => {
   emit('item-click', item)
 }
 
-// 模拟数据加载
+// 从后端加载数据
 const loadData = async () => {
   loading.value = true
+  hasError.value = false
 
-  // 模拟API请求
-  await new Promise(resolve => setTimeout(resolve, 800))
+  try {
+    // 并行请求三个模块的数据
+    const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
+      getQuestionList({ page: 1, pageSize: 2, sortBy: 'views', sortOrder: 'desc' }),
+      getResourceList({ page: 1, pageSize: 2, sortBy: 'download_count', sortOrder: 'desc' }),
+      getActivityList({ page: 1, pageSize: 1, status: 1 }) // status=1 表示进行中
+    ])
 
-  featuredList.value = [
-    {
-      id: 1,
-      type: 'question',
-      title: '如何理解 Spring Boot 的自动配置原理？',
-      description: '想深入了解 Spring Boot 的自动配置机制，有大佬能详细讲解一下吗？',
-      views: 1234,
-      likes: 56
-    },
-    {
-      id: 2,
-      type: 'resource',
-      title: '计算机网络期末复习笔记',
-      description: '整理了完整的计网知识点，包含 OSI 七层模型、TCP/IP 协议等',
-      views: 2345,
-      likes: 128
-    },
-    {
-      id: 3,
-      type: 'resource',
-      title: '数据结构与算法精讲',
-      description: '涵盖链表、树、图、排序等核心算法，配有代码示例',
-      views: 3456,
-      likes: 234
-    },
-    {
-      id: 4,
-      type: 'activity',
-      title: 'ACM 程序设计竞赛集训',
-      description: '每周六下午，一起刷题提升算法能力',
-      views: 567,
-      likes: 45
+    const items: FeaturedItem[] = []
+
+    // 处理问答数据
+    const questionList = questionsRes?.list || questionsRes?.records || []
+    if (questionList.length) {
+      questionList.slice(0, 1).forEach((q: QuestionItem) => {
+        items.push({
+          id: q.qid || q.questionId || 0,
+          type: 'question',
+          title: q.title,
+          description: q.content || '快来回答这个问题吧~',
+          views: q.views || 0,
+          likes: q.answerCount || 0
+        })
+      })
     }
-  ]
 
-  loading.value = false
+    // 处理资源数据
+    const resourceList = resourcesRes?.list || resourcesRes?.records || []
+    if (resourceList.length) {
+      resourceList.slice(0, 2).forEach((r: ResourceItem) => {
+        items.push({
+          id: r.resourceId,
+          type: 'resource',
+          title: r.title,
+          description: r.description || '',
+          views: r.downloads || 0,
+          likes: r.likes || 0
+        })
+      })
+    }
+
+    // 处理活动数据
+    const activityList = activitiesRes?.list || activitiesRes?.records || []
+    if (activityList.length) {
+      activityList.slice(0, 1).forEach((a: any) => {
+        items.push({
+          id: a.activityId || a.id,
+          type: 'activity',
+          title: a.title || a.name,
+          description: a.description || '',
+          views: a.participants || a.currentParticipants || 0,
+          likes: a.maxParticipants || 0
+        })
+      })
+    }
+
+    featuredList.value = items
+
+    // 如果没有获取到任何数据，显示空状态
+    if (items.length === 0) {
+      console.log('[FeaturedSection] 暂无精选推荐数据')
+    }
+  } catch (error) {
+    console.error('[FeaturedSection] 加载精选推荐失败:', error)
+    hasError.value = true
+    featuredList.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 // 暴露刷新方法

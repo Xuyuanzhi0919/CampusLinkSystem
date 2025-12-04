@@ -35,8 +35,30 @@
         textBorderRadius: '6rpx'
       }"
     >
+      <!-- 错误状态 -->
+      <EmptyState
+        v-if="hasError"
+        type="error"
+        title="问答加载失败"
+        description="数据小哥正在努力修复中～"
+        button-text="刷新试试"
+        :show-recommendations="false"
+        @action="loadData"
+      />
+
+      <!-- 空状态 -->
+      <EmptyState
+        v-else-if="!loading && questionList.length === 0"
+        type="empty"
+        title="暂无最新问答"
+        description="不如你来发起一个话题？"
+        button-text="立即提问"
+        :show-recommendations="false"
+        @action="handleViewMore"
+      />
+
       <!-- 问答列表 -->
-      <view class="questions-list">
+      <view v-else class="questions-list">
         <view
           v-for="item in questionList"
           :key="item.id"
@@ -96,6 +118,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { getQuestionList } from '@/services/question'
+import type { QuestionItem } from '@/types/question'
+import { formatTime } from '@/utils/formatters'
+import EmptyState from '@/components/EmptyState.vue'
 
 interface Question {
   id: number
@@ -115,6 +141,7 @@ const emit = defineEmits<{
 
 const loading = ref(true)
 const questionList = ref<Question[]>([])
+const hasError = ref(false)
 
 const handleQuestionClick = (item: Question) => {
   emit('question-click', item)
@@ -124,46 +151,41 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
-// 模拟数据加载
+// 从后端加载最新问答
 const loadData = async () => {
   loading.value = true
+  hasError.value = false
 
-  await new Promise(resolve => setTimeout(resolve, 600))
+  try {
+    const res = await getQuestionList({
+      page: 1,
+      pageSize: 3,
+      sortBy: 'created_at',
+      sortOrder: 'desc'
+    })
 
-  questionList.value = [
-    {
-      id: 1,
-      title: 'Java 多线程中 synchronized 和 ReentrantLock 有什么区别？',
-      author: '技术小白',
-      time: '10分钟前',
-      tags: ['Java', '多线程', '并发'],
-      answers: 5,
-      views: 234,
-      solved: true
-    },
-    {
-      id: 2,
-      title: '如何优化 MySQL 慢查询？有哪些常用的索引优化技巧？',
-      author: '数据库萌新',
-      time: '30分钟前',
-      tags: ['MySQL', '性能优化', '索引'],
-      answers: 3,
-      views: 156,
-      solved: false
-    },
-    {
-      id: 3,
-      title: 'Vue3 组合式 API 和选项式 API 应该如何选择？',
-      author: '前端学习者',
-      time: '1小时前',
-      tags: ['Vue3', '前端', 'Composition API'],
-      answers: 8,
-      views: 432,
-      solved: true
+    const dataList = res?.list || res?.records || []
+    if (dataList.length) {
+      questionList.value = dataList.map((q: QuestionItem) => ({
+        id: q.qid || q.questionId || 0,
+        title: q.title,
+        author: q.askerNickname || q.askerName || '匿名用户',
+        time: formatTime(q.createdAt),
+        tags: q.tags || [],
+        answers: q.answerCount || 0,
+        views: q.views || 0,
+        solved: q.status === 1 || q.isSolved === true
+      }))
+    } else {
+      questionList.value = []
     }
-  ]
-
-  loading.value = false
+  } catch (error) {
+    console.error('[LatestQuestions] 加载最新问答失败:', error)
+    hasError.value = true
+    questionList.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 defineExpose({ loadData })

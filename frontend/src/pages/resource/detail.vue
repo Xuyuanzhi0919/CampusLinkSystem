@@ -2151,7 +2151,7 @@ const closePreview = () => {
   right: 0;
   bottom: 0;
   background: rgba($gray-900, 0.5);
-  z-index: $z-overlay;
+  z-index: $z-modal-backdrop;
   display: flex;
   align-items: flex-end;
 
@@ -2216,7 +2216,7 @@ const closePreview = () => {
   right: 0;
   bottom: 0;
   background: rgba($gray-900, 0.85);
-  z-index: $z-fullscreen;
+  z-index: $z-max;
   @include flex-center;
   padding: $sp-10;
 }

@@ -237,15 +237,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .featured-section {
-  margin-bottom: $module-gap-md;
-  padding-top: 16px;
+  // 模块间距统一为 48px
+  margin-bottom: 48px;
 }
 
 .section-header {
   display: flex;
   align-items: baseline;
   gap: 12px;
-  margin-bottom: $title-margin-bottom;
+  // 标题到内容间距统一为 24px
+  margin-bottom: 24px;
 }
 
 .section-title {

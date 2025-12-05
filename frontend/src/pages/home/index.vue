@@ -423,13 +423,14 @@ onUnmounted(() => {
   position: relative;
 
   // 主背景层：径向微雾 + 大范围柔光（统一左右风格）
+  // 修改为 absolute 并限制高度，避免覆盖底部 Footer
   &::before {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
+    height: 1200px; // 限制高度，不覆盖底部区域
     background:
       // 左上角主光斑（蓝色系）
       radial-gradient(ellipse 120% 80% at 10% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
@@ -437,7 +438,7 @@ onUnmounted(() => {
       radial-gradient(ellipse 100% 70% at 90% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
       // 中部过渡光斑（柔和蓝）
       radial-gradient(ellipse 80% 60% at 50% 40%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-      // 底部渐隐
+      // 底部渐隐到页面背景色
       linear-gradient(180deg, transparent 0%, rgba(250, 251, 252, 0.8) 70%, #FAFBFC 100%);
     pointer-events: none;
     z-index: 0;
@@ -446,7 +447,7 @@ onUnmounted(() => {
   // 顶部柔光装饰层
   &::after {
     content: '';
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     right: 0;
@@ -470,29 +471,31 @@ onUnmounted(() => {
 .main-content {
   position: relative;
   z-index: 1;
-  padding: $module-gap-md 0;
+  // 使用统一的 48px 间距
+  padding: 48px 0 0;
 
   @include mobile {
-    padding: 24px 0;
+    padding: 24px 0 0;
   }
 }
 
 .content-wrapper {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 $sp-16;
+  padding: 0 32px;
   display: flex;
-  gap: $sp-10;
+  // 左右栏间距统一为 40px
+  gap: 40px;
 
   @media (max-width: 1440px) {
-    padding: 0 $sp-12;
-    gap: $sp-8;
+    padding: 0 24px;
+    gap: 32px;
   }
 
   @include mobile {
     flex-direction: column;
-    padding: 0 $sp-4;
-    gap: $sp-6;
+    padding: 0 16px;
+    gap: 24px;
   }
 }
 
@@ -502,16 +505,66 @@ onUnmounted(() => {
   min-width: 0;
   // 为分区背景提供溢出空间
   overflow: visible;
+  // 底部添加额外内边距，确保与 Footer 有足够间距
+  padding-bottom: 32px;
 
   @include mobile {
     flex: 1;
+    padding-bottom: 24px;
   }
 }
 
-// 右侧栏（固定340px宽度）
+// 右侧栏（固定340px宽度）- 毛玻璃容器效果
 .sidebar-area {
   width: 340px;
   flex-shrink: 0;
+  position: relative;
+
+  // 毛玻璃容器背景
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  // 边框与圆角
+  border: 1px solid #F2F4F8;
+  border-radius: 20px;
+
+  // 柔和阴影
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+
+  // 内边距
+  padding: 24px 20px;
+
+  // 高度自适应
+  height: fit-content;
+  align-self: flex-start;
+
+  // 左侧分割线（使用伪元素）
+  &::before {
+    content: '';
+    position: absolute;
+    left: -20px; // 在容器左侧间隙中
+    top: 24px;
+    bottom: 24px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(226, 232, 240, 0.6) 10%,
+      rgba(226, 232, 240, 0.8) 50%,
+      rgba(226, 232, 240, 0.6) 90%,
+      transparent 100%
+    );
+  }
+
+  @media (max-width: 1440px) {
+    width: 320px;
+    padding: 20px 16px;
+
+    &::before {
+      left: -16px;
+    }
+  }
 
   @include mobile {
     display: none;

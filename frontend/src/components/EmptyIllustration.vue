@@ -1,35 +1,15 @@
 <template>
   <view class="illustration-wrapper">
-    <!-- 空状态插画 -->
-    <svg v-if="type === 'empty'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-      <!-- 背景圆 -->
-      <circle cx="100" cy="100" r="80" fill="#F0F4FF" opacity="0.5">
-        <animate attributeName="r" values="80;85;80" dur="3s" repeatCount="indefinite"/>
-      </circle>
-      
-      <!-- 邮箱 -->
-      <rect x="60" y="80" width="80" height="60" rx="8" fill="#E8EEFF" stroke="#2E7CF6" stroke-width="2"/>
-      <path d="M 60 80 L 100 110 L 140 80" fill="none" stroke="#2E7CF6" stroke-width="2" stroke-linecap="round"/>
-      
-      <!-- 装饰点 -->
-      <circle cx="50" cy="60" r="4" fill="#2E7CF6" opacity="0.3">
-        <animate attributeName="cy" values="60;55;60" dur="2s" repeatCount="indefinite"/>
-      </circle>
-      <circle cx="150" cy="70" r="3" fill="#2E7CF6" opacity="0.3">
-        <animate attributeName="cy" values="70;65;70" dur="2.5s" repeatCount="indefinite"/>
-      </circle>
-    </svg>
-
     <!-- 错误插画 - 校园风格：书本+云朵+问号 -->
-    <svg v-else-if="type === 'error'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <svg v-if="type === 'error'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <!-- 背景渐变圆 -->
       <defs>
-        <linearGradient id="errorBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="errorBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style="stop-color:#EBF4FF;stop-opacity:0.6"/>
           <stop offset="100%" style="stop-color:#E0EEFF;stop-opacity:0.4"/>
         </linearGradient>
       </defs>
-      <circle cx="100" cy="100" r="80" fill="url(#errorBgGradient)"/>
+      <circle cx="100" cy="100" r="80" fill="url(#errorBgGrad)"/>
 
       <!-- 书本图标 -->
       <path d="M 60 120 L 60 75 Q 100 65 140 75 L 140 120 Q 100 110 60 120 Z" fill="#E8F0FE" stroke="#4F85F0" stroke-width="2"/>
@@ -62,12 +42,12 @@
     <svg v-else-if="type === 'network'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
       <!-- 背景渐变圆 -->
       <defs>
-        <linearGradient id="networkBgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id="networkBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" style="stop-color:#EBF4FF;stop-opacity:0.6"/>
           <stop offset="100%" style="stop-color:#E0EEFF;stop-opacity:0.4"/>
         </linearGradient>
       </defs>
-      <circle cx="100" cy="100" r="80" fill="url(#networkBgGradient)"/>
+      <circle cx="100" cy="100" r="80" fill="url(#networkBgGrad)"/>
 
       <!-- WiFi 图标（品牌蓝色） -->
       <circle cx="100" cy="125" r="5" fill="#4F85F0"/>
@@ -89,6 +69,26 @@
       <!-- 装饰小点 -->
       <circle cx="145" cy="75" r="3" fill="#4F85F0" opacity="0.25">
         <animate attributeName="cy" values="75;70;75" dur="2s" repeatCount="indefinite"/>
+      </circle>
+    </svg>
+
+    <!-- 空状态插画 -->
+    <svg v-else-if="type === 'empty'" class="illustration" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <!-- 背景圆 -->
+      <circle cx="100" cy="100" r="80" fill="#F0F4FF" opacity="0.5">
+        <animate attributeName="r" values="80;85;80" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      
+      <!-- 邮箱 -->
+      <rect x="60" y="80" width="80" height="60" rx="8" fill="#E8EEFF" stroke="#2E7CF6" stroke-width="2"/>
+      <path d="M 60 80 L 100 110 L 140 80" fill="none" stroke="#2E7CF6" stroke-width="2" stroke-linecap="round"/>
+      
+      <!-- 装饰点 -->
+      <circle cx="50" cy="60" r="4" fill="#2E7CF6" opacity="0.3">
+        <animate attributeName="cy" values="60;55;60" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="150" cy="70" r="3" fill="#2E7CF6" opacity="0.3">
+        <animate attributeName="cy" values="70;65;70" dur="2.5s" repeatCount="indefinite"/>
       </circle>
     </svg>
 

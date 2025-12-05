@@ -5,7 +5,26 @@
       <view class="module-header">
         <text class="module-title">🔥 今日热问榜单</text>
       </view>
-      <view class="hot-questions">
+      <!-- 错误状态 -->
+      <SidebarEmptyState
+        v-if="questionsError"
+        type="error"
+        icon-type="hotlist"
+        title="热门问题加载失败"
+        description="网络有点忙，稍后再试哦"
+        @refresh="loadHotQuestions"
+      />
+      <!-- 空状态 -->
+      <SidebarEmptyState
+        v-else-if="!questionsLoading && hotQuestions.length === 0"
+        type="empty"
+        icon-type="hotlist"
+        title="暂无热门问题"
+        description="今天的问题还不够多，稍后再来看看～"
+        :show-refresh="false"
+      />
+      <!-- 正常列表 -->
+      <view v-else class="hot-questions">
         <view
           v-for="(item, index) in hotQuestions"
           :key="item.id"
@@ -25,7 +44,26 @@
       <view class="module-header">
         <text class="module-title">🏷️ 热门推荐</text>
       </view>
-      <view class="tag-cloud">
+      <!-- 错误状态 -->
+      <SidebarEmptyState
+        v-if="tagsError"
+        type="error"
+        icon-type="tags"
+        title="推荐标签加载失败"
+        description="请检查网络或稍后再试"
+        @refresh="loadHotTags"
+      />
+      <!-- 空状态 -->
+      <SidebarEmptyState
+        v-else-if="!tagsLoading && hotTags.length === 0"
+        type="empty"
+        icon-type="tags"
+        title="暂无推荐标签"
+        description="稍后会自动为你更新热门内容"
+        :show-refresh="false"
+      />
+      <!-- 正常列表 -->
+      <view v-else class="tag-cloud">
         <view
           v-for="tag in hotTags"
           :key="tag.id"
@@ -95,6 +133,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { getQuestionList } from '@/services/question'
+import { getHotTags, type TagItem } from '@/services/tag'
+import { getTodayStats, type TodayStatsResponse } from '@/services/stats'
+import SidebarEmptyState from '@/components/SidebarEmptyState.vue'
 
 interface HotQuestion {
   id: number
@@ -113,32 +155,27 @@ const emit = defineEmits<{
   (e: 'ai-click'): void
 }>()
 
+// 加载状态
+const questionsLoading = ref(true)
+const tagsLoading = ref(true)
+const statsLoading = ref(true)
+
+// 错误状态
+const questionsError = ref(false)
+const tagsError = ref(false)
+
 // 热问榜单
-const hotQuestions = ref<HotQuestion[]>([
-  { id: 1, title: 'Spring Boot 自动配置原理详解' },
-  { id: 2, title: 'MySQL 索引优化最佳实践' },
-  { id: 3, title: 'Vue3 响应式原理深入分析' },
-  { id: 4, title: '如何写好一份技术简历?' },
-])
+const hotQuestions = ref<HotQuestion[]>([])
 
 // 热门标签
-const hotTags = ref<HotTag[]>([
-  { id: 1, name: 'Python', hot: true },
-  { id: 2, name: 'Java' },
-  { id: 3, name: 'C++' },
-  { id: 4, name: '蓝桥杯', hot: true },
-  { id: 5, name: '四六级' },
-  { id: 6, name: '考研' },
-  { id: 7, name: '算法' },
-  { id: 8, name: '前端' },
-])
+const hotTags = ref<HotTag[]>([])
 
 // 平台数据
 const platformStats = ref({
-  newResources: 128,
-  newQuestions: 56,
-  pointsEarned: 3240,
-  activeUsers: 892
+  newResources: 0,
+  newQuestions: 0,
+  pointsEarned: 0,
+  activeUsers: 0
 })
 
 // 获取排名样式类
@@ -161,9 +198,85 @@ const handleAIClick = () => {
   emit('ai-click')
 }
 
+// 加载热问榜单 - 只使用真实API数据
+const loadHotQuestions = async () => {
+  questionsLoading.value = true
+  questionsError.value = false // 重置错误状态
+  try {
+    const res = await getQuestionList({
+      page: 1,
+      pageSize: 5,
+      sortBy: 'views', // 按浏览量排序
+      sortOrder: 'desc'
+    })
+    // request 已解包，直接访问 list 或 records
+    const dataList = (res as any)?.list || (res as any)?.records || []
+    hotQuestions.value = dataList.map((q: any) => ({
+      id: q.qid || q.questionId || q.id,
+      title: q.title
+    }))
+    questionsError.value = false
+  } catch (error) {
+    console.error('[HomeSidebar] 加载热问榜单失败:', error)
+    questionsError.value = true // 设置错误状态
+    hotQuestions.value = []
+  } finally {
+    questionsLoading.value = false
+  }
+}
+
+// 加载热门标签 - 只使用真实API数据
+const loadHotTags = async () => {
+  tagsLoading.value = true
+  tagsError.value = false // 重置错误状态
+  try {
+    const res = await getHotTags({ limit: 10 })
+    // request 已解包，res 直接是 TagItem[]
+    const tagList = Array.isArray(res) ? res : []
+    hotTags.value = tagList.map((tag: TagItem, index: number) => ({
+      id: tag.tagId,
+      name: tag.displayName || tag.tagName,
+      hot: index < 2 // 前两个标记为热门
+    }))
+    tagsError.value = false
+  } catch (error) {
+    console.error('[HomeSidebar] 加载热门标签失败:', error)
+    tagsError.value = true // 设置错误状态
+    hotTags.value = []
+  } finally {
+    tagsLoading.value = false
+  }
+}
+
+// 加载平台统计数据 - 只使用真实API数据
+const loadPlatformStats = async () => {
+  statsLoading.value = true
+  try {
+    const res = await getTodayStats()
+    // request 已解包，res 直接是 TodayStatsResponse
+    if (res && typeof res === 'object') {
+      platformStats.value = {
+        newResources: res.newResources || 0,
+        newQuestions: res.newQuestions || 0,
+        pointsEarned: res.activityParticipants || 0, // 用活动参与数代替积分
+        activeUsers: res.activeUsers || 0
+      }
+    }
+  } catch (error) {
+    console.error('[HomeSidebar] 加载平台统计失败:', error)
+    // 保持初始值 0
+  } finally {
+    statsLoading.value = false
+  }
+}
+
 // 暴露刷新方法
 const loadData = async () => {
-  // 可以在这里添加实际的数据加载逻辑
+  await Promise.all([
+    loadHotQuestions(),
+    loadHotTags(),
+    loadPlatformStats()
+  ])
 }
 
 defineExpose({ loadData })
@@ -177,14 +290,23 @@ onMounted(() => {
 .home-sidebar {
   display: flex;
   flex-direction: column;
-  gap: $sp-6;
+  gap: 20px;
 }
 
 .sidebar-module {
-  background: $bg-surface;
-  border-radius: $radius-md;
-  padding: $sp-5;
-  border: 1px solid $border-light;
+  // 内部模块使用半透明白色背景，与外层毛玻璃容器配合
+  background: rgba(255, 255, 255, 0.65);
+  border-radius: 14px;
+  padding: 18px 16px;
+  border: 1px solid rgba(226, 232, 240, 0.5);
+  // 轻微阴影增加层次感
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  }
 }
 
 .module-header {
@@ -328,10 +450,14 @@ onMounted(() => {
   }
 }
 
-// AI 小助手模块
+// AI 小助手模块 - 保持渐变但调整透明度
 .ai-module {
-  background: linear-gradient(135deg, $primary-50, $white);
-  border-color: $primary-200;
+  background: linear-gradient(135deg, rgba(239, 246, 255, 0.85), rgba(255, 255, 255, 0.75));
+  border-color: rgba(191, 219, 254, 0.6);
+
+  &:hover {
+    background: linear-gradient(135deg, rgba(239, 246, 255, 0.95), rgba(255, 255, 255, 0.9));
+  }
 }
 
 .ai-content {

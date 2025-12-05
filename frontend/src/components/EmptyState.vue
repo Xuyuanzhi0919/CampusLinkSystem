@@ -243,9 +243,10 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 48rpx 32rpx;
-  min-height: 260rpx;
-  max-height: 360rpx;
+  // 压缩空状态高度：180-220px 范围
+  padding: 32px 24px;
+  min-height: 180px;
+  max-height: 220px;
   animation: fadeIn 0.4s ease-out;
 }
 
@@ -260,11 +261,10 @@ onMounted(() => {
   }
 }
 
-/* SVG 插画 */
+/* SVG 插画 - 缩小插图尺寸 */
 .empty-illustration {
-  margin-bottom: 20rpx;
-  animation: float 3s ease-in-out infinite;
-  transform: scale(0.85);
+  margin-bottom: 12px;
+  transform: scale(0.7);
 }
 
 @keyframes float {
@@ -276,22 +276,22 @@ onMounted(() => {
   }
 }
 
-/* 文案 */
+/* 文案 - 紧凑间距 */
 .empty-title {
-  font-size: 28rpx;
+  font-size: 14px;
   font-weight: 600;
   color: var(--cl-gray-700, #374151);
-  margin-bottom: 12rpx;
+  margin-bottom: 6px;
   text-align: center;
 }
 
 .empty-description {
-  font-size: 24rpx;
+  font-size: 12px;
   color: var(--cl-gray-500, #6B7280);
-  line-height: 1.5;
+  line-height: 1.4;
   text-align: center;
-  margin-bottom: 24rpx;
-  max-width: 440rpx;
+  margin-bottom: 16px;
+  max-width: 220px;
 }
 
 /* 智能推荐 */
@@ -372,13 +372,13 @@ onMounted(() => {
 .action-btn {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 20rpx 32rpx;
-  border-radius: var(--radius-lg, 16px);
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
   background: var(--cl-primary, #2E7CF6);
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(46, 124, 246, 0.2);
+  box-shadow: 0 2px 8px rgba(46, 124, 246, 0.15);
   position: relative;
   overflow: hidden;
 
@@ -410,8 +410,8 @@ onMounted(() => {
 
 /* SVG 图标容器 */
 .btn-icon-svg {
-  width: 32rpx;
-  height: 32rpx;
+  width: 14px;
+  height: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -459,8 +459,8 @@ onMounted(() => {
 }
 
 .btn-text {
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: #FFFFFF;
   line-height: 1;
 }

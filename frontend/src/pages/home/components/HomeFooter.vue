@@ -127,9 +127,23 @@ const handleFeedback = () => {
 
 <style lang="scss" scoped>
 .home-footer {
+  position: relative;
+  z-index: 2; // 确保在雾化背景层之上
   background: $gray-900;
   padding: 80rpx 0 40rpx;
-  margin-top: $sp-16;
+  margin-top: 0; // 移除多余的上边距，由内容区控制
+
+  // 顶部过渡渐变，使 Footer 与内容区自然衔接
+  &::before {
+    content: '';
+    position: absolute;
+    top: -48px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(180deg, transparent 0%, #FAFBFC 100%);
+    pointer-events: none;
+  }
 }
 
 .footer-container {

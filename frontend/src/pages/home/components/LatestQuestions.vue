@@ -197,34 +197,20 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .latest-questions {
-  margin: 0 calc(-1 * $sp-16);
-  padding: 48px $sp-16;
-  // 问答区使用浅蓝过渡背景
-  background: linear-gradient(180deg, rgba($campus-blue, 0.02) 0%, $white 100%);
-  border-radius: $campus-radius-lg;
+  // 模块间距统一为 48px
+  margin-bottom: 48px;
+  // 内边距统一
+  padding: 32px 0;
+  // 问答区使用浅蓝过渡背景 - 限制高度
+  background: linear-gradient(180deg, rgba($campus-blue, 0.02) 0%, transparent 100%);
+  background-size: 100% 280px;
+  background-repeat: no-repeat;
+  border-radius: $campus-radius;
   position: relative;
 
-  // 顶部分割线 - 使用校园蓝
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: linear-gradient(90deg, $campus-blue 0%, lighten($campus-blue, 15%) 100%);
-    border-radius: 2px;
-  }
-
-  @media (max-width: 1440px) {
-    margin: 0 calc(-1 * $sp-12);
-    padding: 40px $sp-12;
-  }
-
   @include mobile {
-    margin: 0 calc(-1 * $sp-4);
-    padding: 32px $sp-4;
+    padding: 24px 0;
+    background-size: 100% 240px;
   }
 }
 

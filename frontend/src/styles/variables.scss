@@ -167,11 +167,11 @@ $section-gap: $sp-24;       // 96rpx - 区块间距（已按P0规范重构）
 $card-padding: $sp-6;       // 24rpx - 卡片内边距（已按文档重构）
 $list-gap: $sp-6;           // 24rpx - 列表项间距
 
-// 企业级模块间距系统
-$module-gap-lg: 56px;       // 大模块间距（模块之间）
-$module-gap-md: 48px;       // 中模块间距（模块之间）
+// 企业级模块间距系统（8px 基线栅格）
+$module-gap-lg: 64px;       // 大模块间距（主区块之间）
+$module-gap-md: 48px;       // 中模块间距（模块之间）- 主用
 $module-gap-sm: 24px;       // 小间距（卡片之间）
-$title-margin-bottom: 16px; // 标题下方间距
+$title-margin-bottom: 24px; // 标题下方间距（统一为24px）
 
 // ============================================
 // 3. 字体系统 (Typography System)

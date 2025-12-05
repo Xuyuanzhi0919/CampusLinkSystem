@@ -320,47 +320,20 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .activity-recommend {
-  margin: 0 calc(-1 * $sp-16);
-  padding: 48px $sp-16 56px;
-  // 使用橙色调（$campus-amber）作为活动区调味色
-  background: linear-gradient(180deg, rgba($campus-amber, 0.04) 0%, rgba($campus-amber, 0.08) 30%, rgba($campus-amber, 0.04) 60%, $white 100%);
-  border-radius: $campus-radius-lg;
+  // 最后一个模块使用 64px 作为与 Footer 的间距
+  margin-bottom: 64px;
+  // 内边距统一
+  padding: 32px 0;
+  // 使用橙色调背景 - 限制高度为 280px
+  background: linear-gradient(180deg, rgba($campus-amber, 0.03) 0%, rgba($campus-amber, 0.05) 40%, transparent 100%);
+  background-size: 100% 280px;
+  background-repeat: no-repeat;
+  border-radius: $campus-radius;
   position: relative;
-  overflow: hidden;
-
-  // 装饰性背景光斑
-  &::before {
-    content: '';
-    position: absolute;
-    top: 20%;
-    left: -5%;
-    width: 200px;
-    height: 200px;
-    background: radial-gradient(circle, rgba($campus-amber, 0.1) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 10%;
-    right: -5%;
-    width: 180px;
-    height: 180px;
-    background: radial-gradient(circle, rgba($campus-violet, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-  }
-
-  @media (max-width: 1440px) {
-    margin: 0 calc(-1 * $sp-12);
-    padding: 40px $sp-12 48px;
-  }
 
   @include mobile {
-    margin: 0 calc(-1 * $sp-4);
-    padding: 32px $sp-4 40px;
+    padding: 24px 0;
+    background-size: 100% 240px;
   }
 }
 

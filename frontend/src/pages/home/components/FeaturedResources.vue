@@ -242,25 +242,16 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .featured-resources {
-  margin-bottom: $module-gap-md;
-  padding: 40px 0;
+  // 模块间距统一为 48px
+  margin-bottom: 48px;
+  // 内边距统一
+  padding: 32px 0;
   position: relative;
-  // 使用青绿色调（$campus-teal）作为资料区调味色
-  background: linear-gradient(180deg, transparent 0%, rgba($campus-teal, 0.04) 30%, rgba($campus-teal, 0.06) 60%, transparent 100%);
-  border-radius: $campus-radius-lg;
-
-  // 装饰光斑
-  &::before {
-    content: '';
-    position: absolute;
-    top: 10%;
-    right: 5%;
-    width: 150px;
-    height: 150px;
-    background: radial-gradient(circle, rgba($campus-teal, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-  }
+  // 使用青绿色调背景 - 限制高度为 280px
+  background: linear-gradient(180deg, transparent 0%, rgba($campus-teal, 0.03) 30%, rgba($campus-teal, 0.04) 60%, transparent 100%);
+  background-size: 100% 280px;
+  background-repeat: no-repeat;
+  border-radius: $campus-radius;
 }
 
 // 装饰emoji

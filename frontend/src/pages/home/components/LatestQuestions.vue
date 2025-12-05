@@ -222,7 +222,7 @@ import { ref, onMounted } from 'vue'
 import { getQuestionList } from '@/services/question'
 import { addFavorite, removeFavorite, checkFavorite } from '@/services/favorite'
 import type { QuestionItem } from '@/types/question'
-import { formatTime } from '@/utils/formatters'
+import { formatSmartTime } from '@/utils/date'
 import { useUserStore } from '@/stores/user'
 import EmptyState from '@/components/EmptyState.vue'
 
@@ -390,7 +390,7 @@ const loadData = async () => {
         school: (q as any).schoolName || '',
         major: (q as any).majorName || '',
         grade: (q as any).grade || '',
-        time: formatTime(q.createdAt),
+        time: formatSmartTime(q.createdAt),
         category: q.category || '',
         tags: q.tags || [],
         answers: q.answerCount || 0,

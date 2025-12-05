@@ -237,6 +237,8 @@
 		"custom": {
 			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
 			"^gp-skeleton$": "@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue",
+			"^z-paging$": "z-paging/components/z-paging/z-paging.vue",
+			"^z-paging-(.*)$": "z-paging/components/z-paging-$1/z-paging-$1.vue",
 			"^LazyImage$": "@/components/LazyImage.vue",
 			"^SkeletonScreen$": "@/components/SkeletonScreen.vue",
 			"^SkeletonCard$": "@/components/SkeletonCard.vue",

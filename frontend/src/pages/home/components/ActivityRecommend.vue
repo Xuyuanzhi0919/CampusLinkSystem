@@ -158,6 +158,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { getActivityList } from '@/services/activity'
+import { formatDateCN } from '@/utils/date'
 import EmptyState from '@/components/EmptyState.vue'
 
 interface Activity {
@@ -221,15 +222,9 @@ const mapActivityStatus = (status: number): 'upcoming' | 'ongoing' | 'ended' => 
   return statusMap[status] || 'upcoming'
 }
 
-// 格式化活动时间
+// 格式化活动时间 - 使用 dayjs 封装
 const formatActivityTime = (startTime: string): string => {
-  if (!startTime) return '待定'
-  const date = new Date(startTime)
-  const month = date.getMonth() + 1
-  const day = date.getDate()
-  const hour = String(date.getHours()).padStart(2, '0')
-  const minute = String(date.getMinutes()).padStart(2, '0')
-  return `${month}月${day}日 ${hour}:${minute}`
+  return formatDateCN(startTime)
 }
 
 // 根据活动名称猜测图标

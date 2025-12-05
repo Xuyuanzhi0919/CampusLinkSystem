@@ -130,6 +130,12 @@ import CustomTabBar from '@/components/CustomTabBar.vue'
 import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
 
+// 组合式函数
+import { useNavigation } from '@/composables/useNavigation'
+
+// 统一导航
+const nav = useNavigation()
+
 // 平台判断
 const isDesktop = computed(() => {
   // #ifdef H5
@@ -156,136 +162,31 @@ const resourcesRef = ref<any>(null)
 const activitiesRef = ref<any>(null)
 const sidebarRef = ref<any>(null)
 
-// ===================== 导航事件处理 =====================
+// ===================== 导航事件处理（使用 useNavigation）=====================
 
-const handleSearch = (keyword: string) => {
-  uni.navigateTo({
-    url: `/pages/search/result?keyword=${encodeURIComponent(keyword)}`,
-    fail: () => uni.showToast({ title: '搜索功能开发中', icon: 'none' })
-  })
-}
-
-const handleUpload = () => {
-  uni.navigateTo({
-    url: '/pages/resource/upload',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleAsk = () => {
-  uni.navigateTo({
-    url: '/pages/question/ask',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleTask = () => {
-  uni.navigateTo({
-    url: '/pages/task/publish',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleTagClick = (tag: any) => {
-  uni.navigateTo({
-    url: `/pages/search/result?keyword=${encodeURIComponent(tag.name)}`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleNavigate = (path: string) => {
-  // Footer 导航处理
-}
+const handleSearch = (keyword: string) => nav.toSearchResult(keyword)
+const handleUpload = () => nav.toUploadResource()
+const handleAsk = () => nav.toAskQuestion()
+const handleTask = () => nav.toPublishTask()
+const handleTagClick = (tag: any) => nav.toSearchResult(tag.name)
+const handleNavigate = (_path: string) => { /* Footer 导航由组件内部处理 */ }
 
 // ===================== 内容点击处理 =====================
 
-const handleFeaturedClick = (item: any) => {
-  const routes: Record<string, string> = {
-    question: `/pages/question/detail?id=${item.id}`,
-    resource: `/pages/resource/detail?id=${item.id}`,
-    activity: `/pages/club/activity-detail?id=${item.id}`
-  }
-  const url = routes[item.type]
-  if (url) {
-    uni.navigateTo({ url, fail: () => uni.showToast({ title: '功能开发中', icon: 'none' }) })
-  }
-}
-
-const handleQuestionClick = (item: any) => {
-  uni.navigateTo({
-    url: `/pages/question/detail?id=${item.id}`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleAnswerClick = (item: any) => {
-  // 跳转到问题详情页，并通过参数标识需要聚焦到回答区域
-  uni.navigateTo({
-    url: `/pages/question/detail?id=${item.id}&action=answer`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleResourceClick = (item: any) => {
-  uni.navigateTo({
-    url: `/pages/resource/detail?id=${item.id}`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleActivityClick = (item: any) => {
-  uni.navigateTo({
-    url: `/pages/club/activity-detail?id=${item.id}`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleHotQuestionClick = (item: any) => {
-  handleQuestionClick(item)
-}
-
-const handleAIClick = () => {
-  uni.navigateTo({
-    url: '/pages/ai/chat',
-    fail: () => uni.showToast({ title: 'AI 助手开发中', icon: 'none' })
-  })
-}
-
-const handleQuickLink = (type: string) => {
-  const routes: Record<string, string> = {
-    upload: '/pages/resource/upload',
-    ask: '/pages/question/ask',
-    task: '/pages/task/publish',
-    activity: '/pages/club/activity-list'
-  }
-  const url = routes[type]
-  if (url) {
-    uni.navigateTo({ url, fail: () => uni.showToast({ title: '功能开发中', icon: 'none' }) })
-  }
-}
+const handleFeaturedClick = (item: any) => nav.toDetailByType(item.type, item.id)
+const handleQuestionClick = (item: any) => nav.toQuestionDetail(item.id)
+const handleAnswerClick = (item: any) => nav.toQuestionDetail(item.id, 'answer')
+const handleResourceClick = (item: any) => nav.toResourceDetail(item.id)
+const handleActivityClick = (item: any) => nav.toActivityDetail(item.id)
+const handleHotQuestionClick = (item: any) => nav.toQuestionDetail(item.id)
+const handleAIClick = () => nav.toAIChat()
+const handleQuickLink = (type: string) => nav.toQuickLink(type)
 
 // ===================== 查看更多 =====================
 
-const handleViewMoreQuestions = () => {
-  uni.switchTab({
-    url: '/pages/question/index',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleViewMoreResources = () => {
-  uni.switchTab({
-    url: '/pages/resource/index',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
-
-const handleViewMoreActivities = () => {
-  uni.navigateTo({
-    url: '/pages/club/activity-list',
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
-}
+const handleViewMoreQuestions = () => nav.toQuestionList()
+const handleViewMoreResources = () => nav.toResourceList()
+const handleViewMoreActivities = () => nav.toActivityList()
 
 // ===================== 登录相关 =====================
 

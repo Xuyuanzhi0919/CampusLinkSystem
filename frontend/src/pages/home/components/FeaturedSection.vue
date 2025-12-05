@@ -555,10 +555,11 @@ onMounted(() => {
 
 .featured-card {
   @include card-base;
-  padding: 20px;
+  // 增加内边距到 28px，提升呼吸感
+  padding: 28px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -572,6 +573,11 @@ onMounted(() => {
       opacity: 1;
       transform: translateY(0);
     }
+  }
+
+  @include mobile {
+    padding: 20px;
+    gap: 14px;
   }
 }
 

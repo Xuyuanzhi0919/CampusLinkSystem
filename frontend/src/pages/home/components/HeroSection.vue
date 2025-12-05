@@ -591,26 +591,39 @@ $hero-red: #EF4444;
 }
 
 .hero-container {
-  max-width: 1400px;
+  // 与主内容区保持一致的最大宽度
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 56px 64px;
+  // 与主内容区保持一致的左右边距
+  padding: 56px 80px;
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 420px;
-  gap: 56px;
+  grid-template-columns: 1fr 400px;
+  gap: 48px;
   align-items: flex-start;
 
-  @media (max-width: 1200px) {
-    padding: 48px 36px;
+  // 响应式边距与主内容区保持同步
+  @media (max-width: 1600px) {
+    padding: 52px 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 48px 48px;
     grid-template-columns: 1fr 380px;
     gap: 40px;
   }
 
+  @media (max-width: 1200px) {
+    padding: 44px 32px;
+    grid-template-columns: 1fr 360px;
+    gap: 36px;
+  }
+
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    padding: 40px 24px;
-    gap: 40px;
+    padding: 40px 16px;
+    gap: 32px;
   }
 }
 
@@ -1392,45 +1405,58 @@ $hero-red: #EF4444;
 
 // 卡片基础样式
 .feed-card {
+  position: relative;
   background: $white;
   border: 1px solid rgba($gray-100, 0.8);
   border-radius: 12px;
-  padding: 14px;
-  transition: all 0.3s ease;
+  padding: 16px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
 
   &:hover {
-    border-color: rgba($hero-blue, 0.15);
-    box-shadow: 0 4px 12px rgba($hero-blue, 0.06);
-    background: rgba($white, 1);
+    transform: translateY(-4px);
+    border-color: rgba($hero-blue, 0.2);
+    box-shadow:
+      0 8px 24px rgba($hero-blue, 0.1),
+      0 4px 12px rgba($black, 0.05);
+    background: $white;
+
+    .user-name {
+      color: $hero-blue;
+    }
+
+    .card-content {
+      color: $text-primary;
+    }
   }
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
 .user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: $white;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba($black, 0.1);
+  box-shadow: 0 2px 8px rgba($black, 0.1);
 }
 
 .ai-avatar {
   position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
   background: linear-gradient(135deg, $hero-violet, darken($hero-violet, 15%));
   display: flex;
   align-items: center;
@@ -1438,6 +1464,11 @@ $hero-red: #EF4444;
   color: $white;
   flex-shrink: 0;
   overflow: hidden;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .ai-glow {
@@ -1457,50 +1488,56 @@ $hero-red: #EF4444;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .user-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: $text-primary;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.25s ease;
+  line-height: 1.3;
 }
 
 .user-meta {
-  font-size: 12px;
+  font-size: 11px;
   color: $text-quaternary;
+  line-height: 1.3;
 }
 
 .card-badge {
-  flex-shrink: 0;
-  padding: 5px 10px;
-  border-radius: 8px;
-  font-size: 11px;
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
   font-weight: 600;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
+  z-index: 2;
 
   &.waiting {
-    background: linear-gradient(135deg, rgba($hero-amber, 0.1), rgba($hero-amber, 0.05));
+    background: linear-gradient(135deg, rgba($hero-amber, 0.12), rgba($hero-amber, 0.06));
     color: $hero-amber;
   }
 
   &.hot {
-    background: linear-gradient(135deg, rgba($hero-red, 0.1), rgba($hero-red, 0.05));
+    background: linear-gradient(135deg, rgba($hero-red, 0.12), rgba($hero-red, 0.06));
     color: $hero-red;
   }
 
   &.responding {
-    background: linear-gradient(135deg, rgba($hero-blue, 0.1), rgba($hero-blue, 0.05));
+    background: linear-gradient(135deg, rgba($hero-blue, 0.12), rgba($hero-blue, 0.06));
     color: $hero-blue;
   }
 
   &.activity {
-    background: linear-gradient(135deg, rgba($hero-teal, 0.1), rgba($hero-teal, 0.05));
+    background: linear-gradient(135deg, rgba($hero-teal, 0.12), rgba($hero-teal, 0.06));
     color: $hero-teal;
   }
 }
@@ -1519,45 +1556,61 @@ $hero-red: #EF4444;
 }
 
 .card-content {
-  font-size: 14px;
-  color: $text-secondary;
-  line-height: 1.6;
+  font-size: 13px;
+  color: $text-tertiary;
+  line-height: 1.5;
   display: block;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
+  transition: color 0.25s ease;
+  // 单行截断，更紧凑
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-top: 8px;
+  border-top: 1px solid rgba($gray-100, 0.6);
 }
 
 .card-tags {
   display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
+  gap: 4px;
+  flex-wrap: nowrap;
+  overflow: hidden;
 }
 
 .tag {
-  font-size: 11px;
-  color: $hero-blue;
-  background: rgba($hero-blue, 0.06);
-  padding: 4px 8px;
-  border-radius: 6px;
+  font-size: 10px;
+  color: $text-tertiary;
+  background: rgba($gray-100, 0.8);
+  padding: 3px 6px;
+  border-radius: 4px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .card-stats {
   display: flex;
-  gap: 12px;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
+  gap: 3px;
+  font-size: 11px;
   color: $text-quaternary;
+
+  svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 // AI 进度条
@@ -1613,32 +1666,37 @@ $hero-red: #EF4444;
 // 资源卡片
 .resource-card {
   display: flex;
-  gap: 14px;
+  gap: 12px;
 }
 
 .resource-preview {
   position: relative;
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
   background: linear-gradient(135deg, rgba($hero-teal, 0.1), rgba($hero-teal, 0.05));
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: $hero-teal;
+
+  svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .resource-badge {
   position: absolute;
-  bottom: -4px;
-  right: -4px;
-  padding: 2px 6px;
+  bottom: -3px;
+  right: -3px;
+  padding: 2px 5px;
   background: $hero-teal;
   color: $white;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 700;
-  border-radius: 4px;
+  border-radius: 3px;
   text-transform: uppercase;
 }
 
@@ -1648,48 +1706,59 @@ $hero-red: #EF4444;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .resource-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: $text-primary;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: color 0.25s ease;
+  line-height: 1.3;
+
+  .resource-card:hover & {
+    color: $hero-blue;
+  }
 }
 
 .resource-meta {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .resource-rating {
   display: flex;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   color: $hero-amber;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
+
+  svg {
+    width: 10px;
+    height: 10px;
+  }
 }
 
 .resource-downloads {
-  font-size: 12px;
+  font-size: 11px;
   color: $text-quaternary;
 }
 
 // 活动卡片
 .activity-card {
   .activity-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 14px;
     flex-shrink: 0;
   }
 
@@ -1697,7 +1766,8 @@ $hero-red: #EF4444;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba($gray-100, 0.6);
   }
 
   .activity-avatars {
@@ -1706,11 +1776,11 @@ $hero-red: #EF4444;
   }
 
   .mini-avatar {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     border: 2px solid $white;
-    margin-left: -6px;
+    margin-left: -5px;
 
     &:first-child {
       margin-left: 0;
@@ -1718,15 +1788,18 @@ $hero-red: #EF4444;
   }
 
   .avatar-more {
-    font-size: 11px;
+    font-size: 10px;
     color: $text-tertiary;
-    margin-left: 6px;
+    margin-left: 5px;
   }
 
   .activity-deadline {
-    font-size: 11px;
+    font-size: 10px;
     color: $hero-amber;
-    font-weight: 500;
+    font-weight: 600;
+    background: rgba($hero-amber, 0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
   }
 }
 

@@ -400,16 +400,27 @@ defineExpose({
 }
 
 .header-container {
-  max-width: 1400px;
+  // 与主内容区保持一致的最大宽度
+  max-width: 1280px;
   height: 60px;
   margin: 0 auto;
-  padding: 0 $sp-8;
+  // 与主内容区保持一致的左右边距
+  padding: 0 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
 
+  // 响应式边距与主内容区保持同步
+  @media (max-width: 1600px) {
+    padding: 0 64px;
+  }
+
   @media (max-width: 1440px) {
-    padding: 0 $sp-6;
+    padding: 0 48px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32px;
   }
 }
 

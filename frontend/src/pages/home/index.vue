@@ -427,33 +427,33 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .home-page {
   min-height: 100vh;
-  // 统一雾化渐变背景 - 解决左右断层问题
+  // 页面基础背景色
   background: #FAFBFC;
   position: relative;
 
-  // 主背景层：径向微雾 + 大范围柔光（统一左右风格）
-  // 修改为 absolute 并限制高度，避免覆盖底部 Footer
+  // 主背景层：全宽铺满，渐变光斑
+  // 背景 100% 宽度，内容区居中 - 避免左右空白断层
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 1200px; // 限制高度，不覆盖底部区域
+    height: 1200px;
     background:
       // 左上角主光斑（蓝色系）
-      radial-gradient(ellipse 120% 80% at 10% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 60% at 8% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
       // 右上角辅助光斑（青绿色系）
-      radial-gradient(ellipse 100% 70% at 90% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
+      radial-gradient(ellipse 70% 50% at 92% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
       // 中部过渡光斑（柔和蓝）
-      radial-gradient(ellipse 80% 60% at 50% 40%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 30%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
       // 底部渐隐到页面背景色
-      linear-gradient(180deg, transparent 0%, rgba(250, 251, 252, 0.8) 70%, #FAFBFC 100%);
+      linear-gradient(180deg, transparent 0%, rgba(250, 251, 252, 0.85) 60%, #FAFBFC 100%);
     pointer-events: none;
     z-index: 0;
   }
 
-  // 顶部柔光装饰层
+  // 顶部柔光装饰层 - 全宽覆盖
   &::after {
     content: '';
     position: absolute;
@@ -462,12 +462,13 @@ onUnmounted(() => {
     right: 0;
     height: 600px;
     background:
-      // 横跨左右的统一雾化带
+      // 横跨全屏的统一雾化带
       linear-gradient(135deg,
-        rgba(239, 246, 255, 0.7) 0%,
-        rgba(240, 253, 244, 0.4) 30%,
-        rgba(239, 246, 255, 0.5) 60%,
-        rgba(250, 251, 252, 0.3) 100%
+        rgba(239, 246, 255, 0.6) 0%,
+        rgba(240, 253, 244, 0.35) 25%,
+        rgba(239, 246, 255, 0.4) 50%,
+        rgba(240, 253, 244, 0.3) 75%,
+        rgba(250, 251, 252, 0.2) 100%
       );
     pointer-events: none;
     z-index: 0;
@@ -480,30 +481,47 @@ onUnmounted(() => {
 .main-content {
   position: relative;
   z-index: 1;
-  // 使用统一的 48px 间距
-  padding: 48px 0 0;
+  // 顶部间距
+  padding-top: 48px;
+  // 左右安全边距 80px - 专业级呼吸感
+  padding-left: 80px;
+  padding-right: 80px;
+
+  // 中等屏幕适配
+  @media (max-width: 1600px) {
+    padding-left: 64px;
+    padding-right: 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  @media (max-width: 1200px) {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
 
   @include mobile {
-    padding: 24px 0 0;
+    padding: 24px 16px 0;
   }
 }
 
 .content-wrapper {
-  max-width: 1400px;
+  // 内容区最大宽度限制 - 保持专业布局
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 32px;
   display: flex;
-  // 左右栏间距统一为 40px
+  // 左右栏间距 40px - 足够的视觉分隔
   gap: 40px;
 
-  @media (max-width: 1440px) {
-    padding: 0 24px;
+  @media (max-width: 1200px) {
     gap: 32px;
   }
 
   @include mobile {
     flex-direction: column;
-    padding: 0 16px;
     gap: 24px;
   }
 }
@@ -523,9 +541,9 @@ onUnmounted(() => {
   }
 }
 
-// 右侧栏（固定340px宽度）- 毛玻璃容器效果
+// 右侧栏（固定320px宽度）- 毛玻璃容器效果
 .sidebar-area {
-  width: 340px;
+  width: 320px;
   flex-shrink: 0;
   position: relative;
 
@@ -541,12 +559,15 @@ onUnmounted(() => {
   // 柔和阴影
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 
-  // 内边距
-  padding: 24px 20px;
+  // 内边距 - 增加到 24px 保持呼吸感
+  padding: 24px;
 
   // 高度自适应
   height: fit-content;
   align-self: flex-start;
+  // 添加 sticky 定位，滚动时保持可见
+  position: sticky;
+  top: 100px;
 
   // 左侧分割线（使用伪元素）
   &::before {
@@ -566,13 +587,17 @@ onUnmounted(() => {
     );
   }
 
-  @media (max-width: 1440px) {
-    width: 320px;
-    padding: 20px 16px;
+  @media (max-width: 1200px) {
+    width: 300px;
+    padding: 20px;
 
     &::before {
       left: -16px;
     }
+  }
+
+  @media (max-width: 1024px) {
+    display: none;
   }
 
   @include mobile {

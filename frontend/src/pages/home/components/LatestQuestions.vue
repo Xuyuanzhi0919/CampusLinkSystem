@@ -465,7 +465,8 @@ onMounted(() => {
   background: $white;
   border-radius: $campus-radius;
   box-shadow: $campus-shadow-card;
-  padding: 24px;
+  // 增加内边距到 28px，提升呼吸感
+  padding: 28px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -480,6 +481,10 @@ onMounted(() => {
       opacity: 1;
       transform: translateX(0);
     }
+  }
+
+  @include mobile {
+    padding: 20px;
   }
 }
 
@@ -842,10 +847,6 @@ onMounted(() => {
     .cta-text {
       font-size: 12px;
     }
-  }
-
-  .question-card {
-    padding: 20px;
   }
 
   .card-footer {

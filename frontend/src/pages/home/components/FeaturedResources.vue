@@ -450,10 +450,15 @@ onMounted(() => {
 }
 
 .resource-info {
-  padding: 16px;
+  // 增加内边距到 20px，提升呼吸感
+  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
+
+  @include mobile {
+    padding: 16px;
+  }
 }
 
 .resource-title {

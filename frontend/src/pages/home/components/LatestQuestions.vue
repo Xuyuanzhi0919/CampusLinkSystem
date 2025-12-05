@@ -464,15 +464,15 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   // 卡片之间 24px 间距（8pt 系统）
-  gap: 24px;
+  gap: 16px;
 }
 
 .question-card {
   background: $white;
   border-radius: $campus-radius;
-  box-shadow: $campus-shadow-card;
-  // 统一内边距 24px（8pt 系统）
-  padding: 24px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+  // 统一内边距 20px，移动端更紧凑
+  padding: 20px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -494,7 +494,7 @@ onMounted(() => {
   }
 
   @include mobile {
-    padding: 20px;
+    padding: 16px;
   }
 }
 
@@ -608,7 +608,7 @@ onMounted(() => {
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, $campus-blue, lighten($campus-blue, 15%));
+  background: #e5e7eb;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -695,20 +695,20 @@ onMounted(() => {
 
 .category-tag {
   padding: 4px 10px;
-  background: linear-gradient(135deg, rgba($campus-blue, 0.12), rgba($campus-blue, 0.08));
+  background: #f5f7fa;
   border-radius: 4px;
-  border: 1px solid rgba($campus-blue, 0.2);
+  border: 1px solid #e5e7eb;
 
   .tag-text {
     font-size: 12px;
-    color: $campus-blue;
-    font-weight: 500;
+    color: $text-secondary;
+    font-weight: 600;
   }
 }
 
 .topic-tag {
   padding: 4px 10px;
-  background: $gray-100;
+  background: #f5f7fa;
   border-radius: 4px;
 
   .tag-text {
@@ -734,9 +734,9 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(167, 139, 250, 0.05));
+  background: #f5f1ff;
   border-radius: 6px;
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  border: 1px solid #e9d8fd;
   margin-bottom: 12px;
 
   .ai-icon {
@@ -838,7 +838,7 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 16px;
-  background: linear-gradient(135deg, $campus-blue, lighten($campus-blue, 8%));
+  background: #2563EB;
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -847,8 +847,8 @@ onMounted(() => {
   flex-shrink: 0;
 
   &:hover {
-    transform: translateX(0) scale(1.02);
-    box-shadow: 0 4px 12px rgba($campus-blue, 0.3);
+    transform: translateX(0) scale(1.01);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.25);
   }
 
   .cta-text {

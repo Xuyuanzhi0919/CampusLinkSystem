@@ -234,7 +234,9 @@
     <PCFloatingNav />
 
     <!-- 移动端自定义底部导航 -->
+    <!-- #ifndef MP-WEIXIN -->
     <CustomTabBar />
+    <!-- #endif -->
   </view>
 </template>
 

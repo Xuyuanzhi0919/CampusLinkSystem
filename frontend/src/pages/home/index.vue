@@ -74,8 +74,10 @@
     <!-- PC端悬浮导航 -->
     <PCFloatingNav />
 
-    <!-- 移动端自定义底部导航 -->
+    <!-- 移动端自定义底部导航（非微信小程序时使用） -->
+    <!-- #ifndef MP-WEIXIN -->
     <CustomTabBar />
+    <!-- #endif -->
 
     <!-- 登录弹窗 -->
     <LoginModal
@@ -405,7 +407,7 @@ onUnmounted(() => {
   }
 
   @include mobile {
-    padding: 24px 16px 0;
+    padding: 16px 12px 0;
   }
 }
 
@@ -427,7 +429,7 @@ onUnmounted(() => {
 
   @include mobile {
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
   }
 }
 
@@ -449,7 +451,7 @@ onUnmounted(() => {
   @include mobile {
     flex: 1;
     padding-bottom: 24px;
-    gap: 32px;
+    gap: 20px;
   }
 }
 

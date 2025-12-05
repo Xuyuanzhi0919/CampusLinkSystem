@@ -36,6 +36,7 @@
           <LatestQuestions
             ref="questionsRef"
             @question-click="handleQuestionClick"
+            @answer-click="handleAnswerClick"
             @view-more="handleViewMoreQuestions"
           />
 
@@ -213,6 +214,14 @@ const handleFeaturedClick = (item: any) => {
 const handleQuestionClick = (item: any) => {
   uni.navigateTo({
     url: `/pages/question/detail?id=${item.id}`,
+    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
+  })
+}
+
+const handleAnswerClick = (item: any) => {
+  // 跳转到问题详情页，并通过参数标识需要聚焦到回答区域
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${item.id}&action=answer`,
     fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }

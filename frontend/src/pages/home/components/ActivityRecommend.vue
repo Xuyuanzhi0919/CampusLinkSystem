@@ -1,21 +1,9 @@
 <template>
   <view class="activity-recommend">
-    <!-- 装饰元素 -->
-    <view class="section-decoration">
-      <text class="deco-emoji left">🎉</text>
-      <text class="deco-emoji right">🎊</text>
-    </view>
-
     <view class="section-header">
-      <view class="title-wrap">
-        <text class="section-title">社团活动推荐</text>
-        <view class="title-badge">
-          <text class="badge-dot"></text>
-          <text class="badge-text">热门</text>
-        </view>
-      </view>
+      <text class="section-title">社团活动推荐</text>
       <view class="view-more" @click="handleViewMore">
-        <text class="more-text">探索更多</text>
+        <text class="more-text">查看更多</text>
         <svg class="more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
           <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -320,120 +308,43 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .activity-recommend {
-  // 最后一个模块使用 64px 作为与 Footer 的间距
-  margin-bottom: 64px;
-  // 内边距统一
-  padding: 32px 0;
-  // 使用橙色调背景 - 限制高度为 280px
-  background: linear-gradient(180deg, rgba($campus-amber, 0.03) 0%, rgba($campus-amber, 0.05) 40%, transparent 100%);
-  background-size: 100% 280px;
-  background-repeat: no-repeat;
-  border-radius: $campus-radius;
+  // 由父容器 gap 控制模块间距
+  width: 100%;
+  // 移除整块背景色，与其他模块保持一致
   position: relative;
 
   @include mobile {
-    padding: 24px 0;
-    background-size: 100% 240px;
+    // 移动端无需特殊处理
   }
-}
-
-// 装饰emoji
-.section-decoration {
-  position: absolute;
-  top: 32px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-
-  .deco-emoji {
-    position: absolute;
-    font-size: 24px;
-    opacity: 0.6;
-    animation: floatEmoji 3s ease-in-out infinite;
-
-    &.left {
-      left: 10%;
-      animation-delay: 0s;
-    }
-
-    &.right {
-      right: 10%;
-      animation-delay: 1.5s;
-    }
-  }
-}
-
-@keyframes floatEmoji {
-  0%, 100% { transform: translateY(0) rotate(-5deg); }
-  50% { transform: translateY(-8px) rotate(5deg); }
 }
 
 .section-header {
   @include section-header;
   position: relative;
   z-index: 1;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  // 分割线在标题下方
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   @include heading-h2;
-}
-
-.title-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, rgba($campus-amber, 0.12), rgba($campus-amber, 0.2));
-  border-radius: $campus-radius-sm;
-
-  .badge-dot {
-    width: 6px;
-    height: 6px;
-    background: $campus-amber;
-    border-radius: 50%;
-    animation: pulseDot 1.5s ease-in-out infinite;
-  }
-
-  .badge-text {
-    font-size: 11px;
-    font-weight: 500;
-    color: $campus-amber;
-  }
-}
-
-@keyframes pulseDot {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.9); }
+  font-family: $font-family;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .view-more {
   @include view-more-link;
-  color: $campus-amber;
-
-  &:hover {
-    color: darken($campus-amber, 10%);
-  }
+  // 使用统一的默认颜色
 }
 
+// 单列信息流布局
 .activities-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: $module-gap-sm;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @include mobile {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+  display: flex;
+  flex-direction: column;
+  // 卡片之间 24px 间距（8pt 系统）
+  gap: 24px;
 }
 
 .activity-card {
@@ -442,11 +353,26 @@ onMounted(() => {
   box-shadow: $campus-shadow-card;
   overflow: hidden;
   cursor: pointer;
+  // 横向布局
+  display: flex;
+  flex-direction: row;
+  // 统一内边距 24px
+  padding: 24px;
+  gap: 20px;
   transition: all 0.3s ease;
 
   &:hover {
     transform: translateY(-4px);
     box-shadow: $campus-shadow-hover;
+
+    .activity-title {
+      color: $campus-amber;
+    }
+  }
+
+  @include mobile {
+    padding: 20px;
+    gap: 16px;
   }
 
   // 骨架屏卡片样式
@@ -476,9 +402,16 @@ onMounted(() => {
 }
 
 .activity-cover {
-  height: 180rpx;
+  // 横向布局：固定宽度的图标区
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
   position: relative;
   background: $gray-50;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   // 编程活动 - 使用主色蓝
   &.type-code {
@@ -617,13 +550,15 @@ onMounted(() => {
   .meta-icon {
     width: 14px;
     height: 14px;
-    color: $text-tertiary;
+    // 加深颜色，提高可见度
+    color: #6B7280;
     flex-shrink: 0;
   }
 
   .meta-text {
     font-size: $font-size-xs;
-    color: $text-tertiary;
+    // 加深颜色，提高可见度
+    color: #6B7280;
   }
 }
 
@@ -667,6 +602,7 @@ onMounted(() => {
 
 .participant-count {
   font-size: $font-size-xs;
-  color: $text-quaternary;
+  // 加深颜色，提高可见度
+  color: #6B7280;
 }
 </style>

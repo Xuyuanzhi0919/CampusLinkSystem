@@ -429,44 +429,50 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .latest-questions {
-  margin-bottom: 48px;
-  padding: 32px 0;
-  background: linear-gradient(180deg, rgba($campus-blue, 0.02) 0%, transparent 100%);
-  background-size: 100% 280px;
-  background-repeat: no-repeat;
-  border-radius: $campus-radius;
+  // 由父容器 gap 控制模块间距
+  width: 100%;
+  // 移除整块背景色，与其他模块保持一致
   position: relative;
 
   @include mobile {
-    padding: 24px 0;
-    background-size: 100% 240px;
+    // 移动端无需特殊处理
   }
 }
 
 .section-header {
   @include section-header;
+  // 标题与内容间距 24px（8pt 系统）
+  margin-bottom: 24px;
+  // 分割线在标题下方
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   @include heading-h2;
+  font-family: $font-family;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .view-more {
   @include view-more-link;
 }
 
+// 单列信息流
 .questions-list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  // 卡片之间 24px 间距（8pt 系统）
+  gap: 24px;
 }
 
 .question-card {
   background: $white;
   border-radius: $campus-radius;
   box-shadow: $campus-shadow-card;
-  // 增加内边距到 28px，提升呼吸感
-  padding: 28px;
+  // 统一内边距 24px（8pt 系统）
+  padding: 24px;
   cursor: pointer;
   position: relative;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -481,6 +487,10 @@ onMounted(() => {
       opacity: 1;
       transform: translateX(0);
     }
+
+    .question-title {
+      color: $campus-blue;
+    }
   }
 
   @include mobile {
@@ -488,7 +498,7 @@ onMounted(() => {
   }
 }
 
-// 状态角标
+// 状态角标 - 低饱和度淡色系
 .status-corner {
   position: absolute;
   top: 0;
@@ -501,24 +511,28 @@ onMounted(() => {
   font-size: 11px;
   font-weight: 600;
 
+  // 已解决 - 淡绿色
   &.status-solved {
-    background: linear-gradient(135deg, $campus-teal, lighten($campus-teal, 10%));
-    color: white;
+    background: #E7FBEA;
+    color: #16A34A;
   }
 
+  // 热门 - 淡橙色
   &.status-hot {
-    background: linear-gradient(135deg, #FF6B35, #FF8F5A);
-    color: white;
+    background: #FFF2E5;
+    color: #EA580C;
   }
 
+  // AI答 - 淡紫色
   &.status-ai {
-    background: linear-gradient(135deg, #8B5CF6, #A78BFA);
-    color: white;
+    background: #F3E8FF;
+    color: #7C3AED;
   }
 
+  // 待解答 - 淡蓝色
   &.status-pending {
-    background: linear-gradient(135deg, $campus-amber, lighten($campus-amber, 10%));
-    color: white;
+    background: #EFF6FF;
+    color: #2563EB;
   }
 
   .status-icon {
@@ -531,7 +545,7 @@ onMounted(() => {
   }
 }
 
-// 收藏按钮
+// 收藏按钮 - 轻描淡写风格
 .favorite-btn {
   position: absolute;
   top: 12px;
@@ -539,18 +553,25 @@ onMounted(() => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  // 移除白色背景，改为透明
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 2;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  // 移除阴影
 
   &:hover {
     transform: scale(1.1);
-    background: white;
+    // hover 时显示轻微背景
+    background: rgba(255, 71, 87, 0.08);
+
+    .favorite-icon {
+      // hover 时填充红色
+      color: #FF4757;
+    }
   }
 
   &.is-favorited {
@@ -560,7 +581,8 @@ onMounted(() => {
   }
 
   .favorite-icon {
-    color: $gray-400;
+    // 默认浅灰线条
+    color: #9CA3AF;
     transition: color 0.2s ease;
 
     &.filled {
@@ -767,7 +789,7 @@ onMounted(() => {
   color: $text-tertiary;
 }
 
-// 统计数据
+// 统计数据 - 加强视觉权重
 .stats-row {
   display: flex;
   align-items: center;
@@ -780,17 +802,20 @@ onMounted(() => {
   align-items: center;
   gap: 4px;
   font-size: 13px;
-  color: $text-quaternary;
+  // 加深颜色，提高可见度
+  color: #6B7280;
   cursor: pointer;
   transition: color 0.2s ease;
 
   &:hover {
-    color: $text-secondary;
+    color: $text-primary;
   }
 
   .stat-icon {
     width: 14px;
     height: 14px;
+    // 图标颜色也加深
+    color: #6B7280;
 
     &.is-liked {
       color: #FF4757;

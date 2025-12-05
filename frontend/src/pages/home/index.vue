@@ -513,8 +513,12 @@ onUnmounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   display: flex;
-  // 左右栏间距 40px - 足够的视觉分隔
+  // 左右栏间距 40px - 视觉平衡的关键
   gap: 40px;
+
+  @media (max-width: 1400px) {
+    gap: 36px;
+  }
 
   @media (max-width: 1200px) {
     gap: 32px;
@@ -527,6 +531,7 @@ onUnmounted(() => {
 }
 
 // 左侧主内容区（8栅格 = 66.67%）
+// 单列信息流布局 - 最佳阅读体验
 .main-area {
   flex: 8;
   min-width: 0;
@@ -535,9 +540,15 @@ onUnmounted(() => {
   // 底部添加额外内边距，确保与 Footer 有足够间距
   padding-bottom: 32px;
 
+  // 模块之间统一 48px 间距（8pt 设计系统）
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+
   @include mobile {
     flex: 1;
     padding-bottom: 24px;
+    gap: 32px;
   }
 }
 

@@ -36,11 +36,38 @@
 
         <!-- 操作区域 -->
         <div class="action-group">
+          <!-- 用户头像 -->
+          <div class="user-wrapper" ref="avatarContainer">
+            <template v-if="isLoggedIn">
+              <UserAvatar
+                class="header-avatar"
+                :avatar-url="userInfo.avatar"
+                :nickname="userInfo.nickname"
+                :is-active="showUserMenu"
+                size="36px"
+                @click="handleAvatarClick"
+              />
+              <UserDropdownMenu
+                :visible="showUserMenu"
+                :position="dropdownPosition"
+                :user-info="userInfo"
+                :is-checked-in="isCheckedIn"
+                @update:visible="showUserMenu = $event"
+                @menu-click="handleMenuClick"
+                @check-in="handleCheckIn"
+              />
+            </template>
+            <template v-else>
+              <button class="login-btn" @click="handleLogin">登录</button>
+            </template>
+          </div>
+
           <!-- 通知按钮 -->
           <div class="notification-wrapper" ref="notificationContainer">
             <button
               class="icon-btn"
               :class="{ disabled: !isLoggedIn }"
+              aria-label="打开通知"
               @click="handleMessagesClick"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -62,30 +89,13 @@
             />
           </div>
 
-          <!-- 用户头像 -->
-          <div class="user-wrapper" ref="avatarContainer">
-            <template v-if="isLoggedIn">
-              <UserAvatar
-                :avatar-url="userInfo.avatar"
-                :nickname="userInfo.nickname"
-                :is-active="showUserMenu"
-                size="36px"
-                @click="handleAvatarClick"
-              />
-              <UserDropdownMenu
-                :visible="showUserMenu"
-                :position="dropdownPosition"
-                :user-info="userInfo"
-                :is-checked-in="isCheckedIn"
-                @update:visible="showUserMenu = $event"
-                @menu-click="handleMenuClick"
-                @check-in="handleCheckIn"
-              />
-            </template>
-            <template v-else>
-              <button class="login-btn" @click="handleLogin">登录</button>
-            </template>
-          </div>
+          <!-- 主题切换（占位，暂不实现功能） -->
+          <button class="icon-btn theme-toggle" @click="handleThemeToggle" aria-label="切换主题">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M12 3a6.5 6.5 0 1 0 9 9 6 6 0 1 1 -9 -9Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 1.5V3.5M12 20.5V22.5M3.5 12H1.5M22.5 12H20.5M5.05 5.05L3.64 3.64M20.36 20.36L18.95 18.95M5.05 18.95L3.64 20.36M20.36 3.64L18.95 5.05" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+          </button>
 
           <!-- 发布按钮 -->
           <button class="publish-btn" @click="handlePublish">
@@ -367,6 +377,11 @@ const handleMenuClick = (menuId: string) => {
   }
 }
 
+// 主题切换按钮占位
+const handleThemeToggle = () => {
+  uni.showToast({ title: '主题切换即将上线', icon: 'none' })
+}
+
 onMounted(() => {
   checkLoginStatus()
   if (isLoggedIn.value) {
@@ -514,7 +529,7 @@ defineExpose({
 .action-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
 .notification-wrapper,
@@ -530,6 +545,8 @@ defineExpose({
   justify-content: center;
   width: 36px;
   height: 36px;
+  padding: 0 6px;
+  box-sizing: border-box;
   background: transparent;
   border: none;
   border-radius: $radius-sm;
@@ -538,13 +555,17 @@ defineExpose({
   transition: $transition-fast;
 
   &:hover {
-    background: $gray-100;
+    background: rgba($primary, 0.06);
     color: $text-secondary;
+    box-shadow: 0 2px 6px rgba($primary, 0.12);
   }
 
   &.disabled {
-    opacity: 0.5;
+    opacity: 0.45;
     cursor: not-allowed;
+    filter: grayscale(0.4);
+    box-shadow: none;
+    background: transparent;
   }
 }
 
@@ -552,11 +573,27 @@ defineExpose({
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: $error;
   border-radius: 50%;
   border: 2px solid $gray-50;
+  box-shadow: 0 0 0 2px $gray-50;
+}
+
+.header-avatar {
+  border: 1px solid rgba($gray-400, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-radius: $radius-full;
+}
+
+.theme-toggle {
+  color: $text-secondary;
+
+  &:hover {
+    background: rgba($primary, 0.05);
+    color: $primary;
+  }
 }
 
 // 登录按钮

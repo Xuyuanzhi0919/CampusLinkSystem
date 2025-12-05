@@ -1,21 +1,9 @@
 <template>
   <view class="featured-resources">
-    <!-- 装饰元素 -->
-    <view class="section-decoration">
-      <text class="deco-emoji left">📚</text>
-      <text class="deco-emoji right">✨</text>
-    </view>
-
     <view class="section-header">
-      <view class="title-wrap">
-        <text class="section-title">精选资料</text>
-        <view class="share-badge">
-          <text class="badge-emoji">🔥</text>
-          <text class="badge-text">同学们都在看</text>
-        </view>
-      </view>
+      <text class="section-title">精选资料</text>
       <view class="view-more" @click="handleViewMore">
-        <text class="more-text">发现更多</text>
+        <text class="more-text">查看更多</text>
         <svg class="more-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none">
           <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -242,106 +230,39 @@ onMounted(() => {
 
 <style lang="scss" scoped>
 .featured-resources {
-  // 模块间距统一为 48px
-  margin-bottom: 48px;
-  // 内边距统一
-  padding: 32px 0;
+  // 由父容器 gap 控制模块间距
+  width: 100%;
+  // 移除整块背景色，与其他模块保持一致
   position: relative;
-  // 使用青绿色调背景 - 限制高度为 280px
-  background: linear-gradient(180deg, transparent 0%, rgba($campus-teal, 0.03) 30%, rgba($campus-teal, 0.04) 60%, transparent 100%);
-  background-size: 100% 280px;
-  background-repeat: no-repeat;
-  border-radius: $campus-radius;
-}
-
-// 装饰emoji
-.section-decoration {
-  position: absolute;
-  top: 24px;
-  left: 0;
-  right: 0;
-  pointer-events: none;
-
-  .deco-emoji {
-    position: absolute;
-    font-size: 20px;
-    opacity: 0.5;
-    animation: floatEmoji 3s ease-in-out infinite;
-
-    &.left {
-      left: 5%;
-      animation-delay: 0s;
-    }
-
-    &.right {
-      right: 5%;
-      animation-delay: 1.5s;
-    }
-  }
-}
-
-@keyframes floatEmoji {
-  0%, 100% { transform: translateY(0) rotate(-3deg); }
-  50% { transform: translateY(-6px) rotate(3deg); }
 }
 
 .section-header {
   @include section-header;
   position: relative;
   z-index: 1;
-}
-
-.title-wrap {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  // 分割线在标题下方
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .section-title {
   @include heading-h2;
-}
-
-.share-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, rgba($campus-teal, 0.12), rgba($campus-teal, 0.2));
-  border-radius: $campus-radius-sm;
-
-  .badge-emoji {
-    font-size: 12px;
-  }
-
-  .badge-text {
-    font-size: 11px;
-    font-weight: 500;
-    color: $campus-teal;
-  }
+  font-family: $font-family;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .view-more {
   @include view-more-link;
-  color: $campus-teal;
-
-  &:hover {
-    color: darken($campus-teal, 10%);
-  }
+  // 使用统一的默认颜色
 }
 
+// 单列信息流布局
 .resources-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: $module-gap-sm;
-
-  @media (max-width: 1200px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @include mobile {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+  display: flex;
+  flex-direction: column;
+  // 卡片之间 24px 间距（8pt 系统）
+  gap: 24px;
 }
 
 .resource-card {
@@ -350,9 +271,12 @@ onMounted(() => {
   box-shadow: $campus-shadow-card;
   overflow: hidden;
   cursor: pointer;
-  height: 240px;
+  // 单列布局：横向排列
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  // 统一内边距 24px
+  padding: 24px;
+  gap: 20px;
   transition: all 0.3s ease;
 
   &:hover {
@@ -364,6 +288,15 @@ onMounted(() => {
         transform: scale(1.1);
       }
     }
+
+    .resource-title {
+      color: $campus-teal;
+    }
+  }
+
+  @include mobile {
+    padding: 20px;
+    gap: 16px;
   }
 
   // 骨架屏卡片样式
@@ -395,13 +328,16 @@ onMounted(() => {
 }
 
 .resource-cover {
-  height: 100px;
+  // 横向布局：固定宽度的图标区
+  width: 80px;
+  height: 80px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   background: $gray-50;
+  border-radius: 12px;
 
   // 课件 - 使用主色蓝
   &.course {
@@ -495,12 +431,14 @@ onMounted(() => {
   .stat-icon {
     width: 14px;
     height: 14px;
-    color: $text-quaternary;
+    // 加深颜色，提高可见度
+    color: #6B7280;
   }
 
   .stat-value {
     font-size: 12px;
-    color: $text-quaternary;
+    // 加深颜色，提高可见度
+    color: #6B7280;
   }
 }
 

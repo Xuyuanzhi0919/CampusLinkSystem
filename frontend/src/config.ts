@@ -1,11 +1,27 @@
 // 全局配置文件
 const isProd = import.meta.env.PROD
 
+// 获取 API 基础地址
+const getBaseURL = (): string => {
+  if (isProd) {
+    return 'https://api.campuslink.com/api/v1'
+  }
+  // #ifdef MP-WEIXIN
+  // 小程序开发环境：必须使用完整URL直接请求后端
+  return 'http://localhost:8080/api/v1'
+  // #endif
+  // #ifdef H5
+  // H5开发环境：通过Vite代理转发
+  return '/api/v1'
+  // #endif
+  // #ifdef APP-PLUS
+  return 'http://localhost:8080/api/v1'
+  // #endif
+}
+
 export const config = {
   // API 基础地址
-  baseURL: isProd
-    ? 'https://api.campuslink.com/api/v1'
-    : '/api/v1',  // 开发环境使用相对路径，通过Vite代理转发
+  baseURL: getBaseURL(),
 
   // WebSocket 地址
   WS_URL: isProd

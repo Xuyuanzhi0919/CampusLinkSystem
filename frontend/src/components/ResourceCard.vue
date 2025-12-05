@@ -8,11 +8,11 @@
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <!-- 🎯 顶部标题行 -->
+    <!--  顶部标题行 -->
     <view class="card-header">
       <view class="title-row">
         <!-- 资源类型图标 -->
-        <view class="type-icon" :class="`type-${resource.category || 0}`">
+        <view class="type-icon" :class="`type-${getCategoryClass(resource.category)}`">
           {{ getTypeIcon(resource.category) }}
         </view>
 
@@ -30,10 +30,10 @@
       </view>
     </view>
 
-    <!-- 🎯 资源描述 -->
+    <!--  资源描述 -->
     <view class="description">{{ resource.description }}</view>
 
-    <!-- 🎯 标签和文件信息行 -->
+    <!-- 标签和文件信息行 -->
     <view class="meta-row">
       <!-- 左侧：课程标签 -->
       <view class="tags-left">
@@ -53,7 +53,7 @@
       </view>
     </view>
 
-    <!-- 🎯 底部元数据行 -->
+    <!--  底部元数据行 -->
     <view class="card-footer">
       <!-- 左侧：作者信息 -->
       <view class="user-info">
@@ -136,12 +136,12 @@ const emit = defineEmits<{
   like: [resource: ResourceItem]
 }>()
 
-// 🎯 响应式状态
+//  响应式状态
 const isActive = ref(false)
 const isMobile = ref(false)
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
 
-// 🎯 检测设备类型
+// 检测设备类型
 onMounted(() => {
   checkDevice()
   window.addEventListener('resize', checkDevice)
@@ -152,7 +152,24 @@ const checkDevice = () => {
 }
 
 /**
- * 🎯 获取资源类型图标 - 支持统一颜色体系
+ * 获取分类的英文类名（用于 CSS 类名，避免中文在小程序中报错）
+ */
+const getCategoryClass = (category: number | string | undefined): string => {
+  if (typeof category === 'string') {
+    const classMap: Record<string, string> = {
+      '课件': 'courseware',
+      '试卷': 'paper',
+      '笔记': 'note',
+      '教材': 'textbook',
+      '实验报告': 'report'
+    }
+    return classMap[category] || '0'
+  }
+  return String(category || 0)
+}
+
+/**
+ * 获取资源类型图标 - 支持统一颜色体系
  */
 const getTypeIcon = (category: number | string | undefined): string => {
   // 如果是字符串类型，直接映射
@@ -178,7 +195,7 @@ const getTypeIcon = (category: number | string | undefined): string => {
 }
 
 /**
- * 🎯 获取审核状态文本
+ *  获取审核状态文本
  */
 const getStatusText = (status: number): string => {
   const statusMap: Record<number, string> = {
@@ -190,7 +207,7 @@ const getStatusText = (status: number): string => {
 }
 
 /**
- * 🎯 获取文件类型图标
+ *  获取文件类型图标
  */
 const getFileTypeIcon = (fileType: string): string => {
   const iconMap: Record<string, string> = {
@@ -207,14 +224,14 @@ const getFileTypeIcon = (fileType: string): string => {
 }
 
 /**
- * 🎯 获取文件类型文本
+ *  获取文件类型文本
  */
 const getFileTypeText = (fileType: string): string => {
   return fileType?.toUpperCase() || 'FILE'
 }
 
 /**
- * 🎯 格式化文件大小
+ *  格式化文件大小
  */
 const formatFileSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return ''
@@ -235,7 +252,7 @@ const formatFileSize = (bytes: number): string => {
 }
 
 /**
- * 🎯 格式化数字 (1000 -> 1k)
+ *  格式化数字 (1000 -> 1k)
  */
 const formatNumber = (num: number): string => {
   if (!num || num === 0) return '0'
@@ -250,7 +267,7 @@ const formatNumber = (num: number): string => {
 }
 
 /**
- * 🎯 格式化时间
+ *  格式化时间
  */
 const formatTime = (time: string): string => {
   if (!time) return ''
@@ -280,14 +297,14 @@ const formatTime = (time: string): string => {
 }
 
 /**
- * 🎯 头像加载失败处理
+ *  头像加载失败处理
  */
 const handleAvatarError = (e: any) => {
   e.target.src = defaultAvatar
 }
 
 /**
- * 🎯 触摸/鼠标交互
+ *  触摸/鼠标交互
  */
 const onTouchStart = () => {
   isActive.value = true
@@ -312,21 +329,21 @@ const onMouseLeave = () => {
 }
 
 /**
- * 🎯 点击卡片
+ *  点击卡片
  */
 const handleClick = () => {
   emit('click', props.resource)
 }
 
 /**
- * 🎯 点击下载按钮
+ *  点击下载按钮
  */
 const handleDownload = () => {
   emit('download', props.resource)
 }
 
 /**
- * 🎯 点击点赞按钮
+ *  点击点赞按钮
  */
 const handleLike = () => {
   emit('like', props.resource)
@@ -345,14 +362,14 @@ const handleLike = () => {
   position: relative;
   overflow: hidden;
 
-  // 🎯 悬停/激活效果
+  // 悬停/激活效果
   &.is-active,
   &:hover {
     box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
     transform: translateY(-4rpx);
   }
 
-  // 🎯 移动端适配
+  // 移动端适配
   &.is-mobile {
     &.is-active {
       background: #F8F9FA;
@@ -361,7 +378,7 @@ const handleLike = () => {
   }
 }
 
-// 🎯 顶部标题行
+// 顶部标题行
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -388,32 +405,34 @@ const handleLike = () => {
   border-radius: 12rpx;
   font-size: 24rpx;
 
-  // 🎯 不同类型的渐变背景 - 统一颜色体系
+  // 不同类型的渐变背景 - 统一颜色体系
   // 课件 - 蓝色系
   &.type-0,
-  &.type-课件 {
+  &.type-courseware {
     background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
   }
 
   // 试题 - 橙色系
   &.type-1,
-  &.type-试卷 {
+  &.type-paper {
     background: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
   }
 
   // 笔记 - 紫色系
   &.type-2,
-  &.type-笔记 {
+  &.type-note {
     background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
   }
 
   // 教材 - 红色系
-  &.type-教材 {
+  &.type-3,
+  &.type-textbook {
     background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
   }
 
   // 实验报告 - 青色系
-  &.type-实验报告 {
+  &.type-4,
+  &.type-report {
     background: linear-gradient(135deg, #1ABC9C 0%, #16A085 100%);
   }
 }
@@ -433,7 +452,7 @@ const handleLike = () => {
   letter-spacing: 0.2rpx;
 }
 
-// 🎯 审核状态标签
+// 审核状态标签
 .status-badge {
   flex-shrink: 0;
   padding: 6rpx 12rpx;
@@ -458,7 +477,7 @@ const handleLike = () => {
   }
 }
 
-// 🎯 描述区域
+// 描述区域
 .description {
   font-size: 24rpx;
   color: #6B7280;
@@ -473,7 +492,7 @@ const handleLike = () => {
   letter-spacing: 0.1rpx;
 }
 
-// 🎯 标签和文件信息行
+//  标签和文件信息行
 .meta-row {
   display: flex;
   align-items: flex-start;
@@ -534,7 +553,7 @@ const handleLike = () => {
   }
 }
 
-// 🎯 底部元数据行
+//  底部元数据行
 .card-footer {
   display: flex;
   align-items: center;
@@ -581,7 +600,7 @@ const handleLike = () => {
   flex-shrink: 0;
 }
 
-// 🎯 统计信息行
+//  统计信息行
 .stats-row {
   display: flex;
   align-items: center;
@@ -653,7 +672,7 @@ const handleLike = () => {
   font-size: 22rpx;
 }
 
-// 🎯 右侧区域（统计+点赞+下载按钮）
+//  右侧区域（统计+点赞+下载按钮）
 .right-section {
   display: flex;
   align-items: center;
@@ -662,7 +681,7 @@ const handleLike = () => {
   padding-right: 4rpx;
 }
 
-// 🎯 点赞按钮
+//  点赞按钮
 .like-btn {
   display: flex;
   align-items: center;
@@ -720,7 +739,7 @@ const handleLike = () => {
   }
 }
 
-// 🎯 下载按钮
+// 下载按钮
 .download-btn {
   display: flex;
   align-items: center;
@@ -767,7 +786,7 @@ const handleLike = () => {
   white-space: nowrap;
 }
 
-// 🎯 响应式适配
+//  响应式适配
 @media (max-width: 768px) {
   .title {
     font-size: 28rpx;
@@ -837,7 +856,7 @@ const handleLike = () => {
   }
 }
 
-// 🎯 深色模式适配
+//  深色模式适配
 @media (prefers-color-scheme: dark) {
   .resource-card {
     background: rgba(31, 41, 55, 0.7);

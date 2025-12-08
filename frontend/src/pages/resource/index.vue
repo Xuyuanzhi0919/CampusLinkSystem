@@ -12,7 +12,7 @@
       <view class="search-container">
         <!-- 搜索框 -->
         <view class="search-box">
-          <view class="search-icon">🔍</view>
+          <ClIcon name="icon-search" size="lg" color="#9CA3AF" />
           <input
             v-model="searchKeyword"
             class="search-input"
@@ -23,9 +23,7 @@
             @focus="handleSearchFocus"
             @blur="handleSearchBlur"
           />
-          <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
-            ✕
-          </view>
+          <ClIcon v-if="searchKeyword" name="icon-close" size="lg" color="#9CA3AF" class="clear-icon" @click="clearSearch" />
         </view>
 
         <!-- 搜索历史下拉面板 -->
@@ -45,23 +43,21 @@
               class="history-item"
               @click="handleSearchHistoryClick(item)"
             >
-              <text class="history-icon">🕐</text>
+              <ClIcon name="icon-time" size="base" color="#9CA3AF" />
               <text class="history-text">{{ item }}</text>
-              <text class="history-delete" @click.stop="deleteSearchHistoryItem(item)">
-                ✕
-              </text>
+              <ClIcon name="icon-close" size="base" color="#D1D5DB" class="history-delete" @click.stop="deleteSearchHistoryItem(item)" />
             </view>
           </view>
         </view>
 
         <!-- 语音搜索按钮 (复用活动列表的) - 暂时隐藏，等待功能实现 -->
         <view v-if="false" class="voice-search-btn" @click="handleVoiceSearch">
-          <view class="voice-icon">🎤</view>
+          <ClIcon name="icon-mic" size="xl" color="#FFFFFF" />
         </view>
 
         <!-- PC 端上传按钮 -->
         <view class="upload-btn-pc" @click="handleUploadClick">
-          <text class="upload-icon">+</text>
+          <ClIcon name="icon-plus" size="lg" color="#FFFFFF" />
           <text class="upload-text">上传资源</text>
         </view>
       </view>
@@ -77,7 +73,7 @@
           :class="{ active: currentCategory === tab.value }"
           @click="handleCategoryChange(tab.value)"
         >
-          <text class="tab-icon">{{ tab.icon }}</text>
+          <ClIcon :name="tab.icon" size="base" :color="currentCategory === tab.value ? '#FFFFFF' : '#6B7280'" />
           <text class="tab-label">{{ tab.label }}</text>
         </view>
       </view>
@@ -114,7 +110,7 @@
         </text>
         <!-- 高级筛选按钮 - 始终显示 -->
         <view class="filter-btn" :class="{ 'has-filter': hasActiveFilters }" @click="showAdvancedFilter = true">
-          <text class="filter-icon">🎛️</text>
+          <ClIcon name="icon-filter" size="base" :color="hasActiveFilters ? '#FF6B35' : '#6B7280'" />
           <text class="filter-label">筛选</text>
           <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
         </view>
@@ -134,43 +130,58 @@
         @scroll="handleScroll"
       >
         <!-- 加载中：显示骨架屏 -->
-        <view v-if="loading && resources.length === 0" class="skeleton-list">
-          <SkeletonResourceCard v-for="n in 5" :key="n" />
-        </view>
+        <gp-skeleton v-if="loading && resources.length === 0" type="list" :loading="true" />
 
-        <!-- 资源列表 -->
+        <!-- 错误状态 -->
+        <ClError
+          v-else-if="loadError && resources.length === 0"
+          type="network"
+          size="large"
+          variant="card"
+          @retry="handleRetry"
+        />
+
+        <!-- 资源列表（企业级组件） -->
         <view v-else-if="resources.length > 0" class="resource-list">
-          <ResourceCard
+          <ClResourceCard
             v-for="item in resources"
             :key="item.resourceId"
-            :resource="item"
-            @click="handleResourceClick"
-            @download="handleResourceDownload"
-            @like="handleResourceLike"
+            :resource="mapToClResource(item)"
+            class="resource-card-item"
+            @click="handleResourceCardClick"
+            @download="handleResourceCardDownload"
           />
 
           <!-- 加载更多状态 -->
           <view v-if="hasMore" class="loading-more">
+            <ClIcon name="icon-loading" size="base" color="#9CA3AF" class="loading-spin" />
             <text class="loading-text">加载更多...</text>
           </view>
           <view v-else class="no-more">
-            <text class="no-more-text">— 没有更多了 —</text>
+            <ClIcon name="icon-check" size="base" color="#9CA3AF" />
+            <text class="no-more-text">没有更多了</text>
           </view>
         </view>
 
-        <!-- 空状态 -->
-        <EmptyState
+        <!-- 空状态（企业级组件） -->
+        <ClEmpty
           v-else
-          icon="📦"
+          :type="emptyType"
           :title="emptyTitle"
           :description="emptyDescription"
+          size="large"
+          variant="card"
+          :show-action="!searchKeyword"
+          action-text="上传资源"
+          action-icon="icon-upload"
+          @action="handleUploadClick"
         />
       </scroll-view>
     </view>
 
     <!-- 🎯 上传资源悬浮按钮 -->
     <view class="upload-fab" @click="handleUploadClick">
-      <view class="fab-icon">+</view>
+      <ClIcon name="icon-plus" size="2xl" color="#FFFFFF" />
     </view>
 
     <!-- 🎯 返回顶部按钮 -->
@@ -179,7 +190,7 @@
       class="back-to-top-btn"
       @click="scrollToTop"
     >
-      <view class="back-to-top-icon">↑</view>
+      <ClIcon name="icon-arrow-up" size="xl" color="#FFFFFF" />
     </view>
 
     <!-- PC端悬浮导航（仅 H5） -->
@@ -292,10 +303,10 @@ import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import type { ResourceItem } from '@/types/resource'
 import { resourceSearchHistory } from '@/utils/searchHistory'
-import ResourceCard from '@/components/ResourceCard.vue'
-import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
-import EmptyState from '@/components/EmptyState.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+
+// 企业级组件
+import { ClIcon, ClResourceCard, ClEmpty, ClError } from '@/components/cl'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -306,15 +317,31 @@ import { PCFloatingNav } from '@/components/desktop'
 // #endif
 import config from '@/config'
 
-// 🎯 快捷筛选选项
+// 🎯 快捷筛选选项（使用 Iconify 图标名）
 const quickFilterTabs = [
-  { label: '全部', value: null, icon: '📦' },
-  { label: '课件', value: '课件', icon: '📚' },
-  { label: '试题', value: '试卷', icon: '📝' },
-  { label: '笔记', value: '笔记', icon: '✍️' },
-  { label: '教材', value: '教材', icon: '📖' },
-  { label: '实验报告', value: '实验报告', icon: '🔬' }
+  { label: '全部', value: null, icon: 'icon-grid' },
+  { label: '课件', value: '课件', icon: 'icon-book' },
+  { label: '试题', value: '试卷', icon: 'icon-file-text' },
+  { label: '笔记', value: '笔记', icon: 'icon-edit' },
+  { label: '教材', value: '教材', icon: 'icon-book' },
+  { label: '实验报告', value: '实验报告', icon: 'icon-file' }
 ]
+
+// 加载错误状态
+const loadError = ref(false)
+
+// 数据映射：ResourceItem → ClResourceCard.Resource
+const mapToClResource = (item: ResourceItem) => ({
+  id: item.resourceId,
+  title: item.title,
+  description: item.description,
+  fileType: item.fileType || 'other',
+  tags: item.courseName ? [item.courseName] : [],
+  downloads: item.downloads,
+  rating: item.averageRating,
+  createdAt: item.createdAt,
+  points: item.score
+})
 
 // 🎯 状态管理
 const resources = ref<ResourceItem[]>([])
@@ -372,6 +399,12 @@ const LIKED_RESOURCES_KEY = 'liked_resources'
 const likedResourceIds = ref<Set<number>>(new Set())
 
 // 🎯 空状态文案
+// 空状态类型（映射到 ClEmpty 的 type）
+const emptyType = computed(() => {
+  if (searchKeyword.value) return 'search'
+  return 'resource'
+})
+
 const emptyTitle = computed(() => {
   if (searchKeyword.value) {
     return '没有找到相关资源'
@@ -578,10 +611,16 @@ const loadResourceList = async (isRefresh = false) => {
     })
   } catch (error) {
     console.error('[ResourceSquare] 加载失败:', error)
-    uni.showToast({
-      title: '加载失败',
-      icon: 'none'
-    })
+    // 设置错误状态（仅在列表为空时显示错误页面）
+    if (resources.value.length === 0) {
+      loadError.value = true
+    } else {
+      // 列表有数据时只显示 toast
+      uni.showToast({
+        title: '加载失败',
+        icon: 'none'
+      })
+    }
   } finally {
     loading.value = false
     refreshing.value = false
@@ -755,6 +794,34 @@ const handleResourceClick = (resource: ResourceItem) => {
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.resourceId}`
   })
+}
+
+/**
+ * 🎯 处理 ClResourceCard 点击（接收映射后的资源）
+ */
+const handleResourceCardClick = (resource: { id: number }) => {
+  const original = resources.value.find(r => r.resourceId === resource.id)
+  if (original) {
+    handleResourceClick(original)
+  }
+}
+
+/**
+ * 🎯 处理 ClResourceCard 下载（接收映射后的资源）
+ */
+const handleResourceCardDownload = (resource: { id: number }) => {
+  const original = resources.value.find(r => r.resourceId === resource.id)
+  if (original) {
+    handleResourceDownload(original)
+  }
+}
+
+/**
+ * 🎯 处理错误重试
+ */
+const handleRetry = () => {
+  loadError.value = false
+  loadResourceList(true)
 }
 
 /**
@@ -1847,8 +1914,20 @@ onShow(() => {
   padding: $sp-6 $sp-8;
 }
 
+.resource-card-item {
+  margin-bottom: $sp-6;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
 .loading-more,
 .no-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
   padding: $sp-8;
   text-align: center;
 }
@@ -1857,6 +1936,20 @@ onShow(() => {
 .no-more-text {
   font-size: $font-size-sm;
   color: $text-placeholder;
+}
+
+// 加载旋转动画
+.loading-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 // 🎯 上传悬浮按钮 (移动端)

@@ -66,8 +66,11 @@ export const ICONIFY_MAP: Record<string, string> = {
   'icon-settings': 'lucide:settings',
   'icon-arrow-right': 'lucide:arrow-right',
   'icon-arrow-left': 'lucide:arrow-left',
+  'icon-arrow-up': 'lucide:arrow-up',
   'icon-chevron-right': 'lucide:chevron-right',
   'icon-chevron-down': 'lucide:chevron-down',
+  'icon-grid': 'lucide:grid-3x3',
+  'icon-list': 'lucide:list',
 
   // ========== 状态图标 ==========
   'icon-success': 'lucide:check-circle',
@@ -75,6 +78,13 @@ export const ICONIFY_MAP: Record<string, string> = {
   'icon-warning': 'lucide:alert-triangle',
   'icon-info': 'lucide:info',
   'icon-loading': 'lucide:loader-2',
+  'icon-check-circle': 'lucide:check-circle-2',
+  'icon-help-circle': 'lucide:help-circle',
+
+  // ========== 代码/技术图标 ==========
+  'icon-code': 'lucide:code',
+  'icon-terminal': 'lucide:terminal',
+  'icon-tag': 'lucide:tag',
 
   // ========== 其他常用图标 ==========
   'icon-share': 'lucide:share-2',

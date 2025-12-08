@@ -214,12 +214,15 @@
         </view>
       </view>
 
-      <!-- 🎯 智能空状态 -->
-      <view v-if="!loading && activities.length === 0" class="empty-state">
-        <text class="empty-icon">{{ emptyStateConfig.icon }}</text>
-        <text class="empty-text">{{ emptyStateConfig.text }}</text>
-        <text v-if="emptyStateConfig.hint" class="empty-hint">{{ emptyStateConfig.hint }}</text>
-      </view>
+      <!-- 空状态（企业级组件） -->
+      <ClEmpty
+        v-if="!loading && activities.length === 0"
+        :type="searchKeyword ? 'search' : 'activity'"
+        :title="emptyStateConfig.text"
+        :description="emptyStateConfig.hint"
+        size="large"
+        variant="card"
+      />
 
       <!-- 加载更多 -->
       <view v-if="loading && activities.length > 0" class="loading-more">
@@ -334,6 +337,8 @@ import { getActivityList } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import config from '@/config'
+// 企业级组件
+import { ClEmpty, ClError } from '@/components/cl'
 
 // 搜索关键词
 const searchKeyword = ref('')
@@ -1812,34 +1817,7 @@ defineExpose({
   }
 }
 
-/* 🎯 空状态优化 */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 120rpx 32rpx;
-  text-align: center;
-}
-
-.empty-icon {
-  font-size: 120rpx;
-  line-height: 1;
-  margin-bottom: 32rpx;
-}
-
-.empty-text {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: $gray-700;
-  margin-bottom: 16rpx;
-}
-
-.empty-hint {
-  font-size: 24rpx;
-  color: $gray-400;
-  line-height: 1.5;
-}
+/* 空状态使用统一企业级组件 ClEmpty，样式已内置 */
 
 /* 加载更多 */
 .loading-more {

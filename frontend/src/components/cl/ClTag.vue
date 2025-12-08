@@ -152,4 +152,19 @@ const handleClose = () => {
     padding-right: $spacing-2;
   }
 }
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-tag {
+    &--small {
+      padding: $spacing-1 $spacing-2;
+      font-size: 20rpx;
+    }
+
+    &--medium {
+      padding: $spacing-1 $spacing-3;
+      font-size: $font-size-xs;
+    }
+  }
+}
 </style>

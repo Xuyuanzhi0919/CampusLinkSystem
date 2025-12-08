@@ -81,13 +81,15 @@
         </view>
       </view>
 
-      <!-- 空状态 -->
-      <view v-if="!loading && taskList.length === 0" class="empty-state">
-        <text class="empty-icon">📋</text>
-        <text class="empty-text">暂无任务</text>
-        <text class="empty-tip" v-if="currentTab === 'published'">快去发布一个任务吧~</text>
-        <text class="empty-tip" v-else>快去接单赚积分吧~</text>
-      </view>
+      <!-- 空状态（企业级组件） -->
+      <ClEmpty
+        v-if="!loading && taskList.length === 0"
+        type="default"
+        title="暂无任务"
+        :description="currentTab === 'published' ? '快去发布一个任务吧~' : '快去接单赚积分吧~'"
+        size="large"
+        variant="card"
+      />
 
       <!-- 加载中 - 骨架屏 -->
       <SkeletonScreen
@@ -108,10 +110,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
 import { TaskStatus, type TaskListItem, type TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
+// 企业级组件
+import { ClEmpty } from '@/components/cl'
 
 // 标签选项
 const tabs = [

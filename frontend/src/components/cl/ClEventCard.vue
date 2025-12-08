@@ -24,7 +24,7 @@
 
       <!-- 组织者 -->
       <view class="cl-event-card__organizer">
-        <ClIcon name="icon-group" size="base" :color="$campusBlue" />
+        <ClIcon name="icon-group" size="base" color="#377DFF" />
         <text>{{ event.organizer }}</text>
       </view>
 
@@ -352,6 +352,37 @@ const handleActionClick = (action: Action) => {
   &__actions {
     position: relative;
     z-index: 1;
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-event-card {
+    padding: $spacing-4 $spacing-4;
+    gap: $spacing-4;
+
+    &__icon {
+      width: 56rpx;
+      height: 56rpx;
+    }
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__organizer {
+      font-size: $font-size-xs;
+      gap: $spacing-2;
+    }
+
+    &__info {
+      gap: $spacing-2;
+    }
+
+    &__info-item {
+      font-size: $font-size-xs;
+      gap: $spacing-2;
+    }
   }
 }
 </style>

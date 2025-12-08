@@ -295,4 +295,30 @@ const handleActionClick = (action: Action) => {
     /* 操作按钮默认右对齐 */
   }
 }
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-resource-card {
+    padding: $spacing-4 $spacing-4;
+    gap: $spacing-4;
+
+    &__icon {
+      width: 56rpx;
+      height: 56rpx;
+    }
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__description {
+      font-size: $font-size-sm;
+      -webkit-line-clamp: 1;
+    }
+
+    &__tags {
+      gap: $spacing-2;
+    }
+  }
+}
 </style>

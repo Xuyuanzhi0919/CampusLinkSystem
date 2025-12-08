@@ -88,12 +88,19 @@
         </view>
       </view>
 
-      <!-- 空状态 -->
-      <view v-if="!loading && taskList.length === 0" class="empty-state">
-        <text class="empty-icon">📋</text>
-        <text class="empty-text">暂无任务</text>
-        <text class="empty-tip">快去发布一个新任务吧~</text>
-      </view>
+      <!-- 空状态（企业级组件） -->
+      <ClEmpty
+        v-if="!loading && taskList.length === 0"
+        type="default"
+        title="暂无任务"
+        description="快去发布一个新任务吧~"
+        size="large"
+        variant="card"
+        :show-action="true"
+        action-text="发布任务"
+        action-icon="plus"
+        @action="handlePublish"
+      />
 
       <!-- 加载中 - 骨架屏 -->
       <SkeletonScreen
@@ -124,6 +131,8 @@ import { getTaskList } from '@/services/task'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 import CButton from '@/components/ui/CButton.vue'
+// 企业级组件
+import { ClEmpty } from '@/components/cl'
 
 // 任务状态选项
 const statusOptions = [

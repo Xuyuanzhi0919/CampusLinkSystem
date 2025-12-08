@@ -116,11 +116,11 @@ const handleClick = (action: Action, index: number) => {
     color: $color-text-secondary;
 
     &:hover {
-      background: darken($color-bg-hover, 3%);
+      background: #EEF0F3;  // $color-bg-hover darkened 3%
     }
 
     &:active {
-      background: darken($color-bg-hover, 5%);
+      background: #E5E8EC;  // $color-bg-hover darkened 5%
     }
   }
 
@@ -135,7 +135,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-primary-bg, 5%);
+      background: #2A6DE6;  // $campus-blue darkened 5%
       transform: translateY(0);
     }
   }
@@ -149,7 +149,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-secondary-bg, 8%);
+      background: #D6E4FF;  // $campus-blue-lighter darkened 8%
     }
   }
 
@@ -163,7 +163,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-ghost-hover-bg, 3%);
+      background: #E5EDFF;  // $campus-blue-lighter darkened 3%
     }
   }
 
@@ -177,7 +177,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($campus-blue-lighter, 3%);
+      background: #E5EDFF;  // $campus-blue-lighter darkened 3%
     }
   }
 
@@ -186,6 +186,22 @@ const handleClick = (action: Action, index: number) => {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
+  }
+}
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-action-bar {
+    gap: $spacing-3;
+  }
+
+  .cl-action-btn {
+    padding: $spacing-2 $spacing-4;
+    font-size: $font-size-sm;
+
+    &__icon {
+      font-size: $icon-sm;
+    }
   }
 }
 </style>

@@ -113,4 +113,20 @@ const handleClick = (item: MetaItem, index: number) => {
     }
   }
 }
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-meta-row {
+    gap: $spacing-4;
+    font-size: $font-size-xs;
+  }
+
+  .cl-meta-item {
+    gap: $spacing-1;
+
+    &__icon {
+      font-size: $icon-sm;
+    }
+  }
+}
 </style>

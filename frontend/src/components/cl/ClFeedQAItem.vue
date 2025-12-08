@@ -257,4 +257,37 @@ const handleMetaClick = (item: MetaItem) => {
     border-top: 1px solid $color-divider;
   }
 }
+
+/* 移动端适配 */
+@media (max-width: 750px) {
+  .cl-feed-qa {
+    padding: $spacing-4 $spacing-4;
+
+    &__header {
+      flex-wrap: wrap;
+      gap: $spacing-2;
+    }
+
+    &__user {
+      gap: $spacing-2;
+    }
+
+    &__username {
+      max-width: 120rpx;
+      font-size: $font-size-xs;
+    }
+
+    &__time {
+      font-size: 22rpx;
+    }
+
+    &__title {
+      font-size: $font-size-lg;
+    }
+
+    &__tags {
+      gap: $spacing-2;
+    }
+  }
+}
 </style>

@@ -37,6 +37,7 @@ $color-info-bg: #E6F0FF;         // 信息背景色
 $color-text-primary: #1A1A1A;    // 主文本（标题）
 $color-text-secondary: #333333;  // 次级文本（正文）
 $color-text-tertiary: #6B778C;   // 三级文本（元数据、辅助信息）
+$color-text-quaternary: #9CA3AF; // 四级文本（空状态描述、提示语）
 $color-text-disabled: #BFBFBF;   // 禁用文本
 $color-text-placeholder: #D1D5DB; // 占位符文本
 
@@ -227,6 +228,13 @@ $card-meta-size: $font-size-sm;             // 13px
 $card-meta-weight: $font-weight-normal;     // 400
 $card-meta-color: $color-text-tertiary;
 
+/* 首页模块容器样式（与右侧栏统一） */
+$section-card-bg: rgba(255, 255, 255, 0.88);           // 白色半透明背景
+$section-card-border: rgba(242, 244, 248, 0.8);        // 柔和边框
+$section-card-radius: 20px;                            // 大圆角
+$section-card-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);  // 柔和阴影
+$section-card-padding: 28px;                           // 内边距
+
 /* ========================================
    11. 按钮专用 Tokens - Button Specific
    ======================================== */
@@ -236,7 +244,7 @@ $button-primary-hover: $campus-blue-light;
 $button-primary-text: #FFFFFF;
 
 $button-secondary-bg: $campus-blue-lighter;
-$button-secondary-hover: darken($campus-blue-lighter, 5%);
+$button-secondary-hover: #E5EDFF;  // $campus-blue-lighter with -5% lightness
 $button-secondary-text: $campus-blue;
 
 $button-ghost-bg: transparent;

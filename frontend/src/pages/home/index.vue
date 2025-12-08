@@ -336,6 +336,8 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss" scoped>
+@import '@/styles/design-tokens.scss';
+
 .home-page {
   min-height: 100vh;
   // 页面基础背景色
@@ -423,99 +425,79 @@ onUnmounted(() => {
   // 内容区最大宽度限制 - 保持专业布局
   max-width: 1280px;
   margin: 0 auto;
-  display: flex;
-  // 左右栏间距 40px - 视觉平衡的关键
-  gap: 40px;
+  // 使用 Grid 布局，更精确控制两列
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  // 左右栏间距 28px - 社区/门户类最佳间距
+  column-gap: 28px;
 
   @media (max-width: 1400px) {
-    gap: 36px;
+    grid-template-columns: 1fr 340px;
+    column-gap: 24px;
   }
 
   @media (max-width: 1200px) {
-    gap: 32px;
+    grid-template-columns: 1fr 320px;
+    column-gap: 24px;
+  }
+
+  @media (max-width: 1024px) {
+    // 平板及以下：单列布局
+    grid-template-columns: 1fr;
+    column-gap: 0;
   }
 
   @include mobile {
-    flex-direction: column;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    row-gap: 16px;
   }
 }
 
-// 左侧主内容区（8栅格 = 66.67%）
-// 单列信息流布局 - 最佳阅读体验
+// 左侧主内容区 - Grid 自动填充剩余宽度
 .main-area {
-  flex: 8;
   min-width: 0;
   // 为分区背景提供溢出空间
   overflow: visible;
   // 底部添加额外内边距，确保与 Footer 有足够间距
   padding-bottom: 32px;
 
-  // 模块之间统一 48px 间距（8pt 设计系统）
+  // 模块之间统一 24px 间距（卡片容器之间需要适度透气）
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 24px;
 
   @include mobile {
-    flex: 1;
     padding-bottom: 24px;
-    gap: 20px;
+    gap: 16px;
   }
 }
 
-// 右侧栏（固定320px宽度）- 毛玻璃容器效果
+// 右侧栏 - 与左侧卡片统一视觉体系（宽度由 Grid 控制）
 .sidebar-area {
-  width: 320px;
-  flex-shrink: 0;
-  position: relative;
+  // 与左侧模块统一的卡片容器样式
+  background: $section-card-bg;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
-  // 毛玻璃容器背景
-  background: rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  // 边框与圆角（与左侧统一）
+  border: 1px solid $section-card-border;
+  border-radius: $section-card-radius;
 
-  // 边框与圆角
-  border: 1px solid #F2F4F8;
-  border-radius: 20px;
+  // 柔和阴影（与左侧统一）
+  box-shadow: $section-card-shadow;
 
-  // 柔和阴影
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
-
-  // 内边距 - 增加到 24px 保持呼吸感
+  // 内边距
   padding: 24px;
 
-  // 高度自适应
+  // 高度自适应，顶部对齐
   height: fit-content;
-  align-self: flex-start;
+  align-self: start;
   // 添加 sticky 定位，滚动时保持可见
   position: sticky;
   top: 100px;
 
-  // 左侧分割线（使用伪元素）
-  &::before {
-    content: '';
-    position: absolute;
-    left: -20px; // 在容器左侧间隙中
-    top: 24px;
-    bottom: 24px;
-    width: 1px;
-    background: linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(226, 232, 240, 0.6) 10%,
-      rgba(226, 232, 240, 0.8) 50%,
-      rgba(226, 232, 240, 0.6) 90%,
-      transparent 100%
-    );
-  }
-
   @media (max-width: 1200px) {
-    width: 300px;
     padding: 20px;
-
-    &::before {
-      left: -16px;
-    }
   }
 
   @media (max-width: 1024px) {

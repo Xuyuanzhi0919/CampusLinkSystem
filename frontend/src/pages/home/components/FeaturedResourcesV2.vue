@@ -11,19 +11,29 @@
 
     <!-- Loading State -->
     <view v-if="loading" class="loading-container">
-      <text>加载中...</text>
+      <gp-skeleton :loading="true" type="card" :count="4" />
     </view>
 
-    <!-- Error State -->
-    <view v-else-if="hasError" class="error-container">
-      <text>加载失败</text>
-      <button @click="loadData">重试</button>
-    </view>
+    <!-- Error State (使用统一企业级组件) -->
+    <ClError
+      v-else-if="hasError"
+      type="network"
+      size="compact"
+      variant="card"
+      @retry="loadData"
+    />
 
-    <!-- Empty State -->
-    <view v-else-if="resourceList.length === 0" class="empty-container">
-      <text>暂无资料</text>
-    </view>
+    <!-- Empty State (使用统一企业级组件) -->
+    <ClEmpty
+      v-else-if="resourceList.length === 0"
+      type="resource"
+      size="compact"
+      variant="card"
+      :show-action="true"
+      action-text="去上传"
+      action-icon="plus"
+      @action="handleViewMore"
+    />
 
     <!-- Resources Grid (使用企业级卡片) -->
     <view v-else class="resources-grid">
@@ -41,7 +51,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ClResourceCard } from '@/components/cl'
+import { ClResourceCard, ClEmpty, ClError } from '@/components/cl'
 import { getResourceList } from '@/services/resource'
 
 const emit = defineEmits<{
@@ -126,14 +136,23 @@ defineExpose({
 
 .featured-resources-v2 {
   width: 100%;
+  // 统一白色卡片容器（与右侧栏视觉统一）
+  background: $section-card-bg;
+  border: 1px solid $section-card-border;
+  border-radius: $section-card-radius;
+  box-shadow: $section-card-shadow;
+  padding: $section-card-padding;
+  // 毛玻璃效果
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $spacing-8;
-  padding: 0 $spacing-2;
+  margin-bottom: $spacing-6;
+  padding: 0;
 }
 
 .section-title {
@@ -178,27 +197,7 @@ defineExpose({
   }
 }
 
-.loading-container,
-.error-container,
-.empty-container {
-  padding: $spacing-16;
-  text-align: center;
-  color: $color-text-tertiary;
-}
-
-.error-container {
-  button {
-    margin-top: $spacing-4;
-    padding: $spacing-3 $spacing-6;
-    background: $campus-blue;
-    color: white;
-    border: none;
-    border-radius: $radius-button;
-    cursor: pointer;
-
-    &:hover {
-      background: $campus-blue-light;
-    }
-  }
+.loading-container {
+  padding: $spacing-8;
 }
 </style>

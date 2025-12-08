@@ -4,7 +4,7 @@
     <view class="search-section">
       <view class="search-wrapper">
         <view class="search-bar">
-          <text class="search-icon">🔍</text>
+          <ClIcon name="icon-search" size="lg" color="#9CA3AF" class="search-icon" />
           <input
             v-model="searchKeyword"
             class="search-input"
@@ -14,13 +14,13 @@
             @focus="showSearchHistory = true"
             @blur="handleSearchBlur"
           />
-          <text v-if="searchLoading" class="search-loading-icon">⏳</text>
-          <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">✕</text>
+          <ClIcon v-if="searchLoading" name="icon-loading" size="lg" color="#9CA3AF" class="search-loading-icon" />
+          <ClIcon v-else-if="searchKeyword" name="icon-close" size="lg" color="#9CA3AF" class="clear-icon" @click="handleClearSearch" />
         </view>
 
         <!-- PC端提问按钮 -->
         <CButton type="primary" size="md" class="pc-ask-btn" @click="handleAskQuestion">
-          <template #icon><text>✏️</text></template>
+          <template #icon><ClIcon name="icon-edit" size="base" color="#FFFFFF" /></template>
           提问
         </CButton>
       </view>
@@ -38,9 +38,9 @@
             class="history-item"
             @click="handleHistoryClick(item)"
           >
-            <text class="history-icon">🕐</text>
+            <ClIcon name="icon-time" size="base" color="#9CA3AF" />
             <text class="history-text">{{ item }}</text>
-            <text class="history-remove" @click.stop="handleRemoveHistory(item)">✕</text>
+            <ClIcon name="icon-close" size="base" color="#D1D5DB" class="history-remove" @click.stop="handleRemoveHistory(item)" />
           </view>
         </view>
       </view>
@@ -57,7 +57,7 @@
             :class="{ active: category === item.value }"
             @click="handleCategoryChange(item.value)"
           >
-            <text class="tab-icon">{{ item.icon }}</text>
+            <ClIcon :name="item.icon" size="sm" :color="category === item.value ? '#377DFF' : '#6B7280'" />
             <text class="tab-label">{{ item.label }}</text>
           </view>
         </view>
@@ -82,7 +82,7 @@
       <!-- 状态筛选 -->
       <view class="sort-right">
         <view class="status-filter" @click="showFilterModal = true">
-          <text class="status-icon">{{ status === 1 ? '✅' : status === 0 ? '❓' : '📋' }}</text>
+          <ClIcon :name="status === 1 ? 'icon-check-circle' : status === 0 ? 'icon-help-circle' : 'icon-list'" size="sm" :color="status !== null ? '#377DFF' : '#6B7280'" />
           <text class="status-label">{{ statusLabel }}</text>
           <text v-if="hasActiveFilters" class="filter-badge"></text>
         </view>
@@ -100,48 +100,64 @@
       :refresher-triggered="refreshing"
       @refresherrefresh="handleRefresh"
     >
-      <!-- 骨架屏 -->
-      <template v-if="loading && questions.length === 0">
-        <view v-for="i in 3" :key="i" class="skeleton-card">
-          <view class="skeleton-title" />
-          <view class="skeleton-content" />
-          <view class="skeleton-tags" />
-          <view class="skeleton-stats" />
-        </view>
-      </template>
+      <!-- 骨架屏（使用 gp-skeleton） -->
+      <gp-skeleton v-if="loading && questions.length === 0" type="list" :loading="true" :configs="skeletonConfigs" />
 
-      <!-- 问题卡片列表 -->
+      <!-- 问题卡片列表（企业级组件） -->
       <template v-else-if="questions.length > 0">
-        <QuestionCard
+        <ClFeedQAItem
           v-for="item in questions"
           :key="item.qid"
-          :question="item"
-          :keyword="searchKeyword"
-          @click="handleQuestionClick(item.qid)"
+          :question="mapToClQuestion(item)"
+          class="question-card-item"
+          @click="handleQuestionClick"
+          @user-click="handleUserClick"
         />
 
         <!-- 加载更多提示 -->
-        <view v-if="loading && questions.length > 0" class="load-more">加载中...</view>
-        <view v-else-if="!hasMore && questions.length > 0" class="load-more">没有更多了</view>
+        <view v-if="loading && questions.length > 0" class="load-more">
+          <ClIcon name="icon-loading" size="base" color="#9CA3AF" class="loading-spin" />
+          <text>加载中...</text>
+        </view>
+        <view v-else-if="!hasMore && questions.length > 0" class="load-more">
+          <ClIcon name="icon-check" size="base" color="#9CA3AF" />
+          <text>没有更多了</text>
+        </view>
       </template>
 
-      <!-- 空状态 -->
-      <view v-else class="empty-state">
-        <text class="empty-icon">{{ emptyIcon }}</text>
-        <text class="empty-text">{{ emptyText }}</text>
-        <text class="empty-hint">{{ emptyHint }}</text>
-      </view>
+      <!-- 空状态（企业级组件） -->
+      <ClEmpty
+        v-else
+        :type="emptyType"
+        :title="emptyText"
+        :description="emptyHint"
+        size="large"
+        variant="card"
+        :show-action="!searchKeyword"
+        action-text="去提问"
+        action-icon="icon-edit"
+        @action="handleAskQuestion"
+      />
+
+      <!-- 错误状态（仅在加载失败时显示） -->
+      <ClError
+        v-if="loadError && questions.length === 0"
+        type="network"
+        size="large"
+        variant="card"
+        @retry="handleRetry"
+      />
     </scroll-view>
 
     <!-- 🆕 发布问题悬浮按钮 -->
     <CButton type="primary" size="md" round class="fab-btn" @click="handleAskQuestion">
-      <template #icon><text>✏️</text></template>
+      <template #icon><ClIcon name="icon-edit" size="base" color="#FFFFFF" /></template>
       提问
     </CButton>
 
     <!-- ⬆️ 回到顶部按钮 -->
     <view v-if="showBackToTop" class="back-to-top" @click="scrollToTop">
-      <text class="back-icon">⬆️</text>
+      <ClIcon name="icon-arrow-up" size="xl" color="#377DFF" />
     </view>
 
     <!-- 🔍 筛选弹窗 -->
@@ -169,7 +185,7 @@
                 :class="{ selected: tempCategory === item.value }"
                 @click="tempCategory = item.value"
               >
-                <text class="option-icon">{{ item.icon }}</text>
+                <ClIcon :name="item.icon" size="base" :color="tempCategory === item.value ? '#377DFF' : '#6B7280'" />
                 <text class="option-label">{{ item.label }}</text>
               </view>
             </view>
@@ -184,7 +200,7 @@
                 :class="{ selected: tempStatus === null }"
                 @click="tempStatus = null"
               >
-                <text class="option-icon">📋</text>
+                <ClIcon name="icon-list" size="base" :color="tempStatus === null ? '#377DFF' : '#6B7280'" />
                 <text class="option-label">全部</text>
               </view>
               <view
@@ -192,7 +208,7 @@
                 :class="{ selected: tempStatus === 0 }"
                 @click="tempStatus = 0"
               >
-                <text class="option-icon">❓</text>
+                <ClIcon name="icon-help-circle" size="base" :color="tempStatus === 0 ? '#377DFF' : '#6B7280'" />
                 <text class="option-label">未解决</text>
               </view>
               <view
@@ -200,7 +216,7 @@
                 :class="{ selected: tempStatus === 1 }"
                 @click="tempStatus = 1"
               >
-                <text class="option-icon">✅</text>
+                <ClIcon name="icon-check-circle" size="base" :color="tempStatus === 1 ? '#377DFF' : '#6B7280'" />
                 <text class="option-label">已解决</text>
               </view>
             </view>
@@ -247,8 +263,11 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
-import QuestionCard from './components/QuestionCard.vue'
+import type { QuestionItem } from '@/types/question'
 import CButton from '@/components/ui/CButton.vue'
+
+// 企业级组件
+import { ClIcon, ClFeedQAItem, ClEmpty, ClError } from '@/components/cl'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -265,6 +284,14 @@ const questionStore = useQuestionStore()
 const { questions, total } = storeToRefs(questionStore)
 const loading = ref(false)
 const refreshing = ref(false)
+const loadError = ref(false)
+
+// 骨架屏配置
+const skeletonConfigs = {
+  rows: 5,
+  avatar: true,
+  title: true
+}
 
 // 搜索
 const searchKeyword = ref('')
@@ -302,13 +329,13 @@ const hasMore = computed(() => page.value < totalPages.value)
 const scrollTop = ref(0)
 const showBackToTop = ref(false)
 
-// 分类配置
+// 分类配置（使用 Iconify 图标名）
 const categories: Array<{ label: string; value: string | null; icon: string }> = [
-  { label: '全部', value: null, icon: '📦' },
-  { label: '学习', value: '学习', icon: '📚' },
-  { label: '生活', value: '生活', icon: '🏠' },
-  { label: '技术', value: '技术', icon: '💻' },
-  { label: '其他', value: '其他', icon: '📌' }
+  { label: '全部', value: null, icon: 'icon-grid' },
+  { label: '学习', value: '学习', icon: 'icon-book' },
+  { label: '生活', value: '生活', icon: 'icon-home' },
+  { label: '技术', value: '技术', icon: 'icon-code' },
+  { label: '其他', value: '其他', icon: 'icon-tag' }
 ]
 
 // 排序选项
@@ -326,11 +353,10 @@ const statusLabel = computed(() => {
   return '全部'
 })
 
-// 空状态
-const emptyIcon = computed(() => {
-  if (searchKeyword.value) return '🔍'
-  if (category.value) return '📭'
-  return '📋'
+// 空状态类型（映射到 ClEmpty 的 type）
+const emptyType = computed(() => {
+  if (searchKeyword.value) return 'search'
+  return 'question'
 })
 
 const emptyText = computed(() => {
@@ -344,12 +370,31 @@ const emptyHint = computed(() => {
   return '快来提出第一个问题吧！'
 })
 
+// 数据映射：QuestionItem → ClFeedQAItem.Question
+const mapToClQuestion = (item: QuestionItem) => ({
+  id: item.qid,
+  title: item.title,
+  user: {
+    id: 0, // 后端未返回 askerId，暂用 0
+    username: item.askerNickname || '匿名用户',
+    avatar: item.askerAvatar
+  },
+  tags: item.tags,
+  views: item.views,
+  comments: item.answerCount,
+  likes: 0, // 后端问题列表未返回点赞数
+  createdAt: item.createdAt,
+  isSolved: item.status === 1,
+  rewardPoints: item.bounty > 0 ? item.bounty : undefined
+})
+
 // 加载问题列表
 const loadQuestions = async (refresh = false) => {
   if (loading.value) return
 
   try {
     loading.value = true
+    loadError.value = false
 
     if (refresh) {
       page.value = 1
@@ -370,6 +415,7 @@ const loadQuestions = async (refresh = false) => {
     totalPages.value = res.totalPages
   } catch (err: any) {
     console.error('[问答列表] 加载失败', err)
+    loadError.value = true
     uni.showToast({
       title: err.message || '加载失败',
       icon: 'none'
@@ -379,6 +425,12 @@ const loadQuestions = async (refresh = false) => {
     searchLoading.value = false
     refreshing.value = false
   }
+}
+
+// 重试加载
+const handleRetry = () => {
+  loadError.value = false
+  loadQuestions(true)
 }
 
 // 搜索防抖
@@ -542,11 +594,20 @@ const scrollToTop = () => {
   }, 100)
 }
 
-// 点击问题卡片
-const handleQuestionClick = (questionId: number) => {
+// 点击问题卡片（接收 ClFeedQAItem 传递的 question 对象）
+const handleQuestionClick = (question: { id: number }) => {
   uni.navigateTo({
-    url: `/pages/question/detail?id=${questionId}`
+    url: `/pages/question/detail?id=${question.id}`
   })
+}
+
+// 点击用户头像
+const handleUserClick = (user: { id: number; username: string }) => {
+  if (user.id > 0) {
+    uni.navigateTo({
+      url: `/pages/user/profile?id=${user.id}`
+    })
+  }
 }
 
 // 发布问题
@@ -608,10 +669,10 @@ onMounted(() => {
   background: $gray-100;
   border-radius: $radius-2xl;
   padding: 0 $sp-5;
+  gap: $sp-2;
 
   .search-icon {
-    font-size: $font-size-lg;
-    margin-right: $sp-2;
+    flex-shrink: 0;
   }
 
   .search-input {
@@ -621,15 +682,13 @@ onMounted(() => {
   }
 
   .search-loading-icon {
-    font-size: $font-size-lg;
-    padding: 0 $sp-1;
+    flex-shrink: 0;
     animation: rotate 1.5s linear infinite;
   }
 
   .clear-icon {
-    font-size: $font-size-lg;
-    color: $gray-400;
-    padding: 0 $sp-1;
+    flex-shrink: 0;
+    cursor: pointer;
   }
 }
 
@@ -681,14 +740,10 @@ onMounted(() => {
     gap: $sp-3;
     padding: $sp-3 $sp-6;
     transition: background $duration-base $ease-out;
+    cursor: pointer;
 
     &:active {
       background: $gray-100;
-    }
-
-    .history-icon {
-      font-size: $font-size-base;
-      color: $gray-400;
     }
 
     .history-text {
@@ -699,12 +754,10 @@ onMounted(() => {
     }
 
     .history-remove {
-      font-size: $font-size-xl;
-      color: $gray-300;
-      padding: 0 $sp-2;
+      cursor: pointer;
 
       &:active {
-        color: $error;
+        opacity: 0.7;
       }
     }
   }
@@ -736,29 +789,20 @@ onMounted(() => {
 .filter-tab {
   display: inline-flex;
   align-items: center;
-  gap: $sp-1;
+  gap: $sp-2;
   padding: $sp-2 $sp-5;
   background: $gray-100;
   border-radius: $radius-lg;
   transition: $transition-base;
+  cursor: pointer;
 
   &.active {
     background: rgba($primary, 0.12);
-
-    .tab-icon {
-      color: $primary;
-    }
 
     .tab-label {
       color: $primary;
       font-weight: $font-weight-semibold;
     }
-  }
-
-  .tab-icon {
-    font-size: $font-size-sm;
-    color: $gray-500;
-    transition: color $duration-base $ease-out;
   }
 
   .tab-label {
@@ -893,17 +937,13 @@ onMounted(() => {
 .option-item {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: $sp-3;
   padding: $sp-3 $sp-5;
   background: $gray-100;
   border-radius: $radius-md;
   border: 2rpx solid transparent;
   cursor: pointer;
   transition: $transition-base;
-
-  .option-icon {
-    font-size: $font-size-base;
-  }
 
   .option-label {
     font-size: $font-size-sm;
@@ -1029,92 +1069,32 @@ onMounted(() => {
   }
 }
 
+// 问题卡片项
+.question-card-item {
+  margin-bottom: $sp-4;
+}
+
 // 加载更多
 .load-more {
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
   padding: $sp-8;
   font-size: $font-size-sm;
   color: $gray-400;
-}
 
-// 骨架屏
-.skeleton-card {
-  background: $white;
-  border-radius: $radius-md;
-  padding: $sp-6;
-  margin-bottom: $sp-4;
-
-  .skeleton-title {
-    width: 80%;
-    height: 40rpx;
-    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-    border-radius: $radius-sm;
-    margin-bottom: $sp-4;
-  }
-
-  .skeleton-content {
-    width: 100%;
-    height: 32rpx;
-    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-    border-radius: $radius-sm;
-    margin-bottom: $sp-4;
-  }
-
-  .skeleton-tags {
-    width: 60%;
-    height: 28rpx;
-    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-    border-radius: $radius-sm;
-    margin-bottom: $sp-4;
-  }
-
-  .skeleton-stats {
-    width: 50%;
-    height: 24rpx;
-    background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
-    background-size: 200% 100%;
-    animation: loading 1.5s infinite;
-    border-radius: $radius-sm;
+  .loading-spin {
+    animation: rotate 1s linear infinite;
   }
 }
 
-@keyframes loading {
-  0% {
-    background-position: 200% 0;
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
   }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-// 空状态
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: $sp-30 $sp-12;
-
-  .empty-icon {
-    font-size: 120rpx;
-    margin-bottom: $sp-6;
-  }
-
-  .empty-text {
-    font-size: $font-size-lg;
-    color: $gray-600;
-    margin-bottom: $sp-3;
-  }
-
-  .empty-hint {
-    font-size: $font-size-sm;
-    color: $gray-400;
+  to {
+    transform: rotate(360deg);
   }
 }
 

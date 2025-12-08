@@ -890,15 +890,15 @@ onMounted(() => {
   transform: translateY(8px);
 
   &.question {
-    background: linear-gradient(135deg, $campus-blue, lighten($campus-blue, 8%));
+    background: linear-gradient(135deg, $campus-blue, #5A9BFF);  // lighten($campus-blue, 8%)
   }
 
   &.resource {
-    background: linear-gradient(135deg, $campus-amber, lighten($campus-amber, 8%));
+    background: linear-gradient(135deg, $campus-amber, #FFD180);  // lighten($campus-amber, 8%)
   }
 
   &.activity {
-    background: linear-gradient(135deg, $campus-teal, lighten($campus-teal, 8%));
+    background: linear-gradient(135deg, $campus-teal, #4DD0B5);  // lighten($campus-teal, 8%)
   }
 
   &:hover {

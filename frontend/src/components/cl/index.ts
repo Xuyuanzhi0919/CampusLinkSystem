@@ -20,6 +20,10 @@ export { default as ClFeedQAItem } from './ClFeedQAItem.vue'
 export { default as ClResourceCard } from './ClResourceCard.vue'
 export { default as ClEventCard } from './ClEventCard.vue'
 
+// 状态组件
+export { default as ClEmpty } from './ClEmpty.vue'
+export { default as ClError } from './ClError.vue'
+
 // 类型导出
 export type { MetaItem } from './ClMetaRow.vue'
 export type { Action } from './ClActionBar.vue'

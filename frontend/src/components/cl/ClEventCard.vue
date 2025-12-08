@@ -24,7 +24,7 @@
 
       <!-- 组织者 -->
       <view class="cl-event-card__organizer">
-        <ClIcon name="icon-group" size="base" :color="$campusBlue" />
+        <ClIcon name="icon-group" size="base" color="#377DFF" />
         <text>{{ event.organizer }}</text>
       </view>
 

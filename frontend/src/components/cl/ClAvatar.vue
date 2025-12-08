@@ -117,7 +117,7 @@ const handleError = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, $campus-blue-lighter 0%, lighten($campus-blue-lighter, 3%) 100%);
+    background: linear-gradient(135deg, $campus-blue-lighter 0%, #F5F9FF 100%);
   }
 
   &__text {

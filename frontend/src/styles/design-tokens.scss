@@ -37,6 +37,7 @@ $color-info-bg: #E6F0FF;         // 信息背景色
 $color-text-primary: #1A1A1A;    // 主文本（标题）
 $color-text-secondary: #333333;  // 次级文本（正文）
 $color-text-tertiary: #6B778C;   // 三级文本（元数据、辅助信息）
+$color-text-quaternary: #9CA3AF; // 四级文本（时间、分隔符等最弱信息）
 $color-text-disabled: #BFBFBF;   // 禁用文本
 $color-text-placeholder: #D1D5DB; // 占位符文本
 
@@ -236,7 +237,7 @@ $button-primary-hover: $campus-blue-light;
 $button-primary-text: #FFFFFF;
 
 $button-secondary-bg: $campus-blue-lighter;
-$button-secondary-hover: darken($campus-blue-lighter, 5%);
+$button-secondary-hover: #E0EBFF;  // 比 $campus-blue-lighter (#EFF5FF) 深 5%
 $button-secondary-text: $campus-blue;
 
 $button-ghost-bg: transparent;

@@ -25,7 +25,7 @@
       <text>暂无问答</text>
     </view>
 
-    <!-- Questions List (使用企业级卡片) -->
+    <!-- Questions List (使用重构后的问答卡片) -->
     <view v-else class="questions-list">
       <ClFeedQAItem
         v-for="question in questionList"
@@ -33,7 +33,9 @@
         :question="question"
         @click="handleQuestionClick"
         @user-click="handleUserClick"
-        @meta-click="handleMetaClick"
+        @answer="handleAnswerClick"
+        @like="handleLikeClick"
+        @comment="handleCommentClick"
       />
     </view>
   </view>
@@ -43,6 +45,7 @@
 import { ref, onMounted } from 'vue'
 import { ClFeedQAItem } from '@/components/cl'
 import { getQuestionList } from '@/services/question'
+import { requireLogin } from '@/utils/auth'
 
 const emit = defineEmits<{
   'question-click': [question: any]
@@ -113,13 +116,45 @@ const handleUserClick = (user: any) => {
   }
 }
 
-const handleMetaClick = (item: any, question: any) => {
-  console.log('点击元数据:', item, question)
-  // TODO: 处理点赞、评论等操作
+// 回答问题（需要登录）
+const handleAnswerClick = (question: any) => {
+  if (!question?.id) return
+  // 已解决的问题可以直接查看，不需要登录
+  if (question.isSolved) {
+    uni.navigateTo({
+      url: `/pages/question/detail?id=${question.id}`
+    })
+    return
+  }
+  // 回答需要登录
+  if (!requireLogin('answer')) return
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}&action=answer`
+  })
+}
+
+// 点赞问题（需要登录）
+const handleLikeClick = (question: any) => {
+  if (!question?.id) return
+  if (!requireLogin('like')) return
+  // TODO: 实现点赞逻辑
+  console.log('点赞问题:', question.id)
+}
+
+// 评论问题（需要登录）
+const handleCommentClick = (question: any) => {
+  if (!question?.id) return
+  if (!requireLogin('comment')) return
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}#comments`
+  })
 }
 
 const handleViewMore = () => {
   emit('view-more')
+  uni.navigateTo({
+    url: '/pages/question/list'
+  })
 }
 
 // 初始化
@@ -182,7 +217,7 @@ defineExpose({
 .questions-list {
   display: flex;
   flex-direction: column;
-  gap: $spacing-6;
+  gap: $spacing-4;  // 紧凑的卡片间距
 }
 
 .loading-container,

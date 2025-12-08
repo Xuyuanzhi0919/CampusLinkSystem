@@ -190,7 +190,7 @@ const handleCommentClick = () => emit('comment', props.question)
     left: 0;
     right: 0;
     height: 4rpx;
-    background: linear-gradient(90deg, $type-color-qa 0%, lighten($type-color-qa, 15%) 100%);
+    background: linear-gradient(90deg, $type-color-qa 0%, #6BA3FF 100%);  // lighten($type-color-qa, 15%)
     border-radius: $card-radius $card-radius 0 0;
   }
 
@@ -362,7 +362,7 @@ const handleCommentClick = () => emit('comment', props.question)
       }
 
       &:active {
-        background: darken($campus-blue-lighter, 3%);
+        background: #E5EFFF;  // darken($campus-blue-lighter, 3%)
       }
     }
   }

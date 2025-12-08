@@ -97,6 +97,16 @@
       @go-to-login="handleSwitchToLogin"
     />
 
+    <!-- 登录引导弹窗（需要登录时显示） -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuideModal"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+      @cancel="handleLoginGuideCancel"
+    />
+
     <!-- 快速返回顶部按钮 -->
     <view
       v-if="showBackToTop"
@@ -139,6 +149,7 @@ import HomeFooter from './components/HomeFooter.vue'
 // 通用组件
 import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
+import { ClLoginGuideModal } from '@/components/cl'
 
 // 组合式函数
 import { useNavigation } from '@/composables/useNavigation'
@@ -159,6 +170,13 @@ const isDesktop = computed(() => {
 // 弹窗状态
 const showLoginModal = ref(false)
 const showRegisterModal = ref(false)
+
+// 登录引导弹窗状态
+const showLoginGuideModal = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+let loginGuideCallback: (() => void) | null = null
 
 // 返回顶部
 const showBackToTop = ref(false)
@@ -243,6 +261,8 @@ const showWelcomeToast = (message: string) => {
 }
 
 const handleLoginSuccess = (response: any) => {
+  // 通知 Header 组件刷新登录状态
+  uni.$emit('user-login')
   showWelcomeToast(`欢迎回来, ${response.user.nickname}!`)
 }
 
@@ -252,6 +272,8 @@ const handleRegister = () => {
 }
 
 const handleRegisterSuccess = (response: any) => {
+  // 通知 Header 组件刷新登录状态
+  uni.$emit('user-login')
   showWelcomeToast(`欢迎加入 CampusLink, ${response.user.nickname}!`)
 }
 
@@ -265,6 +287,17 @@ const handleForgotPassword = () => {
     url: '/pages/auth/forgot-password',
     fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
+}
+
+// ===================== 登录引导弹窗处理 =====================
+
+const handleLoginGuideConfirm = () => {
+  // 打开登录弹窗
+  showLoginModal.value = true
+}
+
+const handleLoginGuideCancel = () => {
+  loginGuideCallback = null
 }
 
 // ===================== 滚动处理 =====================
@@ -319,9 +352,18 @@ onMounted(() => {
   window.addEventListener('scroll', handlePageScroll)
   // #endif
 
-  // 监听登录事件
+  // 监听直接打开登录弹窗事件
   uni.$on('show-login-modal', () => {
     showLoginModal.value = true
+  })
+
+  // 监听登录引导弹窗事件（带操作类型和文案）
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+    loginGuideCallback = data?.onSuccess || null
+    showLoginGuideModal.value = true
   })
 })
 
@@ -332,6 +374,7 @@ onUnmounted(() => {
   // #endif
 
   uni.$off('show-login-modal')
+  uni.$off('show-login-guide')
 })
 </script>
 

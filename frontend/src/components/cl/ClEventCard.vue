@@ -176,7 +176,7 @@ const handleRegisterClick = () => emit('register', props.event)
     left: 0;
     right: 0;
     height: 4rpx;
-    background: linear-gradient(90deg, $type-color-activity 0%, lighten($type-color-activity, 15%) 100%);
+    background: linear-gradient(90deg, $type-color-activity 0%, #52C77B 100%);  // lighten($type-color-activity, 15%)
     border-radius: $card-radius $card-radius 0 0;
   }
 
@@ -319,7 +319,7 @@ const handleRegisterClick = () => emit('register', props.event)
   /* 已结束状态 */
   &--ended {
     .featured-event__type-bar {
-      background: linear-gradient(90deg, $color-text-tertiary 0%, lighten($color-text-tertiary, 20%) 100%);
+      background: linear-gradient(90deg, $color-text-tertiary 0%, #C5CAD1 100%);  // lighten($color-text-tertiary, 20%)
     }
 
     .featured-event__title,

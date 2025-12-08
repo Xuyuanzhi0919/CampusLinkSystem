@@ -43,6 +43,7 @@
 import { ref, onMounted } from 'vue'
 import { ClEventCard } from '@/components/cl'
 import { getActivityList } from '@/services/activity'
+import { requireLogin } from '@/utils/auth'
 
 const emit = defineEmits<{
   'activity-click': [activity: any]
@@ -111,11 +112,20 @@ const handleActivityClick = (activity: any) => {
   })
 }
 
+// 报名活动（需要登录）
 const handleRegister = (activity: any) => {
   if (!activity?.id) {
     console.warn('活动 ID 无效:', activity)
     return
   }
+  // 已结束的活动可以直接查看
+  if (activity.isEnded) {
+    uni.navigateTo({
+      url: `/pages/club/activity-detail?id=${activity.id}`
+    })
+    return
+  }
+  if (!requireLogin('register')) return
   uni.navigateTo({
     url: `/pages/club/activity-detail?id=${activity.id}&action=register`
   })

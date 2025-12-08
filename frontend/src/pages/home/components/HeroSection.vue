@@ -1457,7 +1457,7 @@ $hero-red: #EF4444;
   width: 32px;
   height: 32px;
   border-radius: 10px;
-  background: linear-gradient(135deg, $hero-violet, darken($hero-violet, 15%));
+  background: linear-gradient(135deg, $hero-violet, #6D3BD8);  // darken($hero-violet, 15%)
   display: flex;
   align-items: center;
   justify-content: center;

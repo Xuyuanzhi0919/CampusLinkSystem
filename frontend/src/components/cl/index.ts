@@ -20,6 +20,9 @@ export { default as ClFeedQAItem } from './ClFeedQAItem.vue'
 export { default as ClResourceCard } from './ClResourceCard.vue'
 export { default as ClEventCard } from './ClEventCard.vue'
 
+// 弹窗组件
+export { default as ClLoginGuideModal } from './ClLoginGuideModal.vue'
+
 // 类型导出
 export type { MetaItem } from './ClMetaRow.vue'
 export type { Action } from './ClActionBar.vue'

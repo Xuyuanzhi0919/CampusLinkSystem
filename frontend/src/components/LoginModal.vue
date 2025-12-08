@@ -104,6 +104,7 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { login, type LoginRequest, type AuthResponse } from '@/services/auth'
+import { useUserStore } from '@/stores/user'
 import config from '@/config'
 
 const props = defineProps({
@@ -114,6 +115,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'login-success', 'register', 'forgot-password'])
+
+// 获取用户 store
+const userStore = useUserStore()
 
 // 表单数据
 const formData = ref({
@@ -338,10 +342,12 @@ const handleLogin = async () => {
 
     const response: AuthResponse = await login(loginData)
 
-    // 存储Token
-    uni.setStorageSync(config.tokenKey, response.token)
-    uni.setStorageSync(config.refreshTokenKey, response.refreshToken)
-    uni.setStorageSync(config.userInfoKey, JSON.stringify(response.user))
+    // 更新 Pinia store（同时也会存储到 localStorage）
+    userStore.login({
+      token: response.token,
+      refreshToken: response.refreshToken,
+      userInfo: response.user
+    })
 
     // 如果选择记住账号，存储账号信息
     if (formData.value.rememberMe) {

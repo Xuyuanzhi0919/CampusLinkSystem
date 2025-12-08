@@ -43,6 +43,7 @@
 import { ref, onMounted } from 'vue'
 import { ClResourceCard } from '@/components/cl'
 import { getResourceList } from '@/services/resource'
+import { requireLogin } from '@/utils/auth'
 
 const emit = defineEmits<{
   'resource-click': [resource: any]
@@ -107,11 +108,13 @@ const handleResourceClick = (resource: any) => {
   })
 }
 
+// 下载资源（需要登录）
 const handleDownload = (resource: any) => {
   if (!resource?.id) {
     console.warn('资源 ID 无效:', resource)
     return
   }
+  if (!requireLogin('download')) return
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.id}&action=download`
   })

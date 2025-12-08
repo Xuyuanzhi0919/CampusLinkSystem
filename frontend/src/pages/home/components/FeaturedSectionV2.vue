@@ -65,6 +65,7 @@ import { ClFeaturedQAItem, ClResourceCard, ClEventCard } from '@/components/cl'
 import { getQuestionList } from '@/services/question'
 import { getResourceList } from '@/services/resource'
 import { getActivityList } from '@/services/activity'
+import { requireLogin } from '@/utils/auth'
 
 const emit = defineEmits<{
   'item-click': [item: any]
@@ -195,12 +196,13 @@ const handleQuestionClick = (question: any) => {
   })
 }
 
-// 回答问题
+// 回答问题（需要登录）
 const handleAnswer = (question: any) => {
   if (!question?.id) {
     console.warn('问题 ID 无效:', question)
     return
   }
+  if (!requireLogin('answer')) return
   uni.navigateTo({
     url: `/pages/question/detail?id=${question.id}&action=answer`
   })
@@ -215,19 +217,21 @@ const handleUserClick = (user: any) => {
   }
 }
 
-// 点赞问题
+// 点赞问题（需要登录）
 const handleLike = (question: any) => {
   if (!question?.id) return
+  if (!requireLogin('like')) return
   // TODO: 实现点赞逻辑
   console.log('点赞问题:', question.id)
 }
 
-// 评论问题
+// 评论问题（需要登录）
 const handleComment = (question: any) => {
   if (!question?.id) {
     console.warn('问题 ID 无效:', question)
     return
   }
+  if (!requireLogin('comment')) return
   uni.navigateTo({
     url: `/pages/question/detail?id=${question.id}&action=comment`
   })
@@ -244,12 +248,13 @@ const handleResourceClick = (resource: any) => {
   })
 }
 
-// 下载资源
+// 下载资源（需要登录）
 const handleDownload = (resource: any) => {
   if (!resource?.id) {
     console.warn('资源 ID 无效:', resource)
     return
   }
+  if (!requireLogin('download')) return
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.id}&action=download`
   })
@@ -266,12 +271,20 @@ const handleActivityClick = (event: any) => {
   })
 }
 
-// 报名活动
+// 报名活动（需要登录）
 const handleRegister = (event: any) => {
   if (!event?.id) {
     console.warn('活动 ID 无效:', event)
     return
   }
+  // 已结束的活动可以直接查看
+  if (event.isEnded) {
+    uni.navigateTo({
+      url: `/pages/club/activity-detail?id=${event.id}`
+    })
+    return
+  }
+  if (!requireLogin('register')) return
   uni.navigateTo({
     url: `/pages/club/activity-detail?id=${event.id}&action=register`
   })

@@ -174,7 +174,7 @@ const handleDownloadClick = () => emit('download', props.resource)
     left: 0;
     right: 0;
     height: 4rpx;
-    background: linear-gradient(90deg, $type-color-resource 0%, lighten($type-color-resource, 15%) 100%);
+    background: linear-gradient(90deg, $type-color-resource 0%, #BB8FCC 100%);  // lighten($type-color-resource, 15%)
     border-radius: $card-radius $card-radius 0 0;
   }
 

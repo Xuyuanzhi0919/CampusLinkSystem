@@ -116,11 +116,11 @@ const handleClick = (action: Action, index: number) => {
     color: $color-text-secondary;
 
     &:hover {
-      background: darken($color-bg-hover, 3%);
+      background: #F0F2F5;  // darken($color-bg-hover, 3%)
     }
 
     &:active {
-      background: darken($color-bg-hover, 5%);
+      background: #E8EAED;  // darken($color-bg-hover, 5%)
     }
   }
 
@@ -135,7 +135,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-primary-bg, 5%);
+      background: #2D6FE8;  // darken($button-primary-bg, 5%)
       transform: translateY(0);
     }
   }
@@ -149,7 +149,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-secondary-bg, 8%);
+      background: #D0E0FF;  // darken($button-secondary-bg, 8%)
     }
   }
 
@@ -163,7 +163,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($button-ghost-hover-bg, 3%);
+      background: #E5EFFF;  // darken($button-ghost-hover-bg, 3%)
     }
   }
 
@@ -177,7 +177,7 @@ const handleClick = (action: Action, index: number) => {
     }
 
     &:active {
-      background: darken($campus-blue-lighter, 3%);
+      background: #E5EFFF;  // darken($campus-blue-lighter, 3%)
     }
   }
 

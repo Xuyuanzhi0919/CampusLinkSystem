@@ -1,0 +1,264 @@
+/**
+ * CampusLink Design Tokens - 企业级设计变量系统
+ *
+ * 基于企业级内容平台标准（知乎/B站学习区/得物/CSDN）
+ *
+ * 使用规范：
+ * 1. 所有新组件必须使用 Design Tokens，禁止硬编码颜色/尺寸
+ * 2. 品牌色统一使用 $campus-blue 系列
+ * 3. 间距统一使用 $spacing-* 变量
+ * 4. 阴影统一使用 $shadow-* 变量
+ *
+ * @version 1.0.0
+ * @author CampusLink Design Team
+ */
+
+/* ========================================
+   1. 色彩体系 - Color Tokens
+   ======================================== */
+
+/* 主品牌色 - Campus Blue */
+$campus-blue: #377DFF;           // 主品牌色（按钮、链接、关键操作）
+$campus-blue-light: #5A8BFF;     // 交互高亮色（hover、active）
+$campus-blue-lighter: #EFF5FF;   // 背景辅助色（提示条、标签背景）
+$campus-blue-dark: #2563EB;      // 深色变体（深色模式或强调）
+
+/* 功能色 - Functional Colors */
+$color-success: #3CCB7F;         // 成功/已解决/通过
+$color-success-bg: #E6F9F0;      // 成功背景色
+$color-warning: #FFB766;         // 警告/进行中
+$color-warning-bg: #FFF5E6;      // 警告背景色
+$color-danger: #FF5C5C;          // 危险/错误/拒绝
+$color-danger-bg: #FFE6E6;       // 危险背景色
+$color-info: #5A8BFF;            // 信息提示
+$color-info-bg: #E6F0FF;         // 信息背景色
+
+/* 中性色 - Neutral Colors */
+$color-text-primary: #1A1A1A;    // 主文本（标题）
+$color-text-secondary: #333333;  // 次级文本（正文）
+$color-text-tertiary: #6B778C;   // 三级文本（元数据、辅助信息）
+$color-text-disabled: #BFBFBF;   // 禁用文本
+$color-text-placeholder: #D1D5DB; // 占位符文本
+
+$color-border: #E5E7EB;          // 边框色
+$color-border-light: #F3F4F6;    // 浅边框
+$color-divider: #F0F0F0;         // 分割线
+
+$color-bg-page: #F8FAFC;         // 页面背景
+$color-bg-card: #FFFFFF;         // 卡片背景
+$color-bg-hover: #F8FAFC;        // 悬浮背景
+$color-bg-overlay: rgba(0, 0, 0, 0.5); // 遮罩层
+
+/* ========================================
+   2. 字体体系 - Typography Tokens
+   ======================================== */
+
+/* 字号 - Font Size */
+$font-size-xs: 24rpx;            // 12px - 辅助信息、标签
+$font-size-sm: 26rpx;            // 13px - 次要文本
+$font-size-base: 28rpx;          // 14px - 正文
+$font-size-md: 30rpx;            // 15px - 小标题
+$font-size-lg: 32rpx;            // 16px - 副标题
+$font-size-xl: 36rpx;            // 18px - 卡片标题
+$font-size-2xl: 40rpx;           // 20px - 页面标题
+$font-size-3xl: 48rpx;           // 24px - 大标题
+
+/* 字重 - Font Weight */
+$font-weight-normal: 400;        // 正常文本
+$font-weight-medium: 500;        // 标签、按钮
+$font-weight-semibold: 600;      // 标题、强调
+$font-weight-bold: 700;          // 重要标题
+
+/* 行高 - Line Height */
+$line-height-tight: 1.2;         // 紧凑（标题）
+$line-height-normal: 1.5;        // 正常（正文）
+$line-height-relaxed: 1.8;       // 宽松（长文本）
+
+/* ========================================
+   3. 间距体系 - Spacing Tokens
+   ======================================== */
+
+/* 基于 8px 栅格系统 */
+$spacing-0: 0;
+$spacing-1: 4rpx;                // 2px
+$spacing-2: 8rpx;                // 4px
+$spacing-3: 12rpx;               // 6px
+$spacing-4: 16rpx;               // 8px
+$spacing-5: 20rpx;               // 10px
+$spacing-6: 24rpx;               // 12px - 卡片内边距（小）
+$spacing-8: 32rpx;               // 16px - 卡片模块间距
+$spacing-10: 40rpx;              // 20px - 卡片右边距
+$spacing-12: 48rpx;              // 24px - 卡片左对齐线
+$spacing-16: 64rpx;              // 32px - 大间距
+$spacing-20: 80rpx;              // 40px
+$spacing-24: 96rpx;              // 48px
+
+/* 语义化间距 - Semantic Spacing */
+$spacing-card-padding: $spacing-6;        // 卡片内边距
+$spacing-card-gap: $spacing-8;            // 卡片模块间距
+$spacing-card-left: $spacing-12;          // 卡片左侧对齐线
+$spacing-card-right: $spacing-10;         // 卡片右侧边距
+$spacing-section: $spacing-16;            // 章节间距
+
+/* ========================================
+   4. 圆角体系 - Border Radius Tokens
+   ======================================== */
+
+$radius-none: 0;
+$radius-sm: 8rpx;                // 4px - 小标签
+$radius-base: 12rpx;             // 6px - 标签、小按钮
+$radius-md: 16rpx;               // 8px - 输入框
+$radius-lg: 24rpx;               // 12px - 操作区域
+$radius-xl: 32rpx;               // 16px - 卡片
+$radius-2xl: 40rpx;              // 20px - 大卡片
+$radius-full: 9999rpx;           // 圆形（头像）
+
+/* 语义化圆角 - Semantic Radius */
+$radius-card: $radius-xl;        // 卡片圆角
+$radius-tag: $radius-base;       // 标签圆角
+$radius-button: $radius-lg;      // 按钮圆角
+$radius-avatar: $radius-full;    // 头像圆角
+
+/* ========================================
+   5. 阴影体系 - Shadow Tokens
+   ======================================== */
+
+/* 企业级阴影 - 参考 Material Design 3.0 */
+$shadow-none: none;
+$shadow-xs: 0 2rpx 8rpx rgba(0, 0, 0, 0.02);           // 1px 4px - 轻微
+$shadow-sm: 0 4rpx 12rpx rgba(0, 0, 0, 0.03);          // 2px 6px - 小阴影
+$shadow-base: 0 4rpx 20rpx rgba(0, 0, 0, 0.04);        // 2px 10px - 卡片阴影
+$shadow-md: 0 6rpx 24rpx rgba(0, 0, 0, 0.06);          // 3px 12px - 中阴影
+$shadow-lg: 0 6rpx 24rpx rgba(0, 0, 0, 0.08);          // 3px 12px - 悬浮阴影
+$shadow-xl: 0 12rpx 48rpx rgba(0, 0, 0, 0.12);         // 6px 24px - 模态框阴影
+
+/* 语义化阴影 - Semantic Shadow */
+$shadow-card: $shadow-base;      // 卡片默认阴影
+$shadow-card-hover: $shadow-lg;  // 卡片悬浮阴影
+$shadow-modal: $shadow-xl;       // 模态框阴影
+$shadow-dropdown: $shadow-md;    // 下拉菜单阴影
+
+/* ========================================
+   6. 图标尺寸体系 - Icon Size Tokens
+   ======================================== */
+
+$icon-xs: 24rpx;                 // 12px - 极小图标
+$icon-sm: 28rpx;                 // 14px - 标签图标
+$icon-base: 32rpx;               // 16px - 常规图标
+$icon-md: 36rpx;                 // 18px - Meta 图标（推荐）
+$icon-lg: 40rpx;                 // 20px - 大图标
+$icon-xl: 48rpx;                 // 24px - 特大图标
+$icon-2xl: 64rpx;                // 32px - 主图标
+
+/* 语义化图标尺寸 */
+$icon-size-tag: $icon-sm;        // 标签图标
+$icon-size-meta: $icon-md;       // 元数据图标（浏览/点赞/评论）
+$icon-size-main: $icon-2xl;      // 主图标（文件类型、活动图标）
+$icon-size-avatar: 64rpx;        // 头像尺寸（32px）
+
+/* ========================================
+   7. 层级体系 - Z-Index Tokens
+   ======================================== */
+
+$z-base: 1;
+$z-dropdown: 100;
+$z-sticky: 200;
+$z-fixed: 300;
+$z-modal-backdrop: 400;
+$z-modal: 500;
+$z-popover: 600;
+$z-tooltip: 700;
+$z-toast: 800;
+$z-max: 9999;
+
+/* ========================================
+   8. 过渡动画 - Transition Tokens
+   ======================================== */
+
+$transition-fast: 150ms;
+$transition-base: 250ms;
+$transition-slow: 350ms;
+
+$transition-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+$transition-ease-out: cubic-bezier(0, 0, 0.2, 1);
+$transition-ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+/* 语义化过渡 */
+$transition-all: all $transition-base $transition-ease-in-out;
+$transition-color: color $transition-fast $transition-ease-in-out;
+$transition-bg: background-color $transition-fast $transition-ease-in-out;
+$transition-transform: transform $transition-base $transition-ease-out;
+$transition-opacity: opacity $transition-base $transition-ease-in-out;
+
+/* ========================================
+   9. 断点体系 - Breakpoint Tokens
+   ======================================== */
+
+$breakpoint-xs: 375px;           // 小屏手机
+$breakpoint-sm: 640px;           // 大屏手机
+$breakpoint-md: 768px;           // 平板
+$breakpoint-lg: 1024px;          // 小屏笔记本
+$breakpoint-xl: 1280px;          // 桌面
+$breakpoint-2xl: 1536px;         // 大屏桌面
+
+/* ========================================
+   10. 卡片专用 Tokens - Card Specific
+   ======================================== */
+
+/* 卡片结构变量 */
+$card-bg: $color-bg-card;
+$card-border: $color-border-light;
+$card-radius: $radius-card;
+$card-shadow: $shadow-card;
+$card-shadow-hover: $shadow-card-hover;
+$card-padding: $spacing-card-padding;
+$card-gap: $spacing-card-gap;
+
+/* 卡片元素变量 */
+$card-title-size: $font-size-xl;            // 18px
+$card-title-weight: $font-weight-semibold;  // 600
+$card-title-color: $color-text-primary;
+
+$card-desc-size: $font-size-base;           // 14px
+$card-desc-weight: $font-weight-normal;     // 400
+$card-desc-color: $color-text-secondary;
+
+$card-meta-size: $font-size-sm;             // 13px
+$card-meta-weight: $font-weight-normal;     // 400
+$card-meta-color: $color-text-tertiary;
+
+/* ========================================
+   11. 按钮专用 Tokens - Button Specific
+   ======================================== */
+
+$button-primary-bg: $campus-blue;
+$button-primary-hover: $campus-blue-light;
+$button-primary-text: #FFFFFF;
+
+$button-secondary-bg: $campus-blue-lighter;
+$button-secondary-hover: darken($campus-blue-lighter, 5%);
+$button-secondary-text: $campus-blue;
+
+$button-ghost-bg: transparent;
+$button-ghost-border: $campus-blue;
+$button-ghost-text: $campus-blue;
+$button-ghost-hover-bg: $campus-blue-lighter;
+
+/* ========================================
+   12. 标签专用 Tokens - Tag Specific
+   ======================================== */
+
+$tag-default-bg: $color-bg-hover;
+$tag-default-text: $color-text-secondary;
+
+$tag-primary-bg: $campus-blue-lighter;
+$tag-primary-text: $campus-blue;
+
+$tag-success-bg: $color-success-bg;
+$tag-success-text: $color-success;
+
+$tag-warning-bg: $color-warning-bg;
+$tag-warning-text: $color-warning;
+
+$tag-danger-bg: $color-danger-bg;
+$tag-danger-text: $color-danger;

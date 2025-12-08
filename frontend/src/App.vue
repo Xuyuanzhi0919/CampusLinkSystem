@@ -48,12 +48,20 @@ onHide(() => {
 </script>
 
 <style lang="scss">
-/* ========== 全局样式 ========== */
+/* ========== CampusLink 企业级设计系统 ========== */
+
+/* 导入 Design Tokens（企业级设计变量） */
+@import '@/styles/design-tokens.scss';
+
+/* 微信小程序专用样式 */
+/* #ifdef MP-WEIXIN */
+@import '@/styles/mp-weixin.scss';
+/* #endif */
 
 /* ========== 全局基调 Design Tokens（符合 uiDesign/index.md）========== */
 :root {
-  /* 品牌主色 - #2563EB（比现有蓝更稳）*/
-  --cl-primary: #2563EB;
+  /* 品牌主色 - #377DFF（CampusLink 专属蓝）*/
+  --cl-primary: #377DFF;
   --cl-primary-50: #EFF6FF;
   --cl-primary-100: #DBEAFE;
   --cl-primary-200: #BFDBFE;
@@ -170,17 +178,20 @@ html, body {
 .h3 { font-size: var(--fz-16); font-weight: 500; line-height: 1.5; }
 .p  { font-size: var(--fz-14); line-height: 1.6; color: var(--cl-text-sub); }
 
-/* 隐藏原生 tabBar，使用自定义 tabBar */
+/* ========== 多端 TabBar 适配 ========== */
+
+/* H5/App 端：隐藏原生 tabBar，使用自定义 tabBar */
+/* #ifndef MP-WEIXIN */
 uni-tabbar {
   display: none !important;
 }
 
-/* 移除页面底部的 padding（tabBar 占位） */
+/* 移除页面底部的 padding（自定义 tabBar 占位） */
 uni-page-body {
   padding-bottom: 56px !important; /* 自定义 tabBar 高度 */
 }
 
-/* PC端隐藏自定义 tabBar（使用悬浮导航） */
+/* PC 端隐藏自定义 tabBar（使用悬浮导航） */
 @media (min-width: 751px) {
   .custom-tabbar {
     display: none !important;
@@ -190,4 +201,12 @@ uni-page-body {
     padding-bottom: 0 !important;
   }
 }
+/* #endif */
+
+/* 微信小程序端：使用原生 tabBar，无需自定义 */
+/* #ifdef MP-WEIXIN */
+uni-page-body {
+  padding-bottom: 0 !important; /* 小程序原生 tabBar 自动处理 */
+}
+/* #endif */
 </style>

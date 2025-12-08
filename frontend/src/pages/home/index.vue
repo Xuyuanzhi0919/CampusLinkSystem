@@ -26,29 +26,28 @@
       <view class="content-wrapper">
         <!-- 左侧：内容主流区（8栅格） -->
         <view class="main-area">
-          <!-- 精选推荐 -->
-          <FeaturedSection
+          <!-- 精选推荐（企业级卡片） -->
+          <FeaturedSectionV2
             ref="featuredRef"
             @item-click="handleFeaturedClick"
           />
 
-          <!-- 最新问答 -->
-          <LatestQuestions
+          <!-- 最新问答（企业级卡片） -->
+          <LatestQuestionsV2
             ref="questionsRef"
             @question-click="handleQuestionClick"
-            @answer-click="handleAnswerClick"
             @view-more="handleViewMoreQuestions"
           />
 
-          <!-- 精选资料 -->
-          <FeaturedResources
+          <!-- 精选资料（企业级卡片） -->
+          <FeaturedResourcesV2
             ref="resourcesRef"
             @resource-click="handleResourceClick"
             @view-more="handleViewMoreResources"
           />
 
-          <!-- 社团活动推荐 -->
-          <ActivityRecommend
+          <!-- 社团活动推荐（企业级卡片） -->
+          <ActivityRecommendV2
             ref="activitiesRef"
             @activity-click="handleActivityClick"
             @view-more="handleViewMoreActivities"
@@ -71,8 +70,10 @@
     <!-- 4. 底部区块 - 仅桌面端显示 -->
     <HomeFooter v-if="isDesktop" @navigate="handleNavigate" />
 
-    <!-- PC端悬浮导航 -->
+    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- #ifdef H5 -->
     <PCFloatingNav />
+    <!-- #endif -->
 
     <!-- 移动端自定义底部导航（非微信小程序时使用） -->
     <!-- #ifndef MP-WEIXIN -->
@@ -112,23 +113,30 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onPullDownRefresh } from '@dcloudio/uni-app'
 
-// 布局组件
-import WebHeader from '@/components/layout/WebHeader.vue'
-import MobileHeader from '@/components/layout/MobileHeader.vue'
-import GridNavigation from '@/components/layout/GridNavigation.vue'
+// 移动端组件
+import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { WebHeader, PCFloatingNav } from '@/components/desktop'
+// #endif
 
 // 首页组件
 import HeroSection from './components/HeroSection.vue'
-import FeaturedSection from './components/FeaturedSection.vue'
-import LatestQuestions from './components/LatestQuestions.vue'
-import FeaturedResources from './components/FeaturedResources.vue'
-import ActivityRecommend from './components/ActivityRecommend.vue'
+// 企业级卡片组件（新版）
+import FeaturedSectionV2 from './components/FeaturedSectionV2.vue'
+import LatestQuestionsV2 from './components/LatestQuestionsV2.vue'
+import FeaturedResourcesV2 from './components/FeaturedResourcesV2.vue'
+import ActivityRecommendV2 from './components/ActivityRecommendV2.vue'
+// 旧组件（备份）
+// import FeaturedSection from './components/FeaturedSection.vue'
+// import LatestQuestions from './components/LatestQuestions.vue'
+// import FeaturedResources from './components/FeaturedResources.vue'
+// import ActivityRecommend from './components/ActivityRecommend.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
 import HomeFooter from './components/HomeFooter.vue'
 
 // 通用组件
-import PCFloatingNav from '@/components/PCFloatingNav.vue'
-import CustomTabBar from '@/components/CustomTabBar.vue'
 import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
 

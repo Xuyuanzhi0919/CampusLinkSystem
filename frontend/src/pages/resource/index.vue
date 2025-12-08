@@ -182,8 +182,10 @@
       <view class="back-to-top-icon">↑</view>
     </view>
 
-    <!-- PC端悬浮导航 -->
+    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- #ifdef H5 -->
     <PCFloatingNav />
+    <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->
     <!-- #ifndef MP-WEIXIN -->
@@ -293,9 +295,15 @@ import { resourceSearchHistory } from '@/utils/searchHistory'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import PCFloatingNav from '@/components/PCFloatingNav.vue'
-import CustomTabBar from '@/components/CustomTabBar.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
 import config from '@/config'
 
 // 🎯 快捷筛选选项

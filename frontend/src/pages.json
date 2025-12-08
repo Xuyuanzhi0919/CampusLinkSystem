@@ -252,7 +252,7 @@
 		"backgroundColor": "#F5F5F5"
 	},
 	"tabBar": {
-		"color": "#666666",
+		"color": "#999999",
 		"selectedColor": "#2563EB",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
@@ -262,18 +262,26 @@
 		"list": [
 			{
 				"pagePath": "pages/home/index",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home-active.png",
 				"text": "首页"
 			},
 			{
 				"pagePath": "pages/resource/index",
+				"iconPath": "static/tabbar/resource.png",
+				"selectedIconPath": "static/tabbar/resource-active.png",
 				"text": "资源"
 			},
 			{
 				"pagePath": "pages/question/index",
+				"iconPath": "static/tabbar/question.png",
+				"selectedIconPath": "static/tabbar/question-active.png",
 				"text": "问答"
 			},
 			{
 				"pagePath": "pages/user/index",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user-active.png",
 				"text": "我的"
 			}
 		]

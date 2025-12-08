@@ -387,8 +387,9 @@ import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
 import RatingStars from '@/components/RatingStars.vue'
+// PC 端组件（仅 H5）
 // #ifdef H5
-import PDFViewer from '@/components/pdf/PDFViewer.vue'
+import { PDFViewer } from '@/components/desktop'
 // #endif
 import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource, rateResource } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'

@@ -60,7 +60,10 @@
       "Bash(rm:*)",
       "Bash(for file in ActivityScroll BannerSwiper BottomTabBar ClubCard PointsAnimation RecommendCards)",
       "Bash(do echo '=== $file ===')",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(move:*)",
+      "Bash(mv:*)",
+      "Bash(node scripts/generate-tabbar-icons.js:*)"
     ],
     "deny": [],
     "ask": []

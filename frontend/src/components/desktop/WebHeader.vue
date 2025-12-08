@@ -116,8 +116,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import UserAvatar from '@/components/UserAvatar.vue'
-import UserDropdownMenu from '@/components/UserDropdownMenu.vue'
-import NotificationDropdown from '@/components/NotificationDropdown.vue'
+import UserDropdownMenu from './UserDropdownMenu.vue'
+import NotificationDropdown from './NotificationDropdown.vue'
 import config from '@/config'
 import { checkIn, getCheckInStatus } from '@/services/user'
 import { logout } from '@/services/auth'

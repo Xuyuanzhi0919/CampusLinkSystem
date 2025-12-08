@@ -230,8 +230,10 @@
       </view>
     </view>
 
-    <!-- PC端悬浮导航 -->
+    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- #ifdef H5 -->
     <PCFloatingNav />
+    <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->
     <!-- #ifndef MP-WEIXIN -->
@@ -246,9 +248,15 @@ import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
 import QuestionCard from './components/QuestionCard.vue'
-import PCFloatingNav from '@/components/PCFloatingNav.vue'
-import CustomTabBar from '@/components/CustomTabBar.vue'
 import CButton from '@/components/ui/CButton.vue'
+
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
 
 // Store
 const questionStore = useQuestionStore()

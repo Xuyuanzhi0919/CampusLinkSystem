@@ -66,22 +66,25 @@ const loadData = async () => {
       order: 'desc'
     })
 
-    // 转换数据格式为 ClFeedQAItem 需要的格式
+    /**
+     * 转换数据格式为 ClFeedQAItem 需要的格式
+     * 后端实际返回字段：qid, title, category, bounty, views, answerCount, status, askerNickname, createdAt
+     */
     questionList.value = response.list.map((item: any) => ({
-      id: item.id,
-      title: item.title,
+      id: item.qid || item.questionId || item.id,
+      title: item.title || '',
       user: {
-        id: item.userId,
-        username: item.author || '匿名用户',
-        avatar: item.authorAvatar
+        id: item.askerId || 0,
+        username: item.askerNickname || item.askerName || '匿名用户',
+        avatar: item.askerAvatar || ''
       },
       tags: item.tags || [],
-      views: item.views || 0,
-      comments: item.comments || 0,
+      views: item.views || item.viewCount || 0,
+      comments: item.answerCount || 0,
       likes: item.likes || 0,
-      createdAt: item.createdAt,
-      isSolved: item.solved || false,
-      rewardPoints: item.reward
+      createdAt: item.createdAt || '',
+      isSolved: item.status === 1 || item.isSolved || false,
+      rewardPoints: item.bounty || 0
     }))
   } catch (error) {
     console.error('加载问答失败:', error)
@@ -92,12 +95,22 @@ const loadData = async () => {
 }
 
 const handleQuestionClick = (question: any) => {
+  if (!question?.id) {
+    console.warn('问题 ID 无效:', question)
+    return
+  }
   emit('question-click', question)
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}`
+  })
 }
 
 const handleUserClick = (user: any) => {
-  console.log('点击用户:', user)
-  // TODO: 跳转到用户主页
+  if (user?.id) {
+    uni.navigateTo({
+      url: `/pages/user/profile?id=${user.id}`
+    })
+  }
 }
 
 const handleMetaClick = (item: any, question: any) => {

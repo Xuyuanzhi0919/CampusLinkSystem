@@ -69,10 +69,10 @@ const handleClick = (item: MetaItem, index: number) => {
 .cl-meta-row {
   display: flex;
   align-items: center;
-  gap: $spacing-6;
-  font-size: $card-meta-size;
-  font-weight: $card-meta-weight;
-  color: $card-meta-color;
+  gap: $meta-item-gap;  // 统一使用 16px 间距
+  font-size: $font-size-xs;  // 12px
+  font-weight: $font-weight-normal;
+  color: $color-text-tertiary;
 
   &--align-right {
     justify-content: flex-end;
@@ -82,23 +82,23 @@ const handleClick = (item: MetaItem, index: number) => {
 .cl-meta-item {
   display: flex;
   align-items: center;
-  gap: $spacing-2;
+  gap: $meta-gap;  // 统一使用 8px 间距
   transition: $transition-color;
 
   &__icon {
-    font-size: $icon-size-meta;
+    font-size: $meta-icon-size;  // 统一 16px
     line-height: 1;
+    flex-shrink: 0;
   }
 
   &__text {
-    line-height: 1;
+    line-height: 1.2;
     white-space: nowrap;
   }
 
   /* ========== 交互状态 ========== */
   &--clickable {
     cursor: pointer;
-    color: $color-text-secondary;
 
     &:hover {
       color: $campus-blue;

@@ -262,3 +262,135 @@ $tag-warning-text: $color-warning;
 
 $tag-danger-bg: $color-danger-bg;
 $tag-danger-text: $color-danger;
+
+/* ========================================
+   13. 精选卡片专用 Tokens - Featured Card
+   ======================================== */
+
+/* 精选卡片标题 - 增强权重 */
+$featured-title-size: $font-size-lg;             // 16px（比普通卡片略大）
+$featured-title-weight: $font-weight-bold;       // 700（加粗，突出精选感）
+$featured-title-color: $color-text-primary;
+
+/* 精选卡片副标题 */
+$featured-desc-size: $font-size-sm;              // 13px
+$featured-desc-weight: $font-weight-normal;
+$featured-desc-color: $color-text-tertiary;      // 更低灰度
+
+/* 精选卡片内边距（更大留白） */
+$featured-card-padding: $spacing-8;              // 16px（比普通卡片更舒适）
+$featured-card-gap: $spacing-5;                  // 10px（模块间距）
+
+/* 内容类型色条 */
+$type-color-qa: $campus-blue;                    // 问答 - 蓝色
+$type-color-resource: #9B59B6;                   // 资源 - 紫色
+$type-color-activity: #27AE60;                   // 活动 - 绿色
+$type-color-task: #F39C12;                       // 任务 - 橙色
+
+/* 精选标签胶囊样式 */
+$capsule-tag-height: 40rpx;
+$capsule-tag-padding: 0 $spacing-4;
+$capsule-tag-radius: 20rpx;
+$capsule-tag-font-size: $font-size-xs;
+
+/* 元数据增强间距 */
+$meta-icon-size: $icon-base;                     // 16px（统一尺寸）
+$meta-gap: $spacing-4;                           // 8px（图标与文字间距）
+$meta-item-gap: $spacing-8;                      // 16px（项目之间间距）
+
+/* ========================================
+   14. 卡片 Mixins - Card Utilities
+   ======================================== */
+
+/* 卡片基础样式 */
+@mixin card-base {
+  display: flex;
+  flex-direction: column;
+  background: $card-bg;
+  border-radius: $card-radius;
+  box-shadow: $card-shadow;
+  transition: $transition-all;
+  cursor: pointer;
+  overflow: hidden;
+
+  &:hover {
+    box-shadow: $card-shadow-hover;
+    transform: translateY(-2rpx);
+  }
+}
+
+/* 精选卡片样式（带顶部色条） */
+@mixin featured-card-base {
+  @include card-base;
+  position: relative;
+  padding: $featured-card-padding;
+  gap: $featured-card-gap;
+
+  // 顶部类型色条占位
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rpx;
+    border-radius: $card-radius $card-radius 0 0;
+  }
+}
+
+/* 卡片标题样式 */
+@mixin card-title {
+  font-size: $featured-title-size;
+  font-weight: $featured-title-weight;
+  color: $featured-title-color;
+  line-height: $line-height-normal;
+  word-break: break-word;
+
+  // 最多2行截断
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 卡片描述样式 */
+@mixin card-desc {
+  font-size: $featured-desc-size;
+  font-weight: $featured-desc-weight;
+  color: $featured-desc-color;
+  line-height: $line-height-relaxed;
+
+  // 最多2行截断
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 已结束/禁用状态 */
+@mixin card-ended-state {
+  .card-title,
+  .card-desc,
+  .card-meta {
+    opacity: 0.55;
+  }
+
+  .card-icon {
+    filter: grayscale(50%);
+    opacity: 0.7;
+  }
+}
+
+/* 文本截断工具 */
+@mixin text-ellipsis($lines: 1) {
+  @if $lines == 1 {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  } @else {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

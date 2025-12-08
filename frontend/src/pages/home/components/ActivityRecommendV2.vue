@@ -66,21 +66,32 @@ const loadData = async () => {
       order: 'desc'
     })
 
-    // 转换数据格式为 ClEventCard 需要的格式
+    /**
+     * 转换数据格式为 ClEventCard 需要的格式
+     * 后端实际返回字段：activityId, clubId, clubName, title, description, location, startTime, endTime, maxParticipants, currentParticipants, remainingSlots, rewardPoints, coverImage, status, isJoined, isSignedIn, isFavorited, createdAt
+     */
     const now = new Date()
-    activityList.value = response.list.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      organizer: item.organizer || item.clubName || '社团',
-      type: item.type || 'other',
-      startTime: item.startTime,
-      endTime: item.endTime,
-      location: item.location || '待定',
-      participants: item.participants || 0,
-      views: item.views || 0,
-      isEnded: item.endTime ? new Date(item.endTime) < now : false,
-      isRegistering: item.status === 1  // 1 表示报名中
-    }))
+    activityList.value = response.list.map((item: any) => {
+      const endTime = item.endTime ? new Date(item.endTime) : null
+      const startTime = item.startTime ? new Date(item.startTime) : null
+      // status: 0-未开始，1-进行中，2-已结束，3-已取消
+      const isEnded = item.status === 2 || item.status === 3 || (endTime ? endTime < now : false)
+      const isRegistering = item.status === 0 || (startTime ? startTime > now : false)
+
+      return {
+        id: item.activityId || item.id,
+        title: item.title || '',
+        organizer: item.clubName || item.organizerName || '社团',
+        type: item.activityType || item.type || 'other',
+        startTime: item.startTime || '',
+        endTime: item.endTime || '',
+        location: item.location || '待定',
+        participants: item.currentParticipants || 0,
+        views: item.viewCount || 0,
+        isEnded: isEnded,
+        isRegistering: isRegistering && !isEnded
+      }
+    })
   } catch (error) {
     console.error('加载活动失败:', error)
     hasError.value = true
@@ -90,12 +101,24 @@ const loadData = async () => {
 }
 
 const handleActivityClick = (activity: any) => {
+  if (!activity?.id) {
+    console.warn('活动 ID 无效:', activity)
+    return
+  }
   emit('activity-click', activity)
+  uni.navigateTo({
+    url: `/pages/club/activity-detail?id=${activity.id}`
+  })
 }
 
 const handleRegister = (activity: any) => {
-  console.log('报名活动:', activity)
-  // TODO: 处理报名逻辑
+  if (!activity?.id) {
+    console.warn('活动 ID 无效:', activity)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/club/activity-detail?id=${activity.id}&action=register`
+  })
 }
 
 const handleMetaClick = (item: any, activity: any) => {

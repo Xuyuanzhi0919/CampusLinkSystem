@@ -1,73 +1,76 @@
 <template>
-  <view class="cl-featured-qa" @click="handleCardClick">
-    <!-- Header: 用户信息 + 状态标签 -->
-    <view class="cl-featured-qa__header">
-      <view class="cl-featured-qa__user">
+  <view class="featured-qa" @click="handleCardClick">
+    <!-- 顶部类型色条（蓝色 = 问答） -->
+    <view class="featured-qa__type-bar"></view>
+
+    <!-- Header: 左侧用户 + 右侧胶囊标签 -->
+    <view class="featured-qa__header">
+      <view class="featured-qa__user" @click.stop="handleUserClick">
         <ClAvatar
           :src="question.user?.avatar"
           :name="question.user?.username"
-          size="medium"
+          size="small"
           :verified="question.user?.verified"
-          clickable
-          @click.stop="handleUserClick"
         />
-        <view class="cl-featured-qa__user-info">
-          <text class="cl-featured-qa__username">{{ question.user?.username || '匿名用户' }}</text>
-          <ClTag
-            v-if="question.user?.role"
-            :text="getRoleText(question.user.role)"
-            type="info"
-            size="small"
-          />
+        <view class="featured-qa__user-info">
+          <text class="featured-qa__username">{{ question.user?.username || '匿名用户' }}</text>
+          <text v-if="question.user?.role" class="featured-qa__role">{{ getRoleText(question.user.role) }}</text>
         </view>
       </view>
 
-      <ClTag
-        v-if="question.isHot || question.isRecommended"
-        :text="question.isHot ? '热门' : 'AI推荐'"
-        :type="question.isHot ? 'danger' : 'primary'"
-      />
+      <!-- 右侧胶囊标签（AI推荐/热门） -->
+      <view v-if="question.isHot || question.isRecommended" class="featured-qa__capsule" :class="capsuleClass">
+        <text>{{ question.isHot ? '热门' : 'AI推荐' }}</text>
+      </view>
     </view>
 
-    <!-- Body: 标题 + 摘要 + 推荐提示 -->
-    <view class="cl-featured-qa__body">
-      <view class="cl-featured-qa__title">{{ question.title }}</view>
+    <!-- Body: 标题（加粗 700）+ 描述（灰度降低） -->
+    <view class="featured-qa__body">
+      <view class="featured-qa__title">{{ question.title }}</view>
 
-      <view v-if="question.description" class="cl-featured-qa__description">
+      <view v-if="question.description" class="featured-qa__desc">
         {{ question.description }}
       </view>
 
-      <!-- 品牌蓝提示条（增强推荐力度） -->
-      <view v-if="question.reason" class="cl-featured-qa__reason">
-        <ClIcon name="icon-lightbulb" size="md" />
-        <text>{{ question.reason }}</text>
-      </view>
-
-      <!-- 标签 -->
-      <view v-if="question.tags && question.tags.length > 0" class="cl-featured-qa__tags">
-        <ClTag
-          v-for="(tag, index) in question.tags.slice(0, 3)"
-          :key="index"
-          :text="tag"
-          type="default"
-          size="small"
-        />
+      <!-- 标签（最多3个） -->
+      <view v-if="question.tags && question.tags.length > 0" class="featured-qa__tags">
+        <view v-for="(tag, index) in question.tags.slice(0, 3)" :key="index" class="featured-qa__tag">
+          {{ tag }}
+        </view>
       </view>
     </view>
 
-    <!-- Meta: 元数据行 -->
-    <ClMetaRow
-      :items="metaItems"
-      class="cl-featured-qa__meta"
-      @click="handleMetaClick"
-    />
+    <!-- Meta: 统一图标尺寸 + 增大间距 -->
+    <view class="featured-qa__meta">
+      <view class="featured-qa__meta-item">
+        <ClIcon name="icon-eye" size="base" />
+        <text>{{ formatNumber(question.views) }}</text>
+      </view>
+      <view class="featured-qa__meta-item featured-qa__meta-item--clickable" @click.stop="handleCommentClick">
+        <ClIcon name="icon-message" size="base" />
+        <text>{{ formatNumber(question.comments) }}</text>
+      </view>
+      <view class="featured-qa__meta-item featured-qa__meta-item--clickable" @click.stop="handleLikeClick">
+        <ClIcon name="icon-heart" size="base" />
+        <text>{{ formatNumber(question.likes) }}</text>
+      </view>
+      <view class="featured-qa__meta-item">
+        <ClIcon name="icon-time" size="base" />
+        <text>{{ formatTime(question.createdAt) }}</text>
+      </view>
+    </view>
 
-    <!-- Action: 操作按钮 -->
-    <ClActionBar
-      :actions="actionButtons"
-      class="cl-featured-qa__actions"
-      @click="handleActionClick"
-    />
+    <!-- Action: 弱化按钮（outline 风格） -->
+    <view class="featured-qa__actions">
+      <view v-if="question.rewardPoints" class="featured-qa__reward">
+        <ClIcon name="icon-coin" size="base" />
+        <text>悬赏 {{ question.rewardPoints }} 积分</text>
+      </view>
+      <view class="featured-qa__btn featured-qa__btn--outline" @click.stop="handleAnswerClick">
+        <ClIcon name="icon-edit" size="base" />
+        <text>回答问题</text>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -75,18 +78,16 @@
 import { computed } from 'vue'
 import ClIcon from './ClIcon.vue'
 import ClAvatar from './ClAvatar.vue'
-import ClTag from './ClTag.vue'
-import ClMetaRow, { type MetaItem } from './ClMetaRow.vue'
-import ClActionBar, { type Action } from './ClActionBar.vue'
 
 /**
- * ClFeaturedQAItem - 精选推荐问答卡片
+ * ClFeaturedQAItem - 精选推荐问答卡片（重构版 2.0）
  *
- * 用于首页展示精选推荐的问题，突出内容、吸引点击
- *
- * @component
- * @example
- * <ClFeaturedQAItem :question="questionData" @answer="handleAnswer" />
+ * 设计原则：
+ * 1. 统一卡片结构（头部/主体/元数据/操作）
+ * 2. 标题加粗 700，副标题灰度降低
+ * 3. 胶囊标签取代整行提示
+ * 4. 弱化 CTA 按钮（outline 风格）
+ * 5. 顶部蓝色色条标识内容类型
  */
 
 interface User {
@@ -109,7 +110,7 @@ interface Question {
   createdAt: string
   isHot?: boolean
   isRecommended?: boolean
-  reason?: string  // 推荐理由
+  reason?: string
   rewardPoints?: number
 }
 
@@ -120,62 +121,21 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  /** 点击卡片 */
   click: [question: Question]
-  /** 点击用户 */
   userClick: [user: User]
-  /** 点击回答按钮 */
   answer: [question: Question]
-  /** 点击元数据项 */
-  metaClick: [item: MetaItem, question: Question]
+  like: [question: Question]
+  comment: [question: Question]
 }>()
 
-// 元数据项
-const metaItems = computed<MetaItem[]>(() => [
-  {
-    icon: 'icon-eye',
-    text: formatNumber(props.question.views),
-  },
-  {
-    icon: 'icon-message',
-    text: formatNumber(props.question.comments),
-    clickable: true,
-    data: 'comments'
-  },
-  {
-    icon: 'icon-heart',
-    text: formatNumber(props.question.likes),
-    clickable: true,
-    data: 'likes'
-  },
-  {
-    icon: 'icon-time',
-    text: formatTime(props.question.createdAt),
-  }
-])
+// 胶囊标签样式
+const capsuleClass = computed(() => ({
+  'featured-qa__capsule--hot': props.question.isHot,
+  'featured-qa__capsule--ai': props.question.isRecommended && !props.question.isHot
+}))
 
-// 操作按钮
-const actionButtons = computed<Action[]>(() => {
-  const buttons: Action[] = [
-    {
-      text: '回答问题',
-      type: 'primary',
-      icon: 'icon-edit'
-    }
-  ]
 
-  if (props.question.rewardPoints) {
-    buttons.unshift({
-      text: `悬赏 ${props.question.rewardPoints} 积分`,
-      type: 'secondary',
-      icon: 'icon-coin'
-    })
-  }
-
-  return buttons
-})
-
-// 获取角色文本
+// 角色文本
 const getRoleText = (role: string): string => {
   const roleMap: Record<string, string> = {
     'admin': '管理员',
@@ -188,18 +148,14 @@ const getRoleText = (role: string): string => {
 
 // 格式化数字
 const formatNumber = (num: number): string => {
-  if (num >= 10000) {
-    return `${(num / 10000).toFixed(1)}w`
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}k`
-  }
+  if (num >= 10000) return `${(num / 10000).toFixed(1)}w`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
   return String(num)
 }
 
 // 格式化时间
 const formatTime = (time: string): string => {
-  const now = new Date().getTime()
+  const now = Date.now()
   const target = new Date(time).getTime()
   const diff = now - target
 
@@ -207,158 +163,208 @@ const formatTime = (time: string): string => {
   const hour = 60 * minute
   const day = 24 * hour
 
-  if (diff < minute) {
-    return '刚刚'
-  }
-  if (diff < hour) {
-    return `${Math.floor(diff / minute)}分钟前`
-  }
-  if (diff < day) {
-    return `${Math.floor(diff / hour)}小时前`
-  }
-  if (diff < 7 * day) {
-    return `${Math.floor(diff / day)}天前`
-  }
+  if (diff < minute) return '刚刚'
+  if (diff < hour) return `${Math.floor(diff / minute)}分钟前`
+  if (diff < day) return `${Math.floor(diff / hour)}小时前`
+  if (diff < 7 * day) return `${Math.floor(diff / day)}天前`
   return time.slice(0, 10)
 }
 
-const handleCardClick = () => {
-  emit('click', props.question)
-}
-
-const handleUserClick = () => {
-  if (props.question.user) {
-    emit('userClick', props.question.user)
-  }
-}
-
-const handleMetaClick = (item: MetaItem) => {
-  emit('metaClick', item, props.question)
-}
-
-const handleActionClick = (action: Action, index: number) => {
-  if (index === 0 || action.text?.includes('回答')) {
-    emit('answer', props.question)
-  }
-}
+const handleCardClick = () => emit('click', props.question)
+const handleUserClick = () => props.question.user && emit('userClick', props.question.user)
+const handleAnswerClick = () => emit('answer', props.question)
+const handleLikeClick = () => emit('like', props.question)
+const handleCommentClick = () => emit('comment', props.question)
 </script>
 
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
-.cl-featured-qa {
-  display: flex;
-  flex-direction: column;
-  gap: $card-gap;
-  padding: $spacing-card-padding;
-  background: $card-bg;
-  border-radius: $card-radius;
-  box-shadow: $card-shadow;
-  transition: $transition-all;
-  cursor: pointer;
+.featured-qa {
+  @include featured-card-base;
 
-  &:hover {
-    box-shadow: $card-shadow-hover;
-    transform: translateY(-2rpx);
+  /* 顶部类型色条 - 蓝色（问答） */
+  &__type-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rpx;
+    background: linear-gradient(90deg, $type-color-qa 0%, lighten($type-color-qa, 15%) 100%);
+    border-radius: $card-radius $card-radius 0 0;
   }
 
-  /* Header: 用户信息 + 状态 */
+  /* ========== Header ========== */
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: $spacing-4;
+    padding-top: $spacing-2; // 给色条留空间
   }
 
   &__user {
     display: flex;
     align-items: center;
-    gap: $spacing-4;
+    gap: $spacing-3;
     flex: 1;
     min-width: 0;
+    cursor: pointer;
+
+    &:hover {
+      .featured-qa__username {
+        color: $campus-blue;
+      }
+    }
   }
 
   &__user-info {
     display: flex;
     align-items: center;
-    gap: $spacing-3;
+    gap: $spacing-2;
     flex: 1;
     min-width: 0;
   }
 
   &__username {
-    font-size: $font-size-base;
+    font-size: $font-size-sm;
     font-weight: $font-weight-medium;
-    color: $color-text-primary;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    color: $color-text-secondary;
+    @include text-ellipsis(1);
+    transition: $transition-color;
   }
 
-  /* Body: 内容区 */
+  &__role {
+    flex-shrink: 0;
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    padding: $spacing-1 $spacing-2;
+    background: $color-bg-hover;
+    border-radius: $radius-sm;
+  }
+
+  /* 胶囊标签 */
+  &__capsule {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-1;
+    height: $capsule-tag-height;
+    padding: $capsule-tag-padding;
+    border-radius: $capsule-tag-radius;
+    font-size: $capsule-tag-font-size;
+    font-weight: $font-weight-medium;
+
+    &--hot {
+      background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
+      color: #FFFFFF;
+    }
+
+    &--ai {
+      background: linear-gradient(135deg, $campus-blue 0%, #64B5F6 100%);
+      color: #FFFFFF;
+    }
+  }
+
+  /* ========== Body ========== */
   &__body {
     display: flex;
     flex-direction: column;
-    gap: $spacing-4;
+    gap: $spacing-3;
   }
 
   &__title {
-    font-size: $card-title-size;
-    font-weight: $card-title-weight;
-    color: $card-title-color;
-    line-height: $line-height-normal;
-    word-break: break-word;
-
-    /* 支持最多3行 */
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    @include card-title;
   }
 
-  &__description {
-    font-size: $card-desc-size;
-    font-weight: $card-desc-weight;
-    color: $card-desc-color;
-    line-height: $line-height-relaxed;
-
-    /* 最多2行 */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-
-  /* 推荐理由提示条（品牌浅蓝） */
-  &__reason {
-    display: flex;
-    align-items: center;
-    gap: $spacing-3;
-    padding: $spacing-4 $spacing-5;
-    background: $campus-blue-lighter;
-    border-left: 4rpx solid $campus-blue;
-    border-radius: $radius-base;
-    font-size: $font-size-sm;
-    color: $campus-blue;
-    line-height: $line-height-normal;
+  &__desc {
+    @include card-desc;
   }
 
   &__tags {
     display: flex;
     align-items: center;
-    gap: $spacing-3;
+    gap: $spacing-2;
     flex-wrap: wrap;
+    margin-top: $spacing-1;
   }
 
-  /* Meta: 元数据 */
+  &__tag {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    padding: $spacing-1 $spacing-3;
+    background: $color-bg-hover;
+    border-radius: $radius-sm;
+  }
+
+  /* ========== Meta ========== */
   &__meta {
-    padding-top: $spacing-2;
+    display: flex;
+    align-items: center;
+    gap: $meta-item-gap;
+    padding-top: $spacing-3;
     border-top: 1px solid $color-divider;
   }
 
-  /* Actions: 操作按钮 */
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: $meta-gap;
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    transition: $transition-color;
+
+    &--clickable {
+      cursor: pointer;
+
+      &:hover {
+        color: $campus-blue;
+      }
+    }
+  }
+
+  /* ========== Actions ========== */
   &__actions {
-    /* 操作按钮默认右对齐 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $spacing-4;
+  }
+
+  &__reward {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    font-size: $font-size-xs;
+    color: #F59E0B;
+    font-weight: $font-weight-medium;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-2 $spacing-5;
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: $transition-all;
+
+    /* Outline 风格（弱化 CTA） */
+    &--outline {
+      background: transparent;
+      color: $campus-blue;
+      border: 1px solid $campus-blue;
+
+      &:hover {
+        background: $campus-blue-lighter;
+      }
+
+      &:active {
+        background: darken($campus-blue-lighter, 3%);
+      }
+    }
   }
 }
 </style>

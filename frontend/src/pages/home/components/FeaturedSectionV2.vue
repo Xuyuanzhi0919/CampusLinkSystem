@@ -31,10 +31,11 @@
         v-for="item in featuredList.filter(i => i.type === 'question')"
         :key="`question-${item.id}`"
         :question="transformToQuestion(item)"
-        @click="handleItemClick"
+        @click="handleQuestionClick"
         @answer="handleAnswer"
         @user-click="handleUserClick"
-        @meta-click="handleMetaClick"
+        @like="handleLike"
+        @comment="handleComment"
       />
 
       <!-- 资源类型：使用 ClResourceCard -->
@@ -42,9 +43,8 @@
         v-for="item in featuredList.filter(i => i.type === 'resource')"
         :key="`resource-${item.id}`"
         :resource="transformToResource(item)"
-        @click="handleItemClick"
+        @click="handleResourceClick"
         @download="handleDownload"
-        @meta-click="handleMetaClick"
       />
 
       <!-- 活动类型：使用 ClEventCard -->
@@ -52,9 +52,8 @@
         v-for="item in featuredList.filter(i => i.type === 'activity')"
         :key="`activity-${item.id}`"
         :event="transformToEvent(item)"
-        @click="handleItemClick"
+        @click="handleActivityClick"
         @register="handleRegister"
-        @meta-click="handleMetaClick"
       />
     </view>
   </view>
@@ -81,18 +80,18 @@ const loadData = async () => {
     loading.value = true
     hasError.value = false
 
-    // 并行加载问答、资源、活动数据
-    const [questions, resources, activities] = await Promise.all([
-      getQuestionList({ page: 1, pageSize: 2, sortBy: 'views', order: 'desc' }).catch(() => ({ list: [] })),
-      getResourceList({ page: 1, pageSize: 2, sortBy: 'downloads', order: 'desc', status: 1 }).catch(() => ({ list: [] })),
-      getActivityList({ page: 1, pageSize: 2, sortBy: 'startTime', order: 'desc' }).catch(() => ({ list: [] }))
+    // 并行加载问答、资源、活动数据（使用正确的 API 参数）
+    const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
+      getQuestionList({ page: 1, pageSize: 2 }).catch(() => ({ list: [] })),
+      getResourceList({ page: 1, pageSize: 2, status: 1 }).catch(() => ({ list: [] })),
+      getActivityList({ page: 1, pageSize: 2 }).catch(() => ({ list: [] }))
     ])
 
     // 合并数据并添加类型标识
     const allItems = [
-      ...questions.list.map((item: any) => ({ ...item, type: 'question' })),
-      ...resources.list.map((item: any) => ({ ...item, type: 'resource' })),
-      ...activities.list.map((item: any) => ({ ...item, type: 'activity' }))
+      ...(questionsRes.list || []).map((item: any) => ({ ...item, type: 'question' })),
+      ...(resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' })),
+      ...(activitiesRes.list || []).map((item: any) => ({ ...item, type: 'activity' }))
     ]
 
     // 打乱顺序（模拟 AI 推荐）
@@ -106,96 +105,176 @@ const loadData = async () => {
   }
 }
 
-// 转换为问答卡片数据格式
+/**
+ * 转换为问答卡片数据格式
+ * 后端实际返回字段：qid, title, category, bounty, views, answerCount, status, askerNickname, createdAt
+ */
 const transformToQuestion = (item: any) => {
   return {
-    id: item.id,
-    title: item.title,
-    description: item.summary || item.content?.slice(0, 100),
+    id: item.qid || item.questionId || item.id,
+    title: item.title || '',
+    description: item.content?.slice(0, 100) || '',
     user: {
-      id: item.userId,
-      username: item.author || '匿名用户',
-      avatar: item.authorAvatar,
-      role: item.userRole || 'student',
-      verified: item.verified || false
+      id: item.askerId || 0,
+      username: item.askerNickname || item.askerName || '匿名用户',
+      avatar: item.askerAvatar || '',
+      role: 'student',
+      verified: false
     },
     tags: item.tags || [],
-    views: item.views || 0,
-    comments: item.comments || 0,
+    views: item.views || item.viewCount || 0,
+    comments: item.answerCount || 0,
     likes: item.likes || 0,
-    createdAt: item.createdAt,
-    isHot: item.views > 1000,
+    createdAt: item.createdAt || '',
+    isHot: (item.views || item.viewCount || 0) > 100,
     isRecommended: true,
-    reason: 'AI 根据你的浏览记录推荐',
-    rewardPoints: item.reward
+    rewardPoints: item.bounty || 0
   }
 }
 
-// 转换为资源卡片数据格式
+/**
+ * 转换为资源卡片数据格式
+ * 后端实际返回字段：resourceId, title, description, uploaderName, uploaderAvatar, fileType, fileSize, category, courseName, score, downloads, likes, status, createdAt
+ */
 const transformToResource = (item: any) => {
   return {
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    fileType: getFileExtension(item.fileName || item.fileUrl || ''),
+    id: item.resourceId || item.id,
+    title: item.title || '',
+    description: item.description || '',
+    fileType: item.fileType || getFileExtension(item.fileName || item.fileUrl || ''),
     tags: item.tags || [],
     downloads: item.downloads || 0,
-    rating: item.rating || 0,
-    createdAt: item.createdAt,
-    points: item.points || 0
+    rating: item.score || item.rating || 0,
+    createdAt: item.createdAt || '',
+    points: item.pointsCost || item.points || 0
   }
 }
 
-// 转换为活动卡片数据格式
+/**
+ * 转换为活动卡片数据格式
+ * 后端实际返回字段：activityId, clubId, clubName, title, description, location, startTime, endTime, maxParticipants, currentParticipants, remainingSlots, rewardPoints, coverImage, status, isJoined, isSignedIn, isFavorited, createdAt
+ */
 const transformToEvent = (item: any) => {
   const now = new Date()
+  const endTime = item.endTime ? new Date(item.endTime) : null
+  const startTime = item.startTime ? new Date(item.startTime) : null
+  // status: 0-未开始，1-进行中，2-已结束，3-已取消
+  const isEnded = item.status === 2 || item.status === 3 || (endTime ? endTime < now : false)
+  const isRegistering = item.status === 0 || (startTime ? startTime > now : false)
+
   return {
-    id: item.id,
-    title: item.title,
-    organizer: item.organizer || item.clubName || '社团',
-    type: item.type || 'other',
-    startTime: item.startTime,
-    endTime: item.endTime,
+    id: item.activityId || item.id,
+    title: item.title || '',
+    organizer: item.clubName || item.organizerName || '社团',
+    type: item.activityType || 'other',
+    startTime: item.startTime || '',
+    endTime: item.endTime || '',
     location: item.location || '待定',
-    participants: item.participants || 0,
-    views: item.views || 0,
-    isEnded: item.endTime ? new Date(item.endTime) < now : false,
-    isRegistering: item.status === 1
+    participants: item.currentParticipants || 0,
+    views: item.viewCount || 0,
+    isEnded: isEnded,
+    isRegistering: isRegistering && !isEnded
   }
 }
 
 // 获取文件扩展名
 const getFileExtension = (filename: string): string => {
+  if (!filename) return 'pdf'
   const ext = filename.split('.').pop()?.toLowerCase() || ''
   return ext || 'pdf'
 }
 
-const handleItemClick = (item: any) => {
-  emit('item-click', item)
+// 点击问答卡片
+const handleQuestionClick = (question: any) => {
+  if (!question?.id) {
+    console.warn('问题 ID 无效:', question)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}`
+  })
 }
 
+// 回答问题
 const handleAnswer = (question: any) => {
-  console.log('回答问题:', question)
-  // TODO: 跳转到回答页面
+  if (!question?.id) {
+    console.warn('问题 ID 无效:', question)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}&action=answer`
+  })
 }
 
+// 点击用户
 const handleUserClick = (user: any) => {
-  console.log('点击用户:', user)
-  // TODO: 跳转到用户主页
+  if (user?.id) {
+    uni.navigateTo({
+      url: `/pages/user/profile?id=${user.id}`
+    })
+  }
 }
 
+// 点赞问题
+const handleLike = (question: any) => {
+  if (!question?.id) return
+  // TODO: 实现点赞逻辑
+  console.log('点赞问题:', question.id)
+}
+
+// 评论问题
+const handleComment = (question: any) => {
+  if (!question?.id) {
+    console.warn('问题 ID 无效:', question)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/question/detail?id=${question.id}&action=comment`
+  })
+}
+
+// 点击资源卡片
+const handleResourceClick = (resource: any) => {
+  if (!resource?.id) {
+    console.warn('资源 ID 无效:', resource)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/resource/detail?id=${resource.id}`
+  })
+}
+
+// 下载资源
 const handleDownload = (resource: any) => {
-  console.log('下载资源:', resource)
-  // TODO: 处理下载
+  if (!resource?.id) {
+    console.warn('资源 ID 无效:', resource)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/resource/detail?id=${resource.id}&action=download`
+  })
 }
 
+// 点击活动卡片
+const handleActivityClick = (event: any) => {
+  if (!event?.id) {
+    console.warn('活动 ID 无效:', event)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/club/activity-detail?id=${event.id}`
+  })
+}
+
+// 报名活动
 const handleRegister = (event: any) => {
-  console.log('报名活动:', event)
-  // TODO: 处理报名
-}
-
-const handleMetaClick = (item: any, data: any) => {
-  console.log('点击元数据:', item, data)
+  if (!event?.id) {
+    console.warn('活动 ID 无效:', event)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/club/activity-detail?id=${event.id}&action=register`
+  })
 }
 
 // 初始化

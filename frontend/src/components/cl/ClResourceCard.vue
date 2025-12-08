@@ -1,82 +1,92 @@
 <template>
-  <view class="cl-resource-card" @click="handleCardClick">
-    <!-- Header: 文件图标 + 类型标签 -->
-    <view class="cl-resource-card__header">
-      <view class="cl-resource-card__icon" :style="{ background: fileTypeConfig.bgColor }">
+  <view class="featured-resource" @click="handleCardClick">
+    <!-- 顶部类型色条（紫色 = 资源） -->
+    <view class="featured-resource__type-bar"></view>
+
+    <!-- Header: 左侧文件图标 + 右侧文件类型标签 -->
+    <view class="featured-resource__header">
+      <view class="featured-resource__icon" :style="{ background: fileTypeConfig.bgColor }">
         <ClIcon :name="fileTypeConfig.icon" size="xl" :color="fileTypeConfig.color" />
       </view>
 
-      <ClTag
-        :text="getFileTypeName(resource.fileType)"
-        type="info"
-        size="small"
-      />
+      <!-- 文件类型胶囊标签 -->
+      <view class="featured-resource__capsule" :style="{ background: fileTypeConfig.capsuleBg, color: fileTypeConfig.color }">
+        {{ getFileTypeName(resource.fileType) }}
+      </view>
     </view>
 
-    <!-- Body: 标题 + 描述 -->
-    <view class="cl-resource-card__body">
-      <view class="cl-resource-card__title">{{ resource.title }}</view>
+    <!-- Body: 标题（加粗 700）+ 描述（灰度降低） -->
+    <view class="featured-resource__body">
+      <view class="featured-resource__title">{{ resource.title }}</view>
 
-      <view v-if="resource.description" class="cl-resource-card__description">
+      <view v-if="resource.description" class="featured-resource__desc">
         {{ resource.description }}
       </view>
 
-      <!-- 标签 -->
-      <view v-if="resource.tags && resource.tags.length > 0" class="cl-resource-card__tags">
-        <ClTag
-          v-for="(tag, index) in resource.tags.slice(0, 3)"
-          :key="index"
-          :text="tag"
-          type="default"
-          size="small"
-        />
+      <!-- 标签（最多3个） -->
+      <view v-if="resource.tags && resource.tags.length > 0" class="featured-resource__tags">
+        <view v-for="(tag, index) in resource.tags.slice(0, 3)" :key="index" class="featured-resource__tag">
+          {{ tag }}
+        </view>
       </view>
     </view>
 
-    <!-- Meta: 下载量 + 评分 + 时间 -->
-    <ClMetaRow
-      :items="metaItems"
-      class="cl-resource-card__meta"
-      @click="handleMetaClick"
-    />
+    <!-- Meta: 统一图标尺寸 + 增大间距 -->
+    <view class="featured-resource__meta">
+      <view class="featured-resource__meta-item">
+        <ClIcon name="icon-download" size="base" />
+        <text>{{ formatNumber(resource.downloads) }}</text>
+      </view>
+      <view v-if="resource.rating" class="featured-resource__meta-item featured-resource__meta-item--rating">
+        <ClIcon name="icon-star" size="base" />
+        <text>{{ resource.rating.toFixed(1) }}</text>
+      </view>
+      <view class="featured-resource__meta-item">
+        <ClIcon name="icon-time" size="base" />
+        <text>{{ formatTime(resource.createdAt) }}</text>
+      </view>
+    </view>
 
-    <!-- Action: 下载按钮 -->
-    <ClActionBar
-      :actions="actionButtons"
-      class="cl-resource-card__actions"
-      @click="handleActionClick"
-    />
+    <!-- Action: 弱化按钮（outline 风格） -->
+    <view class="featured-resource__actions">
+      <view class="featured-resource__points">
+        <ClIcon name="icon-coin" size="base" />
+        <text>{{ resource.points }} 积分</text>
+      </view>
+      <view class="featured-resource__btn featured-resource__btn--outline" @click.stop="handleDownloadClick">
+        <ClIcon name="icon-download" size="base" />
+        <text>下载</text>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import ClIcon from './ClIcon.vue'
-import ClTag from './ClTag.vue'
-import ClMetaRow, { type MetaItem } from './ClMetaRow.vue'
-import ClActionBar, { type Action } from './ClActionBar.vue'
 import { getFileTypeIcon } from '@/config/icons'
 
 /**
- * ClResourceCard - 精选资料卡片
+ * ClResourceCard - 精选资料卡片（重构版 2.0）
  *
- * 用于展示资源文档，突出文档价值、正式感、可下载行为
- *
- * @component
- * @example
- * <ClResourceCard :resource="resourceData" @download="handleDownload" />
+ * 设计原则：
+ * 1. 统一卡片结构（头部/主体/元数据/操作）
+ * 2. 标题加粗 700，副标题灰度降低
+ * 3. 顶部紫色色条标识内容类型
+ * 4. 弱化 CTA 按钮（outline 风格）
+ * 5. 积分与下载按钮分离显示
  */
 
 interface Resource {
   id: number
   title: string
   description?: string
-  fileType: string  // 'pdf' | 'doc' | 'ppt' | 'xls' | 'zip' | 'other'
+  fileType: string
   tags?: string[]
   downloads: number
-  rating?: number  // 评分（1-5）
+  rating?: number
   createdAt: string
-  points: number  // 所需积分
+  points: number
 }
 
 interface Props {
@@ -86,26 +96,21 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  /** 点击卡片 */
   click: [resource: Resource]
-  /** 点击下载按钮 */
   download: [resource: Resource]
-  /** 点击元数据项 */
-  metaClick: [item: MetaItem, resource: Resource]
 }>()
 
-// 文件类型配置（图标 + 颜色）
+// 文件类型配置
 const fileTypeConfig = computed(() => {
   const config = getFileTypeIcon(props.resource.fileType)
-  // 根据文件类型返回配置（图标、颜色、背景色）
-  const colorMap: Record<string, { color: string; bgColor: string }> = {
-    '#E74C3C': { color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.08)' },      // PDF 红色
-    '#2B579A': { color: '#2B579A', bgColor: 'rgba(43, 87, 154, 0.08)' },      // Word 蓝色
-    '#D24726': { color: '#D24726', bgColor: 'rgba(210, 71, 38, 0.08)' },      // PPT 橙红
-    '#1D6F42': { color: '#1D6F42', bgColor: 'rgba(29, 111, 66, 0.08)' },      // Excel 绿色
-    '#F39C12': { color: '#F39C12', bgColor: 'rgba(243, 156, 18, 0.08)' },     // ZIP 黄色
-    '#7F8C8D': { color: '#7F8C8D', bgColor: 'rgba(127, 140, 141, 0.08)' },    // TXT 灰色
-    '#95A5A6': { color: '#95A5A6', bgColor: 'rgba(149, 165, 166, 0.08)' }     // 默认灰色
+  const colorMap: Record<string, { color: string; bgColor: string; capsuleBg: string }> = {
+    '#E74C3C': { color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.08)', capsuleBg: 'rgba(231, 76, 60, 0.12)' },
+    '#2B579A': { color: '#2B579A', bgColor: 'rgba(43, 87, 154, 0.08)', capsuleBg: 'rgba(43, 87, 154, 0.12)' },
+    '#D24726': { color: '#D24726', bgColor: 'rgba(210, 71, 38, 0.08)', capsuleBg: 'rgba(210, 71, 38, 0.12)' },
+    '#1D6F42': { color: '#1D6F42', bgColor: 'rgba(29, 111, 66, 0.08)', capsuleBg: 'rgba(29, 111, 66, 0.12)' },
+    '#F39C12': { color: '#F39C12', bgColor: 'rgba(243, 156, 18, 0.08)', capsuleBg: 'rgba(243, 156, 18, 0.12)' },
+    '#7F8C8D': { color: '#7F8C8D', bgColor: 'rgba(127, 140, 141, 0.08)', capsuleBg: 'rgba(127, 140, 141, 0.12)' },
+    '#95A5A6': { color: '#95A5A6', bgColor: 'rgba(149, 165, 166, 0.08)', capsuleBg: 'rgba(149, 165, 166, 0.12)' }
   }
 
   const theme = colorMap[config.color] || colorMap['#95A5A6']
@@ -113,46 +118,12 @@ const fileTypeConfig = computed(() => {
   return {
     icon: config.icon,
     color: theme.color,
-    bgColor: theme.bgColor
+    bgColor: theme.bgColor,
+    capsuleBg: theme.capsuleBg
   }
 })
 
-// 元数据项
-const metaItems = computed<MetaItem[]>(() => {
-  const items: MetaItem[] = [
-    {
-      icon: 'icon-download',
-      text: formatNumber(props.resource.downloads),
-    }
-  ]
-
-  // 评分
-  if (props.resource.rating) {
-    items.push({
-      icon: 'icon-star',
-      text: props.resource.rating.toFixed(1),
-    })
-  }
-
-  // 时间
-  items.push({
-    icon: 'icon-time',
-    text: formatTime(props.resource.createdAt),
-  })
-
-  return items
-})
-
-// 操作按钮
-const actionButtons = computed<Action[]>(() => [
-  {
-    text: `下载 · ${props.resource.points} 积分`,
-    type: 'primary',
-    icon: 'icon-download'
-  }
-])
-
-// 获取文件类型名称
+// 文件类型名称
 const getFileTypeName = (type: string): string => {
   const typeMap: Record<string, string> = {
     'pdf': 'PDF',
@@ -170,67 +141,50 @@ const getFileTypeName = (type: string): string => {
 
 // 格式化数字
 const formatNumber = (num: number): string => {
-  if (num >= 10000) {
-    return `${(num / 10000).toFixed(1)}w`
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}k`
-  }
+  if (num >= 10000) return `${(num / 10000).toFixed(1)}w`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
   return String(num)
 }
 
 // 格式化时间
 const formatTime = (time: string): string => {
-  const now = new Date().getTime()
+  const now = Date.now()
   const target = new Date(time).getTime()
   const diff = now - target
-
   const day = 24 * 60 * 60 * 1000
 
-  if (diff < 7 * day) {
-    return `${Math.floor(diff / day)}天前`
-  }
+  if (diff < 7 * day) return `${Math.floor(diff / day)}天前`
   return time.slice(0, 10)
 }
 
-const handleCardClick = () => {
-  emit('click', props.resource)
-}
-
-const handleMetaClick = (item: MetaItem) => {
-  emit('metaClick', item, props.resource)
-}
-
-const handleActionClick = (action: Action) => {
-  emit('download', props.resource)
-}
+const handleCardClick = () => emit('click', props.resource)
+const handleDownloadClick = () => emit('download', props.resource)
 </script>
 
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
-.cl-resource-card {
-  display: flex;
-  flex-direction: column;
-  gap: $card-gap;
-  padding: $spacing-card-padding;
-  background: $card-bg;
-  border-radius: $card-radius;
-  box-shadow: $card-shadow;
-  transition: $transition-all;
-  cursor: pointer;
+.featured-resource {
+  @include featured-card-base;
 
-  &:hover {
-    box-shadow: $card-shadow-hover;
-    transform: translateY(-2rpx);
+  /* 顶部类型色条 - 紫色（资源） */
+  &__type-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4rpx;
+    background: linear-gradient(90deg, $type-color-resource 0%, lighten($type-color-resource, 15%) 100%);
+    border-radius: $card-radius $card-radius 0 0;
   }
 
-  /* Header: 文件图标 + 类型 */
+  /* ========== Header ========== */
   &__header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: $spacing-4;
+    padding-top: $spacing-2;
   }
 
   &__icon {
@@ -243,56 +197,119 @@ const handleActionClick = (action: Action) => {
     transition: $transition-all;
   }
 
-  /* Body: 内容区 */
+  /* 文件类型胶囊标签 */
+  &__capsule {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    height: $capsule-tag-height;
+    padding: $capsule-tag-padding;
+    border-radius: $capsule-tag-radius;
+    font-size: $capsule-tag-font-size;
+    font-weight: $font-weight-semibold;
+  }
+
+  /* ========== Body ========== */
   &__body {
     display: flex;
     flex-direction: column;
-    gap: $spacing-4;
+    gap: $spacing-3;
   }
 
   &__title {
-    font-size: $card-title-size;
-    font-weight: $card-title-weight;
-    color: $card-title-color;
-    line-height: $line-height-normal;
-    word-break: break-word;
-
-    /* 最多2行 */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+    @include card-title;
   }
 
-  &__description {
-    font-size: $card-desc-size;
-    font-weight: $card-desc-weight;
-    color: $card-desc-color;
-    line-height: $line-height-relaxed;
-
-    /* 最多2行 */
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+  &__desc {
+    @include card-desc;
   }
 
   &__tags {
     display: flex;
     align-items: center;
-    gap: $spacing-3;
+    gap: $spacing-2;
     flex-wrap: wrap;
+    margin-top: $spacing-1;
   }
 
-  /* Meta: 元数据 */
+  &__tag {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    padding: $spacing-1 $spacing-3;
+    background: $color-bg-hover;
+    border-radius: $radius-sm;
+  }
+
+  /* ========== Meta ========== */
   &__meta {
-    padding-top: $spacing-2;
+    display: flex;
+    align-items: center;
+    gap: $meta-item-gap;
+    padding-top: $spacing-3;
     border-top: 1px solid $color-divider;
   }
 
-  /* Actions: 操作按钮 */
+  &__meta-item {
+    display: flex;
+    align-items: center;
+    gap: $meta-gap;
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+
+    &--rating {
+      color: #F59E0B;
+    }
+  }
+
+  /* ========== Actions ========== */
   &__actions {
-    /* 操作按钮默认右对齐 */
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: $spacing-4;
+  }
+
+  &__points {
+    display: flex;
+    align-items: center;
+    gap: $spacing-2;
+    font-size: $font-size-xs;
+    color: #F59E0B;
+    font-weight: $font-weight-medium;
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: $spacing-2;
+    padding: $spacing-2 $spacing-5;
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    cursor: pointer;
+    transition: $transition-all;
+
+    /* Outline 风格 */
+    &--outline {
+      background: transparent;
+      color: $type-color-resource;
+      border: 1px solid $type-color-resource;
+
+      &:hover {
+        background: rgba(155, 89, 182, 0.08);
+      }
+
+      &:active {
+        background: rgba(155, 89, 182, 0.12);
+      }
+    }
+  }
+
+  /* Hover 效果增强 */
+  &:hover {
+    .featured-resource__icon {
+      transform: scale(1.05);
+    }
   }
 }
 </style>

@@ -71,10 +71,18 @@ export const ICONIFY_MAP: Record<string, string> = {
 
   // ========== 状态图标 ==========
   'icon-success': 'lucide:check-circle',
+  'icon-check-circle': 'lucide:check-circle',
   'icon-error': 'lucide:alert-circle',
   'icon-warning': 'lucide:alert-triangle',
   'icon-info': 'lucide:info',
   'icon-loading': 'lucide:loader-2',
+  'icon-clock': 'lucide:clock',
+
+  // ========== 精选推荐图标 ==========
+  'icon-fire': 'lucide:flame',
+  'icon-sparkles': 'lucide:sparkles',
+  'icon-zap': 'lucide:zap',
+  'icon-trending': 'lucide:trending-up',
 
   // ========== 其他常用图标 ==========
   'icon-share': 'lucide:share-2',
@@ -126,8 +134,16 @@ export const EMOJI_MAP: Record<string, string> = {
   'icon-basketball': '🏀',
   'icon-group': '👥',
 
-  // 其他
-  'icon-verified': '✓'
+  // 状态图标
+  'icon-verified': '✓',
+  'icon-check-circle': '✓',
+  'icon-clock': '🕐',
+
+  // 精选推荐图标
+  'icon-fire': '🔥',
+  'icon-sparkles': '✨',
+  'icon-zap': '⚡',
+  'icon-trending': '📈'
 }
 
 /**

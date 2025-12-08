@@ -67,17 +67,20 @@ const loadData = async () => {
       status: 1  // 仅显示已审核通过的资源
     })
 
-    // 转换数据格式为 ClResourceCard 需要的格式
+    /**
+     * 转换数据格式为 ClResourceCard 需要的格式
+     * 后端实际返回字段：resourceId, title, description, uploaderName, uploaderAvatar, fileType, fileSize, category, courseName, score, downloads, likes, status, createdAt
+     */
     resourceList.value = response.list.map((item: any) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      fileType: getFileExtension(item.fileName || item.fileUrl || ''),
+      id: item.resourceId || item.id,
+      title: item.title || '',
+      description: item.description || '',
+      fileType: item.fileType || getFileExtension(item.fileName || item.fileUrl || ''),
       tags: item.tags || [],
       downloads: item.downloads || 0,
-      rating: item.rating || 0,
-      createdAt: item.createdAt,
-      points: item.points || 0
+      rating: item.score || item.rating || 0,
+      createdAt: item.createdAt || '',
+      points: item.pointsCost || item.points || 0
     }))
   } catch (error) {
     console.error('加载资源失败:', error)
@@ -94,12 +97,24 @@ const getFileExtension = (filename: string): string => {
 }
 
 const handleResourceClick = (resource: any) => {
+  if (!resource?.id) {
+    console.warn('资源 ID 无效:', resource)
+    return
+  }
   emit('resource-click', resource)
+  uni.navigateTo({
+    url: `/pages/resource/detail?id=${resource.id}`
+  })
 }
 
 const handleDownload = (resource: any) => {
-  console.log('下载资源:', resource)
-  // TODO: 处理下载逻辑（积分扣除、下载链接等）
+  if (!resource?.id) {
+    console.warn('资源 ID 无效:', resource)
+    return
+  }
+  uni.navigateTo({
+    url: `/pages/resource/detail?id=${resource.id}&action=download`
+  })
 }
 
 const handleMetaClick = (item: any, resource: any) => {

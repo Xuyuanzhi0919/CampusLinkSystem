@@ -6,10 +6,10 @@
     </view>
 
     <!-- 标题 -->
-    <text class="card-title">{{ question.title }}</text>
+    <rich-text class="card-title" :nodes="highlightedTitle"></rich-text>
 
     <!-- 内容预览 -->
-    <text v-if="question.content" class="card-content">{{ question.content }}</text>
+    <rich-text v-if="question.content" class="card-content" :nodes="highlightedContent"></rich-text>
 
     <!-- 标签 -->
     <view v-if="question.tags && question.tags.length > 0" class="card-tags">
@@ -37,6 +37,7 @@ import { computed } from 'vue'
 
 interface Props {
   question: QuestionItem
+  keyword?: string  // 搜索关键词，用于高亮
 }
 
 const props = defineProps<Props>()
@@ -49,6 +50,23 @@ defineEmits<{
 const isSolved = computed(() => props.question.status === 1 || props.question.isSolved)
 const statusClass = computed(() => isSolved.value ? 'status--solved' : 'status--open')
 const statusText = computed(() => isSolved.value ? '已解决' : '待解答')
+
+// 高亮文本
+const highlightText = (text: string): string => {
+  if (!props.keyword || !props.keyword.trim() || !text) {
+    return text
+  }
+  // 转义正则特殊字符
+  const escaped = props.keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escaped})`, 'gi')
+  return text.replace(regex, '<span class="highlight">$1</span>')
+}
+
+// 高亮后的标题
+const highlightedTitle = computed(() => highlightText(props.question.title))
+
+// 高亮后的内容
+const highlightedContent = computed(() => highlightText(props.question.content || ''))
 </script>
 
 <style lang="scss" scoped>
@@ -216,5 +234,14 @@ const statusText = computed(() => isSolved.value ? '已解决' : '待解答')
   @media (max-width: 768px) {
     padding: 6rpx 12rpx;
   }
+}
+
+/* 关键词高亮样式 */
+:deep(.highlight) {
+  color: $campus-blue;
+  font-weight: $font-weight-semibold;
+  background: rgba($campus-blue, 0.1);
+  padding: 0 4rpx;
+  border-radius: 4rpx;
 }
 </style>

@@ -167,6 +167,14 @@
         </view>
       </view>
 
+      <!-- 搜索统计信息 -->
+      <view v-if="totalCount > 0 && !loading" class="search-stats">
+        <text class="stats-text">
+          共找到 <text class="stats-highlight">{{ totalCount }}</text> 条与「<text class="stats-keyword">{{ keyword }}</text>」相关的结果
+        </text>
+        <text v-if="searchTime > 0" class="stats-time">（{{ searchTime }}ms）</text>
+      </view>
+
       <!-- 排序和筛选栏（非全部Tab时显示） -->
       <view v-if="activeTab !== 'all'" class="filter-bar">
         <!-- 排序选择 -->
@@ -356,6 +364,7 @@
                   v-for="item in resourceList.slice(0, 3)"
                   :key="item.resourceId"
                   :resource="item"
+                  :keyword="keyword"
                   @click="goToResource(item.resourceId)"
                 />
               </view>
@@ -372,6 +381,7 @@
                   v-for="item in questionList.slice(0, 3)"
                   :key="item.qid"
                   :question="item"
+                  :keyword="keyword"
                   @click="goToQuestion(item.qid)"
                 />
               </view>
@@ -388,6 +398,7 @@
                   v-for="item in activityList.slice(0, 3)"
                   :key="item.activityId"
                   :activity="item"
+                  :keyword="keyword"
                   @click="goToActivity(item.activityId)"
                 />
               </view>
@@ -402,6 +413,7 @@
                   v-for="item in resourceList"
                   :key="item.resourceId"
                   :resource="item"
+                  :keyword="keyword"
                   @click="goToResource(item.resourceId)"
                 />
               </template>
@@ -410,6 +422,7 @@
                   v-for="item in questionList"
                   :key="item.qid"
                   :question="item"
+                  :keyword="keyword"
                   @click="goToQuestion(item.qid)"
                 />
               </template>
@@ -418,6 +431,7 @@
                   v-for="item in activityList"
                   :key="item.activityId"
                   :activity="item"
+                  :keyword="keyword"
                   @click="goToActivity(item.activityId)"
                 />
               </template>
@@ -456,6 +470,7 @@ const keyword = ref('')
 const hasSearched = ref(false)
 const loading = ref(false)
 const loadingMore = ref(false)
+const searchTime = ref(0)  // 搜索耗时（毫秒）
 
 // 搜索框聚焦控制
 const searchInputFocus = ref(false)
@@ -1079,6 +1094,10 @@ const handleSearch = async () => {
   hasSearched.value = true
   loading.value = true
   activeTab.value = 'all'
+  searchTime.value = 0  // 重置搜索耗时
+
+  // 记录开始时间
+  const startTime = Date.now()
 
   // 保存搜索历史
   saveHistory(keyword.value.trim())
@@ -1106,6 +1125,9 @@ const handleSearch = async () => {
     pagination.value.resource.hasMore = resourceList.value.length >= pageSize
     pagination.value.question.hasMore = questionList.value.length >= pageSize
     pagination.value.activity.hasMore = activityList.value.length >= pageSize
+
+    // 记录搜索耗时
+    searchTime.value = Date.now() - startTime
 
   } catch (error) {
     console.error('搜索失败:', error)
@@ -1826,6 +1848,37 @@ onLoad((options: any) => {
   padding: 0 32rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid $color-divider;
+}
+
+/* 搜索统计信息 */
+.search-stats {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 32rpx;
+  background: rgba($campus-blue, 0.02);
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.stats-text {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+.stats-highlight {
+  color: $campus-blue;
+  font-weight: $font-weight-semibold;
+}
+
+.stats-keyword {
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.stats-time {
+  font-size: 22rpx;
+  color: $color-text-quaternary;
+  margin-left: 8rpx;
 }
 
 /* 优化3：强化Tab选中态 */

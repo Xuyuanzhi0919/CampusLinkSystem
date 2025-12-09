@@ -19,7 +19,7 @@
 
     <!-- 内容区域 -->
     <view class="card-content">
-      <text class="card-title">{{ activity.title }}</text>
+      <rich-text class="card-title" :nodes="highlightedTitle"></rich-text>
 
       <view class="card-info">
         <view class="info-item">
@@ -61,6 +61,7 @@ interface Props {
     maxParticipants?: number
     clubName?: string
   }
+  keyword?: string  // 搜索关键词，用于高亮
 }
 
 const props = defineProps<Props>()
@@ -98,6 +99,20 @@ const formatDate = (dateStr: string): string => {
   const minutes = date.getMinutes().toString().padStart(2, '0')
   return `${month}月${day}日 ${hours}:${minutes}`
 }
+
+// 高亮文本
+const highlightText = (text: string): string => {
+  if (!props.keyword || !props.keyword.trim() || !text) {
+    return text
+  }
+  // 转义正则特殊字符
+  const escaped = props.keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escaped})`, 'gi')
+  return text.replace(regex, '<span class="highlight">$1</span>')
+}
+
+// 高亮后的标题
+const highlightedTitle = computed(() => highlightText(props.activity.title))
 </script>
 
 <style lang="scss" scoped>
@@ -251,5 +266,14 @@ const formatDate = (dateStr: string): string => {
     font-size: 22rpx;
     color: $color-text-secondary;
   }
+}
+
+/* 关键词高亮样式 */
+:deep(.highlight) {
+  color: $campus-blue;
+  font-weight: $font-weight-semibold;
+  background: rgba($campus-blue, 0.1);
+  padding: 0 4rpx;
+  border-radius: 4rpx;
 }
 </style>

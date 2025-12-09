@@ -7,8 +7,8 @@
 
     <!-- 内容区域 -->
     <view class="card-content">
-      <text class="card-title">{{ resource.title }}</text>
-      <text class="card-desc" v-if="resource.description">{{ resource.description }}</text>
+      <rich-text class="card-title" :nodes="highlightedTitle"></rich-text>
+      <rich-text class="card-desc" v-if="resource.description" :nodes="highlightedDesc"></rich-text>
       <view class="card-meta">
         <text class="meta-item">📥 {{ resource.downloads }}</text>
         <text class="meta-item">❤️ {{ resource.likes }}</text>
@@ -30,6 +30,7 @@ import { computed } from 'vue'
 
 interface Props {
   resource: ResourceItem
+  keyword?: string  // 搜索关键词，用于高亮
 }
 
 const props = defineProps<Props>()
@@ -56,6 +57,23 @@ const formatSize = (bytes: number): string => {
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + 'KB'
   return (bytes / (1024 * 1024)).toFixed(1) + 'MB'
 }
+
+// 高亮文本
+const highlightText = (text: string): string => {
+  if (!props.keyword || !props.keyword.trim() || !text) {
+    return text
+  }
+  // 转义正则特殊字符
+  const escaped = props.keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${escaped})`, 'gi')
+  return text.replace(regex, '<span class="highlight">$1</span>')
+}
+
+// 高亮后的标题
+const highlightedTitle = computed(() => highlightText(props.resource.title))
+
+// 高亮后的描述
+const highlightedDesc = computed(() => highlightText(props.resource.description || ''))
 </script>
 
 <style lang="scss" scoped>
@@ -195,5 +213,14 @@ const formatSize = (bytes: number): string => {
   font-weight: $font-weight-medium;
   color: #FF6B35;
   line-height: 1;
+}
+
+/* 关键词高亮样式 */
+:deep(.highlight) {
+  color: $campus-blue;
+  font-weight: $font-weight-semibold;
+  background: rgba($campus-blue, 0.1);
+  padding: 0 4rpx;
+  border-radius: 4rpx;
 }
 </style>

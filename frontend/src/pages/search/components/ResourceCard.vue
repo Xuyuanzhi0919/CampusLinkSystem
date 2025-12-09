@@ -16,10 +16,10 @@
       </view>
     </view>
 
-    <!-- 积分标签 -->
+    <!-- 积分标签 - 优化为胶囊样式 -->
     <view class="card-score">
-      <text class="score-value">{{ resource.score }}</text>
-      <text class="score-label">积分</text>
+      <text class="score-icon">🧧</text>
+      <text class="score-text">{{ resource.score }}分</text>
     </view>
   </view>
 </template>
@@ -61,6 +61,7 @@ const formatSize = (bytes: number): string => {
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
+/* 优化6：移动端卡片紧凑化 */
 .resource-card {
   display: flex;
   align-items: flex-start;
@@ -74,6 +75,12 @@ const formatSize = (bytes: number): string => {
   &:active {
     transform: scale(0.98);
     box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  }
+
+  @media (max-width: 768px) {
+    gap: 20rpx;
+    padding: 20rpx;
+    border-radius: 16rpx;
   }
 }
 
@@ -95,6 +102,16 @@ const formatSize = (bytes: number): string => {
   .icon-text {
     font-size: 36rpx;
   }
+
+  @media (max-width: 768px) {
+    width: 64rpx;
+    height: 64rpx;
+    border-radius: 12rpx;
+
+    .icon-text {
+      font-size: 28rpx;
+    }
+  }
 }
 
 .card-content {
@@ -111,6 +128,11 @@ const formatSize = (bytes: number): string => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 28rpx;
+    line-height: 1.3;
+  }
 }
 
 .card-desc {
@@ -122,38 +144,54 @@ const formatSize = (bytes: number): string => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (max-width: 768px) {
+    font-size: 24rpx;
+    margin-top: 6rpx;
+  }
 }
 
 .card-meta {
   display: flex;
   gap: 24rpx;
   margin-top: 16rpx;
+
+  @media (max-width: 768px) {
+    gap: 16rpx;
+    margin-top: 12rpx;
+  }
 }
 
 .meta-item {
   font-size: 24rpx;
   color: $color-text-quaternary;
+
+  @media (max-width: 768px) {
+    font-size: 22rpx;
+  }
 }
 
+/* 优化4：积分标签改为小胶囊样式，浅底深字 */
 .card-score {
   display: flex;
-  flex-direction: column;
   align-items: center;
+  gap: 6rpx;
   flex-shrink: 0;
-  padding: 12rpx 20rpx;
-  background: linear-gradient(135deg, $campus-blue-lighter, rgba($campus-blue, 0.1));
-  border-radius: 12rpx;
+  padding: 8rpx 16rpx;
+  background: rgba(255, 107, 53, 0.08);
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(255, 107, 53, 0.15);
 }
 
-.score-value {
-  font-size: 32rpx;
-  font-weight: $font-weight-bold;
-  color: $campus-blue;
-}
-
-.score-label {
+.score-icon {
   font-size: 20rpx;
-  color: $campus-blue;
-  opacity: 0.8;
+  line-height: 1;
+}
+
+.score-text {
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  color: #FF6B35;
+  line-height: 1;
 }
 </style>

@@ -1818,17 +1818,32 @@ onLoad((options: any) => {
   border-bottom: 1rpx solid $color-divider;
 }
 
+/* 优化3：强化Tab选中态 */
 .tab-item {
   padding: 24rpx 32rpx;
   position: relative;
   display: flex;
   align-items: center;
   gap: 8rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover:not(&--active) {
+    background: rgba($campus-blue, 0.04);
+  }
 
   &--active {
+    background: rgba($campus-blue, 0.06);
+
     .tab-text {
       color: $campus-blue;
       font-weight: $font-weight-semibold;
+    }
+
+    .tab-count {
+      background: rgba($campus-blue, 0.15);
+      color: $campus-blue;
+      font-weight: $font-weight-medium;
     }
 
     &::after {
@@ -1851,8 +1866,12 @@ onLoad((options: any) => {
 }
 
 .tab-count {
-  font-size: 24rpx;
-  color: $color-text-tertiary;
+  font-size: 22rpx;
+  color: $color-text-quaternary;
+  padding: 4rpx 10rpx;
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12rpx;
+  transition: all 0.2s ease;
 }
 
 /* ========== 排序和筛选栏 ========== */

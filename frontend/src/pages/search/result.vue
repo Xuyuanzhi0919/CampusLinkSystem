@@ -1200,7 +1200,7 @@ onLoad((options: any) => {
   top: 0;
   z-index: 100;
   background: #FFFFFF;
-  padding: 24rpx 32rpx;
+  padding: 20rpx 32rpx;
   box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
   /* 为下拉建议列表提供定位上下文 */
   position: relative;

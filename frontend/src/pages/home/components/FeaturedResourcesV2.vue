@@ -70,7 +70,7 @@ const loadData = async () => {
 
     /**
      * 转换数据格式为 ClResourceCard 需要的格式
-     * 后端实际返回字段：resourceId, title, description, uploaderName, uploaderAvatar, fileType, fileSize, category, courseName, score, downloads, likes, status, createdAt
+     * 后端实际返回字段：resourceId, title, description, uploaderName, uploaderAvatar, fileType, fileSize, category, courseName, averageRating, downloads, likes, views, favorites, status, createdAt
      */
     resourceList.value = response.list.map((item: any) => ({
       id: item.resourceId || item.id,
@@ -79,9 +79,11 @@ const loadData = async () => {
       fileType: item.fileType || getFileExtension(item.fileName || item.fileUrl || ''),
       tags: item.tags || [],
       downloads: item.downloads || 0,
-      rating: item.score || item.rating || 0,
+      views: item.views || 0,
+      favorites: item.favorites || 0,
+      rating: item.averageRating || 0,  // 使用平均评分，score是积分要求不是评分
       createdAt: item.createdAt || '',
-      points: item.pointsCost || item.points || 0
+      points: item.score || item.pointsCost || item.points || 0  // score是下载所需积分
     }))
   } catch (error) {
     console.error('加载资源失败:', error)

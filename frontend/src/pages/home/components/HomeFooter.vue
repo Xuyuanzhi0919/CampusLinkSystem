@@ -131,6 +131,7 @@ const handleFeedback = () => {
   z-index: 2; // 确保在雾化背景层之上
   background: $gray-900;
   padding: 80rpx 0 40rpx;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom, 0)); // 适配安全区域
   margin-top: 0; // 移除多余的上边距，由内容区控制
 
   // 顶部过渡渐变，使 Footer 与内容区自然衔接

@@ -78,4 +78,47 @@ public interface TagMapper extends BaseMapper<Tag> {
      */
     @Select("SELECT * FROM tag WHERE status = 1 AND (tag_name LIKE CONCAT('%', #{keyword}, '%') OR display_name LIKE CONCAT('%', #{keyword}, '%')) ORDER BY use_count DESC LIMIT #{limit}")
     List<Tag> searchTags(@Param("keyword") String keyword, @Param("limit") Integer limit);
+
+    /**
+     * 统计标签关联的问题数量
+     *
+     * @param tagId 标签ID
+     * @return 问题数量
+     */
+    @Select("SELECT COUNT(*) FROM tag_relation WHERE tag_id = #{tagId} AND target_type = 'question'")
+    Integer countQuestionsByTagId(@Param("tagId") Long tagId);
+
+    /**
+     * 统计标签关联的资源数量
+     *
+     * @param tagId 标签ID
+     * @return 资源数量
+     */
+    @Select("SELECT COUNT(*) FROM tag_relation WHERE tag_id = #{tagId} AND target_type = 'resource'")
+    Integer countResourcesByTagId(@Param("tagId") Long tagId);
+
+    /**
+     * 统计标签在最近7天内新增的关联数量（用于趋势计算）
+     *
+     * @param tagId 标签ID
+     * @return 最近7天新增数量
+     */
+    @Select("SELECT COUNT(*) FROM tag_relation WHERE tag_id = #{tagId} AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)")
+    Integer countRecentRelations(@Param("tagId") Long tagId);
+
+    /**
+     * 获取热门标签（综合热度排序）
+     * 热度计算公式：use_count + (recent_7d_count * 5)
+     * 近期活跃的标签会获得更高权重
+     *
+     * @param limit 返回数量
+     * @return 热门标签列表（按综合热度降序）
+     */
+    @Select("SELECT t.*, " +
+            "(SELECT COUNT(*) FROM tag_relation tr WHERE tr.tag_id = t.tag_id AND tr.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as recent_count " +
+            "FROM tag t " +
+            "WHERE t.status = 1 " +
+            "ORDER BY (t.use_count + COALESCE((SELECT COUNT(*) FROM tag_relation tr WHERE tr.tag_id = t.tag_id AND tr.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)), 0) * 5) DESC " +
+            "LIMIT #{limit}")
+    List<Tag> selectHotTagsWithTrend(@Param("limit") Integer limit);
 }

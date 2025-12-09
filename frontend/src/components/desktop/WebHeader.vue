@@ -32,6 +32,18 @@
             placeholder="搜索资源、问答..."
             @keyup.enter="handleSearch"
           />
+          <template v-if="searchKeyword">
+            <div class="search-clear" @click="searchKeyword = ''">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="search-btn" @click="handleSearch">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </template>
         </div>
 
         <!-- 操作区域 -->
@@ -51,10 +63,12 @@
                 :visible="showUserMenu"
                 :position="dropdownPosition"
                 :user-info="userInfo"
+                :user-stats="userStats"
                 :is-checked-in="isCheckedIn"
                 @update:visible="showUserMenu = $event"
                 @menu-click="handleMenuClick"
                 @check-in="handleCheckIn"
+                @stat-click="handleStatClick"
               />
             </template>
             <template v-else>
@@ -110,6 +124,14 @@
 
     <!-- 底部强调线 -->
     <div class="header-accent-line"></div>
+
+    <!-- 退出登录确认弹窗 -->
+    <LogoutConfirmModal
+      ref="logoutModalRef"
+      :visible="showLogoutModal"
+      @update:visible="showLogoutModal = $event"
+      @confirm="handleLogoutConfirm"
+    />
   </header>
 </template>
 
@@ -118,11 +140,13 @@ import { ref, computed, onMounted } from 'vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from './UserDropdownMenu.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
+import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue'
 import config from '@/config'
-import { checkIn, getCheckInStatus } from '@/services/user'
+import { checkIn, getCheckInStatus, getUserStats } from '@/services/user'
 import { logout } from '@/services/auth'
 import { getUnreadNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification'
 import type { NotificationResponse } from '@/services/notification'
+import type { UserStatsData } from '@/types/user'
 
 // 导航配置
 const navItems = [
@@ -156,11 +180,27 @@ const userInfo = ref({
   userId: null as number | null,
   nickname: '',
   avatar: '',
+  email: '',
+  phone: '',
   level: 1,
+  points: 0,
+  role: 'student' as 'student' | 'admin' | 'teacher' | 'user',
 })
 const isCheckedIn = ref(false)
 const avatarContainer = ref<HTMLElement | null>(null)
 const dropdownPosition = ref({ top: 0, left: 0 })
+
+// 用户统计数据
+const userStats = ref({
+  answerCount: 0,
+  resourceCount: 0,
+  checkInDays: 0,
+  likeCount: 0
+})
+
+// 退出登录弹窗
+const showLogoutModal = ref(false)
+const logoutModalRef = ref<InstanceType<typeof LogoutConfirmModal> | null>(null)
 
 // 通知相关
 const showNotificationMenu = ref(false)
@@ -216,15 +256,35 @@ const checkLoginStatus = () => {
         userId: parsedUserInfo.uId || parsedUserInfo.userId || parsedUserInfo.id || null,
         nickname: parsedUserInfo.nickname || '用户',
         avatar: parsedUserInfo.avatarUrl || parsedUserInfo.avatar || '',
+        email: parsedUserInfo.email || '',
+        phone: parsedUserInfo.phone || '',
         level: parsedUserInfo.level || 1,
+        points: parsedUserInfo.points || 0,
+        role: parsedUserInfo.role || 'student',
       }
       isLoggedIn.value = true
       syncCheckInStatus()
+      loadUserStats()
     } catch (e) {
       isLoggedIn.value = false
     }
   } else {
     isLoggedIn.value = false
+  }
+}
+
+// 加载用户统计数据
+const loadUserStats = async () => {
+  try {
+    const res = await getUserStats() as UserStatsData
+    userStats.value = {
+      answerCount: res.answerCount || 0,
+      resourceCount: res.resourceCount || 0,
+      checkInDays: res.checkInDays || 0,
+      likeCount: res.likeCount || 0
+    }
+  } catch (error) {
+    console.error('[WebHeader] 加载用户统计失败:', error)
   }
 }
 
@@ -236,15 +296,43 @@ const handleCheckIn = async () => {
   try {
     await checkIn()
     isCheckedIn.value = true
+    // 签到成功后刷新统计数据
+    loadUserStats()
     uni.showToast({ title: '签到成功！+10 积分', icon: 'success' })
   } catch (error) {
     uni.showToast({ title: '签到失败', icon: 'error' })
   }
 }
 
+// 统计项点击处理
+const handleStatClick = (type: string) => {
+  switch (type) {
+    case 'answers':
+      uni.navigateTo({ url: '/pages/user/my-answers' })
+      break
+    case 'resources':
+      uni.navigateTo({ url: '/pages/user/my-resources' })
+      break
+    case 'checkin':
+      // 签到天数点击不跳转
+      break
+    case 'likes':
+      uni.navigateTo({ url: '/pages/user/index' })
+      break
+  }
+}
+
+// 搜索
 const handleSearch = () => {
-  if (!searchKeyword.value.trim()) return
-  emit('search', searchKeyword.value.trim())
+  const keyword = searchKeyword.value.trim()
+  if (!keyword) {
+    uni.showToast({ title: '请输入搜索关键词', icon: 'none' })
+    return
+  }
+  // 跳转到搜索结果页
+  uni.navigateTo({
+    url: `/pages/search/result?keyword=${encodeURIComponent(keyword)}`
+  })
 }
 
 const handlePublish = () => {
@@ -347,34 +435,34 @@ const handleViewAllNotifications = () => {
 const handleMenuClick = (menuId: string) => {
   switch (menuId) {
     case 'profile':
-      uni.navigateTo({ url: '/pages/user/index' })
+      // user/index 是 tabBar 页面，必须用 switchTab
+      uni.switchTab({ url: '/pages/user/index' })
       break
     case 'favorites':
       uni.navigateTo({ url: '/pages/user/favorites' })
       break
     case 'settings':
-      uni.navigateTo({ url: '/pages/user/settings' })
+      uni.navigateTo({ url: '/pages/user/edit-profile' })
       break
     case 'logout':
-      uni.showModal({
-        title: '退出登录',
-        content: '确定要退出当前账号吗？',
-        success: async (res) => {
-          if (res.confirm) {
-            try {
-              await logout()
-            } catch (e) {
-              console.error('Logout API调用失败', e)
-            }
-            uni.removeStorageSync(config.tokenKey)
-            uni.removeStorageSync(config.userInfoKey)
-            uni.$emit('user-logout')
-            uni.showToast({ title: '已安全退出', icon: 'none' })
-          }
-        },
-      })
+      // 显示自定义退出确认弹窗
+      showLogoutModal.value = true
       break
   }
+}
+
+// 退出登录确认
+const handleLogoutConfirm = async () => {
+  try {
+    await logout()
+  } catch (e) {
+    console.error('Logout API调用失败', e)
+  }
+  uni.removeStorageSync(config.tokenKey)
+  uni.removeStorageSync(config.userInfoKey)
+  uni.$emit('user-logout')
+  showLogoutModal.value = false
+  uni.showToast({ title: '已安全退出', icon: 'none' })
 }
 
 // 主题切换按钮占位
@@ -488,13 +576,13 @@ defineExpose({
   gap: 16px;
 }
 
-// 搜索框 - 缩短宽度
+// 搜索框
 .search-box {
   display: flex;
   align-items: center;
-  width: 200px;
-  height: 36px;
-  padding: 0 14px;
+  width: 260px;
+  height: 38px;
+  padding: 0 6px 0 14px;
   background: $white;
   border: 1px solid $border-color;
   border-radius: $radius-full;
@@ -508,12 +596,13 @@ defineExpose({
 
 .search-icon {
   color: $text-quaternary;
-  margin-right: 8px;
+  margin-right: 10px;
   flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
+  height: 100%;
   border: none;
   outline: none;
   background: transparent;
@@ -522,6 +611,42 @@ defineExpose({
 
   &::placeholder {
     color: $text-quaternary;
+  }
+}
+
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: $gray-200;
+  color: $text-tertiary;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    background: $gray-300;
+    color: $text-secondary;
+  }
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: $primary;
+  color: $white;
+  cursor: pointer;
+  transition: $transition-fast;
+
+  &:hover {
+    background: $primary-dark;
   }
 }
 

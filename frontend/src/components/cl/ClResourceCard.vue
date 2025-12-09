@@ -33,17 +33,25 @@
 
     <!-- Meta: 统一图标尺寸 + 增大间距 -->
     <view class="featured-resource__meta">
+      <!-- 浏览量 -->
+      <view v-if="resource.views" class="featured-resource__meta-item">
+        <ClIcon name="icon-eye" size="base" />
+        <text>{{ formatNumber(resource.views) }}</text>
+      </view>
+      <!-- 下载量 -->
       <view class="featured-resource__meta-item">
         <ClIcon name="icon-download" size="base" />
         <text>{{ formatNumber(resource.downloads) }}</text>
       </view>
-      <view v-if="resource.rating" class="featured-resource__meta-item featured-resource__meta-item--rating">
+      <!-- 收藏量 -->
+      <view v-if="resource.favorites" class="featured-resource__meta-item featured-resource__meta-item--favorites">
         <ClIcon name="icon-star" size="base" />
-        <text>{{ resource.rating.toFixed(1) }}</text>
+        <text>{{ formatNumber(resource.favorites) }}</text>
       </view>
-      <view class="featured-resource__meta-item">
-        <ClIcon name="icon-time" size="base" />
-        <text>{{ formatTime(resource.createdAt) }}</text>
+      <!-- 评分 -->
+      <view v-if="resource.rating" class="featured-resource__meta-item featured-resource__meta-item--rating">
+        <ClIcon name="icon-fire" size="base" />
+        <text>{{ resource.rating.toFixed(1) }}</text>
       </view>
     </view>
 
@@ -84,6 +92,8 @@ interface Resource {
   fileType: string
   tags?: string[]
   downloads: number
+  views?: number
+  favorites?: number
   rating?: number
   createdAt: string
   points: number
@@ -256,8 +266,12 @@ const handleDownloadClick = () => emit('download', props.resource)
     font-size: $font-size-xs;
     color: $color-text-tertiary;
 
-    &--rating {
+    &--favorites {
       color: #F59E0B;
+    }
+
+    &--rating {
+      color: #EF4444;
     }
   }
 

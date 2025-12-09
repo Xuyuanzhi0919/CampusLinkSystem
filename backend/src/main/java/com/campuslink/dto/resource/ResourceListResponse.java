@@ -20,8 +20,12 @@ public class ResourceListResponse {
     private String category;
     private String courseName;
     private Integer score;
+    private Integer views;  // 浏览次数
     private Integer downloads;
     private Integer likes;
+    private Integer favorites;  // 收藏数
+    private Double averageRating;  // 平均评分
+    private Integer totalRatings;  // 总评分人数
 
     /**
      * 审核状态：0-待审核，1-已通过，2-已拒绝（仅在获取自己上传的资源时返回）

@@ -1,53 +1,88 @@
 <template>
   <view v-if="visible" class="dropdown-mask" @click="handleMaskClick">
     <view class="menu-final" :class="{ 'menu-show': showAnimation }" :style="menuStyle" @tap.stop>
-      <!-- 用户信息卡片 -->
+      <!-- 用户信息卡片 - 优化：添加等级/积分标签 -->
       <view class="user-info-card">
-        <view class="user-avatar-large">
-          <image v-if="userInfo.avatar" class="avatar-img" :src="userInfo.avatar" mode="aspectFill" />
-          <view v-else class="avatar-default">
-            <text class="avatar-text">{{ displayText }}</text>
+        <view class="user-avatar-wrapper">
+          <view class="user-avatar-large">
+            <image v-if="userInfo.avatar" class="avatar-img" :src="userInfo.avatar" mode="aspectFill" />
+            <view v-else class="avatar-default">
+              <text class="avatar-text">{{ displayText }}</text>
+            </view>
           </view>
         </view>
         <view class="user-details">
-          <text class="user-nickname">{{ userInfo.nickname || '用户' }}</text>
-          <text class="user-email">{{ userInfo.email || userInfo.phone ||'未绑定邮箱' }}</text>
+          <view class="user-name-row">
+            <text class="user-nickname">{{ userInfo.nickname || '用户' }}</text>
+            <view class="user-role-tag" :class="roleTagClass">{{ roleDisplayName }}</view>
+            <view class="user-level-tag">Lv.{{ userInfo.level || 1 }}</view>
+          </view>
+          <text class="user-email">{{ contactDisplay }}</text>
+          <view class="user-points-row">
+            <text class="points-icon">✨</text>
+            <text class="points-value">{{ userInfo.points || 0 }}</text>
+            <text class="points-label">积分</text>
+          </view>
         </view>
       </view>
 
-      <!-- 分割线 -->
-      <view class="menu-divider"></view>
-
-      <!-- 签到按钮(独立区域)-->
+      <!-- 签到按钮 - 优化：缩小高度，弱化渐变 -->
       <view
         class="check-in-section"
         :class="{ 'checked-in': isCheckedIn }"
         @click="handleCheckIn"
       >
         <view class="check-in-content">
-          <text class="check-in-icon">{{ isCheckedIn ? '✨' : '📅' }}</text>
-          <view class="check-in-info">
-            <text class="check-in-title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
-            <text class="check-in-desc">{{ isCheckedIn ? '已获得 +10 积分' : '签到可获得 +10 积分' }}</text>
-          </view>
+          <text class="check-in-icon">{{ isCheckedIn ? '✅' : '📅' }}</text>
+          <text class="check-in-title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
         </view>
-        <text class="check-in-badge">{{ isCheckedIn ? '已完成' : '去签到' }}</text>
+        <text class="check-in-badge">{{ isCheckedIn ? '+10' : '去签到' }}</text>
       </view>
 
-      <!-- 分割线 -->
-      <view class="menu-divider"></view>
+      <!-- 我的数据 - 优化：减弱阴影，缩小间距，精致化 -->
+      <view class="user-stats-section">
+        <view class="stats-grid">
+          <view class="stat-item" @click="handleStatClick('answers')">
+            <text class="stat-value">{{ userStats.answerCount }}</text>
+            <text class="stat-label">回答</text>
+          </view>
+          <view class="stat-item" @click="handleStatClick('resources')">
+            <text class="stat-value">{{ userStats.resourceCount }}</text>
+            <text class="stat-label">资源</text>
+          </view>
+          <view class="stat-item" @click="handleStatClick('checkin')">
+            <text class="stat-value">{{ userStats.checkInDays }}</text>
+            <text class="stat-label">签到</text>
+          </view>
+          <view class="stat-item" @click="handleStatClick('likes')">
+            <text class="stat-value">{{ userStats.likeCount }}</text>
+            <text class="stat-label">获赞</text>
+          </view>
+        </view>
+      </view>
 
-      <!-- 菜单项列表 -->
+      <!-- 分割线 - 优化：上移导航区 -->
+      <view class="section-divider"></view>
+
+      <!-- 菜单项列表 - 优化：紧凑布局 -->
       <view class="menu-items">
         <view
-          v-for="item in menuItems"
+          v-for="item in normalMenuItems"
           :key="item.id"
           class="menu-item"
-          :class="{ 'menu-item-danger': item.danger }"
           @click="handleMenuClick(item)"
         >
-          <text class="menu-icon" :class="'menu-icon-' + item.id">{{ item.icon }}</text>
+          <text class="menu-icon">{{ item.icon }}</text>
           <text class="menu-text">{{ item.text }}</text>
+          <text class="menu-arrow">›</text>
+        </view>
+      </view>
+
+      <!-- 退出登录 - 优化：独立区域，灰色文字，降低存在感 -->
+      <view class="logout-section">
+        <view class="menu-item menu-item-logout" @click="handleMenuClick(logoutItem)">
+          <text class="menu-icon menu-icon-logout">🚪</text>
+          <text class="menu-text">退出登录</text>
         </view>
       </view>
     </view>
@@ -55,13 +90,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 interface UserInfo {
   nickname?: string
   email?: string
   phone?: string
   avatar?: string
+  level?: number
+  points?: number
+  role?: 'student' | 'admin' | 'teacher' | 'user'
+}
+
+interface UserStats {
+  answerCount: number
+  resourceCount: number
+  checkInDays: number
+  likeCount: number
 }
 
 interface MenuItem {
@@ -74,40 +119,43 @@ interface MenuItem {
 interface Props {
   visible: boolean
   userInfo: UserInfo
+  userStats?: UserStats
   isCheckedIn?: boolean
-  position: { top: number; left: number };
+  position: { top: number; left: number }
 }
 
 const props = withDefaults(defineProps<Props>(), {
   visible: false,
   userInfo: () => ({}),
+  userStats: () => ({ answerCount: 0, resourceCount: 0, checkInDays: 0, likeCount: 0 }),
   isCheckedIn: false,
   position: () => ({ top: 0, left: 0 }),
 })
 
-const emit = defineEmits(['update:visible', 'menu-click', 'check-in'])
+const emit = defineEmits(['update:visible', 'menu-click', 'check-in', 'stat-click'])
 
 const showAnimation = ref(false)
 
 const menuStyle = computed(() => {
-  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-  // 计算右侧偏移量, 使菜单右侧与 avatar 图标中心对齐,再向右偏移20px
-  const rightOffset = windowWidth - props.position.left - 20;
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth
+  const rightOffset = windowWidth - props.position.left - 20
 
   return {
     top: `${props.position.top}px`,
     right: `${rightOffset}px`,
     left: 'auto',
-  };
-});
+  }
+})
 
-// 菜单项配置
-const menuItems: MenuItem[] = [
+// 普通菜单项（不含退出登录）
+const normalMenuItems: MenuItem[] = [
   { id: 'profile', icon: '👤', text: '我的主页' },
   { id: 'favorites', icon: '⭐', text: '我的收藏' },
   { id: 'settings', icon: '⚙️', text: '账号设置' },
-  { id: 'logout', icon: '🚪', text: '退出登录', danger: true }
 ]
+
+// 退出登录单独处理
+const logoutItem: MenuItem = { id: 'logout', icon: '🚪', text: '退出登录', danger: true }
 
 // 显示文字(昵称首字母)
 const displayText = computed(() => {
@@ -115,6 +163,39 @@ const displayText = computed(() => {
     return props.userInfo.nickname.charAt(0).toUpperCase()
   }
   return 'U'
+})
+
+// 身份角色显示名称
+const roleDisplayName = computed(() => {
+  const roleMap: Record<string, string> = {
+    admin: '管理员',
+    teacher: '教师',
+    student: '学生',
+    user: '用户',
+  }
+  return roleMap[props.userInfo.role || 'student'] || '学生'
+})
+
+// 身份标签样式类
+const roleTagClass = computed(() => {
+  const role = props.userInfo.role || 'student'
+  return `role-${role}`
+})
+
+// 联系方式显示（优先邮箱，其次手机号）
+const contactDisplay = computed(() => {
+  if (props.userInfo.email) {
+    return props.userInfo.email
+  }
+  if (props.userInfo.phone) {
+    // 手机号脱敏显示
+    const phone = props.userInfo.phone
+    if (phone.length >= 11) {
+      return phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2')
+    }
+    return phone
+  }
+  return '未绑定邮箱'
 })
 
 // 监听 visible 变化,添加动画
@@ -145,10 +226,16 @@ const handleCheckIn = () => {
     emit('check-in')
   }
 }
+
+// 统计项点击
+const handleStatClick = (type: string) => {
+  emit('stat-click', type)
+  emit('update:visible', false)
+}
 </script>
 
 <style scoped lang="scss">
-/* ==========  遮罩层 ========== */
+/* ========== 遮罩层 ========== */
 .dropdown-mask {
   position: fixed;
   top: 0;
@@ -156,91 +243,73 @@ const handleCheckIn = () => {
   right: 0;
   bottom: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(2px);
 }
 
-/* ==========  下拉菜单容器 ========== */
+/* ========== 下拉菜单容器 ========== */
 .menu-final {
   position: absolute;
-  width: 360px;
-  // 优化: 自适应内容高度, 同时给予最大高度限制
+  width: 320px;
   max-height: calc(100vh - 80px);
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-radius: 16px;
   box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.16),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.9);
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 4px 12px rgba(0, 0, 0, 0.06);
   z-index: 9999;
   opacity: 0;
-  transform: translateX(0) translateY(-10px) scale(0.98);
+  transform: translateY(-8px) scale(0.98);
   transform-origin: top right;
-  transition: all 0.28s cubic-bezier(0.34, 1.26, 0.64, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  padding: 16px; // 统一内边距
+  padding: 16px;
 
   &.menu-show {
     opacity: 1;
-    transform: translateX(0) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-/* ==========  用户信息卡片 - 优化呼吸感 ========== */
+/* ========== 用户信息卡片 - 优化层次感 ========== */
 .user-info-card {
   display: flex;
-  align-items: center;
-  gap: 28rpx; /* 优化: 从24rpx增加到28rpx (14px) */
-  margin-bottom: 36rpx; /* 优化: 增加到18px */
-  padding-top: 8rpx; /* 优化: 文字区域下移4px */
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  margin-bottom: 12px;
+}
+
+.user-avatar-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .user-avatar-large {
-  position: relative;
-  width: 108rpx; /* 优化: 从96rpx增加到108rpx (54px), +6px */
-  height: 108rpx;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
   overflow: hidden;
-  border: 4rpx solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
-  flex-shrink: 0;
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
-
-  /* 优化: 头像点击反馈 */
-  &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.15);
-  }
-
-  &:active {
-    transform: scale(0.96); /* 优化: 点击缩放 */
-  }
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
   /* 在线状态指示器 */
   &::after {
     content: '';
     position: absolute;
-    bottom: 4rpx;
-    right: 4rpx;
-    width: 22rpx; /* 11px */
-    height: 22rpx;
+    bottom: 2px;
+    right: 2px;
+    width: 10px;
+    height: 10px;
     background: #22C55E;
-    border: 3rpx solid #FFFFFF;
+    border: 2px solid #FFFFFF;
     border-radius: 50%;
-    box-shadow: 0 2rpx 8rpx rgba(34, 197, 94, 0.4);
-    animation: pulse-online 2s ease-in-out infinite;
   }
-}
-
-/* 在线状态脉动动画 */
-@keyframes pulse-online {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
 }
 
 .avatar-img {
@@ -259,132 +328,139 @@ const handleCheckIn = () => {
 }
 
 .avatar-text {
-  font-size: 44rpx; /* 优化: 从40rpx增加到44rpx (22px) */
+  font-size: 20px;
   font-weight: 600;
   color: #FFFFFF;
 }
 
 .user-details {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8rpx; /* 优化: 从4rpx增加到8rpx (4px) */
+  gap: 4px;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .user-nickname {
-  font-size: 32rpx; /* 16px */
+  font-size: 15px;
   font-weight: 600;
-  color: #1E3A8A; /* 深蓝色 */
-  line-height: 1.3;
-  letter-spacing: 0.5rpx;
-}
-
-.user-email {
-  font-size: 24rpx; /* 优化: 从26rpx减小到24rpx (12px) */
-  font-weight: 400;
-  color: #8A92A6; /* 优化: 改为更浅的灰色 */
+  color: #1E293B;
   line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin-top: 4rpx;
-  opacity: 0.9; /* 优化: 降低不透明度 */
 }
 
-/* ==========  分割线 - 优化透明度 ========== */
-.menu-divider {
-  height: 2rpx; /* 1px */
-  background: linear-gradient(90deg, transparent 0%, rgba(100, 116, 139, 0.15) 50%, transparent 100%); /* 优化: 30% 透明度 */
-  margin-bottom: 20rpx; /* 优化: 增加到10px */
+/* 身份角色标签 */
+.user-role-tag {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+
+  /* 学生 - 绿色 */
+  &.role-student,
+  &.role-user {
+    color: #16A34A;
+    background: rgba(22, 163, 74, 0.1);
+  }
+
+  /* 教师 - 紫色 */
+  &.role-teacher {
+    color: #7C3AED;
+    background: rgba(124, 58, 237, 0.1);
+  }
+
+  /* 管理员 - 橙色 */
+  &.role-admin {
+    color: #EA580C;
+    background: rgba(234, 88, 12, 0.1);
+  }
 }
 
-/* ==========  签到区域 - 优化蓝绿渐变 ========== */
+.user-level-tag {
+  font-size: 10px;
+  font-weight: 600;
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.user-email {
+  font-size: 12px;
+  color: #94A3B8;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-points-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+.points-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.points-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: #F59E0B;
+}
+
+.points-label {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+/* ========== 签到区域 - 优化：轻量化 ========== */
 .check-in-section {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28rpx 24rpx; /* 14px 12px */
-  margin-bottom: 20rpx; /* 优化: 增加到10px */
-  /* 优化: 蓝绿渐变背景 + 条纹效果 */
-  background:
-    repeating-linear-gradient(
-      45deg,
-      transparent,
-      transparent 10rpx,
-      rgba(59, 130, 246, 0.03) 10rpx,
-      rgba(59, 130, 246, 0.03) 20rpx
-    ),
-    linear-gradient(135deg, rgba(59, 130, 246, 0.10), rgba(16, 185, 129, 0.10));
-  border: 2rpx solid rgba(59, 130, 246, 0.2);
-  border-radius: 16rpx; /* 优化: 从16rpx减小到16rpx (8px) */
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  background: rgba(59, 130, 246, 0.04);
+  border: 1px solid rgba(59, 130, 246, 0.08);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-
-  /* 左侧强调条 */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 6rpx; /* 3px */
-    background: linear-gradient(180deg, #3B82F6, #10B981);
-    transition: width 0.2s ease;
-  }
+  transition: all 0.2s ease;
 
   &:hover {
-    background:
-      repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10rpx,
-        rgba(59, 130, 246, 0.05) 10rpx,
-        rgba(59, 130, 246, 0.05) 20rpx
-      ),
-      linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(16, 185, 129, 0.15));
-    border-color: rgba(59, 130, 246, 0.3);
-    transform: translateX(4rpx);
-
-    &::before {
-      width: 8rpx; /* 4px */
-    }
+    background: rgba(59, 130, 246, 0.08);
+    border-color: rgba(59, 130, 246, 0.15);
   }
 
   &:active {
-    transform: translateX(0) scale(0.98);
+    transform: scale(0.99);
   }
 
-  /* 已签到状态 */
   &.checked-in {
-    background:
-      repeating-linear-gradient(
-        45deg,
-        transparent,
-        transparent 10rpx,
-        rgba(16, 185, 129, 0.03) 10rpx,
-        rgba(16, 185, 129, 0.03) 20rpx
-      ),
-      linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(34, 197, 94, 0.10));
-    border-color: rgba(16, 185, 129, 0.25);
+    background: rgba(34, 197, 94, 0.04);
+    border-color: rgba(34, 197, 94, 0.08);
     cursor: default;
 
-    &::before {
-      background: linear-gradient(180deg, #10B981, #22C55E);
+    &:hover {
+      background: rgba(34, 197, 94, 0.04);
     }
 
-    &:hover {
-      background:
-        repeating-linear-gradient(
-          45deg,
-          transparent,
-          transparent 10rpx,
-          rgba(16, 185, 129, 0.03) 10rpx,
-          rgba(16, 185, 129, 0.03) 20rpx
-        ),
-        linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(34, 197, 94, 0.10));
-      transform: none;
+    .check-in-badge {
+      color: #22C55E;
+      background: rgba(34, 197, 94, 0.1);
     }
   }
 }
@@ -392,205 +468,165 @@ const handleCheckIn = () => {
 .check-in-content {
   display: flex;
   align-items: center;
-  gap: 20rpx; /* 10px */
+  gap: 8px;
 }
 
 .check-in-icon {
-  font-size: 44rpx; /* 22px */
+  font-size: 16px;
   line-height: 1;
-  transition: transform 0.2s ease;
-
-  .check-in-section:hover & {
-    transform: scale(1.1);
-  }
-
-  .check-in-section.checked-in & {
-    animation: checkBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  }
-}
-
-/* 优化: 签到成功闪光动画 */
-@keyframes checkBounce {
-  0% { transform: scale(1); filter: brightness(1); }
-  50% { transform: scale(1.2); filter: brightness(1.3) drop-shadow(0 0 8rpx rgba(16, 185, 129, 0.6)); }
-  100% { transform: scale(1); filter: brightness(1); }
-}
-
-.check-in-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx; /* 2px */
 }
 
 .check-in-title {
-  font-size: 28rpx; /* 14px */
-  font-weight: 600;
-  color: #1E3A8A;
-  line-height: 1.3;
-}
-
-.check-in-desc {
-  font-size: 24rpx; /* 12px */
-  font-weight: 400;
-  color: #64748B;
-  line-height: 1.3;
-  opacity: 0.85;
+  font-size: 13px;
+  font-weight: 500;
+  color: #475569;
 }
 
 .check-in-badge {
-  font-size: 24rpx; /* 12px */
+  font-size: 11px;
   font-weight: 600;
   color: #3B82F6;
-  padding: 8rpx 20rpx; /* 4px 10px */
-  background: rgba(59, 130, 246, 0.15);
-  border-radius: 12rpx; /* 6px */
-  transition: all 0.2s ease;
-  white-space: nowrap;
-
-  .check-in-section:hover & {
-    background: rgba(59, 130, 246, 0.2);
-  }
-
-  .check-in-section.checked-in & {
-    color: #10B981;
-    background: rgba(16, 185, 129, 0.15);
-  }
+  background: rgba(59, 130, 246, 0.1);
+  padding: 4px 10px;
+  border-radius: 6px;
 }
 
-/* ==========  菜单项列表 ========== */
-.menu-items {
+/* ========== 数据统计区 - 优化：精致轻量 ========== */
+.user-stats-section {
+  margin-bottom: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.stat-item {
   display: flex;
   flex-direction: column;
-  gap: 8rpx; /* 4px */
-}
-
-/* ==========  菜单项 - 优化交互 ========== */
-.menu-item {
-  position: relative;
-  display: flex;
   align-items: center;
-  gap: 20rpx; /* 优化: 统一图标与文字间距到10px */
-  padding: 24rpx 20rpx; /* 优化: 左内边距20rpx (10px) */
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 16rpx; /* 8px */
+  justify-content: center;
+  padding: 10px 4px;
+  background: rgba(248, 250, 252, 0.6);
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.15s ease;
 
-  /* 优化: 左侧强调线 */
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 0;
-    height: 60%;
-    background: linear-gradient(180deg, #3B82F6, #60A5FA);
-    border-radius: 0 4rpx 4rpx 0;
-    transition: width 0.2s ease;
-  }
-
-  /* 优化: hover状态 - 浅蓝背景 + 轻微投影 */
   &:hover {
-    background: rgba(246, 249, 255, 0.9); /* 优化: #F6F9FF */
-    box-shadow: 0 2rpx 8rpx rgba(59, 130, 246, 0.08); /* 优化: 轻微投影 */
-    transform: translateX(4rpx);
+    background: rgba(239, 246, 255, 0.8);
 
-    &::before {
-      width: 6rpx; /* 优化: 3px强调线 */
-    }
-
-    .menu-icon {
-      transform: translateY(-1rpx); /* 优化: 图标上浮1px */
+    .stat-value {
+      color: #3B82F6;
     }
   }
 
   &:active {
-    transform: translateX(0) scale(0.98);
-  }
-
-  /* 退出登录的hover状态 */
-  &.menu-item-danger {
-    /* 优化: 默认状态不显示红色背景,降低冲击感 */
-    &:hover {
-      background: rgba(254, 242, 242, 0.9); /* 浅红色背景 */
-      box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.08);
-
-      &::before {
-        background: linear-gradient(180deg, #EF4444, #F87171);
-      }
-    }
+    transform: scale(0.97);
   }
 }
 
-/* 优化: 为功能图标添加个性色 */
-.menu-icon {
-  font-size: 32rpx; /* 16px */
+.stat-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1E293B;
   line-height: 1;
-  width: 32rpx; /* 优化: 固定宽度,保证对齐 */
+  margin-bottom: 4px;
+  transition: color 0.15s ease;
+}
+
+.stat-label {
+  font-size: 10px;
+  color: #94A3B8;
+  line-height: 1;
+}
+
+/* ========== 分割线 ========== */
+.section-divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.05);
+  margin: 6px 0 8px;
+}
+
+/* ========== 菜单项列表 ========== */
+.menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: rgba(248, 250, 252, 0.8);
+
+    .menu-arrow {
+      opacity: 1;
+      transform: translateX(2px);
+    }
+  }
+
+  &:active {
+    background: rgba(241, 245, 249, 1);
+  }
+}
+
+.menu-icon {
+  font-size: 15px;
+  line-height: 1;
+  width: 20px;
   text-align: center;
-  transition: transform 0.2s ease;
   flex-shrink: 0;
 }
 
-/* 主页 - 品牌蓝 */
-.menu-icon-profile {
-  filter: grayscale(0.3) brightness(1.1);
-}
-
-.menu-item:hover .menu-icon-profile {
-  filter: grayscale(0) brightness(1.2) hue-rotate(-10deg);
-}
-
-/* 收藏 - 金黄色 */
-.menu-icon-favorites {
-  filter: grayscale(0.3) brightness(1.1);
-}
-
-.menu-item:hover .menu-icon-favorites {
-  filter: grayscale(0) brightness(1.2) hue-rotate(10deg);
-}
-
-/* 设置 - 灰蓝色 */
-.menu-icon-settings {
-  filter: grayscale(0.4) brightness(1);
-}
-
-.menu-item:hover .menu-icon-settings {
-  filter: grayscale(0) brightness(1.1);
-}
-
-/* 退出登录 - 灰色(默认) → 红色(hover) */
-.menu-icon-logout {
-  filter: grayscale(1) brightness(0.8);
-}
-
-.menu-item-danger:hover .menu-icon-logout {
-  filter: grayscale(0) brightness(1) hue-rotate(-10deg);
-}
-
 .menu-text {
-  font-size: 28rpx; /* 14px */
+  font-size: 13px;
   font-weight: 500;
-  color: #1E3A8A; /* 深蓝色 */
-  line-height: 1;
+  color: #334155;
   flex: 1;
 }
 
-/* 优化: 退出登录的文字颜色 - 默认灰色,hover变红 */
-.menu-item-danger .menu-text {
-  color: #64748B; /* 默认灰蓝色 */
-  transition: color 0.2s ease;
+.menu-arrow {
+  font-size: 14px;
+  color: #CBD5E1;
+  opacity: 0;
+  transition: all 0.15s ease;
 }
 
-.menu-item-danger:hover .menu-text {
-  color: #EF4444; /* hover时变红 */
+/* ========== 退出登录区域 - 优化：降低存在感 ========== */
+.logout-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
-/* ==========  最后添加分割线 - 退出登录前 ========== */
-.menu-item-danger {
-  margin-top: 12rpx; /* 优化: 与上方拉开距离 */
-  padding-top: 28rpx; /* 优化: 增加顶部内边距 */
-  border-top: 2rpx solid rgba(100, 116, 139, 0.12); /* 优化: 添加顶部分割线 */
+.menu-item-logout {
+  .menu-icon-logout {
+    filter: grayscale(1) opacity(0.5);
+  }
+
+  .menu-text {
+    color: #94A3B8;
+    font-weight: 400;
+  }
+
+  &:hover {
+    background: rgba(254, 242, 242, 0.6);
+
+    .menu-icon-logout {
+      filter: grayscale(0) opacity(1);
+    }
+
+    .menu-text {
+      color: #EF4444;
+    }
+  }
 }
 </style>

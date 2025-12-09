@@ -141,9 +141,12 @@ export function useNavigation() {
 
   /** 跳转到搜索结果页 */
   const toSearchResult = (keyword: string) => {
-    navigateTo(`/pages/search/result?keyword=${encodeURIComponent(keyword)}`, {
-      failMessage: '搜索功能开发中'
-    })
+    if (!keyword.trim()) {
+      // 空关键词时直接跳转到搜索页（显示热门搜索和历史）
+      navigateTo('/pages/search/result')
+    } else {
+      navigateTo(`/pages/search/result?keyword=${encodeURIComponent(keyword.trim())}`)
+    }
   }
 
   // ================== 用户中心 ==================

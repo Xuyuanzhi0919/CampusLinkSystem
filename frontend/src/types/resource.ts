@@ -33,6 +33,7 @@ export interface ResourceItem {
   category: ResourceCategory
   courseName?: string
   score: number            // 积分要求
+  views?: number           // 浏览次数
   downloads: number
   likes: number
   favorites?: number       // 收藏数（可选）

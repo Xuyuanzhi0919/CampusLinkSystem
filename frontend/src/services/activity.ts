@@ -12,6 +12,8 @@ import type { PageResult } from '@/types/api'
 export const getActivityList = (params: {
   clubId?: number
   status?: number
+  keyword?: string
+  sortBy?: string
   page?: number
   pageSize?: number
 } = {}) => {

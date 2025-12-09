@@ -381,8 +381,8 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .home-page {
   min-height: 100vh;
-  // 页面基础背景色
-  background: #FAFBFC;
+  // 页面基础背景色：底部使用深色与 Footer 融合，避免白色空白
+  background: #0F172A; // Footer 深色
   position: relative;
 
   // 主背景层：全宽铺满，渐变光斑
@@ -395,6 +395,8 @@ onUnmounted(() => {
     right: 0;
     height: 1200px;
     background:
+      // 页面顶部浅色基底
+      linear-gradient(180deg, #FAFBFC 0%, #FAFBFC 100%),
       // 左上角主光斑（蓝色系）
       radial-gradient(ellipse 80% 60% at 8% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
       // 右上角辅助光斑（青绿色系）
@@ -435,6 +437,8 @@ onUnmounted(() => {
 .main-content {
   position: relative;
   z-index: 1;
+  // 浅色背景覆盖深色底色
+  background: #FAFBFC;
   // 顶部间距
   padding-top: 48px;
   // 左右安全边距 80px - 专业级呼吸感

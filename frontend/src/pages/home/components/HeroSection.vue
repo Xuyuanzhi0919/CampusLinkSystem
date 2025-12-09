@@ -567,6 +567,8 @@ $hero-red: #EF4444;
   overflow: hidden;
   margin-top: 64px;
   min-height: 580px;
+  // 浅色背景确保不透出底部深色
+  background: #FAFBFC;
 }
 
 .hero-bg {

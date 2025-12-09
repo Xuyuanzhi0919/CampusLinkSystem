@@ -14,6 +14,14 @@ export interface TagItem {
   useCount: number
   category?: string
   description?: string
+  /** 热度趋势：up=上升, down=下降, stable=稳定 */
+  trend?: 'up' | 'down' | 'stable'
+  /** 趋势变化百分比（正数上升，负数下降） */
+  trendPercent?: number
+  /** 关联的问题数量 */
+  questionCount?: number
+  /** 关联的资源数量 */
+  resourceCount?: number
 }
 
 /**

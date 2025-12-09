@@ -403,6 +403,19 @@ public class ResourceService {
         response.setLikes(resource.getLikes());
         response.setCreatedAt(resource.getCreatedAt());
 
+        // 设置浏览次数（临时使用下载次数的估算值，与详情页一致）
+        response.setViews(resource.getDownloads() != null ? resource.getDownloads() * 3 : 0);
+
+        // 统计收藏数
+        Long favoriteCount = favoriteService.getFavoriteCount("resource", resource.getRid());
+        response.setFavorites(favoriteCount != null ? favoriteCount.intValue() : 0);
+
+        // 填充评分相关字段（从ResourceRatingService获取真实数据）
+        ResourceRatingService.RatingResult ratingResult =
+            resourceRatingService.calculateRatingStatistics(resource.getRid(), null);
+        response.setAverageRating(ratingResult.getAverageRating());
+        response.setTotalRatings(ratingResult.getTotalRatings());
+
         // 查询上传者信息
         User uploader = userMapper.selectById(resource.getUploaderId());
         if (uploader != null) {

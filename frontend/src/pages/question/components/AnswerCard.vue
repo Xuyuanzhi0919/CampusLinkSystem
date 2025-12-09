@@ -1,21 +1,31 @@
 <template>
-  <view class="answer-card" :class="{ accepted: answer.isAccepted }">
-    <!-- 已采纳标识 -->
-    <view v-if="answer.isAccepted" class="accepted-badge">
-      <text class="badge-icon">✅</text>
-      <text class="badge-label">已采纳</text>
-    </view>
+  <CCard
+    variant="outlined"
+    :hoverable="true"
+    class="answer-card"
+    :class="{ 'answer-card--accepted': answer.isAccepted }"
+  >
+    <!-- 最佳答案标识 -->
+    <BestAnswerBadge v-if="answer.isAccepted" />
 
-    <!-- 回答者信息 -->
-    <view class="responder-info">
-      <image
-        :src="answer.responderAvatar || '/static/default-avatar.png'"
-        class="responder-avatar"
-        mode="aspectFill"
-      />
-      <view class="responder-details">
-        <text class="responder-name">{{ answer.responderName }}</text>
-        <text class="responder-time">{{ formatTime(answer.createdAt) }}</text>
+    <!-- 回答者信息 + 更多操作 -->
+    <view class="answer-header">
+      <!-- 左侧：头像 + 昵称 + 时间 -->
+      <view class="responder-info">
+        <image
+          :src="answer.responderAvatar || '/static/default-avatar.png'"
+          class="responder-avatar"
+          mode="aspectFill"
+        />
+        <view class="responder-details">
+          <text class="responder-name">{{ answer.responderName }}</text>
+          <text class="responder-time">{{ formatTime(answer.createdAt) }}</text>
+        </view>
+      </view>
+
+      <!-- 右侧：更多操作按钮 -->
+      <view class="more-actions" @click="showMoreMenu">
+        <text class="more-icon">⋯</text>
       </view>
     </view>
 
@@ -35,36 +45,84 @@
     </view>
 
     <!-- 底部操作栏 -->
-    <view class="answer-actions">
-      <!-- 点赞按钮 -->
-      <view class="action-item like" :class="{ liked: answer.isLiked }" @click="handleLike">
-        <text class="action-icon">{{ answer.isLiked ? '👍' : '👍🏻' }}</text>
-        <text class="action-label">{{ formatNumber(answer.likes) }}</text>
+    <view class="answer-footer">
+      <!-- 左侧：点赞按钮 -->
+      <view class="footer-left">
+        <CButton
+          :type="answer.isLiked ? 'primary' : 'ghost'"
+          size="sm"
+          :plain="!answer.isLiked"
+          @click="handleLike"
+        >
+          <text class="action-icon">{{ answer.isLiked ? '👍' : '👍🏻' }}</text>
+          <text class="action-label">{{ formatNumber(answer.likes) }}</text>
+        </CButton>
       </view>
 
-      <!-- 采纳按钮（仅提问者可见且问题未解决） -->
-      <view
-        v-if="canAccept && !answer.isAccepted"
-        class="action-item accept"
-        @click="handleAccept"
-      >
-        <text class="action-icon">✅</text>
-        <text class="action-label">采纳</text>
-      </view>
+      <!-- 右侧：采纳/删除按钮 -->
+      <view class="footer-right">
+        <!-- 采纳按钮（仅提问者可见且问题未解决） -->
+        <CButton
+          v-if="canAccept && !answer.isAccepted"
+          type="success"
+          size="sm"
+          @click="handleAccept"
+        >
+          <text class="action-icon">✅</text>
+          采纳
+        </CButton>
 
-      <!-- 删除按钮（仅回答者本人可见） -->
-      <view v-if="isMyAnswer" class="action-item delete" @click="handleDelete">
-        <text class="action-icon">🗑️</text>
-        <text class="action-label">删除</text>
+        <!-- 删除按钮（仅回答者本人可见） -->
+        <CButton
+          v-if="isMyAnswer"
+          type="danger"
+          size="sm"
+          plain
+          @click="handleDelete"
+        >
+          <text class="action-icon">🗑️</text>
+          删除
+        </CButton>
       </view>
     </view>
-  </view>
+
+    <!-- 更多菜单弹出层 -->
+    <view v-if="showMenu" class="menu-overlay" @click="hideMoreMenu">
+      <view class="menu-content" @click.stop>
+        <!-- 复制内容 -->
+        <view class="menu-item" @click="handleCopy">
+          <text class="menu-icon">📋</text>
+          <text class="menu-label">复制内容</text>
+        </view>
+
+        <!-- 分享回答 -->
+        <view class="menu-item" @click="handleShare">
+          <text class="menu-icon">📤</text>
+          <text class="menu-label">分享回答</text>
+        </view>
+
+        <!-- 举报回答（非本人） -->
+        <view v-if="!isMyAnswer" class="menu-item" @click="handleReport">
+          <text class="menu-icon">🚨</text>
+          <text class="menu-label">举报</text>
+        </view>
+
+        <!-- 取消 -->
+        <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
+          <text class="menu-label">取消</text>
+        </view>
+      </view>
+    </view>
+  </CCard>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import type { AnswerItem } from '@/types/question'
 import { useUserStore } from '@/stores/user'
+import { CCard, CButton } from '@/components/ui'
+import BestAnswerBadge from './BestAnswerBadge.vue'
+import { formatNumber, formatTime } from '@/utils/formatters'
 
 // Props
 interface Props {
@@ -83,6 +141,9 @@ const emit = defineEmits<{
 
 // Store
 const userStore = useUserStore()
+
+// 更多菜单状态
+const showMenu = ref(false)
 
 // 是否是我的回答
 const isMyAnswer = computed(() => {
@@ -114,83 +175,82 @@ const handlePreviewImage = (index: number) => {
   })
 }
 
-// 格式化数字
-const formatNumber = (num: number): string => {
-  if (num >= 10000) {
-    return (num / 10000).toFixed(1) + 'w'
-  }
-  if (num >= 1000) {
-    return (num / 1000).toFixed(1) + 'k'
-  }
-  return num.toString()
+// 显示更多菜单
+const showMoreMenu = () => {
+  showMenu.value = true
 }
 
-// 格式化时间
-const formatTime = (timeStr: string): string => {
-  const time = new Date(timeStr).getTime()
-  const now = Date.now()
-  const diff = now - time
+// 隐藏更多菜单
+const hideMoreMenu = () => {
+  showMenu.value = false
+}
 
-  const minute = 60 * 1000
-  const hour = 60 * minute
-  const day = 24 * hour
-  const month = 30 * day
+// 复制内容
+const handleCopy = () => {
+  hideMoreMenu()
+  uni.setClipboardData({
+    data: props.answer.content,
+    success: () => {
+      uni.showToast({
+        title: '已复制到剪贴板',
+        icon: 'success'
+      })
+    }
+  })
+}
 
-  if (diff < minute) {
-    return '刚刚'
-  } else if (diff < hour) {
-    return Math.floor(diff / minute) + ' 分钟前'
-  } else if (diff < day) {
-    return Math.floor(diff / hour) + ' 小时前'
-  } else if (diff < month) {
-    return Math.floor(diff / day) + ' 天前'
-  } else {
-    const date = new Date(time)
-    return `${date.getMonth() + 1}月${date.getDate()}日`
-  }
+// 分享回答
+const handleShare = () => {
+  hideMoreMenu()
+  uni.showToast({
+    title: '分享功能开发中',
+    icon: 'none'
+  })
+}
+
+// 举报回答
+const handleReport = () => {
+  hideMoreMenu()
+  uni.showModal({
+    title: '举报',
+    content: '确定要举报这个回答吗？',
+    success: (res) => {
+      if (res.confirm) {
+        uni.showToast({
+          title: '举报成功，我们会尽快处理',
+          icon: 'success'
+        })
+      }
+    }
+  })
 }
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
-
+// ===================================
+// 回答卡片容器
+// ===================================
 .answer-card {
-  background: $white;
-  border-radius: $radius-md;
-  padding: $sp-6;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.04);
-  transition: $transition-slow;
-  position: relative;
+  margin-bottom: $sp-6;
+  transition: all $duration-base $ease-out;
 
-  &.accepted {
-    border: 2rpx solid $success;
-    background: linear-gradient(135deg, $white 0%, $success-50 100%);
+  // 最佳答案样式增强
+  &--accepted {
+    border-color: #FFD700 !important;
+    box-shadow: 0 6rpx 20rpx rgba(#FFD700, 0.25) !important;
   }
 }
 
-// 已采纳标识
-.accepted-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
+// ===================================
+// 回答头部（头像 + 昵称 + 更多按钮）
+// ===================================
+.answer-header {
   display: flex;
   align-items: center;
-  gap: $sp-1;
-  padding: $sp-2 $sp-4;
-  @include gradient-success;
-  color: $white;
-  border-radius: 0 $radius-md 0 $radius-md;
-  font-size: $font-size-xs + 2rpx;
-  font-weight: $font-weight-semibold;
-  box-shadow: 0 2rpx 8rpx rgba($success, 0.3);
-
-  .badge-icon {
-    font-size: $font-size-xs + 2rpx;
-  }
-
-  .badge-label {
-    font-size: $font-size-xs + 2rpx;
-  }
+  justify-content: space-between;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-4;
+  border-bottom: 1rpx solid $gray-100;
 }
 
 // 回答者信息
@@ -198,13 +258,15 @@ const formatTime = (timeStr: string): string => {
   display: flex;
   align-items: center;
   gap: $sp-4;
-  margin-bottom: $sp-4;
+  flex: 1;
+  min-width: 0;
 
   .responder-avatar {
-    width: $sp-16;
-    height: $sp-16;
+    width: 80rpx;
+    height: 80rpx;
     border-radius: $radius-full;
-    background: $gray-100;
+    background: $gray-200;
+    flex-shrink: 0;
   }
 
   .responder-details {
@@ -212,122 +274,200 @@ const formatTime = (timeStr: string): string => {
     display: flex;
     flex-direction: column;
     gap: $sp-1;
+    min-width: 0;
 
     .responder-name {
-      font-size: $font-size-sm + 2rpx;
+      font-size: $font-size-base;
       font-weight: $font-weight-semibold;
       color: $gray-800;
+      @include text-ellipsis(1);
     }
 
     .responder-time {
-      font-size: $font-size-xs + 2rpx;
-      color: $gray-400;
+      font-size: $font-size-sm;
+      color: $gray-500;
     }
   }
 }
 
+// 更多操作按钮
+.more-actions {
+  flex-shrink: 0;
+  width: 64rpx;
+  height: 64rpx;
+  @include flex-center;
+  border-radius: $radius-full;
+  cursor: pointer;
+  transition: background $duration-base;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    background: $gray-200;
+  }
+
+  .more-icon {
+    font-size: $font-size-2xl;
+    color: $gray-600;
+    font-weight: $font-weight-bold;
+    letter-spacing: 2rpx;
+  }
+}
+
+// ===================================
 // 回答内容
+// ===================================
 .answer-content {
   font-size: $font-size-base;
   color: $gray-800;
   line-height: $line-height-loose;
-  margin-bottom: $sp-4;
+  margin-bottom: $sp-6;
   white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
+// ===================================
 // 图片列表
+// ===================================
 .answer-images {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-3;
-  margin-bottom: $sp-4;
+  gap: $sp-4;
+  margin-bottom: $sp-6;
 
   .answer-image {
     width: 200rpx;
     height: 200rpx;
     border-radius: $radius-base;
     background: $gray-100;
+    cursor: pointer;
+    transition: transform $duration-base, box-shadow $duration-base;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: $shadow-md;
+    }
   }
 }
 
+// ===================================
 // 底部操作栏
-.answer-actions {
+// ===================================
+.answer-footer {
   display: flex;
   align-items: center;
-  gap: $sp-6;
+  justify-content: space-between;
   padding-top: $sp-4;
   border-top: 1rpx solid $gray-100;
+}
 
-  .action-item {
-    display: flex;
-    align-items: center;
-    gap: $sp-1;
-    padding: $sp-2 $sp-4;
-    background: $gray-100;
-    border-radius: $radius-xl;
-    transition: $transition-slow;
-    font-size: $font-size-sm;
-    color: $gray-600;
+.footer-left,
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
 
-    .action-icon {
-      font-size: $font-size-sm;
-    }
+.action-icon {
+  margin-right: $sp-1;
+}
 
-    .action-label {
-      font-size: $font-size-sm;
-    }
+// ===================================
+// 更多菜单弹出层
+// ===================================
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($gray-900, 0.5);
+  z-index: $z-modal;
+  display: flex;
+  align-items: flex-end;
+  animation: fadeIn $duration-slow $ease-out;
+}
 
-    &:active {
-      transform: scale(0.95);
-    }
+.menu-content {
+  width: 100%;
+  background: $white;
+  border-radius: $radius-xl $radius-xl 0 0;
+  padding: $sp-6 0;
+  animation: slideUp $duration-slow $ease-out;
+}
 
-    // 点赞按钮
-    &.like {
-      &.liked {
-        background: rgba($primary, 0.1);
-        color: $primary;
+.menu-item {
+  display: flex;
+  align-items: center;
+  padding: $sp-6 $sp-12;
+  transition: background $duration-base;
+  cursor: pointer;
 
-        .action-label {
-          font-weight: $font-weight-semibold;
-        }
-      }
+  &:active {
+    background: $gray-50;
+  }
 
-      &:active {
-        animation: like-bounce $duration-slow $ease-out;
-      }
-    }
+  &--cancel {
+    justify-content: center;
+    border-top: 1rpx solid $gray-100;
+    margin-top: $sp-4;
+    padding-top: $sp-8;
 
-    // 采纳按钮
-    &.accept {
-      background: rgba($success, 0.1);
-      color: $success;
-      font-weight: $font-weight-semibold;
-
-      &:active {
-        background: rgba($success, 0.2);
-      }
-    }
-
-    // 删除按钮
-    &.delete {
-      background: rgba($error, 0.1);
-      color: $error;
-
-      &:active {
-        background: rgba($error, 0.2);
-      }
+    .menu-label {
+      color: $gray-500;
     }
   }
 }
 
-// 点赞动画
-@keyframes like-bounce {
-  0%,
-  100% {
-    transform: scale(1);
+.menu-icon {
+  font-size: $font-size-2xl;
+  margin-right: $sp-6;
+}
+
+.menu-label {
+  font-size: $font-size-lg;
+  color: $gray-800;
+}
+
+// ===================================
+// 动画定义
+// ===================================
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  50% {
-    transform: scale(1.2);
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+// ===================================
+// 响应式适配
+// ===================================
+@include mobile {
+  .responder-info {
+    .responder-avatar {
+      width: 72rpx;
+      height: 72rpx;
+    }
+  }
+
+  .answer-images {
+    .answer-image {
+      width: 160rpx;
+      height: 160rpx;
+    }
   }
 }
 </style>

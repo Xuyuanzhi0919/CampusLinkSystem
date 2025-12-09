@@ -514,9 +514,36 @@ const handleDeleteQuestion = () => {
             icon: 'success'
           })
 
-          // 返回上一页
+          // 延迟后返回问答广场（使用智能返回逻辑）
           setTimeout(() => {
-            uni.navigateBack()
+            const pages = getCurrentPages()
+
+            // 检查页面栈，决定返回方式
+            if (pages.length === 1) {
+              // 页面栈只有一页，直接跳转到问答中心
+              uni.switchTab({
+                url: '/pages/question/index'
+              })
+            } else if (pages.length >= 2) {
+              // 获取上一页的路径
+              const prevPage = pages[pages.length - 2]
+              const prevRoute = prevPage.route || ''
+
+              // 如果上一页是问答中心（tabBar页面），使用 switchTab
+              if (prevRoute === 'pages/question/index') {
+                uni.switchTab({
+                  url: '/pages/question/index'
+                })
+              } else {
+                // 否则正常返回
+                uni.navigateBack()
+              }
+            } else {
+              // 默认跳转到问答中心
+              uni.switchTab({
+                url: '/pages/question/index'
+              })
+            }
           }, 1500)
         } catch (error: any) {
           console.error('删除失败:', error)

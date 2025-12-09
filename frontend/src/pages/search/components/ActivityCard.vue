@@ -111,6 +111,8 @@ const formatDate = (dateStr: string): string => {
   border-radius: 20rpx;
   box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
+  width: 100%;
+  box-sizing: border-box;
 
   &:active {
     transform: scale(0.98);

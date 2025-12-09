@@ -341,95 +341,98 @@
         scroll-y
         @scrolltolower="loadMore"
       >
-        <!-- 全部结果 -->
-        <template v-if="activeTab === 'all'">
-          <!-- 资源结果 -->
-          <view v-if="resourceList.length > 0" class="result-group">
-            <view class="group-header">
-              <text class="group-title">📚 资源</text>
-              <text class="group-more" @click="switchTab('resource')">查看更多 →</text>
+        <!-- 内容容器：解决 scroll-view padding-right 不生效问题 -->
+        <view class="result-list-inner">
+          <!-- 全部结果 -->
+          <template v-if="activeTab === 'all'">
+            <!-- 资源结果 -->
+            <view v-if="resourceList.length > 0" class="result-group">
+              <view class="group-header">
+                <text class="group-title">📚 资源</text>
+                <text class="group-more" @click="switchTab('resource')">查看更多 →</text>
+              </view>
+              <view class="result-items">
+                <ResourceCard
+                  v-for="item in resourceList.slice(0, 3)"
+                  :key="item.resourceId"
+                  :resource="item"
+                  @click="goToResource(item.resourceId)"
+                />
+              </view>
             </view>
-            <view class="result-items">
-              <ResourceCard
-                v-for="item in resourceList.slice(0, 3)"
-                :key="item.resourceId"
-                :resource="item"
-                @click="goToResource(item.resourceId)"
-              />
-            </view>
-          </view>
 
-          <!-- 问答结果 -->
-          <view v-if="questionList.length > 0" class="result-group">
-            <view class="group-header">
-              <text class="group-title">❓ 问答</text>
-              <text class="group-more" @click="switchTab('question')">查看更多 →</text>
+            <!-- 问答结果 -->
+            <view v-if="questionList.length > 0" class="result-group">
+              <view class="group-header">
+                <text class="group-title">❓ 问答</text>
+                <text class="group-more" @click="switchTab('question')">查看更多 →</text>
+              </view>
+              <view class="result-items">
+                <QuestionCard
+                  v-for="item in questionList.slice(0, 3)"
+                  :key="item.qid"
+                  :question="item"
+                  @click="goToQuestion(item.qid)"
+                />
+              </view>
             </view>
-            <view class="result-items">
-              <QuestionCard
-                v-for="item in questionList.slice(0, 3)"
-                :key="item.qid"
-                :question="item"
-                @click="goToQuestion(item.qid)"
-              />
-            </view>
-          </view>
 
-          <!-- 活动结果 -->
-          <view v-if="activityList.length > 0" class="result-group">
-            <view class="group-header">
-              <text class="group-title">🎉 活动</text>
-              <text class="group-more" @click="switchTab('activity')">查看更多 →</text>
+            <!-- 活动结果 -->
+            <view v-if="activityList.length > 0" class="result-group">
+              <view class="group-header">
+                <text class="group-title">🎉 活动</text>
+                <text class="group-more" @click="switchTab('activity')">查看更多 →</text>
+              </view>
+              <view class="result-items">
+                <ActivityCard
+                  v-for="item in activityList.slice(0, 3)"
+                  :key="item.activityId"
+                  :activity="item"
+                  @click="goToActivity(item.activityId)"
+                />
+              </view>
             </view>
-            <view class="result-items">
-              <ActivityCard
-                v-for="item in activityList.slice(0, 3)"
-                :key="item.activityId"
-                :activity="item"
-                @click="goToActivity(item.activityId)"
-              />
+          </template>
+
+          <!-- 单类型结果 -->
+          <template v-else>
+            <view class="result-items result-items--full">
+              <template v-if="activeTab === 'resource'">
+                <ResourceCard
+                  v-for="item in resourceList"
+                  :key="item.resourceId"
+                  :resource="item"
+                  @click="goToResource(item.resourceId)"
+                />
+              </template>
+              <template v-else-if="activeTab === 'question'">
+                <QuestionCard
+                  v-for="item in questionList"
+                  :key="item.qid"
+                  :question="item"
+                  @click="goToQuestion(item.qid)"
+                />
+              </template>
+              <template v-else-if="activeTab === 'activity'">
+                <ActivityCard
+                  v-for="item in activityList"
+                  :key="item.activityId"
+                  :activity="item"
+                  @click="goToActivity(item.activityId)"
+                />
+              </template>
             </view>
-          </view>
-        </template>
 
-        <!-- 单类型结果 -->
-        <template v-else>
-          <view class="result-items result-items--full">
-            <template v-if="activeTab === 'resource'">
-              <ResourceCard
-                v-for="item in resourceList"
-                :key="item.resourceId"
-                :resource="item"
-                @click="goToResource(item.resourceId)"
-              />
-            </template>
-            <template v-else-if="activeTab === 'question'">
-              <QuestionCard
-                v-for="item in questionList"
-                :key="item.qid"
-                :question="item"
-                @click="goToQuestion(item.qid)"
-              />
-            </template>
-            <template v-else-if="activeTab === 'activity'">
-              <ActivityCard
-                v-for="item in activityList"
-                :key="item.activityId"
-                :activity="item"
-                @click="goToActivity(item.activityId)"
-              />
-            </template>
-          </view>
-
-          <!-- 加载更多状态 -->
-          <view v-if="loadingMore" class="loading-more">
-            <view class="loading-spinner loading-spinner--small"></view>
-            <text>加载中...</text>
-          </view>
-          <view v-else-if="noMore" class="no-more">
-            <text>— 没有更多了 —</text>
-          </view>
-        </template>
+            <!-- 加载更多状态 -->
+            <view v-if="loadingMore" class="loading-more">
+              <view class="loading-spinner loading-spinner--small"></view>
+              <text>加载中...</text>
+            </view>
+            <view v-else-if="noMore" class="no-more">
+              <text>— 没有更多了 —</text>
+            </view>
+          </template>
+        </view>
       </scroll-view>
     </view>
   </view>
@@ -740,6 +743,13 @@ const clearKeyword = () => {
 const clearTopicSource = () => {
   isFromTopic.value = false
   topicInfo.value = null
+  // 同时清空搜索状态，回到搜索默认页
+  keyword.value = ''
+  hasSearched.value = false
+  // 清空搜索结果
+  resourceList.value = []
+  questionList.value = []
+  activityList.value = []
 }
 
 // 获取趋势箭头符号
@@ -2031,10 +2041,16 @@ onLoad((options: any) => {
   }
 }
 
-/* 结果列表 - 修复：确保左右间距一致 */
+/* 结果列表 - scroll-view 容器 */
 .result-list {
   flex: 1;
-  padding: 24rpx 32rpx 24rpx 32rpx;
+  box-sizing: border-box;
+}
+
+/* 内容容器：解决 scroll-view padding-right 在部分平台不生效的问题 */
+.result-list-inner {
+  padding: 24rpx 32rpx;
+  min-height: 100%;
   box-sizing: border-box;
 }
 
@@ -2099,6 +2115,7 @@ onLoad((options: any) => {
   gap: 16rpx;
   width: 100%;
   box-sizing: border-box;
+  overflow: hidden;
 
   &--full {
     gap: 20rpx;

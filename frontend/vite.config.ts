@@ -21,9 +21,9 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        // 全局注入 SCSS 变量和 mixins，避免在每个组件中手动 @import
-        additionalData: `@use "@/styles/design-tokens.scss" as *;`,
-        // 忽略 @import 弃用警告（Dart Sass 3.0 之前的过渡期）
+        // 静默 Sass 弃用警告（Dart Sass 3.0 之前的过渡期）
+        // 'import' - @import 规则将被移除
+        // 'global-builtin' - 全局内置模块将被移除
         silenceDeprecations: ['import', 'global-builtin'],
       }
     }

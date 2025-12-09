@@ -2031,10 +2031,11 @@ onLoad((options: any) => {
   }
 }
 
-/* 结果列表 */
+/* 结果列表 - 修复：确保左右间距一致 */
 .result-list {
   flex: 1;
-  padding: 24rpx 32rpx;
+  padding: 24rpx 32rpx 24rpx 32rpx;
+  box-sizing: border-box;
 }
 
 /* 优化1：增加分区间距 40→64rpx (32px) */
@@ -2096,6 +2097,8 @@ onLoad((options: any) => {
   display: flex;
   flex-direction: column;
   gap: 16rpx;
+  width: 100%;
+  box-sizing: border-box;
 
   &--full {
     gap: 20rpx;

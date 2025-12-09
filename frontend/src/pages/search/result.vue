@@ -110,13 +110,21 @@
           <view class="hot-tags-grid">
             <view
               v-for="(item, index) in hotKeywords"
-              :key="item"
+              :key="item.id"
               class="hot-tag-item"
               :class="{ 'hot-tag-item--top': index < 3 }"
-              @click="handleTagClick(item)"
+              @click="handleTagClick(item.keyword)"
             >
               <text v-if="index < 3" class="hot-rank">{{ index + 1 }}</text>
-              <text class="hot-text">{{ item }}</text>
+              <text class="hot-text">{{ item.keyword }}</text>
+              <!-- 动态标签：新/热/爆 -->
+              <view v-if="item.tag" class="hot-badge" :class="`hot-badge--${item.tag}`">
+                <text>{{ getHotTagLabel(item.tag) }}</text>
+              </view>
+              <!-- 趋势图标 -->
+              <text v-if="item.trend && index >= 3" class="hot-trend" :class="`hot-trend--${item.trend}`">
+                {{ getTrendIcon(item.trend) }}
+              </text>
             </view>
           </view>
         </view>
@@ -453,12 +461,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getResourceList } from '@/services/resource'
 import { getQuestionList } from '@/services/question'
 import { getActivityList } from '@/services/activity'
-import { getSearchSuggestions, type SuggestItem } from '@/services/search'
+import { getSearchSuggestions, getHotKeywords, reportSearchKeyword, type SuggestItem, type HotKeywordItem } from '@/services/search'
 import type { ResourceItem } from '@/types/resource'
 import type { QuestionItem } from '@/types/question'
 import ResourceCard from './components/ResourceCard.vue'
@@ -539,11 +547,90 @@ const noMore = computed(() => {
   return false
 })
 
-// 热门搜索词（可从后端获取）
-const hotKeywords = ref([
-  '高数', '英语四级', '考研', '数据结构',
-  '操作系统', '计算机网络', '线性代数', 'Python'
-])
+// 热门搜索词（从后端获取）
+const hotKeywords = ref<HotKeywordItem[]>([])
+const hotKeywordsLoading = ref(false)
+const hotKeywordsError = ref(false)
+
+// 默认热词（后端API不可用时的备选）
+const defaultHotKeywords: HotKeywordItem[] = [
+  { id: 1, keyword: '高数', searchCount: 12580, tag: 'hot' },
+  { id: 2, keyword: '英语四级', searchCount: 9876, tag: 'explode' },
+  { id: 3, keyword: '考研', searchCount: 8654, tag: 'hot' },
+  { id: 4, keyword: '数据结构', searchCount: 7432 },
+  { id: 5, keyword: '操作系统', searchCount: 6521, tag: 'new' },
+  { id: 6, keyword: '计算机网络', searchCount: 5890 },
+  { id: 7, keyword: '线性代数', searchCount: 4567 },
+  { id: 8, keyword: 'Python', searchCount: 3456, trend: 'up', trendValue: 3 },
+]
+
+// 热词刷新定时器
+let hotKeywordsTimer: ReturnType<typeof setInterval> | null = null
+const HOT_KEYWORDS_REFRESH_INTERVAL = 5 * 60 * 1000  // 5分钟刷新一次
+
+// 获取热门搜索词
+const fetchHotKeywords = async () => {
+  hotKeywordsLoading.value = true
+  hotKeywordsError.value = false
+
+  try {
+    const res = await getHotKeywords(8)
+    if (res && res.length > 0) {
+      hotKeywords.value = res
+    } else {
+      // API 返回空数据时使用默认热词
+      hotKeywords.value = defaultHotKeywords
+    }
+  } catch (error) {
+    console.error('获取热门搜索词失败:', error)
+    hotKeywordsError.value = true
+    // 使用默认热词作为备选
+    hotKeywords.value = defaultHotKeywords
+  } finally {
+    hotKeywordsLoading.value = false
+  }
+}
+
+// 启动热词自动刷新
+const startHotKeywordsAutoRefresh = () => {
+  // 清除之前的定时器
+  if (hotKeywordsTimer) {
+    clearInterval(hotKeywordsTimer)
+  }
+  // 设置新的定时器
+  hotKeywordsTimer = setInterval(() => {
+    fetchHotKeywords()
+  }, HOT_KEYWORDS_REFRESH_INTERVAL)
+}
+
+// 停止热词自动刷新
+const stopHotKeywordsAutoRefresh = () => {
+  if (hotKeywordsTimer) {
+    clearInterval(hotKeywordsTimer)
+    hotKeywordsTimer = null
+  }
+}
+
+// 获取热词标签显示文本
+const getHotTagLabel = (tag: string): string => {
+  const labels: Record<string, string> = {
+    new: '新',
+    hot: '热',
+    explode: '爆'
+  }
+  return labels[tag] || ''
+}
+
+// 获取趋势图标
+const getTrendIcon = (trend: string): string => {
+  const icons: Record<string, string> = {
+    up: '↑',
+    down: '↓',
+    new: '🆕',
+    stable: ''
+  }
+  return icons[trend] || ''
+}
 
 // AI 搜索建议词
 const aiSuggestions = ref([
@@ -1200,6 +1287,12 @@ const goToActivity = (id: number) => {
 onLoad((options: any) => {
   initHistory()
 
+  // 初始化热词数据
+  fetchHotKeywords()
+
+  // 启动热词自动刷新
+  startHotKeywordsAutoRefresh()
+
   // 处理话题来源
   if (options?.source === 'topic') {
     isFromTopic.value = true
@@ -1215,6 +1308,11 @@ onLoad((options: any) => {
     keyword.value = decodeURIComponent(options.keyword)
     handleSearch()
   }
+})
+
+// 页面卸载时清理定时器
+onUnmounted(() => {
+  stopHotKeywordsAutoRefresh()
 })
 </script>
 
@@ -1760,6 +1858,59 @@ onLoad((options: any) => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+/* 热词动态标签（新/热/爆） */
+.hot-badge {
+  padding: 4rpx 10rpx;
+  border-radius: 8rpx;
+  font-size: 18rpx;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  flex-shrink: 0;
+
+  /* 新词 - 蓝色 */
+  &--new {
+    background: rgba($campus-blue, 0.12);
+    color: $campus-blue;
+  }
+
+  /* 热门 - 橙色 */
+  &--hot {
+    background: rgba(255, 107, 53, 0.12);
+    color: #FF6B35;
+  }
+
+  /* 爆款 - 红色 */
+  &--explode {
+    background: rgba(239, 68, 68, 0.12);
+    color: #EF4444;
+  }
+}
+
+/* 热词趋势指示 */
+.hot-trend {
+  font-size: 20rpx;
+  font-weight: $font-weight-semibold;
+  flex-shrink: 0;
+
+  /* 上升趋势 */
+  &--up {
+    color: #22C55E;
+  }
+
+  /* 下降趋势 */
+  &--down {
+    color: #EF4444;
+  }
+
+  /* 新上榜 */
+  &--new {
+    color: $campus-blue;
+    font-size: 18rpx;
+  }
 }
 
 /* 历史记录网格 */

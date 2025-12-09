@@ -1623,7 +1623,7 @@ onLoad((options: any) => {
   transition: all 0.2s ease;
 
   &:hover {
-    background: darken(#2563EB, 8%);
+    background: #1D4ED8; // darken(#2563EB, 8%)
   }
 
   &:active {
@@ -2027,7 +2027,7 @@ onLoad((options: any) => {
     color: $color-text-secondary;
 
     &:active {
-      background: darken(#F5F5F5, 5%);
+      background: #EBEBEB; // darken(#F5F5F5, 5%)
     }
   }
 
@@ -2036,7 +2036,7 @@ onLoad((options: any) => {
     color: #FFFFFF;
 
     &:active {
-      background: darken(#2563EB, 10%);
+      background: #1E40AF; // darken(#2563EB, 10%)
     }
   }
 }
@@ -2286,7 +2286,7 @@ onLoad((options: any) => {
   align-items: center;
   gap: 12rpx;
   padding: 24rpx 48rpx;
-  background: linear-gradient(135deg, $campus-blue 0%, darken($campus-blue, 8%) 100%);
+  background: linear-gradient(135deg, $campus-blue 0%, #1D4ED8 100%); // darken($campus-blue, 8%)
   border-radius: 48rpx;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
   cursor: pointer;

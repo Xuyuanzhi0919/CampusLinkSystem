@@ -17,6 +17,18 @@ export default defineConfig({
     }
   },
 
+  // CSS 预处理器配置
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // 全局注入 SCSS 变量和 mixins，避免在每个组件中手动 @import
+        additionalData: `@use "@/styles/design-tokens.scss" as *;`,
+        // 忽略 @import 弃用警告（Dart Sass 3.0 之前的过渡期）
+        silenceDeprecations: ['import', 'global-builtin'],
+      }
+    }
+  },
+
   // 优化配置
   optimizeDeps: {
     // 排除pdfjs-dist，让其在运行时加载

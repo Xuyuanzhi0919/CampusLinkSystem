@@ -14,17 +14,17 @@
     <!-- 分类 + 状态标签 -->
     <view class="header-tags">
       <CTag :type="getCategoryTagType(question.category)" size="md">
-        <text class="tag-icon">{{ getCategoryIcon(question.category) }}</text>
+        <Icon :name="getCategoryIconName(question.category)" :size="16" class="tag-icon" />
         {{ question.category }}
       </CTag>
 
       <CTag v-if="question.status === 1" type="success" size="md">
-        <text class="tag-icon">✅</text>
+        <Icon name="check-circle" :size="16" class="tag-icon" />
         已解决
       </CTag>
 
       <CTag v-if="question.bounty > 0" type="accent" size="md">
-        <text class="tag-icon">🎁</text>
+        <Icon name="gift" :size="16" class="tag-icon" />
         {{ question.bounty }} 积分
       </CTag>
     </view>
@@ -71,6 +71,7 @@
 <script setup lang="ts">
 import type { QuestionDetail } from '@/types/question'
 import { CCard, CTag } from '@/components/ui'
+import Icon from '@/components/icons/index.vue'
 
 // Props
 const props = defineProps<{
@@ -95,15 +96,15 @@ const getCategoryTagType = (category: string) => {
   return typeMap[category] || 'default'
 }
 
-// 获取分类图标
-const getCategoryIcon = (category: string): string => {
+// 获取分类图标名称
+const getCategoryIconName = (category: string): string => {
   const iconMap: Record<string, string> = {
-    '学习': '📚',
-    '生活': '🏠',
-    '技术': '💻',
-    '其他': '📌'
+    '学习': 'book',
+    '生活': 'life-buoy',
+    '技术': 'code',
+    '其他': 'grid'
   }
-  return iconMap[category] || '📌'
+  return iconMap[category] || 'grid'
 }
 
 // 处理面包屑点击

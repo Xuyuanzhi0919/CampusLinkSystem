@@ -3,7 +3,7 @@
     <!-- 提问者信息卡 -->
     <CCard variant="elevated" class="sidebar-card asker-card">
       <view class="card-title">
-        <text class="title-icon">👤</text>
+        <Icon name="user" :size="20" class="title-icon" />
         <text class="title-text">提问者</text>
       </view>
 
@@ -24,7 +24,7 @@
     <!-- 操作按钮卡 -->
     <CCard variant="elevated" class="sidebar-card actions-card">
       <view class="card-title">
-        <text class="title-icon">⚡</text>
+        <Icon name="lightning" :size="20" class="title-icon" />
         <text class="title-text">快捷操作</text>
       </view>
 
@@ -36,7 +36,7 @@
           block
           @click="handleFollow"
         >
-          <text class="btn-icon">{{ question.isFollowing ? '⭐' : '☆' }}</text>
+          <Icon :name="question.isFollowing ? 'star' : 'star'" :size="16" class="btn-icon" />
           {{ question.isFollowing ? '已关注' : '关注问题' }}
         </CButton>
 
@@ -47,7 +47,7 @@
           block
           @click="handleCollect"
         >
-          <text class="btn-icon">🔖</text>
+          <Icon name="bookmark" :size="16" class="btn-icon" />
           收藏
         </CButton>
 
@@ -58,7 +58,7 @@
           block
           @click="handleShare"
         >
-          <text class="btn-icon">📤</text>
+          <Icon name="share" :size="16" class="btn-icon" />
           分享
         </CButton>
 
@@ -70,7 +70,7 @@
           block
           @click="handleReport"
         >
-          <text class="btn-icon">🚨</text>
+          <Icon name="flag" :size="16" class="btn-icon" />
           举报
         </CButton>
 
@@ -83,7 +83,7 @@
           plain
           @click="handleDelete"
         >
-          <text class="btn-icon">🗑️</text>
+          <Icon name="trash" :size="16" class="btn-icon" />
           删除问题
         </CButton>
       </view>
@@ -92,31 +92,31 @@
     <!-- 问题统计卡 -->
     <CCard variant="elevated" class="sidebar-card stats-card">
       <view class="card-title">
-        <text class="title-icon">📊</text>
+        <Icon name="bar-chart" :size="20" class="title-icon" />
         <text class="title-text">数据统计</text>
       </view>
 
       <view class="stats-list">
         <view class="stat-item">
-          <text class="stat-icon">👁️</text>
+          <Icon name="eye" :size="18" class="stat-icon" />
           <text class="stat-label">浏览量</text>
           <text class="stat-value">{{ formatNumber(question.views) }}</text>
         </view>
 
         <view class="stat-item">
-          <text class="stat-icon">💬</text>
+          <Icon name="message-circle" :size="18" class="stat-icon" />
           <text class="stat-label">回答数</text>
           <text class="stat-value">{{ question.answerCount }}</text>
         </view>
 
         <view v-if="question.bounty > 0" class="stat-item stat-item--highlight">
-          <text class="stat-icon">🎁</text>
+          <Icon name="gift" :size="18" class="stat-icon" />
           <text class="stat-label">悬赏积分</text>
           <text class="stat-value">{{ question.bounty }}</text>
         </view>
 
         <view v-if="question.status === 1" class="stat-item stat-item--success">
-          <text class="stat-icon">✅</text>
+          <Icon name="check-circle" :size="18" class="stat-icon" />
           <text class="stat-label">状态</text>
           <text class="stat-value">已解决</text>
         </view>
@@ -126,7 +126,7 @@
     <!-- 相关问题推荐卡 -->
     <CCard variant="elevated" class="sidebar-card related-card">
       <view class="card-title">
-        <text class="title-icon">🔗</text>
+        <Icon name="link" :size="20" class="title-icon" />
         <text class="title-text">相关推荐</text>
       </view>
 
@@ -157,6 +157,7 @@
 import { ref, computed, onMounted } from 'vue'
 import type { QuestionDetail } from '@/types/question'
 import { CCard, CButton } from '@/components/ui'
+import Icon from '@/components/icons/index.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 
 // Props

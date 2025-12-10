@@ -62,7 +62,7 @@
                   :plain="sortBy !== 'likes'"
                   @click="handleSortChange('likes')"
                 >
-                  <text class="sort-icon">👍</text>
+                  <Icon name="thumbs-up" :size="16" class="sort-icon" />
                   点赞
                 </CButton>
 
@@ -72,7 +72,7 @@
                   :plain="sortBy !== 'created_at'"
                   @click="handleSortChange('created_at')"
                 >
-                  <text class="sort-icon">🕐</text>
+                  <Icon name="clock" :size="16" class="sort-icon" />
                   时间
                 </CButton>
               </view>
@@ -101,7 +101,7 @@
           <!-- 空状态 -->
           <CCard v-else variant="elevated" class="empty-answers-card">
             <view class="empty-answers">
-              <text class="empty-icon">💭</text>
+              <Icon name="message-circle" :size="64" class="empty-icon" />
               <text class="empty-text">还没有回答，快来抢沙发吧！</text>
             </view>
           </CCard>
@@ -126,9 +126,7 @@
 
       <!-- 错误状态 -->
       <view v-else-if="error" class="error-container">
-        <text class="error-icon">
-          {{ error.type === 'not-found' ? '😕' : error.type === 'network' ? '📡' : '⚠️' }}
-        </text>
+        <Icon :name="getErrorIcon(error.type)" :size="64" class="error-icon" />
         <text class="error-text">{{ error.message }}</text>
         <view class="error-actions">
           <CButton
@@ -148,15 +146,15 @@
     <view v-if="showMorePopup" class="more-menu-overlay" @click="closeMoreMenu">
       <view class="more-menu-content" @click.stop>
         <view v-if="isMyQuestion" class="menu-item" @click="handleEditQuestion">
-          <text class="menu-icon">✏️</text>
+          <Icon name="edit" :size="20" class="menu-icon" />
           <text class="menu-label">编辑问题</text>
         </view>
         <view class="menu-item" @click="handleReportQuestionFromMenu">
-          <text class="menu-icon">🚨</text>
+          <Icon name="flag" :size="20" class="menu-icon" />
           <text class="menu-label">举报</text>
         </view>
         <view class="menu-item" @click="handleShareFromMenu">
-          <text class="menu-icon">📤</text>
+          <Icon name="share" :size="20" class="menu-icon" />
           <text class="menu-label">分享</text>
         </view>
         <view class="menu-item menu-item--cancel" @click="closeMoreMenu">
@@ -175,7 +173,7 @@
 
     <!-- 已解决提示 -->
     <view v-else-if="question && question.status === 1" class="solved-notice">
-      <text class="solved-icon">✅</text>
+      <Icon name="check-circle" :size="20" class="solved-icon" />
       <text class="solved-text">该问题已解决</text>
     </view>
   </PageContainer>
@@ -198,6 +196,7 @@ import {
 } from '@/services/question'
 import { PageContainer } from '@/components/layout'
 import { CCard, CButton } from '@/components/ui'
+import Icon from '@/components/icons/index.vue'
 import QuestionHeader from './components/QuestionHeader.vue'
 import DetailSidebar from './components/DetailSidebar.vue'
 import AnswerCard from './components/AnswerCard.vue'
@@ -266,6 +265,16 @@ const sortedAnswers = computed(() => {
     }
   })
 })
+
+// 获取错误图标
+const getErrorIcon = (type: 'not-found' | 'network' | 'unknown'): string => {
+  const iconMap: Record<string, string> = {
+    'not-found': 'search',
+    'network': 'wifi-off',
+    'unknown': 'alert-triangle'
+  }
+  return iconMap[type] || 'alert-triangle'
+}
 
 // 页面加载
 onLoad((options) => {
@@ -774,7 +783,8 @@ const handleRetry = () => {
   gap: $sp-3;
 
   .sort-icon {
-    margin-right: $sp-1;
+    margin-right: $sp-2;
+    color: currentColor;
   }
 }
 
@@ -813,8 +823,8 @@ const handleRetry = () => {
   padding: $sp-30 $sp-12;
 
   .empty-icon {
-    font-size: 120rpx;
     opacity: 0.5;
+    color: $gray-400;
   }
 
   .empty-text {
@@ -833,7 +843,7 @@ const handleRetry = () => {
   padding: $sp-12;
 
   .error-icon {
-    font-size: 120rpx;
+    color: $gray-400;
     margin-bottom: $sp-6;
   }
 
@@ -899,8 +909,8 @@ const handleRetry = () => {
 }
 
 .menu-icon {
-  font-size: $font-size-2xl;
-  margin-right: $sp-6;
+  color: $gray-700;
+  margin-right: $sp-4;
 }
 
 .menu-label {
@@ -925,7 +935,8 @@ const handleRetry = () => {
   z-index: $z-dropdown;
 
   .solved-icon {
-    font-size: $font-size-xl;
+    color: $success;
+    margin-right: $sp-2;
   }
 
   .solved-text {

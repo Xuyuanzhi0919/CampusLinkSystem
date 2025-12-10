@@ -5,7 +5,7 @@
     <view class="input-section">
       <!-- 图片上传按钮 -->
       <view class="upload-btn" @click="handleChooseImage">
-        <text class="upload-icon">🖼️</text>
+        <Icon name="image" :size="24" class="upload-icon" />
       </view>
 
       <!-- 输入框 -->
@@ -56,7 +56,7 @@
         />
         <!-- 删除按钮 -->
         <view class="remove-btn" @click="handleRemoveImage(index)">
-          <text class="remove-icon">✕</text>
+          <Icon name="trash" :size="16" class="remove-icon" />
         </view>
       </view>
 
@@ -76,6 +76,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { CButton } from '@/components/ui'
+import Icon from '@/components/icons/index.vue'
 
 // Props
 const props = withDefaults(defineProps<{
@@ -231,7 +232,7 @@ defineExpose({
   }
 
   .upload-icon {
-    font-size: $font-size-2xl;
+    color: $gray-600;
   }
 }
 
@@ -342,9 +343,7 @@ defineExpose({
     }
 
     .remove-icon {
-      font-size: $font-size-lg;
       color: $white;
-      font-weight: $font-weight-bold;
     }
   }
 }
@@ -388,7 +387,7 @@ defineExpose({
     height: 72rpx;
 
     .upload-icon {
-      font-size: $font-size-xl;
+      // SVG size handled by Icon component size prop
     }
   }
 

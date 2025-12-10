@@ -1093,7 +1093,7 @@ onMounted(() => {
    ======================================== */
 .sticky-nav {
   position: sticky;
-  top: 56px;
+  top: 52px; // 从56px改为52px，与顶部导航高度同步
   z-index: 99;
   width: 100%;
   background: $white;
@@ -1105,14 +1105,14 @@ onMounted(() => {
 }
 
 .sticky-nav-container {
-  max-width: 1280px;  // 改为与首页一致
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 80px;  // 改为与首页一致
-  height: 48px;
+  padding: 0 80px;
+  height: 44px; // 从48px减小到44px，更紧凑
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: 20px; // 从24px减小到20px
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -1128,6 +1128,7 @@ onMounted(() => {
 
   @include mobile {
     padding: 0 16px;
+    height: 44px;
     gap: 12px;
   }
 }
@@ -1149,8 +1150,8 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 16px;
-  border-radius: 20px;
+  padding: 6px 14px; // 从8px 16px减小到6px 14px
+  border-radius: 18px; // 从20px减小到18px
   font-size: 14px;
   font-weight: 500;
   color: $gray-700;
@@ -1175,7 +1176,7 @@ onMounted(() => {
   }
 
   @include mobile {
-    padding: 6px 12px;
+    padding: 5px 12px; // 从6px减小到5px
     font-size: 13px;
   }
 }

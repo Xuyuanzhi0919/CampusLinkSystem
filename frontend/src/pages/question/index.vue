@@ -9,47 +9,49 @@
           <text class="logo-text">问答社区</text>
         </view>
 
-        <!-- 紧凑搜索栏 -->
-        <view class="compact-search-bar">
-          <Icon name="search" :size="16" class="search-icon" />
-          <input
-            v-model="searchKeyword"
-            class="search-input"
-            placeholder="搜索问题..."
-            @input="handleSearchInput"
-            @confirm="handleSearch"
-            @focus="showSearchHistory = true"
-            @blur="handleSearchBlur"
-          />
-          <text v-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
-            <Icon name="x" :size="14" />
-          </text>
+        <!-- 紧凑搜索栏（包含搜索历史） -->
+        <view class="search-wrapper">
+          <view class="compact-search-bar">
+            <Icon name="search" :size="16" class="search-icon" />
+            <input
+              v-model="searchKeyword"
+              class="search-input"
+              placeholder="搜索问题..."
+              @input="handleSearchInput"
+              @confirm="handleSearch"
+              @focus="showSearchHistory = true"
+              @blur="handleSearchBlur"
+            />
+            <text v-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
+              <Icon name="x" :size="14" />
+            </text>
+          </view>
+
+          <!-- 搜索历史面板 -->
+          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
+            <view class="history-header">
+              <text class="history-title">搜索历史</text>
+              <text class="history-clear" @click="handleClearHistory">清空</text>
+            </view>
+            <view class="history-list">
+              <view
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="history-item"
+                @click="handleHistoryClick(item)"
+              >
+                <Icon name="clock" :size="14" class="history-icon" />
+                <text class="history-text">{{ item }}</text>
+                <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
+              </view>
+            </view>
+          </view>
         </view>
 
         <!-- 提问按钮 -->
         <view class="ask-button" @click="handleAskQuestion">
           <Icon name="edit-3" :size="16" class="ask-icon" />
           <text class="ask-text">提问</text>
-        </view>
-      </view>
-
-      <!-- 搜索历史面板 -->
-      <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
-        <view class="history-header">
-          <text class="history-title">搜索历史</text>
-          <text class="history-clear" @click="handleClearHistory">清空</text>
-        </view>
-        <view class="history-list">
-          <view
-            v-for="(item, index) in searchHistory"
-            :key="index"
-            class="history-item"
-            @click="handleHistoryClick(item)"
-          >
-            <Icon name="clock" :size="14" class="history-icon" />
-            <text class="history-text">{{ item }}</text>
-            <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
-          </view>
         </view>
       </view>
     </view>
@@ -808,11 +810,23 @@ onMounted(() => {
   }
 }
 
+// 搜索包装器（包含搜索框和历史面板）
+.search-wrapper {
+  position: relative;
+  flex: 1;
+  max-width: 480px;
+  margin: 0 auto;
+
+  @include mobile {
+    max-width: none;
+    margin: 0;
+  }
+}
+
 // 紧凑搜索栏
 .compact-search-bar {
   position: relative;
-  flex: 1;
-  max-width: 480px; // 从 520px 减少到 480px，给右侧更多空间
+  width: 100%;
   height: 36px;
   display: flex;
   align-items: center;
@@ -820,7 +834,6 @@ onMounted(() => {
   border-radius: 18px;
   padding: 0 14px;
   gap: 8px;
-  margin: 0 auto; // 居中对齐
   transition: all 0.2s;
 
   &:focus-within {
@@ -829,8 +842,6 @@ onMounted(() => {
   }
 
   @include mobile {
-    max-width: none;
-    margin: 0; // 移动端取消居中
     height: 32px;
     padding: 0 12px;
   }

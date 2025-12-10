@@ -1,31 +1,38 @@
 <template>
   <view class="question-page">
-    <!-- 🔍 搜索栏（居中、大号、轻拟物） -->
+    <!-- 🔍 搜索栏（现代化设计） -->
     <view class="search-section">
-        <view class="search-container">
-          <view class="search-bar-large">
-            <Icon name="search" :size="20" class="search-icon" />
-            <input
-              v-model="searchKeyword"
-              class="search-input"
-              placeholder="搜索你感兴趣的问题..."
-              @input="handleSearchInput"
-              @confirm="handleSearch"
-              @focus="showSearchHistory = true"
-              @blur="handleSearchBlur"
-            />
-            <text v-if="searchLoading" class="search-loading-icon">⏳</text>
-            <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
-              <Icon name="x" :size="16" />
-            </text>
-          </view>
-
-          <!-- PC端提问按钮（与搜索栏同行） -->
-          <CButton type="primary" size="lg" class="pc-ask-btn" @click="handleAskQuestion">
-            <Icon name="edit" :size="18" class="btn-icon" />
-            提问
-          </CButton>
+      <view class="search-container">
+        <!-- PC端左侧品牌标识 -->
+        <view class="brand-section">
+          <Icon name="message-circle" :size="24" class="brand-icon" />
+          <text class="brand-title">问答社区</text>
         </view>
+
+        <!-- 搜索栏 -->
+        <view class="search-bar-large">
+          <Icon name="search" :size="18" class="search-icon" />
+          <input
+            v-model="searchKeyword"
+            class="search-input"
+            placeholder="搜索你感兴趣的问题..."
+            @input="handleSearchInput"
+            @confirm="handleSearch"
+            @focus="showSearchHistory = true"
+            @blur="handleSearchBlur"
+          />
+          <text v-if="searchLoading" class="search-loading-icon">⏳</text>
+          <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
+            <Icon name="x" :size="16" />
+          </text>
+        </view>
+
+        <!-- PC端提问按钮（与搜索栏同行） -->
+        <CButton type="primary" size="lg" class="pc-ask-btn" @click="handleAskQuestion">
+          <Icon name="edit-3" :size="18" class="btn-icon" />
+          提问
+        </CButton>
+      </view>
 
       <!-- 🕒 搜索历史面板 -->
       <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-panel">
@@ -620,21 +627,22 @@ onMounted(() => {
 }
 
 // ===================================
-// 🔍 搜索栏（居中、大号、轻拟物）
+// 🔍 搜索栏（现代化设计）
 // ===================================
 .search-section {
-  padding: $sp-5 0;
+  padding: $sp-6 0;  // 增加上下内边距
   background: $white;
   box-sizing: border-box;
+  border-bottom: 1rpx solid $gray-100;  // 添加底部分割线
 }
 
 .search-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 $sp-6;
+  padding: 0 $sp-8;  // 从 $sp-6 增加到 $sp-8
   display: flex;
   align-items: center;
-  gap: $sp-6;
+  gap: $sp-5;  // 减小间距，更紧凑
 
   @include mobile {
     padding: 0 $sp-4;
@@ -642,33 +650,58 @@ onMounted(() => {
   }
 }
 
+// 品牌标识（PC端左侧）
+.brand-section {
+  display: none;  // 默认隐藏（移动端）
+
+  @include desktop {
+    display: flex;
+    align-items: center;
+    gap: $sp-3;
+    flex-shrink: 0;
+  }
+}
+
+.brand-icon {
+  color: $primary;
+}
+
+.brand-title {
+  font-size: $font-size-xl;  // 18px
+  font-weight: $font-weight-bold;
+  color: $gray-900;
+  letter-spacing: -0.02em;
+}
+
 .search-bar-large {
   display: flex;
   align-items: center;
   flex: 1;
-  height: 88rpx;  // 从 96rpx 降至 88rpx (44px)
+  max-width: 680px;  // 限制最大宽度，避免过宽
+  height: 80rpx;  // 从 88rpx 降至 80rpx (40px)
   background: $gray-50;
-  border-radius: 24rpx;  // 从 48rpx 降至 24rpx (12px)，更 Web 风格
+  border-radius: $radius-lg;  // 使用设计系统的 lg 圆角 (24rpx = 12px)
   padding: 0 $sp-6;
   border: 2rpx solid $gray-200;
   transition: all $duration-base;
 
   &:hover {
-    border-color: $primary-300;
+    border-color: $primary-200;
     background: $white;
-    box-shadow: 0 2rpx 8rpx rgba($primary, 0.08);
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.06);
   }
 
   &:focus-within {
     border-color: $primary;
     background: $white;
-    box-shadow: 0 4rpx 12rpx rgba($primary, 0.12);
+    box-shadow: 0 0 0 4rpx rgba($primary, 0.08);  // 焦点环样式
   }
 
   @include mobile {
+    max-width: none;  // 移动端占满宽度
     height: 72rpx;
     padding: 0 $sp-5;
-    border-radius: 20rpx;  // 移动端也相应调整
+    border-radius: $radius-md;
   }
 
   .search-icon {
@@ -733,7 +766,6 @@ onMounted(() => {
   background: $white;
   padding: 0;
   border-bottom: 1rpx solid $gray-100;
-  margin-top: $sp-4;  // 与搜索栏拉开间距（16rpx = 8px）
 }
 
 .category-scroll {
@@ -747,14 +779,14 @@ onMounted(() => {
 
 .category-pills {
   display: inline-flex;
-  gap: $sp-4;  // 从 $sp-3 增加到 $sp-4 (16px)
-  padding: $sp-4 $sp-6;
+  gap: $sp-3;  // 减小到 $sp-3 (12rpx = 6px)，更紧凑
+  padding: $sp-5 $sp-8;  // 增加左右内边距，与搜索栏对齐
   max-width: 1200px;
   margin: 0 auto;
 
   @include mobile {
     padding: $sp-3 $sp-4;
-    gap: $sp-3;  // 移动端保持紧凑
+    gap: $sp-2;  // 移动端更紧凑
   }
 }
 
@@ -762,23 +794,25 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-6;
-  background: $gray-100;
+  padding: $sp-3 $sp-5;  // 减小内边距
+  background: $gray-50;  // 从 $gray-100 改为 $gray-50，更浅
   border-radius: $radius-2xl;
-  border: 1rpx solid transparent;
+  border: 1rpx solid $gray-200;  // 添加边框，增强轮廓
   cursor: pointer;
   transition: all $duration-base;
   white-space: nowrap;
 
   &:hover {
-    background: $gray-200;
+    background: $gray-100;
+    border-color: $gray-300;
+    transform: translateY(-1rpx);  // 轻微上移
   }
 
   &.active {
     background: $primary;
     color: $white;
     border-color: $primary;
-    box-shadow: $shadow-sm;
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.25);  // 增强阴影
 
     .pill-icon {
       color: $white;
@@ -786,24 +820,24 @@ onMounted(() => {
 
     .pill-label {
       color: $white;
-      font-weight: $font-weight-semibold;  // 加粗
+      font-weight: $font-weight-semibold;
     }
   }
 
   @include mobile {
-    padding: $sp-2 $sp-5;
+    padding: $sp-2 $sp-4;
   }
 }
 
 .pill-icon {
-  color: $gray-500;  // 稍浅一点的图标
+  color: $gray-600;  // 从 $gray-500 加深到 $gray-600
   flex-shrink: 0;
 }
 
 .pill-label {
   font-size: $font-size-base;
   font-weight: $font-weight-medium;
-  color: $gray-700;
+  color: $gray-800;  // 从 $gray-700 加深到 $gray-800
 
   @include mobile {
     font-size: $font-size-sm;
@@ -876,9 +910,9 @@ onMounted(() => {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 4rpx;
-  background: linear-gradient(90deg, $primary 0%, $primary-400 100%);
-  border-radius: 2rpx 2rpx 0 0;
+  height: 6rpx;  // 从 4rpx 增加到 6rpx (3px)
+  background: $primary;  // 移除渐变，使用纯色更清晰
+  border-radius: 3rpx 3rpx 0 0;
   animation: slideIn 0.3s ease-out;
 }
 

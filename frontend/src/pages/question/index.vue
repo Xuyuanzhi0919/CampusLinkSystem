@@ -28,7 +28,7 @@
 
         <!-- 提问按钮 -->
         <view class="ask-button" @click="handleAskQuestion">
-          <Icon name="edit-3" :size="16" class="ask-icon" />
+          <Icon name="edit" :size="16" class="ask-icon" />
           <text class="ask-text">提问</text>
         </view>
       </view>

@@ -142,6 +142,12 @@
       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- Edit 3 图标（编辑笔） -->
+    <template v-else-if="name === 'edit-3'">
+      <path d="M12 20h9" stroke="currentColor" fill="none"/>
+      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" fill="none"/>
+    </template>
+
     <!-- Home 图标 -->
     <template v-else-if="name === 'home'">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="currentColor" fill="none"/>

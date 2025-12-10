@@ -624,7 +624,7 @@ onMounted(() => {
 // ===================================
 .question-page {
   height: 100vh;
-  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);  // 渐变背景，更有层次
+  background: $bg-page;  // 统一使用纯色背景,更简洁
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
@@ -870,12 +870,10 @@ onMounted(() => {
 // 🎯 筛选导航栏（分段控制器风格）
 // ===================================
 .nav-section {
-  background: $white;
+  background: transparent;  // 改为透明背景
   padding: $sp-6 $sp-8;
   max-width: 1200px;
   margin: $sp-6 auto 0;
-  border-radius: $radius-xl $radius-xl 0 0;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
 
   @include mobile {
     padding: $sp-4;
@@ -1077,10 +1075,8 @@ onMounted(() => {
 .question-list-column {
   height: 100%;
   overflow-y: auto;
-  padding: $sp-8 $sp-4 0 0;  // 顶部增加内边距,与筛选栏分离
-  background: $white;  // 添加白色背景
-  border-radius: 0 0 $radius-lg $radius-lg;  // 底部圆角,与筛选栏形成整体
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);  // 轻微阴影
+  padding: $sp-8 $sp-8 $sp-8 $sp-8;  // 统一内边距
+  background: transparent;  // 改为透明背景,更简洁
 
   // 优化滚动条样式（细条半透明）
   &::-webkit-scrollbar {

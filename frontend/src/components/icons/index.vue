@@ -225,6 +225,26 @@
       <path d="M10 22h4" stroke="currentColor" fill="none"/>
       <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.97 4.97 0 0 0 18 8a6 6 0 1 0-12 0c0 1.5.7 2.73 1.5 3.5.76.76 1.23 1.52 1.41 2.5" stroke="currentColor" fill="none"/>
     </template>
+
+    <!-- Trending Up 图标（热门/趋势） -->
+    <template v-else-if="name === 'trending-up'">
+      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" stroke="currentColor" fill="none"/>
+      <polyline points="17 6 23 6 23 12" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Users 图标（多用户/社区） -->
+    <template v-else-if="name === 'users'">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" fill="none"/>
+      <circle cx="9" cy="7" r="4" stroke="currentColor" fill="none"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" fill="none"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- School 图标（学校/教育） -->
+    <template v-else-if="name === 'school'">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" fill="none"/>
+      <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5" stroke="currentColor" fill="none"/>
+    </template>
   </svg>
 </template>
 

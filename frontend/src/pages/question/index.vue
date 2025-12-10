@@ -153,13 +153,6 @@
       </view>
     </view>
 
-    <!-- 🆕 发布问题悬浮按钮（移动端） -->
-    <view class="fab-container">
-      <CButton type="primary" size="lg" round class="fab-btn" @click="handleAskQuestion">
-        <Icon name="edit" :size="20" />
-      </CButton>
-    </view>
-
     <!-- ⬆️ 回到顶部按钮 -->
     <view v-if="showBackToTop" class="back-to-top" @click="scrollToTop">
       <Icon name="arrow-up" :size="20" class="back-icon" />
@@ -602,8 +595,11 @@ onMounted(() => {
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/variables.scss';
 
+// ===================================
+// 📐 全局布局 - 专业级两栏设计
+// ===================================
 .question-page {
   height: 100vh;
   background: $bg-page;
@@ -615,38 +611,90 @@ onMounted(() => {
 }
 
 // ===================================
-// 🔍 搜索栏
+// 🎯 页面头部区域（固定顶部）
+// ===================================
+.page-header {
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+  box-shadow: 0 1rpx 3rpx rgba($black, 0.03);
+}
+
+// ===================================
+// 🔍 搜索栏（居中、大号、轻拟物）
 // ===================================
 .search-section {
-  padding: $sp-5 $sp-6 $sp-4;
+  padding: $sp-5 0;
   background: $white;
   box-sizing: border-box;
 }
 
-.search-wrapper {
+.search-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 $sp-6;
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: $sp-6;
+
+  @include mobile {
+    padding: 0 $sp-4;
+    gap: $sp-3;
+  }
 }
 
-.search-bar {
+.search-bar-large {
   display: flex;
   align-items: center;
   flex: 1;
-  height: 68rpx;
-  background: $gray-100;
-  border-radius: $radius-2xl;
-  padding: 0 $sp-5;
+  height: 88rpx;  // 从 96rpx 降至 88rpx (44px)
+  background: $gray-50;
+  border-radius: 24rpx;  // 从 48rpx 降至 24rpx (12px)，更 Web 风格
+  padding: 0 $sp-6;
+  border: 2rpx solid $gray-200;
+  transition: all $duration-base;
+
+  &:hover {
+    border-color: $primary-300;
+    background: $white;
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.08);
+  }
+
+  &:focus-within {
+    border-color: $primary;
+    background: $white;
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.12);
+  }
+
+  @include mobile {
+    height: 72rpx;
+    padding: 0 $sp-5;
+    border-radius: 20rpx;  // 移动端也相应调整
+  }
 
   .search-icon {
-    font-size: $font-size-lg;
-    margin-right: $sp-2;
+    color: $gray-400;
+    flex-shrink: 0;
   }
 
   .search-input {
     flex: 1;
-    font-size: $font-size-base;
-    color: $gray-800;
+    font-size: $font-size-lg;
+    color: $gray-900;
+    margin: 0 $sp-4;
+    border: none;
+    outline: none;
+    background: transparent;
+
+    &::placeholder {
+      color: $gray-400;
+    }
+
+    @include mobile {
+      font-size: $font-size-base;
+    }
   }
 
   .search-loading-icon {
@@ -656,15 +704,301 @@ onMounted(() => {
   }
 
   .clear-icon {
-    font-size: $font-size-lg;
     color: $gray-400;
-    padding: 0 $sp-1;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color $duration-base;
+
+    &:hover {
+      color: $gray-600;
+    }
   }
 }
 
-// PC端提问按钮
+// PC端提问按钮（与搜索栏同行）
 .pc-ask-btn {
   display: none;
+  flex-shrink: 0;
+
+  @include desktop {
+    display: flex;
+  }
+
+  .btn-icon {
+    margin-right: $sp-2;
+  }
+}
+
+// ===================================
+// 📦 分类标签栏（轻量 Pill 风格）
+// ===================================
+.category-section {
+  background: $white;
+  padding: 0;
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.category-scroll {
+  white-space: nowrap;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-pills {
+  display: inline-flex;
+  gap: $sp-4;  // 从 $sp-3 增加到 $sp-4 (16px)
+  padding: $sp-4 $sp-6;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @include mobile {
+    padding: $sp-3 $sp-4;
+    gap: $sp-3;  // 移动端保持紧凑
+  }
+}
+
+.category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-6;  // 增加左右 padding
+  background: #F3F4F6;  // 统一浅灰底
+  border-radius: $radius-2xl;
+  border: 1rpx solid transparent;
+  cursor: pointer;
+  transition: all $duration-base;
+  white-space: nowrap;
+
+  &:hover {
+    background: #E5E7EB;  // hover 稍深
+  }
+
+  &.active {
+    background: $primary;  // 统一纯蓝底，不用渐变
+    color: $white;
+    border-color: $primary;
+    box-shadow: 0 2rpx 6rpx rgba($primary, 0.15);  // 减小阴影
+
+    .pill-icon {
+      color: $white;
+    }
+
+    .pill-label {
+      color: $white;
+      font-weight: $font-weight-semibold;  // 加粗
+    }
+  }
+
+  @include mobile {
+    padding: $sp-2 $sp-5;
+  }
+}
+
+.pill-icon {
+  color: $gray-500;  // 稍浅一点的图标
+  flex-shrink: 0;
+}
+
+.pill-label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: $gray-700;
+
+  @include mobile {
+    font-size: $font-size-sm;
+  }
+}
+
+// ===================================
+// 🎯 二级导航筛选栏（下划线高亮）
+// ===================================
+.nav-section {
+  background: $white;
+  padding: 0 $sp-6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+
+  @include mobile {
+    padding: 0 $sp-4;
+  }
+}
+
+.nav-tabs {
+  display: flex;
+  gap: $sp-8;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @include mobile {
+    gap: $sp-6;
+  }
+}
+
+.nav-tab {
+  position: relative;
+  padding: $sp-5 0;
+  cursor: pointer;
+  transition: color $duration-base;
+
+  @include mobile {
+    padding: $sp-4 0;
+  }
+}
+
+.nav-label {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-medium;
+  color: $gray-600;
+  transition: color $duration-base;
+
+  @include mobile {
+    font-size: $font-size-base;
+  }
+}
+
+.nav-tab.active {
+  .nav-label {
+    color: $primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.nav-underline {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4rpx;
+  background: linear-gradient(90deg, $primary 0%, $primary-400 100%);
+  border-radius: 2rpx 2rpx 0 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.nav-right {
+  flex-shrink: 0;
+  margin-left: $sp-4;
+}
+
+.filter-trigger {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  background: $gray-50;
+  border-radius: $radius-2xl;
+  cursor: pointer;
+  transition: all $duration-base;
+  position: relative;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  @include mobile {
+    padding: $sp-2 $sp-4;
+  }
+}
+
+.filter-icon {
+  color: $gray-600;
+}
+
+.filter-text {
+  font-size: $font-size-base;
+  color: $gray-700;
+
+  @include mobile {
+    font-size: $font-size-sm;
+  }
+}
+
+.filter-dot {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 12rpx;
+  height: 12rpx;
+  background: $error;
+  border-radius: 50%;
+  border: 2rpx solid $white;
+}
+
+// ===================================
+// 🏛️ 主内容区域（两栏布局 max-width: 1200px）
+// ===================================
+.main-container {
+  flex: 1;
+  overflow: hidden;
+  background: $bg-page;
+}
+
+.content-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-6 $sp-6 $sp-6 $sp-8;  // 左侧稍多留白
+  display: grid;
+  grid-template-columns: 1fr 360px;  // 调整为 68% vs 32% 的比例
+  gap: $sp-10;  // 增加间距到 40px，更舒适
+  height: 100%;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    padding: $sp-4;
+    gap: 0;
+  }
+}
+
+// 左侧：问题列表列
+.question-list-column {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: $sp-4;  // 增加右侧 padding，避免滚动条贴边
+
+  // 优化滚动条样式（细条半透明）
+  &::-webkit-scrollbar {
+    width: 6rpx;  // 从 8rpx 减到 6rpx
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;  // 轨道透明
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gray-400, 0.3);  // 半透明
+    border-radius: 3rpx;
+    transition: background $duration-base;
+
+    &:hover {
+      background: rgba($gray-500, 0.5);  // hover 时加深
+    }
+  }
+}
+
+// 右侧：推荐栏（仅 PC 端显示）
+.recommend-column {
+  display: block;
+
+  @include mobile {
+    display: none;
+  }
 }
 
 // 🕒 搜索历史面板
@@ -740,67 +1074,7 @@ onMounted(() => {
 }
 
 // ===================================
-// 📦 分类筛选栏
-// ===================================
-.filter-section {
-  background: $white;
-  padding: 0 $sp-6 $sp-3;
-  border-bottom: 1rpx solid $gray-100;
-  box-sizing: border-box;
-}
-
-.filter-scroll {
-  white-space: nowrap;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.filter-tabs {
-  display: inline-flex;
-  gap: $sp-3;
-}
-
-.filter-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: $sp-1;
-  padding: $sp-2 $sp-5;
-  background: $gray-100;
-  border-radius: $radius-lg;
-  transition: $transition-base;
-
-  &.active {
-    background: rgba($primary, 0.12);
-
-    .tab-icon {
-      color: $primary;
-    }
-
-    .tab-label {
-      color: $primary;
-      font-weight: $font-weight-semibold;
-    }
-  }
-
-  .tab-icon {
-    font-size: $font-size-sm;
-    color: $gray-500;
-    transition: color $duration-base $ease-out;
-  }
-
-  .tab-label {
-    font-size: $font-size-sm;
-    color: $gray-500;
-    white-space: nowrap;
-    font-weight: $font-weight-medium;
-    transition: $transition-base;
-  }
-}
-
-// ===================================
-// 🔍 筛选面板（响应式：移动端底部弹出 + PC端右侧抽屉）
+// 🔍 筛选面板（响应式：移动端底部弹出）
 // ===================================
 .filter-modal {
   position: fixed;
@@ -967,103 +1241,22 @@ onMounted(() => {
 }
 
 // ===================================
-// 🎯 排序和状态筛选栏
+// 📋 问题列表内容样式
 // ===================================
-.sort-section {
-  @include flex-between;
-  padding: $sp-3 $sp-6;
-  background: $white;
-  border-bottom: 1rpx solid $gray-100;
-  position: sticky;
-  top: 0;
-  z-index: $z-sticky;
-}
-
-.sort-tabs {
-  display: flex;
-  gap: $sp-6;
-}
-
-.sort-tab {
-  font-size: $font-size-sm;
-  color: $gray-500;
-  padding: $sp-1 $sp-3;
-  border-radius: $radius-base;
-  font-weight: $font-weight-medium;
-  transition: $transition-base;
-  background: transparent;
-
-  &.active {
-    color: $primary;
-    font-weight: $font-weight-semibold;
-    background: rgba($primary, 0.08);
-  }
-}
-
-.sort-right {
-  display: flex;
-  align-items: center;
-  gap: $sp-4;
-}
-
-.status-filter {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: $sp-1;
-  padding: $sp-1 $sp-3;
-  background: $gray-100;
-  border-radius: $radius-lg;
-  transition: $transition-base;
-  cursor: pointer;
-
-  &:active {
-    background: $gray-200;
-  }
-
-  .status-icon {
-    font-size: $font-size-xs;
-  }
-
-  .status-label {
-    font-size: $font-size-sm;
-    color: $gray-500;
-    font-weight: $font-weight-medium;
-  }
-}
-
-.filter-badge {
-  position: absolute;
-  top: 2rpx;
-  right: 2rpx;
-  width: 12rpx;
-  height: 12rpx;
-  background: $error;
-  border-radius: $radius-full;
-  border: 2rpx solid $white;
-}
-
-// ===================================
-// 📋 问题列表
-// ===================================
-.question-list {
-  // H5 环境下 scroll-view 需要固定高度才能触发 scrolltolower 事件
-  // 计算高度：100vh - 搜索栏(~96rpx) - 筛选栏(~60rpx) - 底部导航(~100rpx) = ~250rpx
-  height: calc(100vh - 250rpx);
-  padding: $sp-3 $sp-6;
-  box-sizing: border-box;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
 // 加载更多
 .load-more {
   text-align: center;
   padding: $sp-8;
   font-size: $font-size-sm;
   color: $gray-400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+}
+
+.loading-icon {
+  animation: rotate 1.5s linear infinite;
 }
 
 // 骨架屏
@@ -1148,23 +1341,12 @@ onMounted(() => {
 }
 
 // ===================================
-// 🆕 发布问题悬浮按钮
-// ===================================
-.fab-btn {
-  position: fixed;
-  right: $sp-8;
-  bottom: $sp-30;
-  z-index: $z-dropdown;
-  box-shadow: 0 4rpx 16rpx rgba($primary, 0.25);
-}
-
-// ===================================
 // ⬆️ 回到顶部按钮
 // ===================================
 .back-to-top {
   position: fixed;
   right: $sp-8;
-  bottom: 200rpx; // 在提问按钮上方
+  bottom: $sp-30;  // 固定在底部
   width: 88rpx;
   height: 88rpx;
   @include flex-center;
@@ -1209,11 +1391,6 @@ onMounted(() => {
   // PC端：显示搜索框右边的提问按钮
   .pc-ask-btn {
     display: inline-flex;
-  }
-
-  // PC端：隐藏移动端的悬浮按钮
-  .fab-btn {
-    display: none;
   }
 
   // PC端：筛选面板改为右侧抽屉样式

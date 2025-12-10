@@ -19,6 +19,38 @@
       </view>
     </CCard>
 
+    <!-- 本校热议模块 -->
+    <CCard variant="elevated" class="sidebar-card school-card">
+      <view class="card-header">
+        <Icon name="school" :size="18" class="header-icon school-icon" />
+        <text class="header-title">本校热议</text>
+        <view class="school-badge">
+          <text class="badge-text">{{ schoolName }}</text>
+        </view>
+      </view>
+      <view class="hot-questions">
+        <view
+          v-for="(question, index) in schoolQuestions"
+          :key="question.qid"
+          class="hot-question-item"
+          @click="handleQuestionClick(question.qid)"
+        >
+          <view class="rank-badge school-rank">
+            {{ index + 1 }}
+          </view>
+          <view class="question-content">
+            <text class="question-title">{{ question.title }}</text>
+            <view class="question-meta">
+              <Icon name="eye" :size="12" class="meta-icon" />
+              <text class="meta-text">{{ question.views }}</text>
+              <Icon name="message-circle" :size="12" class="meta-icon" />
+              <text class="meta-text">{{ question.answerCount }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </CCard>
+
     <!-- 热门问题模块 -->
     <CCard variant="elevated" class="sidebar-card">
       <view class="card-header">
@@ -76,9 +108,54 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
+
+// Store
+const userStore = useUserStore()
+const { userInfo } = storeToRefs(userStore)
+
+// 学校名称（从用户信息获取）
+const schoolName = computed(() => {
+  return userInfo.value?.schoolName || '校园'
+})
+
+// 本校热议问题（模拟数据，实际应基于用户 schoolId 从 API 获取）
+const schoolQuestions = ref([
+  {
+    qid: 101,
+    title: '图书馆周末开放时间有变化吗？',
+    views: 1234,
+    answerCount: 15,
+  },
+  {
+    qid: 102,
+    title: '校园卡充值在哪里比较方便？',
+    views: 987,
+    answerCount: 12,
+  },
+  {
+    qid: 103,
+    title: '新生宿舍楼有空调吗？',
+    views: 856,
+    answerCount: 10,
+  },
+  {
+    qid: 104,
+    title: '学校食堂哪个窗口最好吃？',
+    views: 745,
+    answerCount: 8,
+  },
+  {
+    qid: 105,
+    title: '校内打印店在哪里？',
+    views: 623,
+    answerCount: 6,
+  },
+])
 
 // 模拟数据（实际应该从 API 获取）
 const hotTags = ref([
@@ -220,6 +297,41 @@ onMounted(() => {
   font-weight: $font-weight-semibold;
   color: $gray-900;
   letter-spacing: -0.01em;
+  flex: 1;
+}
+
+// ===================================
+// 本校热议卡片特殊样式
+// ===================================
+.school-card {
+  background: linear-gradient(135deg, rgba($primary, 0.03) 0%, rgba($accent, 0.02) 100%);
+  border: 1rpx solid rgba($primary, 0.1);
+
+  .card-header {
+    border-bottom-color: rgba($primary, 0.1);
+  }
+
+  .school-icon {
+    color: $accent;
+  }
+}
+
+.school-badge {
+  padding: $sp-1 $sp-3;
+  background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($accent, 0.1) 100%);
+  border-radius: $radius-2xl;
+
+  .badge-text {
+    font-size: $font-size-xs;
+    color: $accent;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.school-rank {
+  background: linear-gradient(135deg, $accent 0%, $accent-600 100%);
+  color: $white;
+  box-shadow: 0 2rpx 8rpx rgba($accent, 0.25);
 }
 
 // ===================================
@@ -237,7 +349,7 @@ onMounted(() => {
   gap: $sp-2;
   padding: $sp-2 $sp-4;
   background: $gray-50;
-  border-radius: $radius-pill;
+  border-radius: $radius-2xl;
   border: 1rpx solid $gray-200;
   cursor: pointer;
   transition: all $duration-base;
@@ -406,7 +518,7 @@ onMounted(() => {
   flex-shrink: 0;
   padding: $sp-1 $sp-3;
   background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
-  border-radius: $radius-pill;
+  border-radius: $radius-2xl;
 }
 
 .badge-text {

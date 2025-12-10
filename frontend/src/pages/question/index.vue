@@ -123,7 +123,7 @@
             <view class="quick-filter-tabs">
               <view
                 class="filter-tab"
-                :class="{ active: sortBy === 'created_at' && !category && status === null }"
+                :class="{ active: sortBy === 'created_at' && status === null }"
                 @click="handleQuickFilter('latest')"
               >
                 <Icon name="clock" :size="14" class="tab-icon" />
@@ -131,7 +131,7 @@
               </view>
               <view
                 class="filter-tab"
-                :class="{ active: sortBy === 'bounty' }"
+                :class="{ active: sortBy === 'bounty' && status === null }"
                 @click="handleQuickFilter('bounty')"
               >
                 <Icon name="award" :size="14" class="tab-icon" />
@@ -139,7 +139,7 @@
               </view>
               <view
                 class="filter-tab"
-                :class="{ active: sortBy === 'views' }"
+                :class="{ active: sortBy === 'views' && status === null }"
                 @click="handleQuickFilter('hot')"
               >
                 <Icon name="trending-up" :size="14" class="tab-icon" />

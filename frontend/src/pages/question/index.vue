@@ -325,6 +325,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { onReachBottom } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
@@ -680,6 +681,11 @@ const handleLoadMore = () => {
   page.value++
   loadQuestions()
 }
+
+// 页面滚动到底部时触发（uni-app生命周期）
+onReachBottom(() => {
+  handleLoadMore()
+})
 
 // 监听滚动事件
 const handleScroll = (e: any) => {

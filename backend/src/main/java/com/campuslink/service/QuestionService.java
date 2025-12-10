@@ -749,7 +749,7 @@ public class QuestionService {
         // 统计每个用户的回答数量
         java.util.Map<Long, Integer> userAnswerCountMap = new java.util.HashMap<>();
         for (Answer answer : answers) {
-            Long userId = answer.getAnswererId();
+            Long userId = answer.getResponderId();
             userAnswerCountMap.put(userId, userAnswerCountMap.getOrDefault(userId, 0) + 1);
         }
 
@@ -778,7 +778,7 @@ public class QuestionService {
                 }
 
                 responses.add(ActiveUserResponse.builder()
-                        .userId(user.getUserId())
+                        .userId(user.getUId())
                         .nickname(user.getNickname())
                         .avatar(user.getAvatarUrl())
                         .answerCount(answerCount)

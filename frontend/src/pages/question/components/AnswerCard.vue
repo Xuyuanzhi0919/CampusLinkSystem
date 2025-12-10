@@ -5,8 +5,10 @@
     class="answer-card"
     :class="{ 'answer-card--accepted': answer.isAccepted }"
   >
-    <!-- 最佳答案标识 -->
-    <BestAnswerBadge v-if="answer.isAccepted" />
+    <!-- 最佳答案标识 (放在最顶部) -->
+    <view v-if="answer.isAccepted" class="accepted-badge-wrapper">
+      <BestAnswerBadge />
+    </view>
 
     <!-- 回答者信息 + 更多操作 -->
     <view class="answer-header">
@@ -49,13 +51,14 @@
       <!-- 左侧：点赞按钮 -->
       <view class="footer-left">
         <CButton
-          :type="answer.isLiked ? 'primary' : 'ghost'"
+          :type="answer.isLiked ? 'primary' : 'info'"
           size="sm"
           :plain="!answer.isLiked"
           @click="handleLike"
+          custom-style="border: none; background: transparent; padding-left: 0;"
         >
           <text class="action-icon">{{ answer.isLiked ? '👍' : '👍🏻' }}</text>
-          <text class="action-label">{{ formatNumber(answer.likes) }}</text>
+          <text class="action-label" :class="{ 'text-primary': answer.isLiked }">{{ formatNumber(answer.likes) }}</text>
         </CButton>
       </view>
 
@@ -64,12 +67,13 @@
         <!-- 采纳按钮（仅提问者可见且问题未解决） -->
         <CButton
           v-if="canAccept && !answer.isAccepted"
-          type="success"
+          type="warning"
           size="sm"
+          plain
           @click="handleAccept"
         >
           <text class="action-icon">✅</text>
-          采纳
+          采纳回答
         </CButton>
 
         <!-- 删除按钮（仅回答者本人可见） -->
@@ -78,6 +82,7 @@
           type="danger"
           size="sm"
           plain
+          class="btn-delete"
           @click="handleDelete"
         >
           <text class="action-icon">🗑️</text>
@@ -232,13 +237,25 @@ const handleReport = () => {
 // ===================================
 .answer-card {
   margin-bottom: $sp-6;
+  background: $bg-surface;
   transition: all $duration-base $ease-out;
+  // border: 1rpx solid $gray-200; // Removed to use CCard's border
 
-  // 最佳答案样式增强
+  // 最佳答案样式 - 清新现代风
   &--accepted {
-    border-color: #FFD700 !important;
-    box-shadow: 0 6rpx 20rpx rgba(#FFD700, 0.25) !important;
+    background-color: #FFFDF5 !important; // 极浅米黄
+    border-color: #FACC15 !important; // 亮金色边框 (1px)
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03) !important; // 轻柔阴影
+
+    // 内部文字可能需要微调（可选）
+    .answer-content {
+      color: $gray-900;
+    }
   }
+}
+
+.accepted-badge-wrapper {
+  margin-bottom: $sp-2;
 }
 
 // ===================================
@@ -248,32 +265,32 @@ const handleReport = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $sp-6;
-  padding-bottom: $sp-4;
-  border-bottom: 1rpx solid $gray-100;
+  margin-bottom: $sp-4;
+  padding-bottom: 0; // 移除内边距，更紧凑
 }
 
 // 回答者信息
 .responder-info {
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: $sp-3;
   flex: 1;
   min-width: 0;
 
   .responder-avatar {
-    width: 80rpx;
-    height: 80rpx;
+    width: 72rpx; // 稍微调小一点，更精致
+    height: 72rpx;
     border-radius: $radius-full;
-    background: $gray-200;
+    background: $gray-100;
     flex-shrink: 0;
+    border: 1rpx solid $gray-200;
   }
 
   .responder-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: $sp-1;
+    gap: 2rpx;
     min-width: 0;
 
     .responder-name {
@@ -284,7 +301,7 @@ const handleReport = () => {
     }
 
     .responder-time {
-      font-size: $font-size-sm;
+      font-size: $font-size-xs; // 12px
       color: $gray-500;
     }
   }
@@ -293,26 +310,23 @@ const handleReport = () => {
 // 更多操作按钮
 .more-actions {
   flex-shrink: 0;
-  width: 64rpx;
-  height: 64rpx;
+  width: 56rpx;
+  height: 56rpx;
   @include flex-center;
   border-radius: $radius-full;
   cursor: pointer;
-  transition: background $duration-base;
+  color: $gray-400;
+  transition: all $duration-base;
 
   &:hover {
     background: $gray-100;
-  }
-
-  &:active {
-    background: $gray-200;
+    color: $gray-600;
   }
 
   .more-icon {
-    font-size: $font-size-2xl;
-    color: $gray-600;
-    font-weight: $font-weight-bold;
-    letter-spacing: 2rpx;
+    font-size: $font-size-xl;
+    font-weight: bold;
+    line-height: 1;
   }
 }
 
@@ -321,9 +335,9 @@ const handleReport = () => {
 // ===================================
 .answer-content {
   font-size: $font-size-base;
-  color: $gray-800;
-  line-height: $line-height-loose;
-  margin-bottom: $sp-6;
+  color: $gray-700; // 稍微柔和一点的黑色
+  line-height: 1.6;
+  margin-bottom: $sp-4;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -334,20 +348,19 @@ const handleReport = () => {
 .answer-images {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-4;
-  margin-bottom: $sp-6;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
 
   .answer-image {
     width: 200rpx;
     height: 200rpx;
-    border-radius: $radius-base;
+    border-radius: $radius-sm;
     background: $gray-100;
     cursor: pointer;
-    transition: transform $duration-base, box-shadow $duration-base;
+    transition: transform $duration-base;
 
     &:hover {
-      transform: scale(1.05);
-      box-shadow: $shadow-md;
+      transform: scale(1.02);
     }
   }
 }
@@ -359,11 +372,30 @@ const handleReport = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: $sp-4;
+  margin-top: $sp-2;
+  padding-top: $sp-3;
   border-top: 1rpx solid $gray-100;
+
+  // 如果是最佳答案，底部分割线颜色微调
+  .answer-card--accepted & {
+    border-top-color: rgba(#FACC15, 0.2);
+  }
 }
 
-.footer-left,
+.footer-left {
+  // 点赞按钮自定义样式
+  .action-label {
+    margin-left: $sp-1;
+    font-size: $font-size-sm;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+
+    &.text-primary {
+      color: $primary;
+    }
+  }
+}
+
 .footer-right {
   display: flex;
   align-items: center;
@@ -372,7 +404,22 @@ const handleReport = () => {
 
 .action-icon {
   margin-right: $sp-1;
+  font-size: $font-size-base;
 }
+
+// 删除按钮特殊样式
+.btn-delete {
+  :deep(button) {
+    border-color: #FECACA !important; // 淡红边框
+    color: $error !important;
+    background: transparent !important;
+
+    &:hover {
+      background: #FEF2F2 !important; // 淡红背景
+    }
+  }
+}
+
 
 // ===================================
 // 更多菜单弹出层
@@ -383,25 +430,26 @@ const handleReport = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba($gray-900, 0.5);
+  background: rgba(0, 0, 0, 0.4);
   z-index: $z-modal;
   display: flex;
   align-items: flex-end;
-  animation: fadeIn $duration-slow $ease-out;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .menu-content {
   width: 100%;
   background: $white;
   border-radius: $radius-xl $radius-xl 0 0;
-  padding: $sp-6 0;
-  animation: slideUp $duration-slow $ease-out;
+  padding: $sp-4 0;
+  animation: slideUp 0.2s ease-out;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .menu-item {
   display: flex;
   align-items: center;
-  padding: $sp-6 $sp-12;
+  padding: 24rpx 48rpx;
   transition: background $duration-base;
   cursor: pointer;
 
@@ -411,23 +459,26 @@ const handleReport = () => {
 
   &--cancel {
     justify-content: center;
-    border-top: 1rpx solid $gray-100;
-    margin-top: $sp-4;
-    padding-top: $sp-8;
+    border-top: 12rpx solid $gray-50;
+    margin-top: $sp-2;
+    padding: 32rpx;
 
     .menu-label {
       color: $gray-500;
+      font-weight: 500;
     }
   }
 }
 
 .menu-icon {
-  font-size: $font-size-2xl;
-  margin-right: $sp-6;
+  font-size: 40rpx;
+  margin-right: $sp-4;
+  width: 40rpx;
+  text-align: center;
 }
 
 .menu-label {
-  font-size: $font-size-lg;
+  font-size: 32rpx;
   color: $gray-800;
 }
 
@@ -435,21 +486,13 @@ const handleReport = () => {
 // 动画定义
 // ===================================
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
 }
 
 // ===================================
@@ -458,15 +501,15 @@ const handleReport = () => {
 @include mobile {
   .responder-info {
     .responder-avatar {
-      width: 72rpx;
-      height: 72rpx;
+      width: 64rpx;
+      height: 64rpx;
     }
   }
 
   .answer-images {
     .answer-image {
-      width: 160rpx;
-      height: 160rpx;
+      width: 31%; // 3列布局
+      height: 200rpx;
     }
   }
 }

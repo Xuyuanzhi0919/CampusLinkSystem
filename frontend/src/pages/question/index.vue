@@ -73,27 +73,31 @@
         </scroll-view>
       </view>
 
-      <!-- 🎯 二级导航筛选栏（下划线高亮） -->
+      <!-- 🎯 筛选导航栏（分段控制器风格） -->
       <view class="nav-section">
-        <view class="nav-tabs">
-          <view
-            v-for="item in sortOptions"
-            :key="item.value"
-            class="nav-tab"
-            :class="{ active: sortBy === item.value }"
-            @click="handleSortChange(item.value)"
-          >
-            <text class="nav-label">{{ item.label }}</text>
-            <view v-if="sortBy === item.value" class="nav-underline" />
+        <view class="nav-container">
+          <!-- 左侧：分段控制器 -->
+          <view class="segmented-control">
+            <view
+              v-for="item in sortOptions"
+              :key="item.value"
+              class="segment-item"
+              :class="{ active: sortBy === item.value }"
+              @click="handleSortChange(item.value)"
+            >
+              <text class="segment-label">{{ item.label }}</text>
+            </view>
+            <view
+              class="segment-indicator"
+              :style="{ transform: `translateX(${getIndicatorOffset()}%)` }"
+            />
           </view>
-        </view>
 
-        <!-- 状态筛选按钮 -->
-        <view class="nav-right">
-          <view class="filter-trigger" @click="showFilterModal = true">
-            <Icon name="filter" :size="16" class="filter-icon" />
+          <!-- 右侧：筛选按钮 -->
+          <view class="filter-button" @click="showFilterModal = true">
+            <Icon name="sliders" :size="18" class="filter-icon" />
             <text class="filter-text">筛选</text>
-            <view v-if="hasActiveFilters" class="filter-dot" />
+            <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
         </view>
     </view>
@@ -309,6 +313,20 @@ const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('creat
 const hasActiveFilters = computed(() => {
   return category.value !== null || status.value !== null || sortBy.value !== 'created_at'
 })
+
+// 活跃筛选项数量
+const activeFilterCount = computed(() => {
+  let count = 0
+  if (category.value !== null) count++
+  if (status.value !== null) count++
+  return count
+})
+
+// 计算分段控制器指示器偏移量
+const getIndicatorOffset = () => {
+  const index = sortOptions.findIndex(item => item.value === sortBy.value)
+  return index * 100 // 每个选项占 100% 宽度
+}
 
 // 分页（本地管理 page，与资源列表保持一致）
 const page = ref(1)
@@ -849,86 +867,97 @@ onMounted(() => {
 }
 
 // ===================================
-// 🎯 二级导航筛选栏（下划线高亮）
+// 🎯 筛选导航栏（分段控制器风格）
 // ===================================
 .nav-section {
-  background: $white;  // 改回白色，增强对比
-  padding: $sp-5 $sp-8;  // 增加内边距
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background: $white;
+  padding: $sp-6 $sp-8;
   max-width: 1200px;
-  margin: $sp-6 auto 0;  // 顶部增加间距，与分类栏分离
-  border-radius: $radius-lg $radius-lg 0 0;  // 顶部圆角
-  box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.02);  // 轻微阴影
+  margin: $sp-6 auto 0;
+  border-radius: $radius-xl $radius-xl 0 0;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
 
   @include mobile {
-    padding: $sp-4 $sp-4;
+    padding: $sp-4;
     margin-top: $sp-4;
   }
 }
 
-.nav-tabs {
+.nav-container {
   display: flex;
-  gap: $sp-10;  // 增加到 $sp-10 (40rpx = 20px)
-  overflow-x: auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: $sp-6;
+}
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+// 分段控制器容器
+.segmented-control {
+  position: relative;
+  display: inline-flex;
+  background: $gray-100;
+  border-radius: $radius-xl;
+  padding: 6rpx;
+  gap: 4rpx;
 
   @include mobile {
-    gap: $sp-6;
+    flex: 1;
   }
 }
 
-.nav-tab {
+// 每个分段选项
+.segment-item {
   position: relative;
-  padding: $sp-4 $sp-2;  // 增加左右内边距
+  z-index: 1;
+  padding: $sp-3 $sp-6;
+  min-width: 140rpx;
+  text-align: center;
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:hover {
-    .nav-label {
-      color: $primary;
+  &:hover:not(.active) {
+    .segment-label {
+      color: $gray-800;
     }
   }
 
   @include mobile {
-    padding: $sp-3 0;
+    flex: 1;
+    min-width: auto;
+    padding: $sp-3 $sp-4;
   }
 }
 
-.nav-label {
-  font-size: 30rpx;  // 增加到 30rpx (15px)
-  font-weight: $font-weight-semibold;  // 增加到 semibold
-  color: $gray-700;  // 加深到 $gray-700
-  transition: color $duration-base;
+.segment-label {
+  font-size: 28rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-600;
+  transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   white-space: nowrap;
 
   @include mobile {
-    font-size: $font-size-base;
+    font-size: $font-size-sm;
   }
 }
 
-.nav-tab.active {
-  .nav-label {
+.segment-item.active {
+  .segment-label {
     color: $primary;
-    font-weight: $font-weight-bold;  // 选中时加粗到 bold
+    font-weight: $font-weight-bold;
   }
 }
 
-.nav-underline {
+// 滑动指示器
+.segment-indicator {
   position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  height: 8rpx;  // 增加到 8rpx (4px)
-  background: linear-gradient(90deg, $primary 0%, lighten($primary, 10%) 100%);  // 添加渐变
-  border-radius: 4rpx 4rpx 0 0;
-  box-shadow: 0 -2rpx 8rpx rgba($primary, 0.3);  // 添加发光效果
-  animation: slideIn 0.3s ease-out;
+  top: 6rpx;
+  bottom: 6rpx;
+  left: 6rpx;
+  width: calc(25% - 3rpx); // 4个选项，每个占25%
+  background: $white;
+  border-radius: calc(#{$radius-xl} - 6rpx);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08), 0 1rpx 2rpx rgba(0, 0, 0, 0.04);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 0;
 }
 
 @keyframes slideIn {
@@ -940,53 +969,83 @@ onMounted(() => {
   }
 }
 
-.nav-right {
-  flex-shrink: 0;
-  margin-left: $sp-4;
-}
-
-.filter-trigger {
+// 筛选按钮
+.filter-button {
+  position: relative;
   display: flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-5;
-  background: $gray-50;
-  border-radius: $radius-2xl;
+  padding: $sp-4 $sp-6;
+  background: $white;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-xl;
   cursor: pointer;
-  transition: all $duration-base;
-  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 
   &:hover {
-    background: $gray-100;
+    background: $gray-50;
+    border-color: $primary;
+    transform: translateY(-1rpx);
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
   }
 
   @include mobile {
-    padding: $sp-2 $sp-4;
+    padding: $sp-3 $sp-5;
   }
 }
 
 .filter-icon {
-  color: $gray-600;
+  color: $gray-700;
+  transition: color 0.3s;
+
+  .filter-button:hover & {
+    color: $primary;
+  }
 }
 
 .filter-text {
-  font-size: $font-size-base;
-  color: $gray-700;
+  font-size: 28rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  transition: color 0.3s;
+
+  .filter-button:hover & {
+    color: $primary;
+  }
 
   @include mobile {
     font-size: $font-size-sm;
   }
 }
 
-.filter-dot {
+// 筛选徽章（显示活跃筛选项数量）
+.filter-badge {
   position: absolute;
-  top: 8rpx;
-  right: 8rpx;
-  width: 12rpx;
-  height: 12rpx;
-  background: $error;
-  border-radius: 50%;
-  border: 2rpx solid $white;
+  top: -8rpx;
+  right: -8rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, $error 0%, darken($error, 10%) 100%);
+  color: $white;
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
+  border-radius: 16rpx;
+  box-shadow: 0 2rpx 6rpx rgba($error, 0.4);
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
 }
 
 // ===================================

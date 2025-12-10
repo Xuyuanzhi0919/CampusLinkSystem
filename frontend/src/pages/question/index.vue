@@ -755,13 +755,13 @@ onMounted(() => {
 }
 
 .top-nav-container {
-  max-width: 1280px;  // 改为与首页一致
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 80px;  // 改为与首页一致
-  height: 56px;
+  padding: 0 80px;
+  height: 52px; // 从56px减小到52px，更紧凑
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px; // 从20px减小到16px
 
   @media (max-width: 1600px) {
     padding: 0 64px;

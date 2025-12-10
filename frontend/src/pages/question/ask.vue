@@ -1190,7 +1190,7 @@ const handleSubmit = async () => {
 
 .hint-text {
   font-size: $font-size-xs;
-  color: $info-700;
+  color: $info;
   line-height: 1.5;
 }
 
@@ -1315,7 +1315,7 @@ const handleSubmit = async () => {
 
 .tip-text {
   font-size: $font-size-xs;
-  color: $warning-700;
+  color: $warning-dark;
   line-height: 1.5;
 }
 

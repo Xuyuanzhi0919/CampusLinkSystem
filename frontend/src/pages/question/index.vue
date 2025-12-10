@@ -1530,6 +1530,11 @@ uni-page-body {
 .uni-app--showtabbar uni-page-head[uni-page-head-type='default'] ~ uni-page-wrapper {
   height: 100% !important;
 }
+
+/* Web 端隐藏 tabbar 占位伪元素 */
+.uni-app--showtabbar uni-page-wrapper::after {
+  display: none !important;
+}
 /* #endif */
 </style>
 

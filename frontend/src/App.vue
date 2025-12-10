@@ -209,4 +209,25 @@ uni-page-body {
   padding-bottom: 0 !important; /* 小程序原生 tabBar 自动处理 */
 }
 /* #endif */
+
+/* ========== 底部安全区适配优化 ========== */
+
+/* H5 端：隐藏 uni-page-wrapper 的底部伪元素占位，避免与自定义 TabBar 双重占位 */
+/* #ifdef H5 */
+uni-app--showtabbar uni-page-wrapper::after {
+  display: none !important;
+}
+/* #endif */
+
+/* 非 H5 端：优化底部安全区适配 */
+/* #ifndef H5 */
+uni-app--showtabbar uni-page-wrapper::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--tab-bar-height, 50px);
+  height: calc(var(--tab-bar-height, 50px) + constant(safe-area-inset-bottom));
+  height: calc(var(--tab-bar-height, 50px) + env(safe-area-inset-bottom));
+}
+/* #endif */
 </style>

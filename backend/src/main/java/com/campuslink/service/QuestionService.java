@@ -115,7 +115,7 @@ public class QuestionService {
      * 获取问题列表
      */
     public PageResult<QuestionListResponse> getQuestionList(
-            String category, Long schoolId, String keyword,
+            String category, Long schoolId, String keyword, Integer isSolved,
             Integer page, Integer pageSize, String sortBy, String sortOrder
     ) {
         // 构建查询条件
@@ -129,6 +129,9 @@ public class QuestionService {
             wrapper.and(w -> w.like(Question::getTitle, keyword)
                     .or()
                     .like(Question::getContent, keyword));
+        }
+        if (isSolved != null) {
+            wrapper.eq(Question::getIsSolved, isSolved);
         }
 
         // 排序

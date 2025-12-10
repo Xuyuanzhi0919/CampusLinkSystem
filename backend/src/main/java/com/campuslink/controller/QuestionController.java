@@ -40,13 +40,14 @@ public class QuestionController {
             @Parameter(description = "问题分类") @RequestParam(required = false) String category,
             @Parameter(description = "学校ID") @RequestParam(required = false) Long schoolId,
             @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
+            @Parameter(description = "是否已解决（0=未解决，1=已解决）") @RequestParam(required = false) Integer isSolved,
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "排序字段") @RequestParam(defaultValue = "created_at") String sortBy,
             @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder
     ) {
         PageResult<QuestionListResponse> result = questionService.getQuestionList(
-                category, schoolId, keyword, page, pageSize, sortBy, sortOrder
+                category, schoolId, keyword, isSolved, page, pageSize, sortBy, sortOrder
         );
         return Result.success(result);
     }

@@ -787,7 +787,7 @@ const handleSubmit = async () => {
   right: 0;
   background: $white;
   border-bottom: 1rpx solid $gray-200;
-  z-index: $z-navbar;
+  z-index: $z-fixed;
   padding-top: constant(safe-area-inset-top);
   padding-top: env(safe-area-inset-top);
 }
@@ -1337,7 +1337,7 @@ const handleSubmit = async () => {
   background: $white;
   border-top: 1rpx solid $gray-200;
   box-shadow: 0 -4rpx 12rpx rgba($black, 0.06);
-  z-index: $z-navbar;
+  z-index: $z-fixed;
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }

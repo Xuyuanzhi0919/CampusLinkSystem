@@ -75,6 +75,7 @@
         <view class="sort-controls">
           <!-- 排序下拉 -->
           <view class="sort-dropdown" @click="toggleSortMenu">
+            <Icon name="arrow-down-up" :size="14" class="sort-icon" />
             <text class="sort-label">{{ currentSortLabel }}</text>
             <Icon name="chevron-down" :size="14" class="dropdown-icon" />
           </view>
@@ -82,6 +83,7 @@
           <!-- 筛选按钮 -->
           <view class="filter-btn" @click="showFilterModal = true">
             <Icon name="sliders" :size="14" class="filter-icon" />
+            <text class="filter-label">筛选</text>
             <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
         </view>
@@ -1006,6 +1008,11 @@ onMounted(() => {
   }
 }
 
+.sort-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+}
+
 .sort-label {
   font-size: 13px;
   font-weight: 500;
@@ -1021,22 +1028,17 @@ onMounted(() => {
 
 .filter-btn {
   position: relative;
-  display: inline-flex;  // 改为 inline-flex
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  min-width: 32px;
-  min-height: 32px;
-  max-width: 32px;  // 添加最大宽度限制
-  max-height: 32px;  // 添加最大高度限制
+  gap: 4px;
+  padding: 6px 12px;
+  min-width: 60px;  // 确保最小宽度容纳文字
   background: $gray-100;
-  border-radius: 50%;
+  border-radius: 16px;  // 改为圆角矩形，与排序按钮一致
   cursor: pointer;
   transition: all 0.2s;
-  overflow: hidden;
-  flex-shrink: 0;  // 防止被压缩
-  box-sizing: border-box;  // 确保尺寸包含 border 和 padding
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
     background: $gray-200;
@@ -1044,8 +1046,15 @@ onMounted(() => {
 }
 
 .filter-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+}
+
+.filter-label {
+  font-size: 13px;
+  font-weight: 500;
   color: $gray-700;
-  flex-shrink: 0;  // 防止图标被压缩
+  white-space: nowrap;
 }
 
 .filter-badge {

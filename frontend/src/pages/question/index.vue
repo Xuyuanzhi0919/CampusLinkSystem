@@ -874,77 +874,158 @@ onMounted(() => {
   top: 100%;
   left: 0;
   right: 0;
-  margin-top: 4px;
+  margin-top: 8px;
   background: $white;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  max-height: 320px;
-  overflow-y: auto;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-height: 360px;
+  overflow: hidden;
   z-index: 101;
+  animation: slideDown 0.2s ease-out;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 .history-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border-bottom: 1px solid $gray-100;
+  background: $gray-50;
 }
 
 .history-title {
-  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
   font-weight: 600;
-  color: $gray-700;
+  color: $gray-800;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 14px;
+    background: $primary;
+    border-radius: 2px;
+  }
 }
 
 .history-clear {
   font-size: 13px;
   color: $primary;
+  font-weight: 500;
   cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
 
   &:hover {
+    background: rgba($primary, 0.1);
     color: darken($primary, 10%);
   }
 }
 
 .history-list {
-  padding: 4px;
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: 3px;
+
+    &:hover {
+      background: $gray-400;
+    }
+  }
 }
 
 .history-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  position: relative;
 
   &:hover {
     background: $gray-50;
+    transform: translateX(2px);
+
+    .history-remove {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    background: $gray-100;
+    transform: translateX(0);
   }
 }
 
 .history-icon {
   color: $gray-400;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 50%;
+  padding: 3px;
 }
 
 .history-text {
   flex: 1;
   font-size: 14px;
-  color: $gray-700;
+  color: $gray-800;
+  font-weight: 400;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .history-remove {
   color: $gray-400;
   cursor: pointer;
   padding: 4px;
-  border-radius: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.2s;
 
   &:hover {
-    background: $gray-200;
-    color: $gray-700;
+    background: rgba($error, 0.1);
+    color: $error;
+  }
+
+  &:active {
+    transform: scale(0.9);
   }
 }
 

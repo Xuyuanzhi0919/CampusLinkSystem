@@ -299,21 +299,25 @@ onMounted(() => {
 .section-header {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  padding: 0 $sp-2;
-  margin-bottom: $sp-2;
+  gap: $sp-3;
+  padding: $sp-4 $sp-5;
+  margin-bottom: $sp-4;
+  background: linear-gradient(135deg, rgba($primary, 0.04) 0%, rgba($accent, 0.02) 100%);
+  border-left: 4rpx solid $primary;
+  border-radius: $radius-md;
 }
 
 .section-icon {
-  color: $gray-500;
+  color: $primary;
+  flex-shrink: 0;
 }
 
 .section-title {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $gray-600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $gray-900;
+  letter-spacing: -0.01em;
+  flex: 1;
 }
 
 // ===================================

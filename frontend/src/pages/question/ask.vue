@@ -5,10 +5,10 @@
       <view class="nav-left" @click="handleCancel">
         <text class="nav-btn">取消</text>
       </view>
-      <text class="nav-title">提问</text>
+      <text class="nav-title">{{ editMode ? '编辑问题' : '提问' }}</text>
       <view class="nav-right">
-        <CButton type="text" size="sm" :disabled="!canSubmit" @click="handleSubmit">
-          发布
+        <CButton type="text" size="sm" :disabled="!canSubmit || loading" @click="handleSubmit">
+          {{ editMode ? '保存' : '发布' }}
         </CButton>
       </view>
     </view>
@@ -202,10 +202,10 @@
     </scroll-view>
 
     <!-- 加载中遮罩 -->
-    <view v-if="submitting" class="loading-mask">
+    <view v-if="submitting || loading" class="loading-mask">
       <view class="loading-content">
         <text class="loading-spinner">⏳</text>
-        <text class="loading-text">发布中...</text>
+        <text class="loading-text">{{ loading ? '加载中...' : (editMode ? '保存中...' : '发布中...') }}</text>
       </view>
     </view>
   </view>
@@ -213,7 +213,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { createQuestion } from '@/services/question'
+import { onLoad } from '@dcloudio/uni-app'
+import { createQuestion, updateQuestion, getQuestionDetail } from '@/services/question'
 import { useUserStore } from '@/stores/user'
 import { chooseAndUploadImages } from '@/utils/upload'
 import { validateTitle, validateContent, validateImages } from '@/utils/validator'
@@ -223,6 +224,11 @@ import CButton from '@/components/ui/CButton.vue'
 
 // Store
 const userStore = useUserStore()
+
+// 编辑模式
+const editMode = ref(false)
+const questionId = ref<number | null>(null)
+const loading = ref(false)
 
 // 表单数据
 const formData = ref({
@@ -313,40 +319,89 @@ const autoSaveDraft = () => {
   }, 2000) // 2秒后保存
 }
 
-// 监听表单变化，自动保存草稿
+// 监听表单变化，自动保存草稿（仅在新建模式下）
 watch(() => formData.value, () => {
-  autoSaveDraft()
+  if (!editMode.value) {
+    autoSaveDraft()
+  }
 }, { deep: true })
+
+// 页面加载时处理路由参数
+onLoad(async (options) => {
+  if (options?.id) {
+    // 编辑模式
+    editMode.value = true
+    questionId.value = parseInt(options.id)
+    await loadQuestionDetail()
+  }
+})
+
+// 加载问题详情（编辑模式）
+const loadQuestionDetail = async () => {
+  if (!questionId.value) return
+
+  try {
+    loading.value = true
+    uni.showLoading({ title: '加载中...' })
+
+    const detail = await getQuestionDetail(questionId.value)
+
+    // 填充表单
+    formData.value.title = detail.title
+    formData.value.content = detail.content
+    formData.value.category = detail.category
+    formData.value.tags = detail.tags || []
+    formData.value.images = detail.images || []
+    formData.value.bounty = detail.bounty || 0
+
+    uni.hideLoading()
+  } catch (error: any) {
+    console.error('加载问题详情失败:', error)
+    uni.showToast({
+      title: error.message || '加载失败',
+      icon: 'none'
+    })
+    // 加载失败，返回上一页
+    setTimeout(() => {
+      uni.navigateBack()
+    }, 1500)
+  } finally {
+    loading.value = false
+  }
+}
 
 // 页面加载时恢复草稿并刷新用户信息
 onMounted(async () => {
   // 刷新用户信息（确保积分是最新的）
   await userStore.fetchUserInfo()
 
-  const draft = getDraft()
-  if (draft) {
-    uni.showModal({
-      title: '恢复草稿',
-      content: `发现${formatDraftTime(draft.savedAt)}保存的草稿，是否恢复？`,
-      success: (res) => {
-        if (res.confirm) {
-          formData.value.title = draft.title
-          formData.value.content = draft.content
-          formData.value.category = draft.category as QuestionCategory
-          formData.value.tags = draft.tags
-          formData.value.images = draft.images
-          formData.value.bounty = draft.bounty
+  // 仅在新建模式下恢复草稿
+  if (!editMode.value) {
+    const draft = getDraft()
+    if (draft) {
+      uni.showModal({
+        title: '恢复草稿',
+        content: `发现${formatDraftTime(draft.savedAt)}保存的草稿，是否恢复？`,
+        success: (res) => {
+          if (res.confirm) {
+            formData.value.title = draft.title
+            formData.value.content = draft.content
+            formData.value.category = draft.category as QuestionCategory
+            formData.value.tags = draft.tags
+            formData.value.images = draft.images
+            formData.value.bounty = draft.bounty
 
-          uni.showToast({
-            title: '草稿已恢复',
-            icon: 'success'
-          })
-        } else {
-          // 用户选择不恢复，删除草稿
-          deleteDraft()
+            uni.showToast({
+              title: '草稿已恢复',
+              icon: 'success'
+            })
+          } else {
+            // 用户选择不恢复，删除草稿
+            deleteDraft()
+          }
         }
-      }
-    })
+      })
+    }
   }
 })
 
@@ -600,35 +655,52 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
 
-    const res = await createQuestion({
+    const questionData = {
       title: formData.value.title.trim(),
       content: formData.value.content.trim(),
       category: formData.value.category as QuestionCategory,
       tags: formData.value.tags,
       images: formData.value.images,
       bounty: formData.value.bounty
-    })
+    }
 
-    // 发布成功后删除草稿
-    deleteDraft()
+    let resultQuestionId: number
+
+    if (editMode.value && questionId.value) {
+      // 编辑模式 - 更新问题
+      const res = await updateQuestion(questionId.value, questionData)
+      resultQuestionId = res.questionId
+
+      uni.showToast({
+        title: '保存成功',
+        icon: 'success'
+      })
+    } else {
+      // 新建模式 - 创建问题
+      const res = await createQuestion(questionData)
+      resultQuestionId = res.questionId
+
+      // 发布成功后删除草稿
+      deleteDraft()
+
+      uni.showToast({
+        title: '发布成功',
+        icon: 'success'
+      })
+    }
 
     // 刷新用户信息（更新积分显示）
     await userStore.fetchUserInfo()
 
-    uni.showToast({
-      title: '发布成功',
-      icon: 'success'
-    })
-
     // 延迟跳转到详情页
     setTimeout(() => {
       uni.redirectTo({
-        url: `/pages/question/detail?id=${res.questionId}`
+        url: `/pages/question/detail?id=${resultQuestionId}`
       })
     }, 1500)
   } catch (err: any) {
     uni.showToast({
-      title: err.message || '发布失败',
+      title: err.message || (editMode.value ? '保存失败' : '发布失败'),
       icon: 'none'
     })
   } finally {

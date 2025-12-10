@@ -38,6 +38,15 @@ export const createQuestion = (data: QuestionCreateParams) => {
 }
 
 /**
+ * 更新问题
+ * @param id 问题ID
+ * @param data 问题数据
+ */
+export const updateQuestion = (id: number, data: QuestionCreateParams) => {
+  return request.put<{ questionId: number }>(`/question/${id}`, data)
+}
+
+/**
  * 回答问题
  * @param questionId 问题ID
  * @param data 回答数据

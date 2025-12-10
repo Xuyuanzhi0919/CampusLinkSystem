@@ -684,6 +684,16 @@ const handleLoadMore = () => {
 
 // 页面滚动到底部时触发（uni-app生命周期）
 onReachBottom(() => {
+  // 如果没有更多数据,显示提示
+  if (!hasMore.value && questions.value.length > 0) {
+    uni.showToast({
+      title: '没有更多数据了',
+      icon: 'none',
+      duration: 1500
+    })
+    return
+  }
+
   handleLoadMore()
 })
 

@@ -61,31 +61,6 @@
           <Icon name="share" :size="16" class="btn-icon" />
           分享
         </CButton>
-
-        <!-- 举报按钮（非本人） -->
-        <CButton
-          v-if="!isMyQuestion"
-          type="ghost"
-          size="md"
-          block
-          @click="handleReport"
-        >
-          <Icon name="flag" :size="16" class="btn-icon" />
-          举报
-        </CButton>
-
-        <!-- 删除按钮（仅本人） -->
-        <CButton
-          v-if="isMyQuestion"
-          type="danger"
-          size="md"
-          block
-          plain
-          @click="handleDelete"
-        >
-          <Icon name="trash" :size="16" class="btn-icon" />
-          删除问题
-        </CButton>
       </view>
     </CCard>
 
@@ -171,8 +146,6 @@ const emit = defineEmits<{
   follow: []
   collect: []
   share: []
-  report: []
-  delete: []
 }>()
 
 // 相关问题列表（模拟数据，实际应从后端获取）
@@ -193,16 +166,6 @@ const handleCollect = () => {
 // 处理分享
 const handleShare = () => {
   emit('share')
-}
-
-// 处理举报
-const handleReport = () => {
-  emit('report')
-}
-
-// 处理删除
-const handleDelete = () => {
-  emit('delete')
 }
 
 // 处理相关问题点击

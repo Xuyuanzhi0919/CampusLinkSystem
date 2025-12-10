@@ -118,8 +118,6 @@
             @follow="handleFollow"
             @collect="handleCollect"
             @share="handleShare"
-            @report="handleReportQuestion"
-            @delete="handleDeleteQuestion"
           />
         </view>
       </view>
@@ -145,18 +143,25 @@
     <!-- 更多菜单弹出层 -->
     <view v-if="showMorePopup" class="more-menu-overlay" @click="closeMoreMenu">
       <view class="more-menu-content" @click.stop>
+        <!-- 编辑问题（仅提问者可见） -->
         <view v-if="isMyQuestion" class="menu-item" @click="handleEditQuestion">
           <Icon name="edit" :size="20" class="menu-icon" />
           <text class="menu-label">编辑问题</text>
         </view>
-        <view class="menu-item" @click="handleReportQuestionFromMenu">
+
+        <!-- 删除问题（仅提问者可见） -->
+        <view v-if="isMyQuestion" class="menu-item menu-item--danger" @click="handleDeleteQuestionFromMenu">
+          <Icon name="trash" :size="20" class="menu-icon" />
+          <text class="menu-label">删除问题</text>
+        </view>
+
+        <!-- 举报（非提问者可见） -->
+        <view v-if="!isMyQuestion" class="menu-item" @click="handleReportQuestionFromMenu">
           <Icon name="flag" :size="20" class="menu-icon" />
           <text class="menu-label">举报</text>
         </view>
-        <view class="menu-item" @click="handleShareFromMenu">
-          <Icon name="share" :size="20" class="menu-icon" />
-          <text class="menu-label">分享</text>
-        </view>
+
+        <!-- 取消 -->
         <view class="menu-item menu-item--cancel" @click="closeMoreMenu">
           <text class="menu-label">取消</text>
         </view>
@@ -567,9 +572,9 @@ const handleReportQuestionFromMenu = () => {
   handleReportQuestion()
 }
 
-const handleShareFromMenu = () => {
+const handleDeleteQuestionFromMenu = () => {
   closeMoreMenu()
-  handleShare()
+  handleDeleteQuestion()
 }
 
 const handleRetry = () => {
@@ -894,6 +899,20 @@ const handleRetry = () => {
 
   &:active {
     background: $gray-50;
+  }
+
+  &--danger {
+    .menu-icon {
+      color: $error;
+    }
+
+    .menu-label {
+      color: $error;
+    }
+
+    &:active {
+      background: rgba($error, 0.05);
+    }
   }
 
   &--cancel {

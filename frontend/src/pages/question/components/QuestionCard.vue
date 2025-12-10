@@ -287,13 +287,13 @@ const handleClick = () => {
 // 问题标题（加粗、突出）
 // ===================================
 .card-title {
-  font-size: $font-size-lg;  // 从 base+2rpx 改为 lg，更大
-  font-weight: $font-weight-semibold;
+  font-size: 32rpx;  // 从 lg (30rpx) 增加到 32rpx (16px)
+  font-weight: $font-weight-bold;  // 从 semibold (600) 增加到 bold (700)
   color: $gray-900;
-  line-height: 1.5;
+  line-height: 1.4;  // 从 1.5 减少到 1.4，更紧凑
   @include text-ellipsis(2);
-  margin-bottom: $sp-3;  // 增加间距
-  letter-spacing: -0.01em;  // 紧凑字间距
+  margin-bottom: $sp-4;  // 从 $sp-3 增加到 $sp-4
+  letter-spacing: -0.01em;
 }
 
 // ===================================

@@ -733,6 +733,7 @@ onMounted(() => {
   background: $white;
   padding: 0;
   border-bottom: 1rpx solid $gray-100;
+  margin-top: $sp-4;  // 与搜索栏拉开间距（16rpx = 8px）
 }
 
 .category-scroll {
@@ -761,8 +762,8 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-6;  // 增加左右 padding
-  background: #F3F4F6;  // 统一浅灰底
+  padding: $sp-3 $sp-6;
+  background: $gray-100;
   border-radius: $radius-2xl;
   border: 1rpx solid transparent;
   cursor: pointer;
@@ -770,14 +771,14 @@ onMounted(() => {
   white-space: nowrap;
 
   &:hover {
-    background: #E5E7EB;  // hover 稍深
+    background: $gray-200;
   }
 
   &.active {
-    background: $primary;  // 统一纯蓝底，不用渐变
+    background: $primary;
     color: $white;
     border-color: $primary;
-    box-shadow: 0 2rpx 6rpx rgba($primary, 0.15);  // 减小阴影
+    box-shadow: $shadow-sm;
 
     .pill-icon {
       color: $white;
@@ -813,16 +814,17 @@ onMounted(() => {
 // 🎯 二级导航筛选栏（下划线高亮）
 // ===================================
 .nav-section {
-  background: $white;
-  padding: 0 $sp-6;
+  background: $bg-page;  // 从 $white 改为 $bg-page，降低视觉权重
+  padding: $sp-3 $sp-6;  // 从 0 改为 $sp-3，增加上下内边距
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
+  border-bottom: 1rpx solid $gray-100;  // 添加底部分割线
 
   @include mobile {
-    padding: 0 $sp-4;
+    padding: $sp-3 $sp-4;
   }
 }
 
@@ -842,23 +844,23 @@ onMounted(() => {
 
 .nav-tab {
   position: relative;
-  padding: $sp-5 0;
+  padding: $sp-4 0;  // 从 $sp-5 减少到 $sp-4，减小高度
   cursor: pointer;
   transition: color $duration-base;
 
   @include mobile {
-    padding: $sp-4 0;
+    padding: $sp-3 0;
   }
 }
 
 .nav-label {
-  font-size: $font-size-lg;
+  font-size: $font-size-base;  // 从 lg 降至 base，降低视觉权重
   font-weight: $font-weight-medium;
   color: $gray-600;
   transition: color $duration-base;
 
   @include mobile {
-    font-size: $font-size-base;
+    font-size: $font-size-sm;
   }
 }
 

@@ -1,109 +1,125 @@
 <template>
   <view class="recommend-sidebar">
-    <!-- 热门标签模块 -->
-    <CCard variant="elevated" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="tag" :size="18" class="header-icon" />
-        <text class="header-title">热门标签</text>
+    <!-- ===== 全站趋势分组 ===== -->
+    <view class="sidebar-section">
+      <view class="section-header">
+        <Icon name="trending-up" :size="16" class="section-icon" />
+        <text class="section-title">全站趋势</text>
       </view>
-      <view class="tags-grid">
-        <view
-          v-for="tag in hotTags"
-          :key="tag.name"
-          class="tag-pill"
-          @click="handleTagClick(tag.name)"
-        >
-          <text class="tag-text">{{ tag.name }}</text>
-          <text class="tag-count">{{ tag.count }}</text>
-        </view>
-      </view>
-    </CCard>
 
-    <!-- 本校热议模块 -->
-    <CCard variant="elevated" class="sidebar-card school-card">
-      <view class="card-header">
-        <Icon name="school" :size="18" class="header-icon school-icon" />
-        <text class="header-title">本校热议</text>
-        <view class="school-badge">
-          <text class="badge-text">{{ schoolName }}</text>
+      <!-- 热门标签模块 -->
+      <CCard variant="default" class="sidebar-card">
+        <view class="card-header">
+          <Icon name="tag" :size="18" class="header-icon" />
+          <text class="header-title">热门标签</text>
         </view>
-      </view>
-      <view class="hot-questions">
-        <view
-          v-for="(question, index) in schoolQuestions"
-          :key="question.qid"
-          class="hot-question-item"
-          @click="handleQuestionClick(question.qid)"
-        >
-          <view class="rank-badge school-rank">
-            {{ index + 1 }}
+        <view class="tags-grid">
+          <view
+            v-for="tag in hotTags"
+            :key="tag.name"
+            class="tag-pill"
+            @click="handleTagClick(tag.name)"
+          >
+            <text class="tag-text">{{ tag.name }}</text>
+            <text class="tag-count">{{ tag.count }}</text>
           </view>
-          <view class="question-content">
-            <text class="question-title">{{ question.title }}</text>
-            <view class="question-meta">
-              <Icon name="eye" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.views }}</text>
-              <Icon name="message-circle" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.answerCount }}</text>
+        </view>
+      </CCard>
+
+      <!-- 热门问题模块 -->
+      <CCard variant="default" class="sidebar-card">
+        <view class="card-header">
+          <Icon name="flame" :size="18" class="header-icon" />
+          <text class="header-title">热门问题</text>
+        </view>
+        <view class="hot-questions">
+          <view
+            v-for="(question, index) in hotQuestions"
+            :key="question.qid"
+            class="hot-question-item"
+            @click="handleQuestionClick(question.qid)"
+          >
+            <view class="rank-badge" :class="getRankClass(index)">
+              {{ index + 1 }}
+            </view>
+            <view class="question-content">
+              <text class="question-title">{{ question.title }}</text>
+              <view class="question-meta">
+                <Icon name="eye" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ question.views }}</text>
+                <Icon name="message-circle" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ question.answerCount }}</text>
+              </view>
             </view>
           </view>
         </view>
-      </view>
-    </CCard>
+      </CCard>
+    </view>
 
-    <!-- 热门问题模块 -->
-    <CCard variant="elevated" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="trending-up" :size="18" class="header-icon" />
-        <text class="header-title">热门问题</text>
+    <!-- ===== 校园动态分组 ===== -->
+    <view class="sidebar-section">
+      <view class="section-header">
+        <Icon name="school" :size="16" class="section-icon" />
+        <text class="section-title">校园动态</text>
       </view>
-      <view class="hot-questions">
-        <view
-          v-for="(question, index) in hotQuestions"
-          :key="question.qid"
-          class="hot-question-item"
-          @click="handleQuestionClick(question.qid)"
-        >
-          <view class="rank-badge" :class="getRankClass(index)">
-            {{ index + 1 }}
+
+      <!-- 本校热议模块 -->
+      <CCard variant="default" class="sidebar-card school-card">
+        <view class="card-header">
+          <Icon name="message-square" :size="18" class="header-icon school-icon" />
+          <text class="header-title">本校热议</text>
+          <view class="school-badge">
+            <text class="badge-text">{{ schoolName }}</text>
           </view>
-          <view class="question-content">
-            <text class="question-title">{{ question.title }}</text>
-            <view class="question-meta">
-              <Icon name="eye" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.views }}</text>
-              <Icon name="message-circle" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.answerCount }}</text>
+        </view>
+        <view class="hot-questions">
+          <view
+            v-for="(question, index) in schoolQuestions"
+            :key="question.qid"
+            class="hot-question-item"
+            @click="handleQuestionClick(question.qid)"
+          >
+            <view class="rank-badge school-rank">
+              {{ index + 1 }}
+            </view>
+            <view class="question-content">
+              <text class="question-title">{{ question.title }}</text>
+              <view class="question-meta">
+                <Icon name="eye" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ question.views }}</text>
+                <Icon name="message-circle" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ question.answerCount }}</text>
+              </view>
             </view>
           </view>
         </view>
-      </view>
-    </CCard>
+      </CCard>
 
-    <!-- 活跃答主模块 -->
-    <CCard variant="elevated" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="users" :size="18" class="header-icon" />
-        <text class="header-title">活跃答主</text>
-      </view>
-      <view class="active-users">
-        <view
-          v-for="user in activeUsers"
-          :key="user.userId"
-          class="user-item"
-          @click="handleUserClick(user.userId)"
-        >
-          <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
-          <view class="user-info">
-            <text class="user-name">{{ user.nickname }}</text>
-            <text class="user-answers">回答 {{ user.answerCount }} 个问题</text>
-          </view>
-          <view v-if="user.badge" class="user-badge">
-            <text class="badge-text">{{ user.badge }}</text>
+      <!-- 活跃答主模块 -->
+      <CCard variant="default" class="sidebar-card">
+        <view class="card-header">
+          <Icon name="users" :size="18" class="header-icon" />
+          <text class="header-title">活跃答主</text>
+        </view>
+        <view class="active-users">
+          <view
+            v-for="user in activeUsers"
+            :key="user.userId"
+            class="user-item"
+            @click="handleUserClick(user.userId)"
+          >
+            <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
+            <view class="user-info">
+              <text class="user-name">{{ user.nickname }}</text>
+              <text class="user-answers">回答 {{ user.answerCount }} 个问题</text>
+            </view>
+            <view v-if="user.badge" class="user-badge">
+              <text class="badge-text">{{ user.badge }}</text>
+            </view>
           </view>
         </view>
-      </view>
-    </CCard>
+      </CCard>
+    </view>
   </view>
 </template>
 
@@ -267,16 +283,45 @@ onMounted(() => {
 .recommend-sidebar {
   display: flex;
   flex-direction: column;
-  gap: $sp-6;
+  gap: $sp-8;  // 分组之间的间距（32px）
   position: sticky;
   top: $sp-6;
 }
 
 // ===================================
-// 卡片通用样式
+// 分组样式
+// ===================================
+.sidebar-section {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-6;  // 卡片之间的间距（24px）
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: 0 $sp-2;
+  margin-bottom: $sp-2;
+}
+
+.section-icon {
+  color: $gray-500;
+}
+
+.section-title {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $gray-600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// ===================================
+// 卡片通用样式（统一规范）
 // ===================================
 .sidebar-card {
-  padding: $sp-6;
+  padding: $sp-6;  // 统一内边距 24rpx (12px)
 }
 
 .card-header {
@@ -286,6 +331,7 @@ onMounted(() => {
   margin-bottom: $sp-6;
   padding-bottom: $sp-4;
   border-bottom: 2rpx solid $gray-100;
+  height: 48rpx;  // 统一标题区高度 48rpx (24px)
 }
 
 .header-icon {
@@ -412,21 +458,21 @@ onMounted(() => {
   @include flex-center;
 
   &.rank-1 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    background: linear-gradient(135deg, $rank-gold 0%, $rank-gold-dark 100%);
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba(255, 165, 0, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba($rank-gold-dark, 0.3);
   }
 
   &.rank-2 {
-    background: linear-gradient(135deg, #C0C0C0 0%, #A9A9A9 100%);
+    background: linear-gradient(135deg, $rank-silver 0%, $rank-silver-dark 100%);
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba(192, 192, 192, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba($rank-silver, 0.3);
   }
 
   &.rank-3 {
-    background: linear-gradient(135deg, #CD7F32 0%, #B8860B 100%);
+    background: linear-gradient(135deg, $rank-bronze 0%, $rank-bronze-dark 100%);
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba(205, 127, 50, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba($rank-bronze, 0.3);
   }
 }
 

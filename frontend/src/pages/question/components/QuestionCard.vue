@@ -145,8 +145,8 @@ const highlightText = (text: string, keyword: string): string => {
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`(${escapedKeyword})`, 'gi')
 
-    // 替换为带高亮样式的HTML
-    return text.replace(regex, '<span style="color: #FF7D00; font-weight: 600; background: rgba(255, 125, 0, 0.1); padding: 0 4px; border-radius: 4px;">$1</span>')
+    // 替换为带高亮样式的HTML（使用设计系统的 accent 色）
+    return text.replace(regex, '<span style="color: #FF6B35; font-weight: 600; background: rgba(255, 107, 53, 0.1); padding: 0 4px; border-radius: 4px;">$1</span>')
   } catch (error) {
     return text
   }
@@ -343,18 +343,18 @@ const handleClick = () => {
   }
 }
 
-// 数据统计（右侧）
+// 数据统计（右侧）- 统一灰色调
 .card-stats {
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: $sp-5;  // 从 $sp-4 增加到 $sp-5，增强呼吸感
   flex-shrink: 0;
 
   .stat-item {
     display: flex;
     align-items: center;
     gap: $sp-1;
-    color: $gray-400;
+    color: $gray-500;  // 统一颜色
 
     .stat-icon {
       color: $gray-400;
@@ -362,14 +362,13 @@ const handleClick = () => {
     }
 
     .stat-value {
-      font-size: $font-size-xs + 2rpx;
-      color: $gray-500;
+      font-size: $font-size-sm;  // 使用统一的 sm 尺寸
+      color: $gray-600;  // 统一为 $gray-600，更易读
       font-weight: $font-weight-medium;
     }
 
+    // 悬赏积分特殊样式（橙色强调）
     &.reward {
-      color: $accent;
-
       .stat-icon {
         color: $accent;
       }

@@ -94,7 +94,7 @@ public class QuestionService {
 
         // 检查问题状态：已解决的问题不能编辑
         if (question.getIsSolved() == 1) {
-            throw new BusinessException(ResultCode.OPERATION_FAILED, "已解决的问题不能编辑");
+            throw new BusinessException(ResultCode.QUESTION_ALREADY_SOLVED, "已解决的问题不能编辑");
         }
 
         // 更新问题信息

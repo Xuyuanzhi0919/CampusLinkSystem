@@ -81,6 +81,11 @@
       <polyline points="9 12 11 14 15 10" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- Check 图标（勾选） -->
+    <template v-else-if="name === 'check'">
+      <polyline points="20 6 9 17 4 12" stroke="currentColor" fill="none"/>
+    </template>
+
     <!-- Bar Chart 图标（统计） -->
     <template v-else-if="name === 'bar-chart'">
       <line x1="12" y1="20" x2="12" y2="10" stroke="currentColor"/>

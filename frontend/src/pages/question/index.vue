@@ -73,11 +73,27 @@
 
         <!-- 右侧：排序+筛选 -->
         <view class="sort-controls">
-          <!-- 排序下拉 -->
-          <view class="sort-dropdown" @click="toggleSortMenu">
-            <Icon name="arrow-down-up" :size="14" class="sort-icon" />
-            <text class="sort-label">{{ currentSortLabel }}</text>
-            <Icon name="chevron-down" :size="14" class="dropdown-icon" />
+          <!-- 排序下拉（相对定位容器） -->
+          <view class="sort-dropdown-wrapper">
+            <view class="sort-dropdown" @click="toggleSortMenu">
+              <Icon name="arrow-down-up" :size="14" class="sort-icon" />
+              <text class="sort-label">{{ currentSortLabel }}</text>
+              <Icon name="chevron-down" :size="14" class="dropdown-icon" />
+            </view>
+
+            <!-- 排序菜单（出现在按钮下方） -->
+            <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
+              <view
+                v-for="item in sortOptions"
+                :key="item.value"
+                class="sort-menu-item"
+                :class="{ active: sortBy === item.value }"
+                @click="handleSortChange(item.value)"
+              >
+                <text class="sort-item-label">{{ item.label }}</text>
+                <Icon v-if="sortBy === item.value" name="check" :size="16" class="check-icon" />
+              </view>
+            </view>
           </view>
 
           <!-- 筛选按钮 -->
@@ -88,6 +104,9 @@
           </view>
         </view>
       </view>
+
+      <!-- 遮罩层（点击关闭菜单） -->
+      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
 
     <!-- ========== 主内容区（整页滚动） ========== -->
@@ -136,22 +155,6 @@
         <!-- 右侧：推荐侧栏 -->
         <view class="sidebar">
           <RecommendSidebar />
-        </view>
-      </view>
-    </view>
-
-    <!-- 排序菜单下拉 -->
-    <view v-if="showSortMenu" class="sort-menu-dropdown" @click="showSortMenu = false">
-      <view class="sort-menu-content" @click.stop>
-        <view
-          v-for="item in sortOptions"
-          :key="item.value"
-          class="sort-menu-item"
-          :class="{ active: sortBy === item.value }"
-          @click="handleSortChange(item.value)"
-        >
-          <text class="sort-item-label">{{ item.label }}</text>
-          <Icon v-if="sortBy === item.value" name="check" :size="16" class="check-icon" />
         </view>
       </view>
     </view>
@@ -1272,26 +1275,34 @@ onMounted(() => {
 /* ========================================
    排序菜单下拉
    ======================================== */
-.sort-menu-dropdown {
+// 排序下拉容器（相对定位）
+.sort-dropdown-wrapper {
+  position: relative;
+}
+
+// 遮罩层
+.sort-menu-mask {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 102;
-  background: rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 112px;
+  z-index: 101;
+  background: transparent;  // 透明遮罩
 }
 
+// 排序菜单内容（绝对定位在按钮下方）
 .sort-menu-content {
+  position: absolute;
+  top: calc(100% + 4px);  // 出现在按钮下方，留4px间距
+  right: 0;  // 右对齐
+  z-index: 102;
   background: $white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  min-width: 160px;
+  min-width: 140px;
   overflow: hidden;
+  border: 1px solid $gray-200;
 }
 
 .sort-menu-item {

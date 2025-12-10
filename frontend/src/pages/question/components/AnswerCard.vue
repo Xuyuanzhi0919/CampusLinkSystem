@@ -64,7 +64,7 @@
 
       <!-- 右侧：采纳/删除按钮 -->
       <view class="footer-right">
-        <!-- ?????????????????? -->
+        <!-- 采纳按钮（仅提问者可见且问题未解决） -->
         <CButton
           v-if="canAccept && !answer.isAccepted"
           type="success"
@@ -74,10 +74,10 @@
           @click="handleAccept"
         >
           <ClIcon name="icon-check" size="xs" class="action-icon" />
-          <text class="action-label">??</text>
+          <text class="action-label">采纳</text>
         </CButton>
 
-        <!-- ?????????????? -->
+        <!-- 删除按钮（仅回答者本人可见） -->
         <CButton
           v-if="isMyAnswer"
           type="ghost"
@@ -86,7 +86,7 @@
           @click="handleDelete"
         >
           <ClIcon name="icon-trash-2" size="xs" class="action-icon" />
-          <text class="action-label">??</text>
+          <text class="action-label">删除</text>
         </CButton>
       </view>
     </view>

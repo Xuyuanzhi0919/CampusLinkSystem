@@ -22,6 +22,8 @@ export const ICONIFY_MAP: Record<string, string> = {
 
   // ========== 操作图标 ==========
   'icon-edit': 'lucide:edit-3',
+  'icon-trash': 'lucide:trash',
+  'icon-trash-2': 'lucide:trash-2',
   'icon-check': 'lucide:check',
   'icon-lightbulb': 'lucide:lightbulb',
   'icon-plus': 'lucide:plus',

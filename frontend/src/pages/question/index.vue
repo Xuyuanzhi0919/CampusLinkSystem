@@ -1,41 +1,40 @@
 <template>
   <view class="question-page">
-    <!-- 🔍 搜索栏（现代化设计） -->
-    <view class="search-section">
-      <view class="search-container">
-        <!-- PC端左侧品牌标识 -->
-        <view class="brand-section">
-          <Icon name="message-circle" :size="24" class="brand-icon" />
-          <text class="brand-title">问答社区</text>
+    <!-- ========== 固定顶部导航区 ========== -->
+    <view class="top-nav-fixed">
+      <view class="top-nav-container">
+        <!-- Logo -->
+        <view class="brand-logo">
+          <Icon name="message-circle" :size="20" class="logo-icon" />
+          <text class="logo-text">问答社区</text>
         </view>
 
-        <!-- 搜索栏 -->
-        <view class="search-bar-large">
-          <Icon name="search" :size="18" class="search-icon" />
+        <!-- 紧凑搜索栏 -->
+        <view class="compact-search-bar">
+          <Icon name="search" :size="16" class="search-icon" />
           <input
             v-model="searchKeyword"
             class="search-input"
-            placeholder="搜索你感兴趣的问题..."
+            placeholder="搜索问题..."
             @input="handleSearchInput"
             @confirm="handleSearch"
             @focus="showSearchHistory = true"
             @blur="handleSearchBlur"
           />
-          <text v-if="searchLoading" class="search-loading-icon">⏳</text>
-          <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
-            <Icon name="x" :size="16" />
+          <text v-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
+            <Icon name="x" :size="14" />
           </text>
         </view>
 
-        <!-- PC端提问按钮（与搜索栏同行） -->
-        <CButton type="primary" size="lg" class="pc-ask-btn" @click="handleAskQuestion">
-          <Icon name="edit-3" :size="18" class="btn-icon" />
-          提问
-        </CButton>
+        <!-- 提问按钮 -->
+        <view class="ask-button" @click="handleAskQuestion">
+          <Icon name="edit-3" :size="16" class="ask-icon" />
+          <text class="ask-text">提问</text>
+        </view>
       </view>
 
-      <!-- 🕒 搜索历史面板 -->
-      <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-panel">
+      <!-- 搜索历史面板 -->
+      <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
         <view class="history-header">
           <text class="history-title">搜索历史</text>
           <text class="history-clear" @click="handleClearHistory">清空</text>
@@ -47,75 +46,53 @@
             class="history-item"
             @click="handleHistoryClick(item)"
           >
-            <text class="history-icon">🕐</text>
+            <Icon name="clock" :size="14" class="history-icon" />
             <text class="history-text">{{ item }}</text>
-            <text class="history-remove" @click.stop="handleRemoveHistory(item)">✕</text>
+            <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
           </view>
         </view>
       </view>
     </view>
 
-      <!-- 📦 分类标签栏（轻量 Pill 风格） -->
-      <view class="category-section">
-        <scroll-view class="category-scroll" scroll-x :show-scrollbar="false">
-          <view class="category-pills">
-            <view
-              v-for="item in categories"
-              :key="item.value || 'all'"
-              class="category-pill"
-              :class="{ active: category === item.value }"
-              @click="handleCategoryChange(item.value)"
-            >
-              <Icon :name="item.iconName" :size="16" class="pill-icon" />
-              <text class="pill-label">{{ item.label }}</text>
-            </view>
+    <!-- ========== Sticky 导航区（分类+排序） ========== -->
+    <view class="sticky-nav">
+      <view class="sticky-nav-container">
+        <!-- 左侧：分类Tabs -->
+        <view class="category-tabs">
+          <view
+            v-for="item in categories"
+            :key="item.value || 'all'"
+            class="category-tab"
+            :class="{ active: category === item.value }"
+            @click="handleCategoryChange(item.value)"
+          >
+            <Icon :name="item.iconName" :size="14" class="tab-icon" />
+            <text class="tab-label">{{ item.label }}</text>
           </view>
-        </scroll-view>
-      </view>
+        </view>
 
-      <!-- 🎯 筛选导航栏（分段控制器风格） -->
-      <view class="nav-section">
-        <view class="nav-container">
-          <!-- 左侧：分段控制器 -->
-          <view class="segmented-control">
-            <view
-              v-for="item in sortOptions"
-              :key="item.value"
-              class="segment-item"
-              :class="{ active: sortBy === item.value }"
-              @click="handleSortChange(item.value)"
-            >
-              <text class="segment-label">{{ item.label }}</text>
-            </view>
-            <view
-              class="segment-indicator"
-              :style="{ transform: `translateX(${getIndicatorOffset()}%)` }"
-            />
+        <!-- 右侧：排序+筛选 -->
+        <view class="sort-controls">
+          <!-- 排序下拉 -->
+          <view class="sort-dropdown" @click="toggleSortMenu">
+            <text class="sort-label">{{ currentSortLabel }}</text>
+            <Icon name="chevron-down" :size="14" class="dropdown-icon" />
           </view>
 
-          <!-- 右侧：筛选按钮 -->
-          <view class="filter-button" @click="showFilterModal = true">
-            <Icon name="sliders" :size="18" class="filter-icon" />
-            <text class="filter-text">筛选</text>
+          <!-- 筛选按钮 -->
+          <view class="filter-btn" @click="showFilterModal = true">
+            <Icon name="sliders" :size="14" class="filter-icon" />
             <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
         </view>
+      </view>
     </view>
 
-    <!-- 🏛️ 主内容区域（两栏布局：max-width: 1200px 居中） -->
-    <view class="main-container">
-      <view class="content-wrapper">
-        <!-- 左侧：问题列表（主内容） -->
-        <scroll-view
-          class="question-list-column"
-          scroll-y
-          :scroll-top="scrollTop"
-          @scroll="handleScroll"
-          @scrolltolower="handleLoadMore"
-          :refresher-enabled="true"
-          :refresher-triggered="refreshing"
-          @refresherrefresh="handleRefresh"
-        >
+    <!-- ========== 主内容区（整页滚动） ========== -->
+    <view class="main-content">
+      <view class="content-container">
+        <!-- 左侧：问题列表 -->
+        <view class="question-list">
           <!-- 骨架屏 -->
           <template v-if="loading && questions.length === 0">
             <view v-for="i in 3" :key="i" class="skeleton-card">
@@ -152,18 +129,34 @@
             <text class="empty-text">{{ emptyText }}</text>
             <text class="empty-hint">{{ emptyHint }}</text>
           </view>
-        </scroll-view>
+        </view>
 
-        <!-- 右侧：推荐栏（仅 PC 端显示） -->
-        <view class="recommend-column">
+        <!-- 右侧：推荐侧栏 -->
+        <view class="sidebar">
           <RecommendSidebar />
         </view>
       </view>
     </view>
 
-    <!-- ⬆️ 回到顶部按钮 -->
-    <view v-if="showBackToTop" class="back-to-top" @click="scrollToTop">
-      <Icon name="arrow-up" :size="20" class="back-icon" />
+    <!-- 排序菜单下拉 -->
+    <view v-if="showSortMenu" class="sort-menu-dropdown" @click="showSortMenu = false">
+      <view class="sort-menu-content" @click.stop>
+        <view
+          v-for="item in sortOptions"
+          :key="item.value"
+          class="sort-menu-item"
+          :class="{ active: sortBy === item.value }"
+          @click="handleSortChange(item.value)"
+        >
+          <text class="sort-item-label">{{ item.label }}</text>
+          <Icon v-if="sortBy === item.value" name="check" :size="16" class="check-icon" />
+        </view>
+      </view>
+    </view>
+
+    <!-- 回到顶部按钮 -->
+    <view v-if="showBackToTop" class="back-to-top-btn" @click="scrollToTop">
+      <Icon name="arrow-up" :size="18" />
     </view>
 
     <!-- 🔍 筛选弹窗 -->
@@ -309,6 +302,9 @@ const tempCategory = ref<string | null>(null)
 const tempStatus = ref<number | null>(null)
 const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
 
+// 排序菜单
+const showSortMenu = ref(false)
+
 // 判断是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
   return category.value !== null || status.value !== null || sortBy.value !== 'created_at'
@@ -322,10 +318,15 @@ const activeFilterCount = computed(() => {
   return count
 })
 
-// 计算分段控制器指示器偏移量
-const getIndicatorOffset = () => {
-  const index = sortOptions.findIndex(item => item.value === sortBy.value)
-  return index * 100 // 每个选项占 100% 宽度
+// 当前排序标签
+const currentSortLabel = computed(() => {
+  const option = sortOptions.find(item => item.value === sortBy.value)
+  return option ? option.label : '最新'
+})
+
+// 切换排序菜单
+const toggleSortMenu = () => {
+  showSortMenu.value = !showSortMenu.value
 }
 
 // 分页（本地管理 page，与资源列表保持一致）
@@ -542,6 +543,7 @@ const handleCategoryChange = (value: string | null) => {
 // 排序切换
 const handleSortChange = (value: 'created_at' | 'views' | 'bounty' | 'answerCount') => {
   sortBy.value = value
+  showSortMenu.value = false // 关闭排序菜单
   debouncedLoadQuestions()
 }
 

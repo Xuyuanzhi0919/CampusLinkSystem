@@ -1490,5 +1490,12 @@ uni-page-body {
   height: 100%;
   overflow: hidden;
 }
+
+/* 覆盖 uni-app 的 tabbar 高度计算，避免干扰自定义布局 */
+/* #ifdef H5 */
+.uni-app--showtabbar uni-page-head[uni-page-head-type='default'] ~ uni-page-wrapper {
+  height: 100% !important;
+}
+/* #endif */
 </style>
 

@@ -606,7 +606,7 @@ onMounted(() => {
 // ===================================
 .question-page {
   height: 100vh;
-  background: $bg-page;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);  // 渐变背景，更有层次
   box-sizing: border-box;
   width: 100%;
   overflow: hidden;
@@ -986,10 +986,10 @@ onMounted(() => {
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: $sp-6 $sp-6 $sp-6 $sp-8;  // 左侧稍多留白
+  padding: $sp-8 $sp-8 $sp-8 $sp-10;  // 增加内边距，更舒适
   display: grid;
-  grid-template-columns: 1fr 360px;  // 调整为 68% vs 32% 的比例
-  gap: $sp-10;  // 增加间距到 40px，更舒适
+  grid-template-columns: 1fr 360px;
+  gap: $sp-12;  // 从 40px 增加到 48px，增强分隔感
   height: 100%;
 
   @include mobile {

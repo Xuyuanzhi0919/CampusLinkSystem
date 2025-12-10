@@ -163,22 +163,23 @@ const handleClick = () => {
 
 .question-card {
   background: $white;
-  border-radius: $radius-md;  // 从 base (12rpx) 改为 md (16rpx)，更现代
-  padding: $sp-6 $sp-6;  // 增加内边距，从 $sp-5 到 $sp-6
-  margin-bottom: $sp-5;  // 从 $sp-3 (12px) 改为 $sp-5 (20px)
-  box-shadow: 0 1rpx 3rpx rgba($gray-900, 0.04);  // 减轻阴影
-  border: 1rpx solid $gray-100;  // 添加边框，增强卡片边界
-  transition: $transition-base;
+  border-radius: $radius-lg;  // 从 md 增加到 lg (24rpx = 12px)
+  padding: $sp-8;  // 从 $sp-6 增加到 $sp-8 (32rpx = 16px)
+  margin-bottom: $sp-6;  // 从 $sp-5 增加到 $sp-6 (24rpx = 12px)
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04), 0 1rpx 2rpx rgba(0, 0, 0, 0.06);  // 双层阴影，更立体
+  border: 1rpx solid rgba($gray-200, 0.8);
+  transition: all $duration-base $ease-out;
   cursor: pointer;
 
   &:active {
     transform: translateY(1rpx);
-    box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
+    box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
   }
 
   &:hover {
-    box-shadow: 0 4rpx 12rpx rgba($gray-900, 0.08);  // hover 时增强阴影
-    border-color: $gray-200;  // 边框稍深
+    transform: translateY(-2rpx);  // 轻微上移
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08), 0 2rpx 6rpx rgba(0, 0, 0, 0.04);  // 增强阴影
+    border-color: $gray-300;
   }
 }
 

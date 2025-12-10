@@ -43,7 +43,7 @@
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

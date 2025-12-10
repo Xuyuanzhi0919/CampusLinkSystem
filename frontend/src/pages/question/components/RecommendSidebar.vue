@@ -1,179 +1,61 @@
 <template>
   <view class="recommend-sidebar">
-    <!-- ===== 全站趋势分组 ===== -->
-    <view class="sidebar-section">
-      <view class="section-header">
-        <Icon name="trending-up" :size="16" class="section-icon" />
-        <text class="section-title">全站趋势</text>
+    <!-- 热门标签模块 -->
+    <CCard variant="default" class="sidebar-card">
+      <view class="card-header">
+        <Icon name="tag" :size="18" class="header-icon" />
+        <text class="header-title">热门标签</text>
       </view>
-
-      <!-- 热门标签模块 -->
-      <CCard variant="default" class="sidebar-card">
-        <view class="card-header">
-          <Icon name="tag" :size="18" class="header-icon" />
-          <text class="header-title">热门标签</text>
+      <view class="tags-grid">
+        <view
+          v-for="tag in hotTags"
+          :key="tag.name"
+          class="tag-pill"
+          @click="handleTagClick(tag.name)"
+        >
+          <text class="tag-text">{{ tag.name }}</text>
+          <text class="tag-count">{{ tag.count }}</text>
         </view>
-        <view class="tags-grid">
-          <view
-            v-for="tag in hotTags"
-            :key="tag.name"
-            class="tag-pill"
-            @click="handleTagClick(tag.name)"
-          >
-            <text class="tag-text">{{ tag.name }}</text>
-            <text class="tag-count">{{ tag.count }}</text>
-          </view>
-        </view>
-      </CCard>
-
-      <!-- 热门问题模块 -->
-      <CCard variant="default" class="sidebar-card">
-        <view class="card-header">
-          <Icon name="flame" :size="18" class="header-icon" />
-          <text class="header-title">热门问题</text>
-        </view>
-        <view class="hot-questions">
-          <view
-            v-for="(question, index) in hotQuestions"
-            :key="question.qid"
-            class="hot-question-item"
-            @click="handleQuestionClick(question.qid)"
-          >
-            <view class="rank-badge" :class="getRankClass(index)">
-              {{ index + 1 }}
-            </view>
-            <view class="question-content">
-              <text class="question-title">{{ question.title }}</text>
-              <view class="question-meta">
-                <Icon name="eye" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ question.views }}</text>
-                <Icon name="message-circle" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ question.answerCount }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </CCard>
-    </view>
-
-    <!-- ===== 校园动态分组 ===== -->
-    <view class="sidebar-section">
-      <view class="section-header">
-        <Icon name="school" :size="16" class="section-icon" />
-        <text class="section-title">校园动态</text>
       </view>
+    </CCard>
 
-      <!-- 本校热议模块 -->
-      <CCard variant="default" class="sidebar-card school-card">
-        <view class="card-header">
-          <Icon name="message-square" :size="18" class="header-icon school-icon" />
-          <text class="header-title">本校热议</text>
-          <view class="school-badge">
-            <text class="badge-text">{{ schoolName }}</text>
+    <!-- 热门问题模块 -->
+    <CCard variant="default" class="sidebar-card">
+      <view class="card-header">
+        <Icon name="trending-up" :size="18" class="header-icon" />
+        <text class="header-title">热门问题</text>
+      </view>
+      <view class="hot-questions">
+        <view
+          v-for="(question, index) in hotQuestions"
+          :key="question.qid"
+          class="hot-question-item"
+          @click="handleQuestionClick(question.qid)"
+        >
+          <view class="rank-badge" :class="getRankClass(index)">
+            {{ index + 1 }}
           </view>
-        </view>
-        <view class="hot-questions">
-          <view
-            v-for="(question, index) in schoolQuestions"
-            :key="question.qid"
-            class="hot-question-item"
-            @click="handleQuestionClick(question.qid)"
-          >
-            <view class="rank-badge school-rank">
-              {{ index + 1 }}
-            </view>
-            <view class="question-content">
-              <text class="question-title">{{ question.title }}</text>
-              <view class="question-meta">
-                <Icon name="eye" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ question.views }}</text>
-                <Icon name="message-circle" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ question.answerCount }}</text>
-              </view>
+          <view class="question-content">
+            <text class="question-title">{{ question.title }}</text>
+            <view class="question-meta">
+              <Icon name="eye" :size="12" class="meta-icon" />
+              <text class="meta-text">{{ question.views }}</text>
+              <Icon name="message-circle" :size="12" class="meta-icon" />
+              <text class="meta-text">{{ question.answerCount }}</text>
             </view>
           </view>
         </view>
-      </CCard>
-
-      <!-- 活跃答主模块 -->
-      <CCard variant="default" class="sidebar-card">
-        <view class="card-header">
-          <Icon name="users" :size="18" class="header-icon" />
-          <text class="header-title">活跃答主</text>
-        </view>
-        <view class="active-users">
-          <view
-            v-for="user in activeUsers"
-            :key="user.userId"
-            class="user-item"
-            @click="handleUserClick(user.userId)"
-          >
-            <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
-            <view class="user-info">
-              <text class="user-name">{{ user.nickname }}</text>
-              <text class="user-answers">回答 {{ user.answerCount }} 个问题</text>
-            </view>
-            <view v-if="user.badge" class="user-badge">
-              <text class="badge-text">{{ user.badge }}</text>
-            </view>
-          </view>
-        </view>
-      </CCard>
-    </view>
+      </view>
+    </CCard>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useUserStore } from '@/stores/user'
+import { ref } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
 
-// Store
-const userStore = useUserStore()
-const { userInfo } = storeToRefs(userStore)
-
-// 学校名称（从用户信息获取）
-const schoolName = computed(() => {
-  return userInfo.value?.schoolName || '校园'
-})
-
-// 本校热议问题（模拟数据，实际应基于用户 schoolId 从 API 获取）
-const schoolQuestions = ref([
-  {
-    qid: 101,
-    title: '图书馆周末开放时间有变化吗？',
-    views: 1234,
-    answerCount: 15,
-  },
-  {
-    qid: 102,
-    title: '校园卡充值在哪里比较方便？',
-    views: 987,
-    answerCount: 12,
-  },
-  {
-    qid: 103,
-    title: '新生宿舍楼有空调吗？',
-    views: 856,
-    answerCount: 10,
-  },
-  {
-    qid: 104,
-    title: '学校食堂哪个窗口最好吃？',
-    views: 745,
-    answerCount: 8,
-  },
-  {
-    qid: 105,
-    title: '校内打印店在哪里？',
-    views: 623,
-    answerCount: 6,
-  },
-])
-
-// 模拟数据（实际应该从 API 获取）
+// 热门标签（模拟数据，实际应该从 API 获取）
 const hotTags = ref([
   { name: '数据结构', count: 128 },
   { name: '算法', count: 95 },
@@ -218,37 +100,7 @@ const hotQuestions = ref([
   },
 ])
 
-const activeUsers = ref([
-  {
-    userId: 1,
-    nickname: '编程小能手',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 145,
-    badge: '学霸',
-  },
-  {
-    userId: 2,
-    nickname: '校园达人',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 98,
-    badge: '热心',
-  },
-  {
-    userId: 3,
-    nickname: '技术大牛',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 76,
-    badge: null,
-  },
-  {
-    userId: 4,
-    nickname: '学习委员',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 54,
-    badge: null,
-  },
-])
-
+// 排名徽章样式
 const getRankClass = (index: number) => {
   if (index === 0) return 'rank-1'
   if (index === 1) return 'rank-2'
@@ -256,25 +108,16 @@ const getRankClass = (index: number) => {
   return ''
 }
 
+// 点击标签
 const handleTagClick = (tag: string) => {
   uni.showToast({ title: `点击标签: ${tag}`, icon: 'none' })
   // TODO: 触发父组件的标签筛选
 }
 
+// 点击问题
 const handleQuestionClick = (qid: number) => {
   uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
 }
-
-const handleUserClick = (userId: number) => {
-  uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
-}
-
-// 实际应用中，这里应该调用 API 获取真实数据
-onMounted(() => {
-  // loadHotTags()
-  // loadHotQuestions()
-  // loadActiveUsers()
-})
 </script>
 
 <style scoped lang="scss">
@@ -352,40 +195,6 @@ onMounted(() => {
   color: $gray-800;  // 从900降为800
   letter-spacing: 0;
   flex: 1;
-}
-
-// ===================================
-// 本校热议卡片特殊样式（淡化处理）
-// ===================================
-.school-card {
-  background: rgba($primary, 0.02);  // 大幅淡化背景
-  border: 1px solid $gray-200;  // 使用统一边框
-
-  .card-header {
-    border-bottom-color: $gray-100;
-  }
-
-  .school-icon {
-    color: $accent;
-  }
-}
-
-.school-badge {
-  padding: 3px 8px;  // 统一使用px
-  background: rgba($accent, 0.08);  // 淡化背景
-  border-radius: 12px;
-
-  .badge-text {
-    font-size: 11px;
-    color: $accent;
-    font-weight: $font-weight-medium;  // 从semibold降为medium
-  }
-}
-
-.school-rank {
-  background: $accent;  // 去除渐变，使用纯色
-  color: $white;
-  box-shadow: none;  // 去除阴影
 }
 
 // ===================================
@@ -512,72 +321,5 @@ onMounted(() => {
   font-size: 11px;  // 统一使用px
   color: $gray-500;
   margin-right: 8px;  // 统一使用px
-}
-
-// ===================================
-// 活跃答主
-// ===================================
-.active-users {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;  // 统一使用px
-}
-
-.user-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;  // 统一使用px
-  cursor: pointer;
-  transition: transform 0.2s ease-out;
-
-  &:hover {
-    transform: translateX(2px);  // 统一使用px
-
-    .user-name {
-      color: $primary;
-    }
-  }
-}
-
-.user-avatar {
-  width: 36px;  // 统一使用px，缩小尺寸
-  height: 36px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  border: 1px solid $gray-200;
-}
-
-.user-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;  // 统一使用px
-}
-
-.user-name {
-  font-size: 13px;  // 统一使用px
-  font-weight: $font-weight-medium;
-  color: $gray-800;
-  @include text-ellipsis(1);
-  transition: color 0.2s ease-out;
-}
-
-.user-answers {
-  font-size: 11px;  // 统一使用px
-  color: $gray-500;
-}
-
-.user-badge {
-  flex-shrink: 0;
-  padding: 3px 8px;  // 统一使用px
-  background: rgba($accent, 0.08);  // 淡化背景
-  border-radius: 12px;
-}
-
-.badge-text {
-  font-size: 11px;  // 统一使用px
-  color: $accent;
-  font-weight: $font-weight-medium;  // 从semibold降为medium
 }
 </style>

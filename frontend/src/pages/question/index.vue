@@ -2,6 +2,38 @@
   <view class="question-page">
     <!-- 🎯 顶部固定区域（搜索栏 + 分类 + 筛选） -->
     <view class="page-header">
+      <view class="hero-surface">
+        <view class="hero-copy">
+          <view class="hero-badge">问答社区</view>
+          <view class="hero-title">快速提问 · 高效解答 · 主题清晰</view>
+          <view class="hero-subtitle">用搜索、分区和排序找到最合适的讨论，也可以立即发起一个新问题。</view>
+          <view class="hero-stats">
+            <view class="stat-card">
+              <text class="stat-label">累计问题</text>
+              <text class="stat-value">{{ total || 0 }}</text>
+              <text class="stat-desc">覆盖全部分类</text>
+            </view>
+            <view class="stat-card">
+              <text class="stat-label">当前可见</text>
+              <text class="stat-value">{{ visibleCount }}</text>
+              <text class="stat-desc">按{{ currentSortLabel }}排序</text>
+            </view>
+            <view class="stat-card">
+              <text class="stat-label">筛选状态</text>
+              <text class="stat-value">{{ statusLabel }}</text>
+              <text class="stat-desc">点击右侧随时调整</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="hero-action">
+          <CButton type="primary" size="lg" class="hero-ask-btn" @click="handleAskQuestion">
+            <Icon name="edit" :size="18" class="btn-icon" />
+            快速提问
+          </CButton>
+        </view>
+      </view>
+
       <!-- 🔍 搜索栏（居中、大号、轻拟物） -->
       <view class="search-section">
         <view class="search-container">

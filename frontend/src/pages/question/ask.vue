@@ -803,19 +803,28 @@ const handleSubmit = async () => {
 .nav-left {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: $sp-2;
+  padding: $sp-2 $sp-3;
   cursor: pointer;
   color: $gray-700;
-  transition: color $duration-base;
+  border-radius: $radius-md;
+  transition: all $duration-base;
+
+  &:hover {
+    background: $gray-50;
+  }
 
   &:active {
     color: $primary;
+    background: $primary-50;
   }
 }
 
 .nav-text {
   font-size: $font-size-base;
   font-weight: $font-weight-medium;
+  line-height: 1;
 }
 
 .nav-title {
@@ -854,6 +863,8 @@ const handleSubmit = async () => {
 // ===================================
 .form-card {
   margin-bottom: $sp-6;
+  box-shadow: 0 2rpx 6rpx rgba($black, 0.03);
+  border: 1rpx solid $gray-100;
 
   @include mobile {
     margin-bottom: $sp-4;
@@ -863,26 +874,29 @@ const handleSubmit = async () => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  margin-bottom: $sp-6;
-  padding-bottom: $sp-4;
+  gap: $sp-4;
+  margin-bottom: $sp-8;
+  padding-bottom: $sp-5;
   border-bottom: 1rpx solid $gray-100;
 }
 
 .header-icon {
   color: $primary;
+  flex-shrink: 0;
 }
 
 .header-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
   color: $gray-900;
   flex: 1;
+  letter-spacing: -0.01em;
 }
 
 .header-hint {
   font-size: $font-size-sm;
   color: $gray-500;
+  flex-shrink: 0;
 }
 
 // ===================================
@@ -978,12 +992,13 @@ const handleSubmit = async () => {
 // 分类网格
 // ===================================
 .category-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: wrap;
   gap: $sp-3;
+  max-width: 720px;
 
   @include mobile {
-    grid-template-columns: repeat(2, 1fr);
+    max-width: 100%;
   }
 }
 
@@ -993,20 +1008,33 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   gap: $sp-2;
-  padding: $sp-4 $sp-3;
+  padding: $sp-5 $sp-6;
+  min-width: 160rpx;
   background: $gray-50;
   border: 2rpx solid $gray-200;
   border-radius: $radius-lg;
   cursor: pointer;
   transition: all $duration-base;
 
+  @include mobile {
+    flex: 1;
+    min-width: 0;
+    padding: $sp-4 $sp-5;
+  }
+
+  &:hover {
+    background: $gray-100;
+    border-color: $gray-300;
+  }
+
   &:active {
     transform: scale(0.98);
   }
 
   &.active {
-    background: $primary-50;
+    background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
     border-color: $primary;
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.15);
 
     .pill-icon {
       color: $primary;
@@ -1014,7 +1042,7 @@ const handleSubmit = async () => {
 
     .pill-label {
       color: $primary;
-      font-weight: $font-weight-semibold;
+      font-weight: $font-weight-bold;
     }
   }
 }
@@ -1027,6 +1055,7 @@ const handleSubmit = async () => {
 .pill-label {
   font-size: $font-size-base;
   color: $gray-700;
+  font-weight: $font-weight-medium;
   transition: all $duration-base;
 }
 
@@ -1076,17 +1105,19 @@ const handleSubmit = async () => {
 }
 
 .tags-recommended {
-  margin-top: $sp-4;
-  padding: $sp-4;
-  background: $gray-50;
+  margin-top: $sp-5;
+  padding: $sp-4 $sp-5;
+  background: #F7F8FA;
+  border: 1rpx dashed $gray-200;
   border-radius: $radius-md;
 }
 
 .recommended-label {
   display: block;
   font-size: $font-size-sm;
-  color: $gray-600;
-  margin-bottom: $sp-2;
+  color: $gray-500;
+  font-weight: $font-weight-medium;
+  margin-bottom: $sp-3;
 }
 
 .recommended-list {
@@ -1335,8 +1366,9 @@ const handleSubmit = async () => {
   left: 0;
   right: 0;
   background: $white;
-  border-top: 1rpx solid $gray-200;
-  box-shadow: 0 -4rpx 12rpx rgba($black, 0.06);
+  border-top: 2rpx solid $gray-200;
+  box-shadow: 0 -2rpx 12rpx rgba($black, 0.08);
+  backdrop-filter: blur(8px);
   z-index: $z-fixed;
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
@@ -1349,10 +1381,11 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: flex-end;
   gap: $sp-4;
-  padding: $sp-4 $sp-6;
+  padding: $sp-5 $sp-8;
 
   @include mobile {
-    padding: $sp-3 $sp-4;
+    padding: $sp-4 $sp-4;
+    gap: $sp-3;
   }
 }
 

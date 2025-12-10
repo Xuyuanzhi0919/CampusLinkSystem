@@ -28,7 +28,7 @@
 
         <!-- 提问按钮 -->
         <view class="ask-button" @click="handleAskQuestion">
-          <Icon name="edit" :size="16" class="ask-icon" />
+          <Icon name="edit-3" :size="16" class="ask-icon" />
           <text class="ask-text">提问</text>
         </view>
       </view>
@@ -685,9 +685,11 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+  min-width: 120px; // 确保 Logo 区域有固定宽度，保持对称
 
   @include mobile {
     gap: 6px;
+    min-width: auto; // 移动端不限制宽度
   }
 }
 
@@ -709,7 +711,7 @@ onMounted(() => {
 .compact-search-bar {
   position: relative;
   flex: 1;
-  max-width: 520px;
+  max-width: 480px; // 从 520px 减少到 480px，给右侧更多空间
   height: 36px;
   display: flex;
   align-items: center;
@@ -717,6 +719,7 @@ onMounted(() => {
   border-radius: 18px;
   padding: 0 14px;
   gap: 8px;
+  margin: 0 auto; // 居中对齐
   transition: all 0.2s;
 
   &:focus-within {
@@ -726,6 +729,7 @@ onMounted(() => {
 
   @include mobile {
     max-width: none;
+    margin: 0; // 移动端取消居中
     height: 32px;
     padding: 0 12px;
   }
@@ -848,7 +852,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 20px;
+  padding: 0 24px; // 从 20px 增加到 24px，更宽松
   height: 36px;
   background: $primary;
   color: $white;
@@ -858,6 +862,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
+  margin-left: 12px; // 与搜索框保持间距
 
   &:hover {
     background: darken($primary, 8%);
@@ -868,6 +873,7 @@ onMounted(() => {
   @include mobile {
     padding: 0 16px;
     height: 32px;
+    margin-left: 8px;
   }
 }
 

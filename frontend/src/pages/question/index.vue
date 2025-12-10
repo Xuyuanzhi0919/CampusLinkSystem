@@ -413,12 +413,9 @@ const toggleSortMenu = () => {
   showSortMenu.value = !showSortMenu.value
 }
 
-// 分页（使用 store 状态，避免本地与后端统计不一致）
-const totalPages = computed(() => {
-  // 优先使用后端/Store 的总页数；缺失时按 total/pageSize 兜底
-  return storeTotalPages.value || Math.max(1, Math.ceil((total.value || 0) / (pageSize.value || 1)))
-})
-const hasMore = computed(() => storeHasMore.value && page.value < totalPages.value)
+// 分页（直接使用 store 状态）
+const totalPages = computed(() => storeTotalPages.value)
+const hasMore = computed(() => storeHasMore.value)
 
 // 滚动相关
 const scrollTop = ref(0)
@@ -691,22 +688,52 @@ const showNoMoreToast = () => {
 }
 
 // 上拉加载更多
-const handleLoadMore = () => {
-  if (!hasMore.value || loading.value) {
-    if (!loading.value && questions.value.length > 0) {
+const handleLoadMore = async () => {
+  if (loading.value) return
+
+  // 如果没有更多数据，显示提示
+  if (!hasMore.value) {
+    if (questions.value.length > 0) {
       showNoMoreToast()
     }
     return
   }
 
-  page.value++
-  loadQuestions()
+  try {
+    loading.value = true
+    page.value++
+
+    const params = {
+      keyword: searchKeyword.value,
+      category: category.value,
+      isSolved: status.value,
+      page: page.value,
+      pageSize: pageSize.value,
+      sortBy: sortBy.value,
+      sortOrder: 'desc'
+    }
+
+    console.log('[Question Page] 加载更多，参数：', params)
+    await questionStore.loadQuestions(params, false) // 不使用缓存
+  } catch (err: any) {
+    console.error('[问答列表] 加载更多失败', err)
+    page.value-- // 失败时恢复页码
+    uni.showToast({
+      title: err.message || '加载失败',
+      icon: 'none'
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 // 页面滚动到底部时触发（uni-app生命周期）
 onReachBottom(() => {
+  console.log('[Question Page] onReachBottom 触发 - hasMore:', hasMore.value, '当前页:', page.value, '总页数:', totalPages.value, '列表长度:', questions.value.length)
+
   // 如果没有更多数据,显示提示
   if (!hasMore.value && questions.value.length > 0) {
+    console.log('[Question Page] 没有更多数据，显示提示')
     showNoMoreToast()
     return
   }

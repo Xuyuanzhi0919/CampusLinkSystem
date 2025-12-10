@@ -15,8 +15,8 @@
       </view>
     </template>
 
-    <!-- 页面内容 -->
-    <view class="detail-content">
+    <!-- 页面内容（居中容器） -->
+    <view class="detail-page">
       <!-- 加载状态 -->
       <view v-if="loading && !question" class="loading-container">
         <view class="skeleton-question">
@@ -26,90 +26,103 @@
         </view>
       </view>
 
-      <!-- 问题详情 -->
-      <template v-else-if="question">
-        <!-- 问题头部区块 -->
-        <QuestionHeader
-          :question="question"
-          :is-my-question="isMyQuestion"
-          @follow="handleFollow"
-          @collect="handleCollect"
-          @share="handleShare"
-          @report="handleReportQuestion"
-          @delete="handleDeleteQuestion"
-          @breadcrumb-click="handleBreadcrumbClick"
-          @tag-click="handleTagClick"
-          @preview-image="handlePreviewQuestionImage"
-        />
-
-        <!-- AI 回答区（如果有） -->
-        <CCard v-if="question.aiAnswer" variant="elevated" class="ai-answer-card">
-          <view class="ai-header">
-            <text class="ai-icon">🤖</text>
-            <text class="ai-title">AI 智能答复</text>
-            <text class="ai-time">{{ formatTime(question.aiGeneratedAt!) }}</text>
-          </view>
-          <view class="ai-content">{{ question.aiAnswer }}</view>
-        </CCard>
-
-        <!-- 回答导航条 -->
-        <view class="answers-nav">
-          <view class="answers-nav-left">
-            <text class="answers-count">{{ question.answerCount }} 个回答</text>
-          </view>
-
-          <view class="answers-nav-right">
-            <!-- 排序按钮 -->
-            <CButton
-              :type="sortBy === 'likes' ? 'primary' : 'ghost'"
-              size="sm"
-              :plain="sortBy !== 'likes'"
-              @click="handleSortChange('likes')"
-            >
-              <text class="sort-icon">👍</text>
-              点赞
-            </CButton>
-
-            <CButton
-              :type="sortBy === 'created_at' ? 'primary' : 'ghost'"
-              size="sm"
-              :plain="sortBy !== 'created_at'"
-              @click="handleSortChange('created_at')"
-            >
-              <text class="sort-icon">🕐</text>
-              时间
-            </CButton>
-          </view>
-        </view>
-
-        <!-- 回答列表 -->
-        <view v-if="answers.length > 0" class="answers-list">
-          <AnswerCard
-            v-for="answer in sortedAnswers"
-            :key="answer.answerId"
-            :answer="answer"
-            :can-accept="canAcceptAnswer"
-            @accept="handleAcceptAnswer"
-            @like="handleLikeAnswer"
-            @delete="handleDeleteAnswer"
+      <!-- 主内容（左右栏布局） -->
+      <view v-else-if="question" class="detail-container">
+        <!-- 左侧：主内容区 -->
+        <view class="main-content">
+          <!-- 问题头部卡片 -->
+          <QuestionHeader
+            :question="question"
+            @breadcrumb-click="handleBreadcrumbClick"
+            @tag-click="handleTagClick"
+            @preview-image="handlePreviewQuestionImage"
           />
 
-          <!-- 加载更多 -->
-          <view v-if="hasMoreAnswers" class="load-more" @click="handleLoadMoreAnswers">
-            <text v-if="loadingAnswers">加载中...</text>
-            <text v-else>加载更多回答</text>
+          <!-- AI 回答卡片 -->
+          <CCard v-if="question.aiAnswer" variant="elevated" class="ai-answer-card">
+            <view class="ai-header">
+              <text class="ai-icon">🤖</text>
+              <text class="ai-title">AI 智能答复</text>
+              <text class="ai-time">{{ formatTime(question.aiGeneratedAt!) }}</text>
+            </view>
+            <view class="ai-content">{{ question.aiAnswer }}</view>
+          </CCard>
+
+          <!-- 回答导航条 -->
+          <CCard variant="elevated" class="answers-nav-card">
+            <view class="answers-nav">
+              <view class="answers-nav-left">
+                <text class="answers-count">{{ question.answerCount }} 个回答</text>
+              </view>
+
+              <view class="answers-nav-right">
+                <CButton
+                  :type="sortBy === 'likes' ? 'primary' : 'ghost'"
+                  size="sm"
+                  :plain="sortBy !== 'likes'"
+                  @click="handleSortChange('likes')"
+                >
+                  <text class="sort-icon">👍</text>
+                  点赞
+                </CButton>
+
+                <CButton
+                  :type="sortBy === 'created_at' ? 'primary' : 'ghost'"
+                  size="sm"
+                  :plain="sortBy !== 'created_at'"
+                  @click="handleSortChange('created_at')"
+                >
+                  <text class="sort-icon">🕐</text>
+                  时间
+                </CButton>
+              </view>
+            </view>
+          </CCard>
+
+          <!-- 回答列表 -->
+          <view v-if="answers.length > 0" class="answers-list">
+            <AnswerCard
+              v-for="answer in sortedAnswers"
+              :key="answer.answerId"
+              :answer="answer"
+              :can-accept="canAcceptAnswer"
+              @accept="handleAcceptAnswer"
+              @like="handleLikeAnswer"
+              @delete="handleDeleteAnswer"
+            />
+
+            <!-- 加载更多 -->
+            <view v-if="hasMoreAnswers" class="load-more" @click="handleLoadMoreAnswers">
+              <text v-if="loadingAnswers">加载中...</text>
+              <text v-else>加载更多回答</text>
+            </view>
           </view>
+
+          <!-- 空状态 -->
+          <CCard v-else variant="elevated" class="empty-answers-card">
+            <view class="empty-answers">
+              <text class="empty-icon">💭</text>
+              <text class="empty-text">还没有回答，快来抢沙发吧！</text>
+            </view>
+          </CCard>
+
+          <!-- 底部占位 -->
+          <view class="bottom-placeholder" />
         </view>
 
-        <!-- 空状态 -->
-        <view v-else class="empty-answers">
-          <text class="empty-icon">💭</text>
-          <text class="empty-text">还没有回答，快来抢沙发吧！</text>
+        <!-- 右侧：侧栏 -->
+        <view class="sidebar-content">
+          <DetailSidebar
+            :question="question"
+            :is-my-question="isMyQuestion"
+            @follow="handleFollow"
+            @collect="handleCollect"
+            @share="handleShare"
+            @report="handleReportQuestion"
+            @delete="handleDeleteQuestion"
+          />
         </view>
-
-        <!-- 底部占位（为固定输入框留出空间） -->
-        <view class="bottom-placeholder" />
-      </template>
+      </view>
 
       <!-- 错误状态 -->
       <view v-else-if="error" class="error-container">
@@ -152,7 +165,7 @@
       </view>
     </view>
 
-    <!-- 固定底部回答输入框（问题未解决时显示） -->
+    <!-- 固定底部回答输入框 -->
     <AnswerInput
       v-if="question && question.status !== 1"
       ref="answerInputRef"
@@ -160,7 +173,7 @@
       @submit="handleSubmitAnswer"
     />
 
-    <!-- 已解决提示（问题已解决时显示） -->
+    <!-- 已解决提示 -->
     <view v-else-if="question && question.status === 1" class="solved-notice">
       <text class="solved-icon">✅</text>
       <text class="solved-text">该问题已解决</text>
@@ -169,7 +182,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { useQuestionStore } from '@/stores/question'
 import { useUserStore } from '@/stores/user'
@@ -186,6 +199,7 @@ import {
 import { PageContainer } from '@/components/layout'
 import { CCard, CButton } from '@/components/ui'
 import QuestionHeader from './components/QuestionHeader.vue'
+import DetailSidebar from './components/DetailSidebar.vue'
 import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
@@ -238,20 +252,16 @@ const hasMoreAnswers = computed(() => {
   return answers.value.length < answerTotal.value
 })
 
-// 排序后的回答列表（已采纳答案置顶）
+// 排序后的回答列表
 const sortedAnswers = computed(() => {
   const list = [...answers.value]
   return list.sort((a, b) => {
-    // 已采纳答案始终在最前面
     if (a.isAccepted && !b.isAccepted) return -1
     if (!a.isAccepted && b.isAccepted) return 1
 
-    // 非采纳答案按照选择的排序方式排序
     if (sortBy.value === 'likes') {
-      // 按点赞数降序
       return (b.likes || 0) - (a.likes || 0)
     } else {
-      // 按时间降序（最新的在前）
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     }
   })
@@ -274,23 +284,12 @@ const loadQuestionDetail = async () => {
     await questionStore.loadQuestionDetail(questionId.value)
   } catch (err: any) {
     console.error('加载问题详情失败:', err)
-
-    // 判断错误类型
     if (err.statusCode === 404 || err.message?.includes('不存在') || err.message?.includes('已删除')) {
-      error.value = {
-        type: 'not-found',
-        message: '问题不存在或已被删除'
-      }
+      error.value = { type: 'not-found', message: '问题不存在或已被删除' }
     } else if (!navigator.onLine || err.message?.includes('网络') || err.message?.includes('timeout')) {
-      error.value = {
-        type: 'network',
-        message: '网络连接失败,请检查网络后重试'
-      }
+      error.value = { type: 'network', message: '网络连接失败,请检查网络后重试' }
     } else {
-      error.value = {
-        type: 'unknown',
-        message: err.message || '加载失败,请稍后重试'
-      }
+      error.value = { type: 'unknown', message: err.message || '加载失败,请稍后重试' }
     }
   } finally {
     loading.value = false
@@ -304,32 +303,23 @@ const loadAnswers = async (refresh = false) => {
       answerPage.value = 1
       answers.value = []
     }
-
     loadingAnswers.value = true
-
     const res = await getAnswerList(questionId.value, {
       page: answerPage.value,
       pageSize: answerPageSize.value,
       sortBy: sortBy.value
     })
-
-    // 兼容后端返回的数组格式
     const list = Array.isArray(res) ? res : (res.list || [])
     const total = Array.isArray(res) ? res.length : (res.total || 0)
-
     if (refresh) {
       answers.value = list
     } else {
       answers.value.push(...list)
     }
-
     answerTotal.value = total
   } catch (error: any) {
     console.error('加载回答列表失败:', error)
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+    uni.showToast({ title: error.message || '加载失败', icon: 'none' })
   } finally {
     loadingAnswers.value = false
   }
@@ -340,7 +330,7 @@ const handleRefresh = async () => {
   refreshing.value = true
   try {
     await Promise.all([
-      questionStore.loadQuestionDetail(questionId.value, false), // 强制刷新，不使用缓存
+      questionStore.loadQuestionDetail(questionId.value, false),
       loadAnswers(true)
     ])
   } finally {
@@ -365,31 +355,14 @@ const handleLoadMoreAnswers = () => {
 const handleSubmitAnswer = async (data: { content: string; images: string[] }) => {
   try {
     submittingAnswer.value = true
-
-    await answerQuestion(questionId.value, {
-      content: data.content,
-      images: data.images
-    })
-
-    uni.showToast({
-      title: '回答成功',
-      icon: 'success'
-    })
-
-    // 清空输入
+    await answerQuestion(questionId.value, { content: data.content, images: data.images })
+    uni.showToast({ title: '回答成功', icon: 'success' })
     answerInputRef.value?.clear()
-
-    // 刷新回答列表
     await loadAnswers(true)
-
-    // 更新问题详情（回答数+1）
     await questionStore.loadQuestionDetail(questionId.value, false)
   } catch (error: any) {
     console.error('发布回答失败:', error)
-    uni.showToast({
-      title: error.message || '发布失败',
-      icon: 'none'
-    })
+    uni.showToast({ title: error.message || '发布失败', icon: 'none' })
   } finally {
     submittingAnswer.value = false
   }
@@ -404,25 +377,15 @@ const handleAcceptAnswer = (answerId: number) => {
       if (res.confirm) {
         try {
           uni.showLoading({ title: '采纳中...' })
-
           await acceptAnswer(questionId.value, answerId)
-
-          uni.showToast({
-            title: '采纳成功',
-            icon: 'success'
-          })
-
-          // 刷新数据
+          uni.showToast({ title: '采纳成功', icon: 'success' })
           await Promise.all([
             questionStore.loadQuestionDetail(questionId.value, false),
             loadAnswers(true)
           ])
         } catch (error: any) {
           console.error('采纳失败:', error)
-          uni.showToast({
-            title: error.message || '采纳失败',
-            icon: 'none'
-          })
+          uni.showToast({ title: error.message || '采纳失败', icon: 'none' })
         } finally {
           uni.hideLoading()
         }
@@ -431,17 +394,13 @@ const handleAcceptAnswer = (answerId: number) => {
   })
 }
 
-// 点赞回答（乐观更新）
+// 点赞回答
 const handleLikeAnswer = async (answerId: number) => {
   const answer = answers.value.find(a => a.answerId === answerId)
   if (!answer) return
-
   const wasLiked = answer.isLiked
-
-  // 乐观更新
   answer.isLiked = !wasLiked
   answer.likes += wasLiked ? -1 : 1
-
   try {
     if (wasLiked) {
       await unlikeAnswer(answerId)
@@ -449,15 +408,10 @@ const handleLikeAnswer = async (answerId: number) => {
       await likeAnswer(answerId)
     }
   } catch (error: any) {
-    // 回滚
     answer.isLiked = wasLiked
     answer.likes += wasLiked ? 1 : -1
-
     console.error('点赞失败:', error)
-    uni.showToast({
-      title: error.message || '操作失败',
-      icon: 'none'
-    })
+    uni.showToast({ title: error.message || '操作失败', icon: 'none' })
   }
 }
 
@@ -470,25 +424,13 @@ const handleDeleteAnswer = (answerId: number) => {
       if (res.confirm) {
         try {
           uni.showLoading({ title: '删除中...' })
-
           await deleteAnswer(answerId)
-
-          uni.showToast({
-            title: '删除成功',
-            icon: 'success'
-          })
-
-          // 刷新回答列表
+          uni.showToast({ title: '删除成功', icon: 'success' })
           await loadAnswers(true)
-
-          // 更新问题详情（回答数-1）
           await questionStore.loadQuestionDetail(questionId.value, false)
         } catch (error: any) {
           console.error('删除失败:', error)
-          uni.showToast({
-            title: error.message || '删除失败',
-            icon: 'none'
-          })
+          uni.showToast({ title: error.message || '删除失败', icon: 'none' })
         } finally {
           uni.hideLoading()
         }
@@ -506,51 +448,27 @@ const handleDeleteQuestion = () => {
       if (res.confirm) {
         try {
           uni.showLoading({ title: '删除中...' })
-
           await deleteQuestion(questionId.value)
-
-          uni.showToast({
-            title: '删除成功',
-            icon: 'success'
-          })
-
-          // 延迟后返回问答广场（使用智能返回逻辑）
+          uni.showToast({ title: '删除成功', icon: 'success' })
           setTimeout(() => {
             const pages = getCurrentPages()
-
-            // 检查页面栈，决定返回方式
             if (pages.length === 1) {
-              // 页面栈只有一页，直接跳转到问答中心
-              uni.switchTab({
-                url: '/pages/question/index'
-              })
+              uni.switchTab({ url: '/pages/question/index' })
             } else if (pages.length >= 2) {
-              // 获取上一页的路径
               const prevPage = pages[pages.length - 2]
               const prevRoute = prevPage.route || ''
-
-              // 如果上一页是问答中心（tabBar页面），使用 switchTab
               if (prevRoute === 'pages/question/index') {
-                uni.switchTab({
-                  url: '/pages/question/index'
-                })
+                uni.switchTab({ url: '/pages/question/index' })
               } else {
-                // 否则正常返回
                 uni.navigateBack()
               }
             } else {
-              // 默认跳转到问答中心
-              uni.switchTab({
-                url: '/pages/question/index'
-              })
+              uni.switchTab({ url: '/pages/question/index' })
             }
           }, 1500)
         } catch (error: any) {
           console.error('删除失败:', error)
-          uni.showToast({
-            title: error.message || '删除失败',
-            icon: 'none'
-          })
+          uni.showToast({ title: error.message || '删除失败', icon: 'none' })
         } finally {
           uni.hideLoading()
         }
@@ -559,149 +477,92 @@ const handleDeleteQuestion = () => {
   })
 }
 
-// 关注问题
+// 其他操作
 const handleFollow = () => {
-  // TODO: 实现关注功能
-  uni.showToast({
-    title: '关注功能开发中',
-    icon: 'none'
-  })
+  uni.showToast({ title: '关注功能开发中', icon: 'none' })
 }
 
-// 收藏问题
 const handleCollect = () => {
-  // TODO: 实现收藏功能
-  uni.showToast({
-    title: '收藏功能开发中',
-    icon: 'none'
-  })
+  uni.showToast({ title: '收藏功能开发中', icon: 'none' })
 }
 
-// 分享
 const handleShare = () => {
-  // TODO: 实现分享功能（生成链接/二维码）
-  uni.showToast({
-    title: '分享功能开发中',
-    icon: 'none'
-  })
+  uni.showToast({ title: '分享功能开发中', icon: 'none' })
 }
 
-// 举报问题
 const handleReportQuestion = () => {
   uni.showModal({
     title: '举报',
     content: '确定要举报这个问题吗？',
     success: (res) => {
       if (res.confirm) {
-        uni.showToast({
-          title: '举报成功，我们会尽快处理',
-          icon: 'success'
-        })
+        uni.showToast({ title: '举报成功，我们会尽快处理', icon: 'success' })
       }
     }
   })
 }
 
-// 预览问题图片
 const handlePreviewQuestionImage = (index: number) => {
   if (!question.value?.images) return
-
-  uni.previewImage({
-    current: index,
-    urls: question.value.images
-  })
+  uni.previewImage({ current: index, urls: question.value.images })
 }
 
-// 面包屑点击
 const handleBreadcrumbClick = (type: 'home' | 'question' | 'category') => {
   if (type === 'home') {
-    uni.switchTab({
-      url: '/pages/home/index'
-    })
+    uni.switchTab({ url: '/pages/home/index' })
   } else if (type === 'question') {
-    uni.switchTab({
-      url: '/pages/question/index'
-    })
+    uni.switchTab({ url: '/pages/question/index' })
   } else if (type === 'category') {
-    // TODO: 跳转到分类筛选页面
-    uni.switchTab({
-      url: '/pages/question/index'
-    })
+    uni.switchTab({ url: '/pages/question/index' })
   }
 }
 
-// 标签点击
 const handleTagClick = (tag: string) => {
-  // TODO: 跳转到标签筛选页面
-  uni.navigateTo({
-    url: `/pages/question/index?tag=${tag}`
-  })
+  uni.navigateTo({ url: `/pages/question/index?tag=${tag}` })
 }
 
-// 返回
 const goBack = () => {
   const pages = getCurrentPages()
-
-  // 检查页面栈，决定返回方式
   if (pages.length === 1) {
-    // 页面栈只有一页，直接跳转到问答中心
-    uni.switchTab({
-      url: '/pages/question/index'
-    })
+    uni.switchTab({ url: '/pages/question/index' })
   } else if (pages.length >= 2) {
-    // 获取上一页的路径
     const prevPage = pages[pages.length - 2]
     const prevRoute = prevPage.route || ''
-
-    // 如果上一页是问答中心（tabBar页面），使用 switchTab
     if (prevRoute === 'pages/question/index') {
-      uni.switchTab({
-        url: '/pages/question/index'
-      })
+      uni.switchTab({ url: '/pages/question/index' })
     } else {
-      // 否则正常返回
       uni.navigateBack()
     }
   } else {
-    // 默认返回
     uni.navigateBack()
   }
 }
 
-// 兼容旧函数名（错误状态中使用）
 const handleGoBack = goBack
 
-// 显示更多菜单
 const showMoreMenu = () => {
   showMorePopup.value = true
 }
 
-// 关闭更多菜单
 const closeMoreMenu = () => {
   showMorePopup.value = false
 }
 
-// 编辑问题
 const handleEditQuestion = () => {
   closeMoreMenu()
-  uni.navigateTo({
-    url: `/pages/question/ask?id=${questionId.value}`
-  })
+  uni.navigateTo({ url: `/pages/question/ask?id=${questionId.value}` })
 }
 
-// 从更多菜单举报问题
 const handleReportQuestionFromMenu = () => {
   closeMoreMenu()
   handleReportQuestion()
 }
 
-// 从更多菜单分享
 const handleShareFromMenu = () => {
   closeMoreMenu()
   handleShare()
 }
 
-// 重试加载
 const handleRetry = () => {
   error.value = null
   loadQuestionDetail()
@@ -711,16 +572,55 @@ const handleRetry = () => {
 
 <style lang="scss" scoped>
 // ===================================
-// 页面内容容器
+// 页面容器（统一背景）
 // ===================================
-.detail-content {
+.detail-page {
   min-height: 100vh;
-  padding: $sp-6;
-  padding-bottom: calc($sp-6 + 200rpx); // 为固定输入框留出空间
+  background: $bg-page;
+  padding: $sp-6 $sp-8;
+  padding-bottom: calc($sp-6 + 200rpx);
 
   @include mobile {
     padding: $sp-4;
     padding-bottom: calc($sp-4 + 200rpx);
+  }
+}
+
+// ===================================
+// 居中内容容器（主布局）
+// ===================================
+.detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  gap: 40rpx;
+
+  @include mobile {
+    flex-direction: column;
+    gap: $sp-6;
+  }
+}
+
+// ===================================
+// 主内容区（左侧）
+// ===================================
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-6;
+}
+
+// ===================================
+// 侧栏（右侧）
+// ===================================
+.sidebar-content {
+  width: 340px;
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 100%;
   }
 }
 
@@ -805,7 +705,6 @@ const handleRetry = () => {
 // AI 回答卡片
 // ===================================
 .ai-answer-card {
-  margin-bottom: $sp-6;
   background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
 }
 
@@ -845,15 +744,14 @@ const handleRetry = () => {
 // ===================================
 // 回答导航条
 // ===================================
+.answers-nav-card {
+  // 卡片基础样式由 CCard 提供
+}
+
 .answers-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $sp-6;
-  padding: $sp-6;
-  background: $white;
-  border-radius: $radius-base;
-  box-shadow: $shadow-sm;
 
   @include mobile {
     flex-direction: column;
@@ -888,7 +786,6 @@ const handleRetry = () => {
   flex-direction: column;
 }
 
-// 加载更多
 .load-more {
   text-align: center;
   padding: $sp-8;
@@ -902,14 +799,18 @@ const handleRetry = () => {
   }
 }
 
+// ===================================
 // 空状态
+// ===================================
+.empty-answers-card {
+  // 卡片基础样式由 CCard 提供
+}
+
 .empty-answers {
   @include flex-center;
   flex-direction: column;
   gap: $sp-6;
   padding: $sp-30 $sp-12;
-  background: $white;
-  border-radius: $radius-base;
 
   .empty-icon {
     font-size: 120rpx;
@@ -1038,7 +939,7 @@ const handleRetry = () => {
 // 底部占位
 // ===================================
 .bottom-placeholder {
-  height: 200rpx;
+  height: 100rpx;
 }
 
 // ===================================

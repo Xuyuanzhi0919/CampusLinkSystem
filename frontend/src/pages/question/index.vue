@@ -1518,12 +1518,19 @@ page {
 /* H5端隐藏所有滚动条 */
 ::-webkit-scrollbar {
   display: none;
+  width: 0 !important;
 }
 
-/* uni-app H5端页面容器 */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+/* uni-app H5端页面容器 - 允许滚动但隐藏滚动条 */
 uni-page-body {
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 /* 覆盖 uni-app 的 tabbar 高度计算，避免干扰自定义布局 */

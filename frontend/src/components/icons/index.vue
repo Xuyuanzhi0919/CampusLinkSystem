@@ -149,6 +149,12 @@
       <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- Book Open 图标（学习） -->
+    <template v-else-if="name === 'book-open'">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="currentColor" fill="none"/>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="currentColor" fill="none"/>
+    </template>
+
     <!-- Life Buoy 图标（生活） -->
     <template v-else-if="name === 'life-buoy'">
       <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
@@ -165,12 +171,19 @@
       <polyline points="8 6 2 12 8 18" stroke="currentColor" fill="none"/>
     </template>
 
-    <!-- Grid 图标（其他） -->
+    <!-- Grid 图标（全部） -->
     <template v-else-if="name === 'grid'">
       <rect x="3" y="3" width="7" height="7" stroke="currentColor" fill="none"/>
       <rect x="14" y="3" width="7" height="7" stroke="currentColor" fill="none"/>
       <rect x="14" y="14" width="7" height="7" stroke="currentColor" fill="none"/>
       <rect x="3" y="14" width="7" height="7" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- More Horizontal 图标（其他） -->
+    <template v-else-if="name === 'more-horizontal'">
+      <circle cx="12" cy="12" r="1" stroke="currentColor" fill="currentColor"/>
+      <circle cx="19" cy="12" r="1" stroke="currentColor" fill="currentColor"/>
+      <circle cx="5" cy="12" r="1" stroke="currentColor" fill="currentColor"/>
     </template>
 
     <!-- Search 图标（搜索） -->

@@ -1527,12 +1527,18 @@ uni-page-body {
 
 /* 覆盖 uni-app 的 tabbar 高度计算，避免干扰自定义布局 */
 /* #ifdef H5 */
+.uni-app--showtabbar uni-page-wrapper {
+  height: 100% !important;
+}
+
 .uni-app--showtabbar uni-page-head[uni-page-head-type='default'] ~ uni-page-wrapper {
   height: 100% !important;
 }
 
 /* Web 端隐藏 tabbar 占位伪元素的高度 */
 .uni-app--showtabbar uni-page-wrapper::after {
+  content: none !important;
+  display: none !important;
   height: 0 !important;
 }
 /* #endif */

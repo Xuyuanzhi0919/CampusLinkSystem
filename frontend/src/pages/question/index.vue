@@ -1142,6 +1142,7 @@ onMounted(() => {
 
   @include mobile {
     flex: none;
+    width: 100%;  // 移动端占满容器宽度
     min-height: 400px;
   }
 }

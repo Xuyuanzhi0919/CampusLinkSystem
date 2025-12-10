@@ -196,6 +196,35 @@
       <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor"/>
       <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor"/>
     </template>
+
+    <!-- Arrow Left 图标（返回） -->
+    <template v-else-if="name === 'arrow-left'">
+      <line x1="19" y1="12" x2="5" y2="12" stroke="currentColor"/>
+      <polyline points="12 19 5 12 12 5" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Image Plus 图标（上传图片） -->
+    <template v-else-if="name === 'image-plus'">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" fill="none"/>
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+      <polyline points="21 15 16 10 5 21" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="8" x2="12" y2="14" stroke="currentColor"/>
+      <line x1="9" y1="11" x2="15" y2="11" stroke="currentColor"/>
+    </template>
+
+    <!-- Info 图标（信息提示） -->
+    <template v-else-if="name === 'info'">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="16" x2="12" y2="12" stroke="currentColor"/>
+      <line x1="12" y1="8" x2="12.01" y2="8" stroke="currentColor"/>
+    </template>
+
+    <!-- Lightbulb 图标（提示/建议） -->
+    <template v-else-if="name === 'lightbulb'">
+      <path d="M9 18h6" stroke="currentColor" fill="none"/>
+      <path d="M10 22h4" stroke="currentColor" fill="none"/>
+      <path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.97 4.97 0 0 0 18 8a6 6 0 1 0-12 0c0 1.5.7 2.73 1.5 3.5.76.76 1.23 1.52 1.41 2.5" stroke="currentColor" fill="none"/>
+    </template>
   </svg>
 </template>
 

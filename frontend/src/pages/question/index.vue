@@ -1840,7 +1840,6 @@ onMounted(() => {
 <!-- H5端全局样式（非scoped，用于覆盖 uni-app 内置样式） -->
 <style lang="scss">
 page {
-  height: 100%;
   background: #F8FAFC;
 }
 

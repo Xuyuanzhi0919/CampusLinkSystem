@@ -72,6 +72,17 @@ public class QuestionController {
         return Result.success(question);
     }
 
+    @Operation(summary = "更新问题")
+    @PutMapping("/{id}")
+    public Result<Map<String, Long>> updateQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id,
+            @Valid @RequestBody AskQuestionRequest request,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        questionService.updateQuestion(userId, id, request);
+        return Result.success("更新成功", Map.of("questionId", id));
+    }
+
     @Operation(summary = "回答问题")
     @PostMapping("/{id}/answer")
     public Result<Map<String, Long>> answerQuestion(

@@ -78,6 +78,40 @@ public class QuestionService {
     }
 
     /**
+     * 更新问题
+     */
+    public void updateQuestion(Long userId, Long questionId, AskQuestionRequest request) {
+        // 查询问题
+        Question question = questionMapper.selectById(questionId);
+        if (question == null) {
+            throw new BusinessException(ResultCode.QUESTION_NOT_FOUND);
+        }
+
+        // 检查权限：只有提问者本人可以编辑
+        if (!question.getAskerId().equals(userId)) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        // 检查问题状态：已解决的问题不能编辑
+        if (question.getIsSolved() == 1) {
+            throw new BusinessException(ResultCode.OPERATION_FAILED, "已解决的问题不能编辑");
+        }
+
+        // 更新问题信息
+        question.setTitle(request.getTitle());
+        question.setContent(request.getContent());
+        question.setCategory(request.getCategory());
+        question.setTags(convertListToJson(request.getTags()));
+        question.setImages(convertListToJson(request.getImages()));
+        question.setUpdatedAt(LocalDateTime.now());
+
+        // 注意：悬赏积分在编辑时不允许修改，因为可能已经有人回答了
+        // 如果需要支持修改悬赏，需要额外的业务逻辑处理
+
+        questionMapper.updateById(question);
+    }
+
+    /**
      * 获取问题列表
      */
     public PageResult<QuestionListResponse> getQuestionList(

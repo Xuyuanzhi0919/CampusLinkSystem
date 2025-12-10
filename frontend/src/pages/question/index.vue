@@ -484,7 +484,8 @@ const loadQuestions = async (refresh = false) => {
 
     console.log('[Question Page] 加载问题列表，参数：', params)
 
-    const res = await questionStore.loadQuestions(params)
+    // refresh=true 时不使用缓存
+    const res = await questionStore.loadQuestions(params, !refresh)
 
     // 更新总页数
     totalPages.value = res.totalPages
@@ -585,6 +586,11 @@ const handleClearSearch = () => {
 
 // 快捷筛选
 const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
+  // 清除问题列表缓存（避免旧数据干扰）
+  const cacheKeys = uni.getStorageInfoSync().keys.filter(k => k.includes('question:list'))
+  cacheKeys.forEach(key => uni.removeStorageSync(key))
+  console.log('[Quick Filter] 清除缓存:', cacheKeys.length, '个')
+
   // 重置所有筛选条件
   category.value = null
   status.value = null

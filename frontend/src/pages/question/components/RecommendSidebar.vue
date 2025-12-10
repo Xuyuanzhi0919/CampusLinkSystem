@@ -1,12 +1,12 @@
 <template>
   <view class="recommend-sidebar">
     <!-- 活跃答主模块 -->
-    <CCard v-if="activeUsers.length > 0" variant="default" class="sidebar-card">
+    <CCard variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="users" :size="18" class="header-icon" />
         <text class="header-title">活跃答主</text>
       </view>
-      <view class="active-users">
+      <view v-if="activeUsers.length > 0" class="active-users">
         <view
           v-for="user in activeUsers"
           :key="user.userId"
@@ -23,15 +23,19 @@
           </view>
         </view>
       </view>
+      <view v-else class="empty-state">
+        <Icon name="users" :size="32" class="empty-icon" />
+        <text class="empty-text">暂无活跃答主</text>
+      </view>
     </CCard>
 
     <!-- 热门标签模块 -->
-    <CCard v-if="hotTags.length > 0" variant="default" class="sidebar-card">
+    <CCard variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="tag" :size="18" class="header-icon" />
         <text class="header-title">热门标签</text>
       </view>
-      <view class="tags-grid">
+      <view v-if="hotTags.length > 0" class="tags-grid">
         <view
           v-for="tag in hotTags"
           :key="tag.name"
@@ -42,15 +46,19 @@
           <text class="tag-count">{{ tag.count }}</text>
         </view>
       </view>
+      <view v-else class="empty-state">
+        <Icon name="tag" :size="32" class="empty-icon" />
+        <text class="empty-text">暂无热门标签</text>
+      </view>
     </CCard>
 
     <!-- 热门问题模块 -->
-    <CCard v-if="hotQuestions.length > 0" variant="default" class="sidebar-card">
+    <CCard variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="trending-up" :size="18" class="header-icon" />
         <text class="header-title">热门问题</text>
       </view>
-      <view class="hot-questions">
+      <view v-if="hotQuestions.length > 0" class="hot-questions">
         <view
           v-for="(question, index) in hotQuestions"
           :key="question.qid"
@@ -71,6 +79,10 @@
           </view>
         </view>
       </view>
+      <view v-else class="empty-state">
+        <Icon name="help-circle" :size="32" class="empty-icon" />
+        <text class="empty-text">暂无热门问题</text>
+      </view>
     </CCard>
   </view>
 </template>
@@ -79,7 +91,7 @@
 import { ref, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
-import { getQuestionList } from '@/services/question'
+import { getQuestionList, getHotTags, getActiveUsers } from '@/services/question'
 
 // 定义类型
 interface HotTag {
@@ -152,34 +164,32 @@ const loadHotQuestions = async () => {
     }))
   } catch (error) {
     console.error('[RecommendSidebar] 加载热门问题失败:', error)
+    // 失败时保持空数组，显示空状态
+    hotQuestions.value = []
   }
 }
 
 // 加载热门标签
 const loadHotTags = async () => {
   try {
-    // TODO: 调用热门标签 API
-    // const res = await getHotTags({ limit: 8 })
-    // hotTags.value = res
-
-    // 暂时使用空数据，等待后端 API
-    hotTags.value = []
+    const res = await getHotTags(8)
+    hotTags.value = res
   } catch (error) {
     console.error('[RecommendSidebar] 加载热门标签失败:', error)
+    // 失败时保持空数组，显示空状态
+    hotTags.value = []
   }
 }
 
 // 加载活跃答主
 const loadActiveUsers = async () => {
   try {
-    // TODO: 调用活跃答主 API
-    // const res = await getActiveUsers({ limit: 4, period: '7d' })
-    // activeUsers.value = res
-
-    // 暂时使用空数据，等待后端 API
-    activeUsers.value = []
+    const res = await getActiveUsers(4, '7d')
+    activeUsers.value = res
   } catch (error) {
     console.error('[RecommendSidebar] 加载活跃答主失败:', error)
+    // 失败时保持空数组，显示空状态
+    activeUsers.value = []
   }
 }
 
@@ -465,5 +475,28 @@ onMounted(() => {
     color: $white;
     font-weight: $font-weight-semibold;
   }
+}
+
+// ===================================
+// 空状态
+// ===================================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  gap: 8px;
+}
+
+.empty-icon {
+  color: $gray-300;
+  opacity: 0.6;
+}
+
+.empty-text {
+  font-size: 13px;
+  color: $gray-400;
+  text-align: center;
 }
 </style>

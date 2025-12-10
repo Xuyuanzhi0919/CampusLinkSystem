@@ -131,3 +131,26 @@ export const getMyAnswers = (params: {
   return request.get<PageResult<AnswerItem & { question: QuestionItem }>>('/answer/my', params)
 }
 
+/**
+ * 获取热门标签
+ * @param limit 返回数量，默认8个
+ */
+export const getHotTags = (limit: number = 8) => {
+  return request.get<Array<{ name: string; count: number }>>('/question/hot-tags', { limit })
+}
+
+/**
+ * 获取活跃答主
+ * @param limit 返回数量，默认4个
+ * @param period 时间范围，7d或30d，默认7d
+ */
+export const getActiveUsers = (limit: number = 4, period: '7d' | '30d' = '7d') => {
+  return request.get<Array<{
+    userId: number
+    nickname: string
+    avatar: string
+    answerCount: number
+    badge: string | null
+  }>>('/question/active-users', { limit, period })
+}
+

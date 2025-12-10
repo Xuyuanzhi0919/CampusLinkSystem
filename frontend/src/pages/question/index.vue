@@ -358,14 +358,14 @@ let searchDebounce: number | null = null
 // 筛选条件
 const category = ref<string | null>(null)
 const status = ref<number | null>(null)
-const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
+const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
 let filterDebounce: number | null = null
 
 // 筛选弹窗
 const showFilterModal = ref(false)
 const tempCategory = ref<string | null>(null)
 const tempStatus = ref<number | null>(null)
-const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount'>('created_at')
+const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
 
 // 排序菜单
 const showSortMenu = ref(false)
@@ -386,7 +386,15 @@ const activeFilterCount = computed(() => {
 // 当前排序标签
 const currentSortLabel = computed(() => {
   const option = sortOptions.find(item => item.value === sortBy.value)
-  return option ? option.label : '最新'
+  if (option) return option.label
+
+  // 快捷筛选的排序显示对应标签
+  switch (sortBy.value) {
+    case 'created_at': return '最新'
+    case 'views': return '热门'
+    case 'bounty': return '悬赏'
+    default: return '综合排序'
+  }
 })
 
 // 切换排序菜单
@@ -417,10 +425,8 @@ const categories: Array<{ label: string; value: string | null; icon: string; ico
 
 // 排序选项
 const sortOptions = [
-  { label: '最新', value: 'created_at' as const },
-  { label: '最热', value: 'views' as const },
-  { label: '悬赏', value: 'bounty' as const },
-  { label: '回答', value: 'answerCount' as const }
+  { label: '回答数', value: 'answerCount' as const },
+  { label: '最新回答', value: 'lastAnswerTime' as const }
 ]
 
 // 状态标签

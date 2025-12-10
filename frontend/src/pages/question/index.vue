@@ -1582,8 +1582,17 @@ onMounted(() => {
   }
 }
 
+</style>
+
+<!-- H5端全局样式（非scoped，用于覆盖 uni-app 内置样式） -->
+<style lang="scss">
+page {
+  height: 100%;
+  background: #F8FAFC;
+}
+
 /* ========================================
-   uni-app 覆盖样式
+   uni-app H5端覆盖样式（必须在非scoped中）
    ======================================== */
 /* #ifdef H5 */
 .uni-app--showtabbar uni-page-wrapper {
@@ -1594,20 +1603,14 @@ onMounted(() => {
   height: 100% !important;
 }
 
+/* 隐藏 tabbar 占位伪元素 */
 .uni-app--showtabbar uni-page-wrapper::after {
   content: none !important;
   display: none !important;
   height: 0 !important;
+  visibility: hidden !important;
 }
 /* #endif */
-</style>
-
-<!-- H5端全局样式 -->
-<style lang="scss">
-page {
-  height: 100%;
-  background: #F8FAFC;
-}
 
 /* H5端隐藏所有滚动条 */
 ::-webkit-scrollbar {

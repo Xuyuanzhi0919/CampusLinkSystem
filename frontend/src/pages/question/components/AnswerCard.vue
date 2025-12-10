@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <CCard
     variant="outlined"
     :hoverable="true"
@@ -7,7 +7,7 @@
   >
     <!-- 最佳答案标识 (放在最顶部) -->
     <view v-if="answer.isAccepted" class="accepted-badge-wrapper">
-      <BestAnswerBadge />
+      <BestAnswerBadge class="answer-badge" />
     </view>
 
     <!-- 回答者信息 + 更多操作 -->
@@ -27,7 +27,7 @@
 
       <!-- 右侧：更多操作按钮 -->
       <view class="more-actions" @click="showMoreMenu">
-        <text class="more-icon">⋯</text>
+        <ClIcon name="icon-more" size="sm" class="more-icon" color="#9CA3AF" />
       </view>
     </view>
 
@@ -64,29 +64,29 @@
 
       <!-- 右侧：采纳/删除按钮 -->
       <view class="footer-right">
-        <!-- 采纳按钮（仅提问者可见且问题未解决） -->
+        <!-- ?????????????????? -->
         <CButton
           v-if="canAccept && !answer.isAccepted"
-          type="warning"
+          type="success"
           size="sm"
           plain
+          class="accept-btn"
           @click="handleAccept"
         >
-          <text class="action-icon">✅</text>
-          采纳回答
+          <ClIcon name="icon-check" size="xs" class="action-icon" />
+          <text class="action-label">??</text>
         </CButton>
 
-        <!-- 删除按钮（仅回答者本人可见） -->
+        <!-- ?????????????? -->
         <CButton
           v-if="isMyAnswer"
-          type="danger"
+          type="ghost"
           size="sm"
-          plain
-          class="btn-delete"
+          class="ghost-danger"
           @click="handleDelete"
         >
-          <text class="action-icon">🗑️</text>
-          删除
+          <ClIcon name="icon-trash-2" size="xs" class="action-icon" />
+          <text class="action-label">??</text>
         </CButton>
       </view>
     </view>
@@ -126,6 +126,7 @@ import { ref, computed } from 'vue'
 import type { AnswerItem } from '@/types/question'
 import { useUserStore } from '@/stores/user'
 import { CCard, CButton } from '@/components/ui'
+import { ClIcon } from '@/components/cl'
 import BestAnswerBadge from './BestAnswerBadge.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 
@@ -243,11 +244,22 @@ const handleReport = () => {
 
   // 最佳答案样式 - 清新现代风
   &--accepted {
-    background-color: #FFFDF5 !important; // 极浅米黄
-    border-color: #FACC15 !important; // 亮金色边框 (1px)
-    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.03) !important; // 轻柔阴影
+    background-color: #FFFDF5 !important;
+    border-color: #FACC15 !important;
+    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06) !important;
+    position: relative;
+    overflow: hidden;
 
-    // 内部文字可能需要微调（可选）
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6rpx;
+      background: linear-gradient(90deg, #FACC15 0%, #FDE68A 100%);
+    }
+
     .answer-content {
       color: $gray-900;
     }
@@ -255,7 +267,12 @@ const handleReport = () => {
 }
 
 .accepted-badge-wrapper {
-  margin-bottom: $sp-2;
+  display: inline-flex;
+  margin-bottom: $sp-3;
+}
+
+.answer-badge {
+  display: inline-flex;
 }
 
 // ===================================
@@ -407,19 +424,33 @@ const handleReport = () => {
   font-size: $font-size-base;
 }
 
-// 删除按钮特殊样式
-.btn-delete {
-  :deep(button) {
-    border-color: #FECACA !important; // 淡红边框
-    color: $error !important;
-    background: transparent !important;
-
-    &:hover {
-      background: #FEF2F2 !important; // 淡红背景
-    }
-  }
+.accept-btn {
+  color: #166534;
+  background: #ecfdf3;
+  border: 2rpx solid #86efac;
+  transition: background $duration-base, border-color $duration-base, color $duration-base;
 }
 
+.accept-btn:hover {
+  background: #d1fae5;
+  border-color: #4ade80;
+}
+
+.ghost-danger {
+  color: #b91c1c;
+  background: transparent;
+  border: 2rpx solid #fca5a5;
+  transition: background $duration-base, border-color $duration-base, color $duration-base;
+}
+
+.ghost-danger:hover {
+  background: rgba(#f87171, 0.08);
+  border-color: #f87171;
+}
+
+.action-label {
+  font-size: $font-size-sm;
+}
 
 // ===================================
 // 更多菜单弹出层
@@ -514,3 +545,4 @@ const handleReport = () => {
   }
 }
 </style>
+

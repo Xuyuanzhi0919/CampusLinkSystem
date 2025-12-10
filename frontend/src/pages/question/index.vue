@@ -867,15 +867,23 @@ onMounted(() => {
 }
 
 .clear-icon {
-  color: $gray-500;
+  color: $gray-400;
   cursor: pointer;
   padding: 4px;
   border-radius: 50%;
   transition: all 0.2s;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
-    background: rgba($gray-500, 0.1);
+    background: rgba($gray-500, 0.15);
     color: $gray-700;
+  }
+
+  &:active {
+    transform: scale(0.9);
   }
 }
 

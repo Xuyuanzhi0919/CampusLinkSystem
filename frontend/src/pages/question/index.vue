@@ -1531,9 +1531,9 @@ uni-page-body {
   height: 100% !important;
 }
 
-/* Web 端隐藏 tabbar 占位伪元素 */
+/* Web 端隐藏 tabbar 占位伪元素的高度 */
 .uni-app--showtabbar uni-page-wrapper::after {
-  display: none !important;
+  height: 0 !important;
 }
 /* #endif */
 </style>

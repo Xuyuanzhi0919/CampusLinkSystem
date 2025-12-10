@@ -634,25 +634,38 @@ onMounted(() => {
 }
 
 /* ========================================
-   固定顶部导航区 (~56px)
+   固定顶部导航区 (~56px) - 全宽背景
    ======================================== */
 .top-nav-fixed {
   position: sticky;
   top: 0;
   z-index: 100;
+  width: 100%;
   background: $white;
   border-bottom: 1px solid $gray-200;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .top-nav-container {
-  max-width: 1400px;
+  max-width: 1280px;  // 改为与首页一致
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 80px;  // 改为与首页一致
   height: 56px;
   display: flex;
   align-items: center;
   gap: 20px;
+
+  @media (max-width: 1600px) {
+    padding: 0 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32px;
+  }
 
   @include mobile {
     padding: 0 16px;
@@ -864,12 +877,13 @@ onMounted(() => {
 }
 
 /* ========================================
-   Sticky 导航区 (分类 + 排序) (~48px)
+   Sticky 导航区 (分类 + 排序) (~48px) - 全宽背景
    ======================================== */
 .sticky-nav {
   position: sticky;
   top: 56px;
   z-index: 99;
+  width: 100%;
   background: $white;
   border-bottom: 1px solid $gray-200;
 
@@ -879,14 +893,26 @@ onMounted(() => {
 }
 
 .sticky-nav-container {
-  max-width: 1400px;
+  max-width: 1280px;  // 改为与首页一致
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 80px;  // 改为与首页一致
   height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
+
+  @media (max-width: 1600px) {
+    padding: 0 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32px;
+  }
 
   @include mobile {
     padding: 0 16px;
@@ -1031,34 +1057,58 @@ onMounted(() => {
    主内容区 (整页滚动)
    ======================================== */
 .main-content {
-  padding: 24px 0 40px;
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: $bg-page;
+  padding: 48px 80px 64px;  // 改为与首页一致
+
+  @media (max-width: 1600px) {
+    padding: 48px 64px 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 40px 48px 56px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 32px 32px 48px;
+  }
 
   @include mobile {
-    padding: 16px 0 24px;
+    padding: 16px 16px 24px;
   }
 }
 
 .content-container {
-  max-width: 1400px;
+  max-width: 1280px;  // 改为与首页一致
   margin: 0 auto;
-  padding: 0 32px;
-  display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 32px;
+  display: flex;  // 改为flex布局
+  gap: 40px;  // 改为与首页一致的间距
   align-items: start;
 
+  @media (max-width: 1400px) {
+    gap: 36px;
+  }
+
+  @media (max-width: 1200px) {
+    gap: 32px;
+  }
+
   @include mobile {
-    grid-template-columns: 1fr;
-    padding: 0 16px;
-    gap: 0;
+    flex-direction: column;
+    gap: 20px;
   }
 }
 
-// 左侧：问题列表
+// 左侧：问题列表（主内容区）
 .question-list {
+  flex: 1;  // 自动占据剩余空间
+  min-width: 0;
   min-height: 600px;
 
   @include mobile {
+    flex: none;
     min-height: 400px;
   }
 }
@@ -1177,10 +1227,12 @@ onMounted(() => {
   color: $gray-500;
 }
 
-// 右侧：侧栏
+// 右侧：侧栏（固定宽度）
 .sidebar {
+  width: 320px;  // 固定宽度
+  flex-shrink: 0;  // 不缩小
   position: sticky;
-  top: 120px;
+  top: 120px;  // 顶部导航56px + sticky导航48px + 间距16px
 
   @include mobile {
     display: none;

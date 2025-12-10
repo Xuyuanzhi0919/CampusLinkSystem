@@ -1,7 +1,7 @@
 <template>
   <view class="recommend-sidebar">
     <!-- 活跃答主模块 -->
-    <CCard variant="default" class="sidebar-card">
+    <CCard v-if="activeUsers.length > 0" variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="users" :size="18" class="header-icon" />
         <text class="header-title">活跃答主</text>
@@ -26,7 +26,7 @@
     </CCard>
 
     <!-- 热门标签模块 -->
-    <CCard variant="default" class="sidebar-card">
+    <CCard v-if="hotTags.length > 0" variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="tag" :size="18" class="header-icon" />
         <text class="header-title">热门标签</text>
@@ -45,7 +45,7 @@
     </CCard>
 
     <!-- 热门问题模块 -->
-    <CCard variant="default" class="sidebar-card">
+    <CCard v-if="hotQuestions.length > 0" variant="default" class="sidebar-card">
       <view class="card-header">
         <Icon name="trending-up" :size="18" class="header-icon" />
         <text class="header-title">热门问题</text>
@@ -76,86 +76,40 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
+import { getQuestionList } from '@/services/question'
 
-// 热门标签（模拟数据，实际应该从 API 获取）
-const hotTags = ref([
-  { name: '数据结构', count: 128 },
-  { name: '算法', count: 95 },
-  { name: '前端开发', count: 87 },
-  { name: 'Vue', count: 76 },
-  { name: '宿舍生活', count: 65 },
-  { name: '图书馆', count: 54 },
-  { name: 'Java', count: 48 },
-  { name: '选课攻略', count: 42 },
-])
+// 定义类型
+interface HotTag {
+  name: string
+  count: number
+}
 
-// 活跃答主（模拟数据）
-const activeUsers = ref([
-  {
-    userId: 1,
-    nickname: '编程小能手',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 145,
-    badge: '学霸',
-  },
-  {
-    userId: 2,
-    nickname: '校园达人',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 98,
-    badge: '热心',
-  },
-  {
-    userId: 3,
-    nickname: '技术大牛',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 76,
-    badge: null,
-  },
-  {
-    userId: 4,
-    nickname: '学习委员',
-    avatar: 'https://via.placeholder.com/80',
-    answerCount: 54,
-    badge: null,
-  },
-])
+interface ActiveUser {
+  userId: number
+  nickname: string
+  avatar: string
+  answerCount: number
+  badge: string | null
+}
 
-const hotQuestions = ref([
-  {
-    qid: 1,
-    title: '如何高效准备期末考试？',
-    views: 2345,
-    answerCount: 23,
-  },
-  {
-    qid: 2,
-    title: '学校附近有哪些好吃的餐厅？',
-    views: 1876,
-    answerCount: 18,
-  },
-  {
-    qid: 3,
-    title: '计算机专业有哪些值得学习的技能？',
-    views: 1654,
-    answerCount: 15,
-  },
-  {
-    qid: 4,
-    title: '如何申请奖学金？',
-    views: 1432,
-    answerCount: 12,
-  },
-  {
-    qid: 5,
-    title: '宿舍断网了怎么办？',
-    views: 1287,
-    answerCount: 9,
-  },
-])
+interface HotQuestion {
+  qid: number
+  title: string
+  views: number
+  answerCount: number
+}
+
+// 热门标签
+const hotTags = ref<HotTag[]>([])
+
+// 活跃答主
+const activeUsers = ref<ActiveUser[]>([])
+
+// 热门问题
+const hotQuestions = ref<HotQuestion[]>([])
 
 // 排名徽章样式
 const getRankClass = (index: number) => {
@@ -180,6 +134,61 @@ const handleQuestionClick = (qid: number) => {
 const handleUserClick = (userId: number) => {
   uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
 }
+
+// 加载热门问题
+const loadHotQuestions = async () => {
+  try {
+    const res = await getQuestionList({
+      page: 1,
+      pageSize: 5,
+      sortBy: 'views',
+      sortOrder: 'desc'
+    })
+    hotQuestions.value = res.list.map(q => ({
+      qid: q.qid,
+      title: q.title,
+      views: q.views,
+      answerCount: q.answerCount
+    }))
+  } catch (error) {
+    console.error('[RecommendSidebar] 加载热门问题失败:', error)
+  }
+}
+
+// 加载热门标签
+const loadHotTags = async () => {
+  try {
+    // TODO: 调用热门标签 API
+    // const res = await getHotTags({ limit: 8 })
+    // hotTags.value = res
+
+    // 暂时使用空数据，等待后端 API
+    hotTags.value = []
+  } catch (error) {
+    console.error('[RecommendSidebar] 加载热门标签失败:', error)
+  }
+}
+
+// 加载活跃答主
+const loadActiveUsers = async () => {
+  try {
+    // TODO: 调用活跃答主 API
+    // const res = await getActiveUsers({ limit: 4, period: '7d' })
+    // activeUsers.value = res
+
+    // 暂时使用空数据，等待后端 API
+    activeUsers.value = []
+  } catch (error) {
+    console.error('[RecommendSidebar] 加载活跃答主失败:', error)
+  }
+}
+
+// 组件挂载时加载数据
+onMounted(() => {
+  loadHotQuestions()
+  loadHotTags()
+  loadActiveUsers()
+})
 </script>
 
 <style scoped lang="scss">

@@ -143,16 +143,22 @@
     <!-- 更多菜单弹出层 -->
     <view v-if="showMorePopup" class="more-menu-overlay" @click="closeMoreMenu">
       <view class="more-menu-content" @click.stop>
-        <!-- 编辑问题（仅提问者可见） -->
-        <view v-if="isMyQuestion" class="menu-item" @click="handleEditQuestion">
+        <!-- 编辑问题（仅提问者可见，且问题未解决） -->
+        <view v-if="isMyQuestion && question?.status !== 1" class="menu-item" @click="handleEditQuestion">
           <Icon name="edit" :size="20" class="menu-icon" />
           <text class="menu-label">编辑问题</text>
         </view>
 
-        <!-- 删除问题（仅提问者可见） -->
-        <view v-if="isMyQuestion" class="menu-item menu-item--danger" @click="handleDeleteQuestionFromMenu">
+        <!-- 删除问题（仅提问者可见，且问题未解决） -->
+        <view v-if="isMyQuestion && question?.status !== 1" class="menu-item menu-item--danger" @click="handleDeleteQuestionFromMenu">
           <Icon name="trash" :size="20" class="menu-icon" />
           <text class="menu-label">删除问题</text>
+        </view>
+
+        <!-- 已解决提示（仅提问者，且问题已解决） -->
+        <view v-if="isMyQuestion && question?.status === 1" class="menu-item menu-item--disabled">
+          <Icon name="info" :size="20" class="menu-icon" />
+          <text class="menu-label">已解决的问题无法编辑和删除</text>
         </view>
 
         <!-- 举报（非提问者可见） -->
@@ -923,6 +929,24 @@ const handleRetry = () => {
 
     .menu-label {
       color: $gray-500;
+    }
+  }
+
+  &--disabled {
+    cursor: not-allowed;
+    background: $gray-50;
+
+    .menu-icon {
+      color: $info;
+    }
+
+    .menu-label {
+      color: $gray-600;
+      font-size: $font-size-base;
+    }
+
+    &:active {
+      background: $gray-50;
     }
   }
 }

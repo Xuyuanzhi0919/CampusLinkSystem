@@ -852,23 +852,25 @@ onMounted(() => {
 // 🎯 二级导航筛选栏（下划线高亮）
 // ===================================
 .nav-section {
-  background: $bg-page;  // 从 $white 改为 $bg-page，降低视觉权重
-  padding: $sp-3 $sp-6;  // 从 0 改为 $sp-3，增加上下内边距
+  background: $white;  // 改回白色，增强对比
+  padding: $sp-5 $sp-8;  // 增加内边距
   display: flex;
   align-items: center;
   justify-content: space-between;
   max-width: 1200px;
-  margin: 0 auto;
-  border-bottom: 1rpx solid $gray-100;  // 添加底部分割线
+  margin: $sp-6 auto 0;  // 顶部增加间距，与分类栏分离
+  border-radius: $radius-lg $radius-lg 0 0;  // 顶部圆角
+  box-shadow: 0 -2rpx 8rpx rgba(0, 0, 0, 0.02);  // 轻微阴影
 
   @include mobile {
-    padding: $sp-3 $sp-4;
+    padding: $sp-4 $sp-4;
+    margin-top: $sp-4;
   }
 }
 
 .nav-tabs {
   display: flex;
-  gap: $sp-8;
+  gap: $sp-10;  // 增加到 $sp-10 (40rpx = 20px)
   overflow-x: auto;
 
   &::-webkit-scrollbar {
@@ -882,9 +884,15 @@ onMounted(() => {
 
 .nav-tab {
   position: relative;
-  padding: $sp-4 0;  // 从 $sp-5 减少到 $sp-4，减小高度
+  padding: $sp-4 $sp-2;  // 增加左右内边距
   cursor: pointer;
-  transition: color $duration-base;
+  transition: all $duration-base;
+
+  &:hover {
+    .nav-label {
+      color: $primary;
+    }
+  }
 
   @include mobile {
     padding: $sp-3 0;
@@ -892,31 +900,34 @@ onMounted(() => {
 }
 
 .nav-label {
-  font-size: $font-size-base;  // 从 lg 降至 base，降低视觉权重
-  font-weight: $font-weight-medium;
-  color: $gray-600;
+  font-size: 30rpx;  // 增加到 30rpx (15px)
+  font-weight: $font-weight-semibold;  // 增加到 semibold
+  color: $gray-700;  // 加深到 $gray-700
   transition: color $duration-base;
+  white-space: nowrap;
 
   @include mobile {
-    font-size: $font-size-sm;
+    font-size: $font-size-base;
   }
 }
 
 .nav-tab.active {
   .nav-label {
     color: $primary;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-bold;  // 选中时加粗到 bold
   }
 }
 
 .nav-underline {
   position: absolute;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 6rpx;  // 从 4rpx 增加到 6rpx (3px)
-  background: $primary;  // 移除渐变，使用纯色更清晰
-  border-radius: 3rpx 3rpx 0 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  height: 8rpx;  // 增加到 8rpx (4px)
+  background: linear-gradient(90deg, $primary 0%, lighten($primary, 10%) 100%);  // 添加渐变
+  border-radius: 4rpx 4rpx 0 0;
+  box-shadow: 0 -2rpx 8rpx rgba($primary, 0.3);  // 添加发光效果
   animation: slideIn 0.3s ease-out;
 }
 
@@ -990,10 +1001,10 @@ onMounted(() => {
 .content-wrapper {
   max-width: 1200px;
   margin: 0 auto;
-  padding: $sp-8 $sp-8 $sp-8 $sp-10;  // 增加内边距，更舒适
+  padding: 0 $sp-8 $sp-8;  // 顶部移除内边距,左右和底部保持
   display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: $sp-12;  // 从 40px 增加到 48px，增强分隔感
+  grid-template-columns: 1fr 340px;  // 右侧从 360px 减少到 340px,给左侧更多空间
+  gap: $sp-10;  // 从 48px 减少到 40px,平衡空间利用
   height: 100%;
 
   @include mobile {
@@ -1007,24 +1018,27 @@ onMounted(() => {
 .question-list-column {
   height: 100%;
   overflow-y: auto;
-  padding-right: $sp-4;  // 增加右侧 padding，避免滚动条贴边
+  padding: $sp-8 $sp-4 0 0;  // 顶部增加内边距,与筛选栏分离
+  background: $white;  // 添加白色背景
+  border-radius: 0 0 $radius-lg $radius-lg;  // 底部圆角,与筛选栏形成整体
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);  // 轻微阴影
 
   // 优化滚动条样式（细条半透明）
   &::-webkit-scrollbar {
-    width: 6rpx;  // 从 8rpx 减到 6rpx
+    width: 6rpx;
   }
 
   &::-webkit-scrollbar-track {
-    background: transparent;  // 轨道透明
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba($gray-400, 0.3);  // 半透明
+    background: rgba($gray-400, 0.3);
     border-radius: 3rpx;
     transition: background $duration-base;
 
     &:hover {
-      background: rgba($gray-500, 0.5);  // hover 时加深
+      background: rgba($gray-500, 0.5);
     }
   }
 }
@@ -1034,7 +1048,7 @@ onMounted(() => {
   display: block;
   height: 100%;
   overflow-y: auto;
-  padding-right: $sp-2;  // 避免滚动条贴边
+  padding: $sp-8 $sp-2 0 0;  // 顶部增加内边距,与左侧对齐
 
   // 优化滚动条样式
   &::-webkit-scrollbar {

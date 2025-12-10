@@ -22,9 +22,9 @@
               @focus="showSearchHistory = true"
               @blur="handleSearchBlur"
             />
-            <text v-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
+            <view v-show="searchKeyword.length > 0" class="clear-icon" @click="handleClearSearch">
               <Icon name="x" :size="14" />
-            </text>
+            </view>
           </view>
 
           <!-- 搜索历史面板 -->

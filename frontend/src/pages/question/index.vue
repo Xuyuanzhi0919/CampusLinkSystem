@@ -114,13 +114,30 @@
       <view class="content-container">
         <!-- 左侧：问题列表 -->
         <view class="question-list">
-          <!-- 骨架屏 -->
+          <!-- 骨架屏 - 使用 gp-skeleton -->
           <template v-if="loading && questions.length === 0">
-            <view v-for="i in 3" :key="i" class="skeleton-card">
-              <view class="skeleton-title" />
-              <view class="skeleton-content" />
-              <view class="skeleton-tags" />
-              <view class="skeleton-stats" />
+            <view v-for="i in 5" :key="i" class="skeleton-item">
+              <GpSkeleton
+                :loading="true"
+                :animate="true"
+                :animate-time="1.5"
+                bg-color="#f0f2f5"
+                highlight-bg-color="#e6e8eb"
+                :configs="{
+                  padding: '0',
+                  gridRows: 1,
+                  gridColumns: 1,
+                  itemDirection: 'column',
+                  itemAlign: 'flex-start',
+                  headShow: false,
+                  textShow: true,
+                  textRows: 4,
+                  textRowsGap: '12rpx',
+                  textWidth: ['80%', '100%', '60%', '40%'],
+                  textHeight: ['40rpx', '28rpx', '28rpx', '24rpx'],
+                  textBorderRadius: '6rpx'
+                }"
+              />
             </view>
           </template>
 
@@ -271,6 +288,7 @@ import QuestionCard from './components/QuestionCard.vue'
 import RecommendSidebar from './components/RecommendSidebar.vue'
 import Icon from '@/components/icons/index.vue'
 import CButton from '@/components/ui/CButton.vue'
+import GpSkeleton from '@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -1153,68 +1171,14 @@ onMounted(() => {
   }
 }
 
-// 骨架屏
-.skeleton-card {
+// 骨架屏容器
+.skeleton-item {
   background: $white;
   border-radius: 12px;
+  margin-bottom: 12px;
   padding: 16px;
-  margin-bottom: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-.skeleton-title {
-  width: 70%;
-  height: 20px;
-  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.4s ease-in-out infinite;
-  border-radius: 4px;
-  margin-bottom: 12px;
-}
-
-.skeleton-content {
-  width: 100%;
-  height: 14px;
-  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.4s ease-in-out infinite;
-  border-radius: 4px;
-  margin-bottom: 12px;
-}
-
-.skeleton-tags {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 12px;
-
-  &::before,
-  &::after {
-    content: '';
-    width: 60px;
-    height: 24px;
-    background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
-    background-size: 200% 100%;
-    animation: skeleton-loading 1.4s ease-in-out infinite;
-    border-radius: 12px;
-  }
-}
-
-.skeleton-stats {
-  width: 40%;
-  height: 14px;
-  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
-  background-size: 200% 100%;
-  animation: skeleton-loading 1.4s ease-in-out infinite;
-  border-radius: 4px;
-}
-
-@keyframes skeleton-loading {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
+  overflow: hidden;
 }
 
 // 加载更多

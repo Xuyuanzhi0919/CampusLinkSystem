@@ -1061,41 +1061,49 @@ onMounted(() => {
   z-index: 1;
   width: 100%;
   background: $bg-page;
-  padding: 48px 80px 64px;  // 改为与首页一致
-
-  @media (max-width: 1600px) {
-    padding: 48px 64px 64px;
-  }
+  padding-top: 48px;  // 只保留上下 padding
+  padding-bottom: 64px;
 
   @media (max-width: 1440px) {
-    padding: 40px 48px 56px;
+    padding-top: 40px;
+    padding-bottom: 56px;
   }
 
   @media (max-width: 1200px) {
-    padding: 32px 32px 48px;
+    padding-top: 32px;
+    padding-bottom: 48px;
   }
 
   @include mobile {
-    padding: 16px 16px 24px;
+    padding-top: 16px;
+    padding-bottom: 24px;
   }
 }
 
 .content-container {
-  max-width: 1280px;  // 改为与首页一致
+  max-width: 1280px;  // 与顶部导航一致
   margin: 0 auto;
-  display: flex;  // 改为flex布局
-  gap: 40px;  // 改为与首页一致的间距
+  padding: 0 80px;  // 与顶部导航一致的左右 padding
+  display: flex;
+  gap: 40px;
   align-items: start;
 
-  @media (max-width: 1400px) {
+  @media (max-width: 1600px) {
+    padding: 0 64px;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48px;
     gap: 36px;
   }
 
   @media (max-width: 1200px) {
+    padding: 0 32px;
     gap: 32px;
   }
 
   @include mobile {
+    padding: 0 16px;
     flex-direction: column;
     gap: 20px;
   }

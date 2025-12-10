@@ -110,6 +110,12 @@
       <polyline points="12 6 12 12 16 14" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- X 图标（关闭/清除） -->
+    <template v-else-if="name === 'x'">
+      <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-linecap="round"/>
+    </template>
+
     <!-- Tag 图标 -->
     <template v-else-if="name === 'tag'">
       <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" stroke="currentColor" fill="none"/>

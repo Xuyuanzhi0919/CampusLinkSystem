@@ -591,8 +591,7 @@ const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
   cacheKeys.forEach(key => uni.removeStorageSync(key))
   console.log('[Quick Filter] 清除缓存:', cacheKeys.length, '个')
 
-  // 重置所有筛选条件
-  category.value = null
+  // 保留分类筛选，只重置状态和关键词
   status.value = null
   searchKeyword.value = ''
 

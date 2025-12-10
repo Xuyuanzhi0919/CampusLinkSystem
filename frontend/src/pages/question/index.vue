@@ -1,29 +1,33 @@
 <template>
   <view class="question-page">
-    <!-- 🔍 搜索栏 -->
-    <view class="search-section">
-      <view class="search-wrapper">
-        <view class="search-bar">
-          <text class="search-icon">🔍</text>
-          <input
-            v-model="searchKeyword"
-            class="search-input"
-            placeholder="搜索问题..."
-            @input="handleSearchInput"
-            @confirm="handleSearch"
-            @focus="showSearchHistory = true"
-            @blur="handleSearchBlur"
-          />
-          <text v-if="searchLoading" class="search-loading-icon">⏳</text>
-          <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">✕</text>
-        </view>
+    <!-- 🎯 顶部固定区域（搜索栏 + 分类 + 筛选） -->
+    <view class="page-header">
+      <!-- 🔍 搜索栏（居中、大号、轻拟物） -->
+      <view class="search-section">
+        <view class="search-container">
+          <view class="search-bar-large">
+            <Icon name="search" :size="20" class="search-icon" />
+            <input
+              v-model="searchKeyword"
+              class="search-input"
+              placeholder="搜索你感兴趣的问题..."
+              @input="handleSearchInput"
+              @confirm="handleSearch"
+              @focus="showSearchHistory = true"
+              @blur="handleSearchBlur"
+            />
+            <text v-if="searchLoading" class="search-loading-icon">⏳</text>
+            <text v-else-if="searchKeyword" class="clear-icon" @click="handleClearSearch">
+              <Icon name="x" :size="16" />
+            </text>
+          </view>
 
-        <!-- PC端提问按钮 -->
-        <CButton type="primary" size="md" class="pc-ask-btn" @click="handleAskQuestion">
-          <template #icon><text>✏️</text></template>
-          提问
-        </CButton>
-      </view>
+          <!-- PC端提问按钮（与搜索栏同行） -->
+          <CButton type="primary" size="lg" class="pc-ask-btn" @click="handleAskQuestion">
+            <Icon name="edit" :size="18" class="btn-icon" />
+            提问
+          </CButton>
+        </view>
 
       <!-- 🕒 搜索历史面板 -->
       <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-panel">
@@ -46,102 +50,119 @@
       </view>
     </view>
 
-    <!-- 📦 分类筛选栏 -->
-    <view class="filter-section">
-      <scroll-view class="filter-scroll" scroll-x :show-scrollbar="false">
-        <view class="filter-tabs">
+      <!-- 📦 分类标签栏（轻量 Pill 风格） -->
+      <view class="category-section">
+        <scroll-view class="category-scroll" scroll-x :show-scrollbar="false">
+          <view class="category-pills">
+            <view
+              v-for="item in categories"
+              :key="item.value || 'all'"
+              class="category-pill"
+              :class="{ active: category === item.value }"
+              @click="handleCategoryChange(item.value)"
+            >
+              <Icon :name="item.iconName" :size="16" class="pill-icon" />
+              <text class="pill-label">{{ item.label }}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <!-- 🎯 二级导航筛选栏（下划线高亮） -->
+      <view class="nav-section">
+        <view class="nav-tabs">
           <view
-            v-for="item in categories"
-            :key="item.value || 'all'"
-            class="filter-tab"
-            :class="{ active: category === item.value }"
-            @click="handleCategoryChange(item.value)"
+            v-for="item in sortOptions"
+            :key="item.value"
+            class="nav-tab"
+            :class="{ active: sortBy === item.value }"
+            @click="handleSortChange(item.value)"
           >
-            <text class="tab-icon">{{ item.icon }}</text>
-            <text class="tab-label">{{ item.label }}</text>
+            <text class="nav-label">{{ item.label }}</text>
+            <view v-if="sortBy === item.value" class="nav-underline" />
           </view>
         </view>
-      </scroll-view>
+
+        <!-- 状态筛选按钮 -->
+        <view class="nav-right">
+          <view class="filter-trigger" @click="showFilterModal = true">
+            <Icon name="filter" :size="16" class="filter-icon" />
+            <text class="filter-text">筛选</text>
+            <view v-if="hasActiveFilters" class="filter-dot" />
+          </view>
+        </view>
+      </view>
     </view>
 
-    <!-- 🎯 排序和状态筛选栏 -->
-    <view class="sort-section">
-      <!-- 排序tabs -->
-      <view class="sort-tabs">
-        <view
-          v-for="item in sortOptions"
-          :key="item.value"
-          class="sort-tab"
-          :class="{ active: sortBy === item.value }"
-          @click="handleSortChange(item.value)"
+    <!-- 🏛️ 主内容区域（两栏布局：max-width: 1200px 居中） -->
+    <view class="main-container">
+      <view class="content-wrapper">
+        <!-- 左侧：问题列表（主内容） -->
+        <scroll-view
+          class="question-list-column"
+          scroll-y
+          :scroll-top="scrollTop"
+          @scroll="handleScroll"
+          @scrolltolower="handleLoadMore"
+          :refresher-enabled="true"
+          :refresher-triggered="refreshing"
+          @refresherrefresh="handleRefresh"
         >
-          <text>{{ item.label }}</text>
-        </view>
-      </view>
+          <!-- 骨架屏 -->
+          <template v-if="loading && questions.length === 0">
+            <view v-for="i in 3" :key="i" class="skeleton-card">
+              <view class="skeleton-title" />
+              <view class="skeleton-content" />
+              <view class="skeleton-tags" />
+              <view class="skeleton-stats" />
+            </view>
+          </template>
 
-      <!-- 状态筛选 -->
-      <view class="sort-right">
-        <view class="status-filter" @click="showFilterModal = true">
-          <text class="status-icon">{{ status === 1 ? '✅' : status === 0 ? '❓' : '📋' }}</text>
-          <text class="status-label">{{ statusLabel }}</text>
-          <text v-if="hasActiveFilters" class="filter-badge"></text>
+          <!-- 问题卡片列表 -->
+          <template v-else-if="questions.length > 0">
+            <QuestionCard
+              v-for="item in questions"
+              :key="item.qid"
+              :question="item"
+              :keyword="searchKeyword"
+              @click="handleQuestionClick(item.qid)"
+            />
+
+            <!-- 加载更多提示 -->
+            <view v-if="loading && questions.length > 0" class="load-more">
+              <Icon name="loader" :size="16" class="loading-icon" />
+              <text>加载中...</text>
+            </view>
+            <view v-else-if="!hasMore && questions.length > 0" class="load-more">
+              <text>没有更多了</text>
+            </view>
+          </template>
+
+          <!-- 空状态 -->
+          <view v-else class="empty-state">
+            <Icon :name="emptyIconName" :size="64" class="empty-icon" />
+            <text class="empty-text">{{ emptyText }}</text>
+            <text class="empty-hint">{{ emptyHint }}</text>
+          </view>
+        </scroll-view>
+
+        <!-- 右侧：推荐栏（仅 PC 端显示） -->
+        <view class="recommend-column">
+          <RecommendSidebar />
         </view>
       </view>
     </view>
 
-    <!-- 📋 问题列表 -->
-    <scroll-view
-      class="question-list"
-      scroll-y
-      :scroll-top="scrollTop"
-      @scroll="handleScroll"
-      @scrolltolower="handleLoadMore"
-      :refresher-enabled="true"
-      :refresher-triggered="refreshing"
-      @refresherrefresh="handleRefresh"
-    >
-      <!-- 骨架屏 -->
-      <template v-if="loading && questions.length === 0">
-        <view v-for="i in 3" :key="i" class="skeleton-card">
-          <view class="skeleton-title" />
-          <view class="skeleton-content" />
-          <view class="skeleton-tags" />
-          <view class="skeleton-stats" />
-        </view>
-      </template>
-
-      <!-- 问题卡片列表 -->
-      <template v-else-if="questions.length > 0">
-        <QuestionCard
-          v-for="item in questions"
-          :key="item.qid"
-          :question="item"
-          :keyword="searchKeyword"
-          @click="handleQuestionClick(item.qid)"
-        />
-
-        <!-- 加载更多提示 -->
-        <view v-if="loading && questions.length > 0" class="load-more">加载中...</view>
-        <view v-else-if="!hasMore && questions.length > 0" class="load-more">没有更多了</view>
-      </template>
-
-      <!-- 空状态 -->
-      <view v-else class="empty-state">
-        <text class="empty-icon">{{ emptyIcon }}</text>
-        <text class="empty-text">{{ emptyText }}</text>
-        <text class="empty-hint">{{ emptyHint }}</text>
-      </view>
-    </scroll-view>
-
-    <!-- 🆕 发布问题悬浮按钮 -->
-    <CButton type="primary" size="md" round class="fab-btn" @click="handleAskQuestion">
-      <template #icon><text>✏️</text></template>
-      提问
-    </CButton>
+    <!-- 🆕 发布问题悬浮按钮（移动端） -->
+    <view class="fab-container">
+      <CButton type="primary" size="lg" round class="fab-btn" @click="handleAskQuestion">
+        <Icon name="edit" :size="20" />
+      </CButton>
+    </view>
 
     <!-- ⬆️ 回到顶部按钮 -->
     <view v-if="showBackToTop" class="back-to-top" @click="scrollToTop">
-      <text class="back-icon">⬆️</text>
+      <Icon name="arrow-up" :size="20" class="back-icon" />
     </view>
 
     <!-- 🔍 筛选弹窗 -->
@@ -248,6 +269,8 @@ import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
 import QuestionCard from './components/QuestionCard.vue'
+import RecommendSidebar from './components/RecommendSidebar.vue'
+import Icon from '@/components/icons/index.vue'
 import CButton from '@/components/ui/CButton.vue'
 
 // 移动端组件
@@ -303,12 +326,12 @@ const scrollTop = ref(0)
 const showBackToTop = ref(false)
 
 // 分类配置
-const categories: Array<{ label: string; value: string | null; icon: string }> = [
-  { label: '全部', value: null, icon: '📦' },
-  { label: '学习', value: '学习', icon: '📚' },
-  { label: '生活', value: '生活', icon: '🏠' },
-  { label: '技术', value: '技术', icon: '💻' },
-  { label: '其他', value: '其他', icon: '📌' }
+const categories: Array<{ label: string; value: string | null; icon: string; iconName: string }> = [
+  { label: '全部', value: null, icon: '📦', iconName: 'grid' },
+  { label: '学习', value: '学习', icon: '📚', iconName: 'book-open' },
+  { label: '生活', value: '生活', icon: '🏠', iconName: 'home' },
+  { label: '技术', value: '技术', icon: '💻', iconName: 'code' },
+  { label: '其他', value: '其他', icon: '📌', iconName: 'more-horizontal' }
 ]
 
 // 排序选项
@@ -331,6 +354,12 @@ const emptyIcon = computed(() => {
   if (searchKeyword.value) return '🔍'
   if (category.value) return '📭'
   return '📋'
+})
+
+const emptyIconName = computed(() => {
+  if (searchKeyword.value) return 'search-x'
+  if (category.value) return 'inbox'
+  return 'file-question'
 })
 
 const emptyText = computed(() => {

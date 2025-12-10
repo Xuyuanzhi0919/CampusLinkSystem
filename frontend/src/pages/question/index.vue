@@ -114,6 +114,48 @@
       <view class="content-container">
         <!-- 左侧：问题列表 -->
         <view class="question-list">
+          <!-- 快捷筛选卡片 -->
+          <view class="quick-filter-card">
+            <view class="quick-filter-header">
+              <Icon name="trending-up" :size="16" class="header-icon" />
+              <text class="header-title">快捷筛选</text>
+            </view>
+            <view class="quick-filter-tabs">
+              <view
+                class="filter-tab"
+                :class="{ active: sortBy === 'created_at' && !category && status === null }"
+                @click="handleQuickFilter('latest')"
+              >
+                <Icon name="clock" :size="14" class="tab-icon" />
+                <text class="tab-label">最新</text>
+              </view>
+              <view
+                class="filter-tab"
+                :class="{ active: sortBy === 'bounty' }"
+                @click="handleQuickFilter('bounty')"
+              >
+                <Icon name="award" :size="14" class="tab-icon" />
+                <text class="tab-label">悬赏</text>
+              </view>
+              <view
+                class="filter-tab"
+                :class="{ active: sortBy === 'views' }"
+                @click="handleQuickFilter('hot')"
+              >
+                <Icon name="trending-up" :size="14" class="tab-icon" />
+                <text class="tab-label">热门</text>
+              </view>
+              <view
+                class="filter-tab"
+                :class="{ active: status === 0 }"
+                @click="handleQuickFilter('unsolved')"
+              >
+                <Icon name="help-circle" :size="14" class="tab-icon" />
+                <text class="tab-label">待解决</text>
+              </view>
+            </view>
+          </view>
+
           <!-- 骨架屏 - 使用 gp-skeleton -->
           <template v-if="loading && questions.length === 0">
             <view v-for="i in 5" :key="i" class="skeleton-item">
@@ -528,6 +570,32 @@ const loadSearchHistory = () => {
 const handleClearSearch = () => {
   searchKeyword.value = ''
   showSearchHistory.value = false
+  loadQuestions(true)
+}
+
+// 快捷筛选
+const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
+  // 重置所有筛选条件
+  category.value = null
+  status.value = null
+  searchKeyword.value = ''
+
+  switch (type) {
+    case 'latest':
+      sortBy.value = 'created_at'
+      break
+    case 'bounty':
+      sortBy.value = 'bounty'
+      break
+    case 'hot':
+      sortBy.value = 'views'
+      break
+    case 'unsolved':
+      sortBy.value = 'created_at'
+      status.value = 0
+      break
+  }
+
   loadQuestions(true)
 }
 
@@ -1168,6 +1236,105 @@ onMounted(() => {
     flex: none;
     width: 100%;  // 移动端占满容器宽度
     min-height: 400px;
+  }
+}
+
+// 快捷筛选卡片
+.quick-filter-card {
+  background: $white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.quick-filter-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  .header-icon {
+    color: $primary;
+  }
+
+  .header-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: $gray-900;
+  }
+}
+
+.quick-filter-tabs {
+  display: flex;
+  gap: 8px;
+
+  @include mobile {
+    gap: 6px;
+  }
+}
+
+.filter-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: $gray-50;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  .tab-icon {
+    color: $gray-600;
+    transition: color 0.2s;
+  }
+
+  .tab-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $gray-700;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+
+  &:hover:not(.active) {
+    background: $gray-100;
+    border-color: $gray-200;
+
+    .tab-icon {
+      color: $gray-700;
+    }
+
+    .tab-label {
+      color: $gray-800;
+    }
+  }
+
+  &.active {
+    background: linear-gradient(135deg, $primary 0%, lighten($primary, 5%) 100%);
+    border-color: $primary;
+    box-shadow: 0 2px 8px rgba($primary, 0.25);
+
+    .tab-icon {
+      color: $white;
+    }
+
+    .tab-label {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+
+  @include mobile {
+    padding: 6px 8px;
+    gap: 3px;
+
+    .tab-label {
+      font-size: 12px;
+    }
   }
 }
 

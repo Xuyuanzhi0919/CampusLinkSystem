@@ -116,6 +116,19 @@
       <line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor"/>
     </template>
 
+    <!-- Award 图标（奖励/悬赏） -->
+    <template v-else-if="name === 'award'">
+      <circle cx="12" cy="8" r="7" stroke="currentColor" fill="none"/>
+      <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Help Circle 图标（帮助/问题） -->
+    <template v-else-if="name === 'help-circle'">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </template>
+
     <!-- Image 图标 -->
     <template v-else-if="name === 'image'">
       <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="currentColor" fill="none"/>

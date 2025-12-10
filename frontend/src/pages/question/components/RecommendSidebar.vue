@@ -284,8 +284,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $sp-8;  // 分组之间的间距（32px）
-  position: sticky;
-  top: $sp-6;
+  padding-bottom: $sp-6;  // 底部留白，避免内容贴底
 }
 
 // ===================================

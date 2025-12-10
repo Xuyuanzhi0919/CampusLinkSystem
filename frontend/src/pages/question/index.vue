@@ -1,8 +1,7 @@
 <template>
-
-
-      <!-- 🔍 搜索栏（居中、大号、轻拟物） -->
-      <view class="search-section">
+  <view class="question-page">
+    <!-- 🔍 搜索栏（居中、大号、轻拟物） -->
+    <view class="search-section">
         <view class="search-container">
           <view class="search-bar-large">
             <Icon name="search" :size="20" class="search-icon" />
@@ -251,6 +250,7 @@
     <!-- #ifndef MP-WEIXIN -->
     <CustomTabBar />
     <!-- #endif -->
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -994,6 +994,28 @@ onMounted(() => {
 // 右侧：推荐栏（仅 PC 端显示）
 .recommend-column {
   display: block;
+  height: 100%;
+  overflow-y: auto;
+  padding-right: $sp-2;  // 避免滚动条贴边
+
+  // 优化滚动条样式
+  &::-webkit-scrollbar {
+    width: 6rpx;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gray-400, 0.3);
+    border-radius: 3rpx;
+    transition: background $duration-base;
+
+    &:hover {
+      background: rgba($gray-500, 0.5);
+    }
+  }
 
   @include mobile {
     display: none;

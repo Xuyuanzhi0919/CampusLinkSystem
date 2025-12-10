@@ -1,5 +1,30 @@
 <template>
   <view class="recommend-sidebar">
+    <!-- 活跃答主模块 -->
+    <CCard variant="default" class="sidebar-card">
+      <view class="card-header">
+        <Icon name="users" :size="18" class="header-icon" />
+        <text class="header-title">活跃答主</text>
+      </view>
+      <view class="active-users">
+        <view
+          v-for="user in activeUsers"
+          :key="user.userId"
+          class="user-item"
+          @click="handleUserClick(user.userId)"
+        >
+          <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
+          <view class="user-info">
+            <text class="user-name">{{ user.nickname }}</text>
+            <text class="user-answers">回答 {{ user.answerCount }} 个问题</text>
+          </view>
+          <view v-if="user.badge" class="user-badge">
+            <text class="badge-text">{{ user.badge }}</text>
+          </view>
+        </view>
+      </view>
+    </CCard>
+
     <!-- 热门标签模块 -->
     <CCard variant="default" class="sidebar-card">
       <view class="card-header">
@@ -67,6 +92,38 @@ const hotTags = ref([
   { name: '选课攻略', count: 42 },
 ])
 
+// 活跃答主（模拟数据）
+const activeUsers = ref([
+  {
+    userId: 1,
+    nickname: '编程小能手',
+    avatar: 'https://via.placeholder.com/80',
+    answerCount: 145,
+    badge: '学霸',
+  },
+  {
+    userId: 2,
+    nickname: '校园达人',
+    avatar: 'https://via.placeholder.com/80',
+    answerCount: 98,
+    badge: '热心',
+  },
+  {
+    userId: 3,
+    nickname: '技术大牛',
+    avatar: 'https://via.placeholder.com/80',
+    answerCount: 76,
+    badge: null,
+  },
+  {
+    userId: 4,
+    nickname: '学习委员',
+    avatar: 'https://via.placeholder.com/80',
+    answerCount: 54,
+    badge: null,
+  },
+])
+
 const hotQuestions = ref([
   {
     qid: 1,
@@ -117,6 +174,11 @@ const handleTagClick = (tag: string) => {
 // 点击问题
 const handleQuestionClick = (qid: number) => {
   uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
+}
+
+// 点击用户
+const handleUserClick = (userId: number) => {
+  uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
 }
 </script>
 
@@ -321,5 +383,78 @@ const handleQuestionClick = (qid: number) => {
   font-size: 11px;  // 统一使用px
   color: $gray-500;
   margin-right: 8px;  // 统一使用px
+}
+
+// ===================================
+// 活跃答主
+// ===================================
+.active-users {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    transform: translateX(2px);
+
+    .user-name {
+      color: $primary;
+    }
+  }
+}
+
+.user-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 2px solid $gray-100;
+  transition: border-color 0.2s;
+
+  .user-item:hover & {
+    border-color: $primary;
+  }
+}
+
+.user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: $font-weight-medium;
+  color: $gray-800;
+  @include text-ellipsis(1);
+  transition: color 0.2s;
+}
+
+.user-answers {
+  font-size: 11px;
+  color: $gray-500;
+}
+
+.user-badge {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  background: linear-gradient(135deg, $accent 0%, lighten($accent, 5%) 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba($accent, 0.2);
+
+  .badge-text {
+    font-size: 11px;
+    color: $white;
+    font-weight: $font-weight-semibold;
+  }
 }
 </style>

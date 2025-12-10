@@ -51,7 +51,7 @@ export interface AnswerItem {
 // 问题列表查询参数
 export interface QuestionListParams {
   category?: QuestionCategory | string | null
-  status?: number | null
+  isSolved?: number | null  // 0=未解决，1=已解决
   keyword?: string
   page?: number
   pageSize?: number

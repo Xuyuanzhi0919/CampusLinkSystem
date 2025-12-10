@@ -472,15 +472,19 @@ const loadQuestions = async (refresh = false) => {
       questionStore.clearQuestions()
     }
 
-    const res = await questionStore.loadQuestions({
+    const params = {
       keyword: searchKeyword.value,
       category: category.value,
-      status: status.value,
+      isSolved: status.value,  // 使用 isSolved 而不是 status
       page: page.value,
       pageSize: pageSize.value,
       sortBy: sortBy.value,
       sortOrder: 'desc'
-    })
+    }
+
+    console.log('[Question Page] 加载问题列表，参数：', params)
+
+    const res = await questionStore.loadQuestions(params)
 
     // 更新总页数
     totalPages.value = res.totalPages

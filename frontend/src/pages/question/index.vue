@@ -989,14 +989,17 @@ onMounted(() => {
 }
 
 .sort-dropdown {
-  display: flex;
+  display: inline-flex;  // 改为 inline-flex
   align-items: center;
   gap: 4px;
   padding: 6px 12px;
+  min-width: 60px;  // 确保最小宽度容纳文字
   background: $gray-100;
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;  // 防止被压缩
 
   &:hover {
     background: $gray-200;
@@ -1007,24 +1010,33 @@ onMounted(() => {
   font-size: 13px;
   font-weight: 500;
   color: $gray-700;
+  white-space: nowrap;  // 确保文字不换行
 }
 
 .dropdown-icon {
   color: $gray-600;
   transition: transform 0.2s;
+  flex-shrink: 0;  // 防止图标被压缩
 }
 
 .filter-btn {
   position: relative;
-  display: flex;
+  display: inline-flex;  // 改为 inline-flex
   align-items: center;
   justify-content: center;
   width: 32px;
   height: 32px;
+  min-width: 32px;
+  min-height: 32px;
+  max-width: 32px;  // 添加最大宽度限制
+  max-height: 32px;  // 添加最大高度限制
   background: $gray-100;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
+  overflow: hidden;
+  flex-shrink: 0;  // 防止被压缩
+  box-sizing: border-box;  // 确保尺寸包含 border 和 padding
 
   &:hover {
     background: $gray-200;
@@ -1033,6 +1045,7 @@ onMounted(() => {
 
 .filter-icon {
   color: $gray-700;
+  flex-shrink: 0;  // 防止图标被压缩
 }
 
 .filter-badge {

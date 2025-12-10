@@ -779,14 +779,14 @@ onMounted(() => {
 
 .category-pills {
   display: inline-flex;
-  gap: $sp-3;  // 减小到 $sp-3 (12rpx = 6px)，更紧凑
-  padding: $sp-5 $sp-8;  // 增加左右内边距，与搜索栏对齐
+  gap: $sp-4;  // 增加到 $sp-4 (16rpx = 8px)
+  padding: $sp-6 $sp-8;  // 增加上下内边距
   max-width: 1200px;
   margin: 0 auto;
 
   @include mobile {
     padding: $sp-3 $sp-4;
-    gap: $sp-2;  // 移动端更紧凑
+    gap: $sp-2;
   }
 }
 
@@ -794,25 +794,28 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-5;  // 减小内边距
-  background: $gray-50;  // 从 $gray-100 改为 $gray-50，更浅
+  padding: $sp-4 $sp-6;  // 增加内边距：16rpx 24rpx
+  background: $white;  // 改为白色背景
   border-radius: $radius-2xl;
-  border: 1rpx solid $gray-200;  // 添加边框，增强轮廓
+  border: 2rpx solid $gray-200;  // 增加边框粗细到 2rpx
   cursor: pointer;
   transition: all $duration-base;
   white-space: nowrap;
+  box-shadow: 0 1rpx 3rpx rgba(0, 0, 0, 0.04);  // 添加轻微阴影
 
   &:hover {
-    background: $gray-100;
-    border-color: $gray-300;
-    transform: translateY(-1rpx);  // 轻微上移
+    background: $gray-50;
+    border-color: $primary;
+    transform: translateY(-1rpx);
+    box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
   }
 
   &.active {
-    background: $primary;
+    background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
     color: $white;
     border-color: $primary;
-    box-shadow: 0 2rpx 8rpx rgba($primary, 0.25);  // 增强阴影
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.3), 0 1rpx 3rpx rgba($primary, 0.2);
+    transform: translateY(-1rpx);
 
     .pill-icon {
       color: $white;
@@ -820,24 +823,25 @@ onMounted(() => {
 
     .pill-label {
       color: $white;
-      font-weight: $font-weight-semibold;
+      font-weight: $font-weight-bold;
     }
   }
 
   @include mobile {
-    padding: $sp-2 $sp-4;
+    padding: $sp-3 $sp-5;
   }
 }
 
 .pill-icon {
-  color: $gray-600;  // 从 $gray-500 加深到 $gray-600
+  color: $primary;  // 改为主色蓝
   flex-shrink: 0;
+  opacity: 0.85;
 }
 
 .pill-label {
   font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  color: $gray-800;  // 从 $gray-700 加深到 $gray-800
+  font-weight: $font-weight-semibold;  // 增加到 semibold
+  color: $gray-900;  // 改为最深的灰色
 
   @include mobile {
     font-size: $font-size-sm;

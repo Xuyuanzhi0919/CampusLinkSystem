@@ -143,4 +143,23 @@ public class QuestionController {
         questionService.deleteQuestion(userId, id);
         return Result.success("删除成功", null);
     }
+
+    @Operation(summary = "获取热门标签")
+    @GetMapping("/hot-tags")
+    public Result<List<HotTagResponse>> getHotTags(
+            @Parameter(description = "返回数量") @RequestParam(defaultValue = "8") Integer limit
+    ) {
+        List<HotTagResponse> tags = questionService.getHotTags(limit);
+        return Result.success(tags);
+    }
+
+    @Operation(summary = "获取活跃答主")
+    @GetMapping("/active-users")
+    public Result<List<ActiveUserResponse>> getActiveUsers(
+            @Parameter(description = "返回数量") @RequestParam(defaultValue = "4") Integer limit,
+            @Parameter(description = "时间范围（7d/30d）") @RequestParam(defaultValue = "7d") String period
+    ) {
+        List<ActiveUserResponse> users = questionService.getActiveUsers(limit, period);
+        return Result.success(users);
+    }
 }

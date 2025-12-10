@@ -674,4 +674,119 @@ public class QuestionService {
             answerMapper.updateById(answer);
         }
     }
+
+    /**
+     * 获取热门标签
+     */
+    public List<HotTagResponse> getHotTags(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 8;
+        }
+
+        // 查询最近30天的问题（正常状态）
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Question::getStatus, 1)
+                .ge(Question::getCreatedAt, LocalDateTime.now().minusDays(30))
+                .isNotNull(Question::getTags);
+
+        List<Question> questions = questionMapper.selectList(wrapper);
+
+        // 统计标签出现次数
+        java.util.Map<String, Integer> tagCountMap = new java.util.HashMap<>();
+        for (Question question : questions) {
+            String tagsJson = question.getTags();
+            if (tagsJson != null && !tagsJson.isEmpty()) {
+                // 解析JSON数组格式的标签字符串: ["标签1","标签2"]
+                String[] tags = tagsJson
+                        .replace("[", "")
+                        .replace("]", "")
+                        .replace("\"", "")
+                        .split(",");
+
+                for (String tag : tags) {
+                    String trimmedTag = tag.trim();
+                    if (!trimmedTag.isEmpty()) {
+                        tagCountMap.put(trimmedTag, tagCountMap.getOrDefault(trimmedTag, 0) + 1);
+                    }
+                }
+            }
+        }
+
+        // 按出现次数排序并取前N个
+        return tagCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(limit)
+                .map(entry -> HotTagResponse.builder()
+                        .name(entry.getKey())
+                        .count(entry.getValue())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 获取活跃答主
+     */
+    public List<ActiveUserResponse> getActiveUsers(Integer limit, String period) {
+        if (limit == null || limit <= 0) {
+            limit = 4;
+        }
+
+        // 计算时间范围（默认最近7天）
+        LocalDateTime startTime;
+        if ("30d".equals(period)) {
+            startTime = LocalDateTime.now().minusDays(30);
+        } else {
+            startTime = LocalDateTime.now().minusDays(7);
+        }
+
+        // 查询最近活跃的答案（正常状态）
+        LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Answer::getStatus, 1)
+                .ge(Answer::getCreatedAt, startTime);
+
+        List<Answer> answers = answerMapper.selectList(wrapper);
+
+        // 统计每个用户的回答数量
+        java.util.Map<Long, Integer> userAnswerCountMap = new java.util.HashMap<>();
+        for (Answer answer : answers) {
+            Long userId = answer.getAnswererId();
+            userAnswerCountMap.put(userId, userAnswerCountMap.getOrDefault(userId, 0) + 1);
+        }
+
+        // 按回答数排序并取前N个用户
+        List<Long> topUserIds = userAnswerCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(limit)
+                .map(java.util.Map.Entry::getKey)
+                .collect(java.util.stream.Collectors.toList());
+
+        // 查询用户信息并构建响应
+        List<ActiveUserResponse> responses = new ArrayList<>();
+        for (Long userId : topUserIds) {
+            User user = userMapper.selectById(userId);
+            if (user != null) {
+                Integer answerCount = userAnswerCountMap.get(userId);
+
+                // 根据回答数量设置徽章
+                String badge = null;
+                if (answerCount >= 50) {
+                    badge = "优质答主";
+                } else if (answerCount >= 20) {
+                    badge = "热心答主";
+                } else if (answerCount >= 10) {
+                    badge = "活跃答主";
+                }
+
+                responses.add(ActiveUserResponse.builder()
+                        .userId(user.getUserId())
+                        .nickname(user.getNickname())
+                        .avatar(user.getAvatarUrl())
+                        .answerCount(answerCount)
+                        .badge(badge)
+                        .build());
+            }
+        }
+
+        return responses;
+    }
 }

@@ -163,77 +163,77 @@ const handleClick = () => {
 
 .question-card {
   background: $white;
-  border-radius: $radius-lg;  // 从 md 增加到 lg (24rpx = 12px)
-  padding: $sp-8;  // 从 $sp-6 增加到 $sp-8 (32rpx = 16px)
-  margin-bottom: $sp-6;  // 从 $sp-5 增加到 $sp-6 (24rpx = 12px)
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04), 0 1rpx 2rpx rgba(0, 0, 0, 0.06);  // 双层阴影，更立体
-  border: 1rpx solid rgba($gray-200, 0.8);
-  transition: all $duration-base $ease-out;
+  border-radius: 12px;
+  padding: 16px;  // 从32rpx减少到16px,提高信息密度
+  margin-bottom: 12px;  // 从24rpx减少到12px
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);  // 增强阴影对比度
+  border: 1px solid $gray-200;
+  transition: all 0.2s ease-out;
   cursor: pointer;
 
   &:active {
-    transform: translateY(1rpx);
-    box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
+    transform: translateY(1px);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
   &:hover {
-    transform: translateY(-2rpx);  // 轻微上移
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08), 0 2rpx 6rpx rgba(0, 0, 0, 0.04);  // 增强阴影
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);  // 增强阴影
     border-color: $gray-300;
   }
 }
 
-// ===================================
 // 顶部：用户信息 + 分类标签
-// ===================================
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $sp-4;
-  padding-bottom: $sp-3;
-  border-bottom: 1rpx solid $gray-100;  // 添加分隔线
+  margin-bottom: 10px;  // 减少间距
 }
 
 .user-info {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 8px;
   flex: 1;
   min-width: 0;
 }
 
 .avatar {
-  width: 64rpx;
-  height: 64rpx;
+  width: 28px;  // 从32px减少到28px
+  height: 28px;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 2rpx solid $gray-100;
 }
 
 .user-meta {
   display: flex;
-  flex-direction: column;
-  gap: $sp-1;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
 }
 
 .user-name {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  font-size: 13px;
+  font-weight: 500;
   color: $gray-700;
   @include text-ellipsis(1);
 }
 
 .user-time {
-  font-size: $font-size-xs;
-  color: $gray-400;
+  font-size: 12px;
+  color: $gray-500;
+
+  &::before {
+    content: '·';
+    margin-right: 4px;
+  }
 }
 
 .header-tags {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 6px;
   flex-shrink: 0;
 }
 
@@ -287,24 +287,24 @@ const handleClick = () => {
 // 问题标题（加粗、突出）
 // ===================================
 .card-title {
-  font-size: 32rpx;  // 从 lg (30rpx) 增加到 32rpx (16px)
-  font-weight: $font-weight-bold;  // 从 semibold (600) 增加到 bold (700)
+  font-size: 16px;  // 统一使用px
+  font-weight: $font-weight-semibold;  // 600，适度加粗
   color: $gray-900;
-  line-height: 1.4;  // 从 1.5 减少到 1.4，更紧凑
+  line-height: 1.4;
   @include text-ellipsis(2);
-  margin-bottom: $sp-4;  // 从 $sp-3 增加到 $sp-4
+  margin-bottom: 8px;  // 减少间距
   letter-spacing: -0.01em;
 }
 
 // ===================================
-// 内容摘要（单行截断）
+// 内容摘要（两行截断）
 // ===================================
 .card-content {
-  font-size: $font-size-base;
+  font-size: 14px;  // 统一使用px
   color: $gray-600;
-  line-height: 1.6;
-  @include text-ellipsis(1);
-  margin-bottom: $sp-4;
+  line-height: 1.5;
+  @include text-ellipsis(2);  // 改为两行，增加信息量
+  margin-bottom: 12px;  // 减少间距
 }
 
 // ===================================
@@ -314,25 +314,25 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: $sp-4;
-  padding-top: $sp-3;
-  border-top: 1rpx solid $gray-50;  // 轻微分隔线
+  gap: 12px;  // 统一使用px
+  padding-top: 10px;  // 减少padding
+  border-top: 1px solid $gray-100;  // 加深分隔线
 }
 
 // 标签列表（左侧）
 .card-tags {
   display: flex;
-  gap: $sp-2;
+  gap: 6px;  // 统一使用px
   flex-wrap: wrap;
   flex: 1;
   min-width: 0;
 
   .tag {
-    padding: $sp-1 $sp-2;
+    padding: 3px 8px;  // 统一使用px
     background: rgba($primary, 0.06);
     color: $primary;
-    font-size: $font-size-xs;
-    border-radius: $radius-xs;
+    font-size: 12px;  // 统一使用px
+    border-radius: 4px;  // 统一使用px
     line-height: 1;
     white-space: nowrap;
 
@@ -348,14 +348,14 @@ const handleClick = () => {
 .card-stats {
   display: flex;
   align-items: center;
-  gap: $sp-5;  // 从 $sp-4 增加到 $sp-5，增强呼吸感
+  gap: 16px;  // 统一间距为16px
   flex-shrink: 0;
 
   .stat-item {
     display: flex;
     align-items: center;
-    gap: $sp-1;
-    color: $gray-500;  // 统一颜色
+    gap: 4px;  // 统一使用px
+    color: $gray-500;
 
     .stat-icon {
       color: $gray-400;
@@ -363,8 +363,8 @@ const handleClick = () => {
     }
 
     .stat-value {
-      font-size: $font-size-sm;  // 使用统一的 sm 尺寸
-      color: $gray-600;  // 统一为 $gray-600，更易读
+      font-size: 13px;  // 统一使用px
+      color: $gray-600;
       font-weight: $font-weight-medium;
     }
 

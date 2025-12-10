@@ -283,28 +283,24 @@ onMounted(() => {
 .recommend-sidebar {
   display: flex;
   flex-direction: column;
-  gap: $sp-8;  // 分组之间的间距（32px）
-  padding-bottom: $sp-6;  // 底部留白，避免内容贴底
+  gap: 20px;  // 统一使用px，分组间距
 }
 
 // ===================================
-// 分组样式
+// 分组样式（简化）
 // ===================================
 .sidebar-section {
   display: flex;
   flex-direction: column;
-  gap: $sp-6;  // 卡片之间的间距（24px）
+  gap: 12px;  // 卡片之间间距
 }
 
 .section-header {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  padding: $sp-4 $sp-5;
-  margin-bottom: $sp-4;
-  background: linear-gradient(135deg, rgba($primary, 0.04) 0%, rgba($accent, 0.02) 100%);
-  border-left: 4rpx solid $primary;
-  border-radius: $radius-md;
+  gap: 6px;
+  padding: 0 4px 8px;
+  border-bottom: 2px solid $gray-200;  // 加深分隔线
 }
 
 .section-icon {
@@ -313,10 +309,10 @@ onMounted(() => {
 }
 
 .section-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
-  color: $gray-900;
-  letter-spacing: -0.01em;
+  font-size: 14px;  // 减小字号
+  font-weight: $font-weight-semibold;  // 从bold降为semibold
+  color: $gray-700;  // 从900降为700
+  letter-spacing: 0;
   flex: 1;
 }
 
@@ -324,17 +320,26 @@ onMounted(() => {
 // 卡片通用样式（统一规范）
 // ===================================
 .sidebar-card {
-  padding: $sp-6;  // 统一内边距 24rpx (12px)
+  padding: 16px;  // 统一内边距为16px
+  background: $white;
+  border-radius: 12px;
+  border: 1px solid $gray-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease-out;
+
+  &:hover {
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    border-color: $gray-300;
+  }
 }
 
 .card-header {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  margin-bottom: $sp-6;
-  padding-bottom: $sp-4;
-  border-bottom: 2rpx solid $gray-100;
-  height: 48rpx;  // 统一标题区高度 48rpx (24px)
+  gap: 6px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid $gray-100;
 }
 
 .header-icon {
@@ -342,22 +347,22 @@ onMounted(() => {
 }
 
 .header-title {
-  font-size: $font-size-lg;
+  font-size: 15px;  // 减小字号
   font-weight: $font-weight-semibold;
-  color: $gray-900;
-  letter-spacing: -0.01em;
+  color: $gray-800;  // 从900降为800
+  letter-spacing: 0;
   flex: 1;
 }
 
 // ===================================
-// 本校热议卡片特殊样式
+// 本校热议卡片特殊样式（淡化处理）
 // ===================================
 .school-card {
-  background: linear-gradient(135deg, rgba($primary, 0.03) 0%, rgba($accent, 0.02) 100%);
-  border: 1rpx solid rgba($primary, 0.1);
+  background: rgba($primary, 0.02);  // 大幅淡化背景
+  border: 1px solid $gray-200;  // 使用统一边框
 
   .card-header {
-    border-bottom-color: rgba($primary, 0.1);
+    border-bottom-color: $gray-100;
   }
 
   .school-icon {
@@ -366,21 +371,21 @@ onMounted(() => {
 }
 
 .school-badge {
-  padding: $sp-1 $sp-3;
-  background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($accent, 0.1) 100%);
-  border-radius: $radius-2xl;
+  padding: 3px 8px;  // 统一使用px
+  background: rgba($accent, 0.08);  // 淡化背景
+  border-radius: 12px;
 
   .badge-text {
-    font-size: $font-size-xs;
+    font-size: 11px;
     color: $accent;
-    font-weight: $font-weight-semibold;
+    font-weight: $font-weight-medium;  // 从semibold降为medium
   }
 }
 
 .school-rank {
-  background: linear-gradient(135deg, $accent 0%, $accent-600 100%);
+  background: $accent;  // 去除渐变，使用纯色
   color: $white;
-  box-shadow: 0 2rpx 8rpx rgba($accent, 0.25);
+  box-shadow: none;  // 去除阴影
 }
 
 // ===================================
@@ -389,24 +394,24 @@ onMounted(() => {
 .tags-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-3;
+  gap: 8px;  // 统一使用px
 }
 
 .tag-pill {
   display: inline-flex;
   align-items: center;
-  gap: $sp-2;
-  padding: $sp-2 $sp-4;
+  gap: 4px;
+  padding: 6px 10px;  // 统一使用px
   background: $gray-50;
-  border-radius: $radius-2xl;
-  border: 1rpx solid $gray-200;
+  border-radius: 16px;  // 统一使用px
+  border: 1px solid $gray-200;
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.2s ease-out;
 
   &:hover {
-    background: $primary-50;
-    border-color: $primary-200;
-    transform: translateY(-1rpx);
+    background: rgba($primary, 0.06);  // 淡化hover背景
+    border-color: $primary;
+    transform: translateY(-1px);
   }
 
   &:active {
@@ -415,13 +420,13 @@ onMounted(() => {
 }
 
 .tag-text {
-  font-size: $font-size-sm;
+  font-size: 13px;  // 统一使用px
   color: $gray-700;
   font-weight: $font-weight-medium;
 }
 
 .tag-count {
-  font-size: $font-size-xs;
+  font-size: 11px;
   color: $gray-500;
 }
 
@@ -431,17 +436,17 @@ onMounted(() => {
 .hot-questions {
   display: flex;
   flex-direction: column;
-  gap: $sp-5;
+  gap: 12px;  // 统一使用px
 }
 
 .hot-question-item {
   display: flex;
-  gap: $sp-3;
+  gap: 8px;  // 统一使用px
   cursor: pointer;
-  transition: transform $duration-base;
+  transition: transform 0.2s ease-out;
 
   &:hover {
-    transform: translateX(4rpx);
+    transform: translateX(2px);  // 统一使用px
 
     .question-title {
       color: $primary;
@@ -451,31 +456,31 @@ onMounted(() => {
 
 .rank-badge {
   flex-shrink: 0;
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: $radius-sm;
+  width: 20px;  // 统一使用px，缩小尺寸
+  height: 20px;
+  border-radius: 6px;
   background: $gray-100;
   color: $gray-600;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-bold;
+  font-size: 12px;
+  font-weight: $font-weight-semibold;
   @include flex-center;
 
   &.rank-1 {
-    background: linear-gradient(135deg, $rank-gold 0%, $rank-gold-dark 100%);
+    background: $rank-gold;  // 去除渐变
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba($rank-gold-dark, 0.3);
+    box-shadow: none;  // 去除阴影
   }
 
   &.rank-2 {
-    background: linear-gradient(135deg, $rank-silver 0%, $rank-silver-dark 100%);
+    background: $rank-silver;  // 去除渐变
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba($rank-silver, 0.3);
+    box-shadow: none;
   }
 
   &.rank-3 {
-    background: linear-gradient(135deg, $rank-bronze 0%, $rank-bronze-dark 100%);
+    background: $rank-bronze;  // 去除渐变
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba($rank-bronze, 0.3);
+    box-shadow: none;
   }
 }
 
@@ -486,17 +491,17 @@ onMounted(() => {
 
 .question-title {
   @include text-ellipsis(2);
-  font-size: $font-size-base;
+  font-size: 13px;  // 统一使用px
   color: $gray-800;
   line-height: 1.4;
-  margin-bottom: $sp-2;
-  transition: color $duration-base;
+  margin-bottom: 6px;  // 统一使用px
+  transition: color 0.2s ease-out;
 }
 
 .question-meta {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 6px;  // 统一使用px
 }
 
 .meta-icon {
@@ -504,9 +509,9 @@ onMounted(() => {
 }
 
 .meta-text {
-  font-size: $font-size-xs;
+  font-size: 11px;  // 统一使用px
   color: $gray-500;
-  margin-right: $sp-3;
+  margin-right: 8px;  // 统一使用px
 }
 
 // ===================================
@@ -515,18 +520,18 @@ onMounted(() => {
 .active-users {
   display: flex;
   flex-direction: column;
-  gap: $sp-4;
+  gap: 10px;  // 统一使用px
 }
 
 .user-item {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 10px;  // 统一使用px
   cursor: pointer;
-  transition: transform $duration-base;
+  transition: transform 0.2s ease-out;
 
   &:hover {
-    transform: translateX(4rpx);
+    transform: translateX(2px);  // 统一使用px
 
     .user-name {
       color: $primary;
@@ -535,11 +540,11 @@ onMounted(() => {
 }
 
 .user-avatar {
-  width: 64rpx;
-  height: 64rpx;
+  width: 36px;  // 统一使用px，缩小尺寸
+  height: 36px;
   border-radius: 50%;
   flex-shrink: 0;
-  border: 2rpx solid $gray-100;
+  border: 1px solid $gray-200;
 }
 
 .user-info {
@@ -547,32 +552,32 @@ onMounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: $sp-1;
+  gap: 3px;  // 统一使用px
 }
 
 .user-name {
-  font-size: $font-size-base;
+  font-size: 13px;  // 统一使用px
   font-weight: $font-weight-medium;
   color: $gray-800;
   @include text-ellipsis(1);
-  transition: color $duration-base;
+  transition: color 0.2s ease-out;
 }
 
 .user-answers {
-  font-size: $font-size-xs;
+  font-size: 11px;  // 统一使用px
   color: $gray-500;
 }
 
 .user-badge {
   flex-shrink: 0;
-  padding: $sp-1 $sp-3;
-  background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
-  border-radius: $radius-2xl;
+  padding: 3px 8px;  // 统一使用px
+  background: rgba($accent, 0.08);  // 淡化背景
+  border-radius: 12px;
 }
 
 .badge-text {
-  font-size: $font-size-xs;
+  font-size: 11px;  // 统一使用px
   color: $accent;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-medium;  // 从semibold降为medium
 }
 </style>

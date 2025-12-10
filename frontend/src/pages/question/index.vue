@@ -324,8 +324,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
-import { onReachBottom } from '@dcloudio/uni-app'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { onReachBottom, onPageScroll } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
@@ -347,9 +347,17 @@ import { PCFloatingNav } from '@/components/desktop'
 const questionStore = useQuestionStore()
 
 // 数据状态 - 使用 storeToRefs 确保响应性
-const { questions, total } = storeToRefs(questionStore)
+const {
+  questions,
+  total,
+  page,
+  pageSize,
+  hasMore: storeHasMore,
+  totalPages: storeTotalPages
+} = storeToRefs(questionStore)
 const loading = ref(false)
 const refreshing = ref(false)
+const noMoreHintShown = ref(false) // 避免重复弹出“没有更多数据”
 
 // 搜索
 const searchKeyword = ref('')
@@ -405,13 +413,12 @@ const toggleSortMenu = () => {
   showSortMenu.value = !showSortMenu.value
 }
 
-// 分页（本地管理 page，与资源列表保持一致）
-const page = ref(1)
-const pageSize = ref(20)
-const totalPages = ref(1)
-
-// 本地计算 hasMore（基于当前页和总页数）
-const hasMore = computed(() => page.value < totalPages.value)
+// 分页（使用 store 状态，避免本地与后端统计不一致）
+const totalPages = computed(() => {
+  // 优先使用后端/Store 的总页数；缺失时按 total/pageSize 兜底
+  return storeTotalPages.value || Math.max(1, Math.ceil((total.value || 0) / (pageSize.value || 1)))
+})
+const hasMore = computed(() => storeHasMore.value && page.value < totalPages.value)
 
 // 滚动相关
 const scrollTop = ref(0)
@@ -473,6 +480,7 @@ const loadQuestions = async (refresh = false) => {
     if (refresh) {
       page.value = 1
       questionStore.clearQuestions()
+      noMoreHintShown.value = false
     }
 
     const params = {
@@ -488,10 +496,7 @@ const loadQuestions = async (refresh = false) => {
     console.log('[Question Page] 加载问题列表，参数：', params)
 
     // refresh=true 时不使用缓存
-    const res = await questionStore.loadQuestions(params, !refresh)
-
-    // 更新总页数
-    totalPages.value = res.totalPages
+    await questionStore.loadQuestions(params, !refresh)
   } catch (err: any) {
     console.error('[问答列表] 加载失败', err)
     uni.showToast({
@@ -674,9 +679,25 @@ const handleRefresh = () => {
   loadQuestions(true)
 }
 
+// “没有更多数据”提示（节流）
+const showNoMoreToast = () => {
+  if (noMoreHintShown.value) return
+  noMoreHintShown.value = true
+  uni.showToast({
+    title: '没有更多数据了',
+    icon: 'none',
+    duration: 1500
+  })
+}
+
 // 上拉加载更多
 const handleLoadMore = () => {
-  if (!hasMore.value || loading.value) return
+  if (!hasMore.value || loading.value) {
+    if (!loading.value && questions.value.length > 0) {
+      showNoMoreToast()
+    }
+    return
+  }
 
   page.value++
   loadQuestions()
@@ -686,11 +707,7 @@ const handleLoadMore = () => {
 onReachBottom(() => {
   // 如果没有更多数据,显示提示
   if (!hasMore.value && questions.value.length > 0) {
-    uni.showToast({
-      title: '没有更多数据了',
-      icon: 'none',
-      duration: 1500
-    })
+    showNoMoreToast()
     return
   }
 
@@ -698,11 +715,28 @@ onReachBottom(() => {
 })
 
 // 监听滚动事件
-const handleScroll = (e: any) => {
-  const scrollTopValue = e.detail.scrollTop
+const handleScroll = (scrollTopValue: number) => {
   // 滚动超过 300px 时显示回到顶部按钮
   showBackToTop.value = scrollTopValue > 300
 }
+
+// H5 端窗口滚动兜底，确保 onReachBottom 不生效时也能触发加载/提示
+// #ifdef H5
+const handleWindowScroll = () => {
+  const scrollTopValue = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+  handleScroll(scrollTopValue)
+
+  const doc = document.documentElement
+  const distanceToBottom = doc.scrollHeight - (scrollTopValue + doc.clientHeight)
+  if (distanceToBottom <= 80) {
+    if (!hasMore.value && questions.value.length > 0) {
+      showNoMoreToast()
+    } else {
+      handleLoadMore()
+    }
+  }
+}
+// #endif
 
 // 回到顶部
 const scrollToTop = () => {
@@ -735,10 +769,25 @@ watch(showFilterModal, (newVal) => {
   }
 })
 
+// 监听页面滚动（各端）
+onPageScroll((e) => {
+  handleScroll(e.scrollTop)
+})
+
 // 页面加载
 onMounted(() => {
   loadQuestions(true)
   loadSearchHistory()
+  // #ifdef H5
+  window.addEventListener('scroll', handleWindowScroll, { passive: true })
+  // #endif
+})
+
+// 页面卸载
+onUnmounted(() => {
+  // #ifdef H5
+  window.removeEventListener('scroll', handleWindowScroll)
+  // #endif
 })
 </script>
 

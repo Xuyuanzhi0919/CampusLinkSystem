@@ -621,42 +621,685 @@ onMounted(() => {
 <style lang="scss" scoped>
 @import '@/styles/variables.scss';
 
-// ===================================
-// 📐 全局布局 - 专业级两栏设计
-// ===================================
+/* ========================================
+   全局布局 - 整页滚动架构
+   ======================================== */
 .question-page {
-  height: 100vh;
-  background: $bg-page;  // 统一使用纯色背景,更简洁
-  box-sizing: border-box;
-  width: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  background: $bg-page;
+
+  @include mobile {
+    padding-bottom: 100rpx;
+  }
 }
 
-// ===================================
-// 🎯 页面头部区域（固定顶部）
-// ===================================
-.page-header {
-  background: $white;
-  border-bottom: 1rpx solid $gray-100;
+/* ========================================
+   固定顶部导航区 (~56px)
+   ======================================== */
+.top-nav-fixed {
   position: sticky;
   top: 0;
-  z-index: $z-sticky;
-  box-shadow: 0 1rpx 3rpx rgba($black, 0.03);
-}
-
-// ===================================
-// 🔍 搜索栏（现代化设计）
-// ===================================
-.search-section {
-  padding: $sp-6 0;  // 增加上下内边距
+  z-index: 100;
   background: $white;
-  box-sizing: border-box;
-  border-bottom: 1rpx solid $gray-100;  // 添加底部分割线
+  border-bottom: 1px solid $gray-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
-.search-container {
+.top-nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+
+  @include mobile {
+    padding: 0 16px;
+    height: 48px;
+    gap: 12px;
+  }
+}
+
+// Logo
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+
+  @include mobile {
+    gap: 6px;
+  }
+}
+
+.logo-icon {
+  color: $primary;
+}
+
+.logo-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: $gray-900;
+
+  @include mobile {
+    font-size: 15px;
+  }
+}
+
+// 紧凑搜索栏
+.compact-search-bar {
+  position: relative;
+  flex: 1;
+  max-width: 520px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  background: $gray-100;
+  border-radius: 18px;
+  padding: 0 14px;
+  gap: 8px;
+  transition: all 0.2s;
+
+  &:focus-within {
+    background: $white;
+    box-shadow: 0 0 0 2px rgba($primary, 0.1);
+  }
+
+  @include mobile {
+    max-width: none;
+    height: 32px;
+    padding: 0 12px;
+  }
+}
+
+.search-icon {
+  color: $gray-500;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  height: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 14px;
+  color: $gray-900;
+
+  &::placeholder {
+    color: $gray-500;
+  }
+}
+
+.clear-icon {
+  color: $gray-500;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.2s;
+
+  &:hover {
+    background: rgba($gray-500, 0.1);
+    color: $gray-700;
+  }
+}
+
+// 搜索历史下拉
+.search-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: $white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  max-height: 320px;
+  overflow-y: auto;
+  z-index: 101;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid $gray-100;
+}
+
+.history-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.history-clear {
+  font-size: 13px;
+  color: $primary;
+  cursor: pointer;
+
+  &:hover {
+    color: darken($primary, 10%);
+  }
+}
+
+.history-list {
+  padding: 4px;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $gray-50;
+  }
+}
+
+.history-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.history-text {
+  flex: 1;
+  font-size: 14px;
+  color: $gray-700;
+}
+
+.history-remove {
+  color: $gray-400;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+
+  &:hover {
+    background: $gray-200;
+    color: $gray-700;
+  }
+}
+
+// 提问按钮
+.ask-button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 20px;
+  height: 36px;
+  background: $primary;
+  color: $white;
+  border-radius: 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    background: darken($primary, 8%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
+  }
+
+  @include mobile {
+    padding: 0 16px;
+    height: 32px;
+  }
+}
+
+.ask-icon {
+  flex-shrink: 0;
+}
+
+.ask-text {
+  @include mobile {
+    display: none;
+  }
+}
+
+/* ========================================
+   Sticky 导航区 (分类 + 排序) (~48px)
+   ======================================== */
+.sticky-nav {
+  position: sticky;
+  top: 56px;
+  z-index: 99;
+  background: $white;
+  border-bottom: 1px solid $gray-200;
+
+  @include mobile {
+    top: 48px;
+  }
+}
+
+.sticky-nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  @include mobile {
+    padding: 0 16px;
+    gap: 12px;
+  }
+}
+
+// 分类Tabs
+.category-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $gray-700;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  &:hover {
+    background: $gray-100;
+    color: $gray-900;
+  }
+
+  &.active {
+    background: $primary;
+    color: $white;
+    font-weight: 600;
+
+    .tab-icon {
+      color: $white;
+    }
+  }
+
+  @include mobile {
+    padding: 6px 12px;
+    font-size: 13px;
+  }
+}
+
+.tab-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.tab-label {
+  @include mobile {
+    font-size: 13px;
+  }
+}
+
+// 排序控制
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 12px;
+  background: $gray-100;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-200;
+  }
+}
+
+.sort-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: $gray-700;
+}
+
+.dropdown-icon {
+  color: $gray-600;
+  transition: transform 0.2s;
+}
+
+.filter-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: $gray-100;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-200;
+  }
+}
+
+.filter-icon {
+  color: $gray-700;
+}
+
+.filter-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $error;
+  color: $white;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 9px;
+  border: 2px solid $white;
+}
+
+/* ========================================
+   主内容区 (整页滚动)
+   ======================================== */
+.main-content {
+  padding: 24px 0 40px;
+
+  @include mobile {
+    padding: 16px 0 24px;
+  }
+}
+
+.content-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 32px;
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 32px;
+  align-items: start;
+
+  @include mobile {
+    grid-template-columns: 1fr;
+    padding: 0 16px;
+    gap: 0;
+  }
+}
+
+// 左侧：问题列表
+.question-list {
+  min-height: 600px;
+
+  @include mobile {
+    min-height: 400px;
+  }
+}
+
+// 骨架屏
+.skeleton-card {
+  background: $white;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.skeleton-title {
+  width: 70%;
+  height: 20px;
+  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.skeleton-content {
+  width: 100%;
+  height: 14px;
+  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s ease-in-out infinite;
+  border-radius: 4px;
+  margin-bottom: 12px;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+
+  &::before,
+  &::after {
+    content: '';
+    width: 60px;
+    height: 24px;
+    background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.4s ease-in-out infinite;
+    border-radius: 12px;
+  }
+}
+
+.skeleton-stats {
+  width: 40%;
+  height: 14px;
+  background: linear-gradient(90deg, $gray-200 25%, $gray-100 50%, $gray-200 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+// 加载更多
+.load-more {
+  padding: 24px;
+  text-align: center;
+  font-size: 14px;
+  color: $gray-600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loading-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+// 空状态
+.empty-state {
+  padding: 80px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.empty-icon {
+  color: $gray-400;
+}
+
+.empty-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.empty-hint {
+  font-size: 14px;
+  color: $gray-500;
+}
+
+// 右侧：侧栏
+.sidebar {
+  position: sticky;
+  top: 120px;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+/* ========================================
+   排序菜单下拉
+   ======================================== */
+.sort-menu-dropdown {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 102;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 112px;
+}
+
+.sort-menu-content {
+  background: $white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 160px;
+  overflow: hidden;
+}
+
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $gray-50;
+  }
+
+  &.active {
+    background: rgba($primary, 0.08);
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: 600;
+    }
+  }
+}
+
+.sort-item-label {
+  font-size: 14px;
+  color: $gray-700;
+}
+
+.check-icon {
+  color: $primary;
+}
+
+/* ========================================
+   回到顶部按钮
+   ======================================== */
+.back-to-top-btn {
+  position: fixed;
+  right: 32px;
+  bottom: 32px;
+  width: 48px;
+  height: 48px;
+  background: $white;
+  border-radius: 50%;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s;
+  z-index: 98;
+
+  &:hover {
+    background: $primary;
+    color: $white;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba($primary, 0.3);
+  }
+
+  @include mobile {
+    right: 16px;
+    bottom: 80px;
+    width: 40px;
+    height: 40px;
+  }
+}
+
+/* ========================================
+   筛选弹窗 - 保持原有样式继续使用
+   ======================================== */
+.filter-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  @include desktop {
+    align-items: center;
+  }
+}
+
+// 保留1300-2214行之间的筛选弹窗样式(不修改)
+// 此处删除重复的旧搜索栏样式
+.search-container-DEPRECATED {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 $sp-8;  // 从 $sp-6 增加到 $sp-8

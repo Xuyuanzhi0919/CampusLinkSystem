@@ -1455,11 +1455,13 @@ onUnmounted(() => {
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
   min-height: 600px;
+  padding-bottom: 500px; // 添加底部 padding，确保可以滚动到底部触发加载
 
   @include mobile {
     flex: none;
     width: 100%;  // 移动端占满容器宽度
     min-height: 400px;
+    padding-bottom: 300px;
   }
 }
 

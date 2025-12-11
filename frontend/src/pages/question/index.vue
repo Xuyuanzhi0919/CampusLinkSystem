@@ -203,6 +203,9 @@
             <view v-else-if="!hasMore && questions.length > 0" class="load-more">
               <text>没有更多了</text>
             </view>
+
+            <!-- 底部占位，确保可以滚动 -->
+            <view class="scroll-placeholder"></view>
           </template>
 
           <!-- 空状态 -->
@@ -1596,6 +1599,15 @@ onUnmounted(() => {
   }
   to {
     transform: rotate(360deg);
+  }
+}
+
+// 底部占位元素，确保页面可以滚动
+.scroll-placeholder {
+  height: 500px;
+
+  @include mobile {
+    height: 300px;
   }
 }
 

@@ -1403,6 +1403,7 @@ onUnmounted(() => {
   background: $bg-page;
   padding-top: 48px;  // 只保留上下 padding
   padding-bottom: 64px;
+  min-height: calc(100vh + 200px); // 确保内容足够长，可以滚动触发加载更多
 
   @media (max-width: 1440px) {
     padding-top: 40px;

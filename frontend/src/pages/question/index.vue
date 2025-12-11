@@ -749,18 +749,33 @@ const handleScroll = (scrollTopValue: number) => {
 
 // H5 端窗口滚动兜底，确保 onReachBottom 不生效时也能触发加载/提示
 // #ifdef H5
+let scrollLoadingTriggered = false // 防止重复触发
 const handleWindowScroll = () => {
   const scrollTopValue = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
   handleScroll(scrollTopValue)
 
   const doc = document.documentElement
   const distanceToBottom = doc.scrollHeight - (scrollTopValue + doc.clientHeight)
-  if (distanceToBottom <= 80) {
+
+  console.log('[Question Page] H5 滚动监听 - 距离底部:', distanceToBottom, 'px, scrollTop:', scrollTopValue, 'scrollHeight:', doc.scrollHeight, 'clientHeight:', doc.clientHeight)
+
+  if (distanceToBottom <= 100 && !scrollLoadingTriggered) {
+    scrollLoadingTriggered = true
+    console.log('[Question Page] H5 触发加载 - hasMore:', hasMore.value)
+
     if (!hasMore.value && questions.value.length > 0) {
       showNoMoreToast()
-    } else {
+    } else if (hasMore.value) {
       handleLoadMore()
     }
+
+    // 500ms 后重置标志，允许下次触发
+    setTimeout(() => {
+      scrollLoadingTriggered = false
+    }, 500)
+  } else if (distanceToBottom > 200) {
+    // 离开底部区域时重置标志
+    scrollLoadingTriggered = false
   }
 }
 // #endif

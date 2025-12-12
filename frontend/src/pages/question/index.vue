@@ -1799,17 +1799,21 @@ defineExpose({
   position: sticky;  // 粘性定位
   top: 124px;  // 顶部导航60px + 二级导航40px + 间距24px = 124px
   align-self: flex-start;  // 从顶部对齐
-  max-height: calc(100vh - 148px);  // 视口高度 - top(124px) - 底部留白(24px)
+  max-height: calc(100vh - 124px);  // 视口剩余高度 = 视口总高度 - sticky top值
   overflow-y: auto;  // 内部滚动（当内容超过最大高度时）
   overflow-x: hidden;  // 防止横向滚动
   padding-right: 8px;  // 为滚动条留出空间
-  padding-bottom: 24px;  // 底部留白
+  padding-bottom: 24px;  // 底部留白(内部padding)
   transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0), max-height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+
+  // 强制显示滚动条(跨浏览器兼容)
+  scrollbar-width: thin;  // Firefox
+  scrollbar-color: $gray-300 transparent;  // Firefox
 
   // 当顶部导航折叠时,侧栏同步上移
   &.header-collapsed {
     top: 112px;  // 折叠后: 48px + 40px + 24px = 112px
-    max-height: calc(100vh - 136px);  // 视口高度 - top(112px) - 底部留白(24px)
+    max-height: calc(100vh - 112px);  // 视口剩余高度
   }
 
   // 自定义滚动条样式

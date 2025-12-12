@@ -376,6 +376,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 20px;  // 统一使用px，分组间距
+  height: auto;  // 确保高度自动适应内容
+  min-height: 0;  // 允许flex子元素缩小
 }
 
 // ===================================

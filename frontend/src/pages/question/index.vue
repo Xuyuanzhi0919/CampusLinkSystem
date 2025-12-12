@@ -1799,12 +1799,12 @@ defineExpose({
   position: sticky;  // 粘性定位
   top: 112px;  // 顶部导航60px + 二级导航40px + 间距12px = 112px
   align-self: flex-start;  // 从顶部对齐
-  max-height: calc(100vh - 120px);  // 增加可用高度,只留8px底部余量
-  overflow-y: auto;  // 内部滚动（当内容超过最大高度时）
+  height: calc(100vh - 120px);  // 使用固定高度而不是max-height
+  overflow-y: scroll;  // 强制显示滚动条
   overflow-x: hidden;  // 防止横向滚动
   padding-right: 8px;  // 为滚动条留出空间
   padding-bottom: 16px;  // 减小底部留白
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0), max-height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0), height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   // 强制显示滚动条(跨浏览器兼容)
   scrollbar-width: thin;  // Firefox
@@ -1813,7 +1813,7 @@ defineExpose({
   // 当顶部导航折叠时,侧栏同步上移
   &.header-collapsed {
     top: 100px;  // 折叠后: 48px + 40px + 12px = 100px
-    max-height: calc(100vh - 108px);  // 视口剩余高度
+    height: calc(100vh - 108px);  // 视口剩余高度
   }
 
   // 自定义滚动条样式

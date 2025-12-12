@@ -1497,8 +1497,7 @@ defineExpose({
   width: 100%;
   background: $bg-page;
   padding-top: 48px;
-  padding-bottom: 64px;  // 恢复底部padding
-  min-height: 200vh; // 【临时测试】确保页面可滚动
+  padding-bottom: 2000px;  // 【临时测试】强制增加高度,确保页面可滚动
 
   @media (max-width: 1440px) {
     padding-top: 40px;

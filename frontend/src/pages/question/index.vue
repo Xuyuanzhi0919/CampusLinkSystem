@@ -1,7 +1,7 @@
 <template>
   <view class="question-page">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed">
+    <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
@@ -57,7 +57,7 @@
     </view>
 
     <!-- ========== Sticky 导航区（分类+排序） ========== -->
-    <view class="sticky-nav">
+    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
       <view class="sticky-nav-container">
         <!-- 左侧：分类Tabs -->
         <view class="category-tabs">
@@ -390,6 +390,10 @@ const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'last
 // 排序菜单
 const showSortMenu = ref(false)
 
+// 顶部导航折叠状态
+const isHeaderCollapsed = ref(false)
+const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
+
 // 判断是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
   return category.value !== null || status.value !== null || sortBy.value !== 'created_at'
@@ -717,6 +721,9 @@ const handleLoadMore = async () => {
 const handleScroll = (scrollTopValue: number) => {
   // 滚动超过 300px 时显示回到顶部按钮
   showBackToTop.value = scrollTopValue > 300
+
+  // 滚动超过阈值时折叠顶部导航
+  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
 }
 
 // 点击热门标签筛选
@@ -799,6 +806,48 @@ onUnmounted(() => {
   background: $white;
   border-bottom: 1px solid $gray-200;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
+
+  // 折叠状态：高度保持48px,但元素更紧凑
+  &.collapsed {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); // 更明显的阴影
+
+    .top-nav-container {
+      height: 48px; // 从60px减小到48px
+    }
+
+    .brand-logo {
+      min-width: 100px; // 减小宽度
+
+      .logo-icon {
+        width: 18px; // 缩小图标
+        height: 18px;
+      }
+
+      .logo-text {
+        font-size: 15px; // 缩小文字
+      }
+    }
+
+    .compact-search-bar {
+      height: 32px; // 从36px减小
+
+      .search-icon {
+        width: 14px;
+        height: 14px;
+      }
+
+      .search-input {
+        font-size: 13px;
+      }
+    }
+
+    .ask-button {
+      height: 32px; // 从36px减小
+      padding: 0 18px; // 减小padding
+      font-size: 13px;
+    }
+  }
 }
 
 .top-nav-container {
@@ -809,6 +858,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 16px;
+  transition: height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 高度过渡
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -836,20 +886,23 @@ onUnmounted(() => {
   gap: 8px;
   flex-shrink: 0;
   min-width: 120px; // 确保 Logo 区域有固定宽度，保持对称
+  transition: min-width 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 
   @include mobile {
-    display: none; // 移动端隐藏 Logo，节省空间
+    display: none; // 移动端隐藏 Logo,节省空间
   }
 }
 
 .logo-icon {
   color: $primary;
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 }
 
 .logo-text {
   font-size: 16px;
   font-weight: 600;
   color: $gray-900;
+  transition: font-size 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 
   @include mobile {
     font-size: 15px;
@@ -883,7 +936,7 @@ onUnmounted(() => {
   border-radius: 18px;
   padding: 0 14px;
   gap: 8px;
-  transition: all 0.2s;
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画优化
 
   &:focus-within {
     background: $white;
@@ -899,6 +952,7 @@ onUnmounted(() => {
 .search-icon {
   color: $gray-500;
   flex-shrink: 0;
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 }
 
 .search-input {
@@ -909,6 +963,7 @@ onUnmounted(() => {
   background: transparent;
   font-size: 14px;
   color: $gray-900;
+  transition: font-size 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 
   &::placeholder {
     color: $gray-500;
@@ -1110,7 +1165,12 @@ onUnmounted(() => {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  // 分离折叠动画和hover动画
+  transition: height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0),
+              padding 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0),
+              font-size 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0),
+              transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   margin-left: 12px;
   box-shadow: 0 2px 8px rgba($primary, 0.25);
@@ -1178,6 +1238,12 @@ onUnmounted(() => {
   background: $white;
   border-bottom: 1px solid $gray-100; // 更浅的分割线
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02); // 轻微阴影
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+
+  // 当顶部导航折叠时,sticky-nav的top值同步调整
+  &.header-collapsed {
+    top: 48px; // 折叠后的顶部导航高度
+  }
 
   @include mobile {
     top: 56px; // 移动端与顶部导航同步

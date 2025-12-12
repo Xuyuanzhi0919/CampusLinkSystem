@@ -1375,21 +1375,19 @@ onUnmounted(() => {
   width: 100%;
   background: $bg-page;
   padding-top: 48px;
-  padding-bottom: 64px;
+  // 取消padding-bottom，因为现在是固定高度容器
 
   @media (max-width: 1440px) {
     padding-top: 40px;
-    padding-bottom: 56px;
   }
 
   @media (max-width: 1200px) {
     padding-top: 32px;
-    padding-bottom: 48px;
   }
 
   @include mobile {
     padding-top: 16px;
-    padding-bottom: 24px;
+    padding-bottom: 24px;  // 移动端保留底部padding
   }
 }
 
@@ -1400,6 +1398,9 @@ onUnmounted(() => {
   display: flex;
   gap: 32px;  // 标准栅格间距，从40px减小到32px
   align-items: start;
+  // 固定高度，使左右两侧可以独立滚动
+  height: calc(100vh - 88px);  // 100vh - 顶部导航48px - sticky导航40px
+  overflow: hidden;  // 防止整体滚动
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -1419,6 +1420,8 @@ onUnmounted(() => {
     padding: 0 16px;
     flex-direction: column;
     gap: 20px;
+    height: auto;  // 移动端恢复自动高度
+    overflow: visible;  // 移动端恢复正常滚动
   }
 }
 
@@ -1426,12 +1429,37 @@ onUnmounted(() => {
 .question-list {
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
-  min-height: 600px;
+  height: 100%;  // 占满父容器高度
+  overflow-y: auto;  // 独立滚动
+  overflow-x: hidden;  // 防止横向滚动
+  padding-right: 8px;  // 为滚动条留出空间
+  padding-bottom: 40px;  // 底部留白，避免内容紧贴底部
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: 3px;
+
+    &:hover {
+      background: $gray-400;
+    }
+  }
 
   @include mobile {
     flex: none;
     width: 100%;  // 移动端占满容器宽度
-    min-height: 400px;
+    height: auto;  // 移动端恢复自动高度
+    overflow-y: visible;  // 移动端恢复正常滚动
+    padding-right: 0;
+    padding-bottom: 0;
   }
 }
 
@@ -1695,8 +1723,29 @@ onUnmounted(() => {
 .sidebar {
   width: 320px;  // 固定宽度
   flex-shrink: 0;  // 不缩小
-  position: sticky;
-  top: 120px;  // 顶部导航56px + sticky导航48px + 间距16px
+  height: 100%;  // 占满父容器高度
+  overflow-y: auto;  // 独立滚动
+  overflow-x: hidden;  // 防止横向滚动
+  padding-right: 8px;  // 为滚动条留出空间
+  padding-bottom: 40px;  // 底部留白，避免内容紧贴底部
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: 3px;
+
+    &:hover {
+      background: $gray-400;
+    }
+  }
 
   @include mobile {
     display: none;

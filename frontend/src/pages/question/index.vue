@@ -845,7 +845,7 @@ defineExpose({
    固定顶部导航区 (~56px) - 全宽背景
    ======================================== */
 .top-nav-fixed {
-  position: sticky;
+  position: fixed;
   top: 0;
   z-index: 100;
   width: 100%;

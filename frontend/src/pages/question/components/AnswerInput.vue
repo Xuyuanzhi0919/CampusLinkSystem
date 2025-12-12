@@ -85,8 +85,8 @@
         </CButton>
       </view>
 
-    <!-- 图片预览区 -->
-    <view v-if="images.length > 0" class="image-preview-section">
+      <!-- 图片预览区 -->
+      <view v-if="images.length > 0" class="image-preview-section">
       <view
         v-for="(img, index) in images"
         :key="index"
@@ -112,6 +112,7 @@
         <text class="add-icon">+</text>
         <text class="add-text">{{ images.length }}/{{ maxImages }}</text>
       </view>
+    </view>
     </view>
   </view>
 </template>

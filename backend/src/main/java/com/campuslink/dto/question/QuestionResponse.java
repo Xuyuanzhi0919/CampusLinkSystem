@@ -31,6 +31,11 @@ public class QuestionResponse {
     private String askerAvatar;
 
     /**
+     * 提问者等级
+     */
+    private Integer askerLevel;
+
+    /**
      * 问题标题
      */
     private String title;

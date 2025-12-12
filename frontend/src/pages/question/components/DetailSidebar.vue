@@ -159,10 +159,9 @@ const emit = defineEmits<{
   askerClick: []
 }>()
 
-// 提问者等级（基于积分或问答数量计算）
+// 提问者等级（从后端返回的数据中获取）
 const askerLevel = computed(() => {
-  // TODO: 从后端获取或根据提问者积分计算
-  return 5
+  return props.question.askerLevel ?? 1 // 默认等级1
 })
 
 // 提问者历史统计（模拟数据）

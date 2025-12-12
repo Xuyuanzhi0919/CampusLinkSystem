@@ -162,11 +162,12 @@ public class QuestionService {
             response.setStatus(question.getIsSolved()); // 使用isSolved作为status
             response.setCreatedAt(question.getCreatedAt());
 
-            // 获取提问者信息（昵称和头像）
+            // 获取提问者信息（昵称、头像和等级）
             User asker = userMapper.selectById(question.getAskerId());
             if (asker != null) {
                 response.setAskerNickname(asker.getNickname());
                 response.setAskerAvatar(asker.getAvatarUrl());
+                response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
             }
 
             responses.add(response);
@@ -222,6 +223,7 @@ public class QuestionService {
         if (asker != null) {
             response.setAskerNickname(asker.getNickname());
             response.setAskerAvatar(asker.getAvatarUrl());
+            response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
         }
 
         return response;

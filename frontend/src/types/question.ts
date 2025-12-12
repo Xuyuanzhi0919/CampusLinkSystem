@@ -14,6 +14,7 @@ export interface QuestionItem {
   askerNickname: string    // 后端返回 askerNickname
   askerName?: string       // 兼容字段
   askerAvatar?: string
+  askerLevel?: number      // 提问者等级
   category: QuestionCategory
   tags?: string[]
   views: number

@@ -12,7 +12,7 @@
           <text class="action-text">上传资源</text>
         </view>
         <view class="action-item secondary-action" @click="handleMyTasks">
-          <Icon name="check-square" :size="18" class="action-icon" />
+          <Icon name="check-circle" :size="18" class="action-icon" />
           <text class="action-text">我的任务</text>
         </view>
         <view class="action-item secondary-action" @click="handleMyCollections">

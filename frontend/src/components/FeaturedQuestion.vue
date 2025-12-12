@@ -43,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-import { Icon } from '@/components/icons'
+import Icon from '@/components/icons/index.vue'
 import { CTag } from '@/components/ui'
 
 interface FeaturedQuestionData {

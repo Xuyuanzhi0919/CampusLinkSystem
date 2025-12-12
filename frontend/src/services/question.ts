@@ -154,3 +154,19 @@ export const getActiveUsers = (limit: number = 4, period: '7d' | '30d' = '7d') =
   }>>('/question/active-users', { limit, period })
 }
 
+/**
+ * 获取精选问题（用于首页推荐位）
+ */
+export const getFeaturedQuestion = () => {
+  return request.get<{
+    qid: number
+    title: string
+    username: string
+    avatar: string
+    category: string
+    answerCount: number
+    views: number
+    likes: number
+    createdAt: string
+  } | null>('/question/featured')
+}

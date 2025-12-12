@@ -22,6 +22,14 @@
       </view>
     </CCard>
 
+    <!-- 精选推荐模块 -->
+    <FeaturedQuestion
+      v-if="featuredQuestion && !isFeaturedDismissed"
+      :question="featuredQuestion"
+      @click="handleFeaturedClick"
+      @dismiss="handleFeaturedDismiss"
+    />
+
     <!-- 活跃答主模块 -->
     <CCard variant="default" class="sidebar-card">
       <view class="card-header">
@@ -152,7 +160,8 @@
 import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
-import { getQuestionList, getHotTags, getActiveUsers } from '@/services/question'
+import FeaturedQuestion from '@/components/FeaturedQuestion.vue'
+import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestion } from '@/services/question'
 
 // 定义类型
 interface HotTag {
@@ -180,6 +189,21 @@ interface HotSearch {
   isHot?: boolean
   isNew?: boolean
 }
+
+interface FeaturedQuestionData {
+  qid: number
+  title: string
+  username: string
+  avatar: string
+  category: string
+  answerCount: number
+  views: number
+  likes: number
+}
+
+// 精选问题（Mock 数据，后续对接后端）
+const featuredQuestion = ref<FeaturedQuestionData | null>(null)
+const isFeaturedDismissed = ref(false)
 
 // 热门标签
 const hotTags = ref<HotTag[]>([])
@@ -361,8 +385,58 @@ const loadActiveUsers = async () => {
   }
 }
 
+// 加载精选问题（真实 API）
+const loadFeaturedQuestion = async () => {
+  // 检查是否在 24 小时内关闭过
+  const dismissedTime = uni.getStorageSync('featured_question_dismissed')
+  if (dismissedTime) {
+    const now = Date.now()
+    const diff = now - dismissedTime
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
+    if (diff < TWENTY_FOUR_HOURS) {
+      isFeaturedDismissed.value = true
+      return
+    }
+  }
+
+  try {
+    const res = await getFeaturedQuestion()
+    if (res) {
+      featuredQuestion.value = res
+    } else {
+      // 如果后端返回 null（没有符合条件的问题），则不显示
+      featuredQuestion.value = null
+    }
+  } catch (error) {
+    console.error('[RecommendSidebar] 加载精选问题失败:', error)
+    // 失败时使用 Mock 数据作为降级方案
+    featuredQuestion.value = {
+      qid: 1,
+      title: '如何高效复习数据结构与算法？求学长学姐分享经验！',
+      username: '张同学',
+      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=featured1',
+      category: '学习交流',
+      answerCount: 12,
+      views: 1280,
+      likes: 45,
+      createdAt: new Date().toISOString()
+    }
+  }
+}
+
+// 点击精选问题
+const handleFeaturedClick = (qid: number) => {
+  uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
+}
+
+// 关闭精选问题
+const handleFeaturedDismiss = () => {
+  isFeaturedDismissed.value = true
+}
+
 // 组件挂载时加载数据
 onMounted(() => {
+  loadFeaturedQuestion()
   loadHotQuestions()
   loadHotTags()
   loadActiveUsers()

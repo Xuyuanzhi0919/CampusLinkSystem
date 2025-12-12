@@ -162,4 +162,14 @@ public class QuestionController {
         List<ActiveUserResponse> users = questionService.getActiveUsers(limit, period);
         return Result.success(users);
     }
+
+    @Operation(summary = "获取精选问题", description = "用于首页推荐位，返回综合质量最高的问题")
+    @GetMapping("/featured")
+    public Result<FeaturedQuestionResponse> getFeaturedQuestion() {
+        FeaturedQuestionResponse question = questionService.getFeaturedQuestion();
+        if (question == null) {
+            return Result.success("暂无精选问题", null);
+        }
+        return Result.success(question);
+    }
 }

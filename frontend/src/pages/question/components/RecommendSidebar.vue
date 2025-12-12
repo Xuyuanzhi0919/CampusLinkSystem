@@ -22,13 +22,6 @@
       </view>
     </CCard>
 
-    <!-- 调试信息 -->
-    <!-- <view class="debug-info" style="padding: 10px; background: #f0f0f0; margin: 10px 0;">
-      <text>featuredQuestion: {{ featuredQuestion ? 'exists' : 'null' }}</text><br/>
-      <text>isFeaturedDismissed: {{ isFeaturedDismissed }}</text><br/>
-      <text>显示条件: {{ featuredQuestion && !isFeaturedDismissed }}</text>
-    </view> -->
-
     <!-- 精选推荐模块 -->
     <FeaturedQuestion
       v-if="featuredQuestion && !isFeaturedDismissed"
@@ -209,7 +202,7 @@ interface FeaturedQuestionData {
   createdAt?: string  // 可选字段
 }
 
-// 精选问题（Mock 数据，后续对接后端）
+// 精选问题（真实 API 数据）
 const featuredQuestion = ref<FeaturedQuestionData | null>(null)
 const isFeaturedDismissed = ref(false)
 
@@ -395,8 +388,6 @@ const loadActiveUsers = async () => {
 
 // 加载精选问题（真实 API）
 const loadFeaturedQuestion = async () => {
-  console.log('[RecommendSidebar] 开始加载精选问题')
-
   // 检查是否在 24 小时内关闭过
   const dismissedTime = uni.getStorageSync('featured_question_dismissed')
   if (dismissedTime) {
@@ -404,7 +395,6 @@ const loadFeaturedQuestion = async () => {
     const diff = now - dismissedTime
     const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000
     if (diff < TWENTY_FOUR_HOURS) {
-      console.log('[RecommendSidebar] 精选问题在24小时内被关闭过，不显示')
       isFeaturedDismissed.value = true
       return
     }
@@ -412,40 +402,16 @@ const loadFeaturedQuestion = async () => {
 
   try {
     const res = await getFeaturedQuestion()
-    console.log('[RecommendSidebar] API返回:', res)
     if (res) {
       featuredQuestion.value = res
-      console.log('[RecommendSidebar] 精选问题已设置:', featuredQuestion.value)
     } else {
-      // 如果后端返回 null（没有符合条件的问题），使用 Mock 数据演示
-      console.log('[RecommendSidebar] 后端返回null，使用Mock数据演示')
-      featuredQuestion.value = {
-        qid: 1,
-        title: '如何高效复习数据结构与算法？求学长学姐分享经验！',
-        username: '张同学',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=featured1',
-        category: '学习交流',
-        answerCount: 12,
-        views: 1280,
-        likes: 45,
-        createdAt: new Date().toISOString()
-      }
+      // 后端返回 null，表示没有符合条件的精选问题
+      featuredQuestion.value = null
     }
   } catch (error) {
     console.error('[RecommendSidebar] 加载精选问题失败:', error)
-    // 失败时使用 Mock 数据作为降级方案
-    featuredQuestion.value = {
-      qid: 1,
-      title: '如何高效复习数据结构与算法？求学长学姐分享经验！',
-      username: '张同学',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=featured1',
-      category: '学习交流',
-      answerCount: 12,
-      views: 1280,
-      likes: 45,
-      createdAt: new Date().toISOString()
-    }
-    console.log('[RecommendSidebar] 使用Mock数据:', featuredQuestion.value)
+    // API 调用失败，不显示卡片
+    featuredQuestion.value = null
   }
 }
 

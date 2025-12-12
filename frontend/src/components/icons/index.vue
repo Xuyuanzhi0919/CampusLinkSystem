@@ -99,6 +99,15 @@
       <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- File Text 图标（文档/资源） -->
+    <template v-else-if="name === 'file-text'">
+      <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="currentColor" fill="none"/>
+      <polyline points="14 2 14 8 20 8" stroke="currentColor" fill="none"/>
+      <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor"/>
+      <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor"/>
+      <line x1="10" y1="9" x2="8" y2="9" stroke="currentColor"/>
+    </template>
+
     <!-- Lightning 图标（快捷操作） -->
     <template v-else-if="name === 'lightning'">
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="currentColor" fill="none"/>

@@ -7,17 +7,17 @@
         <text class="header-title">快捷操作</text>
       </view>
       <view class="quick-actions">
-        <view class="action-item primary-action" @click="handleAskQuestion">
-          <Icon name="help-circle" :size="20" class="action-icon" />
-          <text class="action-text">发起提问</text>
-        </view>
-        <view class="action-item secondary-action" @click="handleUploadResource">
-          <Icon name="upload" :size="18" class="action-icon" />
+        <view class="action-item primary-action" @click="handleUploadResource">
+          <Icon name="file-text" :size="20" class="action-icon" />
           <text class="action-text">上传资源</text>
         </view>
-        <view class="action-item secondary-action" @click="handleBrowseTasks">
-          <Icon name="list" :size="18" class="action-icon" />
-          <text class="action-text">浏览任务</text>
+        <view class="action-item secondary-action" @click="handleMyCollections">
+          <Icon name="bookmark" :size="18" class="action-icon" />
+          <text class="action-text">我的收藏</text>
+        </view>
+        <view class="action-item secondary-action" @click="handleMyPoints">
+          <Icon name="gift" :size="18" class="action-icon" />
+          <text class="action-text">我的积分</text>
         </view>
       </view>
     </CCard>
@@ -252,16 +252,16 @@ const handleUserClick = (userId: number) => {
 }
 
 // 快捷操作
-const handleAskQuestion = () => {
-  uni.navigateTo({ url: '/pages/question/publish' })
-}
-
 const handleUploadResource = () => {
   uni.navigateTo({ url: '/pages/resource/upload' })
 }
 
-const handleBrowseTasks = () => {
-  uni.switchTab({ url: '/pages/task/index' })
+const handleMyCollections = () => {
+  uni.navigateTo({ url: '/pages/user/collections' })
+}
+
+const handleMyPoints = () => {
+  uni.navigateTo({ url: '/pages/user/points' })
 }
 
 // 加载热门问题

@@ -5,14 +5,14 @@
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
-          <Icon name="message-circle" :size="20" class="logo-icon" />
+          <Icon name="message-circle" :size="isHeaderCollapsed ? 18 : 20" class="logo-icon" />
           <text class="logo-text">问答社区</text>
         </view>
 
         <!-- 紧凑搜索栏（包含搜索历史） -->
         <view class="search-wrapper">
           <view class="compact-search-bar">
-            <Icon name="search" :size="16" class="search-icon" />
+            <Icon name="search" :size="isHeaderCollapsed ? 14 : 16" class="search-icon" />
             <input
               v-model="searchKeyword"
               class="search-input"
@@ -50,7 +50,7 @@
 
         <!-- 提问按钮 -->
         <view class="ask-button" @click="handleAskQuestion">
-          <Icon name="edit-3" :size="16" class="ask-icon" />
+          <Icon name="edit-3" :size="isHeaderCollapsed ? 14 : 16" class="ask-icon" />
           <text class="ask-text">提问</text>
         </view>
       </view>
@@ -723,7 +723,11 @@ const handleScroll = (scrollTopValue: number) => {
   showBackToTop.value = scrollTopValue > 300
 
   // 滚动超过阈值时折叠顶部导航
-  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
+  const shouldCollapse = scrollTopValue > COLLAPSE_THRESHOLD
+  if (isHeaderCollapsed.value !== shouldCollapse) {
+    console.log(`[滚动折叠] scrollTop: ${scrollTopValue}, collapsed: ${shouldCollapse}`)
+    isHeaderCollapsed.value = shouldCollapse
+  }
 }
 
 // 点击热门标签筛选
@@ -770,6 +774,7 @@ onPageScroll((e) => {
 
 // 页面加载
 onMounted(() => {
+  console.log('[问答页面] 初始化完成, COLLAPSE_THRESHOLD:', COLLAPSE_THRESHOLD)
   loadQuestions(true)
   loadSearchHistory()
 })
@@ -811,6 +816,7 @@ onUnmounted(() => {
   // 折叠状态：高度保持48px,但元素更紧凑
   &.collapsed {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); // 更明显的阴影
+    background: lighten($primary, 52%); // 【调试】轻微蓝色背景,方便观察
 
     .top-nav-container {
       height: 48px; // 从60px减小到48px
@@ -819,11 +825,6 @@ onUnmounted(() => {
     .brand-logo {
       min-width: 100px; // 减小宽度
 
-      .logo-icon {
-        width: 18px; // 缩小图标
-        height: 18px;
-      }
-
       .logo-text {
         font-size: 15px; // 缩小文字
       }
@@ -831,11 +832,6 @@ onUnmounted(() => {
 
     .compact-search-bar {
       height: 32px; // 从36px减小
-
-      .search-icon {
-        width: 14px;
-        height: 14px;
-      }
 
       .search-input {
         font-size: 13px;
@@ -895,7 +891,6 @@ onUnmounted(() => {
 
 .logo-icon {
   color: $primary;
-  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 }
 
 .logo-text {
@@ -952,7 +947,6 @@ onUnmounted(() => {
 .search-icon {
   color: $gray-500;
   flex-shrink: 0;
-  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 }
 
 .search-input {

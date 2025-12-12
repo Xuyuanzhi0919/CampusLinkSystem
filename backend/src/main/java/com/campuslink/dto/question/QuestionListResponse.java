@@ -20,6 +20,11 @@ public class QuestionListResponse {
     private String askerNickname;
 
     /**
+     * 提问者头像
+     */
+    private String askerAvatar;
+
+    /**
      * 问题标题
      */
     private String title;

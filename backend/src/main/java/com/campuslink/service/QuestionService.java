@@ -162,10 +162,11 @@ public class QuestionService {
             response.setStatus(question.getIsSolved()); // 使用isSolved作为status
             response.setCreatedAt(question.getCreatedAt());
 
-            // 获取提问者昵称
+            // 获取提问者信息（昵称和头像）
             User asker = userMapper.selectById(question.getAskerId());
             if (asker != null) {
                 response.setAskerNickname(asker.getNickname());
+                response.setAskerAvatar(asker.getAvatarUrl());
             }
 
             responses.add(response);

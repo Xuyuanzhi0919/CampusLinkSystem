@@ -187,13 +187,20 @@
 
           <!-- 问题卡片列表 -->
           <template v-else-if="questions.length > 0">
-            <QuestionCard
-              v-for="item in questions"
-              :key="item.qid"
-              :question="item"
-              :keyword="searchKeyword"
-              @click="handleQuestionClick(item.qid)"
-            />
+            <template v-for="(item, index) in questions" :key="item.qid">
+              <QuestionCard
+                :question="item"
+                :keyword="searchKeyword"
+                @click="handleQuestionClick(item.qid)"
+              />
+
+              <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示) -->
+              <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
+                <view class="divider-line"></view>
+                <text class="divider-text">更多问题</text>
+                <view class="divider-line"></view>
+              </view>
+            </template>
 
             <!-- 加载更多按钮 -->
             <view v-if="hasMore && questions.length > 0" class="load-more-btn" @click="handleLoadMore">
@@ -1097,20 +1104,47 @@ onUnmounted(() => {
   gap: 6px;
   padding: 0 24px;
   height: 36px;
-  background: $primary;
+  background: linear-gradient(135deg, $primary 0%, darken($primary, 8%) 100%);
   color: $white;
   border-radius: 18px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   margin-left: 12px;
+  box-shadow: 0 2px 8px rgba($primary, 0.25);
+  position: relative;
+  overflow: hidden;
+
+  // 添加闪光动画
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
 
   &:hover {
-    background: darken($primary, 8%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    background: linear-gradient(135deg, darken($primary, 5%) 0%, darken($primary, 13%) 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba($primary, 0.4);
+
+    &::before {
+      width: 300px;
+      height: 300px;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba($primary, 0.25);
   }
 
   @include mobile {
@@ -1562,6 +1596,51 @@ onUnmounted(() => {
 
   &:active {
     transform: translateY(0);
+  }
+}
+
+// 分段分隔符
+.section-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin: 32px 0;
+  padding: 0 24px;
+
+  .divider-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      transparent 0%,
+      $gray-200 20%,
+      $gray-300 50%,
+      $gray-200 80%,
+      transparent 100%
+    );
+  }
+
+  .divider-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: $gray-500;
+    white-space: nowrap;
+    padding: 4px 12px;
+    background: $gray-50;
+    border-radius: 12px;
+    border: 1px solid $gray-200;
+    user-select: none;
+  }
+
+  @include mobile {
+    margin: 24px 0;
+    gap: 12px;
+
+    .divider-text {
+      font-size: 11px;
+      padding: 3px 10px;
+    }
   }
 }
 

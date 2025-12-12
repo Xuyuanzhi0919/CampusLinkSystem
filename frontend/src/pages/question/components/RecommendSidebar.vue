@@ -1,5 +1,27 @@
 <template>
   <view class="recommend-sidebar">
+    <!-- 快捷操作模块 -->
+    <CCard variant="default" class="sidebar-card quick-actions-card">
+      <view class="card-header">
+        <Icon name="zap" :size="18" class="header-icon" />
+        <text class="header-title">快捷操作</text>
+      </view>
+      <view class="quick-actions">
+        <view class="action-item primary-action" @click="handleAskQuestion">
+          <Icon name="help-circle" :size="20" class="action-icon" />
+          <text class="action-text">发起提问</text>
+        </view>
+        <view class="action-item secondary-action" @click="handleUploadResource">
+          <Icon name="upload" :size="18" class="action-icon" />
+          <text class="action-text">上传资源</text>
+        </view>
+        <view class="action-item secondary-action" @click="handleBrowseTasks">
+          <Icon name="list" :size="18" class="action-icon" />
+          <text class="action-text">浏览任务</text>
+        </view>
+      </view>
+    </CCard>
+
     <!-- 活跃答主模块 -->
     <CCard variant="default" class="sidebar-card">
       <view class="card-header">
@@ -229,6 +251,19 @@ const handleUserClick = (userId: number) => {
   uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
 }
 
+// 快捷操作
+const handleAskQuestion = () => {
+  uni.navigateTo({ url: '/pages/question/publish' })
+}
+
+const handleUploadResource = () => {
+  uni.navigateTo({ url: '/pages/resource/upload' })
+}
+
+const handleBrowseTasks = () => {
+  uni.switchTab({ url: '/pages/task/index' })
+}
+
 // 加载热门问题
 const loadHotQuestions = async () => {
   try {
@@ -379,6 +414,96 @@ onMounted(() => {
 }
 
 // ===================================
+// 快捷操作
+// ===================================
+.quick-actions-card {
+  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+
+.quick-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  border: 1px solid transparent;
+
+  .action-icon {
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+
+  .action-text {
+    font-size: 14px;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.primary-action {
+  background: linear-gradient(135deg, $primary 0%, lighten($primary, 5%) 100%);
+  color: $white;
+  box-shadow: 0 2px 8px rgba($primary, 0.25);
+
+  .action-icon {
+    color: $white;
+  }
+
+  .action-text {
+    color: $white;
+    font-weight: 600;
+  }
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
+    transform: translateY(-2px);
+
+    .action-icon {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.secondary-action {
+  background: $white;
+  border-color: $gray-200;
+
+  .action-icon {
+    color: $primary;
+  }
+
+  .action-text {
+    color: $gray-700;
+  }
+
+  &:hover {
+    background: $gray-50;
+    border-color: $primary;
+    box-shadow: 0 2px 8px rgba($primary, 0.15);
+
+    .action-icon {
+      transform: scale(1.1);
+    }
+
+    .action-text {
+      color: $primary;
+    }
+  }
+}
+
+// ===================================
 // 热门标签（按权重分层）
 // ===================================
 .tags-grid {
@@ -414,6 +539,7 @@ onMounted(() => {
     border: none;
     padding: 10px 16px;
     font-size: 14px;
+    animation: pulse-tag 3s ease-in-out infinite; // 添加脉冲动画
 
     .tag-text {
       color: $white;
@@ -429,6 +555,7 @@ onMounted(() => {
     &:hover {
       background: linear-gradient(135deg, darken($primary, 5%) 0%, darken($primary, 10%) 100%);
       box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+      animation: none; // hover时暂停动画
     }
   }
 
@@ -796,5 +923,37 @@ onMounted(() => {
   font-size: 13px;
   color: $gray-400;
   text-align: center;
+}
+
+// ===================================
+// 动画效果
+// ===================================
+@keyframes pulse-tag {
+  0%, 100% {
+    box-shadow: 0 4px 12px rgba($primary, 0.25);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba($primary, 0.4);
+    transform: translateY(-1px);
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+    transform: scale(1.05);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
 }
 </style>

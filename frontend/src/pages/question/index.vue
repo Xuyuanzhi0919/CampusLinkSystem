@@ -807,6 +807,7 @@ onPageScroll((e) => {
 // H5端滚动监听函数(需要保存引用以便移除)
 const scrollListener = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  console.log('[原始滚动事件] scrollTop:', scrollTop)
   handleScroll(scrollTop)
 }
 

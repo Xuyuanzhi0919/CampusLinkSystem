@@ -131,10 +131,14 @@ const getRankClass = (index: number) => {
   return ''
 }
 
-// 点击标签
+// Emits
+const emit = defineEmits<{
+  filterByTag: [tag: string]
+}>()
+
+// 点击标签 - 触发父组件筛选
 const handleTagClick = (tag: string) => {
-  uni.showToast({ title: `点击标签: ${tag}`, icon: 'none' })
-  // TODO: 触发父组件的标签筛选
+  emit('filterByTag', tag)
 }
 
 // 点击问题
@@ -290,34 +294,94 @@ onMounted(() => {
 .tag-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 6px 10px;  // 统一使用px
-  background: $gray-50;
-  border-radius: 16px;  // 统一使用px
-  border: 1px solid $gray-200;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+  border-radius: 20px;
+  border: 1.5px solid #BAE6FD;
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  // 热度前3的标签使用不同配色
+  &:nth-child(1) {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+    border-color: #FCD34D;
+
+    .tag-text { color: #92400E; }
+    .tag-count {
+      background: rgba(217, 119, 6, 0.15);
+      color: #D97706;
+    }
+  }
+
+  &:nth-child(2) {
+    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+    border-color: #FCA5A5;
+
+    .tag-text { color: #991B1B; }
+    .tag-count {
+      background: rgba(239, 68, 68, 0.15);
+      color: #EF4444;
+    }
+  }
+
+  &:nth-child(3) {
+    background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
+    border-color: #A5B4FC;
+
+    .tag-text { color: #3730A3; }
+    .tag-count {
+      background: rgba(99, 102, 241, 0.15);
+      color: #6366F1;
+    }
+  }
 
   &:hover {
-    background: rgba($primary, 0.06);  // 淡化hover背景
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
     border-color: $primary;
-    transform: translateY(-1px);
   }
 
   &:active {
-    transform: translateY(0);
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  // 闪烁动画（仅前3个）
+  &:nth-child(-n+3)::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+    animation: shimmer 3s infinite;
   }
 }
 
+@keyframes shimmer {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
+}
+
 .tag-text {
-  font-size: 13px;  // 统一使用px
-  color: $gray-700;
-  font-weight: $font-weight-medium;
+  font-size: 13px;
+  color: #1E40AF;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .tag-count {
   font-size: 11px;
-  color: $gray-500;
+  font-weight: 700;
+  color: #3B82F6;
+  background: rgba(59, 130, 246, 0.15);
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
 }
 
 // ===================================

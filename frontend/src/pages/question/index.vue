@@ -218,7 +218,7 @@
 
         <!-- 右侧：推荐侧栏 -->
         <view class="sidebar">
-          <RecommendSidebar />
+          <RecommendSidebar @filter-by-tag="handleFilterByTag" />
         </view>
       </view>
     </view>
@@ -710,6 +710,12 @@ const handleLoadMore = async () => {
 const handleScroll = (scrollTopValue: number) => {
   // 滚动超过 300px 时显示回到顶部按钮
   showBackToTop.value = scrollTopValue > 300
+}
+
+// 点击热门标签筛选
+const handleFilterByTag = (tag: string) => {
+  searchKeyword.value = tag
+  loadQuestions(true)
 }
 
 // 回到顶部

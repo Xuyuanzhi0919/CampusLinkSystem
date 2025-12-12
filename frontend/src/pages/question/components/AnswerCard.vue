@@ -85,41 +85,42 @@
       </view>
     </view>
 
-    <!-- 更多菜单弹出层 - 优化版 -->
-    <view v-if="showMenu" class="menu-overlay" @click="hideMoreMenu">
-      <view class="menu-content" @click.stop>
-        <!-- 常规操作组 -->
-        <view class="menu-group">
-          <!-- 复制内容 -->
-          <view class="menu-item" @click="handleCopy">
-            <Icon name="copy" :size="20" class="menu-icon" />
-            <text class="menu-label">复制内容</text>
-          </view>
+  </CCard>
 
-          <!-- 分享回答 -->
-          <view class="menu-item" @click="handleShare">
-            <Icon name="share-2" :size="20" class="menu-icon" />
-            <text class="menu-label">分享回答</text>
-          </view>
+  <!-- 更多菜单弹出层 - 优化版（移到 CCard 外部） -->
+  <view v-if="showMenu" class="menu-overlay" @click="hideMoreMenu">
+    <view class="menu-content" @click.stop>
+      <!-- 常规操作组 -->
+      <view class="menu-group">
+        <!-- 复制内容 -->
+        <view class="menu-item" @click="handleCopy">
+          <Icon name="copy" :size="20" class="menu-icon" />
+          <text class="menu-label">复制内容</text>
         </view>
 
-        <!-- 危险操作组（非本人） -->
-        <view v-if="!isMyAnswer" class="menu-group menu-group--danger">
-          <view class="menu-item menu-item--danger" @click="handleReport">
-            <Icon name="flag" :size="20" class="menu-icon" />
-            <text class="menu-label">举报</text>
-          </view>
+        <!-- 分享回答 -->
+        <view class="menu-item" @click="handleShare">
+          <Icon name="share-2" :size="20" class="menu-icon" />
+          <text class="menu-label">分享回答</text>
         </view>
+      </view>
 
-        <!-- 取消按钮 -->
-        <view class="menu-group">
-          <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
-            <text class="menu-label">取消</text>
-          </view>
+      <!-- 危险操作组（非本人） -->
+      <view v-if="!isMyAnswer" class="menu-group menu-group--danger">
+        <view class="menu-item menu-item--danger" @click="handleReport">
+          <Icon name="flag" :size="20" class="menu-icon" />
+          <text class="menu-label">举报</text>
+        </view>
+      </view>
+
+      <!-- 取消按钮 -->
+      <view class="menu-group">
+        <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
+          <text class="menu-label">取消</text>
         </view>
       </view>
     </view>
-  </CCard>
+  </view>
 </template>
 
 <script setup lang="ts">

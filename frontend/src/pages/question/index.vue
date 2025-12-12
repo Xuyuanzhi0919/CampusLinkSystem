@@ -195,17 +195,17 @@
               @click="handleQuestionClick(item.qid)"
             />
 
-            <!-- 加载更多提示 -->
-            <view v-if="loading && questions.length > 0" class="load-more">
-              <Icon name="loader" :size="16" class="loading-icon" />
-              <text>加载中...</text>
+            <!-- 加载更多按钮 -->
+            <view v-if="hasMore && questions.length > 0" class="load-more-btn" @click="handleLoadMore">
+              <Icon v-if="loading" name="loader" :size="16" class="loading-icon" />
+              <Icon v-else name="arrow-down" :size="16" />
+              <text>{{ loading ? '加载中...' : '加载更多' }}</text>
             </view>
-            <view v-else-if="!hasMore && questions.length > 0" class="load-more">
-              <text>没有更多了</text>
+            <view v-else-if="!hasMore && questions.length > 0" class="load-more-end">
+              <view class="end-line"></view>
+              <text class="end-text">没有更多了</text>
+              <view class="end-line"></view>
             </view>
-
-            <!-- 底部占位，确保可以滚动 -->
-            <view class="scroll-placeholder"></view>
           </template>
 
           <!-- 空状态 -->
@@ -1602,13 +1602,56 @@ onUnmounted(() => {
   }
 }
 
-// 底部占位元素，确保页面可以滚动
-.scroll-placeholder {
-  height: 500px;
+// 加载更多按钮
+.load-more-btn {
+  margin: 32px auto;
+  padding: 12px 32px;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  color: $gray-700;
+  max-width: 200px;
 
-  @include mobile {
-    height: 300px;
+  &:hover {
+    background: $gray-50;
+    border-color: $primary;
+    color: $primary;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
   }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// 加载完成提示
+.load-more-end {
+  margin: 48px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.end-line {
+  flex: 1;
+  height: 1px;
+  background: $gray-200;
+  max-width: 120px;
+}
+
+.end-text {
+  font-size: 13px;
+  color: $gray-400;
+  white-space: nowrap;
 }
 
 // 空状态

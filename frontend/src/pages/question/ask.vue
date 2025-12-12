@@ -730,7 +730,7 @@ const handleExampleClick = (example: { title: string; category: string }) => {
 }
 
 /**
- * 取消编辑
+ * 取消编辑/返回问答首页
  */
 const handleCancel = () => {
   if (canSubmit.value && !editMode.value) {
@@ -751,12 +751,18 @@ const handleCancel = () => {
           uni.showToast({ title: '已保存草稿', icon: 'success' })
         }
         setTimeout(() => {
-          uni.navigateBack()
+          // 返回问答首页而不是 navigateBack
+          uni.redirectTo({
+            url: '/pages/question/index'
+          })
         }, 500)
       }
     })
   } else {
-    uni.navigateBack()
+    // 直接返回问答首页
+    uni.redirectTo({
+      url: '/pages/question/index'
+    })
   }
 }
 

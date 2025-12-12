@@ -812,10 +812,19 @@ const scrollListener = () => {
 }
 
 // 页面加载
-onMounted(() => {
+onMounted(async () => {
   console.log('[问答页面] 初始化完成, COLLAPSE_THRESHOLD:', COLLAPSE_THRESHOLD)
-  loadQuestions(true)
+
+  await loadQuestions(true)
   loadSearchHistory()
+
+  // 延迟检查页面高度
+  setTimeout(() => {
+    const scrollHeight = document.documentElement.scrollHeight
+    const clientHeight = document.documentElement.clientHeight
+    console.log('[页面高度检查] 总高度:', scrollHeight, '视口高度:', clientHeight, '可滚动:', scrollHeight > clientHeight)
+    console.log('[问题列表] 当前问题数量:', questions.value?.length || 0)
+  }, 1000)
 
   // H5端监听窗口滚动事件
   // #ifdef H5
@@ -1541,6 +1550,7 @@ defineExpose({
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
   padding-bottom: 40px;  // 底部留白
+  min-height: 150vh; // 【临时测试】确保页面可滚动,用于测试折叠动画
 
   @include mobile {
     flex: none;

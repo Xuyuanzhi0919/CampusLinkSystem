@@ -72,7 +72,7 @@
         </CCard>
 
         <!-- 卡片 2：分类与标签 -->
-        <CCard variant="elevated" class="form-card category-tags-card">
+        <CCard variant="elevated" class="form-card category-card">
           <view class="card-header">
             <Icon name="grid" :size="20" class="header-icon" />
             <text class="header-title">分类与标签</text>
@@ -991,35 +991,35 @@ const handleSubmit = async () => {
 }
 
 // ===================================
-// 独立标题输入区（主视觉焦点）
+// 独立标题输入区（主视觉焦点）- 强化版
 // ===================================
 .title-section {
   background: $white;
-  border-radius: 16px;  // 更大的圆角，突出重要性
-  padding: 32px;  // 更大的内边距
-  margin-bottom: 24px;
-  border: 2px solid $gray-100;  // 稍粗的边框
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);  // 更明显的阴影
+  border-radius: 20px;  // 从16px增大到20px
+  padding: 36px 40px;  // 从32px增大,更宽敞
+  margin-bottom: 28px;  // 从24px增大
+  border: 2px solid $gray-200;  // 从$gray-100加深
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);  // 轻阴影,避免过重
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:focus-within {
     border-color: $primary;
-    box-shadow: 0 6px 24px rgba($primary, 0.12);
-    transform: translateY(-2px);  // 聚焦时轻微上浮
+    box-shadow: 0 8px 32px rgba($primary, 0.15);  // 更强的聚焦阴影
+    transform: translateY(-3px);  // 从-2px增加到-3px
   }
 
   @include mobile {
-    padding: 24px 20px;
-    margin-bottom: 20px;
+    padding: 28px 24px;
+    margin-bottom: 24px;
   }
 }
 
 .title-main-input {
   width: 100%;
-  min-height: 64px;  // 更高的输入框
-  font-size: 20px;  // 更大的字号（PC端）
-  font-weight: 600;  // 加粗，突出重要性
-  line-height: 1.5;
+  min-height: 96px;  // 从64px增大到96px,更高
+  font-size: 22px;  // 从20px增大到22px
+  font-weight: 600;  // 保持加粗
+  line-height: 1.6;  // 从1.5增加,更舒适
   color: $gray-900;
   border: none;
   background: transparent;
@@ -1027,13 +1027,13 @@ const handleSubmit = async () => {
   resize: none;
 
   &::placeholder {
-    font-size: 18px;
-    font-weight: 500;
+    font-size: 18px;  // 保持18px
+    font-weight: 400;  // 从500减弱,区分输入内容
     color: $gray-400;
   }
 
   @include mobile {
-    min-height: 56px;
+    min-height: 72px;  // 移动端也加高
     font-size: 18px;
 
     &::placeholder {
@@ -1084,15 +1084,45 @@ const handleSubmit = async () => {
 }
 
 // ===================================
-// 表单卡片通用样式
+// 表单卡片通用样式 - 视觉节奏优化
 // ===================================
 .form-card {
-  margin-bottom: $sp-6;
-  box-shadow: 0 2rpx 6rpx rgba($black, 0.03);
-  border: 1rpx solid $gray-100;
+  margin-bottom: 24px;  // 从$sp-6改为固定值,统一间距
+  box-shadow: 0 2px 6px rgba($black, 0.03);  // 从rpx改为px
+  border: 1px solid $gray-100;  // 从rpx改为px
+
+  // 内容卡片(第1个)间距更大
+  &.content-card {
+    margin-bottom: 28px;
+  }
+
+  // 分类卡片(第2个)
+  &.category-card {
+    margin-bottom: 24px;
+    background: lighten($primary, 49.5%);  // 添加浅色背景,增强分区感
+  }
+
+  // 标签卡片(第3个)添加分区背景
+  &.tags-card {
+    margin-bottom: 24px;
+  }
+
+  // 图片卡片(第4个)紧凑一点
+  &.images-card {
+    margin-bottom: 20px;
+  }
+
+  // 积分卡片(第5个)
+  &.bounty-card {
+    margin-bottom: 0;  // 最后一个不需要底部间距
+  }
 
   @include mobile {
-    margin-bottom: $sp-4;
+    margin-bottom: 20px;
+
+    &.content-card {
+      margin-bottom: 24px;
+    }
   }
 }
 
@@ -1295,27 +1325,28 @@ const handleSubmit = async () => {
 
 .category-pill {
   display: flex;
-  align-items: center;  // 横向排列，不再是纵向
+  align-items: center;
   justify-content: center;
-  gap: 6px;  // 缩小间距
-  padding: 10px 18px;  // 缩小 padding
-  min-width: 120px;  // 缩小最小宽度
-  background: $gray-50;
-  border: 1.5px solid $gray-200;  // 稍细的边框
-  border-radius: 24px;  // 更圆润的胶囊形状
+  gap: 7px;  // 从6px增大
+  padding: 12px 22px;  // 从10px 18px增大,更饱满
+  min-width: 130px;  // 从120px增大
+  background: $white;  // 从$gray-50改为纯白
+  border: 2px solid $gray-200;  // 从1.5px增粗到2px
+  border-radius: 28px;  // 从24px增大,更圆润
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   @include mobile {
     flex: 1;
     min-width: 0;
-    padding: 8px 14px;
+    padding: 10px 16px;
   }
 
   &:hover {
-    background: $gray-100;
-    border-color: $gray-300;
-    transform: translateY(-1px);  // 轻微上浮
+    background: lighten($primary, 49%);  // hover时淡蓝色背景
+    border-color: lighten($primary, 30%);
+    transform: translateY(-2px);  // 从-1px增大
+    box-shadow: 0 4px 12px rgba($primary, 0.08);  // 添加hover阴影
   }
 
   &:active {
@@ -1323,31 +1354,33 @@ const handleSubmit = async () => {
   }
 
   &.active {
-    background: $primary;  // 直接使用纯色背景，不用渐变
+    background: $primary;
     border-color: $primary;
-    box-shadow: 0 4px 12px rgba($primary, 0.25);
+    box-shadow: 0 6px 16px rgba($primary, 0.3);  // 更强的激活阴影
 
     .pill-icon {
-      color: $white;  // 激活时图标变白
+      color: $white;
     }
 
     .pill-label {
-      color: $white;  // 激活时文字变白
-      font-weight: $font-weight-semibold;
+      color: $white;
+      font-weight: 600;  // 从$font-weight-semibold改为固定值
     }
   }
 }
 
 .pill-icon {
   color: $gray-600;
-  transition: color $duration-base;
+  transition: color 0.25s;
+  flex-shrink: 0;
 }
 
 .pill-label {
-  font-size: 14px;  // 稍小的字号
-  color: $gray-700;
-  font-weight: $font-weight-medium;
-  transition: all $duration-base;
+  font-size: 15px;  // 从14px增大
+  color: $gray-800;  // 从$gray-700加深
+  font-weight: 500;  // 从$font-weight-medium改为固定值
+  transition: all 0.25s;
+  white-space: nowrap;
 }
 
 // ===================================
@@ -1363,16 +1396,17 @@ const handleSubmit = async () => {
 .tag-input-box {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  padding: $sp-3 $sp-4;
-  background: $gray-50;
-  border: 1rpx solid $gray-200;
-  border-radius: $radius-md;
-  transition: all $duration-base;
+  gap: 10px;  // 从$sp-3改为固定值
+  padding: 12px 16px;  // 从$sp-3 $sp-4增大
+  background: #F8FAFC;  // 从$gray-50改为更浅的灰
+  border: 2px solid $gray-200;  // 从1rpx增粗到2px
+  border-radius: 10px;  // 从$radius-md改为固定值
+  transition: all 0.25s;
 
   &:focus-within {
     background: $white;
     border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.08);  // 添加聚焦阴影
   }
 }
 
@@ -1383,8 +1417,8 @@ const handleSubmit = async () => {
 
 .tag-input {
   flex: 1;
-  height: 60rpx;
-  font-size: $font-size-base;
+  height: 32px;  // 从60rpx改为固定值
+  font-size: 14px;  // 从$font-size-base改为固定值
   color: $gray-900;
   border: none;
   background: transparent;
@@ -1392,6 +1426,7 @@ const handleSubmit = async () => {
 
   &::placeholder {
     color: $gray-400;
+    font-size: 13px;  // placeholder稍小
   }
 }
 
@@ -1556,23 +1591,23 @@ const handleSubmit = async () => {
 }
 
 .bounty-pill {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: inline-flex;  // 从flex改为inline-flex,更紧凑
+  align-items: baseline;  // 从center改为baseline,数字和单位对齐
   justify-content: center;
-  gap: 2px; // 紧凑间距
-  padding: 14px 20px; // 更紧凑的内边距
-  min-width: 85px; // 固定最小宽度
+  gap: 4px;  // 从2px增大
+  padding: 8px 16px;  // 从14px 20px大幅减小,更紧凑
+  min-width: auto;  // 从85px改为auto,自适应
   background: $white;
-  border: 2px solid $gray-200;
-  border-radius: 12px; // 圆润卡片感
+  border: 1.5px solid $gray-300;  // 从2px减细到1.5px
+  border-radius: 20px;  // 从12px增大,更胶囊化
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: $accent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($accent, 0.15);
+    background: lighten($accent, 48%);  // hover改为淡橙色
+    border-color: lighten($accent, 25%);
+    transform: translateY(-1px);  // 从-2px减小
+    box-shadow: 0 2px 8px rgba($accent, 0.12);  // 阴影减弱
   }
 
   &:active {
@@ -1580,9 +1615,9 @@ const handleSubmit = async () => {
   }
 
   &.active {
-    background: $accent; // 强调色纯色背景
+    background: $accent; // 橙色强调
     border-color: $accent;
-    box-shadow: 0 4px 16px rgba($accent, 0.25);
+    box-shadow: 0 3px 12px rgba($accent, 0.25);  // 从16px减小
 
     .bounty-value {
       color: $white;
@@ -1591,32 +1626,33 @@ const handleSubmit = async () => {
 
     .bounty-label {
       color: $white;
-      opacity: 0.9;
+      opacity: 1;  // 从0.9增大到1
     }
   }
 
   &.custom {
-    min-width: 120px; // 自定义按钮稍宽
-    background: lighten($primary, 48%);
-    border-color: $primary;
-    border-style: dashed; // 虚线边框表示自定义
+    padding: 8px 18px;  // 稍宽一点
+    background: $white;  // 从淡蓝改为白色
+    border-color: $gray-300;  // 从$primary改为灰色
+    border-style: dashed;
 
     &:hover {
-      background: lighten($primary, 45%);
+      background: lighten($primary, 48%);
       border-color: $primary;
     }
 
     &.active {
       background: $primary;
+      border-color: $primary;
       border-style: solid;
     }
 
     .bounty-value {
-      color: $primary;
+      color: $gray-700;  // 从$primary改为灰色
     }
 
     .bounty-label {
-      color: $primary;
+      color: $gray-500;  // 从$primary改为灰色
     }
 
     &.active .bounty-value,
@@ -1627,17 +1663,17 @@ const handleSubmit = async () => {
 }
 
 .bounty-value {
-  font-size: 20px; // 大号数字
+  font-size: 16px;  // 从20px减小
   font-weight: 600;
   color: $gray-800;
-  line-height: 1.2;
+  line-height: 1;  // 从1.2减小
   transition: all 0.2s;
 }
 
 .bounty-label {
-  font-size: 11px;
+  font-size: 12px;  // 从11px增大
   color: $gray-500;
-  font-weight: 500;
+  font-weight: 400;  // 从500减弱
   transition: all 0.2s;
 }
 
@@ -1707,22 +1743,24 @@ const handleSubmit = async () => {
 .bounty-tip {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  margin-top: $sp-4;
-  padding: $sp-3;
-  background: $warning-50;
-  border-radius: $radius-sm;
+  gap: 8px;  // 从$sp-2改为固定值
+  margin-top: 16px;  // 从$sp-4改为固定值
+  padding: 10px 14px;  // 从$sp-3减小
+  background: lighten($accent, 48%);  // 从$warning-50改为淡橙色
+  border: 1px solid lighten($accent, 38%);  // 添加边框
+  border-radius: 8px;  // 从$radius-sm改为固定值
 }
 
 .tip-icon {
-  color: $warning;
+  color: $accent;  // 从$warning改为$accent
   flex-shrink: 0;
+  opacity: 0.8;  // 添加透明度
 }
 
 .tip-text {
-  font-size: $font-size-xs;
-  color: $warning-dark;
-  line-height: 1.5;
+  font-size: 12px;  // 从$font-size-xs改为固定值
+  color: darken($accent, 15%);  // 从$warning-dark改为深橙色
+  line-height: 1.6;  // 从1.5增加
 }
 
 // ===================================

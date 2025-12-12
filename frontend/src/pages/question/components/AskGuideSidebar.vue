@@ -145,24 +145,25 @@ const handleExampleClick = (example: typeof examples[0]) => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 10px; // 增大图标与标题间距
-  margin-bottom: 16px;
-  padding: 12px 16px; // 添加内边距，增强模块标题区域感
-  background: lighten($primary, 48%); // 添加淡蓝色背景
-  border-radius: 8px; // 圆角处理
-  border-bottom: none; // 移除底部边框，改用背景区分
+  gap: 8px; // 缩小间距,更紧凑
+  margin-bottom: 18px; // 增大底部间距
+  padding: 10px 14px; // 减小内边距,弱化区域感
+  background: lighten($primary, 50%); // 更浅的背景,降低视觉权重
+  border-radius: 6px; // 更小的圆角
+  border-bottom: none;
 }
 
 .header-icon {
-  color: $primary; // 保持品牌蓝色
+  color: #94A3B8; // 从品牌蓝改为灰蓝色,弱化视觉
   flex-shrink: 0;
+  opacity: 0.8; // 添加透明度
 }
 
 .header-title {
-  font-size: 16px; // 从15px增大到16px
-  font-weight: 600; // 从$font-weight-semibold(500)增强到600
-  color: $gray-900; // 从$gray-800加深到$gray-900
-  letter-spacing: -0.01em; // 紧凑字距，更现代
+  font-size: 14px; // 从16px减小到14px,弱化层级
+  font-weight: 500; // 从600减弱到500
+  color: #60697A; // 从#0F172A改为灰色,弱化对比
+  letter-spacing: 0; // 去除紧凑字距
   flex: 1;
 }
 
@@ -199,20 +200,20 @@ const handleExampleClick = (example: typeof examples[0]) => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px; // 增大间距,降低密度
 }
 
 .item-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: $gray-800;
-  line-height: 1.4;
+  font-size: 13px; // 从14px减小
+  font-weight: 500; // 从600减弱
+  color: $gray-700; // 从$gray-800减弱
+  line-height: 1.6; // 从1.4增加,降低密度
 }
 
 .item-desc {
   font-size: 12px;
-  color: $gray-600;
-  line-height: 1.5;
+  color: $gray-500; // 从$gray-600减弱
+  line-height: 1.7; // 增加行高,降低密度
 }
 
 // ===================================
@@ -221,22 +222,24 @@ const handleExampleClick = (example: typeof examples[0]) => {
 .example-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px; // 从10px减小,更紧凑
 }
 
 .example-item {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 10px 12px;
-  background: $gray-50;
-  border-radius: 8px;
+  padding: 9px 11px; // 从10px 12px减小
+  background: transparent; // 从$gray-50改为透明,更轻量
+  border: 1px solid $gray-200; // 添加边框
+  border-radius: 6px; // 从8px减小
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: lighten($primary, 48%);
-    transform: translateX(2px);
+    background: lighten($primary, 49%); // 更浅
+    border-color: lighten($primary, 35%);
+    transform: translateX(1px); // 从2px减小
 
     .example-title {
       color: $primary;
@@ -253,16 +256,17 @@ const handleExampleClick = (example: typeof examples[0]) => {
 }
 
 .check-icon {
-  color: $success;
+  color: $gray-400; // 从$success改为灰色,弱化
   flex-shrink: 0;
   margin-top: 2px;
+  opacity: 0.6; // 添加透明度
 }
 
 .example-title {
   flex: 1;
-  font-size: 13px;
-  color: $gray-700;
-  line-height: 1.5;
+  font-size: 12px; // 从13px减小
+  color: $gray-600; // 从$gray-700减弱
+  line-height: 1.6; // 从1.5增加
   @include text-ellipsis(2);
   transition: color 0.2s;
 }

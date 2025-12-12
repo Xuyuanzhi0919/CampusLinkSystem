@@ -11,6 +11,10 @@
           <Icon name="file-text" :size="20" class="action-icon" />
           <text class="action-text">上传资源</text>
         </view>
+        <view class="action-item secondary-action" @click="handleMyTasks">
+          <Icon name="check-square" :size="18" class="action-icon" />
+          <text class="action-text">我的任务</text>
+        </view>
         <view class="action-item secondary-action" @click="handleMyCollections">
           <Icon name="bookmark" :size="18" class="action-icon" />
           <text class="action-text">我的收藏</text>
@@ -323,11 +327,15 @@ const handleUploadResource = () => {
 }
 
 const handleMyCollections = () => {
-  uni.navigateTo({ url: '/pages/user/collections' })
+  uni.navigateTo({ url: '/pages/user/favorites' })
 }
 
 const handleMyPoints = () => {
-  uni.navigateTo({ url: '/pages/user/points' })
+  uni.navigateTo({ url: '/pages/user/points-history' })
+}
+
+const handleMyTasks = () => {
+  uni.navigateTo({ url: '/pages/task/my' })
 }
 
 // 热门搜索相关

@@ -805,7 +805,7 @@ onUnmounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80px;
-  height: 48px; // 进一步减小到48px，更扁平
+  height: 60px; // 与首页header一致
   display: flex;
   align-items: center;
   gap: 16px;
@@ -824,7 +824,7 @@ onUnmounted(() => {
 
   @include mobile {
     padding: 0 16px;
-    height: 48px;
+    height: 56px; // 移动端稍小
     gap: 12px;
   }
 }
@@ -1168,11 +1168,11 @@ onUnmounted(() => {
 }
 
 /* ========================================
-   Sticky 导航区 (分类 + 排序) (~48px) - 全宽背景
+   Sticky 导航区 (分类 + 排序) (~40px) - 全宽背景
    ======================================== */
 .sticky-nav {
   position: sticky;
-  top: 48px; // 与顶部导航高度同步
+  top: 60px; // 与顶部导航高度同步 (60px)
   z-index: 99;
   width: 100%;
   background: $white;
@@ -1180,7 +1180,7 @@ onUnmounted(() => {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02); // 轻微阴影
 
   @include mobile {
-    top: 48px;
+    top: 56px; // 移动端与顶部导航同步
   }
 }
 
@@ -1699,7 +1699,7 @@ onUnmounted(() => {
   position: sticky;  // 粘性定位
   top: 24px;  // 距离视口顶部24px
   align-self: flex-start;  // 从顶部对齐
-  max-height: calc(100vh - 48px);  // 最大高度 = 视口高度 - 顶部间距 - 底部留白
+  max-height: calc(100vh - 60px);  // 最大高度 = 视口高度 - 顶部间距 - 底部留白
   overflow-y: auto;  // 内部滚动（当内容超过最大高度时）
   overflow-x: hidden;  // 防止横向滚动
   padding-right: 8px;  // 为滚动条留出空间

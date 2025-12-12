@@ -8,17 +8,30 @@
       </view>
       <view v-if="activeUsers.length > 0" class="active-users">
         <view
-          v-for="user in activeUsers"
+          v-for="(user, index) in activeUsers"
           :key="user.userId"
           class="user-item"
+          :class="getUserRankClass(index)"
           @click="handleUserClick(user.userId)"
         >
-          <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
-          <view class="user-info">
-            <text class="user-name">{{ user.nickname }}</text>
-            <text class="user-answers">回答 {{ user.answerCount }} 个问题</text>
+          <view class="avatar-wrapper">
+            <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
+            <view v-if="index < 3" class="rank-crown" :class="`crown-${index + 1}`">
+              <Icon :name="getCrownIcon(index)" :size="12" />
+            </view>
           </view>
-          <view v-if="user.badge" class="user-badge">
+          <view class="user-info">
+            <view class="name-line">
+              <text class="user-name">{{ user.nickname }}</text>
+              <view v-if="index === 0" class="top-badge">TOP1</view>
+            </view>
+            <view class="stats-line">
+              <Icon name="message-circle" :size="11" class="stat-icon" />
+              <text class="user-answers">{{ user.answerCount }} 回答</text>
+            </view>
+          </view>
+          <view v-if="user.badge" class="user-badge" :class="getBadgeClass(user.badge)">
+            <Icon :name="getBadgeIcon(user.badge)" :size="11" />
             <text class="badge-text">{{ user.badge }}</text>
           </view>
         </view>
@@ -123,12 +136,43 @@ const activeUsers = ref<ActiveUser[]>([])
 // 热门问题
 const hotQuestions = ref<HotQuestion[]>([])
 
-// 排名徽章样式
+// 排名徽章样式（问题）
 const getRankClass = (index: number) => {
   if (index === 0) return 'rank-1'
   if (index === 1) return 'rank-2'
   if (index === 2) return 'rank-3'
   return ''
+}
+
+// 用户排名样式
+const getUserRankClass = (index: number) => {
+  if (index === 0) return 'user-rank-1'
+  if (index === 1) return 'user-rank-2'
+  if (index === 2) return 'user-rank-3'
+  return ''
+}
+
+// 皇冠图标
+const getCrownIcon = (index: number) => {
+  if (index === 0) return 'award'  // 金色皇冠
+  if (index === 1) return 'award'  // 银色皇冠
+  return 'award'  // 铜色皇冠
+}
+
+// 徽章样式类
+const getBadgeClass = (badge: string) => {
+  if (badge === '优质答主') return 'badge-premium'
+  if (badge === '热心答主') return 'badge-active'
+  if (badge === '活跃答主') return 'badge-regular'
+  return ''
+}
+
+// 徽章图标
+const getBadgeIcon = (badge: string) => {
+  if (badge === '优质答主') return 'star'
+  if (badge === '热心答主') return 'heart'
+  if (badge === '活跃答主') return 'zap'
+  return 'award'
 }
 
 // Emits
@@ -474,35 +518,109 @@ onMounted(() => {
 .active-users {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .user-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: $white;
+  border: 1px solid transparent;
 
   &:hover {
-    transform: translateX(2px);
+    transform: translateX(4px) scale(1.02);
+    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
+    border-color: $gray-200;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 
-    .user-name {
-      color: $primary;
+    .user-avatar {
+      transform: scale(1.1);
+      box-shadow: 0 4px 16px rgba($primary, 0.25);
     }
+  }
+
+  // 第1名特殊样式
+  &.user-rank-1 {
+    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FEF3C7 100%);
+    border-color: #F59E0B;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+    }
+  }
+
+  // 第2名特殊样式
+  &.user-rank-2 {
+    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%);
+    border-color: #9CA3AF;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.15);
+  }
+
+  // 第3名特殊样式
+  &.user-rank-3 {
+    background: linear-gradient(135deg, #FDEDE8 0%, #FED7C3 50%, #FDEDE8 100%);
+    border-color: #F97316;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
   }
 }
 
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
+.avatar-wrapper {
+  position: relative;
   flex-shrink: 0;
-  border: 2px solid $gray-100;
-  transition: border-color 0.2s;
+}
 
-  .user-item:hover & {
-    border-color: $primary;
+.user-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 3px solid $white;
+  transition: all 0.3s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.rank-crown {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid $white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+
+  &.crown-1 {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+    color: $white;
+    animation: pulse-gold 2s infinite;
+  }
+
+  &.crown-2 {
+    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);
+    color: $white;
+  }
+
+  &.crown-3 {
+    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
+    color: $white;
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
+    transform: scale(1.1);
   }
 }
 
@@ -511,33 +629,84 @@ onMounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
+}
+
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .user-name {
-  font-size: 13px;
-  font-weight: $font-weight-medium;
+  font-size: 14px;
+  font-weight: 600;
   color: $gray-800;
   @include text-ellipsis(1);
   transition: color 0.2s;
+
+  .user-item:hover & {
+    color: $primary;
+  }
+}
+
+.top-badge {
+  padding: 2px 8px;
+  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
+  color: $white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 10px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+}
+
+.stats-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-icon {
+  color: $gray-400;
 }
 
 .user-answers {
-  font-size: 11px;
-  color: $gray-500;
+  font-size: 12px;
+  color: $gray-600;
+  font-weight: 500;
 }
 
 .user-badge {
   flex-shrink: 0;
-  padding: 4px 10px;
-  background: linear-gradient(135deg, $accent 0%, lighten($accent, 5%) 100%);
-  border-radius: 12px;
-  box-shadow: 0 2px 4px rgba($accent, 0.2);
+  padding: 6px 12px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  transition: all 0.2s;
+
+  &.badge-premium {
+    background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
+    color: $white;
+    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
+  }
+
+  &.badge-active {
+    background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+    color: $white;
+    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+  }
+
+  &.badge-regular {
+    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+    color: $white;
+    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  }
 
   .badge-text {
     font-size: 11px;
-    color: $white;
-    font-weight: $font-weight-semibold;
   }
 }
 

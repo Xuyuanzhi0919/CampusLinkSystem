@@ -328,7 +328,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { onReachBottom, onPageScroll } from '@dcloudio/uni-app'
+import { onPageScroll } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
@@ -360,7 +360,6 @@ const {
 } = storeToRefs(questionStore)
 const loading = ref(false)
 const refreshing = ref(false)
-const noMoreHintShown = ref(false) // 避免重复弹出“没有更多数据”
 
 // 搜索
 const searchKeyword = ref('')
@@ -480,7 +479,6 @@ const loadQuestions = async (refresh = false) => {
     if (refresh) {
       page.value = 1
       questionStore.clearQuestions()
-      noMoreHintShown.value = false
     }
 
     const params = {
@@ -492,8 +490,6 @@ const loadQuestions = async (refresh = false) => {
       sortBy: sortBy.value,
       sortOrder: 'desc'
     }
-
-    console.log('[Question Page] 加载问题列表，参数：', params)
 
     // refresh=true 时不使用缓存
     await questionStore.loadQuestions(params, !refresh)
@@ -679,28 +675,9 @@ const handleRefresh = () => {
   loadQuestions(true)
 }
 
-// “没有更多数据”提示（节流）
-const showNoMoreToast = () => {
-  if (noMoreHintShown.value) return
-  noMoreHintShown.value = true
-  uni.showToast({
-    title: '没有更多数据了',
-    icon: 'none',
-    duration: 1500
-  })
-}
-
-// 上拉加载更多
+// 点击加载更多
 const handleLoadMore = async () => {
-  if (loading.value) return
-
-  // 如果没有更多数据，显示提示
-  if (!hasMore.value) {
-    if (questions.value.length > 0) {
-      showNoMoreToast()
-    }
-    return
-  }
+  if (loading.value || !hasMore.value) return
 
   try {
     loading.value = true
@@ -716,7 +693,6 @@ const handleLoadMore = async () => {
       sortOrder: 'desc'
     }
 
-    console.log('[Question Page] 加载更多，参数：', params)
     await questionStore.loadQuestions(params, false) // 不使用缓存
   } catch (err: any) {
     console.error('[问答列表] 加载更多失败', err)
@@ -730,58 +706,11 @@ const handleLoadMore = async () => {
   }
 }
 
-// 页面滚动到底部时触发（uni-app生命周期）
-onReachBottom(() => {
-  console.log('[Question Page] onReachBottom 触发 - hasMore:', hasMore.value, '当前页:', page.value, '总页数:', totalPages.value, '列表长度:', questions.value.length)
-
-  // 如果没有更多数据,显示提示
-  if (!hasMore.value && questions.value.length > 0) {
-    console.log('[Question Page] 没有更多数据，显示提示')
-    showNoMoreToast()
-    return
-  }
-
-  handleLoadMore()
-})
-
 // 监听滚动事件
 const handleScroll = (scrollTopValue: number) => {
   // 滚动超过 300px 时显示回到顶部按钮
   showBackToTop.value = scrollTopValue > 300
 }
-
-// H5 端窗口滚动兜底，确保 onReachBottom 不生效时也能触发加载/提示
-// #ifdef H5
-let scrollLoadingTriggered = false // 防止重复触发
-const handleWindowScroll = () => {
-  const scrollTopValue = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
-  handleScroll(scrollTopValue)
-
-  const doc = document.documentElement
-  const distanceToBottom = doc.scrollHeight - (scrollTopValue + doc.clientHeight)
-
-  console.log('[Question Page] H5 滚动监听 - 距离底部:', distanceToBottom, 'px, scrollTop:', scrollTopValue, 'scrollHeight:', doc.scrollHeight, 'clientHeight:', doc.clientHeight)
-
-  if (distanceToBottom <= 100 && !scrollLoadingTriggered) {
-    scrollLoadingTriggered = true
-    console.log('[Question Page] H5 触发加载 - hasMore:', hasMore.value)
-
-    if (!hasMore.value && questions.value.length > 0) {
-      showNoMoreToast()
-    } else if (hasMore.value) {
-      handleLoadMore()
-    }
-
-    // 500ms 后重置标志，允许下次触发
-    setTimeout(() => {
-      scrollLoadingTriggered = false
-    }, 500)
-  } else if (distanceToBottom > 200) {
-    // 离开底部区域时重置标志
-    scrollLoadingTriggered = false
-  }
-}
-// #endif
 
 // 回到顶部
 const scrollToTop = () => {
@@ -823,16 +752,11 @@ onPageScroll((e) => {
 onMounted(() => {
   loadQuestions(true)
   loadSearchHistory()
-  // #ifdef H5
-  window.addEventListener('scroll', handleWindowScroll, { passive: true })
-  // #endif
 })
 
 // 页面卸载
 onUnmounted(() => {
-  // #ifdef H5
-  window.removeEventListener('scroll', handleWindowScroll)
-  // #endif
+  // 清理工作
 })
 </script>
 
@@ -1404,9 +1328,8 @@ onUnmounted(() => {
   z-index: 1;
   width: 100%;
   background: $bg-page;
-  padding-top: 48px;  // 只保留上下 padding
+  padding-top: 48px;
   padding-bottom: 64px;
-  min-height: calc(100vh + 200px); // 确保内容足够长，可以滚动触发加载更多
 
   @media (max-width: 1440px) {
     padding-top: 40px;
@@ -1458,13 +1381,11 @@ onUnmounted(() => {
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
   min-height: 600px;
-  padding-bottom: 500px; // 添加底部 padding，确保可以滚动到底部触发加载
 
   @include mobile {
     flex: none;
     width: 100%;  // 移动端占满容器宽度
     min-height: 400px;
-    padding-bottom: 300px;
   }
 }
 

@@ -111,8 +111,6 @@ export const useQuestionStore = defineStore('question', () => {
       total.value = res.total
       page.value = params.page || 1
 
-      console.log('[Question Store] 加载完成 - 当前页:', page.value, '总页数:', totalPages.value, '总数据:', total.value, '当前列表长度:', questions.value.length, 'hasMore:', hasMore.value)
-
       return res
     } catch (error) {
       console.error('加载问题列表失败:', error)

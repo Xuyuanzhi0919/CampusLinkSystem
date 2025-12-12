@@ -124,6 +124,27 @@
         <text class="empty-text">暂无热门问题</text>
       </view>
     </CCard>
+
+    <!-- 热门搜索模块 -->
+    <CCard variant="default" class="sidebar-card">
+      <view class="card-header">
+        <Icon name="trending-up" :size="18" class="header-icon" />
+        <text class="header-title">热门搜索</text>
+      </view>
+      <view class="hot-searches">
+        <view
+          v-for="(search, index) in hotSearches"
+          :key="index"
+          class="search-item"
+          @click="handleSearchClick(search.keyword)"
+        >
+          <view class="search-rank" :class="getSearchRankClass(index)">{{ index + 1 }}</view>
+          <text class="search-keyword">{{ search.keyword }}</text>
+          <view v-if="search.isHot" class="hot-badge">HOT</view>
+          <view v-if="search.isNew" class="new-badge">NEW</view>
+        </view>
+      </view>
+    </CCard>
   </view>
 </template>
 
@@ -154,6 +175,12 @@ interface HotQuestion {
   answerCount: number
 }
 
+interface HotSearch {
+  keyword: string
+  isHot?: boolean
+  isNew?: boolean
+}
+
 // 热门标签
 const hotTags = ref<HotTag[]>([])
 const showAllTags = ref(false) // 是否展开所有标签
@@ -163,6 +190,18 @@ const activeUsers = ref<ActiveUser[]>([])
 
 // 热门问题
 const hotQuestions = ref<HotQuestion[]>([])
+
+// 热门搜索
+const hotSearches = ref<HotSearch[]>([
+  { keyword: '期末复习资料', isHot: true },
+  { keyword: 'Java多线程', isNew: true },
+  { keyword: '数据结构算法', isHot: true },
+  { keyword: '计算机网络', isNew: false },
+  { keyword: 'Python爬虫', isHot: false },
+  { keyword: '操作系统', isNew: false },
+  { keyword: 'MySQL优化', isHot: true },
+  { keyword: '前端框架', isNew: false }
+])
 
 // 显示的标签（限制数量）
 const displayedTags = computed(() => {
@@ -262,6 +301,18 @@ const handleMyCollections = () => {
 
 const handleMyPoints = () => {
   uni.navigateTo({ url: '/pages/user/points' })
+}
+
+// 热门搜索相关
+const handleSearchClick = (keyword: string) => {
+  emit('filterByTag', keyword)  // 复用标签筛选逻辑
+}
+
+const getSearchRankClass = (index: number) => {
+  if (index === 0) return 'rank-1'
+  if (index === 1) return 'rank-2'
+  if (index === 2) return 'rank-3'
+  return ''
 }
 
 // 加载热门问题
@@ -533,51 +584,60 @@ onMounted(() => {
     transform: translateY(0);
   }
 
-  // 一级标签：深色背景 + 白色文字（高权重）
+  // 一级标签：深色背景 + 白色文字（高权重） - 最大、最醒目
   &.tag-level-1 {
     background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
     border: none;
-    padding: 10px 16px;
-    font-size: 14px;
+    padding: 12px 18px;  // 增大padding
+    font-size: 15px;  // 增大字号
     animation: pulse-tag 3s ease-in-out infinite; // 添加脉冲动画
 
     .tag-text {
       color: $white;
-      font-weight: 600;
+      font-weight: 700;  // 更粗
+      letter-spacing: 0.3px;  // 字间距
     }
 
     .tag-count {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.3);
       color: $white;
       font-weight: 700;
+      font-size: 12px;  // 稍大
+      padding: 4px 8px;  // 增大
     }
 
     &:hover {
       background: linear-gradient(135deg, darken($primary, 5%) 0%, darken($primary, 10%) 100%);
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
+      transform: scale(1.05);  // hover放大
       animation: none; // hover时暂停动画
     }
   }
 
-  // 二级标签：浅色边框 + 深色文字（中权重）
+  // 二级标签：浅色边框 + 深色文字（中权重） - 中等大小
   &.tag-level-2 {
-    background: $white;
+    background: lighten($primary, 47%);  // 浅蓝背景
     border: 1.5px solid lighten($primary, 30%);
+    padding: 9px 14px;  // 稍大于三级
 
     .tag-text {
-      color: $primary;
+      color: darken($primary, 10%);  // 更深蓝
       font-weight: 600;
+      font-size: 13.5px;  // 稍大
     }
 
     .tag-count {
-      background: rgba($primary, 0.1);
+      background: rgba($primary, 0.15);
       color: $primary;
       font-weight: 600;
+      font-size: 11px;
     }
 
     &:hover {
       border-color: $primary;
-      background: lighten($primary, 48%);
+      background: lighten($primary, 44%);
+      transform: scale(1.04);  // hover放大
+      box-shadow: 0 4px 12px rgba($primary, 0.15);
     }
   }
 
@@ -646,31 +706,31 @@ onMounted(() => {
 
 .rank-badge {
   flex-shrink: 0;
-  width: 20px;  // 统一使用px，缩小尺寸
-  height: 20px;
+  width: 24px;  // 增大
+  height: 24px;
   border-radius: 6px;
   background: $gray-100;
   color: $gray-600;
-  font-size: 12px;
-  font-weight: $font-weight-semibold;
+  font-size: 13px;  // 增大字号
+  font-weight: 700;  // 加粗
   @include flex-center;
 
   &.rank-1 {
-    background: $rank-gold;  // 去除渐变
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);  // 金色渐变
     color: $white;
-    box-shadow: none;  // 去除阴影
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
   }
 
   &.rank-2 {
-    background: $rank-silver;  // 去除渐变
+    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);  // 银色渐变
     color: $white;
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.25);
   }
 
   &.rank-3 {
-    background: $rank-bronze;  // 去除渐变
+    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);  // 铜色渐变
     color: $white;
-    box-shadow: none;
+    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
   }
 }
 
@@ -681,27 +741,30 @@ onMounted(() => {
 
 .question-title {
   @include text-ellipsis(2);
-  font-size: 13px;  // 统一使用px
+  font-size: 14px;  // 增大字号
   color: $gray-800;
-  line-height: 1.4;
-  margin-bottom: 6px;  // 统一使用px
+  font-weight: 500;  // 稍微加粗
+  line-height: 1.5;
+  margin-bottom: 8px;  // 增大间距
   transition: color 0.2s ease-out;
 }
 
 .question-meta {
   display: flex;
   align-items: center;
-  gap: 6px;  // 统一使用px
+  gap: 8px;  // 增大间距
 }
 
 .meta-icon {
-  color: $gray-400;
+  color: $primary;  // 改为主色,更醒目
+  flex-shrink: 0;
 }
 
 .meta-text {
-  font-size: 11px;  // 统一使用px
-  color: $gray-500;
-  margin-right: 8px;  // 统一使用px
+  font-size: 12px;  // 增大字号
+  color: $gray-700;  // 加深颜色
+  font-weight: 600;  // 加粗
+  margin-right: 8px;
 }
 
 // ===================================
@@ -736,29 +799,55 @@ onMounted(() => {
     }
   }
 
-  // 第1名特殊样式
+  // 第1名特殊样式 - 金色
   &.user-rank-1 {
     background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FEF3C7 100%);
-    border-color: #F59E0B;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.2);
+    border: 2px solid #F59E0B;
+    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
 
     &:hover {
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.3);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .user-name {
+      color: #92400E;  // 深金色文字
+      font-weight: 700;
     }
   }
 
-  // 第2名特殊样式
+  // 第2名特殊样式 - 银色(增强对比度)
   &.user-rank-2 {
-    background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 50%, #F3F4F6 100%);
-    border-color: #9CA3AF;
-    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.15);
+    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 50%, #E5E7EB 100%);
+    border: 2px solid #9CA3AF;
+    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.2);
+
+    &:hover {
+      box-shadow: 0 5px 16px rgba(107, 114, 128, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .user-name {
+      color: #374151;  // 深灰色文字
+      font-weight: 600;
+    }
   }
 
-  // 第3名特殊样式
+  // 第3名特殊样式 - 铜色(增强对比度)
   &.user-rank-3 {
-    background: linear-gradient(135deg, #FDEDE8 0%, #FED7C3 50%, #FDEDE8 100%);
-    border-color: #F97316;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.15);
+    background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 50%, #FED7AA 100%);
+    border: 2px solid #F97316;
+    box-shadow: 0 3px 10px rgba(249, 115, 22, 0.2);
+
+    &:hover {
+      box-shadow: 0 5px 16px rgba(249, 115, 22, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .user-name {
+      color: #9A3412;  // 深橙色文字
+      font-weight: 600;
+    }
   }
 }
 
@@ -860,13 +949,13 @@ onMounted(() => {
 }
 
 .stat-icon {
-  color: $gray-400;
+  color: $primary;  // 改为主色,更醒目
 }
 
 .user-answers {
-  font-size: 12px;
-  color: $gray-600;
-  font-weight: 500;
+  font-size: 13px;  // 从12px增加
+  color: $gray-700;  // 从600加深到700
+  font-weight: 600;  // 从500加粗到600
 }
 
 .user-badge {
@@ -923,6 +1012,95 @@ onMounted(() => {
   font-size: 13px;
   color: $gray-400;
   text-align: center;
+}
+
+// ===================================
+// 热门搜索
+// ===================================
+.hot-searches {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 8px;
+  background: $gray-50;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: lighten($primary, 48%);
+    transform: translateX(3px);
+
+    .search-keyword {
+      color: $primary;
+    }
+  }
+}
+
+.search-rank {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  background: $gray-200;
+  color: $gray-600;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &.rank-1 {
+    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+    color: $white;
+  }
+
+  &.rank-2 {
+    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);
+    color: $white;
+  }
+
+  &.rank-3 {
+    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
+    color: $white;
+  }
+}
+
+.search-keyword {
+  flex: 1;
+  font-size: 13px;
+  color: $gray-800;
+  font-weight: 500;
+  @include text-ellipsis(1);
+  transition: color 0.2s;
+}
+
+.hot-badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  color: $white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+.new-badge {
+  flex-shrink: 0;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+  color: $white;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
 }
 
 // ===================================

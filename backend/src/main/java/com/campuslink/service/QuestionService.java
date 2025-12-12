@@ -792,18 +792,23 @@ public class QuestionService {
     }
 
     /**
-     * 获取精选问题（用于首页推荐位）
+     * 获取精选问题列表（用于首页推荐位轮播）
      * 筛选规则：
      * 1. 至少3个回答
      * 2. 发布时间在7天内
      * 3. 未被删除、正常状态
-     * 4. 综合质量分数最高
+     * 4. 按综合质量分数排序
      *
-     * 质量分数 = 回答数 * 2 + 浏览数 * 0.001 + 点赞数 * 3 - 天数衰减
+     * 质量分数 = 回答数 * 3 + 浏览数 * 0.002 + 悬赏积分 * 0.5 + 时间衰减
      *
-     * @return 精选问题（可能为null）
+     * @param limit 返回数量，默认5条
+     * @return 精选问题列表
      */
-    public FeaturedQuestionResponse getFeaturedQuestion() {
+    public List<FeaturedQuestionResponse> getFeaturedQuestions(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 5;  // 默认返回5条
+        }
+
         // 查询7天内的问题
         LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
 
@@ -816,8 +821,7 @@ public class QuestionService {
         List<Question> questions = questionMapper.selectList(wrapper);
 
         // 计算每个问题的质量分数
-        FeaturedQuestionResponse bestQuestion = null;
-        double maxScore = 0;
+        List<FeaturedQuestionResponse> featuredList = new ArrayList<>();
 
         for (Question question : questions) {
             // 获取回答数
@@ -835,34 +839,35 @@ public class QuestionService {
             long daysOld = java.time.Duration.between(question.getCreatedAt(), LocalDateTime.now()).toDays();
             double timeDecay = Math.max(0, 7 - daysOld);  // 7天内线性衰减
 
-            // 计算质量分数（Question没有likes字段，使用浏览数和回答数作为质量指标）
+            // 计算质量分数
             double score = answerCount * 3.0  // 回答数权重最高
                     + question.getViews() * 0.002  // 浏览数权重
                     + (question.getRewardPoints() != null ? question.getRewardPoints() * 0.5 : 0)  // 悬赏积分
                     + timeDecay;  // 时间衰减
 
-            if (score > maxScore) {
-                maxScore = score;
-
-                // 查询提问者信息
-                User user = userMapper.selectById(question.getAskerId());
-                if (user != null) {
-                    bestQuestion = FeaturedQuestionResponse.builder()
-                            .qid(question.getQid())
-                            .title(question.getTitle())
-                            .username(user.getNickname())
-                            .avatar(user.getAvatarUrl())
-                            .category(question.getCategory())
-                            .answerCount((int) answerCount)
-                            .views(question.getViews())
-                            .likes(0)  // Question表没有likes字段，默认为0
-                            .createdAt(question.getCreatedAt())
-                            .qualityScore(score)
-                            .build();
-                }
+            // 查询提问者信息
+            User user = userMapper.selectById(question.getAskerId());
+            if (user != null) {
+                FeaturedQuestionResponse response = FeaturedQuestionResponse.builder()
+                        .qid(question.getQid())
+                        .title(question.getTitle())
+                        .username(user.getNickname())
+                        .avatar(user.getAvatarUrl())
+                        .category(question.getCategory())
+                        .answerCount((int) answerCount)
+                        .views(question.getViews())
+                        .likes(0)  // Question表没有likes字段，默认为0
+                        .createdAt(question.getCreatedAt())
+                        .qualityScore(score)
+                        .build();
+                featuredList.add(response);
             }
         }
 
-        return bestQuestion;
+        // 按质量分数降序排序，取前N条
+        return featuredList.stream()
+                .sorted((q1, q2) -> Double.compare(q2.getQualityScore(), q1.getQualityScore()))
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

@@ -22,10 +22,12 @@
       </view>
     </CCard>
 
-    <!-- 精选推荐模块 -->
-    <FeaturedQuestion
-      v-if="featuredQuestion && !isFeaturedDismissed"
-      :question="featuredQuestion"
+    <!-- 精选推荐轮播模块 -->
+    <FeaturedCarousel
+      v-if="featuredQuestions.length > 0 && !isFeaturedDismissed"
+      :questions="featuredQuestions"
+      :autoplay="true"
+      :interval="5000"
       @click="handleFeaturedClick"
       @refresh="handleFeaturedRefresh"
     />
@@ -160,8 +162,8 @@
 import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
-import FeaturedQuestion from '@/components/FeaturedQuestion.vue'
-import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestion } from '@/services/question'
+import FeaturedCarousel from '@/components/FeaturedCarousel.vue'
+import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
 
 // 定义类型
 interface HotTag {
@@ -202,8 +204,8 @@ interface FeaturedQuestionData {
   createdAt?: string  // 可选字段
 }
 
-// 精选问题（真实 API 数据）
-const featuredQuestion = ref<FeaturedQuestionData | null>(null)
+// 精选问题列表（真实 API 数据）
+const featuredQuestions = ref<FeaturedQuestionData[]>([])
 const isFeaturedDismissed = ref(false)
 
 // 热门标签
@@ -386,7 +388,7 @@ const loadActiveUsers = async () => {
   }
 }
 
-// 加载精选问题（真实 API）
+// 加载精选问题列表（真实 API，返回多条用于轮播）
 const loadFeaturedQuestion = async () => {
   // 检查是否在 24 小时内关闭过
   const dismissedTime = uni.getStorageSync('featured_question_dismissed')
@@ -401,17 +403,12 @@ const loadFeaturedQuestion = async () => {
   }
 
   try {
-    const res = await getFeaturedQuestion()
-    if (res) {
-      featuredQuestion.value = res
-    } else {
-      // 后端返回 null，表示没有符合条件的精选问题
-      featuredQuestion.value = null
-    }
+    const res = await getFeaturedQuestions(5)  // 获取 5 条精选问题用于轮播
+    featuredQuestions.value = res || []  // 如果返回 null/undefined，设为空数组
   } catch (error) {
     console.error('[RecommendSidebar] 加载精选问题失败:', error)
     // API 调用失败，不显示卡片
-    featuredQuestion.value = null
+    featuredQuestions.value = []
   }
 }
 

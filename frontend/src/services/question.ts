@@ -155,10 +155,11 @@ export const getActiveUsers = (limit: number = 4, period: '7d' | '30d' = '7d') =
 }
 
 /**
- * 获取精选问题（用于首页推荐位）
+ * 获取精选问题列表（用于首页推荐位轮播）
+ * @param limit 返回数量，默认5条
  */
-export const getFeaturedQuestion = () => {
-  return request.get<{
+export const getFeaturedQuestions = (limit: number = 5) => {
+  return request.get<Array<{
     qid: number
     title: string
     username: string
@@ -168,5 +169,5 @@ export const getFeaturedQuestion = () => {
     views: number
     likes: number
     createdAt: string
-  } | null>('/question/featured')
+  }>>('/question/featured', { limit })
 }

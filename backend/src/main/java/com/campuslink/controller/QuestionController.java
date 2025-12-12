@@ -163,13 +163,12 @@ public class QuestionController {
         return Result.success(users);
     }
 
-    @Operation(summary = "获取精选问题", description = "用于首页推荐位，返回综合质量最高的问题")
+    @Operation(summary = "获取精选问题列表", description = "用于首页推荐位轮播，返回多条综合质量最高的问题")
     @GetMapping("/featured")
-    public Result<FeaturedQuestionResponse> getFeaturedQuestion() {
-        FeaturedQuestionResponse question = questionService.getFeaturedQuestion();
-        if (question == null) {
-            return Result.success("暂无精选问题", null);
-        }
-        return Result.success(question);
+    public Result<List<FeaturedQuestionResponse>> getFeaturedQuestions(
+            @Parameter(description = "返回数量，默认5条") @RequestParam(defaultValue = "5") Integer limit
+    ) {
+        List<FeaturedQuestionResponse> questions = questionService.getFeaturedQuestions(limit);
+        return Result.success(questions);
     }
 }

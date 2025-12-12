@@ -1651,10 +1651,10 @@ const handleSubmit = async () => {
 }
 
 .custom-input {
-  width: 100%;
+  width: 200px; // 固定宽度,不要100%
   height: 44px;
   padding: 0 14px;
-  margin-bottom: 12px;
+  margin: 0 auto 12px; // 居中显示
   background: $gray-50;
   border: 2px solid $gray-300;
   border-radius: 8px;
@@ -1663,6 +1663,7 @@ const handleSubmit = async () => {
   text-align: center;
   color: $gray-900;
   transition: all 0.2s;
+  display: block;
 
   &:focus {
     background: $white;

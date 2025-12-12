@@ -326,16 +326,17 @@ onMounted(() => {
 // 卡片通用样式（统一规范）
 // ===================================
 .sidebar-card {
-  padding: 16px;  // 统一内边距为16px
+  padding: 20px;  // 增加内边距到20px，更宽松
   background: $white;
   border-radius: 12px;
-  border: 1px solid $gray-200;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $gray-100; // 更浅的边框
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); // 更明显的阴影
   transition: all 0.2s ease-out;
 
   &:hover {
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
-    border-color: $gray-300;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+    border-color: $gray-200;
+    transform: translateY(-1px); // hover时轻微上浮
   }
 }
 

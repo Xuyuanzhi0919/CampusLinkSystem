@@ -798,10 +798,10 @@ onUnmounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80px;
-  height: 52px; // 从56px减小到52px，更紧凑
+  height: 48px; // 进一步减小到48px，更扁平
   display: flex;
   align-items: center;
-  gap: 16px; // 从20px减小到16px
+  gap: 16px;
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -1138,11 +1138,12 @@ onUnmounted(() => {
    ======================================== */
 .sticky-nav {
   position: sticky;
-  top: 52px; // 从56px改为52px，与顶部导航高度同步
+  top: 48px; // 与顶部导航高度同步
   z-index: 99;
   width: 100%;
   background: $white;
-  border-bottom: 1px solid $gray-200;
+  border-bottom: 1px solid $gray-100; // 更浅的分割线
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02); // 轻微阴影
 
   @include mobile {
     top: 48px;
@@ -1153,7 +1154,7 @@ onUnmounted(() => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80px;
-  height: 44px; // 从48px减小到44px，更紧凑
+  height: 40px; // 进一步减小到40px
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1363,7 +1364,7 @@ onUnmounted(() => {
   margin: 0 auto;
   padding: 0 80px;  // 与顶部导航一致的左右 padding
   display: flex;
-  gap: 40px;
+  gap: 32px;  // 标准栅格间距，从40px减小到32px
   align-items: start;
 
   @media (max-width: 1600px) {

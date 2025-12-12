@@ -1642,7 +1642,6 @@ const handleSubmit = async () => {
 }
 
 .custom-bounty-box {
-  width: 100%;
   margin-top: 16px;
   padding: 16px;
   background: $white;

@@ -1375,19 +1375,21 @@ onUnmounted(() => {
   width: 100%;
   background: $bg-page;
   padding-top: 48px;
-  // 取消padding-bottom，因为现在是固定高度容器
+  padding-bottom: 64px;  // 恢复底部padding
 
   @media (max-width: 1440px) {
     padding-top: 40px;
+    padding-bottom: 56px;
   }
 
   @media (max-width: 1200px) {
     padding-top: 32px;
+    padding-bottom: 48px;
   }
 
   @include mobile {
     padding-top: 16px;
-    padding-bottom: 24px;  // 移动端保留底部padding
+    padding-bottom: 24px;
   }
 }
 
@@ -1398,9 +1400,7 @@ onUnmounted(() => {
   display: flex;
   gap: 32px;  // 标准栅格间距，从40px减小到32px
   align-items: start;
-  // 固定高度，使左右两侧可以独立滚动
-  height: calc(100vh - 88px);  // 100vh - 顶部导航48px - sticky导航40px
-  overflow: hidden;  // 防止整体滚动
+  // 取消固定高度，恢复正常页面滚动
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -1420,8 +1420,6 @@ onUnmounted(() => {
     padding: 0 16px;
     flex-direction: column;
     gap: 20px;
-    height: auto;  // 移动端恢复自动高度
-    overflow: visible;  // 移动端恢复正常滚动
   }
 }
 
@@ -1429,37 +1427,12 @@ onUnmounted(() => {
 .question-list {
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
-  height: 100%;  // 占满父容器高度
-  overflow-y: auto;  // 独立滚动
-  overflow-x: hidden;  // 防止横向滚动
-  padding-right: 8px;  // 为滚动条留出空间
-  padding-bottom: 40px;  // 底部留白，避免内容紧贴底部
-
-  // 自定义滚动条样式
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: $gray-300;
-    border-radius: 3px;
-
-    &:hover {
-      background: $gray-400;
-    }
-  }
+  padding-bottom: 40px;  // 底部留白
 
   @include mobile {
     flex: none;
     width: 100%;  // 移动端占满容器宽度
-    height: auto;  // 移动端恢复自动高度
-    overflow-y: visible;  // 移动端恢复正常滚动
-    padding-right: 0;
-    padding-bottom: 0;
+    padding-bottom: 24px;
   }
 }
 
@@ -1719,15 +1692,18 @@ onUnmounted(() => {
   color: $gray-500;
 }
 
-// 右侧：侧栏（固定宽度）
+// 右侧：侧栏（固定宽度 + sticky定位）
 .sidebar {
   width: 320px;  // 固定宽度
   flex-shrink: 0;  // 不缩小
-  height: 100%;  // 占满父容器高度
-  overflow-y: auto;  // 独立滚动
+  position: sticky;  // 粘性定位
+  top: 24px;  // 距离视口顶部24px
+  align-self: flex-start;  // 从顶部对齐
+  max-height: calc(100vh - 48px);  // 最大高度 = 视口高度 - 顶部间距 - 底部留白
+  overflow-y: auto;  // 内部滚动（当内容超过最大高度时）
   overflow-x: hidden;  // 防止横向滚动
   padding-right: 8px;  // 为滚动条留出空间
-  padding-bottom: 40px;  // 底部留白，避免内容紧贴底部
+  padding-bottom: 24px;  // 底部留白
 
   // 自定义滚动条样式
   &::-webkit-scrollbar {

@@ -29,10 +29,35 @@
       </CTag>
     </view>
 
-    <!-- 问题标题 -->
-    <view class="question-title">
-      {{ question.title }}
+    <!-- 问题标题 - 强化版 -->
+    <view class="question-title-section">
+      <view class="question-title">
+        {{ question.title }}
+      </view>
     </view>
+
+    <!-- 元数据信息栏 - 新增 -->
+    <view class="question-meta">
+      <view class="meta-item">
+        <Icon name="eye" :size="16" class="meta-icon" />
+        <text class="meta-text">{{ question.views || 0 }} 浏览</text>
+      </view>
+      <view class="meta-divider" />
+      <view class="meta-item">
+        <Icon name="clock" :size="16" class="meta-icon" />
+        <text class="meta-text">{{ formatTime(question.createdAt) }}</text>
+      </view>
+      <view class="meta-divider" />
+      <view class="meta-item">
+        <Icon name="user" :size="16" class="meta-icon" />
+        <text class="meta-text meta-link" @click="handleAskerClick">
+          {{ question.askerName || '匿名用户' }}
+        </text>
+      </view>
+    </view>
+
+    <!-- 分割线 - 新增 -->
+    <view class="section-divider" />
 
     <!-- 问题内容 -->
     <view v-if="question.content" class="question-content">
@@ -83,7 +108,30 @@ const emit = defineEmits<{
   breadcrumbClick: [type: 'home' | 'question' | 'category']
   tagClick: [tag: string]
   previewImage: [index: number]
+  askerClick: []
 }>()
+
+// 格式化时间
+const formatTime = (dateString: string) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+  const minutes = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days = Math.floor(diff / 86400000)
+
+  if (minutes < 1) return '刚刚'
+  if (minutes < 60) return `${minutes}分钟前`
+  if (hours < 24) return `${hours}小时前`
+  if (days < 30) return `${days}天前`
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+}
+
+// 点击提问者
+const handleAskerClick = () => {
+  emit('askerClick')
+}
 
 // 获取分类标签类型
 const getCategoryTagType = (category: string) => {
@@ -187,19 +235,78 @@ const handlePreviewImage = (index: number) => {
 }
 
 // ===================================
-// 问题标题
+// 问题标题区域 - 强化版
 // ===================================
+.question-title-section {
+  margin-bottom: 20px; // 从$sp-6增大
+}
+
 .question-title {
-  font-size: $font-size-3xl;
-  font-weight: $font-weight-bold;
+  font-size: 26px; // 从$font-size-3xl(24px)增大到26px
+  font-weight: 700; // 从$font-weight-bold加粗
   color: $gray-900;
-  line-height: $line-height-tight;
-  margin-bottom: $sp-6;
+  line-height: 1.4; // 从$line-height-tight调整
+  margin-bottom: 0; // 移除底部间距,由父容器控制
   word-wrap: break-word;
+  letter-spacing: -0.02em; // 紧凑字距
 
   @include mobile {
-    font-size: $font-size-2xl;
+    font-size: 22px; // 从$font-size-2xl增大
   }
+}
+
+// ===================================
+// 元数据信息栏 - 新增
+// ===================================
+.question-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.meta-text {
+  font-size: 14px;
+  color: $gray-600;
+  line-height: 1;
+}
+
+.meta-link {
+  color: $primary;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: darken($primary, 10%);
+    text-decoration: underline;
+  }
+}
+
+.meta-divider {
+  width: 1px;
+  height: 14px;
+  background: $gray-300;
+}
+
+// ===================================
+// 分割线 - 新增
+// ===================================
+.section-divider {
+  height: 1px;
+  background: $gray-200;
+  margin: 24px 0; // 上下间距
 }
 
 // ===================================

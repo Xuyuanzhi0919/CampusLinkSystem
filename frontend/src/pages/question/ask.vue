@@ -14,9 +14,11 @@
       </view>
     </view>
 
-    <!-- 内容区（居中，最大宽度 960px） -->
+    <!-- 内容区（双栏布局） -->
     <scroll-view class="content-area" scroll-y>
-      <view class="form-container">
+      <view class="main-container">
+        <!-- 左侧：表单区 -->
+        <view class="form-section">
         <!-- 卡片 1：基本信息 -->
         <CCard variant="elevated" class="form-card basic-info-card">
           <view class="card-header">
@@ -39,10 +41,15 @@
               :show-confirm-bar="false"
             />
             <view class="input-footer">
-              <text class="input-hint">标题应准确概括问题核心，便于其他同学快速理解</text>
+              <text class="input-hint">{{ titleHint }}</text>
               <text class="input-count" :class="{ 'count-warning': titleLength > 90 }">
                 {{ titleLength }}/100
               </text>
+            </view>
+            <!-- 标题检查提示 -->
+            <view v-if="titleCheckMessage" class="title-check-tip" :class="titleCheckType">
+              <Icon :name="titleCheckIcon" :size="14" class="tip-icon" />
+              <text class="tip-text">{{ titleCheckMessage }}</text>
             </view>
           </view>
 
@@ -257,24 +264,39 @@
 
         <!-- 底部占位（为固定操作栏留空间） -->
         <view class="bottom-spacer" />
+        </view>
+
+        <!-- 右侧：辅助栏 -->
+        <view class="sidebar-section">
+          <AskGuideSidebar @example-click="handleExampleClick" />
+        </view>
       </view>
     </scroll-view>
 
     <!-- 底部固定操作栏 -->
     <view class="bottom-action-bar">
       <view class="action-bar-content">
-        <CButton type="ghost" size="lg" @click="handleCancel">
-          取消
-        </CButton>
-        <CButton
-          type="primary"
-          size="lg"
-          :disabled="!canSubmit || loading || submitting"
-          :loading="submitting"
-          @click="handleSubmit"
-        >
-          {{ editMode ? '保存修改' : '发布问题' }}
-        </CButton>
+        <!-- 草稿保存状态提示 -->
+        <view v-if="!editMode && draftSaved" class="draft-status">
+          <Icon name="check-circle" :size="16" class="draft-icon" />
+          <text class="draft-text">草稿已保存</text>
+        </view>
+
+        <!-- 操作按钮 -->
+        <view class="action-buttons">
+          <CButton type="ghost" size="lg" @click="handleCancel">
+            取消
+          </CButton>
+          <CButton
+            type="primary"
+            size="lg"
+            :disabled="!canSubmit || loading || submitting"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
+            {{ editMode ? '保存修改' : '发布问题' }}
+          </CButton>
+        </view>
       </view>
     </view>
 
@@ -299,6 +321,7 @@ import { saveDraft, getDraft, deleteDraft } from '@/utils/draft'
 import type { QuestionCategory } from '@/types/question'
 import { CCard, CButton, CTag } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
+import AskGuideSidebar from './components/AskGuideSidebar.vue'
 
 // Store
 const userStore = useUserStore()
@@ -365,6 +388,54 @@ const isCustomRewardValid = computed(() => {
 const titleLength = computed(() => formData.value.title.length)
 const contentLength = computed(() => formData.value.content.length)
 
+// 标题实时检查
+const titleHint = computed(() => {
+  if (titleLength.value === 0) {
+    return '标题应准确概括问题核心，便于其他同学快速理解'
+  }
+  if (titleLength.value < 5) {
+    return '标题太短，建议至少5个字'
+  }
+  if (titleLength.value > 50) {
+    return '标题较长，建议精简表达'
+  }
+  return '标题长度合适'
+})
+
+const titleCheckMessage = computed(() => {
+  const title = formData.value.title.trim()
+  if (!title || titleLength.value < 5) return ''
+
+  // 检查是否包含问题关键词
+  const questionKeywords = ['如何', '怎么', '怎样', '为什么', '什么', '哪里', '哪个', '能否', '可以', '是否', '？', '?']
+  const hasQuestionKeyword = questionKeywords.some(keyword => title.includes(keyword))
+
+  if (!hasQuestionKeyword) {
+    return '建议使用疑问句式，如：如何、为什么、怎么办等'
+  }
+
+  // 检查是否有具体关键词
+  if (titleLength.value >= 10 && titleLength.value <= 50) {
+    return '标题清晰明确！'
+  }
+
+  return ''
+})
+
+const titleCheckType = computed(() => {
+  const title = formData.value.title.trim()
+  if (!title || titleLength.value < 5) return ''
+
+  const questionKeywords = ['如何', '怎么', '怎样', '为什么', '什么', '哪里', '哪个', '能否', '可以', '是否', '？', '?']
+  const hasQuestionKeyword = questionKeywords.some(keyword => title.includes(keyword))
+
+  return hasQuestionKeyword ? 'success' : 'warning'
+})
+
+const titleCheckIcon = computed(() => {
+  return titleCheckType.value === 'success' ? 'check-circle' : 'alert-triangle'
+})
+
 // 是否可以提交
 const canSubmit = computed(() => {
   return (
@@ -374,14 +445,19 @@ const canSubmit = computed(() => {
   )
 })
 
-// 草稿保存计时器
+// 草稿保存计时器和状态
 let draftTimer: ReturnType<typeof setTimeout> | null = null
+const draftSaved = ref(false)
+let draftStatusTimer: ReturnType<typeof setTimeout> | null = null
 
 // 自动保存草稿
 const autoSaveDraft = () => {
   if (draftTimer) {
     clearTimeout(draftTimer)
   }
+
+  // 重置保存状态显示
+  draftSaved.value = false
 
   draftTimer = setTimeout(() => {
     if (canSubmit.value && !editMode.value) {
@@ -394,6 +470,17 @@ const autoSaveDraft = () => {
         bounty: formData.value.bounty,
         savedAt: Date.now()
       })
+
+      // 显示保存成功状态
+      draftSaved.value = true
+
+      // 3秒后隐藏状态提示
+      if (draftStatusTimer) {
+        clearTimeout(draftStatusTimer)
+      }
+      draftStatusTimer = setTimeout(() => {
+        draftSaved.value = false
+      }, 3000)
     }
   }, 2000)
 }
@@ -627,6 +714,26 @@ const handleCancelCustom = () => {
 }
 
 /**
+ * 点击示例问题
+ */
+const handleExampleClick = (example: { title: string; category: string }) => {
+  uni.showModal({
+    title: '使用示例',
+    content: '是否使用此示例作为参考？',
+    success: (res) => {
+      if (res.confirm) {
+        formData.value.title = example.title
+        formData.value.category = example.category as QuestionCategory
+        uni.showToast({
+          title: '已应用示例',
+          icon: 'success'
+        })
+      }
+    }
+  })
+}
+
+/**
  * 取消编辑
  */
 const handleCancel = () => {
@@ -841,20 +948,62 @@ const handleSubmit = async () => {
 }
 
 // ===================================
-// 内容区（居中，最大宽度 960px）
+// 内容区（双栏布局）
 // ===================================
 .content-area {
   flex: 1;
   overflow-y: auto;
 }
 
-.form-container {
-  max-width: 960px;
+.main-container {
+  max-width: 1280px;  // 与首页一致
   margin: 0 auto;
-  padding: $sp-6 $sp-6 0;
+  padding: 32px 80px 0;  // 与首页一致
+  display: flex;
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 1600px) {
+    padding: 32px 64px 0;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 32px 48px 0;
+    gap: 24px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 32px 32px 0;
+  }
 
   @include mobile {
-    padding: $sp-4 $sp-4 0;
+    padding: 16px 16px 0;
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+// 左侧表单区（主内容）
+.form-section {
+  flex: 1;
+  min-width: 0;
+  max-width: 840px;  // 限制最大宽度，优化阅读体验
+
+  @include mobile {
+    max-width: 100%;
+  }
+}
+
+// 右侧辅助栏
+.sidebar-section {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 100px;  // 导航栏高度 + 间距
+  align-self: flex-start;
+
+  @include mobile {
+    display: none;  // 移动端隐藏
   }
 }
 
@@ -955,8 +1104,16 @@ const handleSubmit = async () => {
 }
 
 .title-input {
-  min-height: 96rpx;
+  min-height: 120rpx;  // 从 96rpx 增加到 120rpx
+  font-size: $font-size-xl;  // 更大的字号
+  font-weight: $font-weight-medium;  // 稍微加粗
   line-height: 1.5;
+  color: $gray-900;  // 更深的颜色
+
+  &::placeholder {
+    font-size: $font-size-lg;  // placeholder 也更大
+    font-weight: $font-weight-normal;
+  }
 }
 
 .content-input {
@@ -988,6 +1145,64 @@ const handleSubmit = async () => {
   }
 }
 
+// 标题检查提示
+.title-check-tip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  animation: slideDown 0.3s ease-out;
+
+  &.success {
+    background: lighten($success, 48%);
+    border: 1px solid lighten($success, 35%);
+
+    .tip-icon {
+      color: $success;
+    }
+
+    .tip-text {
+      color: darken($success, 10%);
+    }
+  }
+
+  &.warning {
+    background: lighten($warning, 45%);
+    border: 1px solid lighten($warning, 30%);
+
+    .tip-icon {
+      color: $warning;
+    }
+
+    .tip-text {
+      color: darken($warning, 15%);
+    }
+  }
+}
+
+.tip-icon {
+  flex-shrink: 0;
+}
+
+.tip-text {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 // ===================================
 // 分类网格
 // ===================================
@@ -1004,45 +1219,45 @@ const handleSubmit = async () => {
 
 .category-pill {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  align-items: center;  // 横向排列，不再是纵向
   justify-content: center;
-  gap: $sp-2;
-  padding: $sp-5 $sp-6;
-  min-width: 160rpx;
+  gap: 6px;  // 缩小间距
+  padding: 10px 18px;  // 缩小 padding
+  min-width: 120px;  // 缩小最小宽度
   background: $gray-50;
-  border: 2rpx solid $gray-200;
-  border-radius: $radius-lg;
+  border: 1.5px solid $gray-200;  // 稍细的边框
+  border-radius: 24px;  // 更圆润的胶囊形状
   cursor: pointer;
   transition: all $duration-base;
 
   @include mobile {
     flex: 1;
     min-width: 0;
-    padding: $sp-4 $sp-5;
+    padding: 8px 14px;
   }
 
   &:hover {
     background: $gray-100;
     border-color: $gray-300;
+    transform: translateY(-1px);  // 轻微上浮
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: translateY(0);
   }
 
   &.active {
-    background: linear-gradient(135deg, $primary-50 0%, $primary-100 100%);
+    background: $primary;  // 直接使用纯色背景，不用渐变
     border-color: $primary;
-    box-shadow: 0 2rpx 8rpx rgba($primary, 0.15);
+    box-shadow: 0 4px 12px rgba($primary, 0.25);
 
     .pill-icon {
-      color: $primary;
+      color: $white;  // 激活时图标变白
     }
 
     .pill-label {
-      color: $primary;
-      font-weight: $font-weight-bold;
+      color: $white;  // 激活时文字变白
+      font-weight: $font-weight-semibold;
     }
   }
 }
@@ -1053,7 +1268,7 @@ const handleSubmit = async () => {
 }
 
 .pill-label {
-  font-size: $font-size-base;
+  font-size: 14px;  // 稍小的字号
   color: $gray-700;
   font-weight: $font-weight-medium;
   transition: all $duration-base;
@@ -1375,16 +1590,68 @@ const handleSubmit = async () => {
 }
 
 .action-bar-content {
-  max-width: 960px;
+  max-width: 1280px;  // 与新布局一致
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;  // 改为两端对齐
   gap: $sp-4;
   padding: $sp-5 $sp-8;
 
   @include mobile {
     padding: $sp-4 $sp-4;
+    gap: $sp-3;
+  }
+}
+
+// 草稿保存状态
+.draft-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: lighten($success, 48%);
+  border: 1px solid lighten($success, 35%);
+  border-radius: 20px;
+  animation: slideIn 0.3s ease-out;
+
+  @include mobile {
+    padding: 6px 12px;
+  }
+}
+
+.draft-icon {
+  color: $success;
+}
+
+.draft-text {
+  font-size: 13px;
+  color: darken($success, 10%);
+  font-weight: 500;
+
+  @include mobile {
+    font-size: 12px;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// 操作按钮组
+.action-buttons {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+
+  @include mobile {
     gap: $sp-3;
   }
 }

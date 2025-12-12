@@ -112,7 +112,7 @@
     </view>
 
     <!-- ========== 主内容区（整页滚动） ========== -->
-    <view class="main-content" style="min-height: 200vh; padding-bottom: 100px;">
+    <view class="main-content">
       <view class="content-container">
         <!-- 左侧：问题列表 -->
         <view class="question-list">
@@ -723,11 +723,7 @@ const handleScroll = (scrollTopValue: number) => {
   showBackToTop.value = scrollTopValue > 300
 
   // 滚动超过阈值时折叠顶部导航
-  const shouldCollapse = scrollTopValue > COLLAPSE_THRESHOLD
-  if (isHeaderCollapsed.value !== shouldCollapse) {
-    console.log(`[滚动折叠] scrollTop: ${scrollTopValue}, collapsed: ${shouldCollapse}`)
-    isHeaderCollapsed.value = shouldCollapse
-  }
+  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
 
   // #ifdef H5
   // H5端手动触发"到达底部"逻辑,实现自动加载更多
@@ -737,7 +733,6 @@ const handleScroll = (scrollTopValue: number) => {
 
   // 距离底部小于50px时触发加载更多
   if (scrollBottom < 50 && hasMore.value && !loading.value) {
-    console.log('[自动加载] 距离底部:', scrollBottom, 'px, 触发加载更多')
     handleLoadMore()
   }
   // #endif
@@ -768,11 +763,7 @@ const scrollToTop = () => {
 
 // 触底加载更多(小程序端使用)
 const onReachBottom = () => {
-  if (!hasMore.value || loading.value) {
-    console.log('[触底加载] 已拦截: hasMore=', hasMore.value, 'loading=', loading.value)
-    return
-  }
-  console.log('[触底加载] 触发加载更多')
+  if (!hasMore.value || loading.value) return
   handleLoadMore()
 }
 
@@ -807,29 +798,17 @@ onPageScroll((e) => {
 // H5端滚动监听函数(需要保存引用以便移除)
 const scrollListener = () => {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-  console.log('[原始滚动事件] scrollTop:', scrollTop)
   handleScroll(scrollTop)
 }
 
 // 页面加载
-onMounted(async () => {
-  console.log('[问答页面] 初始化完成, COLLAPSE_THRESHOLD:', COLLAPSE_THRESHOLD)
-
-  await loadQuestions(true)
+onMounted(() => {
+  loadQuestions(true)
   loadSearchHistory()
-
-  // 延迟检查页面高度
-  setTimeout(() => {
-    const scrollHeight = document.documentElement.scrollHeight
-    const clientHeight = document.documentElement.clientHeight
-    console.log('[页面高度检查] 总高度:', scrollHeight, '视口高度:', clientHeight, '可滚动:', scrollHeight > clientHeight)
-    console.log('[问题列表] 当前问题数量:', questions.value?.length || 0)
-  }, 1000)
 
   // H5端监听窗口滚动事件
   // #ifdef H5
   window.addEventListener('scroll', scrollListener)
-  console.log('[问答页面] H5滚动监听已启动')
   // #endif
 })
 
@@ -838,7 +817,6 @@ onUnmounted(() => {
   // H5端移除滚动监听
   // #ifdef H5
   window.removeEventListener('scroll', scrollListener)
-  console.log('[问答页面] H5滚动监听已移除')
   // #endif
 })
 
@@ -1497,7 +1475,7 @@ defineExpose({
   width: 100%;
   background: $bg-page;
   padding-top: 48px;
-  padding-bottom: 2000px;  // 【临时测试】强制增加高度,确保页面可滚动
+  padding-bottom: 64px;  // 恢复底部padding
 
   @media (max-width: 1440px) {
     padding-top: 40px;
@@ -1550,7 +1528,6 @@ defineExpose({
   flex: 1;  // 自动占据剩余空间
   min-width: 0;
   padding-bottom: 40px;  // 底部留白
-  min-height: 150vh; // 【临时测试】确保页面可滚动,用于测试折叠动画
 
   @include mobile {
     flex: none;

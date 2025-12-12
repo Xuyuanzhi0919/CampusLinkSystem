@@ -186,8 +186,8 @@
               class="upload-box"
               @click="handleChooseImage"
             >
-              <Icon name="image-plus" :size="32" class="upload-icon" />
-              <text class="upload-text">上传图片</text>
+              <Icon name="image-plus" :size="24" class="upload-icon" />
+              <text class="upload-text">上传</text>
             </view>
           </view>
 
@@ -1418,24 +1418,33 @@ const handleSubmit = async () => {
 }
 
 // ===================================
-// 图片网格
+// 图片缩略图列表（优化为横向排列）
 // ===================================
 .images-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: $sp-4;
-  margin-bottom: $sp-4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; // 缩小间距
+  margin-bottom: 16px;
 
   @include mobile {
-    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
   }
 }
 
 .image-item {
   position: relative;
-  aspect-ratio: 1;
-  border-radius: $radius-lg;
+  width: 80px; // 固定缩略图尺寸
+  height: 80px;
+  border-radius: 8px;
   overflow: hidden;
+  border: 2px solid $gray-200;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary, 0.15);
+  }
 }
 
 .image-preview {
@@ -1446,17 +1455,22 @@ const handleSubmit = async () => {
 
 .image-remove {
   position: absolute;
-  top: $sp-2;
-  right: $sp-2;
-  width: 48rpx;
-  height: 48rpx;
+  top: 4px;
+  right: 4px;
+  width: 24px; // 缩小删除按钮
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba($error, 0.9);
+  background: rgba($error, 0.95);
   border-radius: 50%;
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.2s;
+  opacity: 0; // 默认隐藏
+
+  .image-item:hover & {
+    opacity: 1; // hover时显示
+  }
 
   &:active {
     transform: scale(0.9);
@@ -1465,21 +1479,30 @@ const handleSubmit = async () => {
 }
 
 .upload-box {
-  aspect-ratio: 1;
+  width: 80px; // 固定尺寸与缩略图一致
+  height: 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $sp-2;
+  gap: 4px;
   background: $gray-50;
-  border: 2rpx dashed $gray-300;
-  border-radius: $radius-lg;
+  border: 2px dashed $gray-300;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.2s;
 
   &:hover {
-    background: $gray-100;
+    background: lighten($primary, 48%);
     border-color: $primary;
+
+    .upload-icon {
+      color: $primary;
+    }
+
+    .upload-text {
+      color: $primary;
+    }
   }
 
   &:active {
@@ -1489,11 +1512,14 @@ const handleSubmit = async () => {
 
 .upload-icon {
   color: $gray-400;
+  transition: color 0.2s;
 }
 
 .upload-text {
-  font-size: $font-size-sm;
+  font-size: 11px; // 缩小文字
   color: $gray-600;
+  font-weight: 500;
+  transition: color 0.2s;
 }
 
 .upload-hint {
@@ -1517,15 +1543,15 @@ const handleSubmit = async () => {
 }
 
 // ===================================
-// 悬赏积分
+// 悬赏积分（按钮式选择优化）
 // ===================================
 .bounty-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: $sp-3;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px; // 紧凑间距
 
   @include mobile {
-    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
 
@@ -1534,82 +1560,125 @@ const handleSubmit = async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $sp-1;
-  padding: $sp-4 $sp-2;
-  background: $gray-50;
-  border: 2rpx solid $gray-200;
-  border-radius: $radius-lg;
+  gap: 2px; // 紧凑间距
+  padding: 14px 20px; // 更紧凑的内边距
+  min-width: 85px; // 固定最小宽度
+  background: $white;
+  border: 2px solid $gray-200;
+  border-radius: 12px; // 圆润卡片感
   cursor: pointer;
-  transition: all $duration-base;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: $accent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($accent, 0.15);
+  }
 
   &:active {
-    transform: scale(0.98);
+    transform: translateY(0) scale(0.98);
   }
 
   &.active {
-    background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
+    background: $accent; // 强调色纯色背景
     border-color: $accent;
+    box-shadow: 0 4px 16px rgba($accent, 0.25);
 
     .bounty-value {
-      color: $accent;
-      font-weight: $font-weight-bold;
+      color: $white;
+      font-weight: 700;
     }
 
     .bounty-label {
-      color: $accent;
+      color: $white;
+      opacity: 0.9;
     }
   }
 
   &.custom {
-    grid-column: span 2;
+    min-width: 120px; // 自定义按钮稍宽
+    background: lighten($primary, 48%);
+    border-color: $primary;
+    border-style: dashed; // 虚线边框表示自定义
 
-    @include mobile {
-      grid-column: span 3;
+    &:hover {
+      background: lighten($primary, 45%);
+      border-color: $primary;
+    }
+
+    &.active {
+      background: $primary;
+      border-style: solid;
+    }
+
+    .bounty-value {
+      color: $primary;
+    }
+
+    .bounty-label {
+      color: $primary;
+    }
+
+    &.active .bounty-value,
+    &.active .bounty-label {
+      color: $white;
     }
   }
 }
 
 .bounty-value {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-semibold;
-  color: $gray-700;
-  transition: all $duration-base;
+  font-size: 20px; // 大号数字
+  font-weight: 600;
+  color: $gray-800;
+  line-height: 1.2;
+  transition: all 0.2s;
 }
 
 .bounty-label {
-  font-size: $font-size-xs;
+  font-size: 11px;
   color: $gray-500;
-  transition: color $duration-base;
+  font-weight: 500;
+  transition: all 0.2s;
 }
 
 .custom-bounty-box {
-  margin-top: $sp-4;
-  padding: $sp-4;
-  background: $gray-50;
-  border-radius: $radius-md;
+  margin-top: 16px;
+  padding: 20px;
+  background: lighten($primary, 49%);
+  border: 2px dashed $primary;
+  border-radius: 12px;
+  animation: slideDown 0.3s ease-out;
 }
 
 .custom-input {
   width: 100%;
-  height: 80rpx;
-  padding: 0 $sp-4;
-  margin-bottom: $sp-3;
+  height: 48px;
+  padding: 0 16px;
+  margin-bottom: 12px;
   background: $white;
-  border: 1rpx solid $gray-200;
-  border-radius: $radius-md;
-  font-size: $font-size-lg;
+  border: 2px solid $gray-300;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
   text-align: center;
   color: $gray-900;
+  transition: all 0.2s;
 
   &:focus {
-    border-color: $accent;
+    border-color: $primary;
+    box-shadow: 0 0 0 4px rgba($primary, 0.1);
     outline: none;
+  }
+
+  &::placeholder {
+    color: $gray-400;
+    font-weight: 500;
   }
 }
 
 .custom-actions {
   display: flex;
-  gap: $sp-3;
+  gap: 12px;
 }
 
 .custom-error {

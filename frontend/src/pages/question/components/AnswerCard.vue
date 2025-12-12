@@ -102,6 +102,7 @@
         <view class="menu-item" @click="handleShare">
           <Icon name="share-2" :size="20" class="menu-icon" />
           <text class="menu-label">分享回答</text>
+          <Icon name="chevron-right" :size="16" class="menu-arrow" />
         </view>
       </view>
 
@@ -536,7 +537,7 @@ const handleReport = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.6); // 加深到 60%
   z-index: $z-modal;
   display: flex;
   align-items: flex-end;
@@ -547,7 +548,7 @@ const handleReport = () => {
 .menu-content {
   width: 100%;
   background: $white;
-  border-radius: 32rpx 32rpx 0 0;
+  border-radius: 24rpx 24rpx 0 0; // 减小到 12px
   padding: 16rpx 0;
   padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
   animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -600,6 +601,18 @@ const handleReport = () => {
     letter-spacing: 0.5rpx;
   }
 
+  // 右箭头（用于分享等操作）
+  .menu-arrow {
+    color: $gray-400;
+    margin-left: auto;
+    flex-shrink: 0;
+    transition: color $duration-base;
+  }
+
+  &:hover .menu-arrow {
+    color: $gray-600;
+  }
+
   // 危险操作样式
   &--danger {
     .menu-icon {
@@ -618,7 +631,8 @@ const handleReport = () => {
   // 取消按钮样式
   &--cancel {
     justify-content: center;
-    margin-top: 8rpx;
+    margin-top: 16rpx; // 增加到 8px，更独立
+    padding: 32rpx; // 稍微加大内边距
 
     .menu-label {
       color: $gray-600;

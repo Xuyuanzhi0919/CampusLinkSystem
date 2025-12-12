@@ -29,7 +29,7 @@ export const config = {
     : 'ws://localhost:8080',  // 开发环境 WebSocket 地址
 
   // 文件上传地址
-  uploadURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',
+  uploadURL: 'https://campuslink01.oss-cn-hangzhou.aliyuncs.com',
 
   // Token 存储 key
   tokenKey: 'campuslink_token',
@@ -43,7 +43,7 @@ export const config = {
   defaultPageSize: 20,
 
   // 图片域名
-  imageBaseURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',
+  imageBaseURL: 'https://campuslink01.oss-cn-hangzhou.aliyuncs.com',
 
   // 色彩系统（根据 UI 设计文档）
   colors: {

@@ -27,7 +27,7 @@
       v-if="featuredQuestion && !isFeaturedDismissed"
       :question="featuredQuestion"
       @click="handleFeaturedClick"
-      @dismiss="handleFeaturedDismiss"
+      @refresh="handleFeaturedRefresh"
     />
 
     <!-- 活跃答主模块 -->
@@ -420,9 +420,10 @@ const handleFeaturedClick = (qid: number) => {
   uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
 }
 
-// 关闭精选问题
-const handleFeaturedDismiss = () => {
-  isFeaturedDismissed.value = true
+// 刷新精选问题（换一换）
+const handleFeaturedRefresh = () => {
+  // 重新加载精选问题
+  loadFeaturedQuestion()
 }
 
 // 组件挂载时加载数据

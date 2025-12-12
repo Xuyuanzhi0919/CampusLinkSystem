@@ -1,14 +1,16 @@
 <template>
   <view class="featured-question" @click="handleClick">
-    <!-- 顶部标签 -->
-    <view class="card-header">
-      <Icon name="star" :size="14" class="star-icon" />
-      <text class="header-text">精选推荐</text>
+    <!-- 顶部区域：标签 + 刷新按钮 -->
+    <view class="top-section">
+      <view class="featured-badge">
+        <Icon name="star" :size="14" class="star-icon" />
+        <text class="badge-text">精选推荐</text>
+      </view>
       <Icon
-        name="x"
+        name="refresh-cw"
         :size="14"
-        class="close-btn"
-        @click.stop="handleDismiss"
+        class="refresh-btn"
+        @click.stop="handleRefresh"
       />
     </view>
 
@@ -24,19 +26,19 @@
       </view>
     </view>
 
-    <!-- 数据指标 -->
+    <!-- 数据指标（按互动优先级排序：回答 → 浏览 → 点赞） -->
     <view class="stats">
-      <view class="stat-item">
-        <Icon name="message-circle" :size="12" class="stat-icon" />
+      <view class="stat-item stat-primary">
+        <Icon name="message-circle" :size="13" class="stat-icon" />
         <text class="stat-text">{{ question.answerCount }} 回答</text>
       </view>
       <view class="stat-item">
-        <Icon name="eye" :size="12" class="stat-icon" />
-        <text class="stat-text">{{ formatViews(question.views) }} 浏览</text>
+        <Icon name="eye" :size="13" class="stat-icon" />
+        <text class="stat-text">{{ formatViews(question.views) }}</text>
       </view>
       <view class="stat-item">
-        <Icon name="thumbs-up" :size="12" class="stat-icon" />
-        <text class="stat-text">{{ question.likes }} 点赞</text>
+        <Icon name="thumbs-up" :size="13" class="stat-icon" />
+        <text class="stat-text">{{ question.likes }}</text>
       </view>
     </view>
   </view>
@@ -65,7 +67,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   click: [qid: number]
-  dismiss: []
+  refresh: []
 }>()
 
 // 格式化浏览量（1000+ 显示为 1k）
@@ -83,18 +85,14 @@ const handleClick = () => {
   emit('click', props.question.qid)
 }
 
-// 关闭卡片（24小时内不再显示）
-const handleDismiss = () => {
-  emit('dismiss')
-
-  // 存储到本地，24小时内不显示
-  const dismissTime = Date.now()
-  uni.setStorageSync('featured_question_dismissed', dismissTime)
+// 刷新推荐（换一换）
+const handleRefresh = () => {
+  emit('refresh')
 
   uni.showToast({
-    title: '已关闭',
-    icon: 'success',
-    duration: 1500
+    title: '正在刷新推荐...',
+    icon: 'loading',
+    duration: 1000
   })
 }
 </script>
@@ -103,75 +101,69 @@ const handleDismiss = () => {
 @import '@/styles/variables.scss';
 
 .featured-question {
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border-radius: $radius-card;
+  background: $white;
+  border-radius: 8px;  // 8px 圆角（更现代）
   padding: 16px;
-  box-shadow: $shadow-card;
+  border: 1px solid $primary;  // 1px 品牌蓝描边
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  transition: all 0.25s ease;
   position: relative;
 
-  // 渐变边框效果
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: $radius-card;
-    padding: 2px;
-    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.6;
-    transition: opacity 0.3s ease;
-  }
-
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.15);
-
-    &::before {
-      opacity: 1;
-    }
+    border-color: darken($primary, 10%);  // hover时边框加深
+    background: lighten($primary, 49%);  // 极浅蓝背景
   }
 
   &:active {
-    transform: translateY(0);
+    transform: scale(0.99);
   }
 }
 
-// 顶部标签区域
-.card-header {
+// 顶部区域（标签 + 刷新按钮）
+.top-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+// 精选徽标（胶囊形状）
+.featured-badge {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 12px;
+  padding: 6px 12px;  // 增加左右内边距
+  background: linear-gradient(135deg, rgba($accent, 0.12) 0%, rgba($accent, 0.06) 100%);  // 橙色渐变背景，稍微加深
+  border-radius: 20px;  // 圆角胶囊
+  border: 1px solid rgba($accent, 0.2);  // 增加边框，更突出
 
   .star-icon {
     color: $accent;
   }
 
-  .header-text {
-    font-size: $font-size-sm;
-    font-weight: 600;
+  .badge-text {
+    font-size: 13px;
+    font-weight: 700;  // 粗体
     color: $accent;
-    flex: 1;
+    letter-spacing: 0.5px;  // 字间距
+  }
+}
+
+// 刷新按钮
+.refresh-btn {
+  color: $primary;
+  padding: 4px;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: lighten($primary, 45%);
+    transform: rotate(90deg);  // hover时旋转90度
   }
 
-  .close-btn {
-    color: $gray-400;
-    padding: 4px;
-    border-radius: 50%;
-    transition: all 0.2s ease;
-
-    &:hover {
-      background-color: $gray-100;
-      color: $gray-600;
-    }
-
-    &:active {
-      background-color: $gray-200;
-    }
+  &:active {
+    background-color: lighten($primary, 40%);
+    transform: rotate(180deg);  // 点击时旋转180度
   }
 }
 
@@ -180,19 +172,19 @@ const handleDismiss = () => {
   margin-bottom: 12px;
 
   .title {
-    font-size: $font-size-base;
-    font-weight: 600;
+    font-size: 16px;  // 从14px增加到16px（更突出）
+    font-weight: 600;  // Medium权重
     color: $text-primary;
-    line-height: 1.5;
+    line-height: 1.4;  // 从1.5减少到1.4（更紧凑）
     display: -webkit-box;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
     text-overflow: ellipsis;
-    margin-bottom: 10px;
+    margin-bottom: 12px;  // 从10px增加到12px（与标签区拉开间距）
 
     // 确保至少显示一行
-    min-height: 2.8em;
+    min-height: 2.6em;  // 根据新行高调整
   }
 
   .meta {
@@ -231,15 +223,29 @@ const handleDismiss = () => {
   .stat-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;  // 从4px增加到5px
 
     .stat-icon {
-      color: $gray-400;
+      color: $primary;  // 从gray-400改为primary（更醒目）
+      flex-shrink: 0;
     }
 
     .stat-text {
-      font-size: $font-size-xs;
-      color: $text-secondary;
+      font-size: 13px;  // 从12px增加到13px
+      color: $gray-700;  // 从text-secondary($gray-600)加深到$gray-700
+      font-weight: 500;  // 增加字重
+    }
+
+    // 第一个数据项（回答数）视觉突出
+    &.stat-primary {
+      .stat-icon {
+        color: $accent;  // 橙色，最突出
+      }
+
+      .stat-text {
+        color: $text-primary;  // 更深的颜色
+        font-weight: 600;  // 更粗的字重
+      }
     }
   }
 }

@@ -224,7 +224,7 @@
         </view>
 
         <!-- 右侧：推荐侧栏 -->
-        <view class="sidebar">
+        <view class="sidebar" :class="{ 'header-collapsed': isHeaderCollapsed }">
           <RecommendSidebar @filter-by-tag="handleFilterByTag" />
         </view>
       </view>
@@ -1474,21 +1474,21 @@ defineExpose({
   z-index: 1;
   width: 100%;
   background: $bg-page;
-  padding-top: 48px;
-  padding-bottom: 64px;  // 恢复底部padding
+  padding-top: 124px;  // 顶部导航60px + 二级导航40px + 间距24px = 124px
+  padding-bottom: 64px;
 
   @media (max-width: 1440px) {
-    padding-top: 40px;
+    padding-top: 116px;  // 60 + 40 + 16
     padding-bottom: 56px;
   }
 
   @media (max-width: 1200px) {
-    padding-top: 32px;
+    padding-top: 112px;  // 60 + 40 + 12
     padding-bottom: 48px;
   }
 
   @include mobile {
-    padding-top: 16px;
+    padding-top: 100px;  // 移动端顶部导航56px + 二级导航40px + 小间距
     padding-bottom: 24px;
   }
 }
@@ -1797,13 +1797,20 @@ defineExpose({
   width: 320px;  // 固定宽度
   flex-shrink: 0;  // 不缩小
   position: sticky;  // 粘性定位
-  top: 24px;  // 距离视口顶部24px
+  top: 124px;  // 顶部导航60px + 二级导航40px + 间距24px = 124px
   align-self: flex-start;  // 从顶部对齐
-  max-height: calc(100vh - 60px);  // 最大高度 = 视口高度 - 顶部间距 - 底部留白
+  max-height: calc(100vh - 148px);  // 视口高度 - top(124px) - 底部留白(24px)
   overflow-y: auto;  // 内部滚动（当内容超过最大高度时）
   overflow-x: hidden;  // 防止横向滚动
   padding-right: 8px;  // 为滚动条留出空间
   padding-bottom: 24px;  // 底部留白
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0), max-height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+
+  // 当顶部导航折叠时,侧栏同步上移
+  &.header-collapsed {
+    top: 112px;  // 折叠后: 48px + 40px + 24px = 112px
+    max-height: calc(100vh - 136px);  // 视口高度 - top(112px) - 底部留白(24px)
+  }
 
   // 自定义滚动条样式
   &::-webkit-scrollbar {

@@ -19,38 +19,34 @@
       <view class="main-container">
         <!-- 左侧：表单区 -->
         <view class="form-section">
-        <!-- 卡片 1：基本信息 -->
-        <CCard variant="elevated" class="form-card basic-info-card">
+        <!-- 独立标题输入区（主视觉焦点） -->
+        <view class="title-section">
+          <textarea
+            v-model="formData.title"
+            class="title-main-input"
+            placeholder="输入你的问题标题..."
+            :maxlength="100"
+            :auto-height="true"
+            :show-confirm-bar="false"
+          />
+          <view class="title-footer">
+            <text class="title-hint">{{ titleHint }}</text>
+            <text class="title-count" :class="{ 'count-warning': titleLength > 90 }">
+              {{ titleLength }}/100
+            </text>
+          </view>
+          <!-- 标题检查提示 -->
+          <view v-if="titleCheckMessage" class="title-check-tip" :class="titleCheckType">
+            <Icon :name="titleCheckIcon" :size="14" class="tip-icon" />
+            <text class="tip-text">{{ titleCheckMessage }}</text>
+          </view>
+        </view>
+
+        <!-- 卡片 1：问题详情 -->
+        <CCard variant="elevated" class="form-card content-card">
           <view class="card-header">
             <Icon name="edit" :size="20" class="header-icon" />
-            <text class="header-title">基本信息</text>
-          </view>
-
-          <!-- 问题标题 -->
-          <view class="form-item">
-            <view class="item-label">
-              <text class="label-text">问题标题</text>
-              <text class="label-required">*</text>
-            </view>
-            <textarea
-              v-model="formData.title"
-              class="input-field title-input"
-              placeholder="简明扼要地描述你的问题..."
-              :maxlength="100"
-              :auto-height="true"
-              :show-confirm-bar="false"
-            />
-            <view class="input-footer">
-              <text class="input-hint">{{ titleHint }}</text>
-              <text class="input-count" :class="{ 'count-warning': titleLength > 90 }">
-                {{ titleLength }}/100
-              </text>
-            </view>
-            <!-- 标题检查提示 -->
-            <view v-if="titleCheckMessage" class="title-check-tip" :class="titleCheckType">
-              <Icon :name="titleCheckIcon" :size="14" class="tip-icon" />
-              <text class="tip-text">{{ titleCheckMessage }}</text>
-            </view>
+            <text class="header-title">问题详情</text>
           </view>
 
           <!-- 问题详情 -->
@@ -987,10 +983,90 @@ const handleSubmit = async () => {
 .form-section {
   flex: 1;
   min-width: 0;
-  max-width: 840px;  // 限制最大宽度，优化阅读体验
+  max-width: 760px;  // 与首页主内容区宽度完全一致，优化阅读体验
 
   @include mobile {
     max-width: 100%;
+  }
+}
+
+// ===================================
+// 独立标题输入区（主视觉焦点）
+// ===================================
+.title-section {
+  background: $white;
+  border-radius: 16px;  // 更大的圆角，突出重要性
+  padding: 32px;  // 更大的内边距
+  margin-bottom: 24px;
+  border: 2px solid $gray-100;  // 稍粗的边框
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);  // 更明显的阴影
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 6px 24px rgba($primary, 0.12);
+    transform: translateY(-2px);  // 聚焦时轻微上浮
+  }
+
+  @include mobile {
+    padding: 24px 20px;
+    margin-bottom: 20px;
+  }
+}
+
+.title-main-input {
+  width: 100%;
+  min-height: 64px;  // 更高的输入框
+  font-size: 20px;  // 更大的字号（PC端）
+  font-weight: 600;  // 加粗，突出重要性
+  line-height: 1.5;
+  color: $gray-900;
+  border: none;
+  background: transparent;
+  outline: none;
+  resize: none;
+
+  &::placeholder {
+    font-size: 18px;
+    font-weight: 500;
+    color: $gray-400;
+  }
+
+  @include mobile {
+    min-height: 56px;
+    font-size: 18px;
+
+    &::placeholder {
+      font-size: 16px;
+    }
+  }
+}
+
+.title-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $gray-100;
+}
+
+.title-hint {
+  font-size: 13px;
+  color: $gray-500;
+  flex: 1;
+  line-height: 1.5;
+}
+
+.title-count {
+  font-size: 13px;
+  color: $gray-400;
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+
+  &.count-warning {
+    color: $warning;
+    font-weight: 600;
   }
 }
 

@@ -119,7 +119,7 @@ const handleExampleClick = (example: typeof examples[0]) => {
 .ask-guide-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px; // 增大模块间距，从20px增加到24px
 }
 
 // ===================================
@@ -145,21 +145,24 @@ const handleExampleClick = (example: typeof examples[0]) => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px; // 增大图标与标题间距
   margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid $gray-100;
+  padding: 12px 16px; // 添加内边距，增强模块标题区域感
+  background: lighten($primary, 48%); // 添加淡蓝色背景
+  border-radius: 8px; // 圆角处理
+  border-bottom: none; // 移除底部边框，改用背景区分
 }
 
 .header-icon {
-  color: $primary;
+  color: $primary; // 保持品牌蓝色
+  flex-shrink: 0;
 }
 
 .header-title {
-  font-size: 15px;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-  letter-spacing: 0;
+  font-size: 16px; // 从15px增大到16px
+  font-weight: 600; // 从$font-weight-semibold(500)增强到600
+  color: $gray-900; // 从$gray-800加深到$gray-900
+  letter-spacing: -0.01em; // 紧凑字距，更现代
   flex: 1;
 }
 

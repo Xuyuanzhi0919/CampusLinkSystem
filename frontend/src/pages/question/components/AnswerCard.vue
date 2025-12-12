@@ -85,30 +85,37 @@
       </view>
     </view>
 
-    <!-- 更多菜单弹出层 -->
+    <!-- 更多菜单弹出层 - 优化版 -->
     <view v-if="showMenu" class="menu-overlay" @click="hideMoreMenu">
       <view class="menu-content" @click.stop>
-        <!-- 复制内容 -->
-        <view class="menu-item" @click="handleCopy">
-          <text class="menu-icon">📋</text>
-          <text class="menu-label">复制内容</text>
+        <!-- 常规操作组 -->
+        <view class="menu-group">
+          <!-- 复制内容 -->
+          <view class="menu-item" @click="handleCopy">
+            <Icon name="copy" :size="20" class="menu-icon" />
+            <text class="menu-label">复制内容</text>
+          </view>
+
+          <!-- 分享回答 -->
+          <view class="menu-item" @click="handleShare">
+            <Icon name="share-2" :size="20" class="menu-icon" />
+            <text class="menu-label">分享回答</text>
+          </view>
         </view>
 
-        <!-- 分享回答 -->
-        <view class="menu-item" @click="handleShare">
-          <text class="menu-icon">📤</text>
-          <text class="menu-label">分享回答</text>
+        <!-- 危险操作组（非本人） -->
+        <view v-if="!isMyAnswer" class="menu-group menu-group--danger">
+          <view class="menu-item menu-item--danger" @click="handleReport">
+            <Icon name="flag" :size="20" class="menu-icon" />
+            <text class="menu-label">举报</text>
+          </view>
         </view>
 
-        <!-- 举报回答（非本人） -->
-        <view v-if="!isMyAnswer" class="menu-item" @click="handleReport">
-          <text class="menu-icon">🚨</text>
-          <text class="menu-label">举报</text>
-        </view>
-
-        <!-- 取消 -->
-        <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
-          <text class="menu-label">取消</text>
+        <!-- 取消按钮 -->
+        <view class="menu-group">
+          <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
+            <text class="menu-label">取消</text>
+          </view>
         </view>
       </view>
     </view>
@@ -520,7 +527,7 @@ const handleReport = () => {
 }
 
 // ===================================
-// 更多菜单弹出层
+// 更多菜单弹出层 - 优化版
 // ===================================
 .menu-overlay {
   position: fixed;
@@ -528,56 +535,99 @@ const handleReport = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.5);
   z-index: $z-modal;
   display: flex;
   align-items: flex-end;
-  animation: fadeIn 0.2s ease-out;
+  animation: fadeIn 0.25s ease-out;
+  backdrop-filter: blur(4rpx);
 }
 
 .menu-content {
   width: 100%;
   background: $white;
-  border-radius: $radius-xl $radius-xl 0 0;
-  padding: $sp-4 0;
-  animation: slideUp 0.2s ease-out;
-  padding-bottom: env(safe-area-inset-bottom);
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 16rpx 0;
+  padding-bottom: calc(16rpx + env(safe-area-inset-bottom));
+  animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -8rpx 32rpx rgba(0, 0, 0, 0.12);
 }
 
+// 菜单分组
+.menu-group {
+  padding: 8rpx 0;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx solid $gray-100;
+  }
+
+  // 危险操作组
+  &--danger {
+    background: lighten($error, 52%);
+  }
+}
+
+// 菜单项
 .menu-item {
   display: flex;
   align-items: center;
-  padding: 24rpx 48rpx;
-  transition: background $duration-base;
+  padding: 28rpx 40rpx;
+  transition: all $duration-base;
   cursor: pointer;
+  min-height: 96rpx;
 
   &:active {
-    background: $gray-50;
+    background: $gray-100;
+    transform: scale(0.98);
   }
 
-  &--cancel {
-    justify-content: center;
-    border-top: 12rpx solid $gray-50;
-    margin-top: $sp-2;
-    padding: 32rpx;
+  // 菜单图标
+  .menu-icon {
+    width: 40rpx;
+    height: 40rpx;
+    margin-right: 24rpx;
+    color: $gray-700;
+    flex-shrink: 0;
+  }
+
+  // 菜单文字
+  .menu-label {
+    flex: 1;
+    font-size: 32rpx;
+    color: $gray-900;
+    font-weight: 500;
+    letter-spacing: 0.5rpx;
+  }
+
+  // 危险操作样式
+  &--danger {
+    .menu-icon {
+      color: $error;
+    }
 
     .menu-label {
-      color: $gray-500;
-      font-weight: 500;
+      color: $error;
+    }
+
+    &:active {
+      background: lighten($error, 48%);
     }
   }
-}
 
-.menu-icon {
-  font-size: 40rpx;
-  margin-right: $sp-4;
-  width: 40rpx;
-  text-align: center;
-}
+  // 取消按钮样式
+  &--cancel {
+    justify-content: center;
+    margin-top: 8rpx;
 
-.menu-label {
-  font-size: 32rpx;
-  color: $gray-800;
+    .menu-label {
+      color: $gray-600;
+      font-weight: 600;
+    }
+
+    &:active {
+      background: $gray-50;
+    }
+  }
 }
 
 // ===================================

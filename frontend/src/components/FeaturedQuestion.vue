@@ -118,7 +118,7 @@ const handleDismiss = () => {
     inset: 0;
     border-radius: $radius-card;
     padding: 2px;
-    background: $gradient-primary;
+    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
     -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;

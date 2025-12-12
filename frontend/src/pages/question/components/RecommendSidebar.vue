@@ -5,6 +5,7 @@
       <view class="card-header">
         <Icon name="users" :size="18" class="header-icon" />
         <text class="header-title">活跃答主</text>
+        <text class="view-more" @click="handleViewMoreUsers">查看更多 ></text>
       </view>
       <view v-if="activeUsers.length > 0" class="active-users">
         <view
@@ -47,12 +48,16 @@
       <view class="card-header">
         <Icon name="tag" :size="18" class="header-icon" />
         <text class="header-title">热门标签</text>
+        <text class="view-more" @click="handleViewMoreTags">
+          {{ showAllTags ? '收起' : '展开更多' }} {{ showAllTags ? '▴' : '▾' }}
+        </text>
       </view>
       <view v-if="hotTags.length > 0" class="tags-grid">
         <view
-          v-for="tag in hotTags"
+          v-for="(tag, index) in displayedTags"
           :key="tag.name"
           class="tag-pill"
+          :class="getTagLevelClass(index, tag.count)"
           @click="handleTagClick(tag.name)"
         >
           <text class="tag-text">{{ tag.name }}</text>
@@ -101,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
 import { getQuestionList, getHotTags, getActiveUsers } from '@/services/question'
@@ -129,12 +134,21 @@ interface HotQuestion {
 
 // 热门标签
 const hotTags = ref<HotTag[]>([])
+const showAllTags = ref(false) // 是否展开所有标签
 
 // 活跃答主
 const activeUsers = ref<ActiveUser[]>([])
 
 // 热门问题
 const hotQuestions = ref<HotQuestion[]>([])
+
+// 显示的标签（限制数量）
+const displayedTags = computed(() => {
+  if (showAllTags.value) {
+    return hotTags.value
+  }
+  return hotTags.value.slice(0, 6) // 默认只显示前6个
+})
 
 // 排名徽章样式（问题）
 const getRankClass = (index: number) => {
@@ -175,6 +189,16 @@ const getBadgeIcon = (badge: string) => {
   return 'award'
 }
 
+// 标签层级样式（按权重分层）
+const getTagLevelClass = (index: number, count: number) => {
+  // 一级标签：前2个或计数>10
+  if (index < 2 || count > 10) return 'tag-level-1'
+  // 二级标签：前5个或计数>5
+  if (index < 5 || count > 5) return 'tag-level-2'
+  // 三级标签：其他
+  return 'tag-level-3'
+}
+
 // Emits
 const emit = defineEmits<{
   filterByTag: [tag: string]
@@ -183,6 +207,16 @@ const emit = defineEmits<{
 // 点击标签 - 触发父组件筛选
 const handleTagClick = (tag: string) => {
   emit('filterByTag', tag)
+}
+
+// 展开/收起标签
+const handleViewMoreTags = () => {
+  showAllTags.value = !showAllTags.value
+}
+
+// 查看更多用户
+const handleViewMoreUsers = () => {
+  uni.showToast({ title: '查看更多用户功能开发中', icon: 'none' })
 }
 
 // 点击问题
@@ -308,9 +342,9 @@ onMounted(() => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
-  padding-bottom: 10px;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
   border-bottom: 1px solid $gray-100;
 }
 
@@ -319,20 +353,38 @@ onMounted(() => {
 }
 
 .header-title {
-  font-size: 15px;  // 减小字号
+  font-size: 15px;
   font-weight: $font-weight-semibold;
-  color: $gray-800;  // 从900降为800
+  color: $gray-800;
   letter-spacing: 0;
   flex: 1;
 }
 
+.view-more {
+  font-size: 12px;
+  color: $primary;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    color: darken($primary, 10%);
+    transform: translateX(2px);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
 // ===================================
-// 热门标签
+// 热门标签（按权重分层）
 // ===================================
 .tags-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;  // 统一使用px
+  gap: 10px;
+  row-gap: 12px; // 行间距稍大
 }
 
 .tag-pill {
@@ -340,92 +392,104 @@ onMounted(() => {
   align-items: center;
   gap: 6px;
   padding: 8px 14px;
-  background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
-  border-radius: 20px;
-  border: 1.5px solid #BAE6FD;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
-  overflow: hidden;
-
-  // 热度前3的标签使用不同配色
-  &:nth-child(1) {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
-    border-color: #FCD34D;
-
-    .tag-text { color: #92400E; }
-    .tag-count {
-      background: rgba(217, 119, 6, 0.15);
-      color: #D97706;
-    }
-  }
-
-  &:nth-child(2) {
-    background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
-    border-color: #FCA5A5;
-
-    .tag-text { color: #991B1B; }
-    .tag-count {
-      background: rgba(239, 68, 68, 0.15);
-      color: #EF4444;
-    }
-  }
-
-  &:nth-child(3) {
-    background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%);
-    border-color: #A5B4FC;
-
-    .tag-text { color: #3730A3; }
-    .tag-count {
-      background: rgba(99, 102, 241, 0.15);
-      color: #6366F1;
-    }
-  }
+  font-weight: 500;
 
   &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
-    border-color: $primary;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
   }
 
   &:active {
-    transform: translateY(-1px) scale(1.02);
+    transform: translateY(0);
   }
 
-  // 闪烁动画（仅前3个）
-  &:nth-child(-n+3)::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-    animation: shimmer 3s infinite;
-  }
-}
+  // 一级标签：深色背景 + 白色文字（高权重）
+  &.tag-level-1 {
+    background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+    border: none;
+    padding: 10px 16px;
+    font-size: 14px;
 
-@keyframes shimmer {
-  0%, 100% { left: -100%; }
-  50% { left: 100%; }
+    .tag-text {
+      color: $white;
+      font-weight: 600;
+    }
+
+    .tag-count {
+      background: rgba(255, 255, 255, 0.25);
+      color: $white;
+      font-weight: 700;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, darken($primary, 5%) 0%, darken($primary, 10%) 100%);
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+    }
+  }
+
+  // 二级标签：浅色边框 + 深色文字（中权重）
+  &.tag-level-2 {
+    background: $white;
+    border: 1.5px solid lighten($primary, 30%);
+
+    .tag-text {
+      color: $primary;
+      font-weight: 600;
+    }
+
+    .tag-count {
+      background: rgba($primary, 0.1);
+      color: $primary;
+      font-weight: 600;
+    }
+
+    &:hover {
+      border-color: $primary;
+      background: lighten($primary, 48%);
+    }
+  }
+
+  // 三级标签：灰色边框 + 灰色文字（低权重）
+  &.tag-level-3 {
+    background: $gray-50;
+    border: 1px solid $gray-200;
+
+    .tag-text {
+      color: $gray-700;
+      font-weight: 500;
+    }
+
+    .tag-count {
+      background: $white;
+      color: $gray-600;
+      font-weight: 600;
+      border: 1px solid $gray-200;
+    }
+
+    &:hover {
+      background: $white;
+      border-color: $gray-400;
+    }
+  }
 }
 
 .tag-text {
   font-size: 13px;
-  color: #1E40AF;
-  font-weight: 600;
   letter-spacing: 0.3px;
+  line-height: 1;
 }
 
 .tag-count {
   font-size: 11px;
-  font-weight: 700;
-  color: #3B82F6;
-  background: rgba(59, 130, 246, 0.15);
-  padding: 2px 6px;
-  border-radius: 10px;
-  min-width: 20px;
+  padding: 3px 7px;
+  border-radius: 12px;
+  min-width: 22px;
   text-align: center;
+  line-height: 1;
 }
 
 // ===================================

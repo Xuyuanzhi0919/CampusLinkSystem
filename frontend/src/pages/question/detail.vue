@@ -595,38 +595,73 @@ const handleRetry = () => {
 }
 
 // ===================================
-// 居中内容容器（主布局）
+// 居中内容容器（主布局）- 统一栅格系统
+// ===================================
+// 栅格系统规范（与首页对齐）：
+// - 容器宽度：1440px
+// - 左侧内容区：860px (flex: 1, max-width)
+// - 中间间隙：24px (gap: 48rpx)
+// - 右侧边栏：360px (固定宽度)
+// - 两侧留白：48px × 2
+// - 总计：48 + 860 + 24 + 360 + 48 = 1340px (留有 100px 弹性空间)
 // ===================================
 .detail-container {
-  max-width: 1200px;
+  max-width: 1440px; // 容器最大宽度
   margin: 0 auto;
   display: flex;
-  gap: 40rpx;
+  gap: 48rpx; // 24px 中间间距
+  padding: 0 48rpx; // 两侧留白 48px
 
+  // 中等屏幕适配（1200px - 1440px）
+  @media (max-width: 1440px) {
+    padding: 0 32rpx; // 缩小两侧留白
+    gap: 40rpx; // 缩小间距到 20px
+  }
+
+  // 小屏幕适配（< 1200px）
+  @media (max-width: 1200px) {
+    padding: 0 24rpx; // 进一步缩小留白
+    gap: 32rpx; // 间距缩小到 16px
+  }
+
+  // 移动端：纵向布局
   @include mobile {
     flex-direction: column;
-    gap: $sp-6;
+    gap: 32rpx;
+    padding: 0 24rpx;
   }
 }
 
 // ===================================
-// 主内容区（左侧）
+// 主内容区（左侧）- 固定宽度范围
 // ===================================
 .main-content {
   flex: 1;
   min-width: 0;
+  max-width: 860px; // 与首页统一：800-860px
   display: flex;
   flex-direction: column;
-  gap: $sp-6;
+  gap: 32rpx; // 16px 统一卡片间距
+
+  @include mobile {
+    max-width: 100%;
+    gap: 24rpx;
+  }
 }
 
 // ===================================
-// 侧栏（右侧）
+// 侧栏（右侧）- 固定宽度（与首页统一）
 // ===================================
 .sidebar-content {
-  width: 340px;
+  width: 360px; // 与首页统一：320-360px
   flex-shrink: 0;
 
+  // 中等屏幕：缩小到 320px
+  @media (max-width: 1200px) {
+    width: 320px;
+  }
+
+  // 移动端：全宽
   @include mobile {
     width: 100%;
   }

@@ -417,9 +417,19 @@ const loadFeaturedQuestion = async () => {
       featuredQuestion.value = res
       console.log('[RecommendSidebar] 精选问题已设置:', featuredQuestion.value)
     } else {
-      // 如果后端返回 null（没有符合条件的问题），则不显示
-      console.log('[RecommendSidebar] 后端返回null，不显示精选问题')
-      featuredQuestion.value = null
+      // 如果后端返回 null（没有符合条件的问题），使用 Mock 数据演示
+      console.log('[RecommendSidebar] 后端返回null，使用Mock数据演示')
+      featuredQuestion.value = {
+        qid: 1,
+        title: '如何高效复习数据结构与算法？求学长学姐分享经验！',
+        username: '张同学',
+        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=featured1',
+        category: '学习交流',
+        answerCount: 12,
+        views: 1280,
+        likes: 45,
+        createdAt: new Date().toISOString()
+      }
     }
   } catch (error) {
     console.error('[RecommendSidebar] 加载精选问题失败:', error)

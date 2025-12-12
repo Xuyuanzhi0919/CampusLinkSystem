@@ -50,6 +50,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/pdf/**",         // PDF代理服务（公开访问）
                         "/resource/list",      // 资源列表（使用可选认证）
                         "/resource/search",    // 搜索资源（使用可选认证）
+                        "/resource/upload/signature", // OSS上传签名（临时开发测试）
                         "/question/list",      // 问题列表（使用可选认证）
                         "/question/*/answers", // 问题答案列表（使用可选认证）
                         "/task/list",          // 任务列表（使用可选认证）

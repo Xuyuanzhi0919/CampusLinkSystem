@@ -1799,39 +1799,13 @@ defineExpose({
   position: sticky;  // 粘性定位
   top: 112px;  // 顶部导航60px + 二级导航40px + 间距12px = 112px
   align-self: flex-start;  // 从顶部对齐
-  height: calc(100vh - 120px);  // 使用固定高度而不是max-height
-  overflow-y: scroll;  // 强制显示滚动条
-  overflow-x: hidden;  // 防止横向滚动
-  padding-right: 8px;  // 为滚动条留出空间
-  padding-bottom: 16px;  // 减小底部留白
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0), height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-
-  // 强制显示滚动条(跨浏览器兼容)
-  scrollbar-width: thin;  // Firefox
-  scrollbar-color: $gray-300 transparent;  // Firefox
+  // 移除高度和overflow限制,让内容完整展示
+  padding-bottom: 24px;  // 底部留白
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   // 当顶部导航折叠时,侧栏同步上移
   &.header-collapsed {
     top: 100px;  // 折叠后: 48px + 40px + 12px = 100px
-    height: calc(100vh - 108px);  // 视口剩余高度
-  }
-
-  // 自定义滚动条样式
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: $gray-300;
-    border-radius: 3px;
-
-    &:hover {
-      background: $gray-400;
-    }
   }
 
   @include mobile {

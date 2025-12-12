@@ -728,6 +728,19 @@ const handleScroll = (scrollTopValue: number) => {
     console.log(`[滚动折叠] scrollTop: ${scrollTopValue}, collapsed: ${shouldCollapse}`)
     isHeaderCollapsed.value = shouldCollapse
   }
+
+  // #ifdef H5
+  // H5端手动触发"到达底部"逻辑,实现自动加载更多
+  const scrollHeight = document.documentElement.scrollHeight
+  const clientHeight = document.documentElement.clientHeight
+  const scrollBottom = scrollHeight - scrollTopValue - clientHeight
+
+  // 距离底部小于50px时触发加载更多
+  if (scrollBottom < 50 && hasMore.value && !loading.value) {
+    console.log('[自动加载] 距离底部:', scrollBottom, 'px, 触发加载更多')
+    handleLoadMore()
+  }
+  // #endif
 }
 
 // 点击热门标签筛选
@@ -738,10 +751,29 @@ const handleFilterByTag = (tag: string) => {
 
 // 回到顶部
 const scrollToTop = () => {
+  // #ifdef H5
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  })
+  // #endif
+
+  // #ifndef H5
   scrollTop.value = Math.random() // 触发滚动（需要改变值）
   setTimeout(() => {
     scrollTop.value = 0
   }, 100)
+  // #endif
+}
+
+// 触底加载更多(小程序端使用)
+const onReachBottom = () => {
+  if (!hasMore.value || loading.value) {
+    console.log('[触底加载] 已拦截: hasMore=', hasMore.value, 'loading=', loading.value)
+    return
+  }
+  console.log('[触底加载] 触发加载更多')
+  handleLoadMore()
 }
 
 // 点击问题卡片
@@ -783,6 +815,11 @@ onMounted(() => {
 onUnmounted(() => {
   // 清理工作
 })
+
+// 导出方法给页面使用(小程序端的onReachBottom需要)
+defineExpose({
+  onReachBottom
+})
 </script>
 
 <style lang="scss" scoped>
@@ -816,7 +853,6 @@ onUnmounted(() => {
   // 折叠状态：高度保持48px,但元素更紧凑
   &.collapsed {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12); // 更明显的阴影
-    background: lighten($primary, 52%); // 【调试】轻微蓝色背景,方便观察
 
     .top-nav-container {
       height: 48px; // 从60px减小到48px

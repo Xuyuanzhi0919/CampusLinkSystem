@@ -112,7 +112,7 @@
     </view>
 
     <!-- ========== 主内容区（整页滚动） ========== -->
-    <view class="main-content">
+    <view class="main-content" style="min-height: 200vh; padding-bottom: 100px;">
       <view class="content-container">
         <!-- 左侧：问题列表 -->
         <view class="question-list">

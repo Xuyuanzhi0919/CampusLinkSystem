@@ -751,16 +751,16 @@ const handleCancel = () => {
           uni.showToast({ title: '已保存草稿', icon: 'success' })
         }
         setTimeout(() => {
-          // 返回问答首页而不是 navigateBack
-          uni.redirectTo({
+          // 使用 switchTab 跳转到 tabBar 页面
+          uni.switchTab({
             url: '/pages/question/index'
           })
         }, 500)
       }
     })
   } else {
-    // 直接返回问答首页
-    uni.redirectTo({
+    // 使用 switchTab 跳转到 tabBar 页面
+    uni.switchTab({
       url: '/pages/question/index'
     })
   }

@@ -172,6 +172,14 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 修复H5端页面滚动问题 - #app不应该限制高度 */
+/* #ifdef H5 */
+#app {
+  height: auto !important;
+  min-height: 100vh;
+}
+/* #endif */
+
 /* 标题层级 */
 .h1 { font-size: var(--fz-20); font-weight: 700; line-height: 1.3; }
 .h2 { font-size: var(--fz-18); font-weight: 600; line-height: 1.4; }

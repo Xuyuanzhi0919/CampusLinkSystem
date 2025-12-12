@@ -804,16 +804,32 @@ onPageScroll((e) => {
   handleScroll(e.scrollTop)
 })
 
+// H5端滚动监听函数(需要保存引用以便移除)
+const scrollListener = () => {
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  handleScroll(scrollTop)
+}
+
 // 页面加载
 onMounted(() => {
   console.log('[问答页面] 初始化完成, COLLAPSE_THRESHOLD:', COLLAPSE_THRESHOLD)
   loadQuestions(true)
   loadSearchHistory()
+
+  // H5端监听窗口滚动事件
+  // #ifdef H5
+  window.addEventListener('scroll', scrollListener)
+  console.log('[问答页面] H5滚动监听已启动')
+  // #endif
 })
 
 // 页面卸载
 onUnmounted(() => {
-  // 清理工作
+  // H5端移除滚动监听
+  // #ifdef H5
+  window.removeEventListener('scroll', scrollListener)
+  console.log('[问答页面] H5滚动监听已移除')
+  // #endif
 })
 
 // 导出方法给页面使用(小程序端的onReachBottom需要)

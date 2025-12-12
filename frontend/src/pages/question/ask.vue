@@ -1642,51 +1642,66 @@ const handleSubmit = async () => {
 }
 
 .custom-bounty-box {
+  width: 100%;
   margin-top: 16px;
-  padding: 20px;
-  background: lighten($primary, 49%);
-  border: 2px dashed $primary;
+  padding: 16px;
+  background: $white;
+  border: 2px solid $primary;
   border-radius: 12px;
   animation: slideDown 0.3s ease-out;
 }
 
 .custom-input {
   width: 100%;
-  height: 48px;
-  padding: 0 16px;
+  height: 44px;
+  padding: 0 14px;
   margin-bottom: 12px;
-  background: $white;
+  background: $gray-50;
   border: 2px solid $gray-300;
-  border-radius: 10px;
-  font-size: 18px;
+  border-radius: 8px;
+  font-size: 16px;
   font-weight: 600;
   text-align: center;
   color: $gray-900;
   transition: all 0.2s;
 
   &:focus {
+    background: $white;
     border-color: $primary;
-    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
     outline: none;
   }
 
   &::placeholder {
     color: $gray-400;
-    font-weight: 500;
+    font-weight: 400;
+    font-size: 14px;
   }
 }
 
 .custom-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
 .custom-error {
-  display: block;
-  margin-top: $sp-2;
-  font-size: $font-size-xs;
-  color: $error;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: $warning;
+  background: lighten($warning, 45%);
+  border-radius: 6px;
   text-align: center;
+
+  &::before {
+    content: '⚠';
+    font-size: 14px;
+  }
 }
 
 .bounty-tip {

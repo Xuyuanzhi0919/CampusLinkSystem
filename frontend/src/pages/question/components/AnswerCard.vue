@@ -48,18 +48,12 @@
 
     <!-- 底部操作栏 -->
     <view class="answer-footer">
-      <!-- 左侧：点赞按钮 -->
+      <!-- 左侧：点赞按钮 - 强化版 -->
       <view class="footer-left">
-        <CButton
-          :type="answer.isLiked ? 'primary' : 'info'"
-          size="sm"
-          :plain="!answer.isLiked"
-          @click="handleLike"
-          custom-style="border: none; background: transparent; padding-left: 0;"
-        >
-          <text class="action-icon">{{ answer.isLiked ? '👍' : '👍🏻' }}</text>
-          <text class="action-label" :class="{ 'text-primary': answer.isLiked }">{{ formatNumber(answer.likes) }}</text>
-        </CButton>
+        <view class="like-button" :class="{ 'like-button--active': answer.isLiked }" @click="handleLike">
+          <Icon :name="answer.isLiked ? 'thumbs-up' : 'thumbs-up'" :size="18" class="like-icon" />
+          <text class="like-count">{{ formatNumber(answer.likes) }}</text>
+        </view>
       </view>
 
       <!-- 右侧：采纳/删除按钮 -->
@@ -127,6 +121,7 @@ import type { AnswerItem } from '@/types/question'
 import { useUserStore } from '@/stores/user'
 import { CCard, CButton } from '@/components/ui'
 import { ClIcon } from '@/components/cl'
+import Icon from '@/components/icons/index.vue'
 import BestAnswerBadge from './BestAnswerBadge.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 
@@ -234,13 +229,23 @@ const handleReport = () => {
 
 <style lang="scss" scoped>
 // ===================================
-// 回答卡片容器
+// 回答卡片容器 - 强化版（与首页卡片统一风格）
 // ===================================
 .answer-card {
-  margin-bottom: $sp-6;
+  margin-bottom: 32rpx; // 16-20px spacing between cards
   background: $bg-surface;
   transition: all $duration-base $ease-out;
-  // border: 1rpx solid $gray-200; // Removed to use CCard's border
+
+  // 统一卡片阴影和圆角
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04) !important; // Enhanced shadow
+  border-radius: 24rpx !important; // 12px rounded corners
+  padding: 48rpx !important; // 24px internal padding
+  border: 1rpx solid $gray-100; // Subtle border
+
+  &:hover {
+    box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.08) !important;
+    transform: translateY(-2rpx);
+  }
 
   // 最佳答案样式 - 清新现代风
   &--accepted {
@@ -262,6 +267,10 @@ const handleReport = () => {
 
     .answer-content {
       color: $gray-900;
+    }
+
+    &:hover {
+      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08) !important;
     }
   }
 }
@@ -286,40 +295,52 @@ const handleReport = () => {
   padding-bottom: 0; // 移除内边距，更紧凑
 }
 
-// 回答者信息
+// 回答者信息 - 强化版（更突出的头像和昵称）
 .responder-info {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 24rpx; // Increased gap from 12rpx to 24rpx
   flex: 1;
   min-width: 0;
 
   .responder-avatar {
-    width: 72rpx; // 稍微调小一点，更精致
-    height: 72rpx;
+    width: 64rpx; // 32px - Enhanced from 36rpx
+    height: 64rpx;
     border-radius: $radius-full;
     background: $gray-100;
     flex-shrink: 0;
-    border: 1rpx solid $gray-200;
+    border: 2rpx solid $gray-200; // Slightly thicker border
+    transition: all $duration-base;
+
+    &:hover {
+      border-color: $primary;
+      transform: scale(1.05);
+    }
   }
 
   .responder-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 2rpx;
+    gap: 4rpx; // Increased from 2rpx
     min-width: 0;
 
     .responder-name {
-      font-size: $font-size-base;
-      font-weight: $font-weight-semibold;
-      color: $gray-800;
+      font-size: 30rpx; // 15-16px - Enhanced from 28rpx
+      font-weight: 600; // Bolder weight
+      color: $gray-900; // Darker color for more prominence
       @include text-ellipsis(1);
+      transition: color $duration-base;
+
+      &:hover {
+        color: $primary;
+      }
     }
 
     .responder-time {
-      font-size: $font-size-xs; // 12px
+      font-size: 24rpx; // 12px
       color: $gray-500;
+      font-weight: 400;
     }
   }
 }
@@ -400,15 +421,61 @@ const handleReport = () => {
 }
 
 .footer-left {
-  // 点赞按钮自定义样式
-  .action-label {
-    margin-left: $sp-1;
-    font-size: $font-size-sm;
-    color: $gray-500;
-    font-weight: $font-weight-medium;
+  // 点赞按钮 - 强化版（品牌色突出）
+  .like-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 12rpx;
+    padding: 12rpx 24rpx;
+    border-radius: 40rpx;
+    background: $gray-50;
+    border: 2rpx solid $gray-200;
+    cursor: pointer;
+    transition: all $duration-base;
 
-    &.text-primary {
-      color: $primary;
+    .like-icon {
+      color: $gray-500;
+      transition: all $duration-base;
+    }
+
+    .like-count {
+      font-size: 28rpx; // 14px
+      font-weight: 500;
+      color: $gray-700;
+      transition: all $duration-base;
+    }
+
+    &:hover {
+      background: lighten($primary, 48%);
+      border-color: lighten($primary, 35%);
+
+      .like-icon {
+        color: $primary;
+        transform: scale(1.1);
+      }
+
+      .like-count {
+        color: $primary;
+      }
+    }
+
+    &--active {
+      background: lighten($primary, 48%);
+      border-color: $primary;
+
+      .like-icon {
+        color: $primary;
+      }
+
+      .like-count {
+        color: $primary;
+        font-weight: 600;
+      }
+
+      &:hover {
+        background: lighten($primary, 45%);
+        transform: scale(1.02);
+      }
     }
   }
 }
@@ -530,10 +597,27 @@ const handleReport = () => {
 // 响应式适配
 // ===================================
 @include mobile {
+  .answer-card {
+    padding: 32rpx !important; // Reduce padding on mobile
+    margin-bottom: 24rpx; // Slightly less spacing on mobile
+  }
+
   .responder-info {
+    gap: 16rpx; // Reduce gap on mobile
+
     .responder-avatar {
-      width: 64rpx;
-      height: 64rpx;
+      width: 56rpx; // 28px on mobile
+      height: 56rpx;
+    }
+
+    .responder-details {
+      .responder-name {
+        font-size: 28rpx; // 14px on mobile
+      }
+
+      .responder-time {
+        font-size: 22rpx; // 11px on mobile
+      }
     }
   }
 
@@ -541,6 +625,15 @@ const handleReport = () => {
     .answer-image {
       width: 31%; // 3列布局
       height: 200rpx;
+    }
+  }
+
+  .like-button {
+    padding: 10rpx 20rpx !important;
+    gap: 8rpx !important;
+
+    .like-count {
+      font-size: 26rpx !important; // 13px on mobile
     }
   }
 }

@@ -542,20 +542,8 @@ const handleTagClick = (tag: string) => {
 }
 
 const goBack = () => {
-  const pages = getCurrentPages()
-  if (pages.length === 1) {
-    uni.switchTab({ url: '/pages/question/index' })
-  } else if (pages.length >= 2) {
-    const prevPage = pages[pages.length - 2]
-    const prevRoute = prevPage.route || ''
-    if (prevRoute === 'pages/question/index') {
-      uni.switchTab({ url: '/pages/question/index' })
-    } else {
-      uni.navigateBack()
-    }
-  } else {
-    uni.navigateBack()
-  }
+  // 直接返回问答首页,避免页面栈判断导致的多次点击问题
+  uni.switchTab({ url: '/pages/question/index' })
 }
 
 const handleGoBack = goBack

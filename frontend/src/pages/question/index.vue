@@ -825,8 +825,7 @@ onUnmounted(() => {
   min-width: 120px; // 确保 Logo 区域有固定宽度，保持对称
 
   @include mobile {
-    gap: 6px;
-    min-width: auto; // 移动端不限制宽度
+    display: none; // 移动端隐藏 Logo，节省空间
   }
 }
 
@@ -850,10 +849,13 @@ onUnmounted(() => {
   flex: 1;
   max-width: 480px;
   margin: 0 auto;
+  min-width: 0; // 允许缩小
 
   @include mobile {
     max-width: none;
     margin: 0;
+    flex: 1; // 占据剩余空间
+    min-width: 0; // 防止溢出
   }
 }
 
@@ -1087,7 +1089,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 24px; // 从 20px 增加到 24px，更宽松
+  padding: 0 24px;
   height: 36px;
   background: $primary;
   color: $white;
@@ -1097,7 +1099,7 @@ onUnmounted(() => {
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
-  margin-left: 12px; // 与搜索框保持间距
+  margin-left: 12px;
 
   &:hover {
     background: darken($primary, 8%);
@@ -1106,9 +1108,12 @@ onUnmounted(() => {
   }
 
   @include mobile {
-    padding: 0 16px;
-    height: 32px;
+    padding: 0;
+    width: 40px; // 圆形按钮
+    height: 40px;
+    border-radius: 50%;
     margin-left: 8px;
+    justify-content: center;
   }
 }
 

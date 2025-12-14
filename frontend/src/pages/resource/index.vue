@@ -86,26 +86,12 @@
 
         <!-- 右侧：排序+筛选 -->
         <view class="sort-controls">
-          <!-- 排序下拉（相对定位容器） -->
-          <view class="sort-dropdown-wrapper" :class="{ 'menu-open': showSortMenu }">
+          <!-- 排序下拉按钮 -->
+          <view class="sort-dropdown-wrapper">
             <view class="sort-dropdown" @click="toggleSortMenu">
               <Icon name="arrow-down-up" :size="14" class="sort-icon" />
               <text class="sort-label">{{ currentSortLabel }}</text>
               <Icon name="chevron-down" :size="14" class="dropdown-icon" />
-            </view>
-
-            <!-- 排序菜单（出现在按钮下方,使用fixed定位突破overflow限制） -->
-            <view v-if="showSortMenu" class="sort-menu-content" :class="{ 'header-collapsed': isHeaderCollapsed }" @click.stop>
-              <view
-                v-for="item in sortOptions"
-                :key="item.value"
-                class="sort-menu-item"
-                :class="{ 'sort-menu-item--active': currentSortBy === item.value }"
-                @click="handleSortChange(item.value)"
-              >
-                <text class="sort-item-label">{{ item.label }}</text>
-                <Icon v-if="currentSortBy === item.value" name="check" :size="16" class="check-icon" />
-              </view>
             </view>
           </view>
 
@@ -119,7 +105,21 @@
       </view>
     </view>
 
-    <!-- 遮罩层（点击关闭菜单,移到外部避免被隐藏） -->
+    <!-- 排序菜单（移到外部,使用fixed定位,不受sticky-nav影响） -->
+    <view v-if="showSortMenu" class="sort-menu-content" :class="{ 'header-collapsed': isHeaderCollapsed }" @click.stop>
+      <view
+        v-for="item in sortOptions"
+        :key="item.value"
+        class="sort-menu-item"
+        :class="{ 'sort-menu-item--active': currentSortBy === item.value }"
+        @click="handleSortChange(item.value)"
+      >
+        <text class="sort-item-label">{{ item.label }}</text>
+        <Icon v-if="currentSortBy === item.value" name="check" :size="16" class="check-icon" />
+      </view>
+    </view>
+
+    <!-- 遮罩层（点击关闭菜单） -->
     <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
 
     <!-- ========== 主内容区(三栏布局) ========== -->
@@ -2042,7 +2042,7 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 101;
+  z-index: 104; // 低于菜单(105),但高于其他元素
   background: transparent; // 透明遮罩
 }
 

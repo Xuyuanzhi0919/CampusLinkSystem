@@ -1981,8 +1981,10 @@ onUnmounted(() => {
       color: $white !important;
     }
 
-    text {
+    text,
+    .tab-label {
       color: $white !important;
+      font-weight: 600; // 确保激活状态文字加粗
     }
   }
 

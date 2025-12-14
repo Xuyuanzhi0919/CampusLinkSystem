@@ -26,6 +26,7 @@ export interface ResourceItem {
   resourceId: number
   title: string
   description: string
+  uploaderId?: number      // 上传者ID（可选，列表接口可能不返回）
   uploaderName: string
   uploaderAvatar: string
   fileType: ResourceFileType

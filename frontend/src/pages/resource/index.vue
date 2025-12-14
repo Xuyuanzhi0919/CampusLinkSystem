@@ -676,6 +676,9 @@ const loadResourceList = async (isRefresh = false) => {
 
     total.value = res.total
     hasMore.value = resources.value.length < res.total
+
+    // 🎯 加载完资源后更新右侧栏社区数据
+    loadCommunityData()
   } catch (error) {
     uni.showToast({
       title: '加载失败',
@@ -901,40 +904,79 @@ const loadUserPoints = () => {
 }
 
 /**
- * 🎯 加载右侧栏社区数据(模拟数据)
+ * 🎯 加载右侧栏社区数据(基于真实数据统计)
  */
 const loadCommunityData = () => {
-  // 🔥 模拟本周热门资源(实际应从API获取)
-  hotResources.value = [
-    { resourceId: 1, title: '数据结构与算法期末复习资料', downloads: 2456, score: 5, category: 0, description: '', fileType: 'pdf', uploaderName: '张三', createdAt: new Date().toISOString(), likes: 128, status: 1, fileSize: 2048000 },
-    { resourceId: 2, title: '高等数学习题集及答案详解', downloads: 1832, score: 3, category: 1, description: '', fileType: 'pdf', uploaderName: '李四', createdAt: new Date().toISOString(), likes: 95, status: 1, fileSize: 3145728 },
-    { resourceId: 3, title: 'Java面向对象程序设计课件', downloads: 1654, score: 0, category: 0, description: '', fileType: 'pptx', uploaderName: '王五', createdAt: new Date().toISOString(), likes: 76, status: 1, fileSize: 4194304 },
-    { resourceId: 4, title: '计算机网络实验报告模板', downloads: 1421, score: 2, category: 4, description: '', fileType: 'docx', uploaderName: '赵六', createdAt: new Date().toISOString(), likes: 63, status: 1, fileSize: 1048576 },
-    { resourceId: 5, title: '数据库系统概论笔记整理', downloads: 1298, score: 5, category: 2, description: '', fileType: 'pdf', uploaderName: '孙七', createdAt: new Date().toISOString(), likes: 54, status: 1, fileSize: 2097152 }
-  ]
+  // 如果没有资源数据,直接返回
+  if (resources.value.length === 0) {
+    hotResources.value = []
+    activeContributors.value = []
+    popularTags.value = []
+    return
+  }
 
-  // 👤 模拟活跃上传者(实际应从API获取)
-  activeContributors.value = [
-    { userId: 101, username: '学霸小王', avatar: '', uploadCount: 128 },
-    { userId: 102, username: '资源分享者', avatar: '', uploadCount: 95 },
-    { userId: 103, username: '考研助手', avatar: '', uploadCount: 76 },
-    { userId: 104, username: '笔记达人', avatar: '', uploadCount: 63 },
-    { userId: 105, username: '课件收集者', avatar: '', uploadCount: 54 }
-  ]
+  // 🔥 本周热门资源 - 从当前资源列表中按下载量排序取前5
+  hotResources.value = [...resources.value]
+    .sort((a, b) => b.downloads - a.downloads)
+    .slice(0, 5)
 
-  // 🏷 模拟热门标签(实际应从API获取)
-  popularTags.value = [
-    { name: '数据结构', count: 1245 },
-    { name: '高等数学', count: 1089 },
-    { name: 'Java', count: 987 },
-    { name: '操作系统', count: 856 },
-    { name: '计算机网络', count: 743 },
-    { name: '数据库', count: 692 },
-    { name: '算法', count: 621 },
-    { name: '期末复习', count: 534 },
-    { name: '考研', count: 478 },
-    { name: 'Python', count: 412 }
-  ]
+  // 👤 活跃贡献者 - 从当前资源列表中统计上传者,按上传数量排序取前5
+  const uploaderMap = new Map<number, {
+    userId: number
+    username: string
+    avatar: string
+    uploadCount: number
+  }>()
+
+  // 统计每个上传者的资源数量
+  resources.value.forEach(resource => {
+    // 使用 uploaderId 作为唯一标识(如果没有则使用 uploaderName 的 hash)
+    const uploaderId = resource.uploaderId || hashString(resource.uploaderName)
+
+    if (uploaderMap.has(uploaderId)) {
+      uploaderMap.get(uploaderId)!.uploadCount++
+    } else {
+      uploaderMap.set(uploaderId, {
+        userId: uploaderId,
+        username: resource.uploaderName,
+        avatar: resource.uploaderAvatar || '',
+        uploadCount: 1
+      })
+    }
+  })
+
+  // 转换为数组并排序,取前5名
+  activeContributors.value = Array.from(uploaderMap.values())
+    .sort((a, b) => b.uploadCount - a.uploadCount)
+    .slice(0, 5)
+
+  // 🏷 热门标签 - 从当前资源列表中提取分类,统计频次
+  const tagMap = new Map<string, number>()
+  const categoryNames = ['课件', '试题', '笔记', '报告', '其他']
+
+  resources.value.forEach(resource => {
+    const categoryName = categoryNames[resource.category] || '其他'
+    tagMap.set(categoryName, (tagMap.get(categoryName) || 0) + 1)
+  })
+
+  // 转换为数组并排序,取前10个
+  popularTags.value = Array.from(tagMap.entries())
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 10)
+}
+
+/**
+ * 🎯 字符串hash函数 - 用于生成唯一ID
+ */
+const hashString = (str: string): number => {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i)
+    hash = ((hash << 5) - hash) + char
+    hash = hash & hash // 转换为32位整数
+  }
+  return Math.abs(hash)
 }
 
 /**
@@ -1367,8 +1409,7 @@ onMounted(() => {
   loadDownloadedResources()
   loadLikedResources()
   loadSearchHistory() // 加载搜索历史
-  loadCommunityData() // 加载右侧栏社区数据
-  loadResourceList(true)
+  loadResourceList(true) // 加载资源列表(会自动调用 loadCommunityData)
 
   // #ifdef H5
   // H5端监听页面滚动，实现顶部导航折叠效果

@@ -1329,7 +1329,7 @@ onShow(() => {
 .resource-square-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: 200rpx; // 为固定导航留出空间
+  padding-top: 200rpx; // 60px(top-nav) + 40px(sticky-nav) = 100px = 200rpx
   padding-bottom: 120rpx;
 }
 
@@ -1342,22 +1342,48 @@ onShow(() => {
   left: 0;
   right: 0;
   background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%);
-  z-index: $z-fixed;
-  padding: $sp-4 $sp-8;
+  z-index: 100;
   box-shadow: 0 2rpx 12rpx rgba($primary, 0.1);
 }
 
 .top-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx; // 40px = 80rpx
+  height: 120rpx; // 60px = 120rpx,与问答首页一致
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: 32rpx; // 16px = 32rpx
+
+  @media (max-width: 1600px) {
+    padding: 0 128rpx; // 64px
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 96rpx; // 48px
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 64rpx; // 32px
+  }
+
+  @include mobile {
+    padding: 0 32rpx; // 16px
+    height: 112rpx; // 56px,移动端稍小
+    gap: 24rpx; // 12px
+  }
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 16rpx; // 8px
   flex-shrink: 0;
+  min-width: 240rpx; // 120px,确保Logo区域有固定宽度
+
+  @include mobile {
+    display: none; // 移动端隐藏Logo,节省空间
+  }
 
   .logo-icon {
     color: $white;
@@ -1365,43 +1391,67 @@ onShow(() => {
   }
 
   .logo-text {
-    font-size: $font-size-lg;
+    font-size: 32rpx; // 16px
     font-weight: 600;
     color: $white;
     letter-spacing: 0.5rpx;
+
+    @include mobile {
+      font-size: 30rpx; // 15px
+    }
   }
 }
 
 .search-wrapper {
-  flex: 1;
   position: relative;
+  flex: 1;
+  max-width: 960rpx; // 480px
+  margin: 0 auto;
+  min-width: 0; // 允许缩小
+
+  @include mobile {
+    max-width: none;
+    margin: 0;
+    flex: 1;
+    min-width: 0; // 防止溢出
+  }
 }
 
 .compact-search-bar {
+  position: relative;
+  width: 100%;
+  height: 72rpx; // 36px = 72rpx,与问答首页一致
   display: flex;
   align-items: center;
   background: rgba($white, 0.15);
   backdrop-filter: blur(10rpx);
-  border-radius: $radius-2xl;
-  padding: $sp-3 $sp-5;
-  transition: $transition-base;
+  border-radius: 36rpx; // 18px = 36rpx
+  padding: 0 28rpx; // 14px
+  gap: 16rpx; // 8px
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   &:focus-within {
     background: rgba($white, 0.25);
     box-shadow: 0 0 0 4rpx rgba($white, 0.1);
   }
 
+  @include mobile {
+    height: 64rpx; // 32px
+    padding: 0 24rpx; // 12px
+  }
+
   .search-icon {
     color: rgba($white, 0.8);
-    margin-right: $sp-3;
     flex-shrink: 0;
   }
 
   input {
     flex: 1;
-    font-size: $font-size-sm;
+    height: 100%;
+    font-size: 28rpx; // 14px
     color: $white;
     border: none;
+    outline: none;
     background: transparent;
 
     &::placeholder {
@@ -1415,13 +1465,18 @@ onShow(() => {
     justify-content: center;
     color: rgba($white, 0.8);
     cursor: pointer;
-    padding: $sp-2;
-    margin-right: -$sp-2;
-    border-radius: $radius-full;
-    transition: $transition-base;
+    padding: 8rpx; // 4px
+    border-radius: 50%;
+    transition: all 0.2s;
+    flex-shrink: 0;
 
     &:hover {
-      background: rgba($white, 0.1);
+      background: rgba($white, 0.15);
+      color: $white;
+    }
+
+    &:active {
+      transform: scale(0.9);
     }
   }
 }
@@ -1508,22 +1563,28 @@ onShow(() => {
 .upload-button {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 12rpx; // 6px
+  height: 72rpx; // 36px,与搜索框一致
   background: rgba($white, 0.2);
   backdrop-filter: blur(10rpx);
-  padding: $sp-3 $sp-5;
-  border-radius: $radius-2xl;
+  padding: 0 36rpx; // 18px
+  border-radius: 36rpx; // 18px
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
   flex-shrink: 0;
 
   &:hover {
     background: rgba($white, 0.3);
-    transform: translateY(-1rpx);
+    transform: translateY(-2rpx);
   }
 
   &:active {
     transform: translateY(0);
+  }
+
+  @include mobile {
+    height: 64rpx; // 32px
+    padding: 0 28rpx; // 14px
   }
 
   .upload-icon {
@@ -1531,9 +1592,13 @@ onShow(() => {
   }
 
   .upload-text {
-    font-size: $font-size-sm;
+    font-size: 26rpx; // 13px
     color: $white;
     font-weight: 500;
+
+    @include mobile {
+      font-size: 24rpx; // 12px
+    }
   }
 }
 
@@ -1541,21 +1606,47 @@ onShow(() => {
 // 🎯 Sticky 分类导航
 // =============================================
 .sticky-nav {
-  position: fixed;
-  top: 100rpx; // 紧贴顶部导航
-  left: 0;
-  right: 0;
+  position: sticky;
+  top: 120rpx; // 60px = 120rpx,与顶部导航高度同步
+  z-index: 99;
+  width: 100%;
   background: $white;
-  border-bottom: 1rpx solid $gray-200;
-  z-index: calc($z-fixed - 1);
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.04);
+  border-bottom: 1rpx solid $gray-100; // 更浅的分割线
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+
+  @include mobile {
+    top: 112rpx; // 56px,移动端与顶部导航同步
+  }
 }
 
 .sticky-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx; // 40px
+  height: 80rpx; // 40px = 80rpx,进一步减小高度
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $sp-3 $sp-8;
+  gap: 40rpx; // 20px
+
+  @media (max-width: 1600px) {
+    padding: 0 128rpx; // 64px
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 96rpx; // 48px
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 64rpx; // 32px
+  }
+
+  @include mobile {
+    padding: 0 32rpx; // 16px
+    height: 88rpx; // 44px
+    gap: 24rpx; // 12px
+  }
 }
 
 .category-tabs {

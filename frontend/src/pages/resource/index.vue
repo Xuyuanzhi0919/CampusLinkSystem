@@ -1,7 +1,7 @@
 <template>
   <view class="resource-square-page">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed">
+    <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
@@ -58,7 +58,7 @@
     </view>
 
     <!-- ========== Sticky 导航区（分类+排序） ========== -->
-    <view class="sticky-nav">
+    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
       <view class="sticky-nav-container">
         <!-- 左侧：分类Tabs -->
         <view class="category-tabs">
@@ -352,7 +352,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import type { ResourceItem } from '@/types/resource'
@@ -439,6 +439,10 @@ const userSchoolId = ref<number | null>(null)
 const showBackToTop = ref(false)
 const scrollTop = ref(0)
 const currentScrollTop = ref(0)
+
+// 🎯 顶部导航折叠状态
+const isHeaderCollapsed = ref(false)
+const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 🎯 下载相关状态
 const showDownloadDialog = ref(false)
@@ -696,14 +700,35 @@ const handleScroll = (e: any) => {
 }
 
 /**
+ * 🎯 处理页面滚动（H5端）
+ */
+const handlePageScroll = () => {
+  // #ifdef H5
+  const scrollTopValue = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+
+  // 滚动超过300px时显示返回顶部按钮
+  showBackToTop.value = scrollTopValue > 300
+
+  // 滚动超过阈值时折叠顶部导航
+  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
+  // #endif
+}
+
+/**
  * 🎯 返回顶部
  */
 const scrollToTop = () => {
+  // #ifdef H5
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  // #endif
+
+  // #ifndef H5
   // 通过修改 scrollTop 触发滚动
   scrollTop.value = currentScrollTop.value
   setTimeout(() => {
     scrollTop.value = 0
   }, 100)
+  // #endif
 }
 
 /**
@@ -1286,6 +1311,11 @@ onMounted(() => {
   loadLikedResources()
   loadSearchHistory() // 加载搜索历史
   loadResourceList(true)
+
+  // #ifdef H5
+  // H5端监听页面滚动，实现顶部导航折叠效果
+  window.addEventListener('scroll', handlePageScroll)
+  // #endif
 })
 
 // 🎯 页面显示（从详情页返回时也会触发）
@@ -1305,6 +1335,14 @@ onShow(() => {
   // 重新加载当前页数据（保持页码和筛选条件）
   loadResourceList(true)
 })
+
+// 🎯 页面卸载
+onUnmounted(() => {
+  // #ifdef H5
+  // 移除滚动监听
+  window.removeEventListener('scroll', handlePageScroll)
+  // #endif
+})
 </script>
 
 <style scoped lang="scss">
@@ -1321,11 +1359,43 @@ onShow(() => {
 .top-nav-fixed {
   position: fixed;
   top: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%);
   z-index: 100;
-  box-shadow: 0 2rpx 12rpx rgba($primary, 0.1);
+  width: 100%;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
+
+  // 折叠状态：高度减小,元素更紧凑
+  &.collapsed {
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12); // 更明显的阴影
+
+    .top-nav-container {
+      height: 96rpx; // 从120rpx减小到96rpx (48px)
+    }
+
+    .brand-logo {
+      min-width: 200rpx; // 减小宽度
+
+      .logo-text {
+        font-size: 30rpx; // 缩小文字
+      }
+    }
+
+    .compact-search-bar {
+      height: 64rpx; // 从72rpx减小到64rpx (32px)
+
+      .search-input {
+        font-size: 26rpx; // 13px
+      }
+    }
+
+    .upload-button {
+      height: 64rpx; // 从72rpx减小到64rpx (32px)
+      padding: 0 36rpx; // 减小padding
+      font-size: 26rpx;
+    }
+  }
 }
 
 .top-nav-container {
@@ -1336,6 +1406,7 @@ onShow(() => {
   display: flex;
   align-items: center;
   gap: 32rpx; // 16px = 32rpx
+  transition: height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 高度过渡
 
   @media (max-width: 1600px) {
     padding: 0 128rpx; // 64px
@@ -1362,21 +1433,22 @@ onShow(() => {
   gap: 16rpx; // 8px
   flex-shrink: 0;
   min-width: 240rpx; // 120px,确保Logo区域有固定宽度
+  transition: min-width 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
 
   @include mobile {
     display: none; // 移动端隐藏Logo,节省空间
   }
 
   .logo-icon {
-    color: $white;
-    opacity: 0.95;
+    color: $primary;
   }
 
   .logo-text {
     font-size: 32rpx; // 16px
     font-weight: 600;
-    color: $white;
+    color: $gray-900;
     letter-spacing: 0.5rpx;
+    transition: font-size 0.18s;
 
     @include mobile {
       font-size: 30rpx; // 15px
@@ -1405,16 +1477,15 @@ onShow(() => {
   height: 72rpx; // 36px = 72rpx,与问答首页一致
   display: flex;
   align-items: center;
-  background: rgba($white, 0.15);
-  backdrop-filter: blur(10rpx);
+  background: $bg-page;
   border-radius: 36rpx; // 18px = 36rpx
   padding: 0 28rpx; // 14px
   gap: 16rpx; // 8px
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   &:focus-within {
-    background: rgba($white, 0.25);
-    box-shadow: 0 0 0 4rpx rgba($white, 0.1);
+    background: $gray-100;
+    box-shadow: 0 0 0 4rpx rgba($primary, 0.1);
   }
 
   @include mobile {
@@ -1423,7 +1494,7 @@ onShow(() => {
   }
 
   .search-icon {
-    color: rgba($white, 0.8);
+    color: $gray-600;
     flex-shrink: 0;
   }
 
@@ -1431,13 +1502,14 @@ onShow(() => {
     flex: 1;
     height: 100%;
     font-size: 28rpx; // 14px
-    color: $white;
+    color: $gray-800;
     border: none;
     outline: none;
     background: transparent;
+    transition: font-size 0.18s;
 
     &::placeholder {
-      color: rgba($white, 0.6);
+      color: $text-placeholder;
     }
   }
 
@@ -1445,7 +1517,7 @@ onShow(() => {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: rgba($white, 0.8);
+    color: $gray-600;
     cursor: pointer;
     padding: 8rpx; // 4px
     border-radius: 50%;
@@ -1453,8 +1525,8 @@ onShow(() => {
     flex-shrink: 0;
 
     &:hover {
-      background: rgba($white, 0.15);
-      color: $white;
+      background: $gray-200;
+      color: $gray-900;
     }
 
     &:active {
@@ -1547,8 +1619,7 @@ onShow(() => {
   align-items: center;
   gap: 12rpx; // 6px
   height: 72rpx; // 36px,与搜索框一致
-  background: rgba($white, 0.2);
-  backdrop-filter: blur(10rpx);
+  background: $primary;
   padding: 0 36rpx; // 18px
   border-radius: 36rpx; // 18px
   cursor: pointer;
@@ -1556,8 +1627,9 @@ onShow(() => {
   flex-shrink: 0;
 
   &:hover {
-    background: rgba($white, 0.3);
+    background: $primary-light;
     transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
   }
 
   &:active {
@@ -1571,15 +1643,18 @@ onShow(() => {
 
   .upload-icon {
     color: $white;
+    flex-shrink: 0;
   }
 
   .upload-text {
-    font-size: 26rpx; // 13px
+    font-size: 28rpx; // 14px
     color: $white;
     font-weight: 500;
+    white-space: nowrap;
+    transition: font-size 0.18s;
 
     @include mobile {
-      font-size: 24rpx; // 12px
+      font-size: 26rpx; // 13px
     }
   }
 }
@@ -1596,6 +1671,11 @@ onShow(() => {
   border-bottom: 1rpx solid $gray-100; // 更浅的分割线
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
   transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+
+  // 当顶部导航折叠时,sticky-nav的top值同步调整
+  &.header-collapsed {
+    top: 96rpx; // 48px,折叠后的顶部导航高度
+  }
 
   @include mobile {
     top: 112rpx; // 56px,移动端与顶部导航同步

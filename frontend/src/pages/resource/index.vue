@@ -2002,7 +2002,7 @@ onShow(() => {
   transition: $transition-base;
 
   &:hover {
-    box-shadow: $shadow-hover;
+    box-shadow: $shadow-card-hover;
   }
 
   &:last-child {
@@ -2106,7 +2106,7 @@ onShow(() => {
 
   &:hover {
     background: $gray-50;
-    box-shadow: $shadow-hover;
+    box-shadow: $shadow-card-hover;
   }
 
   &:active {

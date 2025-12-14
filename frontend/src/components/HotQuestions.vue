@@ -22,11 +22,13 @@
 
         <!-- 问题内容 -->
         <view class="question-content">
-          <text class="question-title">{{ question.title }}</text>
+          <text class="question-title" :class="`title-rank-${index + 1}`">{{ question.title }}</text>
           <view class="question-meta">
-            <view class="meta-item">
+            <view class="meta-item views-item">
               <Icon name="eye" :size="12" class="meta-icon" />
               <text class="meta-text">{{ formatNumber(question.views) }}</text>
+              <!-- 热度可视化条 -->
+              <view class="heat-bar" :style="{ width: getHeatWidth(question.views) }"></view>
             </view>
             <view class="meta-item">
               <Icon name="message-circle" :size="12" class="meta-icon" />
@@ -143,6 +145,19 @@ const handleQuestionClick = (question: HotQuestionItem) => {
 const handleViewMore = () => {
   emit('view-more')
 }
+
+/**
+ * 计算热度条宽度(基于浏览量百分比)
+ */
+const getHeatWidth = (views: number): string => {
+  if (props.questions.length === 0) return '0%'
+
+  const maxViews = Math.max(...props.questions.map(q => q.views))
+  if (maxViews === 0) return '0%'
+
+  const percentage = (views / maxViews) * 100
+  return `${Math.max(percentage, 5)}%` // 最小5%保证可见性
+}
 </script>
 
 <style lang="scss" scoped>
@@ -187,27 +202,44 @@ const handleViewMore = () => {
 .questions-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 10rpx; // 默认间距
 }
 
 // 问题项
 .question-item {
+  position: relative;
   display: flex;
   align-items: flex-start;
   gap: 12rpx;
   padding: 12rpx;
   background: $white;
   border-radius: 8rpx;
+  border-left: 4rpx solid transparent; // 预留左边框空间
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
+  // Top1 特殊间距(呼吸感)
+  &:first-child {
+    padding: 16rpx 12rpx; // 上下+4rpx
+    margin-bottom: 4rpx; // 额外间距
+  }
+
+  // Hover 状态:浅灰背景+左移
   &:hover {
     background: $gray-50;
-    transform: translateX(4rpx);
+    transform: translateX(-2rpx);
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  }
+
+  // Active 状态:左侧主色边框
+  &:active,
+  &.active {
+    border-left-color: $primary;
+    background: rgba($primary, 0.02);
   }
 
   &:active {
-    transform: translateX(2rpx) scale(0.99);
+    transform: translateX(-1rpx) scale(0.99);
   }
 }
 
@@ -224,24 +256,39 @@ const handleViewMore = () => {
   border-radius: 6rpx;
   background: $gray-200;
   color: $gray-600;
+  transition: all 0.25s;
 
-  // 前三名特殊样式
+  // Top1:更大更饱满的徽章
   &.rank-1 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    width: 44rpx; // +4rpx
+    height: 44rpx;
+    font-size: 22rpx; // +2rpx
+    background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); // 更鲜艳的金色
     color: $white;
-    box-shadow: 0 2rpx 8rpx rgba(#FFD700, 0.3);
+    box-shadow: 0 3rpx 12rpx rgba(#FFD700, 0.4);
+    font-weight: 800; // 更粗
   }
 
+  // Top2:保持原样
   &.rank-2 {
     background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
     color: $white;
     box-shadow: 0 2rpx 6rpx rgba(#C0C0C0, 0.3);
   }
 
+  // Top3:保持原样
   &.rank-3 {
     background: linear-gradient(135deg, #CD7F32 0%, #B8722B 100%);
     color: $white;
     box-shadow: 0 2rpx 6rpx rgba(#CD7F32, 0.3);
+  }
+
+  // Top4-5:进一步弱化
+  &.rank-4,
+  &.rank-5 {
+    background: $gray-100; // 更浅的灰
+    color: $gray-500; // 更浅的文字
+    font-weight: 600; // 减轻字重
   }
 }
 
@@ -264,6 +311,40 @@ const handleViewMore = () => {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+  transition: color 0.2s;
+
+  // Top1:标题加粗+稍大行高(头条感)
+  &.title-rank-1 {
+    font-weight: 600; // 500→600
+    line-height: 1.5; // 1.4→1.5,增强呼吸感
+    color: $gray-900;
+  }
+
+  // Top2-3:保持原样
+  &.title-rank-2,
+  &.title-rank-3 {
+    font-weight: 500;
+  }
+
+  // Top4-5:弱化
+  &.title-rank-4,
+  &.title-rank-5 {
+    font-weight: 400; // 减轻字重
+    color: $gray-700; // 文字颜色变浅
+  }
+
+  // Hover 时 Top1-3 变主色
+  .question-item:hover &.title-rank-1,
+  .question-item:hover &.title-rank-2,
+  .question-item:hover &.title-rank-3 {
+    color: $primary;
+  }
+
+  // Hover 时 Top4-5 变深灰
+  .question-item:hover &.title-rank-4,
+  .question-item:hover &.title-rank-5 {
+    color: $gray-800;
+  }
 }
 
 // 元数据
@@ -278,6 +359,7 @@ const handleViewMore = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
+  position: relative;
 
   .meta-icon {
     color: $gray-400;
@@ -297,6 +379,36 @@ const handleViewMore = () => {
       color: $accent;
       font-weight: 600;
     }
+  }
+
+  // 浏览量专属样式(包含热度条)
+  &.views-item {
+    position: relative;
+    padding-right: 8rpx;
+
+    .meta-text {
+      position: relative;
+      z-index: 1;
+    }
+  }
+}
+
+// 热度可视化条
+.heat-bar {
+  position: absolute;
+  left: 0;
+  bottom: -2rpx;
+  height: 3rpx;
+  background: linear-gradient(90deg, rgba($primary, 0.3) 0%, rgba($primary, 0.6) 100%);
+  border-radius: 2rpx;
+  transition: all 0.3s ease-out;
+  pointer-events: none;
+
+  // Hover 时热度条更明显
+  .question-item:hover & {
+    height: 4rpx;
+    background: linear-gradient(90deg, $primary 0%, lighten($primary, 10%) 100%);
+    box-shadow: 0 1rpx 4rpx rgba($primary, 0.3);
   }
 }
 

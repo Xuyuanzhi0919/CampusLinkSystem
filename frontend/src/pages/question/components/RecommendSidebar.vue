@@ -98,35 +98,18 @@
 
     <!-- 热门问题模块 -->
     <CCard variant="default" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="trending-up" :size="18" class="header-icon" />
-        <text class="header-title">热门问题</text>
-      </view>
-      <view v-if="hotQuestions.length > 0" class="hot-questions">
-        <view
-          v-for="(question, index) in hotQuestions"
-          :key="question.qid"
-          class="hot-question-item"
-          @click="handleQuestionClick(question.qid)"
-        >
-          <view class="rank-badge" :class="getRankClass(index)">
-            {{ index + 1 }}
-          </view>
-          <view class="question-content">
-            <text class="question-title">{{ question.title }}</text>
-            <view class="question-meta">
-              <Icon name="eye" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.views }}</text>
-              <Icon name="message-circle" :size="12" class="meta-icon" />
-              <text class="meta-text">{{ question.answerCount }}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-      <view v-else class="empty-state">
-        <Icon name="help-circle" :size="32" class="empty-icon" />
-        <text class="empty-text">暂无热门问题</text>
-      </view>
+      <HotQuestions
+        :questions="hotQuestions"
+        title="热门问题"
+        header-icon="trending-up"
+        :show-header="true"
+        :show-badge="false"
+        :show-view-more="false"
+        :show-bounty="false"
+        :max-display="5"
+        empty-text="暂无热门问题"
+        @question-click="handleHotQuestionClick"
+      />
     </CCard>
 
     <!-- 热门搜索模块 -->
@@ -159,6 +142,8 @@ import { CCard } from '@/components/ui'
 import FeaturedCarousel from '@/components/FeaturedCarousel.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
+import HotQuestions from '@/components/HotQuestions.vue'
+import type { HotQuestionItem } from '@/components/HotQuestions.vue'
 import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
 
 interface ActiveUser {
@@ -169,12 +154,7 @@ interface ActiveUser {
   badge: string | null
 }
 
-interface HotQuestion {
-  qid: number
-  title: string
-  views: number
-  answerCount: number
-}
+// HotQuestionItem 已从 HotQuestions 组件导入,移除重复定义
 
 interface HotSearch {
   keyword: string
@@ -205,7 +185,7 @@ const hotTags = ref<TagItem[]>([])
 const activeUsers = ref<ActiveUser[]>([])
 
 // 热门问题
-const hotQuestions = ref<HotQuestion[]>([])
+const hotQuestions = ref<HotQuestionItem[]>([])
 
 // 热门搜索
 const hotSearches = ref<HotSearch[]>([
@@ -220,13 +200,7 @@ const hotSearches = ref<HotSearch[]>([
 ])
 
 
-// 排名徽章样式（问题）
-const getRankClass = (index: number) => {
-  if (index === 0) return 'rank-1'
-  if (index === 1) return 'rank-2'
-  if (index === 2) return 'rank-3'
-  return ''
-}
+// 排名徽章样式已移至 HotQuestions 组件内部
 
 // 用户排名样式
 const getUserRankClass = (index: number) => {
@@ -274,9 +248,9 @@ const handleViewMoreUsers = () => {
   uni.showToast({ title: '查看更多用户功能开发中', icon: 'none' })
 }
 
-// 点击问题
-const handleQuestionClick = (qid: number) => {
-  uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
+// 点击热门问题 (HotQuestions组件回调)
+const handleHotQuestionClick = (question: HotQuestionItem) => {
+  uni.navigateTo({ url: `/pages/question/detail?id=${question.qid}` })
 }
 
 // 点击用户
@@ -590,92 +564,7 @@ onMounted(() => {
   }
 }
 
-// ===================================
-// 热门问题
-// ===================================
-.hot-questions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;  // 统一使用px
-}
-
-.hot-question-item {
-  display: flex;
-  gap: 8px;  // 统一使用px
-  cursor: pointer;
-  transition: transform 0.2s ease-out;
-
-  &:hover {
-    transform: translateX(2px);  // 统一使用px
-
-    .question-title {
-      color: $primary;
-    }
-  }
-}
-
-.rank-badge {
-  flex-shrink: 0;
-  width: 24px;  // 增大
-  height: 24px;
-  border-radius: 6px;
-  background: $gray-100;
-  color: $gray-600;
-  font-size: 13px;  // 增大字号
-  font-weight: 700;  // 加粗
-  @include flex-center;
-
-  &.rank-1 {
-    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);  // 金色渐变
-    color: $white;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
-  }
-
-  &.rank-2 {
-    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);  // 银色渐变
-    color: $white;
-    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.25);
-  }
-
-  &.rank-3 {
-    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);  // 铜色渐变
-    color: $white;
-    box-shadow: 0 2px 8px rgba(249, 115, 22, 0.25);
-  }
-}
-
-.question-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.question-title {
-  @include text-ellipsis(2);
-  font-size: 14px;  // 增大字号
-  color: $gray-800;
-  font-weight: 500;  // 稍微加粗
-  line-height: 1.5;
-  margin-bottom: 8px;  // 增大间距
-  transition: color 0.2s ease-out;
-}
-
-.question-meta {
-  display: flex;
-  align-items: center;
-  gap: 8px;  // 增大间距
-}
-
-.meta-icon {
-  color: $primary;  // 改为主色,更醒目
-  flex-shrink: 0;
-}
-
-.meta-text {
-  font-size: 12px;  // 增大字号
-  color: $gray-700;  // 加深颜色
-  font-weight: 600;  // 加粗
-  margin-right: 8px;
-}
+// 热门问题样式已移至 HotQuestions 组件内部
 
 // ===================================
 // 活跃答主

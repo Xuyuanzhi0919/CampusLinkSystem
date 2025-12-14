@@ -586,8 +586,9 @@ const handleReport = () => {
 
   // 菜单图标
   .menu-icon {
-    width: 40rpx;
-    height: 40rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     margin-right: 24rpx;
     color: $gray-700;
     flex-shrink: 0;

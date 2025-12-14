@@ -1,145 +1,176 @@
 <template>
   <view class="resource-square-page">
-    <!-- 搜索历史遮罩层 -->
-    <view
-      v-if="showSearchHistory && searchHistory.length > 0 && !searchKeyword"
-      class="search-history-mask"
-      @click="handleMaskClick"
-    />
-
-    <!-- 🎯 顶部搜索栏 -->
-    <view class="search-section">
-      <view class="search-container">
-        <!-- 搜索框 -->
-        <view class="search-box">
-          <view class="search-icon">🔍</view>
-          <input
-            v-model="searchKeyword"
-            class="search-input"
-            placeholder="搜索资源标题、描述或标签..."
-            confirm-type="search"
-            @confirm="handleSearch"
-            @input="handleSearchInput"
-            @focus="handleSearchFocus"
-            @blur="handleSearchBlur"
-          />
-          <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
-            ✕
-          </view>
+    <!-- ========== 固定顶部导航区 ========== -->
+    <view class="top-nav-fixed">
+      <view class="top-nav-container">
+        <!-- Logo -->
+        <view class="brand-logo">
+          <Icon name="file-text" :size="20" class="logo-icon" />
+          <text class="logo-text">资源广场</text>
         </view>
 
-        <!-- 搜索历史下拉面板 -->
-        <view
-          v-if="showSearchHistory && searchHistory.length > 0 && !searchKeyword"
-          class="search-history-panel"
-          @click.stop
-        >
-          <view class="history-header">
-            <text class="history-title">搜索历史</text>
-            <text class="history-clear" @click="clearSearchHistory">清空</text>
+        <!-- 紧凑搜索栏（包含搜索历史） -->
+        <view class="search-wrapper">
+          <view class="compact-search-bar">
+            <Icon name="search" :size="16" class="search-icon" />
+            <input
+              v-model="searchKeyword"
+              class="search-input"
+              placeholder="搜索资源标题、描述或标签..."
+              confirm-type="search"
+              @input="handleSearchInput"
+              @confirm="handleSearch"
+              @focus="showSearchHistory = true"
+              @blur="handleSearchBlur"
+            />
+            <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
+              <Icon name="x" :size="14" />
+            </view>
           </view>
-          <view class="history-list">
-            <view
-              v-for="(item, index) in searchHistory"
-              :key="index"
-              class="history-item"
-              @click="handleSearchHistoryClick(item)"
-            >
-              <text class="history-icon">🕐</text>
-              <text class="history-text">{{ item }}</text>
-              <text class="history-delete" @click.stop="deleteSearchHistoryItem(item)">
-                ✕
-              </text>
+
+          <!-- 搜索历史下拉面板 -->
+          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
+            <view class="history-header">
+              <text class="history-title">搜索历史</text>
+              <text class="history-clear" @click="clearSearchHistory">清空</text>
+            </view>
+            <view class="history-list">
+              <view
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="history-item"
+                @click="handleSearchHistoryClick(item)"
+              >
+                <Icon name="clock" :size="14" class="history-icon" />
+                <text class="history-text">{{ item }}</text>
+                <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 语音搜索按钮 (复用活动列表的) - 暂时隐藏，等待功能实现 -->
-        <view v-if="false" class="voice-search-btn" @click="handleVoiceSearch">
-          <view class="voice-icon">🎤</view>
-        </view>
-
-        <!-- PC 端上传按钮 -->
-        <view class="upload-btn-pc" @click="handleUploadClick">
-          <text class="upload-icon">+</text>
+        <!-- 上传按钮 -->
+        <view class="upload-button" @click="handleUploadClick">
+          <Icon name="image-plus" :size="16" class="upload-icon" />
           <text class="upload-text">上传资源</text>
         </view>
       </view>
     </view>
 
-    <!-- 🎯 快捷筛选 Tabs -->
-    <view class="filter-section">
-      <view class="filter-tabs">
-        <view
-          v-for="tab in quickFilterTabs"
-          :key="tab.label"
-          class="filter-tab"
-          :class="{ active: currentCategory === tab.value }"
-          @click="handleCategoryChange(tab.value)"
-        >
-          <text class="tab-icon">{{ tab.icon }}</text>
-          <text class="tab-label">{{ tab.label }}</text>
+    <!-- ========== Sticky 导航区（分类+排序） ========== -->
+    <view class="sticky-nav">
+      <view class="sticky-nav-container">
+        <!-- 左侧：分类Tabs -->
+        <view class="category-tabs">
+          <view
+            v-for="item in categories"
+            :key="item.value || 'all'"
+            class="category-tab"
+            :class="{ active: currentCategory === item.value }"
+            @click="handleCategoryChange(item.value)"
+          >
+            <Icon :name="item.iconName" :size="14" class="tab-icon" />
+            <text class="tab-label">{{ item.label }}</text>
+          </view>
+        </view>
+
+        <!-- 右侧：排序+筛选 -->
+        <view class="sort-controls">
+          <!-- 排序下拉（相对定位容器） -->
+          <view class="sort-dropdown-wrapper">
+            <view class="sort-dropdown" @click="toggleSortMenu">
+              <Icon name="arrow-down-up" :size="14" class="sort-icon" />
+              <text class="sort-label">{{ currentSortLabel }}</text>
+              <Icon name="chevron-down" :size="14" class="dropdown-icon" />
+            </view>
+
+            <!-- 排序菜单（出现在按钮下方） -->
+            <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
+              <view
+                v-for="item in sortOptions"
+                :key="item.value"
+                class="sort-menu-item"
+                :class="{ active: currentSortBy === item.value }"
+                @click="handleSortChange(item.value)"
+              >
+                <text class="sort-item-label">{{ item.label }}</text>
+                <Icon v-if="currentSortBy === item.value" name="check" :size="16" class="check-icon" />
+              </view>
+            </view>
+          </view>
+
+          <!-- 筛选按钮 -->
+          <view class="filter-btn" @click="showAdvancedFilter = true">
+            <Icon name="sliders" :size="14" class="filter-icon" />
+            <text class="filter-label">筛选</text>
+            <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
+          </view>
         </view>
       </view>
+
+      <!-- 遮罩层（点击关闭菜单） -->
+      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
 
-    <!-- 🎯 排序选择器 -->
-    <view class="sort-section">
-      <view class="sort-tabs">
-        <view
-          class="sort-tab"
-          :class="{ active: currentSortBy === 'created_at' }"
-          @click="handleSortChange('created_at')"
-        >
-          <text class="sort-label">最新</text>
-        </view>
-        <view
-          class="sort-tab"
-          :class="{ active: currentSortBy === 'downloads' }"
-          @click="handleSortChange('downloads')"
-        >
-          <text class="sort-label">下载最多</text>
-        </view>
-        <view
-          class="sort-tab"
-          :class="{ active: currentSortBy === 'likes' }"
-          @click="handleSortChange('likes')"
-        >
-          <text class="sort-label">点赞最多</text>
-        </view>
-      </view>
-      <view class="sort-right">
-        <text v-if="!loading && resources.length > 0" class="result-count">
-          共 {{ total }} 条
-        </text>
-        <!-- 高级筛选按钮 - 始终显示 -->
-        <view class="filter-btn" :class="{ 'has-filter': hasActiveFilters }" @click="showAdvancedFilter = true">
-          <text class="filter-icon">🎛️</text>
-          <text class="filter-label">筛选</text>
-          <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
-        </view>
-      </view>
-    </view>
-
-    <!-- 🎯 资源卡片列表 -->
-    <view class="content-section">
-      <scroll-view
-        scroll-y
-        class="scroll-container"
-        :refresher-enabled="true"
-        :refresher-triggered="refreshing"
-        :scroll-top="scrollTop"
-        @refresherrefresh="onRefresh"
-        @scrolltolower="onLoadMore"
-        @scroll="handleScroll"
-      >
-        <!-- 加载中：显示骨架屏 -->
-        <view v-if="loading && resources.length === 0" class="skeleton-list">
-          <SkeletonResourceCard v-for="n in 5" :key="n" />
+    <!-- ========== 主内容区 ========== -->
+    <view class="main-content">
+      <view class="content-container">
+        <!-- 快捷筛选卡片 -->
+        <view class="quick-filter-card">
+          <view class="quick-filter-header">
+            <Icon name="trending-up" :size="16" class="header-icon" />
+            <text class="header-title">快捷筛选</text>
+          </view>
+          <view class="quick-filter-tabs">
+            <view
+              class="filter-tab"
+              :class="{ active: currentSortBy === 'created_at' }"
+              @click="handleQuickFilter('latest')"
+            >
+              <Icon name="clock" :size="14" class="tab-icon" />
+              <text class="tab-label">最新</text>
+            </view>
+            <view
+              class="filter-tab"
+              :class="{ active: currentSortBy === 'downloads' }"
+              @click="handleQuickFilter('downloads')"
+            >
+              <Icon name="trending-up" :size="14" class="tab-icon" />
+              <text class="tab-label">下载最多</text>
+            </view>
+            <view
+              class="filter-tab"
+              :class="{ active: currentSortBy === 'likes' }"
+              @click="handleQuickFilter('likes')"
+            >
+              <Icon name="heart" :size="14" class="tab-icon" />
+              <text class="tab-label">点赞最多</text>
+            </view>
+            <view class="filter-tab" @click="showAdvancedFilter = true">
+              <Icon name="sliders" :size="14" class="tab-icon" />
+              <text class="tab-label">更多筛选</text>
+            </view>
+          </view>
         </view>
 
-        <!-- 资源列表 -->
-        <view v-else-if="resources.length > 0" class="resource-list">
+        <!-- 资源列表区域 -->
+        <scroll-view
+          scroll-y
+          class="scroll-container"
+          :refresher-enabled="true"
+          :refresher-triggered="refreshing"
+          :scroll-top="scrollTop"
+          @refresherrefresh="onRefresh"
+          @scrolltolower="onLoadMore"
+          @scroll="handleScroll"
+        >
+          <!-- 加载中：显示骨架屏 -->
+          <view v-if="loading && resources.length === 0" class="skeleton-list">
+            <SkeletonResourceCard v-for="n in 5" :key="n" />
+          </view>
+
+          <!-- 资源列表 -->
+          <view v-else-if="resources.length > 0" class="resource-list">
           <ResourceCard
             v-for="item in resources"
             :key="item.resourceId"
@@ -158,28 +189,25 @@
           </view>
         </view>
 
-        <!-- 空状态 -->
-        <EmptyState
-          v-else
-          icon="📦"
-          :title="emptyTitle"
-          :description="emptyDescription"
-        />
-      </scroll-view>
+          <!-- 空状态 -->
+          <EmptyState
+            v-else
+            icon="📦"
+            :title="emptyTitle"
+            :description="emptyDescription"
+          />
+        </scroll-view>
+      </view>
     </view>
 
-    <!-- 🎯 上传资源悬浮按钮 -->
+    <!-- 上传资源悬浮按钮 -->
     <view class="upload-fab" @click="handleUploadClick">
-      <view class="fab-icon">+</view>
+      <Icon name="image-plus" :size="24" class="fab-icon" />
     </view>
 
-    <!-- 🎯 返回顶部按钮 -->
-    <view
-      v-if="showBackToTop"
-      class="back-to-top-btn"
-      @click="scrollToTop"
-    >
-      <view class="back-to-top-icon">↑</view>
+    <!-- 返回顶部按钮 -->
+    <view v-if="showBackToTop" class="back-to-top-btn" @click="scrollToTop">
+      <Icon name="arrow-left" :size="20" class="back-to-top-icon" style="transform: rotate(90deg)" />
     </view>
 
     <!-- PC端悬浮导航（仅 H5） -->
@@ -210,7 +238,9 @@
         <text class="drawer-title">高级筛选</text>
         <view class="drawer-actions">
           <text class="drawer-reset" @click="handleResetFilters">重置</text>
-          <text class="drawer-close" @click="showAdvancedFilter = false">✕</text>
+          <view class="drawer-close" @click="showAdvancedFilter = false">
+            <Icon name="x" :size="20" />
+          </view>
         </view>
       </view>
 
@@ -306,14 +336,31 @@ import { PCFloatingNav } from '@/components/desktop'
 // #endif
 import config from '@/config'
 
+// Icon 组件
+import Icon from '@/components/icons/index.vue'
+
+// 🎯 分类导航选项
+const categories = [
+  { label: '全部', value: null, iconName: 'grid' },
+  { label: '课件', value: '课件', iconName: 'book' },
+  { label: '试题', value: '试卷', iconName: 'edit-3' },
+  { label: '笔记', value: '笔记', iconName: 'file-text' },
+  { label: '教材', value: '教材', iconName: 'book-open' },
+  { label: '实验报告', value: '实验报告', iconName: 'lightbulb' }
+]
+
+// 🎯 排序选项
+const sortOptions = [
+  { label: '最新上传', value: 'created_at' },
+  { label: '下载最多', value: 'downloads' },
+  { label: '点赞最多', value: 'likes' }
+]
+
 // 🎯 快捷筛选选项
 const quickFilterTabs = [
-  { label: '全部', value: null, icon: '📦' },
-  { label: '课件', value: '课件', icon: '📚' },
-  { label: '试题', value: '试卷', icon: '📝' },
-  { label: '笔记', value: '笔记', icon: '✍️' },
-  { label: '教材', value: '教材', icon: '📖' },
-  { label: '实验报告', value: '实验报告', icon: '🔬' }
+  { label: '最新', value: 'latest', iconName: 'clock' },
+  { label: '热门下载', value: 'downloads', iconName: 'trending-up' },
+  { label: '高赞', value: 'likes', iconName: 'heart' }
 ]
 
 // 🎯 状态管理
@@ -338,6 +385,7 @@ const searchHistory = ref<string[]>([])
 // 🎯 排序条件
 const currentSortBy = ref('created_at')
 const currentSortOrder = ref<'asc' | 'desc'>('desc')
+const showSortMenu = ref(false)
 
 // 🎯 高级筛选相关
 const showAdvancedFilter = ref(false)
@@ -402,6 +450,12 @@ const activeFilterCount = computed(() => {
   if (advancedFilters.value.scoreRange !== null) count++
   if (advancedFilters.value.onlyMySchool) count++
   return count
+})
+
+// 🎯 当前排序标签
+const currentSortLabel = computed(() => {
+  const option = sortOptions.find(opt => opt.value === currentSortBy.value)
+  return option ? option.label : '排序'
 })
 
 const filteredResultHint = computed(() => {
@@ -731,6 +785,38 @@ const handleSearch = () => {
 const clearSearch = () => {
   searchKeyword.value = ''
   console.log('[ResourceSquare] 清空搜索')
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 切换排序菜单
+ */
+const toggleSortMenu = () => {
+  showSortMenu.value = !showSortMenu.value
+}
+
+/**
+ * 🎯 选择排序方式
+ */
+const handleSortChange = (value: string) => {
+  currentSortBy.value = value
+  showSortMenu.value = false
+  console.log('[ResourceSquare] 排序方式变更:', currentSortLabel.value)
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 快捷筛选处理
+ */
+const handleQuickFilter = (type: string) => {
+  if (type === 'latest') {
+    currentSortBy.value = 'created_at'
+  } else if (type === 'downloads') {
+    currentSortBy.value = 'downloads'
+  } else if (type === 'likes') {
+    currentSortBy.value = 'likes'
+  }
+  console.log('[ResourceSquare] 快捷筛选:', type, '→', currentSortLabel.value)
   loadResourceList(true)
 }
 
@@ -1247,7 +1333,501 @@ onShow(() => {
 .resource-square-page {
   min-height: 100vh;
   background: $bg-page;
+  padding-top: 200rpx; // 为固定导航留出空间
   padding-bottom: 120rpx;
+}
+
+// =============================================
+// 🎯 顶部固定导航
+// =============================================
+.top-nav-fixed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%);
+  z-index: $z-fixed;
+  padding: $sp-4 $sp-8;
+  box-shadow: 0 2rpx 12rpx rgba($primary, 0.1);
+}
+
+.top-nav-container {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  flex-shrink: 0;
+
+  .logo-icon {
+    color: $white;
+    opacity: 0.95;
+  }
+
+  .logo-text {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $white;
+    letter-spacing: 0.5rpx;
+  }
+}
+
+.search-wrapper {
+  flex: 1;
+  position: relative;
+}
+
+.compact-search-bar {
+  display: flex;
+  align-items: center;
+  background: rgba($white, 0.15);
+  backdrop-filter: blur(10rpx);
+  border-radius: $radius-2xl;
+  padding: $sp-3 $sp-5;
+  transition: $transition-base;
+
+  &:focus-within {
+    background: rgba($white, 0.25);
+    box-shadow: 0 0 0 4rpx rgba($white, 0.1);
+  }
+
+  .search-icon {
+    color: rgba($white, 0.8);
+    margin-right: $sp-3;
+    flex-shrink: 0;
+  }
+
+  input {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $white;
+    border: none;
+    background: transparent;
+
+    &::placeholder {
+      color: rgba($white, 0.6);
+    }
+  }
+
+  .clear-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba($white, 0.8);
+    cursor: pointer;
+    padding: $sp-2;
+    margin-right: -$sp-2;
+    border-radius: $radius-full;
+    transition: $transition-base;
+
+    &:hover {
+      background: rgba($white, 0.1);
+    }
+  }
+}
+
+.search-history-dropdown {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  left: 0;
+  right: 0;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-dropdown;
+  padding: $sp-4;
+  max-height: 400rpx;
+  overflow-y: auto;
+  z-index: $z-dropdown;
+  animation: slideDown 0.2s $ease-out;
+
+  .history-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $sp-3;
+
+    .history-title {
+      display: flex;
+      align-items: center;
+      gap: $sp-2;
+      font-size: $font-size-sm;
+      color: $gray-600;
+
+      .history-icon {
+        color: $gray-500;
+      }
+    }
+
+    .clear-all {
+      font-size: $font-size-xs;
+      color: $primary;
+      cursor: pointer;
+      padding: $sp-2 $sp-3;
+      border-radius: $radius-sm;
+      transition: $transition-base;
+
+      &:hover {
+        background: $primary-50;
+      }
+    }
+  }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: $sp-3 $sp-4;
+    border-radius: $radius-sm;
+    cursor: pointer;
+    transition: $transition-base;
+
+    &:hover {
+      background: $gray-50;
+    }
+
+    .history-keyword {
+      flex: 1;
+      font-size: $font-size-sm;
+      color: $gray-700;
+    }
+
+    .history-remove {
+      color: $gray-400;
+      padding: $sp-2;
+      border-radius: $radius-full;
+      transition: $transition-base;
+
+      &:hover {
+        color: $error;
+        background: $error-50;
+      }
+    }
+  }
+}
+
+.upload-button {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  background: rgba($white, 0.2);
+  backdrop-filter: blur(10rpx);
+  padding: $sp-3 $sp-5;
+  border-radius: $radius-2xl;
+  cursor: pointer;
+  transition: $transition-base;
+  flex-shrink: 0;
+
+  &:hover {
+    background: rgba($white, 0.3);
+    transform: translateY(-1rpx);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .upload-icon {
+    color: $white;
+  }
+
+  .upload-text {
+    font-size: $font-size-sm;
+    color: $white;
+    font-weight: 500;
+  }
+}
+
+// =============================================
+// 🎯 Sticky 分类导航
+// =============================================
+.sticky-nav {
+  position: fixed;
+  top: 100rpx; // 紧贴顶部导航
+  left: 0;
+  right: 0;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  z-index: calc($z-fixed - 1);
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.04);
+}
+
+.sticky-nav-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-3 $sp-8;
+}
+
+.category-tabs {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.category-tab {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-2xl;
+  font-size: $font-size-sm;
+  color: $gray-700;
+  background: transparent;
+  cursor: pointer;
+  transition: $transition-base;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .tab-icon {
+    color: $gray-600;
+    transition: $transition-base;
+  }
+
+  .tab-label {
+    font-weight: 500;
+  }
+
+  &--active {
+    background: $primary-50;
+    color: $primary;
+
+    .tab-icon {
+      color: $primary;
+    }
+
+    .tab-label {
+      font-weight: 600;
+    }
+  }
+
+  &:hover:not(&--active) {
+    background: $gray-50;
+  }
+}
+
+.sort-controls {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  flex-shrink: 0;
+  margin-left: $sp-4;
+}
+
+.sort-dropdown-wrapper {
+  position: relative;
+}
+
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-2xl;
+  background: $gray-50;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  .sort-icon,
+  .dropdown-icon {
+    color: $gray-600;
+  }
+
+  .sort-label {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    font-weight: 500;
+  }
+
+  .dropdown-icon {
+    transition: transform $duration-base $ease-out;
+  }
+
+  &--active .dropdown-icon {
+    transform: rotate(180deg);
+  }
+}
+
+.sort-menu-content {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  right: 0;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-dropdown;
+  padding: $sp-2;
+  min-width: 200rpx;
+  z-index: $z-dropdown;
+  animation: slideDown 0.2s $ease-out;
+}
+
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: $gray-700;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    background: $gray-50;
+  }
+
+  &--active {
+    background: $primary-50;
+    color: $primary;
+    font-weight: 600;
+
+    .check-icon {
+      color: $primary;
+    }
+  }
+
+  .check-icon {
+    color: transparent;
+  }
+}
+
+.sort-menu-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc($z-dropdown - 1);
+}
+
+.filter-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60rpx;
+  height: 60rpx;
+  border-radius: $radius-full;
+  background: $gray-50;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &--active {
+    background: $accent-50;
+
+    .filter-icon {
+      color: $accent;
+    }
+  }
+
+  .filter-icon {
+    color: $gray-600;
+  }
+}
+
+// =============================================
+// 🎯 快捷筛选卡片
+// =============================================
+.quick-filter-card {
+  margin: $sp-4 $sp-8;
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-5;
+  box-shadow: $shadow-card;
+}
+
+.quick-filter-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-4;
+
+  .header-icon {
+    color: $accent;
+  }
+
+  .header-title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: $gray-900;
+  }
+}
+
+.quick-filter-tabs {
+  display: flex;
+  gap: $sp-3;
+  flex-wrap: wrap;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  border-radius: $radius-2xl;
+  border: 2rpx solid $gray-200;
+  background: $white;
+  cursor: pointer;
+  transition: $transition-base;
+
+  .tab-icon {
+    color: $gray-600;
+    transition: $transition-base;
+  }
+
+  .tab-label {
+    font-size: $font-size-sm;
+    color: $gray-700;
+    font-weight: 500;
+  }
+
+  &--active {
+    border-color: $accent;
+    background: $accent-50;
+
+    .tab-icon {
+      color: $accent;
+    }
+
+    .tab-label {
+      color: $accent;
+      font-weight: 600;
+    }
+  }
+
+  &:hover:not(&--active) {
+    border-color: $gray-300;
+    background: $gray-50;
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 // 🎯 搜索历史遮罩层
@@ -1897,10 +2477,7 @@ onShow(() => {
 }
 
 .fab-icon {
-  font-size: 56rpx;
-  font-weight: $font-weight-light;
   color: $white;
-  line-height: 1;
 }
 
 // 🎯 返回顶部按钮
@@ -1942,10 +2519,7 @@ onShow(() => {
 }
 
 .back-to-top-icon {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-bold;
   color: $white;
-  line-height: 1;
 }
 
 // 🎯 响应式适配 - PC端优化

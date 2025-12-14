@@ -2215,23 +2215,16 @@ onUnmounted(() => {
 }
 
 // =============================================
-// 🎯 右侧边栏
+// 🎯 右侧边栏 (采用问答社区样式 - 整体显示,不滚动)
 // =============================================
 .sidebar {
-  width: 320px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 224rpx; // 120rpx (top-nav) + 80rpx (sticky-nav) + 24rpx (gap)
-  align-self: flex-start;
-  max-height: calc(100vh - 240rpx);
-  overflow-y: auto;
-
-  // 隐藏滚动条
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  -ms-overflow-style: none;  // IE和Edge
-  scrollbar-width: none;  // Firefox
+  width: 320px;  // 固定宽度
+  flex-shrink: 0;  // 不缩小
+  position: sticky;  // 粘性定位
+  top: 224rpx;  // 120rpx (top-nav) + 80rpx (sticky-nav) + 24rpx (gap)
+  align-self: flex-start;  // 从顶部对齐
+  // 移除高度和overflow限制,让内容完整展示
+  padding-bottom: 48rpx;  // 底部留白
 
   @include mobile {
     display: none; // 移动端隐藏侧边栏

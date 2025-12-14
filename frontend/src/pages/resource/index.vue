@@ -1911,6 +1911,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+
+  // 移动端隐藏排序和筛选按钮
+  @include mobile {
+    display: none;
+  }
 }
 
 .sort-dropdown-wrapper {

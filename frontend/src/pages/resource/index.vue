@@ -127,44 +127,6 @@
       <view class="content-container">
         <!-- 中间:资源列表 -->
         <view class="resource-list-column">
-          <!-- 快捷筛选卡片 -->
-          <view class="quick-filter-card">
-            <view class="quick-filter-header">
-              <Icon name="trending-up" :size="16" class="header-icon" />
-              <text class="header-title">快捷筛选</text>
-            </view>
-            <view class="quick-filter-tabs">
-              <view
-                class="filter-tab"
-                :class="{ 'filter-tab--active': currentSortBy === 'created_at' }"
-                @click="handleQuickFilter('latest')"
-              >
-                <Icon name="clock" :size="14" class="tab-icon" />
-                <text class="tab-label">最新</text>
-              </view>
-              <view
-                class="filter-tab"
-                :class="{ 'filter-tab--active': currentSortBy === 'downloads' }"
-                @click="handleQuickFilter('downloads')"
-              >
-                <Icon name="trending-up" :size="14" class="tab-icon" />
-                <text class="tab-label">下载最多</text>
-              </view>
-              <view
-                class="filter-tab"
-                :class="{ 'filter-tab--active': currentSortBy === 'likes' }"
-                @click="handleQuickFilter('likes')"
-              >
-                <Icon name="heart" :size="14" class="tab-icon" />
-                <text class="tab-label">点赞最多</text>
-              </view>
-              <view class="filter-tab" @click="showAdvancedFilter = true">
-                <Icon name="sliders" :size="14" class="tab-icon" />
-                <text class="tab-label">更多筛选</text>
-              </view>
-            </view>
-          </view>
-
           <!-- 骨架屏 - 加载中 -->
           <template v-if="loading && resources.length === 0">
             <SkeletonResourceCard v-for="n in 5" :key="n" />
@@ -845,20 +807,6 @@ const clearSearch = () => {
  */
 const toggleSortMenu = () => {
   showSortMenu.value = !showSortMenu.value
-}
-
-/**
- * 🎯 快捷筛选处理
- */
-const handleQuickFilter = (type: string) => {
-  if (type === 'latest') {
-    currentSortBy.value = 'created_at'
-  } else if (type === 'downloads') {
-    currentSortBy.value = 'downloads'
-  } else if (type === 'likes') {
-    currentSortBy.value = 'likes'
-  }
-  loadResourceList(true)
 }
 
 /**
@@ -2099,23 +2047,23 @@ onUnmounted(() => {
 // 🎯 三栏布局结构
 // =============================================
 .main-content {
-  padding-top: 248rpx; // 120rpx (60px top-nav) + 80rpx (40px sticky-nav) + 48rpx (24px gap)
+  padding-top: 216rpx; // 120rpx (60px top-nav) + 80rpx (40px sticky-nav) + 16rpx (8px gap)
   padding-bottom: 128rpx; // 64px
   min-height: 100vh;
   background: $bg-page;
 
   @media (max-width: 1440px) {
-    padding-top: 232rpx; // 120rpx + 80rpx + 32rpx (16px gap)
+    padding-top: 208rpx; // 120rpx + 80rpx + 8rpx (4px gap)
     padding-bottom: 112rpx; // 56px
   }
 
   @media (max-width: 1200px) {
-    padding-top: 224rpx; // 120rpx + 80rpx + 24rpx (12px gap)
+    padding-top: 208rpx; // 120rpx + 80rpx + 8rpx (4px gap)
     padding-bottom: 96rpx; // 48px
   }
 
   @include mobile {
-    padding-top: 216rpx; // 112rpx (56px) + 80rpx (40px) + 24rpx (12px)
+    padding-top: 200rpx; // 112rpx (56px) + 80rpx (40px) + 8rpx (4px)
     padding-bottom: 80rpx; // 40px
   }
 }
@@ -2155,99 +2103,6 @@ onUnmounted(() => {
 .resource-list-column {
   flex: 1;
   min-width: 0; // 防止 flex 子元素溢出
-}
-
-// =============================================
-// 🎯 快捷筛选卡片
-// =============================================
-.quick-filter-card {
-  margin-bottom: 32rpx;
-  background: $white;
-  border-radius: $radius-md;
-  padding: $sp-5;
-  box-shadow: $shadow-card;
-
-  @include mobile {
-    margin: 0 0 24rpx 0;
-    border-radius: $radius-sm;
-  }
-}
-
-.quick-filter-header {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  margin-bottom: $sp-4;
-
-  .header-icon {
-    color: $primary;
-  }
-
-  .header-title {
-    font-size: $font-size-base;
-    font-weight: 600;
-    color: $gray-900;
-  }
-}
-
-.quick-filter-tabs {
-  display: flex;
-  gap: $sp-3;
-  flex-wrap: wrap;
-}
-
-.filter-tab {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  padding: $sp-3 $sp-5;
-  border-radius: $radius-2xl;
-  border: 2rpx solid $gray-200;
-  background: $white;
-  cursor: pointer;
-  transition: $transition-base;
-
-  // 默认状态
-  .tab-icon {
-    color: $gray-600;
-    transition: $transition-base;
-  }
-
-  text {
-    font-size: $font-size-sm;
-    color: $gray-700;
-    font-weight: 500;
-    transition: color 0.2s;
-  }
-
-  // Hover状态
-  &:hover:not(.filter-tab--active) {
-    border-color: $gray-300;
-    background: $gray-50;
-
-    .tab-icon {
-      color: $gray-700;
-    }
-
-    text {
-      color: $gray-900;
-    }
-  }
-
-  // 激活状态
-  &.filter-tab--active {
-    border-color: $accent !important;
-    background: $accent-50 !important;
-
-    .tab-icon {
-      color: $accent !important;
-    }
-
-    text {
-      color: $accent !important;
-      font-weight: 600;
-    }
-  }
 }
 
 // =============================================

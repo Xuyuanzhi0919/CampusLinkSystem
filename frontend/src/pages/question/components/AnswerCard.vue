@@ -238,8 +238,6 @@ const handleReport = () => {
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
-
 // ===================================
 // 回答卡片容器 - 强化版（与首页卡片统一风格）
 // ===================================
@@ -458,8 +456,8 @@ const handleReport = () => {
     }
 
     &:hover {
-      background: color.adjust($primary, $lightness: 48%);
-      border-color: color.adjust($primary, $lightness: 35%);
+      background: lighten($primary, 48%);
+      border-color: lighten($primary, 35%);
 
       .like-icon {
         color: $primary;
@@ -472,7 +470,7 @@ const handleReport = () => {
     }
 
     &--active {
-      background: color.adjust($primary, $lightness: 48%);
+      background: lighten($primary, 48%);
       border-color: $primary;
 
       .like-icon {
@@ -485,7 +483,7 @@ const handleReport = () => {
       }
 
       &:hover {
-        background: color.adjust($primary, $lightness: 45%);
+        background: lighten($primary, 45%);
         transform: scale(1.02);
       }
     }
@@ -568,7 +566,7 @@ const handleReport = () => {
 
   // 危险操作组
   &--danger {
-    background: color.adjust($error, $lightness: 52%);
+    background: lighten($error, 52%);
   }
 }
 
@@ -628,7 +626,7 @@ const handleReport = () => {
     }
 
     &:active {
-      background: color.adjust($error, $lightness: 48%);
+      background: lighten($error, 48%);
     }
   }
 

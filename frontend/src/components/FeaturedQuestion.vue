@@ -98,7 +98,6 @@ const handleRefresh = () => {
 </script>
 
 <style lang="scss" scoped>
-@use "sass:color";
 @import '@/styles/variables.scss';
 
 .featured-question {
@@ -111,8 +110,8 @@ const handleRefresh = () => {
   position: relative;
 
   &:hover {
-    border-color: color.adjust($primary, $lightness: -10%);  // hover时边框加深
-    background: color.adjust($primary, $lightness: 49%);  // 极浅蓝背景
+    border-color: darken($primary, 10%);  // hover时边框加深
+    background: lighten($primary, 49%);  // 极浅蓝背景
   }
 
   &:active {
@@ -158,12 +157,12 @@ const handleRefresh = () => {
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: color.adjust($primary, $lightness: 45%);
+    background-color: lighten($primary, 45%);
     transform: rotate(90deg);  // hover时旋转90度
   }
 
   &:active {
-    background-color: color.adjust($primary, $lightness: 40%);
+    background-color: lighten($primary, 40%);
     transform: rotate(180deg);  // 点击时旋转180度
   }
 }

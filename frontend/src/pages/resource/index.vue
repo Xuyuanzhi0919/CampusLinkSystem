@@ -587,11 +587,9 @@ const loadResourceList = async (isRefresh = false) => {
     }
 
     const res = await getResourceList(params)
-    console.log('[ResourceSquare] API响应:', res)
 
     // 检查响应数据是否有效
     if (!res || !res.list) {
-      console.error('[ResourceSquare] 响应数据格式错误:', res)
       throw new Error('数据格式错误')
     }
 
@@ -627,14 +625,7 @@ const loadResourceList = async (isRefresh = false) => {
 
     total.value = res.total
     hasMore.value = resources.value.length < res.total
-
-    console.log('[ResourceSquare] 加载成功:', {
-      page: page.value,
-      total: res.total,
-      loaded: resources.value.length
-    })
   } catch (error) {
-    console.error('[ResourceSquare] 加载失败:', error)
     uni.showToast({
       title: '加载失败',
       icon: 'none'
@@ -690,7 +681,6 @@ const handleCategoryChange = (category: string | null) => {
   if (currentCategory.value === category) return
 
   currentCategory.value = category
-  console.log('[ResourceSquare] 切换分类:', category)
   loadResourceList(true)
 }
 
@@ -709,8 +699,6 @@ const handleSortChange = (sortBy: string) => {
 
   // 关闭排序菜单
   showSortMenu.value = false
-
-  console.log('[ResourceSquare] 切换排序:', sortBy, currentSortOrder.value)
   loadResourceList(true)
 }
 
@@ -719,7 +707,6 @@ const handleSortChange = (sortBy: string) => {
  */
 const handleScoreRangeChange = (range: 'free' | 'low' | 'medium' | 'high' | null) => {
   advancedFilters.value.scoreRange = range
-  console.log('[ResourceSquare] 积分范围筛选:', range)
 }
 
 /**
@@ -727,14 +714,12 @@ const handleScoreRangeChange = (range: 'free' | 'low' | 'medium' | 'high' | null
  */
 const handleMySchoolChange = (e: any) => {
   advancedFilters.value.onlyMySchool = e.detail.value
-  console.log('[ResourceSquare] 本校资源筛选:', e.detail.value)
 }
 
 /**
  * 🎯 应用筛选
  */
 const handleApplyFilters = () => {
-  console.log('[ResourceSquare] 应用高级筛选:', advancedFilters.value)
   showAdvancedFilter.value = false
   loadResourceList(true)
 }
@@ -745,7 +730,6 @@ const handleApplyFilters = () => {
 const handleResetFilters = () => {
   advancedFilters.value.scoreRange = null
   advancedFilters.value.onlyMySchool = false
-  console.log('[ResourceSquare] 重置筛选')
   loadResourceList(true)
 }
 
@@ -759,7 +743,6 @@ const handleSearchInput = () => {
 
   searchDebounceTimer.value = setTimeout(() => {
     // 修复：清空搜索框时也应该重新加载列表
-    console.log('[ResourceSquare] 搜索:', searchKeyword.value || '(清空)')
     loadResourceList(true)
   }, 300) as unknown as number
 }
@@ -781,7 +764,6 @@ const handleSearch = () => {
   }
 
   // 无论搜索框是否为空，都重新加载（清空搜索也是一种操作）
-  console.log('[ResourceSquare] 确认搜索:', searchKeyword.value || '(全部资源)')
   loadResourceList(true)
 }
 
@@ -790,7 +772,6 @@ const handleSearch = () => {
  */
 const clearSearch = () => {
   searchKeyword.value = ''
-  console.log('[ResourceSquare] 清空搜索')
   loadResourceList(true)
 }
 
@@ -812,7 +793,6 @@ const handleQuickFilter = (type: string) => {
   } else if (type === 'likes') {
     currentSortBy.value = 'likes'
   }
-  console.log('[ResourceSquare] 快捷筛选:', type, '→', currentSortLabel.value)
   loadResourceList(true)
 }
 
@@ -831,8 +811,6 @@ const handleVoiceSearch = () => {
  * 🎯 点击资源卡片
  */
 const handleResourceClick = (resource: ResourceItem) => {
-  console.log('[ResourceSquare] 点击资源:', resource)
-
   // 跳转到资源详情页
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.resourceId}`
@@ -843,8 +821,6 @@ const handleResourceClick = (resource: ResourceItem) => {
  * 🎯 点击上传按钮
  */
 const handleUploadClick = () => {
-  console.log('[ResourceSquare] 点击上传')
-
   // 跳转到上传页面
   uni.navigateTo({
     url: '/pages/resource/upload'
@@ -861,7 +837,6 @@ const loadUserPoints = () => {
       const user = JSON.parse(userInfo)
       userPoints.value = user.points || 0
     } catch (e) {
-      console.error('[ResourceSquare] 解析用户信息失败:', e)
       userPoints.value = 0
     }
   }
@@ -876,10 +851,8 @@ const loadDownloadedResources = () => {
     if (stored) {
       const ids = JSON.parse(stored)
       downloadedResourceIds.value = new Set(ids)
-      console.log('[ResourceSquare] 加载已下载资源ID:', ids)
     }
   } catch (e) {
-    console.error('[ResourceSquare] 加载已下载资源失败:', e)
     downloadedResourceIds.value = new Set()
   }
 }
@@ -892,9 +865,8 @@ const saveDownloadedResource = (resourceId: number) => {
     downloadedResourceIds.value.add(resourceId)
     const ids = Array.from(downloadedResourceIds.value)
     uni.setStorageSync(DOWNLOADED_RESOURCES_KEY, JSON.stringify(ids))
-    console.log('[ResourceSquare] 保存已下载资源ID:', resourceId)
   } catch (e) {
-    console.error('[ResourceSquare] 保存已下载资源失败:', e)
+    // 保存失败,静默处理
   }
 }
 
@@ -906,9 +878,8 @@ const removeDownloadedResource = (resourceId: number) => {
     downloadedResourceIds.value.delete(resourceId)
     const ids = Array.from(downloadedResourceIds.value)
     uni.setStorageSync(DOWNLOADED_RESOURCES_KEY, JSON.stringify(ids))
-    console.log('[ResourceSquare] 移除已下载资源ID:', resourceId)
   } catch (e) {
-    console.error('[ResourceSquare] 移除已下载资源失败:', e)
+    // 移除失败,静默处理
   }
 }
 
@@ -937,10 +908,8 @@ const loadLikedResources = () => {
     if (stored) {
       const ids = JSON.parse(stored)
       likedResourceIds.value = new Set(ids)
-      console.log('[ResourceSquare] 加载已点赞资源ID:', ids)
     }
   } catch (e) {
-    console.error('[ResourceSquare] 加载已点赞资源失败:', e)
     likedResourceIds.value = new Set()
   }
 }
@@ -953,9 +922,7 @@ const saveLikedResource = (resourceId: number) => {
     likedResourceIds.value.add(resourceId)
     const ids = Array.from(likedResourceIds.value)
     uni.setStorageSync(LIKED_RESOURCES_KEY, JSON.stringify(ids))
-    console.log('[ResourceSquare] 保存已点赞资源ID:', resourceId)
   } catch (e) {
-    console.error('[ResourceSquare] 保存已点赞资源失败:', e)
   }
 }
 
@@ -967,9 +934,7 @@ const removeLikedResource = (resourceId: number) => {
     likedResourceIds.value.delete(resourceId)
     const ids = Array.from(likedResourceIds.value)
     uni.setStorageSync(LIKED_RESOURCES_KEY, JSON.stringify(ids))
-    console.log('[ResourceSquare] 移除已点赞资源ID:', resourceId)
   } catch (e) {
-    console.error('[ResourceSquare] 移除已点赞资源失败:', e)
   }
 }
 
@@ -993,7 +958,6 @@ const mergeLikedStatus = (resourceList: ResourceItem[]) => {
  * 🎯 点击资源点赞按钮
  */
 const handleResourceLike = async (resource: ResourceItem) => {
-  console.log('[ResourceSquare] 点击点赞:', resource)
 
   // 检查登录状态
   const token = uni.getStorageSync(config.tokenKey)
@@ -1058,7 +1022,6 @@ const handleResourceLike = async (resource: ResourceItem) => {
       })
     }
   } catch (error: any) {
-    console.error('[ResourceSquare] 点赞操作失败:', error)
     uni.showToast({
       title: error.message || '操作失败，请重试',
       icon: 'none',
@@ -1071,7 +1034,6 @@ const handleResourceLike = async (resource: ResourceItem) => {
  * 🎯 点击资源下载按钮
  */
 const handleResourceDownload = (resource: ResourceItem) => {
-  console.log('[ResourceSquare] 点击下载:', resource)
 
   // 检查登录状态
   const token = uni.getStorageSync(config.tokenKey)
@@ -1128,11 +1090,9 @@ const handleDirectDownload = async (resource: ResourceItem) => {
         url: res.downloadUrl,
         success: (downloadRes) => {
           if (downloadRes.statusCode === 200) {
-            console.log('[ResourceSquare] 文件下载成功:', downloadRes.tempFilePath)
           }
         },
         fail: (err) => {
-          console.error('[ResourceSquare] 文件下载失败:', err)
           uni.showToast({
             title: '文件下载失败，请重试',
             icon: 'none',
@@ -1150,7 +1110,6 @@ const handleDirectDownload = async (resource: ResourceItem) => {
     }
   } catch (error: any) {
     uni.hideLoading()
-    console.error('[ResourceSquare] 直接下载失败:', error)
     uni.showToast({
       title: error.message || '下载失败',
       icon: 'none',
@@ -1231,7 +1190,6 @@ const handleDownloadConfirm = async () => {
           user.points = res.remainingPoints
           uni.setStorageSync(config.userInfoKey, JSON.stringify(user))
         } catch (e) {
-          console.error('[ResourceSquare] 更新用户信息失败:', e)
         }
       }
 
@@ -1246,7 +1204,6 @@ const handleDownloadConfirm = async () => {
       selectedResource.value = null
     }
   } catch (error: any) {
-    console.error('[ResourceSquare] 下载失败:', error)
 
     // 🔄 回滚UI状态
     if (index !== -1) {
@@ -1281,7 +1238,6 @@ const handleDownloadCancel = () => {
 
 // 🎯 页面加载
 onMounted(() => {
-  console.log('[ResourceSquare] 页面加载')
 
   // 加载用户学校ID（从本地存储）
   try {
@@ -1289,10 +1245,8 @@ onMounted(() => {
     if (userInfo) {
       const parsedInfo = JSON.parse(userInfo)
       userSchoolId.value = parsedInfo.schoolId || null
-      console.log('[ResourceSquare] 用户学校ID:', userSchoolId.value)
     }
   } catch (e) {
-    console.error('[ResourceSquare] 加载学校ID失败:', e)
   }
 
   loadUserPoints()
@@ -1304,7 +1258,6 @@ onMounted(() => {
 
 // 🎯 页面显示（从详情页返回时也会触发）
 onShow(() => {
-  console.log('[ResourceSquare] 页面显示')
 
   // 首次显示跳过（onMounted 已经加载了）
   if (isFirstShow.value) {
@@ -1313,7 +1266,6 @@ onShow(() => {
   }
 
   // 从详情页返回时：刷新数据
-  console.log('[ResourceSquare] 从详情页返回，刷新数据')
   loadUserPoints()
   loadDownloadedResources()
   loadLikedResources()

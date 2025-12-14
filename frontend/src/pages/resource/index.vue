@@ -16,7 +16,7 @@
             <input
               v-model="searchKeyword"
               class="search-input"
-              placeholder="搜索资源标题、描述或标签..."
+              placeholder="搜索课件、试题、笔记..."
               confirm-type="search"
               @input="handleSearchInput"
               @confirm="handleSearch"
@@ -165,42 +165,74 @@
           </view>
         </view>
 
-        <!-- 右侧:推荐侧栏 -->
+        <!-- 右侧:社区动态侧栏 -->
         <view class="sidebar">
+          <!-- 🔥 本周热门资源 -->
           <view class="sidebar-card">
             <view class="card-header">
-              <Icon name="bar-chart-2" :size="16" class="header-icon" />
-              <text class="card-title">资源统计</text>
+              <Icon name="trending-up" :size="16" class="header-icon hot-icon" />
+              <text class="card-title">本周热门</text>
+              <text class="card-badge">HOT</text>
             </view>
-            <view class="stats-grid">
-              <view class="stat-item">
-                <text class="stat-value">{{ total }}</text>
-                <text class="stat-label">总资源</text>
-              </view>
-              <view class="stat-item">
-                <text class="stat-value">{{ userPoints }}</text>
-                <text class="stat-label">我的积分</text>
+            <view class="hot-resources-list">
+              <view
+                v-for="(item, index) in hotResources"
+                :key="item.resourceId"
+                class="hot-resource-item"
+                @click="handleResourceClick(item)"
+              >
+                <view class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</view>
+                <view class="hot-content">
+                  <text class="hot-title">{{ item.title }}</text>
+                  <view class="hot-meta">
+                    <text class="hot-downloads">{{ formatNumber(item.downloads) }} 下载</text>
+                    <text class="hot-separator">·</text>
+                    <text class="hot-score">{{ item.score }} 积分</text>
+                  </view>
+                </view>
               </view>
             </view>
           </view>
 
+          <!-- 👤 活跃上传者 -->
           <view class="sidebar-card">
             <view class="card-header">
-              <Icon name="fire" :size="16" class="header-icon" />
-              <text class="card-title">上传指南</text>
+              <Icon name="users" :size="16" class="header-icon" />
+              <text class="card-title">活跃贡献者</text>
             </view>
-            <view class="guide-content">
-              <view class="guide-item">
-                <Icon name="check-circle" :size="14" class="guide-icon" />
-                <text class="guide-text">上传资源可获得积分</text>
+            <view class="contributors-list">
+              <view
+                v-for="user in activeContributors"
+                :key="user.userId"
+                class="contributor-item"
+              >
+                <image class="contributor-avatar" :src="user.avatar || defaultAvatar" mode="aspectFill" />
+                <view class="contributor-info">
+                  <text class="contributor-name">{{ user.username }}</text>
+                  <text class="contributor-stats">{{ user.uploadCount }} 份资源</text>
+                </view>
+                <view class="contributor-badge">
+                  <Icon name="award" :size="12" class="badge-icon" />
+                </view>
               </view>
-              <view class="guide-item">
-                <Icon name="check-circle" :size="14" class="guide-icon" />
-                <text class="guide-text">资源需经过审核</text>
-              </view>
-              <view class="guide-item">
-                <Icon name="check-circle" :size="14" class="guide-icon" />
-                <text class="guide-text">违规资源将被删除</text>
+            </view>
+          </view>
+
+          <!-- 🏷 高频标签 -->
+          <view class="sidebar-card">
+            <view class="card-header">
+              <Icon name="hash" :size="16" class="header-icon" />
+              <text class="card-title">热门标签</text>
+            </view>
+            <view class="tags-cloud">
+              <view
+                v-for="tag in popularTags"
+                :key="tag.name"
+                class="tag-item"
+                :style="{ fontSize: getTagSize(tag.count) }"
+                @click="handleTagClick(tag.name)"
+              >
+                {{ tag.name }}
               </view>
             </view>
           </view>
@@ -415,6 +447,19 @@ const currentScrollTop = ref(0)
 
 // 🎯 顶部导航折叠状态
 const isHeaderCollapsed = ref(false)
+
+// 🎯 右侧栏社区数据
+const hotResources = ref<ResourceItem[]>([]) // 本周热门资源(Top 5)
+const activeContributors = ref<Array<{
+  userId: number
+  username: string
+  avatar: string
+  uploadCount: number
+}>>([]) // 活跃上传者(Top 5)
+const popularTags = ref<Array<{
+  name: string
+  count: number
+}>>([]) // 热门标签(Top 10)
 const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 🎯 下载相关状态
@@ -856,6 +901,62 @@ const loadUserPoints = () => {
 }
 
 /**
+ * 🎯 加载右侧栏社区数据(模拟数据)
+ */
+const loadCommunityData = () => {
+  // 🔥 模拟本周热门资源(实际应从API获取)
+  hotResources.value = [
+    { resourceId: 1, title: '数据结构与算法期末复习资料', downloads: 2456, score: 5, category: 0, description: '', fileType: 'pdf', uploaderName: '张三', createdAt: new Date().toISOString(), likes: 128, status: 1, fileSize: 2048000 },
+    { resourceId: 2, title: '高等数学习题集及答案详解', downloads: 1832, score: 3, category: 1, description: '', fileType: 'pdf', uploaderName: '李四', createdAt: new Date().toISOString(), likes: 95, status: 1, fileSize: 3145728 },
+    { resourceId: 3, title: 'Java面向对象程序设计课件', downloads: 1654, score: 0, category: 0, description: '', fileType: 'pptx', uploaderName: '王五', createdAt: new Date().toISOString(), likes: 76, status: 1, fileSize: 4194304 },
+    { resourceId: 4, title: '计算机网络实验报告模板', downloads: 1421, score: 2, category: 4, description: '', fileType: 'docx', uploaderName: '赵六', createdAt: new Date().toISOString(), likes: 63, status: 1, fileSize: 1048576 },
+    { resourceId: 5, title: '数据库系统概论笔记整理', downloads: 1298, score: 5, category: 2, description: '', fileType: 'pdf', uploaderName: '孙七', createdAt: new Date().toISOString(), likes: 54, status: 1, fileSize: 2097152 }
+  ]
+
+  // 👤 模拟活跃上传者(实际应从API获取)
+  activeContributors.value = [
+    { userId: 101, username: '学霸小王', avatar: '', uploadCount: 128 },
+    { userId: 102, username: '资源分享者', avatar: '', uploadCount: 95 },
+    { userId: 103, username: '考研助手', avatar: '', uploadCount: 76 },
+    { userId: 104, username: '笔记达人', avatar: '', uploadCount: 63 },
+    { userId: 105, username: '课件收集者', avatar: '', uploadCount: 54 }
+  ]
+
+  // 🏷 模拟热门标签(实际应从API获取)
+  popularTags.value = [
+    { name: '数据结构', count: 1245 },
+    { name: '高等数学', count: 1089 },
+    { name: 'Java', count: 987 },
+    { name: '操作系统', count: 856 },
+    { name: '计算机网络', count: 743 },
+    { name: '数据库', count: 692 },
+    { name: '算法', count: 621 },
+    { name: '期末复习', count: 534 },
+    { name: '考研', count: 478 },
+    { name: 'Python', count: 412 }
+  ]
+}
+
+/**
+ * 🎯 标签点击处理
+ */
+const handleTagClick = (tagName: string) => {
+  searchKeyword.value = tagName
+  loadResourceList(true)
+}
+
+/**
+ * 🎯 根据标签频次计算字体大小
+ */
+const getTagSize = (count: number): string => {
+  const maxCount = Math.max(...popularTags.value.map(t => t.count))
+  const minSize = 22
+  const maxSize = 32
+  const size = minSize + ((count / maxCount) * (maxSize - minSize))
+  return `${size}rpx`
+}
+
+/**
  * 🎯 从本地存储加载已下载的资源ID
  */
 const loadDownloadedResources = () => {
@@ -1266,6 +1367,7 @@ onMounted(() => {
   loadDownloadedResources()
   loadLikedResources()
   loadSearchHistory() // 加载搜索历史
+  loadCommunityData() // 加载右侧栏社区数据
   loadResourceList(true)
 
   // #ifdef H5
@@ -2151,72 +2253,225 @@ onUnmounted(() => {
 .card-header {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  margin-bottom: $sp-5;
-  padding-bottom: $sp-4;
+  gap: 8rpx;
+  margin-bottom: 20rpx;
+  padding-bottom: 12rpx;
   border-bottom: 1rpx solid $gray-100;
 
   .header-icon {
     color: $primary;
+    flex-shrink: 0;
+
+    &.hot-icon {
+      color: $accent; // 热门图标使用橙色
+    }
   }
 
   .card-title {
-    font-size: $font-size-base;
+    flex: 1;
+    font-size: 28rpx;
     font-weight: 600;
     color: $gray-900;
   }
-}
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $sp-4;
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $sp-2;
-  padding: $sp-4;
-  background: $bg-page;
-  border-radius: $radius-sm;
-
-  .stat-value {
-    font-size: 40rpx;
-    font-weight: 700;
-    color: $primary;
-    line-height: 1;
-  }
-
-  .stat-label {
-    font-size: $font-size-xs;
-    color: $gray-600;
+  .card-badge {
+    padding: 4rpx 10rpx;
+    background: linear-gradient(135deg, $accent 0%, #FF8C42 100%);
+    color: $white;
+    font-size: 20rpx;
+    font-weight: 600;
+    border-radius: 10rpx;
+    letter-spacing: 0.5rpx;
   }
 }
 
-.guide-content {
+// 🔥 本周热门资源列表
+.hot-resources-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-4;
+  gap: 12rpx;
 }
 
-.guide-item {
+.hot-resource-item {
   display: flex;
   align-items: flex-start;
-  gap: $sp-3;
+  gap: 12rpx;
+  padding: 12rpx;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s;
 
-  .guide-icon {
-    color: $success;
-    flex-shrink: 0;
-    margin-top: 2rpx;
+  &:hover {
+    background: $gray-50;
   }
 
-  .guide-text {
-    flex: 1;
-    font-size: $font-size-sm;
-    color: $gray-700;
-    line-height: 1.6;
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.hot-rank {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 700;
+  border-radius: 8rpx;
+  background: $gray-200;
+  color: $gray-700;
+
+  &.rank-1 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+    color: $white;
+  }
+
+  &.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+    color: $white;
+  }
+
+  &.rank-3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
+    color: $white;
+  }
+}
+
+.hot-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hot-title {
+  display: block;
+  font-size: 24rpx;
+  font-weight: 500;
+  color: $gray-900;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  margin-bottom: 6rpx;
+}
+
+.hot-meta {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  font-size: 20rpx;
+  color: $gray-500;
+
+  .hot-downloads {
+    color: $accent;
+    font-weight: 500;
+  }
+
+  .hot-separator {
+    color: $gray-300;
+  }
+
+  .hot-score {
+    color: $warning;
+    font-weight: 500;
+  }
+}
+
+// 👤 活跃贡献者列表
+.contributors-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.contributor-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 10rpx;
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-50;
+  }
+}
+
+.contributor-avatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: $gray-200;
+  flex-shrink: 0;
+}
+
+.contributor-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  min-width: 0;
+}
+
+.contributor-name {
+  font-size: 24rpx;
+  font-weight: 500;
+  color: $gray-900;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.contributor-stats {
+  font-size: 20rpx;
+  color: $gray-500;
+}
+
+.contributor-badge {
+  flex-shrink: 0;
+  width: 32rpx;
+  height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, $warning 0%, $accent 100%);
+  border-radius: 50%;
+
+  .badge-icon {
+    color: $white;
+  }
+}
+
+// 🏷 热门标签云
+.tags-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  padding: 8rpx 0;
+}
+
+.tag-item {
+  padding: 8rpx 16rpx;
+  background: $gray-50;
+  border-radius: 20rpx;
+  font-weight: 500;
+  color: $gray-700;
+  cursor: pointer;
+  transition: all 0.2s;
+  line-height: 1.4;
+
+  &:hover {
+    background: $primary;
+    color: $white;
+    transform: translateY(-2rpx);
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 

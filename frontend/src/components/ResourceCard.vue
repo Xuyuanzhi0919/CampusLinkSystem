@@ -17,7 +17,8 @@
         </view>
 
         <!-- 标题 -->
-        <text class="title">{{ resource.title }}</text>
+        <rich-text v-if="keyword" class="title" :nodes="highlightText(resource.title, keyword)" />
+        <text v-else class="title">{{ resource.title }}</text>
       </view>
 
       <!-- 审核状态标签 (如果有) -->
@@ -31,7 +32,10 @@
     </view>
 
     <!--  资源描述 -->
-    <view class="description">{{ resource.description }}</view>
+    <view class="description">
+      <rich-text v-if="keyword" :nodes="highlightText(resource.description, keyword)" />
+      <text v-else>{{ resource.description }}</text>
+    </view>
 
     <!-- 标签和文件信息行 -->
     <view class="meta-row">
@@ -125,6 +129,7 @@ import { PLACEHOLDER_IMAGES } from '@/config/images'
 // Props
 interface Props {
   resource: ResourceItem
+  keyword?: string  // 搜索关键词,用于高亮
 }
 
 const props = defineProps<Props>()
@@ -293,6 +298,24 @@ const formatTime = (time: string): string => {
     const month = String(date.getMonth() + 1).padStart(2, '0')
     const day = String(date.getDate()).padStart(2, '0')
     return `${year}-${month}-${day}`
+  }
+}
+
+/**
+ * 高亮关键词
+ */
+const highlightText = (text: string, keyword?: string): string => {
+  if (!keyword || !text) return text
+
+  try {
+    // 转义特殊字符
+    const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`(${escapedKeyword})`, 'gi')
+
+    // 替换为带高亮样式的HTML（使用设计系统的 accent 色）
+    return text.replace(regex, '<span style="color: #FF6B35; font-weight: 600; background: rgba(255, 107, 53, 0.1); padding: 0 4px; border-radius: 4px;">$1</span>')
+  } catch (error) {
+    return text
   }
 }
 

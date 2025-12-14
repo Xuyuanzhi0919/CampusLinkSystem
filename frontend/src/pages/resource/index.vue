@@ -1670,19 +1670,19 @@ onUnmounted(() => {
   background: $white;
   border-bottom: 1rpx solid $gray-100; // 更浅的分割线
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+  overflow: hidden; // 隐藏溢出内容
 
-  // 当顶部导航折叠时,sticky-nav的top值同步调整
+  // 当顶部导航折叠时,筛选栏完全隐藏
   &.header-collapsed {
-    top: 96rpx; // 48px,折叠后的顶部导航高度
+    max-height: 0; // 高度变为0
+    opacity: 0; // 透明度为0
+    border-bottom: none; // 移除边框
+    box-shadow: none; // 移除阴影
   }
 
   @include mobile {
     top: 112rpx; // 56px,移动端与顶部导航同步
-
-    &.header-collapsed {
-      top: 96rpx; // 移动端折叠后也是48px
-    }
   }
 }
 

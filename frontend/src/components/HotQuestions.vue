@@ -258,29 +258,31 @@ const getHeatWidth = (views: number): string => {
   color: $gray-600;
   transition: all 0.25s;
 
-  // Top1:更大更饱满的徽章
+  // Top1:高饱和金色(100%明度)
   &.rank-1 {
     width: 44rpx; // +4rpx
     height: 44rpx;
     font-size: 22rpx; // +2rpx
-    background: linear-gradient(135deg, #FFD700 0%, #FF8C00 100%); // 更鲜艳的金色
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
     color: $white;
     box-shadow: 0 3rpx 12rpx rgba(#FFD700, 0.4);
     font-weight: 800; // 更粗
   }
 
-  // Top2:保持原样
+  // Top2:中等金色(70%明度)
   &.rank-2 {
-    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
+    background: linear-gradient(135deg, #E6C200 0%, #D4A017 100%);
     color: $white;
-    box-shadow: 0 2rpx 6rpx rgba(#C0C0C0, 0.3);
+    box-shadow: 0 2rpx 8rpx rgba(#E6C200, 0.3);
+    font-weight: 700;
   }
 
-  // Top3:保持原样
+  // Top3:暗金色(50%明度)
   &.rank-3 {
-    background: linear-gradient(135deg, #CD7F32 0%, #B8722B 100%);
+    background: linear-gradient(135deg, #C9A003 0%, #B8860B 100%);
     color: $white;
-    box-shadow: 0 2rpx 6rpx rgba(#CD7F32, 0.3);
+    box-shadow: 0 2rpx 6rpx rgba(#C9A003, 0.25);
+    font-weight: 700;
   }
 
   // Top4-5:进一步弱化
@@ -313,8 +315,9 @@ const getHeatWidth = (views: number): string => {
   -webkit-box-orient: vertical;
   transition: color 0.2s;
 
-  // Top1:标题加粗+稍大行高(头条感)
+  // Top1:标题加粗+稍大字号+行高(头条感)
   &.title-rank-1 {
+    font-size: 28rpx; // 26rpx→28rpx,微调
     font-weight: 600; // 500→600
     line-height: 1.5; // 1.4→1.5,增强呼吸感
     color: $gray-900;
@@ -396,19 +399,24 @@ const getHeatWidth = (views: number): string => {
 // 热度可视化条
 .heat-bar {
   position: absolute;
-  left: 0;
+  left: 28rpx; // 从图标右侧开始(icon 12rpx + gap 4rpx + text约12rpx)
   bottom: -2rpx;
-  height: 3rpx;
-  background: linear-gradient(90deg, rgba($primary, 0.3) 0%, rgba($primary, 0.6) 100%);
+  height: 2.5rpx; // 3rpx→2.5rpx,更轻量
+  background: linear-gradient(90deg, rgba($primary, 0.25) 0%, rgba($primary, 0.5) 100%);
   border-radius: 2rpx;
   transition: all 0.3s ease-out;
   pointer-events: none;
 
   // Hover 时热度条更明显
   .question-item:hover & {
-    height: 4rpx;
-    background: linear-gradient(90deg, $primary 0%, lighten($primary, 10%) 100%);
-    box-shadow: 0 1rpx 4rpx rgba($primary, 0.3);
+    height: 3.5rpx; // 4rpx→3.5rpx
+    background: linear-gradient(90deg, rgba($primary, 0.6) 0%, $primary 100%);
+    box-shadow: 0 1rpx 3rpx rgba($primary, 0.25);
+  }
+
+  // Top4-5 进一步弱化热度条
+  .question-item:nth-child(n+4) & {
+    opacity: 0.6;
   }
 }
 

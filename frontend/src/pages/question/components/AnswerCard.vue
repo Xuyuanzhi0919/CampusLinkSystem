@@ -117,6 +117,7 @@
       <!-- 取消按钮 -->
       <view class="menu-group">
         <view class="menu-item menu-item--cancel" @click="hideMoreMenu">
+          <Icon name="x" :size="20" class="menu-icon" />
           <text class="menu-label">取消</text>
         </view>
       </view>

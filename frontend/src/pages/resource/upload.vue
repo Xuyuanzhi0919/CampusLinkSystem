@@ -5,6 +5,7 @@ import config from '@/config'
 import { getUploadSignature, createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
+import UploadGuideSidebar from './components/UploadGuideSidebar.vue'
 
 /**
  * 🎯 文件状态
@@ -504,8 +505,11 @@ onLoad(() => {
       <view class="nav-right"></view>
     </view>
 
-    <!-- 主内容区域 -->
-    <view class="upload-container">
+    <!-- 内容区（双栏布局） -->
+    <scroll-view class="content-area" scroll-y>
+      <view class="main-container">
+        <!-- 左侧：表单区 -->
+        <view class="form-section">
       <!-- 📁 文件上传区域 -->
       <view class="section">
         <view class="section-title">选择文件</view>
@@ -635,10 +639,18 @@ onLoad(() => {
           :loading="submitting"
           @click="handleSubmit"
         >
-          提交审核
+          {{ canSubmit ? '提交并参与资源共享' : '请完善资源信息后提交' }}
         </CButton>
       </view>
     </view>
+    <!-- /左侧：表单区 -->
+
+    <!-- 右侧：辅助栏 -->
+    <view class="sidebar-section">
+      <UploadGuideSidebar />
+    </view>
+  </view>
+</scroll-view>
   </view>
 </template>
 
@@ -648,6 +660,8 @@ onLoad(() => {
 .upload-page {
   min-height: 100vh;
   background: $bg-page;
+  display: flex;
+  flex-direction: column;
 }
 
 // 顶部导航栏
@@ -660,6 +674,7 @@ onLoad(() => {
   padding: 0 $sp-4;
   background: $white;
   border-bottom: 1px solid $gray-200;
+  flex-shrink: 0;
 
   .nav-left {
     display: flex;
@@ -689,21 +704,55 @@ onLoad(() => {
   }
 }
 
-// 主容器
-.upload-container {
+// 内容区域（双栏布局）
+.content-area {
+  flex: 1;
+  height: calc(100vh - 44px);
+
+  @include mobile {
+    height: auto;
+  }
+}
+
+.main-container {
+  max-width: 1400px;
+  margin: 0 auto;
   padding: $sp-5;
+  display: flex;
+  gap: $sp-6;
+
+  @include mobile {
+    flex-direction: column;
+    gap: $sp-4;
+  }
+
+  @include desktop {
+    padding: $sp-8;
+  }
+}
+
+// 左侧表单区
+.form-section {
+  flex: 1;
+  min-width: 0;
 
   @include desktop {
     max-width: 800px;
-    margin: $sp-6 auto;
-    border-radius: $radius-md;
-    background: $white;
-    padding: $sp-10;
-    box-shadow: $shadow-md;
   }
+}
 
-  @media (min-width: 1024px) {
-    max-width: 900px;
+// 右侧辅助栏
+.sidebar-section {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 60px;
+  align-self: flex-start;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+
+  @include mobile {
+    display: none;
   }
 }
 

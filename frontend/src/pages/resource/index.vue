@@ -450,6 +450,9 @@ const currentScrollTop = ref(0)
 // 🎯 顶部导航折叠状态
 const isHeaderCollapsed = ref(false)
 
+// 🎯 全局资源数据(用于右侧栏统计,不受筛选影响)
+const allResources = ref<ResourceItem[]>([])
+
 // 🎯 右侧栏社区数据
 const hotResources = ref<ResourceItem[]>([]) // 本周热门资源(Top 5)
 const activeContributors = ref<Array<{
@@ -675,9 +678,6 @@ const loadResourceList = async (isRefresh = false) => {
 
     total.value = res.total
     hasMore.value = resources.value.length < res.total
-
-    // 🎯 加载完资源后更新右侧栏社区数据
-    loadCommunityData()
   } catch (error) {
     uni.showToast({
       title: '加载失败',
@@ -903,23 +903,23 @@ const loadUserPoints = () => {
 }
 
 /**
- * 🎯 加载右侧栏社区数据(基于真实数据统计)
+ * 🎯 加载右侧栏社区数据(基于全局资源数据统计,不受筛选影响)
  */
 const loadCommunityData = () => {
-  // 如果没有资源数据,直接返回
-  if (resources.value.length === 0) {
+  // 如果没有全局资源数据,直接返回
+  if (allResources.value.length === 0) {
     hotResources.value = []
     activeContributors.value = []
     popularTags.value = []
     return
   }
 
-  // 🔥 本周热门资源 - 从当前资源列表中按下载量排序取前5
-  hotResources.value = [...resources.value]
+  // 🔥 本周热门资源 - 从全局资源列表中按下载量排序取前5
+  hotResources.value = [...allResources.value]
     .sort((a, b) => b.downloads - a.downloads)
     .slice(0, 5)
 
-  // 👤 活跃贡献者 - 从当前资源列表中统计上传者,按上传数量排序取前5
+  // 👤 活跃贡献者 - 从全局资源列表中统计上传者,按上传数量排序取前5
   const uploaderMap = new Map<number, {
     userId: number
     username: string
@@ -928,7 +928,7 @@ const loadCommunityData = () => {
   }>()
 
   // 统计每个上传者的资源数量
-  resources.value.forEach(resource => {
+  allResources.value.forEach(resource => {
     // 使用 uploaderId 作为唯一标识(如果没有则使用 uploaderName 的 hash)
     const uploaderId = resource.uploaderId || hashString(resource.uploaderName)
 
@@ -949,10 +949,10 @@ const loadCommunityData = () => {
     .sort((a, b) => b.uploadCount - a.uploadCount)
     .slice(0, 5)
 
-  // 🏷 热门标签 - 从当前资源列表中提取分类,统计频次
+  // 🏷 热门标签 - 从全局资源列表中提取分类,统计频次
   const tagMap = new Map<string, number>()
 
-  resources.value.forEach(resource => {
+  allResources.value.forEach(resource => {
     // resource.category 现在是字符串类型(如"课件"、"试卷"、"笔记"等)
     const categoryName = resource.category || '其他'
     tagMap.set(categoryName, (tagMap.get(categoryName) || 0) + 1)

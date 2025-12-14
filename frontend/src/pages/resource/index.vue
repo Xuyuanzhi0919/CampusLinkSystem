@@ -20,7 +20,7 @@
               confirm-type="search"
               @input="handleSearchInput"
               @confirm="handleSearch"
-              @focus="showSearchHistory = true"
+              @focus="handleSearchFocus"
               @blur="handleSearchBlur"
             />
             <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
@@ -29,22 +29,32 @@
           </view>
 
           <!-- 搜索历史下拉面板 -->
-          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
-            <view class="history-header">
-              <text class="history-title">搜索历史</text>
-              <text class="history-clear" @click="clearSearchHistory">清空</text>
-            </view>
-            <view class="history-list">
-              <view
-                v-for="(item, index) in searchHistory"
-                :key="index"
-                class="history-item"
-                @click="handleSearchHistoryClick(item)"
-              >
-                <Icon name="clock" :size="14" class="history-icon" />
-                <text class="history-text">{{ item }}</text>
-                <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+          <view v-if="showSearchHistory" class="search-history-dropdown">
+            <!-- 有搜索历史 -->
+            <template v-if="searchHistory.length > 0">
+              <view class="history-header">
+                <text class="history-title">搜索历史</text>
+                <text class="history-clear" @click="clearSearchHistory">清空</text>
               </view>
+              <view class="history-list">
+                <view
+                  v-for="(item, index) in searchHistory"
+                  :key="index"
+                  class="history-item"
+                  @click="handleSearchHistoryClick(item)"
+                >
+                  <Icon name="clock" :size="14" class="history-icon" />
+                  <text class="history-text">{{ item }}</text>
+                  <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+                </view>
+              </view>
+            </template>
+
+            <!-- 无搜索历史 -->
+            <view v-else class="history-empty">
+              <Icon name="search" :size="32" class="empty-icon" />
+              <text class="empty-text">暂无搜索历史</text>
+              <text class="empty-hint">搜索后会自动记录</text>
             </view>
           </view>
         </view>
@@ -562,13 +572,10 @@ const handleSearchHistoryClick = (keyword: string) => {
  * 🎯 处理搜索框聚焦
  */
 const handleSearchFocus = () => {
-  // 如果有搜索历史且搜索框为空，显示历史面板
-  if (searchHistory.value.length > 0 && !searchKeyword.value) {
-    // 使用 nextTick 延迟显示，避免与 blur 事件冲突
-    setTimeout(() => {
-      showSearchHistory.value = true
-    }, 100)
-  }
+  // 显示搜索历史面板(即使没有历史也显示空状态)
+  setTimeout(() => {
+    showSearchHistory.value = true
+  }, 100)
 }
 
 /**
@@ -1693,6 +1700,32 @@ onUnmounted(() => {
 
   &:active {
     transform: scale(0.9);
+  }
+}
+
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+
+  .empty-icon {
+    color: $gray-300;
+    margin-bottom: 12px;
+  }
+
+  .empty-text {
+    font-size: 15px;
+    color: $gray-600;
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .empty-hint {
+    font-size: 13px;
+    color: $gray-400;
   }
 }
 

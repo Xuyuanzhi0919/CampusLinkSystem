@@ -951,10 +951,10 @@ const loadCommunityData = () => {
 
   // 🏷 热门标签 - 从当前资源列表中提取分类,统计频次
   const tagMap = new Map<string, number>()
-  const categoryNames = ['课件', '试题', '笔记', '报告', '其他']
 
   resources.value.forEach(resource => {
-    const categoryName = categoryNames[resource.category] || '其他'
+    // resource.category 现在是字符串类型(如"课件"、"试卷"、"笔记"等)
+    const categoryName = resource.category || '其他'
     tagMap.set(categoryName, (tagMap.get(categoryName) || 0) + 1)
   })
 

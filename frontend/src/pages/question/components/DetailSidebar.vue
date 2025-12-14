@@ -238,6 +238,8 @@ const handleRelatedClick = (questionId: number) => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 .detail-sidebar {
   display: flex;
   flex-direction: column;
@@ -284,7 +286,7 @@ const handleRelatedClick = (questionId: number) => {
     min-width: 40rpx;
     height: 36rpx;
     padding: 0 12rpx;
-    background: lighten($primary, 48%);
+    background: color.adjust($primary, $lightness: 48%);
     color: $primary;
     font-size: 22rpx;
     font-weight: 600;
@@ -296,7 +298,7 @@ const handleRelatedClick = (questionId: number) => {
 // 提问者信息卡 - 强化版
 // ===================================
 .asker-card {
-  background: linear-gradient(135deg, lighten($primary, 50%) 0%, $white 50%);
+  background: linear-gradient(135deg, color.adjust($primary, $lightness: 50%) 0%, $white 50%);
 }
 
 .asker-info {
@@ -362,7 +364,7 @@ const handleRelatedClick = (questionId: number) => {
         justify-content: center;
         height: 32rpx;
         padding: 0 12rpx;
-        background: linear-gradient(135deg, $accent 0%, lighten($accent, 10%) 100%);
+        background: linear-gradient(135deg, $accent 0%, color.adjust($accent, $lightness: 10%) 100%);
         color: $white;
         font-size: 20rpx;
         font-weight: 600;
@@ -420,7 +422,7 @@ const handleRelatedClick = (questionId: number) => {
     align-items: center;
     justify-content: space-around;
     padding: 24rpx;
-    background: linear-gradient(135deg, lighten($primary, 50%) 0%, lighten($primary, 52%) 100%);
+    background: linear-gradient(135deg, color.adjust($primary, $lightness: 50%) 0%, color.adjust($primary, $lightness: 52%) 100%);
     border-radius: 16rpx;
     margin-bottom: 20rpx;
 
@@ -469,8 +471,8 @@ const handleRelatedClick = (questionId: number) => {
     margin-bottom: 20rpx;
 
     &--solved {
-      background: linear-gradient(135deg, lighten($success, 50%) 0%, lighten($success, 45%) 100%);
-      color: darken($success, 10%);
+      background: linear-gradient(135deg, color.adjust($success, $lightness: 50%) 0%, color.adjust($success, $lightness: 45%) 100%);
+      color: color.adjust($success, $lightness: -10%);
       border: 1rpx solid $success;
 
       .status-icon {
@@ -515,7 +517,7 @@ const handleRelatedClick = (questionId: number) => {
       }
 
       &:hover {
-        background: lighten($primary, 48%);
+        background: color.adjust($primary, $lightness: 48%);
         border-color: $primary;
 
         .action-icon {
@@ -529,7 +531,7 @@ const handleRelatedClick = (questionId: number) => {
       }
 
       &--active {
-        background: lighten($primary, 48%);
+        background: color.adjust($primary, $lightness: 48%);
         border-color: $primary;
 
         .action-icon {
@@ -564,7 +566,7 @@ const handleRelatedClick = (questionId: number) => {
     transition: all $duration-base;
 
     &:hover {
-      background: lighten($primary, 50%);
+      background: color.adjust($primary, $lightness: 50%);
       border-color: $primary;
       transform: translateX(4rpx);
       box-shadow: 0 2rpx 8rpx rgba($primary, 0.08);
@@ -597,7 +599,7 @@ const handleRelatedClick = (questionId: number) => {
         justify-content: center;
         width: 32rpx;
         height: 32rpx;
-        background: linear-gradient(135deg, $success 0%, lighten($success, 10%) 100%);
+        background: linear-gradient(135deg, $success 0%, color.adjust($success, $lightness: 10%) 100%);
         color: $white;
         border-radius: 50%;
         box-shadow: 0 2rpx 6rpx rgba($success, 0.3);

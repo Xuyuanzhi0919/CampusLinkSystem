@@ -251,6 +251,8 @@ defineExpose({
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 // ===================================
 // 固定吸底输入容器 - 双模式设计
 // ===================================
@@ -597,7 +599,7 @@ defineExpose({
 
   &:hover {
     border-color: $primary;
-    background: lighten($primary, 50%);
+    background: color.adjust($primary, $lightness: 50%);
 
     .add-icon,
     .add-text {

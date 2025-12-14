@@ -186,6 +186,8 @@ const handlePreviewImage = (index: number) => {
 </script>
 
 <style lang="scss" scoped>
+@use "sass:color";
+
 .question-header-card {
   // 卡片基础样式由 CCard 提供
 }
@@ -303,7 +305,7 @@ const handlePreviewImage = (index: number) => {
   transition: color 0.2s;
 
   &:hover {
-    color: darken($primary, 10%);
+    color: color.adjust($primary, $lightness: -10%);
     text-decoration: underline;
   }
 

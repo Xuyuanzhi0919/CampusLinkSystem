@@ -704,6 +704,9 @@ const handleSortChange = (sortBy: string) => {
     currentSortOrder.value = 'desc'
   }
 
+  // 关闭排序菜单
+  showSortMenu.value = false
+
   console.log('[ResourceSquare] 切换排序:', sortBy, currentSortOrder.value)
   loadResourceList(true)
 }
@@ -793,16 +796,6 @@ const clearSearch = () => {
  */
 const toggleSortMenu = () => {
   showSortMenu.value = !showSortMenu.value
-}
-
-/**
- * 🎯 选择排序方式
- */
-const handleSortChange = (value: string) => {
-  currentSortBy.value = value
-  showSortMenu.value = false
-  console.log('[ResourceSquare] 排序方式变更:', currentSortLabel.value)
-  loadResourceList(true)
 }
 
 /**

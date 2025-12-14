@@ -115,91 +115,126 @@
       <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
 
-    <!-- ========== 主内容区 ========== -->
+    <!-- ========== 主内容区(三栏布局) ========== -->
     <view class="main-content">
       <view class="content-container">
-        <!-- 快捷筛选卡片 -->
-        <view class="quick-filter-card">
-          <view class="quick-filter-header">
-            <Icon name="trending-up" :size="16" class="header-icon" />
-            <text class="header-title">快捷筛选</text>
+        <!-- 中间:资源列表 -->
+        <view class="resource-list-column">
+          <!-- 快捷筛选卡片 -->
+          <view class="quick-filter-card">
+            <view class="quick-filter-header">
+              <Icon name="trending-up" :size="16" class="header-icon" />
+              <text class="header-title">快捷筛选</text>
+            </view>
+            <view class="quick-filter-tabs">
+              <view
+                class="filter-tab"
+                :class="{ 'filter-tab--active': currentSortBy === 'created_at' }"
+                @click="handleQuickFilter('latest')"
+              >
+                <Icon name="clock" :size="14" class="tab-icon" />
+                <text class="tab-label">最新</text>
+              </view>
+              <view
+                class="filter-tab"
+                :class="{ 'filter-tab--active': currentSortBy === 'downloads' }"
+                @click="handleQuickFilter('downloads')"
+              >
+                <Icon name="trending-up" :size="14" class="tab-icon" />
+                <text class="tab-label">下载最多</text>
+              </view>
+              <view
+                class="filter-tab"
+                :class="{ 'filter-tab--active': currentSortBy === 'likes' }"
+                @click="handleQuickFilter('likes')"
+              >
+                <Icon name="heart" :size="14" class="tab-icon" />
+                <text class="tab-label">点赞最多</text>
+              </view>
+              <view class="filter-tab" @click="showAdvancedFilter = true">
+                <Icon name="sliders" :size="14" class="tab-icon" />
+                <text class="tab-label">更多筛选</text>
+              </view>
+            </view>
           </view>
-          <view class="quick-filter-tabs">
-            <view
-              class="filter-tab"
-              :class="{ 'filter-tab--active': currentSortBy === 'created_at' }"
-              @click="handleQuickFilter('latest')"
-            >
-              <Icon name="clock" :size="14" class="tab-icon" />
-              <text class="tab-label">最新</text>
-            </view>
-            <view
-              class="filter-tab"
-              :class="{ 'filter-tab--active': currentSortBy === 'downloads' }"
-              @click="handleQuickFilter('downloads')"
-            >
-              <Icon name="trending-up" :size="14" class="tab-icon" />
-              <text class="tab-label">下载最多</text>
-            </view>
-            <view
-              class="filter-tab"
-              :class="{ 'filter-tab--active': currentSortBy === 'likes' }"
-              @click="handleQuickFilter('likes')"
-            >
-              <Icon name="heart" :size="14" class="tab-icon" />
-              <text class="tab-label">点赞最多</text>
-            </view>
-            <view class="filter-tab" @click="showAdvancedFilter = true">
-              <Icon name="sliders" :size="14" class="tab-icon" />
-              <text class="tab-label">更多筛选</text>
-            </view>
-          </view>
-        </view>
 
-        <!-- 资源列表区域 -->
-        <scroll-view
-          scroll-y
-          class="scroll-container"
-          :refresher-enabled="true"
-          :refresher-triggered="refreshing"
-          :scroll-top="scrollTop"
-          @refresherrefresh="onRefresh"
-          @scrolltolower="onLoadMore"
-          @scroll="handleScroll"
-        >
-          <!-- 加载中：显示骨架屏 -->
-          <view v-if="loading && resources.length === 0" class="skeleton-list">
+          <!-- 骨架屏 - 加载中 -->
+          <template v-if="loading && resources.length === 0">
             <SkeletonResourceCard v-for="n in 5" :key="n" />
-          </view>
+          </template>
 
-          <!-- 资源列表 -->
-          <view v-else-if="resources.length > 0" class="resource-list">
-          <ResourceCard
-            v-for="item in resources"
-            :key="item.resourceId"
-            :resource="item"
-            @click="handleResourceClick"
-            @download="handleResourceDownload"
-            @like="handleResourceLike"
-          />
+          <!-- 资源卡片列表 -->
+          <template v-else-if="resources.length > 0">
+            <ResourceCard
+              v-for="item in resources"
+              :key="item.resourceId"
+              :resource="item"
+              @click="handleResourceClick"
+              @download="handleResourceDownload"
+              @like="handleResourceLike"
+            />
 
-          <!-- 加载更多状态 -->
-          <view v-if="hasMore" class="loading-more">
-            <text class="loading-text">加载更多...</text>
-          </view>
-          <view v-else class="no-more">
-            <text class="no-more-text">— 没有更多了 —</text>
-          </view>
-        </view>
+            <!-- 加载更多按钮 -->
+            <view v-if="hasMore" class="load-more-btn" @click="onLoadMore">
+              <Icon v-if="loading" name="loader" :size="16" class="loading-icon" />
+              <Icon v-else name="arrow-down" :size="16" />
+              <text>{{ loading ? '加载中...' : '加载更多' }}</text>
+            </view>
+            <view v-else-if="!hasMore && resources.length > 0" class="load-more-end">
+              <view class="end-line"></view>
+              <text class="end-text">没有更多了</text>
+              <view class="end-line"></view>
+            </view>
+          </template>
 
           <!-- 空状态 -->
-          <EmptyState
-            v-else
-            icon="📦"
-            :title="emptyTitle"
-            :description="emptyDescription"
-          />
-        </scroll-view>
+          <view v-else class="empty-state">
+            <Icon name="inbox" :size="64" class="empty-icon" />
+            <text class="empty-text">{{ emptyTitle }}</text>
+            <text class="empty-hint">{{ emptyDescription }}</text>
+          </view>
+        </view>
+
+        <!-- 右侧:推荐侧栏 -->
+        <view class="sidebar">
+          <view class="sidebar-card">
+            <view class="card-header">
+              <Icon name="bar-chart-2" :size="16" class="header-icon" />
+              <text class="card-title">资源统计</text>
+            </view>
+            <view class="stats-grid">
+              <view class="stat-item">
+                <text class="stat-value">{{ total }}</text>
+                <text class="stat-label">总资源</text>
+              </view>
+              <view class="stat-item">
+                <text class="stat-value">{{ userPoints }}</text>
+                <text class="stat-label">我的积分</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="sidebar-card">
+            <view class="card-header">
+              <Icon name="fire" :size="16" class="header-icon" />
+              <text class="card-title">上传指南</text>
+            </view>
+            <view class="guide-content">
+              <view class="guide-item">
+                <Icon name="check-circle" :size="14" class="guide-icon" />
+                <text class="guide-text">上传资源可获得积分</text>
+              </view>
+              <view class="guide-item">
+                <Icon name="check-circle" :size="14" class="guide-icon" />
+                <text class="guide-text">资源需经过审核</text>
+              </view>
+              <view class="guide-item">
+                <Icon name="check-circle" :size="14" class="guide-icon" />
+                <text class="guide-text">违规资源将被删除</text>
+              </view>
+            </view>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -1802,14 +1837,69 @@ onShow(() => {
 }
 
 // =============================================
+// 🎯 三栏布局结构
+// =============================================
+.main-content {
+  padding-top: 248rpx; // 120rpx (top-nav) + 80rpx (sticky-nav) + 48rpx (gap)
+  min-height: 100vh;
+  background: $bg-page;
+
+  @include mobile {
+    padding-top: 232rpx; // 112rpx + 80rpx + 40rpx
+  }
+}
+
+.content-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+  display: flex;
+  gap: 64rpx;
+
+  @media (max-width: 1600px) {
+    padding: 0 128rpx;
+    gap: 48rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 96rpx;
+    gap: 40rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 64rpx;
+    gap: 32rpx;
+  }
+
+  @include mobile {
+    padding: 0 32rpx;
+    flex-direction: column;
+    gap: 0;
+  }
+}
+
+// =============================================
+// 🎯 中间栏 - 资源列表区域
+// =============================================
+.resource-list-column {
+  flex: 1;
+  min-width: 0; // 防止 flex 子元素溢出
+}
+
+// =============================================
 // 🎯 快捷筛选卡片
 // =============================================
 .quick-filter-card {
-  margin: $sp-4 $sp-8;
+  margin-bottom: 32rpx;
   background: $white;
   border-radius: $radius-md;
   padding: $sp-5;
   box-shadow: $shadow-card;
+
+  @include mobile {
+    margin: 0 0 24rpx 0;
+    border-radius: $radius-sm;
+  }
 }
 
 .quick-filter-header {
@@ -1819,7 +1909,7 @@ onShow(() => {
   margin-bottom: $sp-4;
 
   .header-icon {
-    color: $accent;
+    color: $primary;
   }
 
   .header-title {
@@ -1874,6 +1964,215 @@ onShow(() => {
   &:hover:not(&--active) {
     border-color: $gray-300;
     background: $gray-50;
+  }
+}
+
+// =============================================
+// 🎯 右侧边栏
+// =============================================
+.sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 224rpx; // 120rpx (top-nav) + 80rpx (sticky-nav) + 24rpx (gap)
+  align-self: flex-start;
+  max-height: calc(100vh - 240rpx);
+  overflow-y: auto;
+
+  @include mobile {
+    display: none; // 移动端隐藏侧边栏
+  }
+
+  @media (max-width: 1200px) {
+    width: 280px;
+    top: 216rpx;
+  }
+
+  @media (max-width: 768px) {
+    display: none; // 小屏幕隐藏侧边栏
+  }
+}
+
+.sidebar-card {
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-6;
+  margin-bottom: $sp-4;
+  box-shadow: $shadow-card;
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: $shadow-hover;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-5;
+  padding-bottom: $sp-4;
+  border-bottom: 1rpx solid $gray-100;
+
+  .header-icon {
+    color: $primary;
+  }
+
+  .card-title {
+    font-size: $font-size-base;
+    font-weight: 600;
+    color: $gray-900;
+  }
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $sp-4;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-4;
+  background: $bg-page;
+  border-radius: $radius-sm;
+
+  .stat-value {
+    font-size: 40rpx;
+    font-weight: 700;
+    color: $primary;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: $font-size-xs;
+    color: $gray-600;
+  }
+}
+
+.guide-content {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+
+  .guide-icon {
+    color: $success;
+    flex-shrink: 0;
+    margin-top: 2rpx;
+  }
+
+  .guide-text {
+    flex: 1;
+    font-size: $font-size-sm;
+    color: $gray-700;
+    line-height: 1.6;
+  }
+}
+
+// =============================================
+// 🎯 加载更多按钮
+// =============================================
+.load-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  padding: $sp-5 0;
+  margin-top: $sp-4;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  cursor: pointer;
+  transition: $transition-base;
+  font-size: $font-size-sm;
+  color: $gray-600;
+
+  .loading-icon {
+    animation: spin 1s linear infinite;
+  }
+
+  &:hover {
+    background: $gray-50;
+    box-shadow: $shadow-hover;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.load-more-end {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-4;
+  padding: $sp-8 0;
+  margin-top: $sp-4;
+
+  .end-line {
+    flex: 1;
+    height: 1rpx;
+    background: $gray-200;
+  }
+
+  .end-text {
+    font-size: $font-size-xs;
+    color: $gray-500;
+    white-space: nowrap;
+  }
+}
+
+// =============================================
+// 🎯 空状态
+// =============================================
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx $sp-8;
+  background: $white;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  margin-top: $sp-4;
+
+  .empty-icon {
+    color: $gray-300;
+    margin-bottom: $sp-6;
+  }
+
+  .empty-text {
+    font-size: $font-size-lg;
+    font-weight: 600;
+    color: $gray-700;
+    margin-bottom: $sp-2;
+  }
+
+  .empty-hint {
+    font-size: $font-size-sm;
+    color: $gray-500;
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
   }
 }
 

@@ -94,15 +94,15 @@
       <view class="menu-group">
         <!-- 复制内容 -->
         <view class="menu-item" @click="handleCopy">
-          <Icon name="copy" :size="20" class="menu-icon" />
+          <Icon name="file-text" :size="20" class="menu-icon" />
           <text class="menu-label">复制内容</text>
         </view>
 
         <!-- 分享回答 -->
         <view class="menu-item" @click="handleShare">
-          <Icon name="share-2" :size="20" class="menu-icon" />
+          <Icon name="share" :size="20" class="menu-icon" />
           <text class="menu-label">分享回答</text>
-          <Icon name="chevron-right" :size="16" class="menu-arrow" />
+          <Icon name="chevron-down" :size="16" class="menu-arrow" />
         </view>
       </view>
 

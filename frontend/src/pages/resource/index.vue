@@ -903,6 +903,28 @@ const loadUserPoints = () => {
 }
 
 /**
+ * 🎯 加载全局资源数据(用于右侧栏统计,仅在初始化时调用一次)
+ */
+const loadAllResources = async () => {
+  try {
+    const res = await getResourceList({
+      page: 1,
+      pageSize: 100, // 获取前100条资源用于统计
+      sortBy: 'downloads', // 按下载量排序
+      sortOrder: 'desc'
+    })
+
+    if (res && res.list) {
+      allResources.value = res.list
+      // 加载完全局数据后立即更新右侧栏
+      loadCommunityData()
+    }
+  } catch (error) {
+    console.error('加载全局资源数据失败:', error)
+  }
+}
+
+/**
  * 🎯 加载右侧栏社区数据(基于全局资源数据统计,不受筛选影响)
  */
 const loadCommunityData = () => {
@@ -1412,7 +1434,8 @@ onMounted(() => {
   loadDownloadedResources()
   loadLikedResources()
   loadSearchHistory() // 加载搜索历史
-  loadResourceList(true) // 加载资源列表(会自动调用 loadCommunityData)
+  loadAllResources() // 🎯 加载全局资源数据(用于右侧栏统计)
+  loadResourceList(true) // 加载资源列表
 
   // #ifdef H5
   // H5端监听页面滚动，实现顶部导航折叠效果

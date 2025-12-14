@@ -1718,7 +1718,7 @@ onUnmounted(() => {
 .category-tabs {
   display: flex;
   align-items: center;
-  gap: 8rpx; // 4px,与问答社区一致
+  gap: 4px;
   flex: 1;
   overflow-x: auto;
   scrollbar-width: none;
@@ -1732,10 +1732,10 @@ onUnmounted(() => {
 .category-tab {
   display: flex;
   align-items: center;
-  gap: 12rpx; // 6px
-  padding: 12rpx 28rpx; // 6px 14px
-  border-radius: 36rpx; // 18px
-  font-size: 28rpx; // 14px
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 18px;
+  font-size: 14px;
   font-weight: 500;
   color: $gray-700;
   background: transparent;
@@ -1786,15 +1786,15 @@ onUnmounted(() => {
   }
 
   @include mobile {
-    padding: 10rpx 24rpx; // 5px 12px
-    font-size: 26rpx; // 13px
+    padding: 5px 12px;
+    font-size: 13px;
   }
 }
 
 .sort-controls {
   display: flex;
   align-items: center;
-  gap: 16rpx; // 8px,与问答社区一致
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -1803,17 +1803,17 @@ onUnmounted(() => {
 }
 
 .sort-dropdown {
-  display: inline-flex; // 改为 inline-flex,防止文字换行
+  display: inline-flex;
   align-items: center;
-  gap: 8rpx; // 4px
-  padding: 12rpx 24rpx; // 6px 12px
-  min-width: 120rpx; // 60px,确保最小宽度
+  gap: 4px;
+  padding: 6px 12px;
+  min-width: 60px;
   background: $gray-100;
-  border-radius: 32rpx; // 16px
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  flex-shrink: 0; // 防止被压缩
+  flex-shrink: 0;
 
   &:hover {
     background: $gray-200;
@@ -1825,13 +1825,13 @@ onUnmounted(() => {
   }
 
   .sort-label {
-    font-size: 26rpx; // 13px
+    font-size: 13px;
     color: $gray-700;
     font-weight: 500;
   }
 
   .dropdown-icon {
-    color: $gray-500;
+    color: $gray-600;
     flex-shrink: 0;
     transition: transform 0.2s;
   }
@@ -1843,27 +1843,27 @@ onUnmounted(() => {
 
 .sort-menu-content {
   position: absolute;
-  top: calc(100% + 8rpx); // 4px
+  top: calc(100% + 4px);
   right: 0;
   z-index: 102;
   background: $white;
-  border-radius: 24rpx; // 12px
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
-  min-width: 280rpx; // 140px
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 140px;
   overflow: hidden;
-  border: 1rpx solid $gray-200;
+  border: 1px solid $gray-200;
 }
 
 .sort-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 32rpx; // 12px 16px
+  padding: 12px 16px;
   cursor: pointer;
   transition: background 0.2s;
 
   .sort-item-label {
-    font-size: 28rpx; // 14px
+    font-size: 14px;
     color: $gray-700;
   }
 
@@ -1903,11 +1903,11 @@ onUnmounted(() => {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 8rpx; // 4px
-  padding: 12rpx 24rpx; // 6px 12px
-  min-width: 120rpx; // 60px
+  gap: 4px;
+  padding: 6px 12px;
+  min-width: 60px;
   background: $gray-100;
-  border-radius: 32rpx; // 16px,圆角矩形,与排序按钮一致
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
@@ -1923,7 +1923,7 @@ onUnmounted(() => {
   }
 
   .filter-label {
-    font-size: 26rpx; // 13px
+    font-size: 13px;
     font-weight: 500;
     color: $gray-700;
     white-space: nowrap;
@@ -1932,20 +1932,20 @@ onUnmounted(() => {
 
 .filter-badge {
   position: absolute;
-  top: -8rpx; // -4px
-  right: -8rpx; // -4px
-  min-width: 36rpx; // 18px
-  height: 36rpx; // 18px
-  padding: 0 10rpx; // 0 5px
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $error;
   color: $white;
-  font-size: 22rpx; // 11px
+  font-size: 11px;
   font-weight: 700;
-  border-radius: 18rpx; // 9px
-  border: 4rpx solid $white; // 2px
+  border-radius: 9px;
+  border: 2px solid $white;
 }
 
 // =============================================

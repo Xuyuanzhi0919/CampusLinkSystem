@@ -135,7 +135,7 @@ const handleClick = () => {
 
 .title {
   flex: 1;
-  font-size: 32rpx;
+  font-size: 30rpx; // 从32rpx减小到30rpx,与ResourceCard一致
   font-weight: 600;
   color: #333;
   overflow: hidden;
@@ -147,13 +147,13 @@ const handleClick = () => {
   padding: 4rpx 12rpx;
   background: #f0f9ff;
   color: #52c41a;
-  font-size: 22rpx;
+  font-size: 20rpx; // 从22rpx减小到20rpx
   border-radius: 4rpx;
   margin-left: 12rpx;
 }
 
 .content {
-  font-size: 28rpx;
+  font-size: 24rpx; // 从28rpx减小到24rpx,与ResourceCard的描述一致
   color: #666;
   line-height: 1.6;
   margin-bottom: 12rpx;
@@ -175,7 +175,7 @@ const handleClick = () => {
   padding: 4rpx 12rpx;
   background: #f5f5f5;
   color: #666;
-  font-size: 22rpx;
+  font-size: 20rpx; // 从22rpx减小到20rpx
   border-radius: 4rpx;
 }
 
@@ -199,7 +199,7 @@ const handleClick = () => {
 }
 
 .username {
-  font-size: 26rpx;
+  font-size: 22rpx; // 从26rpx减小到22rpx,与ResourceCard一致
   color: #666;
 }
 
@@ -212,7 +212,7 @@ const handleClick = () => {
 .stat-item {
   display: flex;
   align-items: center;
-  font-size: 24rpx;
+  font-size: 22rpx; // 从24rpx减小到22rpx,与ResourceCard一致
   color: #999;
 }
 

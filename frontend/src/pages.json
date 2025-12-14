@@ -22,7 +22,8 @@
 			"path": "pages/resource/index",
 			"style": {
 				"navigationBarTitleText": "资源库",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
 			}
 		},
 		{

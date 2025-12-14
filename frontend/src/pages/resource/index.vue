@@ -1740,25 +1740,45 @@ onUnmounted(() => {
   white-space: nowrap;
   flex-shrink: 0;
 
+  // 默认状态下的图标和文字颜色
   .tab-icon {
     color: $gray-600;
     flex-shrink: 0;
     transition: color 0.2s;
   }
 
-  &--active {
-    background: $primary;
-    color: $white;
-    font-weight: 600;
+  text {
+    color: $gray-700;
+    transition: color 0.2s;
+  }
+
+  // Hover状态
+  &:hover:not(.category-tab--active) {
+    background: $gray-100;
+    color: $gray-900;
 
     .tab-icon {
-      color: $white;
+      color: $gray-900;
+    }
+
+    text {
+      color: $gray-900;
     }
   }
 
-  &:hover:not(&--active) {
-    background: $gray-100;
-    color: $gray-900;
+  // 激活状态 - 使用更高的优先级
+  &.category-tab--active {
+    background: $primary !important;
+    color: $white !important;
+    font-weight: 600;
+
+    .tab-icon {
+      color: $white !important;
+    }
+
+    text {
+      color: $white !important;
+    }
   }
 
   @include mobile {
@@ -2036,34 +2056,46 @@ onUnmounted(() => {
   cursor: pointer;
   transition: $transition-base;
 
+  // 默认状态
   .tab-icon {
     color: $gray-600;
     transition: $transition-base;
   }
 
-  .tab-label {
+  text {
     font-size: $font-size-sm;
     color: $gray-700;
     font-weight: 500;
+    transition: color 0.2s;
   }
 
-  &--active {
-    border-color: $accent;
-    background: $accent-50;
-
-    .tab-icon {
-      color: $accent;
-    }
-
-    .tab-label {
-      color: $accent;
-      font-weight: 600;
-    }
-  }
-
-  &:hover:not(&--active) {
+  // Hover状态
+  &:hover:not(.filter-tab--active) {
     border-color: $gray-300;
     background: $gray-50;
+
+    .tab-icon {
+      color: $gray-700;
+    }
+
+    text {
+      color: $gray-900;
+    }
+  }
+
+  // 激活状态
+  &.filter-tab--active {
+    border-color: $accent !important;
+    background: $accent-50 !important;
+
+    .tab-icon {
+      color: $accent !important;
+    }
+
+    text {
+      color: $accent !important;
+      font-weight: 600;
+    }
   }
 }
 

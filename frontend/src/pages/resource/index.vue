@@ -1313,8 +1313,6 @@ onShow(() => {
 .resource-square-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: 200rpx; // 60px(top-nav) + 40px(sticky-nav) = 100px = 200rpx
-  padding-bottom: 120rpx;
 }
 
 // =============================================
@@ -1850,12 +1848,24 @@ onShow(() => {
 // 🎯 三栏布局结构
 // =============================================
 .main-content {
-  padding-top: 248rpx; // 120rpx (top-nav) + 80rpx (sticky-nav) + 48rpx (gap)
+  padding-top: 248rpx; // 120rpx (60px top-nav) + 80rpx (40px sticky-nav) + 48rpx (24px gap)
+  padding-bottom: 128rpx; // 64px
   min-height: 100vh;
   background: $bg-page;
 
+  @media (max-width: 1440px) {
+    padding-top: 232rpx; // 120rpx + 80rpx + 32rpx (16px gap)
+    padding-bottom: 112rpx; // 56px
+  }
+
+  @media (max-width: 1200px) {
+    padding-top: 224rpx; // 120rpx + 80rpx + 24rpx (12px gap)
+    padding-bottom: 96rpx; // 48px
+  }
+
   @include mobile {
-    padding-top: 232rpx; // 112rpx + 80rpx + 40rpx
+    padding-top: 216rpx; // 112rpx (56px) + 80rpx (40px) + 24rpx (12px)
+    padding-bottom: 80rpx; // 40px
   }
 }
 

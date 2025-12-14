@@ -372,8 +372,8 @@ const handleLike = () => {
 .resource-card {
   background: #FDFDFE;
   border-radius: 16rpx;
-  padding: 20rpx;
-  margin-bottom: 16rpx;
+  padding: 24rpx; // 20rpx→24rpx,增加内边距,减少拥挤感
+  margin-bottom: 20rpx; // 16rpx→20rpx,增加卡片间距,增强呼吸感
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
@@ -402,7 +402,7 @@ const handleLike = () => {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16rpx;
-  margin-bottom: 8rpx;
+  margin-bottom: 12rpx; // 8rpx→12rpx,增加层级间距
 }
 
 .title-row {
@@ -415,13 +415,13 @@ const handleLike = () => {
 
 .type-icon {
   flex-shrink: 0;
-  width: 48rpx;
-  height: 48rpx;
+  width: 52rpx; // 48rpx→52rpx,增加图标容器尺寸
+  height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  font-size: 24rpx;
+  font-size: 26rpx; // 24rpx→26rpx,增加emoji图标尺寸
 
   // 不同类型的渐变背景 - 统一颜色体系
   // 课件 - 蓝色系
@@ -457,10 +457,10 @@ const handleLike = () => {
 
 .title {
   flex: 1;
-  font-size: 30rpx;
-  font-weight: 600;
+  font-size: 32rpx; // 30rpx→32rpx,参考HotQuestions
+  font-weight: 600; // 保持600,与HotQuestions一致
   color: #111827;
-  line-height: 1.5;
+  line-height: 1.6; // 1.5→1.6,增强可读性
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -476,18 +476,18 @@ const handleLike = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  padding: 4rpx 10rpx;
+  padding: 6rpx 12rpx; // 4rpx 10rpx→6rpx 12rpx,增加内边距
   border-radius: 12rpx;
   background: rgba(248, 113, 113, 0.08);
   margin-left: 8rpx;
 
   .like-icon-hint {
-    font-size: 18rpx;
+    font-size: 20rpx; // 18rpx→20rpx,增加图标尺寸
     color: #F87171;
   }
 
   .like-count {
-    font-size: 20rpx;
+    font-size: 22rpx; // 20rpx→22rpx,增加字体尺寸
     color: #6B7280;
     font-weight: 500;
   }
@@ -496,9 +496,9 @@ const handleLike = () => {
 // 审核状态标签
 .status-badge {
   flex-shrink: 0;
-  padding: 6rpx 12rpx;
+  padding: 6rpx 14rpx; // 12rpx→14rpx,增加内边距
   border-radius: 28rpx;
-  font-size: 20rpx;
+  font-size: 22rpx; // 20rpx→22rpx,增加字体尺寸
   font-weight: 500;
   white-space: nowrap;
 
@@ -522,15 +522,16 @@ const handleLike = () => {
 .description-section {
   display: flex;
   align-items: flex-start;
-  gap: 10rpx;
-  margin-bottom: 12rpx;
+  gap: 12rpx; // 10rpx→12rpx,增加间距
+  margin-bottom: 16rpx; // 12rpx→16rpx,增加层级间距
 }
 
 .description {
   flex: 1;
-  font-size: 24rpx;
+  font-size: 26rpx; // 24rpx→26rpx,增加可读性
+  font-weight: 400; // 明确字重
   color: #6B7280;
-  line-height: 1.6;
+  line-height: 1.7; // 1.6→1.7,增强可读性
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -544,7 +545,7 @@ const handleLike = () => {
   flex-shrink: 0;
   padding: 4rpx 10rpx;
   border-radius: 10rpx;
-  font-size: 20rpx;
+  font-size: 22rpx; // 20rpx→22rpx,增强可读性
   font-weight: 500;
   white-space: nowrap;
   background: rgba(59, 130, 246, 0.1);
@@ -585,19 +586,19 @@ const handleLike = () => {
 .meta-section {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  margin-bottom: 12rpx;
+  gap: 10rpx; // 8rpx→10rpx,增加间距
+  margin-bottom: 14rpx; // 12rpx→14rpx,增强呼吸感
   flex-wrap: wrap;
-  font-size: 22rpx;
+  font-size: 24rpx; // 22rpx→24rpx
   color: #9CA3AF;
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 4rpx 10rpx;
+  padding: 4rpx 12rpx; // 10rpx→12rpx,增加内边距
   border-radius: 10rpx;
-  font-size: 20rpx;
+  font-size: 22rpx; // 20rpx→22rpx
   font-weight: 500;
   white-space: nowrap;
 
@@ -618,7 +619,8 @@ const handleLike = () => {
 }
 
 .meta-text {
-  font-size: 22rpx;
+  font-size: 24rpx; // 22rpx→24rpx,增强可读性
+  font-weight: 400; // 明确字重
   color: #6B7280;
   white-space: nowrap;
 
@@ -633,7 +635,7 @@ const handleLike = () => {
   align-items: center;
   justify-content: space-between;
   gap: 12rpx;
-  padding-top: 10rpx;
+  padding-top: 14rpx; // 10rpx→14rpx,增加顶部间距
   border-top: 1rpx solid #F3F4F6;
 }
 
@@ -648,9 +650,9 @@ const handleLike = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  font-size: 22rpx;
+  font-size: 24rpx; // 22rpx→24rpx,增强可读性
   font-weight: 500;
-  padding: 4rpx 10rpx;
+  padding: 6rpx 12rpx; // 4rpx 10rpx→6rpx 12rpx,增加内边距
   border-radius: 10rpx;
   transition: all 0.2s ease;
 
@@ -660,7 +662,7 @@ const handleLike = () => {
     background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
 
     .stat-icon {
-      font-size: 18rpx;
+      font-size: 20rpx; // 18rpx→20rpx,增加图标尺寸
     }
 
     .stat-value {
@@ -674,7 +676,7 @@ const handleLike = () => {
     background: rgba(107, 114, 128, 0.08);
 
     .stat-icon {
-      font-size: 16rpx;
+      font-size: 18rpx; // 16rpx→18rpx,增加图标尺寸
       color: #9CA3AF;
     }
   }
@@ -692,8 +694,8 @@ const handleLike = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48rpx;
-  height: 48rpx;
+  width: 52rpx; // 48rpx→52rpx,增加按钮尺寸
+  height: 52rpx;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -710,7 +712,7 @@ const handleLike = () => {
   }
 
   .icon-btn-icon {
-    font-size: 24rpx;
+    font-size: 26rpx; // 24rpx→26rpx,增加图标尺寸
     color: #9CA3AF;
     line-height: 1;
     transition: all 0.2s;
@@ -767,18 +769,22 @@ const handleLike = () => {
 
 //  响应式适配
 @media (max-width: 768px) {
+  .resource-card {
+    padding: 20rpx; // 移动端稍微减少内边距
+  }
+
   .title {
-    font-size: 28rpx;
-    line-height: 1.5;
+    font-size: 30rpx; // 28rpx→30rpx,移动端保持可读性
+    line-height: 1.55;
   }
 
   .description {
-    font-size: 22rpx;
+    font-size: 24rpx; // 22rpx→24rpx,移动端保持可读性
     line-height: 1.6;
   }
 
   .card-header {
-    margin-bottom: 8rpx;
+    margin-bottom: 10rpx;
   }
 
   .meta-row {

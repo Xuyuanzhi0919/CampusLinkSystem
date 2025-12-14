@@ -362,6 +362,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import type { ResourceItem } from '@/types/resource'
 import { resourceSearchHistory } from '@/utils/searchHistory'
+import { PLACEHOLDER_IMAGES } from '@/config/images'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -414,6 +415,7 @@ const pageSize = ref(20)
 const total = ref(0)
 const hasMore = ref(true)
 const isFirstShow = ref(true) // 标记是否首次显示
+const defaultAvatar = PLACEHOLDER_IMAGES.avatar // 默认头像
 
 // 🎯 筛选条件
 const searchKeyword = ref('')
@@ -976,6 +978,21 @@ const hashString = (str: string): number => {
     hash = hash & hash // 转换为32位整数
   }
   return Math.abs(hash)
+}
+
+/**
+ * 🎯 格式化数字显示 (1000 -> 1k, 10000 -> 1w)
+ */
+const formatNumber = (num: number): string => {
+  if (!num || num === 0) return '0'
+
+  if (num >= 10000) {
+    return `${(num / 10000).toFixed(1)}w`
+  } else if (num >= 1000) {
+    return `${(num / 1000).toFixed(1)}k`
+  } else {
+    return num.toString()
+  }
 }
 
 /**

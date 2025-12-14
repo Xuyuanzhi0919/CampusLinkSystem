@@ -81,29 +81,19 @@
 
     <!-- 热门标签模块 -->
     <CCard variant="default" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="tag" :size="18" class="header-icon" />
-        <text class="header-title">热门标签</text>
-        <text class="view-more" @click="handleViewMoreTags">
-          {{ showAllTags ? '收起' : '展开更多' }} {{ showAllTags ? '▴' : '▾' }}
-        </text>
-      </view>
-      <view v-if="hotTags.length > 0" class="tags-grid">
-        <view
-          v-for="(tag, index) in displayedTags"
-          :key="tag.name"
-          class="tag-pill"
-          :class="getTagLevelClass(index, tag.count)"
-          @click="handleTagClick(tag.name)"
-        >
-          <text class="tag-text">{{ tag.name }}</text>
-          <text class="tag-count">{{ tag.count }}</text>
-        </view>
-      </view>
-      <view v-else class="empty-state">
-        <Icon name="tag" :size="32" class="empty-icon" />
-        <text class="empty-text">暂无热门标签</text>
-      </view>
+      <TagCloud
+        :tags="hotTags"
+        title="热门标签"
+        header-icon="tag"
+        :show-header="true"
+        :show-badge="false"
+        :show-count="true"
+        :dynamic-size="false"
+        :collapsible="true"
+        :max-display="6"
+        empty-text="暂无热门标签"
+        @tag-click="handleTagCloudClick"
+      />
     </CCard>
 
     <!-- 热门问题模块 -->
@@ -167,13 +157,9 @@ import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CCard } from '@/components/ui'
 import FeaturedCarousel from '@/components/FeaturedCarousel.vue'
+import TagCloud from '@/components/TagCloud.vue'
+import type { TagItem } from '@/components/TagCloud.vue'
 import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
-
-// 定义类型
-interface HotTag {
-  name: string
-  count: number
-}
 
 interface ActiveUser {
   userId: number
@@ -213,8 +199,7 @@ const featuredQuestions = ref<FeaturedQuestionData[]>([])
 const isFeaturedDismissed = ref(false)
 
 // 热门标签
-const hotTags = ref<HotTag[]>([])
-const showAllTags = ref(false) // 是否展开所有标签
+const hotTags = ref<TagItem[]>([])
 
 // 活跃答主
 const activeUsers = ref<ActiveUser[]>([])
@@ -234,13 +219,6 @@ const hotSearches = ref<HotSearch[]>([
   { keyword: '前端框架', isNew: false }
 ])
 
-// 显示的标签（限制数量）
-const displayedTags = computed(() => {
-  if (showAllTags.value) {
-    return hotTags.value
-  }
-  return hotTags.value.slice(0, 6) // 默认只显示前6个
-})
 
 // 排名徽章样式（问题）
 const getRankClass = (index: number) => {
@@ -281,29 +259,14 @@ const getBadgeIcon = (badge: string) => {
   return 'award'
 }
 
-// 标签层级样式（按权重分层）
-const getTagLevelClass = (index: number, count: number) => {
-  // 一级标签：前2个或计数>10
-  if (index < 2 || count > 10) return 'tag-level-1'
-  // 二级标签：前5个或计数>5
-  if (index < 5 || count > 5) return 'tag-level-2'
-  // 三级标签：其他
-  return 'tag-level-3'
-}
-
 // Emits
 const emit = defineEmits<{
   filterByTag: [tag: string]
 }>()
 
-// 点击标签 - 触发父组件筛选
-const handleTagClick = (tag: string) => {
-  emit('filterByTag', tag)
-}
-
-// 展开/收起标签
-const handleViewMoreTags = () => {
-  showAllTags.value = !showAllTags.value
+// 点击标签 - 触发父组件筛选 (TagCloud组件回调)
+const handleTagCloudClick = (tag: TagItem) => {
+  emit('filterByTag', tag.name)
 }
 
 // 查看更多用户
@@ -625,132 +588,6 @@ onMounted(() => {
       color: $primary;
     }
   }
-}
-
-// ===================================
-// 热门标签（按权重分层）
-// ===================================
-.tags-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  row-gap: 12px; // 行间距稍大
-}
-
-.tag-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-  font-weight: 500;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  // 一级标签：深色背景 + 白色文字（高权重） - 最大、最醒目
-  &.tag-level-1 {
-    background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
-    border: none;
-    padding: 12px 18px;  // 增大padding
-    font-size: 15px;  // 增大字号
-    animation: pulse-tag 3s ease-in-out infinite; // 添加脉冲动画
-
-    .tag-text {
-      color: $white;
-      font-weight: 700;  // 更粗
-      letter-spacing: 0.3px;  // 字间距
-    }
-
-    .tag-count {
-      background: rgba(255, 255, 255, 0.3);
-      color: $white;
-      font-weight: 700;
-      font-size: 12px;  // 稍大
-      padding: 4px 8px;  // 增大
-    }
-
-    &:hover {
-      background: linear-gradient(135deg, darken($primary, 5%) 0%, darken($primary, 10%) 100%);
-      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
-      transform: scale(1.05);  // hover放大
-      animation: none; // hover时暂停动画
-    }
-  }
-
-  // 二级标签：浅色边框 + 深色文字（中权重） - 中等大小
-  &.tag-level-2 {
-    background: lighten($primary, 47%);  // 浅蓝背景
-    border: 1.5px solid lighten($primary, 30%);
-    padding: 9px 14px;  // 稍大于三级
-
-    .tag-text {
-      color: darken($primary, 10%);  // 更深蓝
-      font-weight: 600;
-      font-size: 13.5px;  // 稍大
-    }
-
-    .tag-count {
-      background: rgba($primary, 0.15);
-      color: $primary;
-      font-weight: 600;
-      font-size: 11px;
-    }
-
-    &:hover {
-      border-color: $primary;
-      background: lighten($primary, 44%);
-      transform: scale(1.04);  // hover放大
-      box-shadow: 0 4px 12px rgba($primary, 0.15);
-    }
-  }
-
-  // 三级标签：灰色边框 + 灰色文字（低权重）
-  &.tag-level-3 {
-    background: $gray-50;
-    border: 1px solid $gray-200;
-
-    .tag-text {
-      color: $gray-700;
-      font-weight: 500;
-    }
-
-    .tag-count {
-      background: $white;
-      color: $gray-600;
-      font-weight: 600;
-      border: 1px solid $gray-200;
-    }
-
-    &:hover {
-      background: $white;
-      border-color: $gray-400;
-    }
-  }
-}
-
-.tag-text {
-  font-size: 13px;
-  letter-spacing: 0.3px;
-  line-height: 1;
-}
-
-.tag-count {
-  font-size: 11px;
-  padding: 3px 7px;
-  border-radius: 12px;
-  min-width: 22px;
-  text-align: center;
-  line-height: 1;
 }
 
 // ===================================
@@ -1179,16 +1016,6 @@ onMounted(() => {
 // ===================================
 // 动画效果
 // ===================================
-@keyframes pulse-tag {
-  0%, 100% {
-    box-shadow: 0 4px 12px rgba($primary, 0.25);
-  }
-  50% {
-    box-shadow: 0 6px 20px rgba($primary, 0.4);
-    transform: translateY(-1px);
-  }
-}
-
 @keyframes pulse-gold {
   0%, 100% {
     box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);

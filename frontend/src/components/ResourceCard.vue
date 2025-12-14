@@ -370,11 +370,12 @@ const handleLike = () => {
 
 <style scoped lang="scss">
 .resource-card {
-  background: #FDFDFE;
+  background: #FFFFFF;
   border-radius: 16rpx;
   padding: 24rpx; // 20rpx→24rpx,增加内边距,减少拥挤感
   margin-bottom: 20rpx; // 16rpx→20rpx,增加卡片间距,增强呼吸感
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid #E5E7EB; // 🎯 新增:边框增强边界感
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); // 🎯 优化:降低默认阴影强度
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   position: relative;
@@ -383,14 +384,16 @@ const handleLike = () => {
   // 悬停/激活效果
   &.is-active,
   &:hover {
-    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+    border-color: #2563EB; // 🎯 新增:品牌色边框呼应
+    box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.12); // 🎯 优化:品牌色阴影
     transform: translateY(-4rpx);
   }
 
   // 移动端适配
   &.is-mobile {
     &.is-active {
-      background: #F8F9FA;
+      background: #F9FAFB; // 🎯 优化:更柔和的激活态背景
+      border-color: #2563EB;
       transform: scale(0.98);
     }
   }
@@ -586,30 +589,30 @@ const handleLike = () => {
 .meta-section {
   display: flex;
   align-items: center;
-  gap: 10rpx; // 8rpx→10rpx,增加间距
+  gap: 16rpx; // 🎯 优化:10rpx→16rpx,增强呼吸感
   margin-bottom: 14rpx; // 12rpx→14rpx,增强呼吸感
   flex-wrap: wrap;
   font-size: 24rpx; // 22rpx→24rpx
-  color: #9CA3AF;
+  color: #6B7280; // 🎯 优化:#9CA3AF→#6B7280,增强对比度
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
-  padding: 4rpx 12rpx; // 10rpx→12rpx,增加内边距
+  padding: 6rpx 14rpx; // 🎯 优化:4rpx 12rpx→6rpx 14rpx,增加舒适度
   border-radius: 10rpx;
   font-size: 22rpx; // 20rpx→22rpx
   font-weight: 500;
   white-space: nowrap;
 
   &.course-tag {
-    background: rgba(99, 102, 241, 0.1);
-    color: #6366F1;
+    background: rgba(37, 99, 235, 0.08); // 🎯 优化:使用品牌色系
+    color: #2563EB;
   }
 
   &.size-tag {
-    background: rgba(107, 114, 128, 0.1);
-    color: #6B7280;
+    background: rgba(107, 114, 128, 0.08); // 🎯 优化:降低背景透明度
+    color: #4B5563; // 🎯 优化:加深文字颜色,增强对比度
   }
 }
 
@@ -694,39 +697,46 @@ const handleLike = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52rpx; // 48rpx→52rpx,增加按钮尺寸
-  height: 52rpx;
+  width: 56rpx; // 🎯 优化:52rpx→56rpx,增加按钮点击区域
+  height: 56rpx;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: transparent;
+  background: #F9FAFB; // 🎯 优化:transparent→浅灰背景,增强视觉反馈
   border: 1.5rpx solid #E5E7EB;
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.08); // 🎯 优化:1.1→1.08,缩小缩放幅度
+    background: #F3F4F6; // 🎯 新增:hover背景变化
     border-color: #D1D5DB;
   }
 
   &:active {
     transform: scale(0.95);
+    background: #E5E7EB; // 🎯 新增:active背景加深
   }
 
   .icon-btn-icon {
-    font-size: 26rpx; // 24rpx→26rpx,增加图标尺寸
-    color: #9CA3AF;
+    font-size: 28rpx; // 🎯 优化:26rpx→28rpx,增强可见性
+    color: #6B7280; // 🎯 优化:#9CA3AF→#6B7280,增强对比度
     line-height: 1;
     transition: all 0.2s;
   }
 
   &.like-btn {
     .icon-btn-icon {
-      color: #F87171;
+      color: #EF4444; // 🎯 优化:#F87171→#EF4444,加深颜色
+    }
+
+    &:hover:not(.is-liked) {
+      background: rgba(239, 68, 68, 0.08); // 🎯 新增:未点赞hover态品牌色背景
+      border-color: #FCA5A5;
     }
 
     &.is-liked {
-      background: #F87171;
-      border-color: #F87171;
-      box-shadow: 0 2rpx 8rpx rgba(248, 113, 113, 0.3);
+      background: #EF4444; // 🎯 优化:使用更深的红色
+      border-color: #EF4444;
+      box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.25); // 🎯 优化:增强阴影
 
       .icon-btn-icon {
         color: #FFFFFF;
@@ -734,21 +744,27 @@ const handleLike = () => {
       }
 
       &:hover {
-        background: #EF4444;
-        border-color: #EF4444;
-        box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.4);
+        background: #DC2626; // 🎯 优化:加深hover颜色
+        border-color: #DC2626;
+        box-shadow: 0 6rpx 16rpx rgba(220, 38, 38, 0.35); // 🎯 优化:增强hover阴影
       }
     }
   }
 
   &.download-btn {
     .icon-btn-icon {
-      color: #64748B;
+      color: #2563EB; // 🎯 优化:#64748B→品牌蓝色,增强品牌呼应
+    }
+
+    &:hover:not(.is-downloaded) {
+      background: rgba(37, 99, 235, 0.08); // 🎯 新增:未下载hover态品牌色背景
+      border-color: #93C5FD;
     }
 
     &.is-downloaded {
       background: #10B981;
       border-color: #10B981;
+      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25); // 🎯 新增:已下载阴影
 
       .icon-btn-icon {
         color: #FFFFFF;
@@ -757,6 +773,7 @@ const handleLike = () => {
       &:hover {
         background: #059669;
         border-color: #059669;
+        box-shadow: 0 6rpx 16rpx rgba(5, 150, 105, 0.35); // 🎯 新增:已下载hover阴影
       }
     }
   }

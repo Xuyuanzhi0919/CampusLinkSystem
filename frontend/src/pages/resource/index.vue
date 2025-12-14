@@ -66,7 +66,7 @@
             v-for="item in categories"
             :key="item.value || 'all'"
             class="category-tab"
-            :class="{ active: currentCategory === item.value }"
+            :class="{ 'category-tab--active': currentCategory === item.value }"
             @click="handleCategoryChange(item.value)"
           >
             <Icon :name="item.iconName" :size="14" class="tab-icon" />
@@ -90,7 +90,7 @@
                 v-for="item in sortOptions"
                 :key="item.value"
                 class="sort-menu-item"
-                :class="{ active: currentSortBy === item.value }"
+                :class="{ 'sort-menu-item--active': currentSortBy === item.value }"
                 @click="handleSortChange(item.value)"
               >
                 <text class="sort-item-label">{{ item.label }}</text>
@@ -100,9 +100,12 @@
           </view>
 
           <!-- 筛选按钮 -->
-          <view class="filter-btn" @click="showAdvancedFilter = true">
+          <view
+            class="filter-btn"
+            :class="{ 'filter-btn--active': hasActiveFilters }"
+            @click="showAdvancedFilter = true"
+          >
             <Icon name="sliders" :size="14" class="filter-icon" />
-            <text class="filter-label">筛选</text>
             <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
         </view>
@@ -124,7 +127,7 @@
           <view class="quick-filter-tabs">
             <view
               class="filter-tab"
-              :class="{ active: currentSortBy === 'created_at' }"
+              :class="{ 'filter-tab--active': currentSortBy === 'created_at' }"
               @click="handleQuickFilter('latest')"
             >
               <Icon name="clock" :size="14" class="tab-icon" />
@@ -132,7 +135,7 @@
             </view>
             <view
               class="filter-tab"
-              :class="{ active: currentSortBy === 'downloads' }"
+              :class="{ 'filter-tab--active': currentSortBy === 'downloads' }"
               @click="handleQuickFilter('downloads')"
             >
               <Icon name="trending-up" :size="14" class="tab-icon" />
@@ -140,7 +143,7 @@
             </view>
             <view
               class="filter-tab"
-              :class="{ active: currentSortBy === 'likes' }"
+              :class="{ 'filter-tab--active': currentSortBy === 'likes' }"
               @click="handleQuickFilter('likes')"
             >
               <Icon name="heart" :size="14" class="tab-icon" />
@@ -1709,6 +1712,7 @@ onShow(() => {
 }
 
 .filter-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1734,6 +1738,24 @@ onShow(() => {
   .filter-icon {
     color: $gray-600;
   }
+}
+
+.filter-badge {
+  position: absolute;
+  top: -4rpx;
+  right: -4rpx;
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $error;
+  color: $white;
+  font-size: $font-size-xs;
+  font-weight: 600;
+  border-radius: $radius-full;
+  box-shadow: 0 2rpx 8rpx rgba($error, 0.3);
 }
 
 // =============================================

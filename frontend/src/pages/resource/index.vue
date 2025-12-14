@@ -77,14 +77,14 @@
         <!-- 右侧：排序+筛选 -->
         <view class="sort-controls">
           <!-- 排序下拉（相对定位容器） -->
-          <view class="sort-dropdown-wrapper">
+          <view class="sort-dropdown-wrapper" :class="{ 'menu-open': showSortMenu }">
             <view class="sort-dropdown" @click="toggleSortMenu">
               <Icon name="arrow-down-up" :size="14" class="sort-icon" />
               <text class="sort-label">{{ currentSortLabel }}</text>
               <Icon name="chevron-down" :size="14" class="dropdown-icon" />
             </view>
 
-            <!-- 排序菜单（出现在按钮下方） -->
+            <!-- 排序菜单（出现在按钮下方,使用绝对定位突破overflow限制） -->
             <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
               <view
                 v-for="item in sortOptions"
@@ -107,10 +107,10 @@
           </view>
         </view>
       </view>
-
-      <!-- 遮罩层（点击关闭菜单） -->
-      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
+
+    <!-- 遮罩层（点击关闭菜单,移到外部避免被隐藏） -->
+    <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
 
     <!-- ========== 主内容区(三栏布局) ========== -->
     <view class="main-content">
@@ -1882,6 +1882,11 @@ onUnmounted(() => {
 
 .sort-dropdown-wrapper {
   position: relative;
+
+  // 当菜单打开时,提升z-index使其能突破父元素的overflow限制
+  &.menu-open {
+    z-index: 105; // 高于sticky-nav(99)和其他元素
+  }
 }
 
 .sort-dropdown {
@@ -1927,7 +1932,7 @@ onUnmounted(() => {
   position: absolute;
   top: calc(100% + 4px);
   right: 0;
-  z-index: 102;
+  z-index: 106; // 高于wrapper的z-index
   background: $white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

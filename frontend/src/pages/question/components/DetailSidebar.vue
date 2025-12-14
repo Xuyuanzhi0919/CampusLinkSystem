@@ -11,8 +11,10 @@
         />
         <view class="asker-details">
           <view class="asker-name-wrapper">
-            <text class="asker-name" @click="handleAskerClick">{{ question.askerNickname }}</text>
-            <view class="asker-level">Lv.{{ askerLevel }}</view>
+            <text class="asker-name" :class="{ 'asker-name--deleted': isDeletedUser }" @click="handleAskerClick">
+              {{ displayNickname }}
+            </text>
+            <view v-if="!isDeletedUser" class="asker-level">Lv.{{ askerLevel }}</view>
           </view>
           <text class="asker-school" v-if="question.askerSchool">
             <Icon name="map-pin" :size="12" class="school-icon" />
@@ -26,9 +28,9 @@
         </view>
       </view>
 
-      <!-- 关注提问者按钮 -->
+      <!-- 关注提问者按钮（用户已注销时不显示） -->
       <CButton
-        v-if="!isMyQuestion"
+        v-if="!isMyQuestion && !isDeletedUser"
         :type="isFollowingAsker ? 'secondary' : 'primary'"
         size="sm"
         block
@@ -158,6 +160,19 @@ const emit = defineEmits<{
   share: []
   askerClick: []
 }>()
+
+// 是否为已注销用户
+const isDeletedUser = computed(() => {
+  return props.question.askerNickname === '用户已注销' || !props.question.askerNickname
+})
+
+// 显示的昵称（对已注销用户特殊处理）
+const displayNickname = computed(() => {
+  if (!props.question.askerNickname) {
+    return '未知用户'
+  }
+  return props.question.askerNickname
+})
 
 // 提问者等级（从后端返回的数据中获取）
 const askerLevel = computed(() => {
@@ -328,6 +343,16 @@ const handleRelatedClick = (questionId: number) => {
 
         &:hover {
           color: $primary;
+        }
+
+        &--deleted {
+          color: $gray-500;
+          font-style: italic;
+          cursor: not-allowed;
+
+          &:hover {
+            color: $gray-500;
+          }
         }
       }
 

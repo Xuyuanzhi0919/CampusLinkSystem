@@ -168,6 +168,11 @@ public class QuestionService {
                 response.setAskerNickname(asker.getNickname());
                 response.setAskerAvatar(asker.getAvatarUrl());
                 response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
+            } else {
+                // 用户不存在时的容错处理
+                response.setAskerNickname("用户已注销");
+                response.setAskerAvatar(null);
+                response.setAskerLevel(0);
             }
 
             responses.add(response);
@@ -224,6 +229,11 @@ public class QuestionService {
             response.setAskerNickname(asker.getNickname());
             response.setAskerAvatar(asker.getAvatarUrl());
             response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
+        } else {
+            // 用户不存在时的容错处理
+            response.setAskerNickname("用户已注销");
+            response.setAskerAvatar(null);
+            response.setAskerLevel(0);
         }
 
         return response;

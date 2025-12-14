@@ -50,8 +50,8 @@
       <view class="meta-divider" />
       <view class="meta-item">
         <Icon name="user" :size="16" class="meta-icon" />
-        <text class="meta-text meta-link" @click="handleAskerClick">
-          {{ question.askerName || '匿名用户' }}
+        <text class="meta-text meta-link" :class="{ 'meta-link--deleted': isDeletedUser }" @click="handleAskerClick">
+          {{ displayNickname }}
         </text>
       </view>
     </view>
@@ -94,6 +94,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { QuestionDetail } from '@/types/question'
 import { CCard, CTag } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
@@ -110,6 +111,19 @@ const emit = defineEmits<{
   previewImage: [index: number]
   askerClick: []
 }>()
+
+// 是否为已注销用户
+const isDeletedUser = computed(() => {
+  return props.question.askerNickname === '用户已注销' || !props.question.askerNickname
+})
+
+// 显示的昵称（对已注销用户特殊处理）
+const displayNickname = computed(() => {
+  if (!props.question.askerNickname) {
+    return '未知用户'
+  }
+  return props.question.askerNickname
+})
 
 // 格式化时间
 const formatTime = (dateString: string) => {
@@ -291,6 +305,17 @@ const handlePreviewImage = (index: number) => {
   &:hover {
     color: darken($primary, 10%);
     text-decoration: underline;
+  }
+
+  &--deleted {
+    color: $gray-500;
+    font-style: italic;
+    cursor: not-allowed;
+
+    &:hover {
+      color: $gray-500;
+      text-decoration: none;
+    }
   }
 }
 

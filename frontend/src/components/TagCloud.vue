@@ -10,14 +10,20 @@
     <!-- 标签云 -->
     <view class="tags-cloud" :class="{ 'compact': compact }">
       <view
-        v-for="tag in displayTags"
+        v-for="(tag, index) in displayTags"
         :key="tag.name"
         class="tag-item"
-        :class="{ 'active': activeTag === tag.name }"
+        :class="{
+          'active': activeTag === tag.name,
+          'tag-hot-1': index === 0 && highlightTop,
+          'tag-hot-2': index === 1 && highlightTop
+        }"
         :style="dynamicSize ? { fontSize: getTagSize(tag.count) } : {}"
         @click="handleTagClick(tag)"
       >
-        {{ tag.name }}
+        <text class="tag-icon" v-if="index === 0 && highlightTop">🔥</text>
+        <text class="tag-icon" v-if="index === 1 && highlightTop">⚡</text>
+        <text class="tag-name">{{ tag.name }}</text>
         <text v-if="showCount" class="tag-count">({{ formatCount(tag.count) }})</text>
       </view>
 
@@ -27,8 +33,9 @@
         class="expand-btn"
         @click="toggleExpand"
       >
-        <text class="expand-text">{{ isExpanded ? '收起' : `更多 (${tags.length - maxDisplay}+)` }}</text>
-        <Icon :name="isExpanded ? 'chevron-up' : 'chevron-down'" :size="12" class="expand-icon" />
+        <text class="expand-text">{{ isExpanded ? '收起' : `展开更多` }}</text>
+        <text v-if="!isExpanded" class="expand-count">+{{ tags.length - maxDisplay }}</text>
+        <Icon :name="isExpanded ? 'chevron-up' : 'chevron-down'" :size="14" class="expand-icon" />
       </view>
     </view>
 
@@ -68,6 +75,7 @@ interface Props {
   maxDisplay?: number             // 最大显示数量(超出可折叠)
   collapsible?: boolean           // 是否可折叠
   compact?: boolean               // 紧凑模式(减小间距)
+  highlightTop?: boolean          // 是否高亮Top标签
   activeTag?: string | null       // 当前激活的标签
   emptyText?: string              // 空状态文案
 }
@@ -84,6 +92,7 @@ const props = withDefaults(defineProps<Props>(), {
   maxDisplay: 10,
   collapsible: false,
   compact: false,
+  highlightTop: true,
   activeTag: null,
   emptyText: '暂无标签'
 })
@@ -213,6 +222,9 @@ const toggleExpand = () => {
 
 // 标签项
 .tag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4rpx;
   padding: 8rpx 16rpx;
   background: $gray-50;
   border-radius: 20rpx;
@@ -220,79 +232,207 @@ const toggleExpand = () => {
   font-weight: 500;
   color: $gray-700;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   line-height: 1.4;
   white-space: nowrap;
   user-select: none;
+  border: 1.5rpx solid transparent;
+  position: relative;
 
+  // 默认 hover
   &:hover {
     background: $primary;
     color: $white;
-    transform: translateY(-2rpx);
+    transform: translateY(-3rpx);
+    box-shadow: 0 6rpx 16rpx rgba($primary, 0.25);
 
     .tag-count {
-      color: rgba($white, 0.8);
+      color: rgba($white, 0.85);
+    }
+
+    .tag-icon {
+      transform: scale(1.15);
     }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(-1rpx) scale(0.98);
+    box-shadow: 0 3rpx 10rpx rgba($primary, 0.2);
   }
 
+  // 激活状态
   &.active {
     background: $primary;
     color: $white;
     font-weight: 600;
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
 
     .tag-count {
-      color: rgba($white, 0.8);
+      color: rgba($white, 0.85);
     }
   }
 
+  // 🔥 Top 1 标签（主色渐变 + 强调）
+  &.tag-hot-1 {
+    background: linear-gradient(135deg, rgba($primary, 0.12) 0%, rgba($primary, 0.18) 100%);
+    border-color: rgba($primary, 0.3);
+    color: darken($primary, 8%);
+    font-weight: 600;
+    padding: 10rpx 18rpx;
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.12);
+
+    .tag-count {
+      color: $primary;
+      font-weight: 700;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, $primary 0%, lighten($primary, 5%) 100%);
+      border-color: $primary;
+      color: $white;
+      box-shadow: 0 8rpx 20rpx rgba($primary, 0.35);
+      transform: translateY(-4rpx) scale(1.03);
+
+      .tag-count {
+        color: rgba($white, 0.9);
+      }
+    }
+  }
+
+  // ⚡ Top 2 标签（橙色渐变 + 次强调）
+  &.tag-hot-2 {
+    background: linear-gradient(135deg, rgba($accent, 0.08) 0%, rgba($accent, 0.12) 100%);
+    border-color: rgba($accent, 0.25);
+    color: darken($accent, 10%);
+    font-weight: 600;
+    padding: 9rpx 17rpx;
+    box-shadow: 0 2rpx 6rpx rgba($accent, 0.1);
+
+    .tag-count {
+      color: $accent;
+      font-weight: 600;
+    }
+
+    &:hover {
+      background: linear-gradient(135deg, $accent 0%, lighten($accent, 5%) 100%);
+      border-color: $accent;
+      color: $white;
+      box-shadow: 0 6rpx 16rpx rgba($accent, 0.3);
+      transform: translateY(-3rpx) scale(1.02);
+
+      .tag-count {
+        color: rgba($white, 0.9);
+      }
+    }
+  }
+
+  .tag-icon {
+    font-size: 20rpx;
+    line-height: 1;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .tag-name {
+    line-height: 1.4;
+  }
+
   .tag-count {
-    margin-left: 4rpx;
-    font-size: 0.9em;
+    margin-left: 2rpx;
+    font-size: 0.88em;
     color: $gray-500;
     transition: color 0.2s;
+    font-weight: 500;
   }
 }
 
 // 展开/收起按钮
 .expand-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4rpx;
+  gap: 6rpx;
   padding: 8rpx 16rpx;
-  background: transparent;
-  border: 1rpx dashed $gray-300;
+  background: $gray-50;
+  border: 1.5rpx solid $gray-200;
   border-radius: 20rpx;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+
+  // 添加渐变底纹
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba($primary, 0.08), transparent);
+    transition: left 0.4s;
+  }
 
   .expand-text {
     font-size: 22rpx;
-    font-weight: 500;
-    color: $gray-600;
-    transition: color 0.2s;
+    font-weight: 600;
+    color: $primary;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
+  }
+
+  .expand-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32rpx;
+    height: 28rpx;
+    padding: 0 8rpx;
+    background: rgba($primary, 0.1);
+    color: $primary;
+    font-size: 20rpx;
+    font-weight: 700;
+    border-radius: 14rpx;
+    transition: all 0.2s;
+    position: relative;
+    z-index: 1;
   }
 
   .expand-icon {
-    color: $gray-600;
-    transition: all 0.2s;
+    color: $primary;
+    transition: all 0.25s;
+    position: relative;
+    z-index: 1;
   }
 
   &:hover {
-    background: $gray-50;
+    background: rgba($primary, 0.08);
     border-color: $primary;
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.15);
+    transform: translateY(-2rpx);
 
-    .expand-text,
+    &::before {
+      left: 100%;
+    }
+
+    .expand-text {
+      color: darken($primary, 5%);
+    }
+
+    .expand-count {
+      background: $primary;
+      color: $white;
+      transform: scale(1.08);
+    }
+
     .expand-icon {
-      color: $primary;
+      color: darken($primary, 5%);
+      transform: translateY(2rpx);
     }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.1);
   }
 }
 

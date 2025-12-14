@@ -100,12 +100,9 @@
           </view>
 
           <!-- 筛选按钮 -->
-          <view
-            class="filter-btn"
-            :class="{ 'filter-btn--active': hasActiveFilters }"
-            @click="showAdvancedFilter = true"
-          >
+          <view class="filter-btn" @click="showAdvancedFilter = true">
             <Icon name="sliders" :size="14" class="filter-icon" />
+            <text class="filter-label">筛选</text>
             <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
         </view>
@@ -1639,7 +1636,7 @@ onShow(() => {
 .category-tabs {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 8rpx; // 4px,与问答社区一致
   flex: 1;
   overflow-x: auto;
   scrollbar-width: none;
@@ -1653,50 +1650,50 @@ onShow(() => {
 .category-tab {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  padding: $sp-2 $sp-4;
-  border-radius: $radius-2xl;
-  font-size: $font-size-sm;
+  gap: 12rpx; // 6px
+  padding: 12rpx 28rpx; // 6px 14px
+  border-radius: 36rpx; // 18px
+  font-size: 28rpx; // 14px
+  font-weight: 500;
   color: $gray-700;
   background: transparent;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 
   .tab-icon {
     color: $gray-600;
-    transition: $transition-base;
-  }
-
-  .tab-label {
-    font-weight: 500;
+    flex-shrink: 0;
+    transition: color 0.2s;
   }
 
   &--active {
-    background: $primary-50;
-    color: $primary;
+    background: $primary;
+    color: $white;
+    font-weight: 600;
 
     .tab-icon {
-      color: $primary;
-    }
-
-    .tab-label {
-      font-weight: 600;
+      color: $white;
     }
   }
 
   &:hover:not(&--active) {
-    background: $gray-50;
+    background: $gray-100;
+    color: $gray-900;
+  }
+
+  @include mobile {
+    padding: 10rpx 24rpx; // 5px 12px
+    font-size: 26rpx; // 13px
   }
 }
 
 .sort-controls {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 16rpx; // 8px,与问答社区一致
   flex-shrink: 0;
-  margin-left: $sp-4;
 }
 
 .sort-dropdown-wrapper {
@@ -1704,32 +1701,37 @@ onShow(() => {
 }
 
 .sort-dropdown {
-  display: flex;
+  display: inline-flex; // 改为 inline-flex,防止文字换行
   align-items: center;
-  gap: $sp-2;
-  padding: $sp-2 $sp-4;
-  border-radius: $radius-2xl;
-  background: $gray-50;
+  gap: 8rpx; // 4px
+  padding: 12rpx 24rpx; // 6px 12px
+  min-width: 120rpx; // 60px,确保最小宽度
+  background: $gray-100;
+  border-radius: 32rpx; // 16px
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0; // 防止被压缩
 
   &:hover {
-    background: $gray-100;
+    background: $gray-200;
   }
 
-  .sort-icon,
-  .dropdown-icon {
+  .sort-icon {
     color: $gray-600;
+    flex-shrink: 0;
   }
 
   .sort-label {
-    font-size: $font-size-sm;
+    font-size: 26rpx; // 13px
     color: $gray-700;
     font-weight: 500;
   }
 
   .dropdown-icon {
-    transition: transform $duration-base $ease-out;
+    color: $gray-500;
+    flex-shrink: 0;
+    transition: transform 0.2s;
   }
 
   &--active .dropdown-icon {
@@ -1739,36 +1741,41 @@ onShow(() => {
 
 .sort-menu-content {
   position: absolute;
-  top: calc(100% + 8rpx);
+  top: calc(100% + 8rpx); // 4px
   right: 0;
+  z-index: 102;
   background: $white;
-  border-radius: $radius-md;
-  box-shadow: $shadow-dropdown;
-  padding: $sp-2;
-  min-width: 200rpx;
-  z-index: $z-dropdown;
-  animation: slideDown 0.2s $ease-out;
+  border-radius: 24rpx; // 12px
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  min-width: 280rpx; // 140px
+  overflow: hidden;
+  border: 1rpx solid $gray-200;
 }
 
 .sort-menu-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $sp-3 $sp-4;
-  border-radius: $radius-sm;
-  font-size: $font-size-sm;
-  color: $gray-700;
+  padding: 24rpx 32rpx; // 12px 16px
   cursor: pointer;
-  transition: $transition-base;
+  transition: background 0.2s;
+
+  .sort-item-label {
+    font-size: 28rpx; // 14px
+    color: $gray-700;
+  }
 
   &:hover {
     background: $gray-50;
   }
 
   &--active {
-    background: $primary-50;
-    color: $primary;
-    font-weight: 600;
+    background: rgba($primary, 0.08);
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: 600;
+    }
 
     .check-icon {
       color: $primary;
@@ -1776,7 +1783,7 @@ onShow(() => {
   }
 
   .check-icon {
-    color: transparent;
+    color: $primary;
   }
 }
 
@@ -1786,54 +1793,57 @@ onShow(() => {
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: calc($z-dropdown - 1);
+  z-index: 101;
+  background: transparent; // 透明遮罩
 }
 
 .filter-btn {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: $radius-full;
-  background: $gray-50;
+  gap: 8rpx; // 4px
+  padding: 12rpx 24rpx; // 6px 12px
+  min-width: 120rpx; // 60px
+  background: $gray-100;
+  border-radius: 32rpx; // 16px,圆角矩形,与排序按钮一致
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
 
   &:hover {
-    background: $gray-100;
-  }
-
-  &--active {
-    background: $accent-50;
-
-    .filter-icon {
-      color: $accent;
-    }
+    background: $gray-200;
   }
 
   .filter-icon {
     color: $gray-600;
+    flex-shrink: 0;
+  }
+
+  .filter-label {
+    font-size: 26rpx; // 13px
+    font-weight: 500;
+    color: $gray-700;
+    white-space: nowrap;
   }
 }
 
 .filter-badge {
   position: absolute;
-  top: -4rpx;
-  right: -4rpx;
-  min-width: 32rpx;
-  height: 32rpx;
-  padding: 0 8rpx;
+  top: -8rpx; // -4px
+  right: -8rpx; // -4px
+  min-width: 36rpx; // 18px
+  height: 36rpx; // 18px
+  padding: 0 10rpx; // 0 5px
   display: flex;
   align-items: center;
   justify-content: center;
   background: $error;
   color: $white;
-  font-size: $font-size-xs;
-  font-weight: 600;
-  border-radius: $radius-full;
-  box-shadow: 0 2rpx 8rpx rgba($error, 0.3);
+  font-size: 22rpx; // 11px
+  font-weight: 700;
+  border-radius: 18rpx; // 9px
+  border: 4rpx solid $white; // 2px
 }
 
 // =============================================

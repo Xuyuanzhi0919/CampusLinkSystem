@@ -1364,37 +1364,11 @@ onUnmounted(() => {
   background: $white;
   border-bottom: 1rpx solid $gray-200;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
-  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 折叠动画
+  transition: transform 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑滑动动画
 
-  // 折叠状态：高度减小,元素更紧凑
+  // 折叠状态：向上滑出隐藏
   &.collapsed {
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12); // 更明显的阴影
-
-    .top-nav-container {
-      height: 96rpx; // 从120rpx减小到96rpx (48px)
-    }
-
-    .brand-logo {
-      min-width: 200rpx; // 减小宽度
-
-      .logo-text {
-        font-size: 30rpx; // 缩小文字
-      }
-    }
-
-    .compact-search-bar {
-      height: 64rpx; // 从72rpx减小到64rpx (32px)
-
-      .search-input {
-        font-size: 26rpx; // 13px
-      }
-    }
-
-    .upload-button {
-      height: 64rpx; // 从72rpx减小到64rpx (32px)
-      padding: 0 36rpx; // 减小padding
-      font-size: 26rpx;
-    }
+    transform: translateY(-100%); // 向上移出视野
   }
 }
 
@@ -1670,15 +1644,20 @@ onUnmounted(() => {
   background: $white;
   border-bottom: 1rpx solid $gray-100; // 更浅的分割线
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+  transition: top 0.3s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
 
-  // 当顶部导航折叠时,sticky-nav的top值同步调整
+  // 当顶部导航隐藏时,sticky-nav粘到页面顶部
   &.header-collapsed {
-    top: 96rpx; // 48px,折叠后的顶部导航高度
+    top: 0 !important; // 粘到页面顶部
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08); // 增强阴影
   }
 
   @include mobile {
     top: 112rpx; // 56px,移动端与顶部导航同步
+
+    &.header-collapsed {
+      top: 0 !important; // 移动端也粘到顶部
+    }
   }
 }
 

@@ -260,7 +260,8 @@ const handleUserClick = (userId: number) => {
 
 // 快捷操作
 const handleUploadResource = () => {
-  uni.navigateTo({ url: '/pages/resource/upload' })
+  // 🎯 跳转到统一发布入口
+  uni.navigateTo({ url: '/pages/publish/index' })
 }
 
 const handleMyCollections = () => {

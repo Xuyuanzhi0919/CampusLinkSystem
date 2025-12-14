@@ -107,6 +107,9 @@
       @cancel="handleLoginGuideCancel"
     />
 
+    <!-- 🎯 全局悬浮发布按钮(FAB) -->
+    <PublishFAB tabbar />
+
     <!-- 快速返回顶部按钮 -->
     <view
       v-if="showBackToTop"
@@ -145,6 +148,9 @@ import ActivityRecommendV2 from './components/ActivityRecommendV2.vue'
 // import ActivityRecommend from './components/ActivityRecommend.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
 import HomeFooter from './components/HomeFooter.vue'
+
+// 全局组件
+import PublishFAB from '@/components/PublishFAB.vue'
 
 // 通用组件
 import LoginModal from '@/components/LoginModal.vue'
@@ -193,9 +199,13 @@ const sidebarRef = ref<any>(null)
 // ===================== 导航事件处理（使用 useNavigation）=====================
 
 const handleSearch = (keyword: string) => nav.toSearchResult(keyword)
-const handleUpload = () => nav.toUploadResource()
-const handleAsk = () => nav.toAskQuestion()
-const handleTask = () => nav.toPublishTask()
+
+// 🎯 统一发布入口：所有发布行为都跳转到选择页
+const handlePublish = () => nav.toPublish()
+const handleUpload = () => nav.toPublish() // 保持接口兼容,内部跳转到统一入口
+const handleAsk = () => nav.toPublish()
+const handleTask = () => nav.toPublish()
+
 const handleTagClick = (tag: any) => nav.toSearchResult(tag.name)
 const handleNavigate = (_path: string) => { /* Footer 导航由组件内部处理 */ }
 

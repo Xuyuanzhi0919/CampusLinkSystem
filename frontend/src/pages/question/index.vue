@@ -330,6 +330,9 @@
     <!-- #ifndef MP-WEIXIN -->
     <CustomTabBar />
     <!-- #endif -->
+
+    <!-- 🎯 全局悬浮发布按钮(FAB) -->
+    <PublishFAB tabbar />
   </view>
 </template>
 
@@ -344,6 +347,7 @@ import RecommendSidebar from './components/RecommendSidebar.vue'
 import Icon from '@/components/icons/index.vue'
 import CButton from '@/components/ui/CButton.vue'
 import GpSkeleton from '@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue'
+import PublishFAB from '@/components/PublishFAB.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'

@@ -35,6 +35,9 @@
       <!-- 底部安全距离 -->
       <view class="safe-area-bottom" />
     </view>
+
+    <!-- 🎯 全局悬浮发布按钮(FAB) -->
+    <PublishFAB tabbar />
   </view>
 </template>
 
@@ -54,6 +57,7 @@ import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import UserProfileHeader from './components/UserProfileHeader.vue'
 import FunctionGrid from './components/FunctionGrid.vue'
 import AccountActions from './components/AccountActions.vue'
+import PublishFAB from '@/components/PublishFAB.vue'
 
 const userStore = useUserStore()
 

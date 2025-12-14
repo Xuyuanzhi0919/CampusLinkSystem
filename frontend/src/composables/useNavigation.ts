@@ -85,6 +85,11 @@ export function useNavigation() {
 
   // ================== 发布页跳转 ==================
 
+  /** 🎯 跳转到统一发布入口（推荐） */
+  const toPublish = () => {
+    navigateTo('/pages/publish/index')
+  }
+
   /** 跳转到上传资源 */
   const toUploadResource = () => {
     navigateTo('/pages/resource/upload')
@@ -98,6 +103,11 @@ export function useNavigation() {
   /** 跳转到发布任务 */
   const toPublishTask = () => {
     navigateTo('/pages/task/publish')
+  }
+
+  /** 跳转到发布活动 */
+  const toPublishActivity = () => {
+    navigateTo('/pages/club/publish-activity', { failMessage: '活动发布功能开发中' })
   }
 
   // ================== 列表页跳转 ==================
@@ -220,9 +230,11 @@ export function useNavigation() {
   /** 根据快捷入口类型跳转 */
   const toQuickLink = (type: string) => {
     const handlers: Record<string, () => void> = {
-      upload: toUploadResource,
-      ask: toAskQuestion,
-      task: toPublishTask,
+      // 🎯 发布相关都跳转到统一入口
+      upload: toPublish,
+      ask: toPublish,
+      task: toPublish,
+      // 非发布类跳转到列表页
       activity: toActivityList
     }
     handlers[type]?.()
@@ -239,9 +251,11 @@ export function useNavigation() {
     toDetailByType,
 
     // 发布页
+    toPublish, // 🎯 统一发布入口
     toUploadResource,
     toAskQuestion,
     toPublishTask,
+    toPublishActivity,
 
     // 列表页
     toQuestionList,

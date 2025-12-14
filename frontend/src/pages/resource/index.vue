@@ -351,6 +351,9 @@
         <button class="drawer-confirm-btn" @click="handleApplyFilters">确定 ({{ filteredResultHint }})</button>
       </view>
     </view>
+
+    <!-- 🎯 全局悬浮发布按钮(FAB) -->
+    <PublishFAB tabbar />
   </view>
 </template>
 
@@ -367,6 +370,7 @@ import EmptyState from '@/components/EmptyState.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
+import PublishFAB from '@/components/PublishFAB.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'

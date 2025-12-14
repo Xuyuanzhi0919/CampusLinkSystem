@@ -41,6 +41,13 @@
 			}
 		},
 		{
+			"path": "pages/publish/index",
+			"style": {
+				"navigationBarTitleText": "选择发布类型",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",

@@ -218,23 +218,23 @@
             </view>
           </view>
 
-          <!-- 🏷 高频标签 -->
+          <!-- 🏷 热门标签 -->
           <view class="sidebar-card">
-            <view class="card-header">
-              <Icon name="hash" :size="16" class="header-icon" />
-              <text class="card-title">热门标签</text>
-            </view>
-            <view class="tags-cloud">
-              <view
-                v-for="tag in popularTags"
-                :key="tag.name"
-                class="tag-item"
-                :style="{ fontSize: getTagSize(tag.count) }"
-                @click="handleTagClick(tag.name)"
-              >
-                {{ tag.name }}
-              </view>
-            </view>
+            <TagCloud
+              :tags="popularTags"
+              title="热门标签"
+              header-icon="hash"
+              :show-header="true"
+              :show-badge="true"
+              :show-count="false"
+              :dynamic-size="true"
+              :min-font-size="22"
+              :max-font-size="32"
+              :collapsible="true"
+              :max-display="10"
+              empty-text="暂无热门标签"
+              @tag-click="handleTagCloudClick"
+            />
           </view>
         </view>
       </view>
@@ -366,6 +366,8 @@ import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
+import TagCloud from '@/components/TagCloud.vue'
+import type { TagItem } from '@/components/TagCloud.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -456,10 +458,7 @@ const activeContributors = ref<Array<{
   avatar: string
   uploadCount: number
 }>>([]) // 活跃上传者(Top 5)
-const popularTags = ref<Array<{
-  name: string
-  count: number
-}>>([]) // 热门标签(Top 10)
+const popularTags = ref<TagItem[]>([]) // 热门标签(Top 10)
 const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 🎯 下载相关状态
@@ -980,22 +979,11 @@ const hashString = (str: string): number => {
 }
 
 /**
- * 🎯 标签点击处理
+ * 🎯 标签点击处理 (TagCloud组件回调)
  */
-const handleTagClick = (tagName: string) => {
-  searchKeyword.value = tagName
+const handleTagCloudClick = (tag: TagItem) => {
+  searchKeyword.value = tag.name
   loadResourceList(true)
-}
-
-/**
- * 🎯 根据标签频次计算字体大小
- */
-const getTagSize = (count: number): string => {
-  const maxCount = Math.max(...popularTags.value.map(t => t.count))
-  const minSize = 22
-  const maxSize = 32
-  const size = minSize + ((count / maxCount) * (maxSize - minSize))
-  return `${size}rpx`
 }
 
 /**
@@ -2491,35 +2479,6 @@ onUnmounted(() => {
 
   .badge-icon {
     color: $white;
-  }
-}
-
-// 🏷 热门标签云
-.tags-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12rpx;
-  padding: 8rpx 0;
-}
-
-.tag-item {
-  padding: 8rpx 16rpx;
-  background: $gray-50;
-  border-radius: 20rpx;
-  font-weight: 500;
-  color: $gray-700;
-  cursor: pointer;
-  transition: all 0.2s;
-  line-height: 1.4;
-
-  &:hover {
-    background: $primary;
-    color: $white;
-    transform: translateY(-2rpx);
-  }
-
-  &:active {
-    transform: scale(0.95);
   }
 }
 

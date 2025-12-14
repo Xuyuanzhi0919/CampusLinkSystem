@@ -1409,6 +1409,13 @@ onUnmounted(() => {
 .resource-square-page {
   min-height: 100vh;
   background: $bg-page;
+
+  // 隐藏页面滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;  // IE和Edge
+  scrollbar-width: none;  // Firefox
 }
 
 // =============================================
@@ -2218,6 +2225,13 @@ onUnmounted(() => {
   align-self: flex-start;
   max-height: calc(100vh - 240rpx);
   overflow-y: auto;
+
+  // 隐藏滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;  // IE和Edge
+  scrollbar-width: none;  // Firefox
 
   @include mobile {
     display: none; // 移动端隐藏侧边栏

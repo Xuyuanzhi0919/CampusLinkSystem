@@ -98,37 +98,45 @@
             </view>
           </view>
 
-      <!-- 资源详情卡片 -->
-      <view class="detail-card">
-        <view class="detail-row">
-          <text class="detail-label">课程名称</text>
-          <text class="detail-value">{{ resource.courseName || '未分类' }}</text>
-        </view>
-        <view class="detail-row">
-          <text class="detail-label">文件类型</text>
-          <view class="file-type-badge">
-            <text class="file-type-text">{{ resource.fileType?.toUpperCase() || 'UNKNOWN' }}</text>
+      <!-- P1优化: 资源详情卡片（两段式） -->
+      <view class="detail-card-new">
+        <!-- 第一段: 快速认知区 -->
+        <view class="quick-info-section">
+          <view class="info-item">
+            <text class="info-label">课程</text>
+            <text class="info-value">{{ resource.courseName || '未分类' }}</text>
+          </view>
+          <text class="info-divider">·</text>
+          <view class="info-item">
+            <text class="info-label">类型</text>
+            <view class="file-type-badge-inline">
+              <text class="badge-text">{{ resource.fileType?.toUpperCase() || 'UNKNOWN' }}</text>
+            </view>
+          </view>
+          <text class="info-divider">·</text>
+          <view class="info-item">
+            <text class="info-label">大小</text>
+            <text class="info-value">{{ formatFileSize(resource.fileSize) }}</text>
           </view>
         </view>
-        <view class="detail-row">
-          <text class="detail-label">文件大小</text>
-          <text class="detail-value">{{ formatFileSize(resource.fileSize) }}</text>
-        </view>
-        <view class="detail-row description-row">
-          <text class="detail-label">资源描述</text>
+
+        <!-- 第二段: 资源描述（可展开） -->
+        <view v-if="resource.description" class="description-section">
+          <text class="section-title">资源描述</text>
           <text
-            class="description-text"
-            :class="{ 'expanded': descriptionExpanded }"
+            class="description-content"
+            :class="{ 'is-expanded': descriptionExpanded }"
           >
             {{ resource.description }}
           </text>
-          <text
-            v-if="resource.description && resource.description.length > 100"
-            class="expand-btn"
+          <view
+            v-if="resource.description.length > 100"
+            class="expand-toggle"
             @click="toggleDescription"
           >
-            {{ descriptionExpanded ? '收起' : '展开' }}
-          </text>
+            <text class="toggle-text">{{ descriptionExpanded ? '收起' : '展开全部' }}</text>
+            <text class="toggle-icon">{{ descriptionExpanded ? '▲' : '▼' }}</text>
+          </view>
         </view>
       </view>
 
@@ -2028,81 +2036,133 @@ const closePreview = () => {
   color: $gray-300;
 }
 
-// 资源详情卡片
-.detail-card {
+// P1优化: 资源详情卡片（两段式）
+.detail-card-new {
   background: $white;
-  padding: $sp-5 $sp-6;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
+  padding: $sp-6;
   margin-bottom: $sp-4;
 
-  // PC端：增加圆角和阴影
+  // PC端：增加内边距
   // #ifdef H5
   @include desktop {
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
-    padding: $sp-6 $sp-8;
+    padding: $sp-7 $sp-8;
   }
   // #endif
 }
 
-.detail-row {
+// 第一段：快速认知区（单行紧凑）
+.quick-info-section {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: $sp-4;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
+  align-items: center;
+  gap: $sp-3;
+  flex-wrap: wrap;
+  padding-bottom: $sp-5;
+  border-bottom: 1rpx solid $gray-100;
 }
 
-.detail-label {
-  width: 140rpx;
-  font-size: $font-size-sm;
-  color: $gray-400;
-  flex-shrink: 0;
-  line-height: $line-height-normal;
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
 }
 
-.detail-value {
-  flex: 1;
-  font-size: $font-size-sm;
-  color: $gray-800;
-  line-height: $line-height-normal;
-}
-
-.file-type-badge {
-  padding: $sp-1 $sp-4;
-  background: $gray-100;
-  border-radius: $radius-base;
-}
-
-.file-type-text {
+.info-label {
   font-size: $font-size-xs;
-  color: $gray-600;
-  font-weight: $font-weight-semibold;
+  color: $gray-500;
+  font-weight: $font-weight-medium;
 }
 
-.description-row {
-  flex-direction: column;
-  align-items: stretch;
-}
-
-.description-text {
+.info-value {
   font-size: $font-size-sm;
-  color: $gray-800;
-  line-height: $line-height-relaxed;
-  word-break: break-all;
-  margin-top: $sp-2;
+  color: $gray-900;
+  font-weight: $font-weight-medium;
+}
 
-  &:not(.expanded) {
-    @include text-ellipsis(3);
+.info-divider {
+  color: $gray-300;
+  font-size: $font-size-sm;
+}
+
+.file-type-badge-inline {
+  padding: 2rpx 12rpx;
+  background: linear-gradient(135deg, $gray-100, $gray-50);
+  border-radius: $radius-full;
+  border: 1rpx solid $gray-200;
+}
+
+.badge-text {
+  font-size: 20rpx;
+  color: $gray-700;
+  font-weight: $font-weight-bold;
+  letter-spacing: 0.5rpx;
+}
+
+// 第二段：资源描述
+.description-section {
+  padding-top: $sp-5;
+}
+
+.section-title {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+  margin-bottom: $sp-3;
+}
+
+.description-content {
+  display: block;
+  font-size: $font-size-sm;
+  color: $gray-700;
+  line-height: $line-height-relaxed;
+  word-break: break-word;
+  white-space: pre-wrap;
+
+  // 默认3行截断
+  &:not(.is-expanded) {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
-.expand-btn {
-  font-size: $font-size-sm;
-  color: $accent;
-  margin-top: $sp-3;
+.expand-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  margin-top: $sp-4;
+  padding: $sp-2 $sp-6;
+  background: $gray-50;
+  border-radius: $radius-full;
   cursor: pointer;
+  transition: all $duration-fast;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    background: $gray-200;
+    transform: scale(0.98);
+  }
+
+  .toggle-text {
+    font-size: $font-size-xs;
+    color: $gray-700;
+    font-weight: $font-weight-medium;
+  }
+
+  .toggle-icon {
+    font-size: 18rpx;
+    color: $gray-500;
+  }
 }
 
 // 评论区

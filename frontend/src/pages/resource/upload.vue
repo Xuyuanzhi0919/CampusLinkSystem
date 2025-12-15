@@ -715,19 +715,20 @@ onLoad(() => {
 }
 
 .main-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: $sp-5;
+  padding: $sp-5 $sp-5;
   display: flex;
   gap: $sp-6;
 
   @include mobile {
     flex-direction: column;
     gap: $sp-4;
+    padding: $sp-4 $sp-4;
   }
 
   @include desktop {
-    padding: $sp-8;
+    padding: $sp-8 $sp-6;
   }
 }
 
@@ -735,10 +736,7 @@ onLoad(() => {
 .form-section {
   flex: 1;
   min-width: 0;
-
-  @include desktop {
-    max-width: 800px;
-  }
+  max-width: 100%;
 }
 
 // 右侧辅助栏

@@ -142,6 +142,7 @@
               @click="handleResourceClick"
               @download="handleResourceDownload"
               @like="handleResourceLike"
+              @favorite="handleResourceFavorite"
             />
 
             <!-- 加载更多按钮 -->
@@ -361,6 +362,7 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
+import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceItem } from '@/types/resource'
 import { resourceSearchHistory } from '@/utils/searchHistory'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
@@ -1202,6 +1204,75 @@ const handleResourceLike = async (resource: ResourceItem) => {
 
       uni.showToast({
         title: '点赞成功',
+        icon: 'success',
+        duration: 1500
+      })
+    }
+  } catch (error: any) {
+    uni.showToast({
+      title: error.message || '操作失败，请重试',
+      icon: 'none',
+      duration: 2000
+    })
+  }
+}
+
+/**
+ * 🎯 点击资源收藏按钮 - P1新增
+ */
+const handleResourceFavorite = async (resource: ResourceItem) => {
+  // 检查登录状态
+  const token = uni.getStorageSync(config.tokenKey)
+  if (!token) {
+    uni.showToast({
+      title: '请先登录',
+      icon: 'none',
+      duration: 2000
+    })
+    setTimeout(() => {
+      uni.reLaunch({
+        url: '/pages/home/index'
+      })
+    }, 2000)
+    return
+  }
+
+  try {
+    const isFavorited = resource.isFavorited
+
+    if (isFavorited) {
+      // 取消收藏
+      await removeFavorite('resource', resource.resourceId)
+
+      // 更新资源状态
+      const index = resources.value.findIndex(
+        item => item.resourceId === resource.resourceId
+      )
+      if (index !== -1) {
+        resources.value[index].isFavorited = false
+        resources.value[index].favorites = Math.max(0, (resources.value[index].favorites || 0) - 1)
+      }
+
+      uni.showToast({
+        title: '已取消收藏',
+        icon: 'success',
+        duration: 1500
+      })
+    } else {
+      // 添加收藏
+      await addFavorite('resource', resource.resourceId)
+
+      // 更新资源状态
+      const index = resources.value.findIndex(
+        item => item.resourceId === resource.resourceId
+      )
+      if (index !== -1) {
+        resources.value[index].isFavorited = true
+        resources.value[index].favorites = (resources.value[index].favorites || 0) + 1
+      }
+
+      uni.showToast({
+        title: '收藏成功',
         icon: 'success',
         duration: 1500
       })

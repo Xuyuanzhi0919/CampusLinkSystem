@@ -260,6 +260,11 @@
       <polyline points="6 9 12 15 18 9" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- Chevron Up 图标（上滑/返回顶部） -->
+    <template v-else-if="name === 'chevron-up'">
+      <polyline points="18 15 12 9 6 15" stroke="currentColor" fill="none"/>
+    </template>
+
     <!-- Arrow Down Up 图标（排序） -->
     <template v-else-if="name === 'arrow-down-up'">
       <path d="M11 5v14M18 13l-7 7-7-7" stroke="currentColor" fill="none"/>

@@ -7,11 +7,17 @@
     :refresher-triggered="refreshing"
     @back="goBack"
     @refresh="handleRefresh"
+    @scroll="handleScroll"
   >
-    <!-- 导航栏右侧：更多按钮 -->
+    <!-- 导航栏右侧：返回顶部 + 更多按钮 -->
     <template #navbar-right>
-      <view class="nav-more-btn" @click="showMoreMenu">
-        <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="nav-more-icon" />
+      <view class="nav-actions">
+        <view v-if="showBackToTop" class="nav-action-btn" @click="scrollToTop">
+          <Icon name="chevron-up" :size="20" :stroke-width="1.5" class="nav-action-icon" />
+        </view>
+        <view class="nav-action-btn" @click="showMoreMenu">
+          <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="nav-action-icon" />
+        </view>
       </view>
     </template>
 
@@ -246,6 +252,10 @@ const questionId = ref(0)
 
 // 更多菜单状态
 const showMorePopup = ref(false)
+
+// 返回顶部按钮显示状态
+const showBackToTop = ref(false)
+const scrollTop = ref(0)
 
 // 是否是我的问题
 const isMyQuestion = computed(() => {
@@ -548,6 +558,21 @@ const goBack = () => {
 
 const handleGoBack = goBack
 
+// 页面滚动监听（显示/隐藏返回顶部按钮）
+const handleScroll = (e: any) => {
+  scrollTop.value = e.detail.scrollTop
+  // 滚动超过 300px 显示返回顶部按钮
+  showBackToTop.value = e.detail.scrollTop > 300
+}
+
+// 返回顶部
+const scrollToTop = () => {
+  uni.pageScrollTo({
+    scrollTop: 0,
+    duration: 300
+  })
+}
+
 const showMoreMenu = () => {
   showMorePopup.value = true
 }
@@ -670,7 +695,14 @@ const handleRetry = () => {
 // ===================================
 // 导航栏右侧按钮
 // ===================================
-.nav-more-btn {
+// 导航栏右侧操作区
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.nav-action-btn {
   width: 72rpx;
   height: 72rpx;
   @include flex-center;
@@ -685,15 +717,15 @@ const handleRetry = () => {
   &:active {
     background: rgba($gray-900, 0.1);
   }
+}
 
-  .nav-more-icon {
-    color: $gray-700; // P1: 统一图标颜色
-    flex-shrink: 0;
-    transition: color 0.2s;
+.nav-action-icon {
+  color: $gray-700; // 统一图标颜色
+  flex-shrink: 0;
+  transition: color 0.2s;
 
-    &:hover {
-      color: $gray-900;
-    }
+  .nav-action-btn:hover & {
+    color: $gray-900;
   }
 }
 

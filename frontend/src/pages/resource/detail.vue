@@ -28,104 +28,75 @@
 
     <!-- 主内容区 -->
     <scroll-view v-else scroll-y class="content-scroll">
-      <!-- 资源头图区 -->
-      <view class="resource-header" :style="{ background: headerGradient }">
-        <text class="file-type-icon">{{ fileTypeIcon }}</text>
-      </view>
-
       <!-- Web端双栏布局容器 -->
       <view class="desktop-layout">
         <!-- 左侧：主内容区 -->
         <view class="main-content">
-          <!-- 信息头区 - 整合标题+标签+统计 -->
-          <view class="info-header">
-        <!-- 标题行 - 方案A：纯净标题，无按钮 -->
-        <view class="title-row">
-          <text class="resource-title">{{ resource.title }}</text>
-        </view>
-
-        <!-- 标签组 -->
-        <view class="tag-group">
-          <view class="tag tag-category">{{ getCategoryText(resource.category) }}</view>
-          <view v-if="resource.courseName" class="tag tag-course">{{ resource.courseName }}</view>
-          <view v-if="isHotResource" class="tag tag-hot">HOT</view>
-        </view>
-
-        <!-- 统计数据 - 紧凑单行，智能显示非零项 -->
-        <view class="stats-compact">
-          <!-- 浏览数（如果存在且>0） -->
-          <template v-if="resource.views && resource.views > 0">
-            <text class="stat-item">
-              <text class="stat-icon stat-icon-view">○</text>{{ resource.views }}
-            </text>
-          </template>
-
-          <!-- 下载数（如果存在且>0） -->
-          <template v-if="resource.downloads && resource.downloads > 0">
-            <text v-if="resource.views && resource.views > 0" class="stat-divider">·</text>
-            <text class="stat-item">
-              <text class="stat-icon stat-icon-download">↓</text>{{ resource.downloads }}
-            </text>
-          </template>
-
-          <!-- 点赞数（总是显示，支持交互） -->
-          <text v-if="hasAnyPreviousStat(['views', 'downloads'])" class="stat-divider">·</text>
-          <text class="stat-item" @click="scrollToLike">
-            <text class="stat-icon stat-icon-like" :class="{ 'text-liked': resource.isLiked }">
-              {{ resource.isLiked ? '♥' : '♡' }}
-            </text>
-            <text :class="{ 'text-liked': resource.isLiked }">{{ resource.likes || 0 }}</text>
-          </text>
-
-          <!-- 评论数（如果存在且>0） -->
-          <template v-if="commentCount && commentCount > 0">
-            <text class="stat-divider">·</text>
-            <text class="stat-item" @click="scrollToComment">
-              <text class="stat-icon stat-icon-comment">▭</text>{{ commentCount }}
-            </text>
-          </template>
-        </view>
-
-        <!-- 移动端预览按钮（仅PDF，次操作） -->
-        <view v-if="resource.fileType === 'pdf'" class="mobile-preview-btn-wrapper">
-          <view class="mobile-preview-btn" @click="handlePreview">
-            <text class="btn-icon">👁</text>
-            <text class="btn-text">预览</text>
-          </view>
-        </view>
-
-        <!-- 评分区域 -->
-        <view class="rating-section">
-          <!-- 平均评分显示（只读） -->
-          <view class="average-rating">
-            <view class="rating-label">资源质量</view>
-            <RatingStars
-              :modelValue="resource.averageRating || 0"
-              :readonly="true"
-              :showText="true"
-              :showCount="true"
-              :totalRatings="resource.totalRatings || 0"
-              size="medium"
-            />
-          </view>
-
-          <!-- 用户评分区域（可交互） -->
-          <view class="user-rating">
-            <view class="user-rating-label">
-              <text class="label-text">我的评分</text>
-              <text v-if="(resource.userRating ?? 0) > 0" class="label-hint">（点击星星可修改）</text>
+          <!-- P0优化：资源封面信息卡片（信息密集型） -->
+          <view class="resource-cover-card">
+            <!-- 左侧：文件类型图标 -->
+            <view class="file-icon-wrapper" :style="{ background: headerGradient }">
+              <text class="file-type-label">{{ fileTypeIcon }}</text>
             </view>
-            <RatingStars
-              v-model="resource.userRating"
-              :readonly="false"
-              :showText="true"
-              :showCount="false"
-              size="medium"
-              @change="handleRatingChange"
-            />
+
+            <!-- 右侧：核心资源信息 -->
+            <view class="resource-info-main">
+              <!-- 标题 -->
+              <text class="resource-title-new">{{ resource.title }}</text>
+
+              <!-- 标签行 -->
+              <view class="tag-row">
+                <view class="tag tag-category">{{ getCategoryText(resource.category) }}</view>
+                <view v-if="resource.courseName" class="tag tag-course">{{ resource.courseName }}</view>
+                <view v-if="isHotResource" class="tag tag-hot">🔥 HOT</view>
+              </view>
+
+              <!-- 评分 + 统计一行（紧凑） -->
+              <view class="rating-stats-row">
+                <!-- 评分（点击弹窗） -->
+                <view class="rating-compact" @click="showRatingDialog = true">
+                  <text class="stars-display">{{ getStarsDisplay(resource.averageRating || 0) }}</text>
+                  <text class="rating-number">{{ (resource.averageRating || 0).toFixed(1) }}</text>
+                  <text class="rating-count">({{ resource.totalRatings || 0 }}人评价)</text>
+                </view>
+
+                <text class="stat-divider">|</text>
+
+                <!-- 下载数 -->
+                <view class="stat-item-compact">
+                  <text class="stat-icon">↓</text>
+                  <text class="stat-value">{{ resource.downloads || 0 }}</text>
+                </view>
+
+                <text class="stat-divider">|</text>
+
+                <!-- 点赞数 -->
+                <view class="stat-item-compact" @click="handleLike">
+                  <text class="stat-icon" :class="{ 'text-liked': resource.isLiked }">
+                    {{ resource.isLiked ? '♥' : '♡' }}
+                  </text>
+                  <text class="stat-value" :class="{ 'text-liked': resource.isLiked }">
+                    {{ resource.likes || 0 }}
+                  </text>
+                </view>
+
+                <!-- 评论数 -->
+                <template v-if="commentCount && commentCount > 0">
+                  <text class="stat-divider">|</text>
+                  <view class="stat-item-compact" @click="scrollToComment">
+                    <text class="stat-icon">💬</text>
+                    <text class="stat-value">{{ commentCount }}</text>
+                  </view>
+                </template>
+              </view>
+
+              <!-- 移动端：我的评分入口 -->
+              <view v-if="!resource.userRating || resource.userRating === 0" class="my-rating-entry mobile-only" @click="showRatingDialog = true">
+                <text class="entry-text">点击评分</text>
+                <text class="entry-icon">›</text>
+              </view>
+            </view>
           </view>
-        </view>
-      </view>
 
       <!-- 资源详情卡片 -->
       <view class="detail-card">
@@ -176,62 +147,63 @@
 
     <!-- 右侧：侧边栏（仅PC端显示） -->
     <view class="sidebar">
-      <!-- 方案A：操作卡片（文件操作集合） -->
-      <view class="operation-card">
-        <view class="operation-title">文件操作</view>
-
-        <!-- 预览按钮（仅PDF） -->
+      <!-- P0优化：操作卡片（主次分明） -->
+      <view class="operation-card-new">
+        <!-- 主操作：立即下载 -->
         <view
-          v-if="resource.fileType === 'pdf'"
-          class="operation-btn operation-preview"
-          @click="handlePreview"
-        >
-          <text class="operation-icon">👁</text>
-          <text class="operation-text">预览</text>
-        </view>
-
-        <!-- 下载按钮 -->
-        <view
-          class="operation-btn operation-download"
-          :class="{ 'downloaded': resource.isDownloaded }"
+          class="primary-action-btn"
+          :class="{ 'is-downloaded': resource.isDownloaded }"
           @click="handleDownload"
         >
-          <text class="operation-icon">↓</text>
-          <text class="operation-text">
-            {{ resource.isDownloaded ? '重新下载' : '下载 (-5积分)' }}
+          <text class="btn-icon">↓</text>
+          <text class="btn-text">
+            {{ resource.isDownloaded ? '重新下载（免费）' : '立即下载 -5积分' }}
           </text>
         </view>
 
-        <!-- 收藏按钮 -->
+        <!-- 次操作：在线预览（仅PDF） -->
         <view
-          class="operation-btn operation-favorite"
-          :class="{ 'is-favorited': resource.isFavorited }"
-          @click="handleFavorite"
+          v-if="resource.fileType === 'pdf'"
+          class="secondary-action-btn"
+          @click="handlePreview"
         >
-          <text class="operation-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
-          <text class="operation-text">收藏</text>
+          <text class="btn-icon">👁</text>
+          <text class="btn-text">在线预览</text>
         </view>
 
-        <!-- 更多按钮（Web端带Popover） -->
-        <view class="operation-more-wrapper">
-          <view class="operation-btn operation-more" @click="showMoreMenu">
-            <text class="operation-icon">⋯</text>
-            <text class="operation-text">更多</text>
+        <!-- 分隔线 -->
+        <view class="action-divider"></view>
+
+        <!-- 辅助操作组 -->
+        <view class="auxiliary-actions">
+          <view class="aux-action-item" @click="handleFavorite">
+            <text class="aux-icon" :class="{ 'is-active': resource.isFavorited }">
+              {{ resource.isFavorited ? '★' : '☆' }}
+            </text>
+            <text class="aux-text" :class="{ 'is-active': resource.isFavorited }">收藏</text>
           </view>
 
-          <!-- Web端Popover菜单（就地弹出） -->
-          <view v-if="showMorePopup" class="more-popover" @click.stop>
-            <view class="menu-item" @click="scrollToComment">
-              <text class="menu-icon">💬</text>
-              <text class="menu-text">评论 ({{ commentCount }})</text>
+          <!-- 更多操作（Web端带Popover） -->
+          <view class="operation-more-wrapper">
+            <view class="aux-action-item" @click="showMoreMenu">
+              <text class="aux-icon">⋯</text>
+              <text class="aux-text">更多</text>
             </view>
-            <view class="menu-item" @click="handleShare">
-              <text class="menu-icon">🔗</text>
-              <text class="menu-text">分享</text>
-            </view>
-            <view class="menu-item" @click="handleReport">
-              <text class="menu-icon">⚠️</text>
-              <text class="menu-text">举报</text>
+
+            <!-- Web端Popover菜单（就地弹出） -->
+            <view v-if="showMorePopup" class="more-popover" @click.stop>
+              <view class="menu-item" @click="scrollToComment">
+                <text class="menu-icon">💬</text>
+                <text class="menu-text">评论 ({{ commentCount }})</text>
+              </view>
+              <view class="menu-item" @click="handleShare">
+                <text class="menu-icon">🔗</text>
+                <text class="menu-text">分享</text>
+              </view>
+              <view class="menu-item" @click="handleReport">
+                <text class="menu-icon">⚠️</text>
+                <text class="menu-text">举报</text>
+              </view>
             </view>
           </view>
         </view>
@@ -377,6 +349,43 @@
       </view>
     </view>
     <!-- #endif -->
+
+    <!-- P0优化：评分弹窗（统一入口） -->
+    <view v-if="showRatingDialog" class="rating-overlay" @click="showRatingDialog = false">
+      <view class="rating-dialog" @click.stop>
+        <view class="dialog-header">
+          <text class="dialog-title">资源评分</text>
+          <view class="dialog-close" @click="showRatingDialog = false">
+            <text class="close-icon">✕</text>
+          </view>
+        </view>
+
+        <view class="dialog-content">
+          <!-- 平均评分展示 -->
+          <view class="avg-rating-section">
+            <text class="avg-rating-number">{{ (resource.averageRating || 0).toFixed(1) }}</text>
+            <text class="stars-large">{{ getStarsDisplay(resource.averageRating || 0) }}</text>
+            <text class="avg-rating-desc">基于 {{ resource.totalRatings || 0 }} 人评价</text>
+          </view>
+
+          <!-- 我的评分 -->
+          <view class="my-rating-section">
+            <text class="section-label">我的评分</text>
+            <RatingStars
+              v-model="resource.userRating"
+              :readonly="false"
+              :showText="false"
+              :showCount="false"
+              size="large"
+              @change="handleRatingChangeFromDialog"
+            />
+            <text v-if="resource.userRating > 0" class="my-rating-hint">
+              已评 {{ resource.userRating }} 星，点击星星可修改
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
@@ -408,6 +417,7 @@ const descriptionExpanded = ref(false)
 const showDownloadDialog = ref(false)
 const showMorePopup = ref(false)
 const showPreviewDialog = ref(false)
+const showRatingDialog = ref(false) // P0新增: 评分弹窗状态
 const commentCount = ref(0)
 const userPoints = ref(0)
 // 用户评分直接使用 resource.value.userRating，无需独立变量
@@ -505,6 +515,26 @@ const hasAnyPreviousStat = (statKeys: string[]) => {
     if (key === 'comments') return commentCount.value && commentCount.value > 0
     return false
   })
+}
+
+// P0新增: 获取星星显示（⭐⭐⭐⭐☆格式）
+const getStarsDisplay = (rating: number): string => {
+  const fullStars = Math.floor(rating)
+  const hasHalfStar = rating - fullStars >= 0.5
+  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
+
+  return '⭐'.repeat(fullStars) +
+         (hasHalfStar ? '⭐' : '') +
+         '☆'.repeat(emptyStars)
+}
+
+// P0新增: 从评分弹窗提交评分
+const handleRatingChangeFromDialog = async (rating: number) => {
+  await handleRatingChange(rating)
+  // 评分成功后关闭弹窗
+  setTimeout(() => {
+    showRatingDialog.value = false
+  }, 500)
 }
 
 // 页面加载
@@ -1283,79 +1313,94 @@ const closePreview = () => {
   // #endif
 }
 
-// ============ 方案A：PC端操作卡片（右侧） ============
-.operation-card {
+// ============ P0优化: PC端操作卡片（主次分明） ============
+.operation-card-new {
   background: $white;
-  border-radius: $radius-md;
-  box-shadow: $shadow-sm;
-  padding: $sp-5;
-  margin-bottom: $sp-4;
-  overflow: hidden;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-md;
+  padding: $sp-6;
+  margin-bottom: $sp-5;
+  overflow: visible;
 
   // 移动端：隐藏
   display: none;
 
-  // PC端：显示，并允许Popover溢出
+  // PC端：显示
   // #ifdef H5
   @include desktop {
     display: block;
-    overflow: visible;
   }
   // #endif
 }
 
-.operation-title {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-  margin-bottom: $sp-4;
-  padding-bottom: $sp-3;
-  border-bottom: 1rpx solid $gray-100;
-}
-
-.operation-btn {
-  display: flex;
-  align-items: center;
+// 主操作按钮（立即下载）
+.primary-action-btn {
+  @include flex-center;
   gap: $sp-2;
   width: 100%;
-  padding: $sp-3 $sp-4;
-  margin-bottom: $sp-2;
-  border-radius: $radius-base;
+  height: 88rpx;
+  @include gradient-accent;
+  color: $white;
+  border-radius: $radius-xl;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
   cursor: pointer;
-  transition: $transition-base;
-  font-size: $font-size-sm;
-  box-sizing: border-box;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  box-shadow: 0 4rpx 16rpx rgba($accent, 0.35);
+  transition: all $duration-base;
+  border: none;
 
-  &:last-child {
-    margin-bottom: 0;
+  .btn-icon {
+    font-size: 28rpx;
   }
 
-  .operation-icon {
-    font-size: 22rpx;
-    line-height: 1;
-    flex-shrink: 0;
+  .btn-text {
+    font-size: $font-size-base;
   }
 
-  .operation-text {
-    flex: 1;
-    font-size: $font-size-sm;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  &:hover {
+    transform: translateY(-2rpx);
+    box-shadow: 0 6rpx 20rpx rgba($accent, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  // 已下载状态
+  &.is-downloaded {
+    background: $gray-100;
+    color: $gray-600;
+    box-shadow: none;
+
+    &:hover {
+      background: $gray-200;
+      transform: none;
+    }
   }
 }
 
-// 预览按钮（次操作 - 轻边框）
-.operation-preview {
+// 次操作按钮（在线预览）
+.secondary-action-btn {
+  @include flex-center;
+  gap: $sp-2;
+  width: 100%;
+  height: 72rpx;
   background: $white;
-  border: 2rpx solid $gray-300;
   color: $gray-700;
+  border: 2rpx solid $gray-300;
+  border-radius: $radius-lg;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $duration-base;
+  margin-top: $sp-3;
 
-  .operation-icon {
-    color: $gray-500;
+  .btn-icon {
+    font-size: 24rpx;
+  }
+
+  .btn-text {
+    font-size: $font-size-sm;
   }
 
   &:hover {
@@ -1368,92 +1413,28 @@ const closePreview = () => {
   }
 }
 
-// 下载按钮（主操作 - 橙色）
-.operation-download {
-  background: $accent;
-  color: $white;
-  border: none;
-  font-weight: $font-weight-medium;
-  box-shadow: 0 2rpx 6rpx rgba($accent, 0.2);
-
-  .operation-icon {
-    color: $white;
-  }
-
-  &:hover {
-    background: $accent-dark;
-    transform: translateY(-1rpx);
-    box-shadow: 0 3rpx 8rpx rgba($accent, 0.3);
-  }
-
-  &:active {
-    transform: translateY(0);
-  }
-
-  // 已下载状态
-  &.downloaded {
-    background: $gray-200;
-    color: $gray-400;
-    box-shadow: none;
-
-    .operation-icon {
-      color: $gray-400;
-    }
-
-    &:hover {
-      background: $gray-200;
-      transform: none;
-      cursor: not-allowed;
-    }
-  }
+// 分隔线
+.action-divider {
+  height: 1rpx;
+  background: $gray-200;
+  margin: $sp-5 0;
 }
 
-// 收藏按钮（次操作 - 轻背景）
-.operation-favorite {
-  background: $gray-50;
-  color: $gray-500;
-
-  .operation-icon {
-    color: $gray-500;
-    font-size: $font-size-sm;
-  }
-
-  &:hover {
-    background: $gray-100;
-  }
-
-  &:active {
-    background: $gray-200;
-  }
-
-  // 已收藏状态
-  &.is-favorited {
-    background: $accent-50;
-    color: $accent;
-
-    .operation-icon {
-      color: $accent;
-    }
-
-    &:hover {
-      background: $accent-100;
-    }
-  }
+// 辅助操作组
+.auxiliary-actions {
+  display: flex;
+  gap: $sp-3;
 }
 
-// 更多按钮（文本按钮）
-.operation-more-wrapper {
-  position: relative;
-}
-
-.operation-more {
-  background: transparent;
-  color: $gray-500;
-  padding: $sp-3 $sp-5;
-
-  .operation-icon {
-    color: $gray-500;
-  }
+.aux-action-item {
+  flex: 1;
+  @include flex-center;
+  flex-direction: column;
+  gap: $sp-2;
+  padding: $sp-3;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: background $duration-fast;
 
   &:hover {
     background: $gray-50;
@@ -1462,6 +1443,33 @@ const closePreview = () => {
   &:active {
     background: $gray-100;
   }
+
+  .aux-icon {
+    font-size: 32rpx;
+    color: $gray-500;
+    transition: color $duration-fast;
+
+    &.is-active {
+      color: $accent;
+    }
+  }
+
+  .aux-text {
+    font-size: $font-size-xs;
+    color: $gray-600;
+    transition: color $duration-fast;
+
+    &.is-active {
+      color: $accent;
+      font-weight: $font-weight-medium;
+    }
+  }
+}
+
+// 更多按钮包装器
+.operation-more-wrapper {
+  position: relative;
+  flex: 1;
 }
 
 // Web端Popover菜单（右侧就地弹出）
@@ -1514,87 +1522,96 @@ const closePreview = () => {
   }
 }
 
-// 资源头图区
-.resource-header {
-  width: 100%;
-  height: 140rpx;
-  @include flex-center;
-  position: relative;
-
-  // PC端：更紧凑的高度，增加圆角
-  // #ifdef H5
-  @include desktop {
-    height: 120rpx;
-    max-width: 2400rpx;
-    margin: $sp-5 auto 0;
-    padding: 0 $sp-10;
-    border-radius: $radius-md;
-    overflow: hidden;
-    box-sizing: border-box;
-  }
-  // #endif
-
-  // 添加微妙的纹理效果
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(180deg, rgba($gray-900, 0.05) 0%, transparent 100%);
-    pointer-events: none;
-  }
-}
-
-.file-type-icon {
-  font-size: $font-size-3xl;
-  font-weight: $font-weight-bold;
-  color: rgba($white, 0.98);
-  letter-spacing: 2rpx;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  text-shadow: 0 2rpx 8rpx rgba($gray-900, 0.15);
-  position: relative;
-  z-index: 1;
-
-  // PC端：稍微大一点
-  // #ifdef H5
-  @include desktop {
-    font-size: 52rpx;
-  }
-  // #endif
-}
-
-// 信息头区
-.info-header {
+// ============ P0优化: 资源封面信息卡片 ============
+.resource-cover-card {
+  display: flex;
+  gap: $sp-5;
   background: $white;
-  padding: $sp-6 $sp-6 $sp-5;
+  padding: $sp-6;
   margin-bottom: $sp-4;
+  border-radius: $radius-md;
+  box-shadow: $shadow-sm;
 
-  // PC端：增加圆角和阴影
+  // PC端：增加内边距
   // #ifdef H5
   @include desktop {
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
-    padding: $sp-7 $sp-8 $sp-6;
+    padding: $sp-8;
+    gap: $sp-6;
+  }
+  // #endif
+
+  @include mobile {
+    padding: $sp-5;
+    gap: $sp-4;
+  }
+}
+
+// 文件类型图标（左侧方形区域）
+.file-icon-wrapper {
+  width: 120rpx;
+  height: 120rpx;
+  @include flex-center;
+  border-radius: $radius-lg;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 8rpx rgba($black, 0.08);
+
+  // PC端：稍大
+  // #ifdef H5
+  @include desktop {
+    width: 140rpx;
+    height: 140rpx;
+  }
+  // #endif
+
+  @include mobile {
+    width: 100rpx;
+    height: 100rpx;
+  }
+}
+
+.file-type-label {
+  font-size: 36rpx;
+  font-weight: $font-weight-bold;
+  color: $white;
+  letter-spacing: 1rpx;
+  text-shadow: 0 1rpx 4rpx rgba($black, 0.15);
+
+  // PC端：更大
+  // #ifdef H5
+  @include desktop {
+    font-size: 42rpx;
   }
   // #endif
 }
 
-// 标题行
-.title-row {
-  @include flex-between;
-  align-items: flex-start;
-  gap: $sp-4;
-  margin-bottom: $sp-4;
+// 右侧主信息区
+.resource-info-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+  min-width: 0;
 }
 
-.resource-title {
-  flex: 1;
+.resource-title-new {
   font-size: $font-size-2xl;
   font-weight: $font-weight-semibold;
-  color: $gray-800;
+  color: $gray-900;
   line-height: $line-height-relaxed;
+  word-break: break-word;
+
+  // PC端：更大字号
+  // #ifdef H5
+  @include desktop {
+    font-size: 40rpx;
+  }
+  // #endif
+}
+
+.tag-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
 }
 
 .tag-group {
@@ -1605,10 +1622,11 @@ const closePreview = () => {
 }
 
 .tag {
-  padding: $sp-2 $sp-5;
-  border-radius: $radius-2xl;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-full;
   font-size: $font-size-xs;
   font-weight: $font-weight-medium;
+  white-space: nowrap;
 }
 
 // 淡化标签
@@ -1623,10 +1641,111 @@ const closePreview = () => {
 }
 
 .tag-hot {
-  background: rgba($error, 0.15);
+  background: linear-gradient(135deg, rgba($error, 0.15), rgba($warning, 0.15));
   color: $error;
   font-weight: $font-weight-semibold;
-  letter-spacing: 1rpx;
+  letter-spacing: 0.5rpx;
+}
+
+// P0新增: 评分+统计行（紧凑）
+.rating-stats-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  font-size: $font-size-sm;
+  color: $gray-600;
+  flex-wrap: wrap;
+}
+
+// 评分区域（可点击）
+.rating-compact {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  cursor: pointer;
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-md;
+  transition: background $duration-fast;
+
+  &:hover {
+    background: $gray-50;
+  }
+
+  &:active {
+    background: $gray-100;
+  }
+}
+
+.stars-display {
+  font-size: 20rpx;
+  line-height: 1;
+  color: $warning;
+}
+
+.rating-number {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+}
+
+.rating-count {
+  font-size: $font-size-xs;
+  color: $gray-500;
+}
+
+// 统计项（紧凑版）
+.stat-item-compact {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  cursor: pointer;
+
+  .stat-icon {
+    font-size: 18rpx;
+    color: $gray-500;
+  }
+
+  .stat-value {
+    font-size: $font-size-sm;
+    color: $gray-700;
+  }
+}
+
+// 移动端评分入口
+.my-rating-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-2 $sp-4;
+  background: $accent-50;
+  border: 1rpx dashed $accent-200;
+  border-radius: $radius-md;
+  margin-top: $sp-2;
+  cursor: pointer;
+
+  .entry-text {
+    font-size: $font-size-sm;
+    color: $accent;
+    font-weight: $font-weight-medium;
+  }
+
+  .entry-icon {
+    font-size: $font-size-lg;
+    color: $accent;
+  }
+
+  &:active {
+    background: $accent-100;
+  }
+}
+
+.mobile-only {
+  // PC端隐藏
+  // #ifdef H5
+  @include desktop {
+    display: none !important;
+  }
+  // #endif
 }
 
 .stats-compact {
@@ -1719,72 +1838,119 @@ const closePreview = () => {
   }
 }
 
-// 评分区域
-.rating-section {
-  display: flex;
-  flex-direction: column;
-  gap: $sp-6;
-  margin-top: $sp-5;
-  padding: $sp-6 0;
-  border-top: 1rpx solid $gray-100;
+// P0新增: 评分弹窗
+.rating-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba($gray-900, 0.6);
+  z-index: $z-modal;
+  @include flex-center;
+  padding: $sp-8;
+  backdrop-filter: blur(4px);
+}
+
+.rating-dialog {
+  width: 100%;
+  max-width: 600rpx;
+  background: $white;
+  border-radius: $radius-xl;
+  overflow: hidden;
+  box-shadow: 0 20rpx 60rpx rgba($black, 0.25);
+  animation: slideUp 0.3s ease-out;
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(40rpx);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.dialog-header {
+  @include flex-between;
+  padding: $sp-6 $sp-6 $sp-4;
   border-bottom: 1rpx solid $gray-100;
+}
 
-  // PC端：增加内边距
-  // #ifdef H5
-  @include desktop {
-    margin-top: $sp-6;
-    padding: $sp-7 0;
-    gap: $sp-7;
+.dialog-title {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $gray-900;
+}
+
+.dialog-close {
+  width: 56rpx;
+  height: 56rpx;
+  @include flex-center;
+  cursor: pointer;
+  border-radius: $radius-full;
+  transition: background $duration-fast;
+
+  &:hover {
+    background: $gray-100;
   }
-  // #endif
+
+  .close-icon {
+    font-size: 32rpx;
+    color: $gray-500;
+  }
 }
 
-// 平均评分区域
-.average-rating {
-  display: flex;
-  align-items: center;
-  gap: $sp-4;
-  padding: $sp-4;
-  background: linear-gradient(135deg, $accent-50 0%, $accent-100 100%);
-  border-radius: $radius-md;
-  border: 1rpx solid $accent-200;
+.dialog-content {
+  padding: $sp-8 $sp-6;
 }
 
-// 用户评分区域
-.user-rating {
-  display: flex;
-  align-items: center;
-  gap: $sp-4;
-  padding: $sp-4;
-  background: $gray-50;
-  border-radius: $radius-md;
-  border: 1rpx solid $gray-200;
-}
-
-.user-rating-label {
-  display: flex;
+// 平均评分区域（弹窗内）
+.avg-rating-section {
+  @include flex-center;
   flex-direction: column;
-  gap: $sp-1;
-
-  .label-text {
-    font-size: $font-size-base;
-    font-weight: $font-weight-semibold;
-    color: $gray-800;
-    white-space: nowrap;
-  }
-
-  .label-hint {
-    font-size: $font-size-xs;
-    color: $gray-400;
-    white-space: nowrap;
-  }
+  gap: $sp-3;
+  padding: $sp-6 0;
+  border-bottom: 1rpx solid $gray-100;
 }
 
-.rating-label {
+.avg-rating-number {
+  font-size: 96rpx;
+  font-weight: $font-weight-bold;
+  color: $warning;
+  line-height: 1;
+}
+
+.stars-large {
+  font-size: 32rpx;
+  color: $warning;
+}
+
+.avg-rating-desc {
+  font-size: $font-size-sm;
+  color: $gray-500;
+}
+
+// 我的评分区域（弹窗内）
+.my-rating-section {
+  padding: $sp-6 0 $sp-4;
+  @include flex-center;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+.section-label {
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $gray-800;
-  white-space: nowrap;
+}
+
+.my-rating-hint {
+  font-size: $font-size-xs;
+  color: $gray-500;
+  text-align: center;
 }
 
 // 上传者信息卡片

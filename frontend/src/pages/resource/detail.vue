@@ -32,6 +32,17 @@
       <view class="desktop-layout">
         <!-- 左侧：主内容区 -->
         <view class="main-content">
+          <!-- 面包屑导航 -->
+          <view class="breadcrumb">
+            <text class="breadcrumb-item" @click="navigateTo('/pages/home/index')">首页</text>
+            <text class="breadcrumb-divider">/</text>
+            <text class="breadcrumb-item" @click="navigateTo('/pages/resource/list')">资源广场</text>
+            <text class="breadcrumb-divider">/</text>
+            <text class="breadcrumb-item" @click="navigateToCategory">{{ getCategoryText(resource.category) }}</text>
+            <text class="breadcrumb-divider">/</text>
+            <text class="breadcrumb-item breadcrumb-item--current">资源详情</text>
+          </view>
+
           <!-- P0优化：资源封面信息卡片（信息密集型） -->
           <view class="resource-cover-card">
             <!-- 左侧：文件类型图标 -->
@@ -694,6 +705,18 @@ const goBack = () => {
   }
 }
 
+// 通用导航方法（面包屑使用）
+const navigateTo = (url: string) => {
+  uni.navigateTo({ url })
+}
+
+// 导航到分类列表（面包屑使用）
+const navigateToCategory = () => {
+  uni.navigateTo({
+    url: `/pages/resource/list?category=${resource.value.category}`,
+  })
+}
+
 // 跳转到用户主页
 const navigateToUserProfile = () => {
   uni.navigateTo({
@@ -1298,6 +1321,48 @@ const closePreview = () => {
     max-width: 68%;
   }
   // #endif
+}
+
+// ============ 面包屑导航 ============
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-4;
+  border-bottom: 1rpx solid $gray-100;
+
+  // 移动端：隐藏
+  @include mobile {
+    display: none;
+  }
+}
+
+.breadcrumb-item {
+  font-size: $font-size-sm;
+  color: $gray-500;
+  cursor: pointer;
+  transition: color $duration-base;
+
+  &:hover {
+    color: $primary;
+  }
+
+  &--current {
+    color: $gray-900;
+    font-weight: $font-weight-semibold;
+    cursor: default;
+
+    &:hover {
+      color: $gray-900; // 当前页不变色
+    }
+  }
+}
+
+.breadcrumb-divider {
+  font-size: $font-size-sm;
+  color: $gray-300;
+  user-select: none;
 }
 
 // 右侧侧边栏

@@ -1,7 +1,7 @@
 <template>
   <CCard variant="elevated" hoverable class="question-header-card">
-    <!-- 面包屑导航（仅 Web 端） -->
-    <view class="breadcrumb">
+    <!-- 面包屑导航（仅 Web 端）- 可通过 prop 隐藏 -->
+    <view v-if="showBreadcrumb" class="breadcrumb">
       <text class="breadcrumb-item" @click="handleBreadcrumbClick('home')">首页</text>
       <text class="breadcrumb-divider">/</text>
       <text class="breadcrumb-item" @click="handleBreadcrumbClick('question')">问答广场</text>
@@ -100,9 +100,12 @@ import { CCard, CTag } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
 
 // Props
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   question: QuestionDetail
-}>()
+  showBreadcrumb?: boolean
+}>(), {
+  showBreadcrumb: true
+})
 
 // Emits
 const emit = defineEmits<{

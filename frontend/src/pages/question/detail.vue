@@ -33,12 +33,26 @@
       </view>
 
       <!-- 主内容（左右栏布局） -->
-      <view v-else-if="question" class="detail-container">
-        <!-- 左侧：主内容区 -->
+      <view v-else-if="question" class="detail-wrapper">
+        <!-- 面包屑导航（独立行，在内容之上） -->
+        <view class="breadcrumb">
+          <text class="breadcrumb-item" @click="handleBreadcrumbClick('home')">首页</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item" @click="handleBreadcrumbClick('question')">问答广场</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item" @click="handleBreadcrumbClick('category')">{{ question.category }}</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item breadcrumb-item--current">问题详情</text>
+        </view>
+
+        <!-- 左右两栏容器 -->
+        <view class="detail-container">
+          <!-- 左侧：主内容区 -->
         <view class="main-content">
-          <!-- 问题头部卡片 -->
+          <!-- 问题头部卡片（移除内部面包屑） -->
           <QuestionHeader
             :question="question"
+            :show-breadcrumb="false"
             @breadcrumb-click="handleBreadcrumbClick"
             @tag-click="handleTagClick"
             @preview-image="handlePreviewQuestionImage"
@@ -126,7 +140,10 @@
             @share="handleShare"
           />
         </view>
+        </view>
+        <!-- 结束 detail-container -->
       </view>
+      <!-- 结束 detail-wrapper -->
 
       <!-- 错误状态 -->
       <view v-else-if="error" class="error-container">
@@ -620,6 +637,30 @@ const handleRetry = () => {
 }
 
 // ===================================
+// 外层包裹容器 - 包含面包屑和主内容
+// ===================================
+.detail-wrapper {
+  max-width: 1440px; // 容器最大宽度
+  margin: 0 auto;
+  padding: 0 48rpx; // 两侧留白 48px
+
+  // 中等屏幕适配（1200px - 1440px）
+  @media (max-width: 1440px) {
+    padding: 0 32rpx; // 缩小两侧留白
+  }
+
+  // 小屏幕适配（< 1200px）
+  @media (max-width: 1200px) {
+    padding: 0 24rpx; // 进一步缩小留白
+  }
+
+  // 移动端
+  @include mobile {
+    padding: 0 24rpx;
+  }
+}
+
+// ===================================
 // 居中内容容器（主布局）- 统一栅格系统
 // ===================================
 // 栅格系统规范（与首页对齐）：
@@ -631,21 +672,16 @@ const handleRetry = () => {
 // - 总计：48 + 860 + 24 + 360 + 48 = 1340px (留有 100px 弹性空间)
 // ===================================
 .detail-container {
-  max-width: 1440px; // 容器最大宽度
-  margin: 0 auto;
   display: flex;
   gap: 48rpx; // 24px 中间间距
-  padding: 0 48rpx; // 两侧留白 48px
 
   // 中等屏幕适配（1200px - 1440px）
   @media (max-width: 1440px) {
-    padding: 0 32rpx; // 缩小两侧留白
     gap: 40rpx; // 缩小间距到 20px
   }
 
   // 小屏幕适配（< 1200px）
   @media (max-width: 1200px) {
-    padding: 0 24rpx; // 进一步缩小留白
     gap: 32rpx; // 间距缩小到 16px
   }
 
@@ -653,8 +689,51 @@ const handleRetry = () => {
   @include mobile {
     flex-direction: column;
     gap: 32rpx;
-    padding: 0 24rpx;
   }
+}
+
+// ===================================
+// 面包屑导航（独立行，跨越整个容器宽度）
+// ===================================
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding-bottom: $sp-4;
+  margin-bottom: $sp-6;
+  border-bottom: 1rpx solid $gray-100;
+
+  // 移动端：隐藏
+  @include mobile {
+    display: none;
+  }
+}
+
+.breadcrumb-item {
+  font-size: $font-size-sm;
+  color: $gray-500;
+  cursor: pointer;
+  transition: color $duration-base;
+
+  &:hover {
+    color: $primary;
+  }
+
+  &--current {
+    color: $gray-900;
+    font-weight: $font-weight-semibold;
+    cursor: default;
+
+    &:hover {
+      color: $gray-900; // 当前页不变色
+    }
+  }
+}
+
+.breadcrumb-divider {
+  font-size: $font-size-sm;
+  color: $gray-300;
+  user-select: none;
 }
 
 // ===================================

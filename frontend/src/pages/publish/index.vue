@@ -80,7 +80,7 @@
           <!-- 发布活动 -->
           <view class="publish-card" @click="handleNavigate('activity')">
             <view class="card-icon-wrapper activity">
-              <Icon name="calendar" :size="32" class="card-icon" />
+              <Icon name="users" :size="32" class="card-icon" />
             </view>
             <view class="card-content">
               <text class="card-title">活动</text>
@@ -101,14 +101,14 @@
           <!-- 发布任务 -->
           <view class="publish-card" @click="handleNavigate('task')">
             <view class="card-icon-wrapper task">
-              <Icon name="briefcase" :size="32" class="card-icon" />
+              <Icon name="award" :size="32" class="card-icon" />
             </view>
             <view class="card-content">
               <text class="card-title">悬赏</text>
               <text class="card-motivation">快速完成任务，获得积分奖励</text>
               <view class="card-benefits">
                 <view class="benefit-item warning">
-                  <Icon name="coins" :size="14" />
+                  <Icon name="gift" :size="14" />
                   <text>完成后立即获得 1-100 积分</text>
                 </view>
               </view>

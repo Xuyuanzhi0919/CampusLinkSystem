@@ -439,6 +439,14 @@ const handleSubmit = async () => {
 }
 
 /**
+ * 🎯 描述框获得焦点时的处理
+ */
+const handleDescriptionFocus = () => {
+  // 可以在这里添加焦点提示逻辑
+  console.log('Description field focused')
+}
+
+/**
  * 🎯 取消上传，返回资源广场
  */
 const handleCancel = () => {
@@ -568,19 +576,32 @@ onLoad(() => {
           <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
         </view>
 
-        <!-- 资源描述 -->
+        <!-- 资源描述(结构化引导) -->
         <view class="form-item">
           <view class="form-label">
             <text>资源描述</text>
             <text class="required">*</text>
             <text class="char-count">{{ form.description.length }}/500</text>
           </view>
+
+          <!-- 结构化填写提示 -->
+          <view v-if="!form.description || form.description.length < 10" class="description-guide">
+            <text class="guide-title">💡 可参考以下结构填写:</text>
+            <view class="guide-items">
+              <text class="guide-item">1️⃣ 适用课程/年级: 如"大二数据结构课程"</text>
+              <text class="guide-item">2️⃣ 包含内容: 如"含答案+解析+思维导图"</text>
+              <text class="guide-item">3️⃣ 使用建议: 如"适合期末复习,覆盖90%考点"</text>
+            </view>
+          </view>
+
           <textarea
             v-model="form.description"
             class="form-textarea"
-            placeholder="简单说明资料内容、适用年级/课程、是否含答案、重点章节等信息，帮助其他同学快速了解资源价值（10-500字）"
+            :class="{ 'has-guide': !form.description || form.description.length < 10 }"
+            placeholder="按上方提示结构填写,帮助同学快速了解资源价值..."
             maxlength="500"
             @blur="validateField('description')"
+            @focus="handleDescriptionFocus"
           />
           <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
         </view>
@@ -936,6 +957,40 @@ onLoad(() => {
   .form-textarea {
     min-height: 120px;
     line-height: $line-height-relaxed;
+
+    &.has-guide {
+      min-height: 150px;
+    }
+  }
+
+  // 🎯 描述字段结构化引导
+  .description-guide {
+    margin-bottom: $sp-3;
+    padding: $sp-3;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(37, 99, 235, 0.03) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: $radius-base;
+
+    .guide-title {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $primary;
+      margin-bottom: $sp-2;
+    }
+
+    .guide-items {
+      display: flex;
+      flex-direction: column;
+      gap: $sp-1;
+    }
+
+    .guide-item {
+      font-size: $font-size-xs;
+      color: $gray-700;
+      line-height: $line-height-relaxed;
+      padding-left: $sp-1;
+    }
   }
 
   .picker-input {

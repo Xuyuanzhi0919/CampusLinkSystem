@@ -1,60 +1,35 @@
 <template>
   <view class="upload-guide-sidebar">
-    <!-- 🎯 主模块:上传你将获得(默认展开) -->
-    <CCard variant="default" class="rewards-card primary-card">
-      <view class="card-header">
-        <Icon name="gift" :size="20" class="header-icon" />
-        <text class="header-title">上传你将获得</text>
+    <!-- 🎯 主模块:温和的激励提示(不抢主任务风头) -->
+    <view class="rewards-hint">
+      <view class="hint-header">
+        <Icon name="gift" :size="16" class="hint-icon" />
+        <text class="hint-title">上传你将获得</text>
       </view>
 
       <view class="rewards-list">
-        <view class="reward-item highlight">
-          <view class="reward-icon primary">
-            <Icon name="award" :size="20" />
-          </view>
-          <view class="reward-content">
-            <text class="reward-title">审核通过 +10 积分</text>
-            <text class="reward-desc">立即到账,可用于下载资源</text>
-          </view>
+        <view class="reward-item">
+          <text class="reward-bullet">•</text>
+          <text class="reward-text">审核通过 <text class="highlight">+10 积分</text></text>
         </view>
 
         <view class="reward-item">
-          <view class="reward-icon accent">
-            <Icon name="trending-up" :size="18" />
-          </view>
-          <view class="reward-content">
-            <text class="reward-title">下载越多,赚得越多</text>
-            <text class="reward-desc">每次被下载 +2 积分,无上限</text>
-          </view>
+          <text class="reward-bullet">•</text>
+          <text class="reward-text">下载越多赚越多(每次+2积分)</text>
         </view>
 
         <view class="reward-item">
-          <view class="reward-icon success">
-            <Icon name="star" :size="18" />
-          </view>
-          <view class="reward-content">
-            <text class="reward-title">建立个人声誉</text>
-            <text class="reward-desc">优质资源贡献者认证</text>
-          </view>
-        </view>
-
-        <view class="reward-item">
-          <view class="reward-icon info">
-            <Icon name="users" :size="18" />
-          </view>
-          <view class="reward-content">
-            <text class="reward-title">帮助更多同学</text>
-            <text class="reward-desc">你的分享让学习更轻松</text>
-          </view>
+          <text class="reward-bullet">•</text>
+          <text class="reward-text">建立个人声誉和影响力</text>
         </view>
       </view>
 
-      <!-- 首次上传额外激励(条件显示) -->
-      <view v-if="isFirstUpload" class="first-upload-bonus">
-        <Icon name="zap" :size="16" />
-        <text>首次上传通过审核,直接升至 Lv2 并额外获得 20 积分!</text>
+      <!-- 首次上传额外激励(条件显示,弱化处理) -->
+      <view v-if="isFirstUpload" class="first-upload-hint">
+        <Icon name="zap" :size="14" />
+        <text>首次上传额外 +20 积分</text>
       </view>
-    </CCard>
+    </view>
 
     <!-- 🔽 可折叠辅助模块 -->
     <view class="collapsible-sections">
@@ -196,119 +171,73 @@ const toggleSection = (section: keyof typeof expandedSections.value) => {
   gap: $sp-4;
 }
 
-// 🎯 主激励卡片
-.rewards-card {
-  &.primary-card {
-    border: 2px solid $primary;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
-  }
+// 🎯 温和的激励提示区(不抢主任务)
+.rewards-hint {
+  padding: $sp-4;
+  background: $gray-50;
+  border: 1px solid $gray-200;
+  border-radius: $radius-base;
+  margin-bottom: $sp-4;
 }
 
-.card-header {
+.hint-header {
   display: flex;
   align-items: center;
   gap: $sp-2;
-  margin-bottom: $sp-4;
+  margin-bottom: $sp-3;
 
-  .header-icon {
-    color: $primary;
+  .hint-icon {
+    color: $gray-600;
   }
 
-  .header-title {
-    font-size: $font-size-base;
-    font-weight: $font-weight-semibold;
-    color: $gray-900;
+  .hint-title {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $gray-700;
   }
 }
 
 .rewards-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-3;
+  gap: $sp-2;
 }
 
 .reward-item {
   display: flex;
   align-items: flex-start;
-  gap: $sp-3;
-  padding: $sp-3;
-  background: $gray-50;
-  border-radius: $radius-base;
-  transition: all 0.2s;
-
-  &.highlight {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08) 0%, rgba(37, 99, 235, 0.04) 100%);
-    border: 1px solid rgba(37, 99, 235, 0.2);
-  }
-
-  &:hover {
-    background: $gray-100;
-  }
-}
-
-.reward-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-
-  &.primary {
-    background: linear-gradient(135deg, $primary 0%, lighten($primary, 8%) 100%);
-    color: $white;
-  }
-
-  &.accent {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.15) 0%, rgba(255, 107, 53, 0.08) 100%);
-    color: $accent;
-  }
-
-  &.success {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.08) 100%);
-    color: $success;
-  }
-
-  &.info {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.08) 100%);
-    color: lighten($primary, 10%);
-  }
-}
-
-.reward-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  .reward-title {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    color: $gray-900;
-    line-height: $line-height-normal;
-  }
-
-  .reward-desc {
-    font-size: $font-size-xs;
-    color: $gray-600;
-    line-height: $line-height-relaxed;
-  }
-}
-
-// 首次上传额外奖励
-.first-upload-bonus {
-  margin-top: $sp-3;
-  padding: $sp-3;
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%);
-  border-radius: $radius-base;
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  display: flex;
-  align-items: center;
   gap: $sp-2;
-  color: darken($warning, 10%);
   font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
+  color: $gray-700;
+  line-height: $line-height-relaxed;
+
+  .reward-bullet {
+    color: $gray-400;
+    font-weight: $font-weight-bold;
+    flex-shrink: 0;
+  }
+
+  .reward-text {
+    flex: 1;
+
+    .highlight {
+      color: $accent;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+// 首次上传提示(极弱化)
+.first-upload-hint {
+  margin-top: $sp-3;
+  padding: $sp-2;
+  background: rgba(245, 158, 11, 0.08);
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  color: darken($warning, 15%);
+  font-size: $font-size-xs;
 }
 
 // 🔽 可折叠辅助模块

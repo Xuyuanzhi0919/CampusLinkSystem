@@ -47,6 +47,11 @@ public class ResourceListResponse {
      */
     private Boolean isLiked;
 
+    /**
+     * 是否已收藏（登录用户返回true/false，未登录用户返回false）
+     */
+    private Boolean isFavorited;
+
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 }

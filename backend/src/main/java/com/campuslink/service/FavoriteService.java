@@ -22,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 收藏服务
@@ -118,6 +120,30 @@ public class FavoriteService {
                 .eq(Favorite::getTargetId, targetId);
 
         return favoriteMapper.selectCount(wrapper);
+    }
+
+    /**
+     * 批量查询用户收藏的资源ID集合
+     *
+     * @param userId 用户ID
+     * @param resourceIds 资源ID集合
+     * @return 已收藏的资源ID集合
+     */
+    public Set<Long> getFavoritedResourceIds(Long userId, Set<Long> resourceIds) {
+        if (userId == null || resourceIds == null || resourceIds.isEmpty()) {
+            return Set.of();
+        }
+
+        LambdaQueryWrapper<Favorite> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Favorite::getUserId, userId)
+                .eq(Favorite::getTargetType, "resource")
+                .in(Favorite::getTargetId, resourceIds)
+                .select(Favorite::getTargetId);
+
+        return favoriteMapper.selectList(wrapper)
+                .stream()
+                .map(Favorite::getTargetId)
+                .collect(Collectors.toSet());
     }
 
     /**

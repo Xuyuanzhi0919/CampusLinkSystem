@@ -5,7 +5,6 @@ import config from '@/config'
 import { getUploadSignature, createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
-import UploadGuideSidebar from './components/UploadGuideSidebar.vue'
 
 /**
  * 🎯 文件状态
@@ -734,11 +733,6 @@ onLoad(() => {
       </view>
     </view>
     <!-- /左侧：表单区 -->
-
-    <!-- 右侧：辅助栏 -->
-    <view class="sidebar-section">
-      <UploadGuideSidebar />
-    </view>
   </view>
 </scroll-view>
   </view>
@@ -822,27 +816,15 @@ onLoad(() => {
   }
 }
 
-// 左侧表单区
+// 表单区(居中布局)
 .form-section {
   flex: 1;
   min-width: 0;
-  max-width: 100%;
+  max-width: 800px;
+  margin: 0 auto; // 居中显示
 }
 
-// 右侧辅助栏
-.sidebar-section {
-  width: 320px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 60px;
-  align-self: flex-start;
-  max-height: calc(100vh - 80px);
-  overflow-y: auto;
-
-  @include mobile {
-    display: none;
-  }
-}
+// 右侧辅助栏已删除
 
 // 区块
 .section {

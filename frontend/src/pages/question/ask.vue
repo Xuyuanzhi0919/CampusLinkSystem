@@ -261,11 +261,6 @@
         <!-- 底部占位（为固定操作栏留空间） -->
         <view class="bottom-spacer" />
         </view>
-
-        <!-- 右侧：辅助栏 -->
-        <view class="sidebar-section">
-          <AskGuideSidebar @example-click="handleExampleClick" />
-        </view>
       </view>
     </scroll-view>
 
@@ -317,7 +312,6 @@ import { saveDraft, getDraft, deleteDraft } from '@/utils/draft'
 import type { QuestionCategory } from '@/types/question'
 import { CCard, CButton, CTag } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
-import AskGuideSidebar from './components/AskGuideSidebar.vue'
 
 // Store
 const userStore = useUserStore()
@@ -985,11 +979,12 @@ const handleSubmit = async () => {
   }
 }
 
-// 左侧表单区（主内容）
+// 表单区（主内容 - 居中显示）
 .form-section {
   flex: 1;
   min-width: 0;
-  max-width: 760px;  // 与首页主内容区宽度完全一致，优化阅读体验
+  max-width: 800px;
+  margin: 0 auto; // 居中显示
 
   @include mobile {
     max-width: 100%;
@@ -1076,18 +1071,6 @@ const handleSubmit = async () => {
   }
 }
 
-// 右侧辅助栏
-.sidebar-section {
-  width: 320px;
-  flex-shrink: 0;
-  position: sticky;
-  top: 100px;  // 导航栏高度 + 间距
-  align-self: flex-start;
-
-  @include mobile {
-    display: none;  // 移动端隐藏
-  }
-}
 
 // ===================================
 // 表单卡片通用样式 - 视觉节奏优化

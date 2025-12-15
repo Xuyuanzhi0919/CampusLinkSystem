@@ -1465,12 +1465,22 @@ onShow(() => {
   loadResourceList(true)
 })
 
+// 监听面包屑导航传来的分类筛选事件
+uni.$on('filterByCategory', (category: string) => {
+  // 应用分类筛选
+  currentCategory.value = category
+  loadResourceList(true)
+})
+
 // 🎯 页面卸载
 onUnmounted(() => {
   // #ifdef H5
   // 移除滚动监听
   window.removeEventListener('scroll', handlePageScroll)
   // #endif
+
+  // 移除事件监听
+  uni.$off('filterByCategory')
 })
 </script>
 

@@ -719,10 +719,18 @@ const navigateToResourceIndex = () => {
 }
 
 const navigateToCategory = () => {
-  // 导航到资源广场并传递分类参数
-  uni.redirectTo({
-    url: `/pages/resource/index?category=${resource.value.category}`
+  // tabBar 页面不支持通过 URL 传参，需要先跳转，再通过事件总线或全局状态传递参数
+  // 这里简化处理：直接跳转到资源广场首页
+  uni.switchTab({
+    url: '/pages/resource/index'
   })
+
+  // 如果需要筛选分类，可以通过以下方式：
+  // 1. 使用 uni.$emit 发送事件
+  // 2. 在资源广场页面 onShow 中监听并应用筛选
+  setTimeout(() => {
+    uni.$emit('filterByCategory', resource.value.category)
+  }, 100)
 }
 
 // 跳转到用户主页

@@ -6,9 +6,6 @@
       color: textColor
     }"
   >
-    <!-- 状态栏占位 -->
-    <view class="c-navbar__status" :style="{ height: statusBarHeight + 'px' }"></view>
-
     <!-- 导航栏主体 -->
     <view class="c-navbar__content">
       <!-- 左侧区域 -->
@@ -47,7 +44,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 
 /**
  * CNavBar - 统一导航栏组件
@@ -113,15 +109,6 @@ const emit = defineEmits<{
   back: []
 }>()
 
-// 状态栏高度
-const statusBarHeight = ref(20)
-
-onMounted(() => {
-  // 获取系统信息
-  const systemInfo = uni.getSystemInfoSync()
-  statusBarHeight.value = systemInfo.statusBarHeight || 20
-})
-
 const handleBack = () => {
   emit('back')
 }
@@ -136,10 +123,6 @@ const handleBack = () => {
   background: $bg-surface;
 
   // ============ 子元素 ============
-
-  &__status {
-    width: 100%;
-  }
 
   &__content {
     display: flex;

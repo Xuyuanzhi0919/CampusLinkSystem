@@ -1419,81 +1419,89 @@ const closePreview = () => {
   // #endif
 }
 
-// 主操作按钮（立即下载）
+// 主操作按钮（立即下载）—— P1优化：强化主按钮压场感
 .primary-action-btn {
   @include flex-center;
   gap: $sp-2;
   width: 100%;
-  height: 88rpx;
+  height: 96rpx; // 从 88rpx → 96rpx，增加 8rpx
   @include gradient-accent;
   color: $white;
   border-radius: $radius-xl;
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
+  font-size: 32rpx; // 从 $font-size-base(28rpx) → 32rpx
+  font-weight: $font-weight-bold; // 从 semibold → bold
   cursor: pointer;
-  box-shadow: 0 4rpx 16rpx rgba($accent, 0.35);
+  box-shadow: 0 6rpx 20rpx rgba($accent, 0.4); // 从 4rpx → 6rpx，阴影更强
   transition: all $duration-base;
   border: none;
 
   .btn-icon {
-    color: currentColor; // 继承父元素颜色
+    color: currentColor;
     flex-shrink: 0;
+    width: 24rpx; // 图标稍大
+    height: 24rpx;
   }
 
   .btn-text {
-    font-size: $font-size-base;
+    font-size: 32rpx; // 与父元素保持一致
+    letter-spacing: 0.5rpx; // 增加字间距，提升品质感
   }
 
   &:hover {
-    transform: translateY(-2rpx);
-    box-shadow: 0 6rpx 20rpx rgba($accent, 0.4);
+    transform: translateY(-4rpx); // 从 -2rpx → -4rpx，悬停更明显
+    box-shadow: 0 8rpx 24rpx rgba($accent, 0.5);
   }
 
   &:active {
     transform: translateY(0);
   }
 
-  // 已下载状态
+  // 已下载状态 —— 保持低调但清晰
   &.is-downloaded {
     background: $gray-100;
-    color: $gray-600;
-    box-shadow: none;
+    color: $gray-700; // 从 gray-600 → gray-700，提升可读性
+    box-shadow: 0 2rpx 8rpx rgba($black, 0.06);
+    font-weight: $font-weight-semibold; // 已下载状态降低字重
 
     &:hover {
       background: $gray-200;
-      transform: none;
+      transform: translateY(-2rpx);
+      box-shadow: 0 4rpx 12rpx rgba($black, 0.08);
     }
   }
 }
 
-// 次操作按钮（在线预览）
+// 次操作按钮（在线预览）—— P1优化：明确弱化，与主按钮拉开档次
 .secondary-action-btn {
   @include flex-center;
   gap: $sp-2;
   width: 100%;
-  height: 72rpx;
+  height: 68rpx; // 从 72rpx → 68rpx，进一步缩小与主按钮的差距
   background: $white;
-  color: $gray-700;
-  border: 2rpx solid $gray-300;
-  border-radius: $radius-lg;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+  color: $gray-600; // 从 gray-700 → gray-600，降低视觉权重
+  border: 1.5rpx solid $gray-300; // 从 2rpx → 1.5rpx，边框更细
+  border-radius: $radius-md; // 从 radius-lg → radius-md，圆角更小
+  font-size: 26rpx; // 从 $font-size-sm(24rpx) → 26rpx
+  font-weight: $font-weight-normal; // 从 medium → normal
   cursor: pointer;
   transition: all $duration-base;
-  margin-top: $sp-3;
+  margin-top: $sp-4; // 从 $sp-3 → $sp-4，与主按钮距离稍远
 
   .btn-icon {
-    color: currentColor; // 继承父元素颜色
+    color: currentColor;
     flex-shrink: 0;
+    width: 20rpx;
+    height: 20rpx;
   }
 
   .btn-text {
-    font-size: $font-size-sm;
+    font-size: 26rpx;
   }
 
   &:hover {
     background: $gray-50;
     border-color: $gray-400;
+    color: $gray-700;
   }
 
   &:active {
@@ -1501,31 +1509,54 @@ const closePreview = () => {
   }
 }
 
-// 分隔线
+// 分隔线 —— P1优化：强化视觉分隔，明确"行为区"与"信息区"的边界
 .action-divider {
   height: 1rpx;
-  background: $gray-200;
-  margin: $sp-5 0;
+  background: $gray-300; // 从 gray-200 → gray-300，增强分隔感
+  margin: $sp-6 0; // 从 $sp-5 → $sp-6，上下留白更充足
+  box-shadow: 0 1rpx 0 rgba($white, 0.8); // 添加微弱高光，提升质感
 }
 
-// 辅助操作组
+// 辅助操作组 —— P1优化：改为横向轻量操作条
 .auxiliary-actions {
   display: flex;
-  gap: $sp-3;
+  gap: 0; // 移除间距，让分隔线更自然
+  align-items: center;
 }
 
 .aux-action-item {
   flex: 1;
   @include flex-center;
-  flex-direction: column;
-  gap: $sp-2;
-  padding: $sp-3;
-  border-radius: $radius-md;
+  flex-direction: row; // 从 column → row，横向排列
+  gap: $sp-2; // 图标与文字间距
+  padding: $sp-3 $sp-2; // 上下内边距保持，左右收紧
+  border-radius: 0; // 移除圆角，更像操作条
   cursor: pointer;
-  transition: background $duration-fast;
+  transition: all $duration-fast;
+  position: relative;
+
+  // 添加右侧分隔线（最后一个除外）
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rpx;
+    height: 24rpx;
+    background: $gray-200;
+  }
 
   &:hover {
     background: $gray-50;
+
+    .aux-icon {
+      color: $gray-800;
+    }
+
+    .aux-text {
+      color: $gray-800;
+    }
   }
 
   &:active {
@@ -1533,9 +1564,11 @@ const closePreview = () => {
   }
 
   .aux-icon {
-    color: $gray-600; // P0: 统一图标默认色为 gray-600
+    color: $gray-500; // 从 gray-600 → gray-500，进一步弱化
     transition: color $duration-fast;
     flex-shrink: 0;
+    width: 18rpx; // 图标更小
+    height: 18rpx;
 
     &.is-active {
       color: $accent;
@@ -1543,9 +1576,10 @@ const closePreview = () => {
   }
 
   .aux-text {
-    font-size: $font-size-xs;
-    color: $gray-600;
+    font-size: 24rpx; // 从 $font-size-xs(20rpx) → 24rpx
+    color: $gray-500; // 从 gray-600 → gray-500
     transition: color $duration-fast;
+    font-weight: $font-weight-normal;
 
     &.is-active {
       color: $accent;
@@ -2030,61 +2064,78 @@ const closePreview = () => {
 }
 
 // 上传者信息卡片
+// 上传者卡片 —— P1优化：对齐问答页用户信息卡片，增强可点击感
 .uploader-card {
   display: flex;
   align-items: center;
   background: $white;
-  padding: $sp-5 $sp-6;
+  padding: $sp-6; // 统一为 $sp-6，与问答页保持一致
   margin-bottom: $sp-4;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all $duration-base; // 从 $transition-base 改为完整写法
+  border-radius: $radius-md; // 默认就有圆角
+  box-shadow: $shadow-sm; // 默认就有阴影
 
-  // PC端：增加圆角、阴影和悬停效果
+  // PC端：悬停效果更明显
   // #ifdef H5
   @include desktop {
-    border-radius: $radius-md;
-    box-shadow: $shadow-sm;
-    padding: $sp-6 $sp-7;
-
     &:hover {
       box-shadow: $shadow-md;
       transform: translateY(-2rpx);
+      background: $gray-50; // hover 时背景微变
     }
   }
   // #endif
 
   &:active {
-    background: $gray-50;
+    background: $gray-100; // 从 gray-50 → gray-100，点击反馈更强
+    transform: translateY(0);
   }
 }
 
 .uploader-avatar {
-  width: 72rpx;
-  height: 72rpx;
+  width: 80rpx; // 从 72rpx → 80rpx，头像稍大
+  height: 80rpx;
   border-radius: $radius-full;
   margin-right: $sp-4;
   flex-shrink: 0;
+  border: 2rpx solid $gray-100; // 添加边框，提升层次感
 }
 
 .uploader-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $sp-1;
+  gap: $sp-2; // 从 $sp-1 → $sp-2，行间距更舒适
   min-width: 0;
 }
 
 .uploader-name {
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
-  color: $gray-800;
+  color: $gray-900; // 从 gray-800 → gray-900，对齐问答页
   @include text-ellipsis(1);
+  transition: color $duration-fast;
+
+  // hover 时用户名变色，提示可点击
+  .uploader-card:hover & {
+    color: $primary;
+  }
 }
 
 .uploader-points {
   font-size: $font-size-sm;
   color: $accent;
   font-weight: $font-weight-medium;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+
+  // 添加积分图标前缀（可选）
+  &::before {
+    content: '⭐';
+    font-size: 20rpx;
+  }
 }
 
 .uploader-meta {
@@ -2092,16 +2143,22 @@ const closePreview = () => {
   flex-direction: column;
   align-items: flex-end;
   margin-right: $sp-2;
+  gap: $sp-1;
 }
 
 .upload-time {
   font-size: $font-size-xs;
-  color: $gray-400;
+  color: $gray-500; // 从 gray-400 → gray-500，可读性更好
 }
 
 .arrow-icon {
-  font-size: 40rpx;
-  color: $gray-300;
+  font-size: 36rpx; // 从 40rpx → 36rpx，箭头稍小
+  color: $gray-400; // 从 gray-300 → gray-400，更清晰
+  transition: transform $duration-fast;
+
+  .uploader-card:hover & {
+    transform: translateX(4rpx); // hover 时箭头右移，强化交互提示
+  }
 }
 
 // P1优化: 资源详情卡片（两段式）

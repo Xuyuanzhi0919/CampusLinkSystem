@@ -484,6 +484,10 @@ const downloadedResourceIds = ref<Set<number>>(new Set())
 const LIKED_RESOURCES_KEY = 'liked_resources'
 const likedResourceIds = ref<Set<number>>(new Set())
 
+// 🎯 本地已收藏资源ID集合 - P1新增
+const FAVORITED_RESOURCES_KEY = 'favorited_resources'
+const favoritedResourceIds = ref<Set<number>>(new Set())
+
 // 🎯 空状态文案
 const emptyTitle = computed(() => {
   if (searchKeyword.value) {
@@ -652,9 +656,10 @@ const loadResourceList = async (isRefresh = false) => {
       throw new Error('数据格式错误')
     }
 
-    // 合并本地下载状态和点赞状态
+    // 合并本地下载状态、点赞状态和收藏状态
     mergeDownloadedStatus(res.list)
     mergeLikedStatus(res.list)
+    mergeFavoritedStatus(res.list) // P1新增
 
     // 应用客户端筛选：积分范围（前端筛选）
     let filteredList = res.list
@@ -1142,6 +1147,63 @@ const mergeLikedStatus = (resourceList: ResourceItem[]) => {
 }
 
 /**
+ * 🎯 从本地存储加载已收藏的资源ID - P1新增
+ */
+const loadFavoritedResources = () => {
+  try {
+    const stored = uni.getStorageSync(FAVORITED_RESOURCES_KEY)
+    if (stored) {
+      const ids = JSON.parse(stored) as number[]
+      favoritedResourceIds.value = new Set(ids)
+    }
+  } catch (error) {
+    console.error('加载收藏资源ID失败:', error)
+  }
+}
+
+/**
+ * 🎯 保存已收藏资源ID到本地 - P1新增
+ */
+const saveFavoritedResource = (resourceId: number) => {
+  try {
+    favoritedResourceIds.value.add(resourceId)
+    const ids = Array.from(favoritedResourceIds.value)
+    uni.setStorageSync(FAVORITED_RESOURCES_KEY, JSON.stringify(ids))
+  } catch (error) {
+    console.error('保存收藏资源ID失败:', error)
+  }
+}
+
+/**
+ * 🎯 从本地缓存移除已收藏资源ID - P1新增
+ */
+const removeFavoritedResource = (resourceId: number) => {
+  try {
+    favoritedResourceIds.value.delete(resourceId)
+    const ids = Array.from(favoritedResourceIds.value)
+    uni.setStorageSync(FAVORITED_RESOURCES_KEY, JSON.stringify(ids))
+  } catch (error) {
+    console.error('移除收藏资源ID失败:', error)
+  }
+}
+
+/**
+ * 🎯 合并收藏状态 - P1新增
+ */
+const mergeFavoritedStatus = (resourceList: ResourceItem[]) => {
+  resourceList.forEach(resource => {
+    // 如果后端没有返回 isFavorited，则从本地缓存中查找
+    if (resource.isFavorited === undefined) {
+      resource.isFavorited = favoritedResourceIds.value.has(resource.resourceId)
+    }
+    // 如果后端返回了 isFavorited=true，也同步到本地缓存
+    else if (resource.isFavorited) {
+      favoritedResourceIds.value.add(resource.resourceId)
+    }
+  })
+}
+
+/**
  * 🎯 点击资源点赞按钮
  */
 const handleResourceLike = async (resource: ResourceItem) => {
@@ -1244,6 +1306,9 @@ const handleResourceFavorite = async (resource: ResourceItem) => {
       // 取消收藏
       await removeFavorite('resource', resource.resourceId)
 
+      // 更新本地缓存
+      removeFavoritedResource(resource.resourceId)
+
       // 更新资源状态
       const index = resources.value.findIndex(
         item => item.resourceId === resource.resourceId
@@ -1261,6 +1326,9 @@ const handleResourceFavorite = async (resource: ResourceItem) => {
     } else {
       // 添加收藏
       await addFavorite('resource', resource.resourceId)
+
+      // 更新本地缓存
+      saveFavoritedResource(resource.resourceId)
 
       // 更新资源状态
       const index = resources.value.findIndex(
@@ -1508,6 +1576,7 @@ onMounted(() => {
   loadUserPoints()
   loadDownloadedResources()
   loadLikedResources()
+  loadFavoritedResources() // P1新增
   loadSearchHistory() // 加载搜索历史
   loadAllResources() // 🎯 加载全局资源数据(用于右侧栏统计)
   loadResourceList(true) // 加载资源列表
@@ -1531,6 +1600,7 @@ onShow(() => {
   loadUserPoints()
   loadDownloadedResources()
   loadLikedResources()
+  loadFavoritedResources() // P1新增
 
   // 重新加载当前页数据（保持页码和筛选条件）
   loadResourceList(true)

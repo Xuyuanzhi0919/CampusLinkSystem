@@ -27,7 +27,7 @@
 
       <!-- 右侧：更多操作按钮 -->
       <view class="more-actions" @click="showMoreMenu">
-        <ClIcon name="icon-more" size="sm" class="more-icon" color="#9CA3AF" />
+        <Icon name="more-vertical" :size="20" :stroke-width="1.5" class="more-icon" />
       </view>
     </view>
 
@@ -67,7 +67,7 @@
           class="accept-btn"
           @click="handleAccept"
         >
-          <ClIcon name="icon-check" size="xs" class="action-icon" />
+          <Icon name="check" :size="16" :stroke-width="1.5" class="action-icon" />
           <text class="action-label">采纳</text>
         </CButton>
 
@@ -79,7 +79,7 @@
           class="ghost-danger"
           @click="handleDelete"
         >
-          <ClIcon name="icon-trash-2" size="xs" class="action-icon" />
+          <Icon name="trash-2" :size="16" :stroke-width="1.5" class="action-icon" />
           <text class="action-label">删除</text>
         </CButton>
       </view>
@@ -130,7 +130,6 @@ import { ref, computed } from 'vue'
 import type { AnswerItem } from '@/types/question'
 import { useUserStore } from '@/stores/user'
 import { CCard, CButton } from '@/components/ui'
-import { ClIcon } from '@/components/cl'
 import Icon from '@/components/icons/index.vue'
 import BestAnswerBadge from './BestAnswerBadge.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
@@ -372,9 +371,13 @@ const handleReport = () => {
   }
 
   .more-icon {
-    font-size: $font-size-xl;
-    font-weight: bold;
-    line-height: 1;
+    color: $gray-600; // P1: 统一图标颜色
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $gray-900;
+    }
   }
 }
 
@@ -498,7 +501,8 @@ const handleReport = () => {
 
 .action-icon {
   margin-right: $sp-1;
-  font-size: $font-size-base;
+  flex-shrink: 0;
+  // 颜色由父按钮控制（success按钮绿色，danger按钮红色）
 }
 
 .accept-btn {

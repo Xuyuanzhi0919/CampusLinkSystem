@@ -11,7 +11,7 @@
           placeholder="搜索社团名称"
           @confirm="handleSearch"
         />
-        <text v-if="searchKeyword" class="clear-icon" @click="clearSearch">×</text>
+        <Icon v-if="searchKeyword" name="x" :size="18" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
       </view>
     </view>
 
@@ -81,6 +81,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
+import Icon from '@/components/icons/index.vue'
 
 // 状态
 const loading = ref(false)

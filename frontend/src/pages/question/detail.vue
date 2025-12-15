@@ -11,7 +11,7 @@
     <!-- 导航栏右侧：更多按钮 -->
     <template #navbar-right>
       <view class="nav-more-btn" @click="showMoreMenu">
-        <text class="nav-more-icon">⋯</text>
+        <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="nav-more-icon" />
       </view>
     </template>
 
@@ -687,10 +687,13 @@ const handleRetry = () => {
   }
 
   .nav-more-icon {
-    font-size: $font-size-2xl;
-    color: $gray-700;
-    font-weight: $font-weight-bold;
-    letter-spacing: 2rpx;
+    color: $gray-700; // P1: 统一图标颜色
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $gray-900;
+    }
   }
 }
 

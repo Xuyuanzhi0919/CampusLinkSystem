@@ -347,6 +347,22 @@
     <template v-else-if="name === 'star-off'">
       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" fill="none"/>
     </template>
+
+    <!-- Share 2 图标（分享-箭头样式） -->
+    <template v-else-if="name === 'share-2'">
+      <circle cx="18" cy="5" r="3" stroke="currentColor" fill="none"/>
+      <circle cx="6" cy="12" r="3" stroke="currentColor" fill="none"/>
+      <circle cx="18" cy="19" r="3" stroke="currentColor" fill="none"/>
+      <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" stroke="currentColor"/>
+      <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="currentColor"/>
+    </template>
+
+    <!-- External Link 图标（外链/新窗口） -->
+    <template v-else-if="name === 'external-link'">
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" fill="none"/>
+      <polyline points="15 3 21 3 21 9" stroke="currentColor" fill="none"/>
+      <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor"/>
+    </template>
   </svg>
 </template>
 

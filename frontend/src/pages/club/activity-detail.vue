@@ -12,7 +12,7 @@
 
     <!-- 🎯 错误状态 -->
     <view v-else-if="error" class="error-container">
-      <text class="error-icon">⚠️</text>
+      <Icon name="alert-triangle" :size="48" :stroke-width="1.5" class="error-icon" />
       <text class="error-title">加载失败</text>
       <text class="error-desc">{{ errorMessage }}</text>
       <view class="error-btn" @click="loadActivityDetail">
@@ -138,6 +138,7 @@ import { getActivityDetail, joinActivity, cancelActivity, checkInActivity } from
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS } from '@/utils/cache'
 import config from '@/config'
+import Icon from '@/components/icons/index.vue'
 
 // 🎯 路由参数
 const activityId = ref<number>(0)
@@ -756,9 +757,9 @@ onUnmounted(() => {
 }
 
 .error-icon {
-  font-size: 120rpx;
-  line-height: 1;
+  color: $warning; // P1: 统一图标颜色（警告橙色）
   margin-bottom: 32rpx;
+  flex-shrink: 0;
 }
 
 .error-title {

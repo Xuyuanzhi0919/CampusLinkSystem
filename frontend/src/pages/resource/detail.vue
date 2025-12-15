@@ -64,7 +64,7 @@
 
                 <!-- 下载数 -->
                 <view class="stat-item-compact">
-                  <text class="stat-icon">↓</text>
+                  <Icon name="download" :size="16" :stroke-width="1.5" class="stat-icon" />
                   <text class="stat-value">{{ resource.downloads || 0 }}</text>
                 </view>
 
@@ -72,9 +72,7 @@
 
                 <!-- 点赞数 -->
                 <view class="stat-item-compact" @click="handleLike">
-                  <text class="stat-icon" :class="{ 'text-liked': resource.isLiked }">
-                    {{ resource.isLiked ? '♥' : '♡' }}
-                  </text>
+                  <Icon :name="resource.isLiked ? 'heart' : 'heart'" :size="16" :stroke-width="1.5" class="stat-icon" :class="{ 'stat-icon--liked': resource.isLiked, 'icon-filled': resource.isLiked }" />
                   <text class="stat-value" :class="{ 'text-liked': resource.isLiked }">
                     {{ resource.likes || 0 }}
                   </text>
@@ -84,7 +82,7 @@
                 <template v-if="commentCount && commentCount > 0">
                   <text class="stat-divider">|</text>
                   <view class="stat-item-compact" @click="scrollToComment">
-                    <text class="stat-icon">💬</text>
+                    <Icon name="message-circle" :size="16" :stroke-width="1.5" class="stat-icon" />
                     <text class="stat-value">{{ commentCount }}</text>
                   </view>
                 </template>
@@ -199,15 +197,15 @@
             <!-- Web端Popover菜单（就地弹出） -->
             <view v-if="showMorePopup" class="more-popover" @click.stop>
               <view class="menu-item" @click="scrollToComment">
-                <text class="menu-icon">💬</text>
+                <Icon name="message-circle" :size="18" :stroke-width="1.5" class="menu-icon" />
                 <text class="menu-text">评论 ({{ commentCount }})</text>
               </view>
               <view class="menu-item" @click="handleShare">
-                <text class="menu-icon">🔗</text>
+                <Icon name="share-2" :size="18" :stroke-width="1.5" class="menu-icon" />
                 <text class="menu-text">分享</text>
               </view>
               <view class="menu-item" @click="handleReport">
-                <text class="menu-icon">⚠️</text>
+                <Icon name="flag" :size="18" :stroke-width="1.5" class="menu-icon" />
                 <text class="menu-text">举报</text>
               </view>
             </view>
@@ -315,19 +313,19 @@
       <view class="more-menu" @click.stop>
         <!-- 预览选项（仅PDF） -->
         <view v-if="resource.fileType === 'pdf'" class="menu-item" @click="handlePreview">
-          <text class="menu-icon">👁</text>
+          <Icon name="eye" :size="20" :stroke-width="1.5" class="menu-icon" />
           <text class="menu-text">预览PDF</text>
         </view>
         <view class="menu-item" @click="scrollToComment">
-          <text class="menu-icon">◐</text>
+          <Icon name="message-circle" :size="20" :stroke-width="1.5" class="menu-icon" />
           <text class="menu-text">评论 ({{ commentCount }})</text>
         </view>
         <view class="menu-item" @click="handleShare">
-          <text class="menu-icon">↗</text>
+          <Icon name="share-2" :size="20" :stroke-width="1.5" class="menu-icon" />
           <text class="menu-text">分享</text>
         </view>
         <view class="menu-item" @click="handleReport">
-          <text class="menu-icon">!</text>
+          <Icon name="flag" :size="20" :stroke-width="1.5" class="menu-icon" />
           <text class="menu-text">举报</text>
         </view>
         <view class="menu-item cancel" @click="closeMoreMenu">
@@ -1520,8 +1518,10 @@ const closePreview = () => {
     }
 
     .menu-icon {
-      font-size: 18px;
+      color: $gray-600; // P1: 统一图标颜色
       flex-shrink: 0;
+      margin-right: 12rpx; // 图标与文字间距
+      transition: color 0.2s;
     }
 
     .menu-text {
@@ -1710,8 +1710,18 @@ const closePreview = () => {
   cursor: pointer;
 
   .stat-icon {
-    font-size: 18rpx;
-    color: $gray-500;
+    color: $gray-500; // P1: 统一图标颜色
+    flex-shrink: 0;
+    transition: color 0.2s;
+
+    &--liked {
+      color: $error; // 点赞状态为红色
+    }
+
+    // 点赞图标填充效果
+    &.icon-filled {
+      fill: currentColor;
+    }
   }
 
   .stat-value {
@@ -1771,31 +1781,7 @@ const closePreview = () => {
   gap: $sp-1;
 }
 
-// 统计栏图标
-.stat-icon {
-  font-size: $font-size-xs;
-  color: $gray-400;
-  line-height: 1;
-  font-weight: $font-weight-light;
-  opacity: 0.85;
-
-  &.stat-icon-view {
-    font-size: $font-size-xs;
-  }
-
-  &.stat-icon-download {
-    font-size: 18rpx;
-  }
-
-  &.stat-icon-like {
-    font-size: $font-size-xs;
-  }
-
-  &.stat-icon-comment {
-    font-size: 16rpx;
-    opacity: 0.9;
-  }
-}
+// P1: 统计栏图标样式已合并到 .stat-item-compact 内部，删除重复定义
 
 .stat-divider {
   color: $gray-300;
@@ -2426,12 +2412,10 @@ const closePreview = () => {
 }
 
 .menu-icon {
-  font-size: $font-size-xl;
+  color: $gray-600; // P1: 统一图标颜色
   margin-right: $sp-4;
-  color: $gray-600;
-  font-weight: $font-weight-medium;
-  width: 40rpx;
-  text-align: center;
+  flex-shrink: 0;
+  transition: color 0.2s;
 }
 
 .menu-text {

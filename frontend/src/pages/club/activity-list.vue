@@ -14,7 +14,7 @@
             @focus="showSearchHistory = true"
             @confirm="handleSearch"
           />
-          <text v-if="searchKeyword" class="clear-icon" @click="clearSearch">×</text>
+          <Icon v-if="searchKeyword" name="x" :size="18" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
         </view>
 
         <!-- 🎯 搜索历史下拉列表 -->
@@ -29,9 +29,9 @@
             class="history-item"
             @click="selectHistory(item)"
           >
-            <text class="history-icon">🕒</text>
+            <Icon name="clock" :size="16" :stroke-width="1.5" class="history-icon" />
             <text class="history-text">{{ item }}</text>
-            <text class="history-delete" @click.stop="deleteHistory(index)">×</text>
+            <Icon name="x" :size="16" :stroke-width="1.5" class="history-delete" @click.stop="deleteHistory(index)" />
           </view>
         </view>
       </view>
@@ -45,7 +45,7 @@
         @keydown.enter="showFilterPopup = true"
         @keydown.space.prevent="showFilterPopup = true"
       >
-        <text class="filter-icon" aria-hidden="true">⚙️</text>
+        <Icon name="sliders" :size="20" :stroke-width="1.5" class="filter-icon" aria-hidden="true" />
       </view>
     </view>
 
@@ -334,6 +334,7 @@ import { getActivityList } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import config from '@/config'
+import Icon from '@/components/icons/index.vue'
 
 // 搜索关键词
 const searchKeyword = ref('')

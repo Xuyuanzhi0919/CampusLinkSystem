@@ -359,13 +359,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceItem } from '@/types/resource'
 import { resourceSearchHistory } from '@/utils/searchHistory'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
+import {
+  savePageContext,
+  getPageContext,
+  restoreScrollPosition,
+  getCurrentScrollTop
+} from '@/utils/pageContext'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -879,9 +885,22 @@ const handleVoiceSearch = () => {
 }
 
 /**
- * 🎯 点击资源卡片
+ * 🎯 点击资源卡片 - P0优化:跳转前保存页面上下文
  */
 const handleResourceClick = (resource: ResourceItem) => {
+  // P0: 保存页面上下文(滚动位置 + 筛选条件)
+  savePageContext('resource-list', {
+    scrollTop: getCurrentScrollTop(),
+    filters: {
+      category: currentCategory.value,
+      sortBy: currentSortBy.value,
+      sortOrder: currentSortOrder.value,
+      keyword: searchKeyword.value,
+      scoreRange: advancedFilters.value.scoreRange,
+      onlyMySchool: advancedFilters.value.onlyMySchool
+    }
+  })
+
   // 跳转到资源详情页
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.resourceId}`
@@ -1596,14 +1615,43 @@ onShow(() => {
     return
   }
 
-  // 从详情页返回时：刷新数据
-  loadUserPoints()
-  loadDownloadedResources()
-  loadLikedResources()
-  loadFavoritedResources() // P1新增
+  // P0优化: 尝试恢复页面上下文
+  const context = getPageContext('resource-list')
 
-  // 重新加载当前页数据（保持页码和筛选条件）
-  loadResourceList(true)
+  if (context) {
+    // 恢复筛选条件
+    if (context.filters) {
+      currentCategory.value = context.filters.category ?? null
+      currentSortBy.value = context.filters.sortBy ?? 'created_at'
+      currentSortOrder.value = context.filters.sortOrder ?? 'desc'
+      searchKeyword.value = context.filters.keyword ?? ''
+      advancedFilters.value.scoreRange = context.filters.scoreRange ?? null
+      advancedFilters.value.onlyMySchool = context.filters.onlyMySchool ?? false
+    }
+
+    // 从详情页返回时：刷新数据
+    loadUserPoints()
+    loadDownloadedResources()
+    loadLikedResources()
+    loadFavoritedResources()
+
+    // 重新加载当前页数据（保持筛选条件）
+    loadResourceList(true).then(() => {
+      // 数据加载完成后,恢复滚动位置
+      nextTick(() => {
+        setTimeout(() => {
+          restoreScrollPosition(context.scrollTop, 0) // 立即恢复,不用动画
+        }, 100) // 延迟100ms确保DOM渲染完成
+      })
+    })
+  } else {
+    // 没有保存的上下文(正常刷新)
+    loadUserPoints()
+    loadDownloadedResources()
+    loadLikedResources()
+    loadFavoritedResources()
+    loadResourceList(true)
+  }
 })
 
 // 监听面包屑导航传来的分类筛选事件

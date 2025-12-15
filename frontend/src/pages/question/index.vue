@@ -337,8 +337,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import { onPageScroll } from '@dcloudio/uni-app'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { questionSearchHistory } from '@/utils/searchHistory'
@@ -348,6 +348,12 @@ import Icon from '@/components/icons/index.vue'
 import CButton from '@/components/ui/CButton.vue'
 import GpSkeleton from '@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue'
 import PublishFAB from '@/components/PublishFAB.vue'
+import {
+  savePageContext,
+  getPageContext,
+  restoreScrollPosition,
+  getCurrentScrollTop
+} from '@/utils/pageContext'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -773,6 +779,17 @@ const onReachBottom = () => {
 
 // 点击问题卡片
 const handleQuestionClick = (questionId: number) => {
+  // P0优化: 保存当前页面上下文(滚动位置 + 筛选条件)
+  savePageContext('question-list', {
+    scrollTop: getCurrentScrollTop(),
+    filters: {
+      category: category.value,
+      status: status.value,
+      sortBy: sortBy.value,
+      searchKeyword: searchKeyword.value
+    }
+  })
+
   uni.navigateTo({
     url: `/pages/question/detail?id=${questionId}`
   })
@@ -805,6 +822,9 @@ const scrollListener = () => {
   handleScroll(scrollTop)
 }
 
+// 标记是否是首次显示(用于区分首次加载和从详情页返回)
+const isFirstShow = ref(true)
+
 // 页面加载
 onMounted(() => {
   loadQuestions(true)
@@ -814,6 +834,44 @@ onMounted(() => {
   // #ifdef H5
   window.addEventListener('scroll', scrollListener)
   // #endif
+})
+
+// P0优化: 页面显示(从详情页返回时触发)
+onShow(() => {
+  // 首次显示由 onMounted 处理,跳过
+  if (isFirstShow.value) {
+    isFirstShow.value = false
+    return
+  }
+
+  // 尝试恢复上下文
+  const context = getPageContext('question-list')
+
+  if (context) {
+    console.log('[问答列表页] 恢复上下文:', context)
+
+    // 恢复筛选条件
+    if (context.filters) {
+      category.value = context.filters.category ?? null
+      status.value = context.filters.status ?? null
+      sortBy.value = context.filters.sortBy ?? 'created_at'
+      searchKeyword.value = context.filters.searchKeyword ?? ''
+    }
+
+    // 重新加载问题列表(应用恢复的筛选条件)
+    loadQuestions(true).then(() => {
+      // 等待DOM渲染完成后恢复滚动位置
+      nextTick(() => {
+        // 延迟100ms确保列表渲染完成
+        setTimeout(() => {
+          restoreScrollPosition(context.scrollTop, 0)
+          console.log('[问答列表页] 恢复滚动位置:', context.scrollTop)
+        }, 100)
+      })
+    })
+  } else {
+    console.log('[问答列表页] 无上下文,正常加载')
+  }
 })
 
 // 页面卸载

@@ -2,6 +2,7 @@
   <PageContainer
     nav-title="问题详情"
     :show-back="true"
+    back-text="返回"
     :show-tabbar="false"
     :refresher-enabled="true"
     :refresher-triggered="refreshing"

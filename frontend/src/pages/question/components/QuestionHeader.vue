@@ -243,7 +243,7 @@ const handlePreviewImage = (index: number) => {
   display: flex;
   align-items: center;
   gap: $sp-3;
-  margin-bottom: $sp-6;
+  margin-bottom: $sp-4; // 从 $sp-6 缩小到 $sp-4
   flex-wrap: wrap;
 
   .tag-icon {
@@ -252,34 +252,34 @@ const handlePreviewImage = (index: number) => {
 }
 
 // ===================================
-// 问题标题区域 - 强化版
+// 问题标题区域 - 优化间距
 // ===================================
 .question-title-section {
-  margin-bottom: 20px; // 从$sp-6增大
+  margin-bottom: 12px; // 从 20px 缩小到 12px
 }
 
 .question-title {
-  font-size: 26px; // 从$font-size-3xl(24px)增大到26px
-  font-weight: 700; // 从$font-weight-bold加粗
+  font-size: 24px; // 从 26px 缩小到 24px
+  font-weight: 700;
   color: $gray-900;
-  line-height: 1.4; // 从$line-height-tight调整
-  margin-bottom: 0; // 移除底部间距,由父容器控制
+  line-height: 1.4;
+  margin-bottom: 0;
   word-wrap: break-word;
-  letter-spacing: -0.02em; // 紧凑字距
+  letter-spacing: -0.02em;
 
   @include mobile {
-    font-size: 22px; // 从$font-size-2xl增大
+    font-size: 20px; // 从 22px 缩小到 20px
   }
 }
 
 // ===================================
-// 元数据信息栏 - 新增
+// 元数据信息栏 - 优化间距
 // ===================================
 .question-meta {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 0;
+  padding: 12px 0; // 从 16px 缩小到 12px
   flex-wrap: wrap;
 }
 
@@ -334,7 +334,7 @@ const handlePreviewImage = (index: number) => {
 .section-divider {
   height: 1px;
   background: $gray-200;
-  margin: 24px 0; // 上下间距
+  margin: 16px 0; // 从 24px 缩小到 16px
 }
 
 // ===================================
@@ -344,7 +344,7 @@ const handlePreviewImage = (index: number) => {
   font-size: $font-size-base;
   color: $gray-700;
   line-height: $line-height-loose;
-  margin-bottom: $sp-8;
+  margin-bottom: $sp-6; // 从 $sp-8 缩小到 $sp-6
   white-space: pre-wrap;
   word-wrap: break-word;
 }

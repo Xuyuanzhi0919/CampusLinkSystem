@@ -15,6 +15,7 @@
         <CNavBar
           :title="navTitle"
           :show-back="showBack"
+          :back-text="backText"
           :background="navBackground"
           :text-color="navTextColor"
           @back="handleBack"
@@ -113,6 +114,8 @@ interface Props {
   navTitle?: string
   /** 是否显示返回按钮 */
   showBack?: boolean
+  /** 返回按钮文字 */
+  backText?: string
   /** 导航栏背景色 */
   navBackground?: string
   /** 导航栏文字颜色 */

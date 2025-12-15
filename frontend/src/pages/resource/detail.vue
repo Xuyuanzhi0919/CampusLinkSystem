@@ -163,7 +163,7 @@
           :class="{ 'is-downloaded': resource.isDownloaded }"
           @click="handleDownload"
         >
-          <text class="btn-icon">↓</text>
+          <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
           <text class="btn-text">
             {{ resource.isDownloaded ? '重新下载（免费）' : '立即下载 -5积分' }}
           </text>
@@ -175,7 +175,7 @@
           class="secondary-action-btn"
           @click="handlePreview"
         >
-          <text class="btn-icon">👁</text>
+          <Icon name="eye" :size="20" :stroke-width="1.5" class="btn-icon" />
           <text class="btn-text">在线预览</text>
         </view>
 
@@ -185,16 +185,14 @@
         <!-- 辅助操作组 -->
         <view class="auxiliary-actions">
           <view class="aux-action-item" @click="handleFavorite">
-            <text class="aux-icon" :class="{ 'is-active': resource.isFavorited }">
-              {{ resource.isFavorited ? '★' : '☆' }}
-            </text>
+            <Icon :name="resource.isFavorited ? 'star' : 'star-off'" :size="20" :stroke-width="1.5" class="aux-icon" :class="{ 'is-active': resource.isFavorited }" />
             <text class="aux-text" :class="{ 'is-active': resource.isFavorited }">收藏</text>
           </view>
 
           <!-- 更多操作（Web端带Popover） -->
           <view class="operation-more-wrapper">
             <view class="aux-action-item" @click="showMoreMenu">
-              <text class="aux-icon">⋯</text>
+              <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="aux-icon" />
               <text class="aux-text">更多</text>
             </view>
 
@@ -264,13 +262,13 @@
           :class="{ 'is-liked': resource.isLiked }"
           @click="handleLike"
         >
-          <text class="action-icon">{{ resource.isLiked ? '♥' : '♡' }}</text>
+          <Icon :name="resource.isLiked ? 'heart' : 'heart'" :size="20" :stroke-width="1.5" :class="['action-icon', { 'icon-filled': resource.isLiked }]" />
           <text class="action-label">{{ resource.likes }}</text>
         </view>
 
         <!-- 评论按钮 -->
         <view class="action-icon-btn" @click="scrollToComment">
-          <text class="action-icon">◐</text>
+          <Icon name="message-circle" :size="20" :stroke-width="1.5" class="action-icon" />
           <text class="action-label">{{ commentCount }}</text>
         </view>
 
@@ -280,13 +278,13 @@
           :class="{ 'is-favorited': resource.isFavorited }"
           @click="handleFavorite"
         >
-          <text class="action-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
+          <Icon :name="resource.isFavorited ? 'star' : 'star-off'" :size="20" :stroke-width="1.5" class="action-icon" />
           <text class="action-label">{{ resource.favorites || 0 }}</text>
         </view>
 
         <!-- 更多按钮 -->
         <view class="action-icon-btn" @click="showMoreMenu">
-          <text class="action-icon">⋮</text>
+          <Icon name="more-vertical" :size="20" :stroke-width="1.5" class="action-icon" />
         </view>
       </view>
 
@@ -296,7 +294,7 @@
         :class="{ 'downloaded': resource.isDownloaded }"
         @click="handleDownload"
       >
-        <text class="btn-icon">↓</text>
+        <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
         <text class="btn-text">
           {{ resource.isDownloaded ? '重新下载（免费）' : '下载 (-5积分)' }}
         </text>
@@ -404,6 +402,7 @@ import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
 import RatingStars from '@/components/RatingStars.vue'
+import Icon from '@/components/icons/index.vue'
 // PC 端组件（仅 H5）
 // #ifdef H5
 import { PDFViewer } from '@/components/desktop'
@@ -1358,7 +1357,8 @@ const closePreview = () => {
   border: none;
 
   .btn-icon {
-    font-size: 28rpx;
+    color: currentColor; // 继承父元素颜色
+    flex-shrink: 0;
   }
 
   .btn-text {
@@ -1404,7 +1404,8 @@ const closePreview = () => {
   margin-top: $sp-3;
 
   .btn-icon {
-    font-size: 24rpx;
+    color: currentColor; // 继承父元素颜色
+    flex-shrink: 0;
   }
 
   .btn-text {
@@ -1453,9 +1454,9 @@ const closePreview = () => {
   }
 
   .aux-icon {
-    font-size: 32rpx;
-    color: $gray-500;
+    color: $gray-600; // P0: 统一图标默认色为 gray-600
     transition: color $duration-fast;
+    flex-shrink: 0;
 
     &.is-active {
       color: $accent;
@@ -2278,9 +2279,14 @@ const closePreview = () => {
 }
 
 .action-icon {
-  font-size: $font-size-base;
-  color: $gray-600;
-  line-height: 1;
+  color: $gray-600; // P0: 统一图标默认色
+  flex-shrink: 0;
+  transition: color 0.2s;
+
+  // 点赞图标填充效果
+  &.icon-filled {
+    fill: currentColor; // 填充心形
+  }
 }
 
 .action-label {

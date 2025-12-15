@@ -51,7 +51,7 @@
               class="delete-btn"
               @click="handleDeleteComment(comment.commentId)"
             >
-              <text class="delete-icon">×</text>
+              <Icon name="trash-2" :size="18" :stroke-width="1.5" class="delete-icon" />
             </view>
           </view>
 
@@ -63,7 +63,7 @@
           <!-- Comment actions -->
           <view class="comment-actions">
             <view class="action-btn" @click="handleReply(comment)">
-              <text class="action-icon">↵</text>
+              <Icon name="corner-down-left" :size="16" :stroke-width="1.5" class="action-icon" />
               <text class="action-text">回复 {{ comment.replyCount > 0 ? `(${comment.replyCount})` : '' }}</text>
             </view>
           </view>
@@ -90,7 +90,7 @@
                   class="delete-btn"
                   @click="handleDeleteComment(reply.commentId)"
                 >
-                  <text class="delete-icon">×</text>
+                  <Icon name="trash-2" :size="16" :stroke-width="1.5" class="delete-icon" />
                 </view>
               </view>
 
@@ -139,6 +139,7 @@ import type { ResourceComment } from '@/types/comment'
 import { getResourceComments, addComment, deleteComment } from '@/services/comment'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
 import config from '@/config'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   resourceId: number
@@ -513,14 +514,11 @@ const formatTime = (dateStr: string) => {
 }
 
 .delete-icon {
-  font-size: 32rpx; // 从 48rpx 缩小到 32rpx（更克制）
-  color: #DC2626; // error 色（从 #999 → #DC2626）
-  line-height: 1;
-  font-weight: 500;
+  color: #4B5563; // gray-600（默认状态使用中性灰，不突出危险性）
   transition: color 0.2s;
 
   .delete-btn:hover & {
-    color: #B91C1C; // error-700（hover 更深）
+    color: #DC2626; // error（hover 才变为红色，强调危险操作）
   }
 }
 
@@ -566,9 +564,9 @@ const formatTime = (dateStr: string) => {
 }
 
 .action-icon {
-  font-size: 24rpx;
   color: #6B7280; // gray-500
   transition: color 0.2s;
+  margin-right: 4rpx; // 图标与文字间距
 
   .action-btn:hover & {
     color: #374151; // gray-700

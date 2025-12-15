@@ -321,6 +321,32 @@
       <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" fill="none"/>
       <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5" stroke="currentColor" fill="none"/>
     </template>
+
+    <!-- Download 图标（下载） -->
+    <template v-else-if="name === 'download'">
+      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" fill="none"/>
+      <polyline points="7 10 12 15 17 10" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="15" x2="12" y2="3" stroke="currentColor"/>
+    </template>
+
+    <!-- Trash 2 图标（删除-更精致） -->
+    <template v-else-if="name === 'trash-2'">
+      <polyline points="3 6 5 6 21 6" stroke="currentColor" fill="none"/>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" stroke="currentColor" fill="none"/>
+      <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor"/>
+      <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor"/>
+    </template>
+
+    <!-- Corner Down Left 图标（回复） -->
+    <template v-else-if="name === 'corner-down-left'">
+      <polyline points="9 10 4 15 9 20" stroke="currentColor" fill="none"/>
+      <path d="M20 4v7a4 4 0 0 1-4 4H4" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Star Off 图标（未收藏） -->
+    <template v-else-if="name === 'star-off'">
+      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" stroke="currentColor" fill="none"/>
+    </template>
   </svg>
 </template>
 

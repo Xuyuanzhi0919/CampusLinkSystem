@@ -34,9 +34,9 @@
         <view class="main-content">
           <!-- 面包屑导航 -->
           <view class="breadcrumb">
-            <text class="breadcrumb-item" @click="navigateTo('/pages/home/index')">首页</text>
+            <text class="breadcrumb-item" @click="navigateToHome">首页</text>
             <text class="breadcrumb-divider">/</text>
-            <text class="breadcrumb-item" @click="navigateTo('/pages/resource/list')">资源广场</text>
+            <text class="breadcrumb-item" @click="navigateToResourceIndex">资源广场</text>
             <text class="breadcrumb-divider">/</text>
             <text class="breadcrumb-item" @click="navigateToCategory">{{ getCategoryText(resource.category) }}</text>
             <text class="breadcrumb-divider">/</text>
@@ -705,15 +705,23 @@ const goBack = () => {
   }
 }
 
-// 通用导航方法（面包屑使用）
-const navigateTo = (url: string) => {
-  uni.navigateTo({ url })
+// 面包屑导航方法
+const navigateToHome = () => {
+  uni.switchTab({
+    url: '/pages/home/index'
+  })
 }
 
-// 导航到分类列表（面包屑使用）
+const navigateToResourceIndex = () => {
+  uni.switchTab({
+    url: '/pages/resource/index'
+  })
+}
+
 const navigateToCategory = () => {
-  uni.navigateTo({
-    url: `/pages/resource/list?category=${resource.value.category}`,
+  // 导航到资源广场并传递分类参数
+  uni.redirectTo({
+    url: `/pages/resource/index?category=${resource.value.category}`
   })
 }
 

@@ -1,13 +1,19 @@
 <template>
   <view
     class="resource-card"
-    :class="{ 'is-active': isActive, 'is-mobile': isMobile }"
+    :class="{ 'is-active': isActive, 'is-mobile': isMobile, 'is-hot': isHotResource }"
     @click="handleClick"
     @touchstart="onTouchStart"
     @touchend="onTouchEnd"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
+    <!-- P1-3: 高价值资源角标 -->
+    <view v-if="isHotResource" class="hot-badge">
+      <text class="hot-badge-icon">🔥</text>
+      <text class="hot-badge-text">HOT</text>
+    </view>
+
     <!-- 📌 第一层:标题 + 价值指标 (点赞数) -->
     <view class="card-header">
       <view class="title-row">
@@ -73,11 +79,11 @@
       <text class="meta-text meta-time">{{ formatTime(resource.createdAt) }}</text>
     </view>
 
-    <!-- 📌 第四层:行为区 (积分+下载量+操作按钮) -->
+    <!-- 📌 第四层:行为区 (积分+下载量) —— P1优化:移除操作按钮,只保留信息展示 -->
     <view class="action-section">
-      <!-- 左侧:统计数据 -->
+      <!-- 左侧:统计数据 (社会证明) -->
       <view class="stats-group">
-        <!-- 积分价格 (突出显示) -->
+        <!-- 积分价格 (弱化显示) -->
         <view class="stat-item stat-points">
           <text class="stat-icon">💰</text>
           <text class="stat-value">{{ resource.score }}</text>
@@ -88,20 +94,27 @@
           <text class="stat-icon">↓</text>
           <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
         </view>
+
+        <!-- 收藏数 (新增) -->
+        <view v-if="resource.favorites && resource.favorites > 0" class="stat-item stat-favorites">
+          <text class="stat-icon">★</text>
+          <text class="stat-value">{{ formatNumber(resource.favorites) }}</text>
+        </view>
       </view>
 
-      <!-- 右侧:操作按钮组 (降权设计) -->
-      <view class="action-buttons">
-        <!-- 点赞按钮 (图标按钮) -->
+      <!-- 右侧:操作按钮组 —— P1优化:改为hover显示 -->
+      <view class="action-buttons action-buttons--hover">
+        <!-- 收藏按钮 (hover显示) -->
         <view
-          class="icon-btn like-btn"
-          :class="{ 'is-liked': resource.isLiked }"
-          @click.stop="handleLike"
+          class="icon-btn favorite-btn"
+          :class="{ 'is-favorited': resource.isFavorited }"
+          @click.stop="handleFavorite"
+          :title="resource.isFavorited ? '取消收藏' : '收藏'"
         >
-          <text class="icon-btn-icon">{{ resource.isLiked ? '♥' : '♡' }}</text>
+          <text class="icon-btn-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
         </view>
 
-        <!-- 下载按钮 (图标按钮,降权) -->
+        <!-- 下载按钮 (hover显示) -->
         <view
           class="icon-btn download-btn"
           :class="{ 'is-downloaded': resource.isDownloaded }"
@@ -116,7 +129,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 import { ResourceCategory, ResourceStatus } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
@@ -134,12 +147,18 @@ const emit = defineEmits<{
   click: [resource: ResourceItem]
   download: [resource: ResourceItem]
   like: [resource: ResourceItem]
+  favorite: [resource: ResourceItem]
 }>()
 
 //  响应式状态
 const isActive = ref(false)
 const isMobile = ref(false)
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
+
+// P1-3: 判断是否为热门资源 (下载量 >= 100 或 收藏数 >= 50)
+const isHotResource = computed(() => {
+  return (props.resource.downloads >= 100) || ((props.resource.favorites || 0) >= 50)
+})
 
 // 检测设备类型
 onMounted(() => {
@@ -366,6 +385,13 @@ const handleDownload = () => {
 const handleLike = () => {
   emit('like', props.resource)
 }
+
+/**
+ *  点击收藏按钮 - P1新增
+ */
+const handleFavorite = () => {
+  emit('favorite', props.resource)
+}
 </script>
 
 <style scoped lang="scss">
@@ -389,6 +415,17 @@ const handleLike = () => {
     transform: translateY(-4rpx);
   }
 
+  // P1-3: 热门资源特殊样式
+  &.is-hot {
+    border-color: #FCA5A5; // 淡红色边框
+    background: linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%); // 微红渐变背景
+
+    &:hover {
+      border-color: #EF4444;
+      box-shadow: 0 8rpx 24rpx rgba(239, 68, 68, 0.15);
+    }
+  }
+
   // 移动端适配
   &.is-mobile {
     &.is-active {
@@ -396,6 +433,34 @@ const handleLike = () => {
       border-color: #2563EB;
       transform: scale(0.98);
     }
+  }
+}
+
+// P1-3: 热门角标
+.hot-badge {
+  position: absolute;
+  top: -2rpx;
+  right: -2rpx;
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 6rpx 12rpx;
+  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  border-radius: 0 16rpx 0 16rpx; // 右上角贴合卡片
+  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.3);
+  z-index: 10;
+
+  .hot-badge-icon {
+    font-size: 20rpx;
+    line-height: 1;
+  }
+
+  .hot-badge-text {
+    font-size: 20rpx;
+    font-weight: 700;
+    color: #FFFFFF;
+    letter-spacing: 0.5rpx;
+    text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -649,122 +714,160 @@ const handleLike = () => {
   flex: 1;
 }
 
+// P1优化:统计数据弱化显示,不抢眼
 .stat-item {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  font-size: 24rpx; // 22rpx→24rpx,增强可读性
-  font-weight: 500;
-  padding: 6rpx 12rpx; // 4rpx 10rpx→6rpx 12rpx,增加内边距
-  border-radius: 10rpx;
+  font-size: 22rpx; // 从 24rpx → 22rpx,弱化
+  font-weight: 400; // 从 500 → 400,弱化
+  padding: 4rpx 10rpx; // 从 6rpx 12rpx → 4rpx 10rpx,缩小
+  border-radius: 8rpx;
   transition: all 0.2s ease;
 
+  .stat-icon {
+    font-size: 18rpx;
+  }
+
+  .stat-value {
+    color: #6B7280; // 统一为灰色
+    font-weight: 500;
+  }
+
+  // 积分价格 - P1优化:大幅弱化
   &.stat-points {
-    color: #F59E0B;
-    font-weight: 600;
-    background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.15) 100%);
+    background: rgba(107, 114, 128, 0.06); // 从橙色渐变 → 灰色背景
+    color: #9CA3AF; // 从橙色 → 灰色
 
     .stat-icon {
-      font-size: 20rpx; // 18rpx→20rpx,增加图标尺寸
+      opacity: 0.6; // 金币图标半透明
     }
 
     .stat-value {
-      color: #D97706;
-      font-weight: 700;
+      color: #6B7280; // 从橙色 → 灰色
+      font-weight: 500; // 从 700 → 500
     }
   }
 
+  // 下载量 - 保持原样
   &.stat-downloads {
+    background: rgba(107, 114, 128, 0.06);
     color: #6B7280;
-    background: rgba(107, 114, 128, 0.08);
+  }
+
+  // 收藏数 - 新增
+  &.stat-favorites {
+    background: rgba(251, 191, 36, 0.1);
+    color: #F59E0B;
 
     .stat-icon {
-      font-size: 18rpx; // 16rpx→18rpx,增加图标尺寸
-      color: #9CA3AF;
+      color: #F59E0B;
     }
   }
 }
 
+// P1-2优化:操作按钮容器 - hover才显示
 .action-buttons {
   display: flex;
   align-items: center;
   gap: 8rpx;
   flex-shrink: 0;
+  opacity: 0; // 默认隐藏
+  transform: translateX(8rpx); // 默认右移
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none; // 隐藏时不可点击
+
+  // 卡片hover时显示
+  .resource-card:hover &,
+  .resource-card.is-active & {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
+
+  // 移动端:始终显示(因为没有hover)
+  .resource-card.is-mobile & {
+    opacity: 1;
+    transform: translateX(0);
+    pointer-events: auto;
+  }
 }
 
-// 统一的图标按钮样式 (降权设计)
+// P1优化:图标按钮样式 - 更轻量,不抢眼
 .icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 56rpx; // 🎯 优化:52rpx→56rpx,增加按钮点击区域
-  height: 56rpx;
+  width: 52rpx; // 从 56rpx → 52rpx,缩小
+  height: 52rpx;
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #F9FAFB; // 🎯 优化:transparent→浅灰背景,增强视觉反馈
+  background: #FFFFFF; // 从浅灰 → 纯白
   border: 1.5rpx solid #E5E7EB;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.04); // 添加微弱阴影
 
   &:hover {
-    transform: scale(1.08); // 🎯 优化:1.1→1.08,缩小缩放幅度
-    background: #F3F4F6; // 🎯 新增:hover背景变化
+    transform: scale(1.1);
+    box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.08);
     border-color: #D1D5DB;
   }
 
   &:active {
     transform: scale(0.95);
-    background: #E5E7EB; // 🎯 新增:active背景加深
+    box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.06);
   }
 
   .icon-btn-icon {
-    font-size: 28rpx; // 🎯 优化:26rpx→28rpx,增强可见性
-    color: #6B7280; // 🎯 优化:#9CA3AF→#6B7280,增强对比度
+    font-size: 26rpx; // 从 28rpx → 26rpx,缩小
+    color: #9CA3AF; // 从 #6B7280 → #9CA3AF,更浅
     line-height: 1;
     transition: all 0.2s;
   }
 
-  &.like-btn {
+  // 收藏按钮 - 新增
+  &.favorite-btn {
     .icon-btn-icon {
-      color: #EF4444; // 🎯 优化:#F87171→#EF4444,加深颜色
+      color: #F59E0B;
     }
 
-    &:hover:not(.is-liked) {
-      background: rgba(239, 68, 68, 0.08); // 🎯 新增:未点赞hover态品牌色背景
-      border-color: #FCA5A5;
+    &:hover:not(.is-favorited) {
+      background: rgba(251, 191, 36, 0.08);
+      border-color: #FCD34D;
     }
 
-    &.is-liked {
-      background: #EF4444; // 🎯 优化:使用更深的红色
-      border-color: #EF4444;
-      box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.25); // 🎯 优化:增强阴影
+    &.is-favorited {
+      background: #F59E0B;
+      border-color: #F59E0B;
+      box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.25);
 
       .icon-btn-icon {
         color: #FFFFFF;
-        animation: like-bounce 0.4s ease-in-out;
       }
 
       &:hover {
-        background: #DC2626; // 🎯 优化:加深hover颜色
-        border-color: #DC2626;
-        box-shadow: 0 6rpx 16rpx rgba(220, 38, 38, 0.35); // 🎯 优化:增强hover阴影
+        background: #D97706;
+        border-color: #D97706;
+        box-shadow: 0 6rpx 16rpx rgba(217, 119, 6, 0.35);
       }
     }
   }
 
+  // 下载按钮 - P1优化:弱化处理
   &.download-btn {
     .icon-btn-icon {
-      color: #2563EB; // 🎯 优化:#64748B→品牌蓝色,增强品牌呼应
+      color: #2563EB;
     }
 
     &:hover:not(.is-downloaded) {
-      background: rgba(37, 99, 235, 0.08); // 🎯 新增:未下载hover态品牌色背景
+      background: rgba(37, 99, 235, 0.08);
       border-color: #93C5FD;
     }
 
     &.is-downloaded {
       background: #10B981;
       border-color: #10B981;
-      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25); // 🎯 新增:已下载阴影
+      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25);
 
       .icon-btn-icon {
         color: #FFFFFF;
@@ -773,7 +876,7 @@ const handleLike = () => {
       &:hover {
         background: #059669;
         border-color: #059669;
-        box-shadow: 0 6rpx 16rpx rgba(5, 150, 105, 0.35); // 🎯 新增:已下载hover阴影
+        box-shadow: 0 6rpx 16rpx rgba(5, 150, 105, 0.35);
       }
     }
   }

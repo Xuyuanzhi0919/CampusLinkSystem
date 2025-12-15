@@ -165,9 +165,9 @@
           </view>
         </view>
 
-        <!-- 右侧:社区动态侧栏 -->
+        <!-- 右侧:社区动态侧栏 —— P1优化:调整顺序为 热门 → 标签 → 贡献者 -->
         <view class="sidebar">
-          <!-- 🔥 本周热门资源 -->
+          <!-- 🔥 1. 本周热门资源 (最优先) -->
           <view class="sidebar-card">
             <view class="card-header">
               <Icon name="trending-up" :size="16" class="header-icon hot-icon" />
@@ -194,7 +194,24 @@
             </view>
           </view>
 
-          <!-- 👤 活跃上传者 -->
+          <!-- 🏷 2. 热门标签 (帮助探索分类) -->
+          <view class="sidebar-card">
+            <TagCloud
+              :tags="popularTags"
+              title="热门标签"
+              header-icon="tag"
+              :show-header="true"
+              :show-badge="false"
+              :show-count="true"
+              :dynamic-size="false"
+              :collapsible="true"
+              :max-display="6"
+              empty-text="暂无热门标签"
+              @tag-click="handleTagCloudClick"
+            />
+          </view>
+
+          <!-- 👤 3. 活跃贡献者 (最后,社交元素) -->
           <view class="sidebar-card">
             <view class="card-header">
               <Icon name="users" :size="16" class="header-icon" />
@@ -216,23 +233,6 @@
                 </view>
               </view>
             </view>
-          </view>
-
-          <!-- 🏷 热门标签 -->
-          <view class="sidebar-card">
-            <TagCloud
-              :tags="popularTags"
-              title="热门标签"
-              header-icon="tag"
-              :show-header="true"
-              :show-badge="false"
-              :show-count="true"
-              :dynamic-size="false"
-              :collapsible="true"
-              :max-display="6"
-              empty-text="暂无热门标签"
-              @tag-click="handleTagCloudClick"
-            />
           </view>
         </view>
       </view>

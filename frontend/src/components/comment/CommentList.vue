@@ -333,10 +333,19 @@ const formatTime = (dateStr: string) => {
 </script>
 
 <style scoped lang="scss">
+// ===================================
+// P0 修复：对齐 AnswerCard 视觉规范
+// 修复日期：2025-XX-XX
+// 对齐目标：问答详情页 AnswerCard 组件
+// ===================================
+
 .comment-list {
   width: 100%;
 }
 
+// ===================================
+// 评论输入区（保持原样式）
+// ===================================
 .comment-input-section {
   padding: 20rpx 24rpx;
   background: #FAFAFA;
@@ -396,6 +405,9 @@ const formatTime = (dateStr: string) => {
   }
 }
 
+// ===================================
+// 评论列表容器
+// ===================================
 .comments-wrapper {
   background: #FFFFFF;
 }
@@ -416,6 +428,9 @@ const formatTime = (dateStr: string) => {
   padding: 24rpx;
 }
 
+// ===================================
+// P0-1: 一级评论项（对齐 AnswerCard）
+// ===================================
 .comment-item {
   margin-bottom: 32rpx;
   padding-bottom: 32rpx;
@@ -426,60 +441,104 @@ const formatTime = (dateStr: string) => {
   }
 }
 
+// P0-1.1: Header 区域（头像 + 用户信息 + 删除按钮）
 .comment-header {
   display: flex;
   align-items: center;
   margin-bottom: 16rpx;
+  gap: 16rpx; // 对齐 AnswerCard 的 24rpx gap（略微缩小适配评论场景）
 }
 
 .user-avatar {
-  width: 64rpx;
+  width: 64rpx; // 与 AnswerCard 一致
   height: 64rpx;
   border-radius: 50%;
-  margin-right: 16rpx;
+  border: 2rpx solid #E5E7EB; // 新增：对齐 AnswerCard 的边框（gray-200）
+  background: #F3F4F6; // 新增：加载占位背景
+  flex-shrink: 0;
+  transition: all 0.2s; // 新增：hover 动画
+
+  &:hover {
+    border-color: #2563EB; // primary 色
+    transform: scale(1.05);
+  }
 }
 
 .user-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 4rpx; // 保持 4rpx（AnswerCard 也是）
+  min-width: 0; // 新增：防止文字溢出
 }
 
 .user-name {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: #333333;
+  font-size: 30rpx; // 对齐 AnswerCard（从 28rpx → 30rpx）
+  font-weight: 600; // 对齐 AnswerCard（从 500 → 600）
+  color: #111827; // 对齐 AnswerCard 的 gray-900（从 #333 → #111827）
+  transition: color 0.2s; // 新增：hover 动画
+  @include text-ellipsis(1); // 新增：文本截断
+
+  &:hover {
+    color: #2563EB; // primary 色
+  }
 }
 
 .comment-time {
-  font-size: 22rpx;
-  color: #999999;
+  font-size: 24rpx; // 对齐 AnswerCard（从 22rpx → 24rpx）
+  color: #6B7280; // 对齐 AnswerCard 的 gray-500（从 #999 → #6B7280）
+  font-weight: 400;
 }
 
+// P0-1.2: 删除按钮（改为图标按钮风格，对齐 AnswerCard）
 .delete-btn {
-  padding: 8rpx;
+  flex-shrink: 0;
+  width: 56rpx; // 对齐 AnswerCard 的 more-actions
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; // 圆形按钮
   cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #FEE2E2; // error-50（浅红色背景）
+  }
+
+  &:active {
+    background: #FECACA; // error-100
+    transform: scale(0.95);
+  }
 }
 
 .delete-icon {
-  font-size: 48rpx;
-  color: #999999;
+  font-size: 32rpx; // 从 48rpx 缩小到 32rpx（更克制）
+  color: #DC2626; // error 色（从 #999 → #DC2626）
   line-height: 1;
+  font-weight: 500;
+  transition: color 0.2s;
+
+  .delete-btn:hover & {
+    color: #B91C1C; // error-700（hover 更深）
+  }
 }
 
+// P0-1.3: Content 区域（对齐 AnswerCard）
 .comment-content {
   margin-bottom: 16rpx;
-  padding-left: 80rpx;
+  padding-left: 80rpx; // 保持左对齐（64rpx 头像 + 16rpx gap）
 }
 
 .content-text {
-  font-size: 28rpx;
-  line-height: 1.6;
-  color: #333333;
-  word-break: break-all;
+  font-size: 28rpx; // 对齐 AnswerCard 的 $font-size-base
+  line-height: 1.6; // 对齐 AnswerCard
+  color: #374151; // 对齐 AnswerCard 的 gray-700（从 #333 → #374151）
+  word-break: break-word; // 从 break-all 改为 break-word（更友好）
+  white-space: pre-wrap; // 新增：保留换行
 }
 
+// P0-1.4: Footer 操作区（对齐 AnswerCard footer 样式）
 .comment-actions {
   display: flex;
   gap: 24rpx;
@@ -491,31 +550,57 @@ const formatTime = (dateStr: string) => {
   align-items: center;
   gap: 8rpx;
   padding: 8rpx 16rpx;
+  border-radius: 40rpx; // 新增：圆角（对齐 AnswerCard like-button）
   cursor: pointer;
+  transition: all 0.2s;
+  background: transparent;
+
+  &:hover {
+    background: #F3F4F6; // gray-100
+  }
+
+  &:active {
+    background: #E5E7EB; // gray-200
+    transform: scale(0.98);
+  }
 }
 
 .action-icon {
   font-size: 24rpx;
+  color: #6B7280; // gray-500
+  transition: color 0.2s;
+
+  .action-btn:hover & {
+    color: #374151; // gray-700
+  }
 }
 
 .action-text {
   font-size: 24rpx;
-  color: #666666;
+  color: #6B7280; // 对齐 AnswerCard（从 #666 → gray-500）
+  font-weight: 400;
+  transition: color 0.2s;
+
+  .action-btn:hover & {
+    color: #374151;
+  }
 }
 
+// ===================================
+// P0-2: 二级回复容器（优化层级：缩进 + 分隔线）
+// ===================================
 .replies-container {
   margin-top: 20rpx;
-  margin-left: 80rpx;
-  background: #F5F5F5;
-  border-radius: 12rpx;
-  padding: 20rpx 16rpx;
-  border-left: 3rpx solid #E0E0E0;
+  margin-left: 48rpx; // 从 80rpx 改为 48rpx（更合理的缩进，对齐常见设计）
+  padding-left: 24rpx; // 新增：内边距
+  border-left: 2rpx solid #E5E7EB; // 从 3rpx #E0E0E0 改为 2rpx gray-200（更精致）
+  // 移除背景色（P0 不加背景，保持轻量）
 }
 
 .reply-item {
   margin-bottom: 20rpx;
   padding-bottom: 20rpx;
-  border-bottom: 1rpx solid #E8E8E8;
+  border-bottom: 1rpx solid #F3F4F6; // 从 #E8E8E8 改为 gray-100（更柔和）
 
   &:last-child {
     margin-bottom: 0;
@@ -524,18 +609,27 @@ const formatTime = (dateStr: string) => {
   }
 }
 
+// P0-2.1: 二级回复 Header（对齐一级评论样式）
 .reply-header {
   display: flex;
   align-items: center;
   margin-bottom: 10rpx;
+  gap: 12rpx; // 新增：统一 gap
 }
 
 .reply-avatar {
-  width: 40rpx;
+  width: 40rpx; // 保持 40rpx（P0 不改尺寸）
   height: 40rpx;
   border-radius: 50%;
-  margin-right: 10rpx;
+  border: 2rpx solid #E5E7EB; // 新增：对齐一级评论的边框
+  background: #F3F4F6; // 新增：占位背景
   flex-shrink: 0;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #2563EB;
+    transform: scale(1.05);
+  }
 }
 
 .reply-user-info {
@@ -543,30 +637,43 @@ const formatTime = (dateStr: string) => {
   display: flex;
   flex-direction: column;
   gap: 2rpx;
+  min-width: 0;
 }
 
 .reply-user-name {
-  font-size: 24rpx;
-  font-weight: 500;
-  color: #666666;
+  font-size: 26rpx; // 从 24rpx 稍微增大到 26rpx（更清晰）
+  font-weight: 600; // 从 500 → 600（对齐主评论）
+  color: #374151; // 从 #666 → gray-700（更统一）
+  @include text-ellipsis(1);
+  transition: color 0.2s;
+
+  &:hover {
+    color: #2563EB;
+  }
 }
 
 .reply-time {
-  font-size: 20rpx;
-  color: #AAAAAA;
+  font-size: 22rpx; // 从 20rpx → 22rpx（可读性）
+  color: #6B7280; // 从 #AAA → gray-500（统一色系）
+  font-weight: 400;
 }
 
+// P0-2.2: 二级回复 Content（对齐主评论）
 .reply-content {
-  padding-left: 50rpx;
+  padding-left: 52rpx; // 从 50rpx 改为 52rpx（40rpx 头像 + 12rpx gap）
 }
 
 .reply-text {
-  font-size: 26rpx;
-  line-height: 1.5;
-  color: #555555;
-  word-break: break-all;
+  font-size: 26rpx; // 保持 26rpx（比主评论略小）
+  line-height: 1.6; // 从 1.5 → 1.6（对齐主评论）
+  color: #4B5563; // 从 #555 → gray-600（统一灰阶）
+  word-break: break-word; // 从 break-all 改为 break-word
+  white-space: pre-wrap;
 }
 
+// ===================================
+// 回复输入框（保持原样式）
+// ===================================
 .reply-input-section {
   margin-top: 24rpx;
   padding-left: 80rpx;
@@ -615,6 +722,9 @@ const formatTime = (dateStr: string) => {
   }
 }
 
+// ===================================
+// 加载更多
+// ===================================
 .load-more {
   padding: 32rpx 0;
   text-align: center;
@@ -624,5 +734,32 @@ const formatTime = (dateStr: string) => {
 .load-more-text {
   font-size: 26rpx;
   color: #FF6B35;
+}
+
+// ===================================
+// 响应式适配（对齐 AnswerCard 移动端）
+// ===================================
+@media (max-width: 750px) {
+  .user-avatar {
+    width: 56rpx; // 移动端缩小（对齐 AnswerCard）
+    height: 56rpx;
+  }
+
+  .user-name {
+    font-size: 28rpx; // 移动端字号
+  }
+
+  .comment-time {
+    font-size: 22rpx;
+  }
+
+  .comment-content,
+  .comment-actions {
+    padding-left: 72rpx; // 对应 56rpx 头像 + 16rpx gap
+  }
+
+  .replies-container {
+    margin-left: 40rpx; // 移动端缩进减小
+  }
 }
 </style>

@@ -38,12 +38,12 @@ const submitting = ref(false)
  * 🎯 分类选项
  */
 const categories = [
-  { label: '📚 课件', value: '课件' },
-  { label: '📝 试题', value: '试卷' },
-  { label: '✍️ 笔记', value: '笔记' },
-  { label: '📖 教材', value: '教材' },
-  { label: '🔬 实验报告', value: '实验报告' },
-  { label: '📊 其他', value: '其他' }
+  { label: '📚 课件讲义', value: '课件', desc: '老师PPT、课堂讲义' },
+  { label: '📝 试题试卷', value: '试卷', desc: '期中/期末/模拟题' },
+  { label: '✍️ 学习笔记', value: '笔记', desc: '课堂笔记、知识总结' },
+  { label: '📖 教材资料', value: '教材', desc: '电子教材、参考书' },
+  { label: '🔬 实验报告', value: '实验报告', desc: '含代码和文档' },
+  { label: '📊 其他资料', value: '其他', desc: '其他学习资料' }
 ]
 
 /**
@@ -173,6 +173,12 @@ const handleFileSelected = async (selectedFile: File) => {
       form.value.title = nameWithoutExt
     }
 
+    // 🎯 智能推荐分类
+    const recommended = recommendCategory(selectedFile.name)
+    if (recommended && !form.value.category) {
+      form.value.category = recommended
+    }
+
     // 开始上传
     await uploadFile(selectedFile)
   } catch (error: any) {
@@ -258,6 +264,55 @@ const reUpload = () => {
   fileUrl.value = ''
   uploadProgress.value = 0
   chooseFile()
+}
+
+/**
+ * 🎯 智能推荐分类(基于文件名)
+ */
+const recommendedCategory = ref('')
+
+const recommendCategory = (filename: string) => {
+  const lowerName = filename.toLowerCase()
+
+  if (lowerName.includes('ppt') || lowerName.includes('课件') || lowerName.includes('讲义')) {
+    recommendedCategory.value = '课件讲义'
+    return '课件'
+  }
+  if (lowerName.includes('试卷') || lowerName.includes('试题') || lowerName.includes('考试') || lowerName.includes('真题')) {
+    recommendedCategory.value = '试题试卷'
+    return '试卷'
+  }
+  if (lowerName.includes('笔记') || lowerName.includes('总结') || lowerName.includes('整理')) {
+    recommendedCategory.value = '学习笔记'
+    return '笔记'
+  }
+  if (lowerName.includes('实验') || lowerName.includes('报告')) {
+    recommendedCategory.value = '实验报告'
+    return '实验报告'
+  }
+  if (lowerName.includes('教材') || lowerName.includes('电子书')) {
+    recommendedCategory.value = '教材资料'
+    return '教材'
+  }
+
+  recommendedCategory.value = ''
+  return null
+}
+
+/**
+ * 🎯 获取分类显示文本
+ */
+const getCategoryDisplay = (value: string) => {
+  const category = categories.find(c => c.value === value)
+  return category ? category.label : ''
+}
+
+/**
+ * 🎯 获取分类说明
+ */
+const getCategoryDesc = (value: string) => {
+  const category = categories.find(c => c.value === value)
+  return category ? category.desc : ''
 }
 
 /**
@@ -606,22 +661,36 @@ onLoad(() => {
           <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
         </view>
 
-        <!-- 资源分类 -->
+        <!-- 资源分类(带智能推荐) -->
         <view class="form-item">
           <view class="form-label">
             <text>资源分类</text>
             <text class="required">*</text>
+            <text v-if="recommendedCategory" class="label-hint">
+              💡 推荐:{{ recommendedCategory }}
+            </text>
           </view>
+
+          <!-- 分类选择器 -->
           <picker
             :range="categories"
             range-key="label"
             @change="handleCategoryChange"
           >
-            <view class="picker-input">
-              {{ form.category || '请选择分类' }}
+            <view class="picker-input" :class="{ 'has-value': form.category }">
+              <text class="picker-value">
+                {{ getCategoryDisplay(form.category) || '请选择最匹配的分类' }}
+              </text>
               <text class="picker-arrow">▼</text>
             </view>
           </picker>
+
+          <!-- 已选分类说明 -->
+          <view v-if="form.category" class="category-hint">
+            <Icon name="info" :size="14" />
+            <text>{{ getCategoryDesc(form.category) }}</text>
+          </view>
+
           <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
         </view>
 
@@ -947,11 +1016,53 @@ onLoad(() => {
     border-radius: $radius-base;
     font-size: $font-size-base;
     background: $white;
+    @include flex-between;
+    cursor: pointer;
+    transition: all 0.2s;
 
-    &:focus {
-      border-color: $accent;
-      outline: none;
+    &:hover {
+      border-color: $primary;
     }
+
+    &.has-value {
+      border-color: $primary;
+      background: rgba(37, 99, 235, 0.02);
+
+      .picker-value {
+        color: $gray-900;
+      }
+    }
+
+    .picker-value {
+      flex: 1;
+      color: $gray-500;
+    }
+
+    .picker-arrow {
+      font-size: $font-size-xs;
+      color: $gray-400;
+      margin-left: $sp-2;
+    }
+  }
+
+  // 🎯 分类提示信息
+  .label-hint {
+    margin-left: $sp-2;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-normal;
+    color: $primary;
+  }
+
+  .category-hint {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    margin-top: $sp-2;
+    padding: $sp-2;
+    background: $gray-50;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    color: $gray-600;
   }
 
   .form-textarea {

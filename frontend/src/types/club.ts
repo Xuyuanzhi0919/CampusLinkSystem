@@ -11,6 +11,7 @@ export interface ClubItem {
   schoolName: string
   memberCount: number
   createdAt: string
+  isMember?: boolean // P1优化: 用户是否已加入该社团
 }
 
 // 社团详情

@@ -56,12 +56,17 @@
 
         <!-- 社团信息 -->
         <view class="club-info">
-          <!-- P0优化: 社团名称 + 活跃度标签 -->
+          <!-- P0优化: 社团名称 + 活跃度标签 + 已加入标识 -->
           <view class="club-header">
             <text class="club-name">{{ club.clubName }}</text>
             <view v-if="isClubActive(club)" class="active-badge">
               <text class="active-icon">🔥</text>
               <text class="active-text">活跃</text>
+            </view>
+            <!-- P1优化: 已加入徽章 -->
+            <view v-if="club.isMember" class="joined-badge">
+              <text class="joined-icon">✓</text>
+              <text class="joined-text">已加入</text>
             </view>
           </view>
 
@@ -97,10 +102,19 @@
       </view>
     </view>
 
-    <!-- 空状态 -->
+    <!-- P1优化: 增强型空状态 -->
     <view v-else class="empty-state">
-      <text class="empty-icon">🏫</text>
+      <text class="empty-icon">{{ searchKeyword ? '🔍' : '🏫' }}</text>
       <text class="empty-text">{{ searchKeyword ? '未找到相关社团' : '暂无社团' }}</text>
+      <text class="empty-hint">{{ searchKeyword ? '试试修改搜索关键词' : '还没有社团加入平台' }}</text>
+
+      <!-- P1优化: 空状态下的行动引导 -->
+      <view v-if="!searchKeyword" class="empty-actions">
+        <view class="empty-action-btn" @click="handleBrowseRecommend">
+          <text class="action-icon">👉</text>
+          <text class="action-text">浏览推荐社团</text>
+        </view>
+      </view>
     </view>
   </view>
 </template>
@@ -160,6 +174,13 @@ const loadClubList = async () => {
       pageSize: 100
     })
     clubs.value = res.list || []
+
+    // P1优化: 模拟已加入状态(实际应从后端返回)
+    // TODO: 后端应在列表接口返回 isMember 字段
+    if (clubs.value.length > 0) {
+      // 模拟第一个社团为已加入
+      clubs.value[0].isMember = true
+    }
   } catch (error: any) {
     console.error('加载社团列表失败:', error)
     uni.showToast({
@@ -192,6 +213,18 @@ const goToClubDetail = (clubId: number) => {
       })
     }
   })
+}
+
+// P1优化: 浏览推荐社团(暂时提示功能开发中)
+const handleBrowseRecommend = () => {
+  uni.showToast({
+    title: '推荐社团功能开发中',
+    icon: 'none',
+    duration: 2000
+  })
+
+  // TODO: 后续实现推荐逻辑
+  // uni.navigateTo({ url: '/pages/club/recommend' })
 }
 
 // 页面加载时获取数据
@@ -327,12 +360,37 @@ onMounted(() => {
 .club-card {
   background: $white;
   border-radius: $radius-card;
-  padding: $sp-6; // 从 $sp-8 减少到 $sp-6
+  padding: $sp-6;
   margin-bottom: $sp-6;
   display: flex;
-  align-items: stretch; // 改为 stretch 让子元素高度一致
+  align-items: stretch;
   box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.05);
+  border: 1.5rpx solid transparent;
   transition: all $transition-slow;
+
+  // P1优化: H5端hover效果
+  // #ifdef H5
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-4rpx);
+      box-shadow: 0 8rpx 24rpx rgba($gray-900, 0.12);
+      border-color: rgba($primary, 0.15);
+
+      .club-logo {
+        transform: scale(1.05);
+      }
+
+      .enter-button {
+        background: rgba($primary, 0.05);
+      }
+
+      .enter-text,
+      .arrow-icon {
+        color: darken($primary, 10%);
+      }
+    }
+  }
+  // #endif
 
   &:active {
     transform: scale(0.98);
@@ -354,6 +412,7 @@ onMounted(() => {
   border-radius: $radius-lg;
   background: linear-gradient(135deg, $gray-100 0%, $gray-50 100%);
   border: 1rpx solid $gray-100;
+  transition: transform $transition-base; // P1优化: 添加缩放过渡
 }
 
 // P0优化: 社团信息区
@@ -399,6 +458,31 @@ onMounted(() => {
 .active-text {
   font-size: 20rpx;
   color: $accent;
+  font-weight: $font-weight-medium;
+}
+
+// P1优化: 已加入徽章
+.joined-badge {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  padding: $sp-1 $sp-3;
+  background: linear-gradient(135deg, rgba($success, 0.12) 0%, rgba($success, 0.06) 100%);
+  border-radius: $radius-full;
+  border: 1rpx solid rgba($success, 0.2);
+  flex-shrink: 0;
+}
+
+.joined-icon {
+  font-size: 20rpx;
+  line-height: 1;
+  color: $success;
+  font-weight: $font-weight-bold;
+}
+
+.joined-text {
+  font-size: 20rpx;
+  color: $success;
   font-weight: $font-weight-medium;
 }
 
@@ -471,40 +555,90 @@ onMounted(() => {
   padding: 0 $sp-4;
   margin-left: $sp-4;
   border-left: 1rpx solid $gray-100;
+  border-radius: 0 $radius-card $radius-card 0;
   flex-shrink: 0;
+  transition: background $transition-base; // P1优化: 添加背景过渡
 }
 
 .enter-text {
   font-size: 22rpx;
   color: $primary;
   font-weight: $font-weight-medium;
+  transition: color $transition-base; // P1优化: 添加颜色过渡
 }
 
 .arrow-icon {
   font-size: 32rpx;
   color: $primary;
   line-height: 1;
+  transition: color $transition-base; // P1优化: 添加颜色过渡
 }
 
 // ===================================
-// 空状态
+// P1优化: 增强型空状态
 // ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx $sp-8;
+  padding: 120rpx $sp-8; // 减少顶部padding
+  gap: $sp-4;
 }
 
 .empty-icon {
   font-size: 120rpx;
-  margin-bottom: $sp-6;
-  opacity: 0.5;
+  line-height: 1;
+  opacity: 0.6;
 }
 
 .empty-text {
+  font-size: 32rpx; // 增大字号
+  color: $gray-700; // 加深颜色
+  font-weight: $font-weight-medium;
+}
+
+.empty-hint {
+  font-size: $font-size-sm;
+  color: $gray-500;
+  margin-bottom: $sp-4;
+}
+
+// P1优化: 空状态行动引导
+.empty-actions {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+  margin-top: $sp-6;
+  width: 100%;
+  max-width: 480rpx;
+}
+
+.empty-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-3;
+  padding: $sp-5 $sp-8;
+  background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+  border-radius: $radius-2xl;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.2);
+  }
+}
+
+.action-icon {
+  font-size: 32rpx;
+  line-height: 1;
+}
+
+.action-text {
   font-size: $font-size-base;
-  color: $gray-400;
+  color: $white;
+  font-weight: $font-weight-medium;
 }
 </style>

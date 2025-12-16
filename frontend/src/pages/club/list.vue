@@ -308,11 +308,14 @@ const getMainContentPaddingTop = () => {
 
 // 计算排序菜单的顶部位置
 const getSortMenuTop = () => {
-  // 顶部导航栏高度 + sticky-nav高度 + 间距
-  const topNavHeight = isHeaderCollapsed.value ? 48 : 60 // px
-  const stickyNavHeight = isHeaderCollapsed.value ? 0 : 40 // px
-  const spacing = 4 // px
-  return `${statusBarHeight.value + topNavHeight + stickyNavHeight + spacing}px`
+  // 正常时：顶部导航60px + 分类栏40px + 间距4px = 104px
+  // 折叠时：顶部导航48px + 分类栏隐藏(0px) + 间距4px = 52px
+  // 注意：H5环境statusBarHeight通常为0，移动端才有状态栏
+  if (isHeaderCollapsed.value) {
+    return '52px'  // 折叠状态：48 + 0 + 4
+  } else {
+    return '104px' // 正常状态：60 + 40 + 4
+  }
 }
 
 // 计算属性：筛选+排序后的社团列表
@@ -962,8 +965,8 @@ onPageScroll((e: any) => {
 // 排序菜单（使用fixed定位，移到sticky-nav外部）
 .sort-menu-content {
   position: fixed;
-  // top 通过内联样式动态设置，考虑状态栏高度
-  right: max(calc((100vw - 1280px) / 2 + 40px), 40px); // 响应式右边距
+  // top 通过内联样式动态设置
+  right: 40px; // 先使用简单的固定值测试
   z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
   border-radius: 12px;
@@ -972,18 +975,6 @@ onPageScroll((e: any) => {
   overflow: hidden;
   border: 1px solid $gray-200;
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-
-  @media (max-width: 1600px) {
-    right: max(calc((100vw - 1280px) / 2 + 64px), 64px);
-  }
-
-  @media (max-width: 1440px) {
-    right: max(calc((100vw - 1280px) / 2 + 48px), 48px);
-  }
-
-  @media (max-width: 1200px) {
-    right: max(calc((100vw - 1280px) / 2 + 32px), 32px);
-  }
 
   @include mobile {
     right: 16px;

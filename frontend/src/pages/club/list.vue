@@ -895,10 +895,16 @@ onPageScroll((e: any) => {
   align-items: center;
   gap: 16rpx;
   flex-shrink: 0;
+
+  // 移动端隐藏
+  @include mobile {
+    display: none;
+  }
 }
 
 .sort-dropdown-wrapper {
   position: relative;
+  z-index: 102; // 确保下拉菜单在遮罩层之上
 }
 
 .sort-dropdown {
@@ -949,7 +955,7 @@ onPageScroll((e: any) => {
   border-radius: 16rpx;
   box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
   overflow: hidden;
-  z-index: 101;
+  z-index: 102; // 必须高于遮罩层(100)，确保菜单可以被点击
 }
 
 .sort-menu-item {

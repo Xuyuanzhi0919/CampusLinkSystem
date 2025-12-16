@@ -26,7 +26,7 @@
             :class="{ active: currentCategory === cat.value }"
             @click="handleCategoryChange(cat.value)"
           >
-            <text class="tab-icon">{{ cat.icon }}</text>
+            <Icon :name="cat.iconName" :size="14" class="tab-icon" />
             <text class="tab-label">{{ cat.label }}</text>
             <view v-if="cat.count && cat.count > 0" class="tab-badge">{{ cat.count }}</view>
           </view>
@@ -210,13 +210,13 @@ const currentSort = ref<'recommended' | 'member_count' | 'latest'>('recommended'
 
 // MVP-1: 分类选项
 const categories = ref([
-  { value: 'all', label: '全部', icon: '📋', count: 0 },
-  { value: '技术', label: '技术', icon: '💻', count: 0 },
-  { value: '学习', label: '学习', icon: '📚', count: 0 },
-  { value: '体育', label: '体育', icon: '⚽', count: 0 },
-  { value: '艺术', label: '艺术', icon: '🎨', count: 0 },
-  { value: '公益', label: '公益', icon: '❤️', count: 0 },
-  { value: '兴趣', label: '兴趣', icon: '🎮', count: 0 }
+  { value: 'all', label: '全部', iconName: 'grid', count: 0 },
+  { value: '技术', label: '技术', iconName: 'cpu', count: 0 },
+  { value: '学习', label: '学习', iconName: 'book-open', count: 0 },
+  { value: '体育', label: '体育', iconName: 'heart-pulse', count: 0 },
+  { value: '艺术', label: '艺术', iconName: 'palette', count: 0 },
+  { value: '公益', label: '公益', iconName: 'heart', count: 0 },
+  { value: '兴趣', label: '兴趣', iconName: 'sparkles', count: 0 }
 ])
 
 // MVP-2: 排序选项
@@ -545,14 +545,21 @@ onMounted(() => {
 }
 
 .tab-icon {
-  font-size: 28rpx;
-  line-height: 1;
+  color: $gray-600;
+  flex-shrink: 0;
+  transition: color $transition-base;
 }
 
 .tab-label {
   font-size: $font-size-sm;
   color: $gray-700;
   font-weight: $font-weight-medium;
+  transition: color $transition-base;
+}
+
+// 选中状态时图标变色
+.tab-item.active .tab-icon {
+  color: $primary;
 }
 
 .tab-badge {

@@ -947,40 +947,40 @@ onPageScroll((e: any) => {
 // 排序菜单（使用fixed定位，移到sticky-nav外部）
 .sort-menu-content {
   position: fixed;
-  top: 208rpx; // 120rpx(top-nav) + 80rpx(sticky-nav) + 8rpx
-  right: max(calc((100vw - 1280px) / 2 + 80rpx), 80rpx); // 响应式右边距
+  top: 104px; // 60px(top-nav) + 40px(sticky-nav) + 4px
+  right: max(calc((100vw - 1280px) / 2 + 40px), 40px); // 响应式右边距
   z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
-  border-radius: 24rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
-  min-width: 280rpx;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  min-width: 140px;
   overflow: hidden;
-  border: 2rpx solid $gray-200;
-  transition: top $transition-base;
+  border: 1px solid $gray-200;
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   // 当顶部导航折叠时，菜单位置上移（因为sticky-nav被隐藏了）
   &.header-collapsed {
-    top: 104rpx; // 96rpx(折叠后top-nav) + 8rpx
+    top: 52px; // 48px(折叠后top-nav) + 4px
   }
 
   @media (max-width: 1600px) {
-    right: max(calc((100vw - 1280px) / 2 + 64rpx), 64rpx);
+    right: max(calc((100vw - 1280px) / 2 + 64px), 64px);
   }
 
   @media (max-width: 1440px) {
-    right: max(calc((100vw - 1280px) / 2 + 48rpx), 48rpx);
+    right: max(calc((100vw - 1280px) / 2 + 48px), 48px);
   }
 
   @media (max-width: 1200px) {
-    right: max(calc((100vw - 1280px) / 2 + 32rpx), 32rpx);
+    right: max(calc((100vw - 1280px) / 2 + 32px), 32px);
   }
 
   @include mobile {
-    right: 32rpx;
-    top: 200rpx; // 112rpx + 80rpx + 8rpx
+    right: 16px;
+    top: 100px; // 56px + 40px + 4px
 
     &.header-collapsed {
-      top: 104rpx; // 96rpx + 8rpx
+      top: 52px; // 48px + 4px
     }
   }
 }
@@ -989,12 +989,12 @@ onPageScroll((e: any) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 24rpx 32rpx;
+  padding: 12px 16px;
   cursor: pointer;
-  transition: background $transition-base;
+  transition: background 0.2s;
 
   .sort-item-label {
-    font-size: 28rpx;
+    font-size: 14px;
     color: $gray-700;
   }
 
@@ -1007,7 +1007,7 @@ onPageScroll((e: any) => {
 
     .sort-item-label {
       color: $primary;
-      font-weight: $font-weight-semibold;
+      font-weight: 600;
     }
   }
 }

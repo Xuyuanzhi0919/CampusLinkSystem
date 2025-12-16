@@ -172,7 +172,7 @@
               <!-- 简介(最多2行) -->
               <text class="club-desc">{{ club.description || '暂无简介' }}</text>
 
-              <!-- P0优化: 统计数据 + 分类标签 -->
+              <!-- P0优化: 统计数据（双指标：成员数 + 活动数） + 分类标签 -->
               <view class="club-meta">
                 <view class="club-stats">
                   <view class="stat-item">
@@ -181,8 +181,8 @@
                   </view>
                   <text class="stat-divider">·</text>
                   <view class="stat-item">
-                    <text class="stat-icon">🏫</text>
-                    <text class="stat-text">{{ club.schoolName }}</text>
+                    <text class="stat-icon">🏠</text>
+                    <text class="stat-text">{{ club.activityCount || 0 }} 活动</text>
                   </view>
                 </view>
 
@@ -408,13 +408,22 @@ const loadClubList = async () => {
     clubs.value = res.list || []
 
     // MVP-3/MVP-4: 模拟社团状态(实际应从后端返回)
-    // TODO: 后端应在列表接口返回 isMember 和 isPending 字段
+    // TODO: 后端应在列表接口返回以下字段：
+    // 1. isMember: boolean - 用户是否已加入该社团
+    // 2. isPending: boolean - 用户是否有待审核的加入申请
+    // 3. activityCount: number - 社团历史活动总数（用于活跃度判断）
     if (clubs.value.length >= 3) {
       clubs.value[0].isMember = true  // 第1个: 已加入
+      clubs.value[0].activityCount = 12 // 模拟活动数
       clubs.value[1].isPending = true // 第2个: 申请中
+      clubs.value[1].activityCount = 5 // 模拟活动数
       // 第3个及以后: 未加入(默认状态)
+      for (let i = 2; i < clubs.value.length; i++) {
+        clubs.value[i].activityCount = Math.floor(Math.random() * 20) // 模拟随机活动数 0-19
+      }
     } else if (clubs.value.length > 0) {
       clubs.value[0].isMember = true
+      clubs.value[0].activityCount = 8
     }
 
     // MVP-1: 更新分类计数
@@ -1392,7 +1401,7 @@ onPageScroll((e: any) => {
   background: $white;
   border-radius: $radius-card;
   padding: $sp-6;
-  margin-bottom: $sp-6;
+  margin-bottom: $sp-8; // 从 $sp-6 (24rpx/12px) 提升到 $sp-8 (32rpx/16px)
   display: flex;
   align-items: stretch;
   box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.05);
@@ -1516,13 +1525,14 @@ onPageScroll((e: any) => {
   white-space: nowrap;
 }
 
-// P0优化: 简介(2行截断)
+// P0优化: 简介(2行截断，优化可读性)
 .club-desc {
   font-size: $font-size-sm;
   color: $gray-600; // 从 $gray-500 加深
-  line-height: 1.5;
+  line-height: 1.6; // 从 1.5 提升到 1.6，更有呼吸感
   margin-bottom: $sp-3;
   @include text-ellipsis(2);
+  word-break: break-word; // 防止英文单词溢出
 }
 
 // P0优化: 元信息区(统计 + 标签)
@@ -1575,37 +1585,39 @@ onPageScroll((e: any) => {
   font-weight: $font-weight-medium;
 }
 
-// MVP-4: 操作按钮(加入/申请中/已加入) - 降权设计
+// MVP-4: 操作按钮(加入/申请中/已加入) - 降权设计 v2
 .action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 100rpx; // 从 120rpx 减小
-  padding: $sp-2 $sp-4; // 从 $sp-3 $sp-5 减小
+  min-width: 88rpx; // 再减小一点，更克制
+  padding: $sp-2 $sp-4; // 保持小尺寸
   margin-left: $sp-4;
   border-radius: $radius-2xl;
   flex-shrink: 0;
   transition: all $transition-base;
   font-weight: $font-weight-medium;
 
-  // 未加入状态(加入按钮) - 降低饱和度
+  // 未加入状态(加入按钮) - 改为描边风格（ghost）
   &.status-join {
-    background: $primary; // 改为纯色,去掉渐变
-    box-shadow: none; // 移除阴影,减少侵占感
+    background: transparent; // 透明背景
+    border: 1.5rpx solid rgba($primary, 0.4); // 描边，降低不透明度
+    box-shadow: none; // 移除阴影
 
     .action-text {
-      color: $white;
-      font-size: 24rpx; // 从 $font-size-sm(26rpx) 减小
+      color: $primary; // 文字使用主色
+      font-size: 24rpx;
     }
 
     &:hover {
-      background: #1d4ed8; // $primary 加深 5%
-      box-shadow: 0 2rpx 6rpx rgba($primary, 0.2); // hover时才出现阴影
+      background: rgba($primary, 0.05); // hover时轻微背景色
+      border-color: rgba($primary, 0.6); // 描边加深
     }
 
     &:active {
-      transform: scale(0.96); // 从 0.95 改为 0.96,更轻微
-      background: #1e3a8a; // $primary 加深 8%
+      transform: scale(0.96);
+      background: rgba($primary, 0.08);
+      border-color: $primary;
     }
   }
 

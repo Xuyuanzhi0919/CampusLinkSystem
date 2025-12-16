@@ -12,6 +12,7 @@ export interface ClubItem {
   memberCount: number
   createdAt: string
   isMember?: boolean // P1优化: 用户是否已加入该社团
+  isPending?: boolean // MVP-4: 加入申请是否审核中
 }
 
 // 社团详情

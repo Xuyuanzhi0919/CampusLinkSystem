@@ -15,12 +15,86 @@
       </view>
     </view>
 
-    <!-- 结果信息 + 引导区 -->
+    <!-- MVP-1: 分类筛选Tab -->
+    <view class="category-tabs">
+      <scroll-view scroll-x class="tabs-scroll">
+        <view class="tabs-container">
+          <view
+            v-for="cat in categories"
+            :key="cat.value"
+            class="tab-item"
+            :class="{ active: currentCategory === cat.value }"
+            @click="handleCategoryChange(cat.value)"
+          >
+            <text class="tab-icon">{{ cat.icon }}</text>
+            <text class="tab-label">{{ cat.label }}</text>
+            <view v-if="cat.count && cat.count > 0" class="tab-badge">{{ cat.count }}</view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- MVP-3: 已加入社团置顶区 -->
+    <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
+      <view class="section-header">
+        <text class="section-title">我加入的社团</text>
+        <text class="section-count">{{ joinedClubs.length }}</text>
+      </view>
+      <scroll-view scroll-x class="joined-clubs-scroll">
+        <view class="joined-clubs-container">
+          <view
+            v-for="club in joinedClubs.slice(0, 3)"
+            :key="club.clubId"
+            class="joined-club-item"
+            @click="goToClubDetail(club.clubId)"
+          >
+            <image
+              class="joined-club-logo"
+              :src="club.logoUrl || '/static/default-club.png'"
+              mode="aspectFill"
+            />
+            <text class="joined-club-name">{{ club.clubName }}</text>
+            <view class="joined-club-enter">
+              <text class="enter-arrow">›</text>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <!-- 结果信息 + 排序 -->
     <view class="result-info" v-if="!loading">
       <text class="result-count">
-        {{ searchKeyword ? `找到 ${filteredClubs.length} 个社团` : `共 ${clubs.length} 个社团` }}
+        {{ searchKeyword ? `找到 ${filteredClubs.length} 个社团` : `${currentCategoryLabel} ${filteredClubs.length} 个社团` }}
       </text>
-      <text v-if="userJoinedCount > 0" class="joined-count"> · 你已加入 {{ userJoinedCount }} 个</text>
+      <text v-if="userJoinedCount > 0 && !searchKeyword" class="joined-count"> · 你已加入 {{ userJoinedCount }} 个</text>
+
+      <!-- MVP-2: 排序下拉 -->
+      <view class="sort-dropdown" @click="toggleSortMenu">
+        <Icon name="arrow-down-up" :size="14" :stroke-width="1.5" class="sort-icon" />
+        <text class="sort-label">{{ currentSortLabel }}</text>
+        <Icon name="chevron-down" :size="14" :stroke-width="1.5" class="dropdown-icon" />
+      </view>
+    </view>
+
+    <!-- 排序菜单 -->
+    <view v-if="showSortMenu" class="sort-menu-overlay" @click="toggleSortMenu">
+      <view class="sort-menu-content" @click.stop>
+        <view class="sort-menu-header">
+          <text class="menu-title">排序方式</text>
+          <Icon name="x" :size="18" :stroke-width="1.5" class="close-icon" @click="toggleSortMenu" />
+        </view>
+        <view
+          v-for="option in sortOptions"
+          :key="option.value"
+          class="sort-menu-item"
+          :class="{ active: currentSort === option.value }"
+          @click="handleSortChange(option.value)"
+        >
+          <text class="sort-item-label">{{ option.label }}</text>
+          <Icon v-if="currentSort === option.value" name="check" :size="16" :stroke-width="2" class="check-icon" />
+        </view>
+      </view>
     </view>
 
     <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
@@ -56,17 +130,12 @@
 
         <!-- 社团信息 -->
         <view class="club-info">
-          <!-- P0优化: 社团名称 + 活跃度标签 + 已加入标识 -->
+          <!-- P0优化: 社团名称 + 活跃度标签 -->
           <view class="club-header">
             <text class="club-name">{{ club.clubName }}</text>
             <view v-if="isClubActive(club)" class="active-badge">
               <text class="active-icon">🔥</text>
               <text class="active-text">活跃</text>
-            </view>
-            <!-- P1优化: 已加入徽章 -->
-            <view v-if="club.isMember" class="joined-badge">
-              <text class="joined-icon">✓</text>
-              <text class="joined-text">已加入</text>
             </view>
           </view>
 
@@ -94,10 +163,11 @@
           </view>
         </view>
 
-        <!-- P0优化: 进入按钮(替代箭头) -->
-        <view class="enter-button">
-          <text class="enter-text">进入</text>
-          <text class="arrow-icon">›</text>
+        <!-- MVP-4: 根据状态显示不同的按钮 -->
+        <view class="action-button" :class="getClubStatusClass(club)" @click.stop="handleClubAction(club)">
+          <text v-if="club.isMember" class="action-text joined">已加入</text>
+          <text v-else-if="club.isPending" class="action-text pending">申请中</text>
+          <text v-else class="action-text join">加入</text>
         </view>
       </view>
     </view>
@@ -133,16 +203,86 @@ const searchKeyword = ref('')
 // P0优化: 用户已加入的社团数量(模拟数据,实际应从用户信息获取)
 const userJoinedCount = ref(1)
 
-// 计算属性：筛选后的社团列表
+// MVP-1: 分类筛选状态
+const currentCategory = ref<string>('all')
+const showSortMenu = ref(false)
+const currentSort = ref<'recommended' | 'member_count' | 'latest'>('recommended')
+
+// MVP-1: 分类选项
+const categories = ref([
+  { value: 'all', label: '全部', icon: '📋', count: 0 },
+  { value: '技术', label: '技术', icon: '💻', count: 0 },
+  { value: '学习', label: '学习', icon: '📚', count: 0 },
+  { value: '体育', label: '体育', icon: '⚽', count: 0 },
+  { value: '艺术', label: '艺术', icon: '🎨', count: 0 },
+  { value: '公益', label: '公益', icon: '❤️', count: 0 },
+  { value: '兴趣', label: '兴趣', icon: '🎮', count: 0 }
+])
+
+// MVP-2: 排序选项
+const sortOptions = ref([
+  { value: 'recommended', label: '推荐排序' },
+  { value: 'member_count', label: '成员最多' },
+  { value: 'latest', label: '最新创建' }
+])
+
+// 当前分类标签
+const currentCategoryLabel = computed(() => {
+  if (currentCategory.value === 'all') return '共'
+  return categories.value.find(c => c.value === currentCategory.value)?.label || '共'
+})
+
+// 当前排序标签
+const currentSortLabel = computed(() => {
+  return sortOptions.value.find(o => o.value === currentSort.value)?.label || '推荐排序'
+})
+
+// MVP-3: 已加入的社团列表
+const joinedClubs = computed(() => {
+  return clubs.value.filter(club => club.isMember === true)
+})
+
+// 计算属性：筛选+排序后的社团列表
 const filteredClubs = computed(() => {
-  if (!searchKeyword.value.trim()) {
-    return clubs.value
+  let result = clubs.value
+
+  // 1. 搜索筛选
+  if (searchKeyword.value.trim()) {
+    const keyword = searchKeyword.value.toLowerCase()
+    result = result.filter(club =>
+      club.clubName.toLowerCase().includes(keyword) ||
+      club.description?.toLowerCase().includes(keyword)
+    )
   }
-  const keyword = searchKeyword.value.toLowerCase()
-  return clubs.value.filter(club =>
-    club.clubName.toLowerCase().includes(keyword) ||
-    club.description?.toLowerCase().includes(keyword)
-  )
+
+  // 2. 分类筛选
+  if (currentCategory.value !== 'all') {
+    result = result.filter(club =>
+      getClubCategory(club) === currentCategory.value
+    )
+  }
+
+  // 3. 排序
+  result = [...result] // 创建副本避免直接修改
+  switch (currentSort.value) {
+    case 'member_count':
+      result.sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
+      break
+    case 'latest':
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      break
+    case 'recommended':
+    default:
+      // 推荐排序: 活跃度(成员数>=10) + 成员数降序
+      result.sort((a, b) => {
+        const aActive = (a.memberCount || 0) >= 10 ? 1 : 0
+        const bActive = (b.memberCount || 0) >= 10 ? 1 : 0
+        if (aActive !== bActive) return bActive - aActive
+        return (b.memberCount || 0) - (a.memberCount || 0)
+      })
+  }
+
+  return result
 })
 
 // P0优化: 判断社团是否活跃
@@ -175,12 +315,18 @@ const loadClubList = async () => {
     })
     clubs.value = res.list || []
 
-    // P1优化: 模拟已加入状态(实际应从后端返回)
-    // TODO: 后端应在列表接口返回 isMember 字段
-    if (clubs.value.length > 0) {
-      // 模拟第一个社团为已加入
+    // MVP-3/MVP-4: 模拟社团状态(实际应从后端返回)
+    // TODO: 后端应在列表接口返回 isMember 和 isPending 字段
+    if (clubs.value.length >= 3) {
+      clubs.value[0].isMember = true  // 第1个: 已加入
+      clubs.value[1].isPending = true // 第2个: 申请中
+      // 第3个及以后: 未加入(默认状态)
+    } else if (clubs.value.length > 0) {
       clubs.value[0].isMember = true
     }
+
+    // MVP-1: 更新分类计数
+    updateCategoryCounts()
   } catch (error: any) {
     console.error('加载社团列表失败:', error)
     uni.showToast({
@@ -215,6 +361,21 @@ const goToClubDetail = (clubId: number) => {
   })
 }
 
+// MVP-1: 切换分类
+const handleCategoryChange = (category: string) => {
+  currentCategory.value = category
+}
+
+// MVP-2: 切换排序
+const toggleSortMenu = () => {
+  showSortMenu.value = !showSortMenu.value
+}
+
+const handleSortChange = (sort: 'recommended' | 'member_count' | 'latest') => {
+  currentSort.value = sort
+  showSortMenu.value = false
+}
+
 // P1优化: 浏览推荐社团(暂时提示功能开发中)
 const handleBrowseRecommend = () => {
   uni.showToast({
@@ -225,6 +386,67 @@ const handleBrowseRecommend = () => {
 
   // TODO: 后续实现推荐逻辑
   // uni.navigateTo({ url: '/pages/club/recommend' })
+}
+
+// MVP-1: 更新分类计数
+const updateCategoryCounts = () => {
+  categories.value.forEach(cat => {
+    if (cat.value === 'all') {
+      cat.count = clubs.value.length
+    } else {
+      cat.count = clubs.value.filter(club => getClubCategory(club) === cat.value).length
+    }
+  })
+}
+
+// MVP-4: 获取社团状态类名
+const getClubStatusClass = (club: ClubItem): string => {
+  if (club.isMember) return 'status-joined'
+  if (club.isPending) return 'status-pending'
+  return 'status-join'
+}
+
+// MVP-4: 处理社团操作(加入/取消加入/查看申请状态)
+const handleClubAction = (club: ClubItem) => {
+  if (club.isMember) {
+    // 已加入,直接进入社团详情
+    goToClubDetail(club.clubId)
+  } else if (club.isPending) {
+    // 申请中,查看申请状态或取消申请
+    uni.showModal({
+      title: '申请进行中',
+      content: '你的加入申请正在审核中,是否取消申请?',
+      confirmText: '取消申请',
+      cancelText: '继续等待',
+      success: (res) => {
+        if (res.confirm) {
+          // TODO: 调用取消申请接口
+          uni.showToast({
+            title: '申请已取消',
+            icon: 'success'
+          })
+          club.isPending = false
+        }
+      }
+    })
+  } else {
+    // 未加入,发起加入申请
+    uni.showModal({
+      title: '加入社团',
+      content: `确定要加入"${club.clubName}"吗?`,
+      confirmText: '加入',
+      success: (res) => {
+        if (res.confirm) {
+          // TODO: 调用加入社团接口
+          uni.showToast({
+            title: '申请已提交',
+            icon: 'success'
+          })
+          club.isPending = true
+        }
+      }
+    })
+  }
 }
 
 // 页面加载时获取数据
@@ -277,12 +499,189 @@ onMounted(() => {
 }
 
 // ===================================
-// 结果信息
+// MVP-1: 分类筛选Tab
+// ===================================
+.category-tabs {
+  background: $white;
+  padding: $sp-4 0 $sp-5;
+  margin-bottom: $sp-2;
+}
+
+.tabs-scroll {
+  white-space: nowrap;
+}
+
+.tabs-container {
+  display: inline-flex;
+  padding: 0 $sp-6;
+  gap: $sp-4;
+}
+
+.tab-item {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  background: $gray-50;
+  border-radius: $radius-2xl;
+  border: 1.5rpx solid transparent;
+  transition: all $transition-base;
+  position: relative;
+  flex-shrink: 0;
+
+  &.active {
+    background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($primary, 0.05) 100%);
+    border-color: rgba($primary, 0.3);
+
+    .tab-label {
+      color: $primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.tab-icon {
+  font-size: 28rpx;
+  line-height: 1;
+}
+
+.tab-label {
+  font-size: $font-size-sm;
+  color: $gray-700;
+  font-weight: $font-weight-medium;
+}
+
+.tab-badge {
+  font-size: 20rpx;
+  color: $gray-500;
+  background: $gray-100;
+  padding: 0rpx 8rpx;
+  border-radius: $radius-full;
+  min-width: 32rpx;
+  height: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// ===================================
+// MVP-3: 已加入社团置顶区
+// ===================================
+.joined-clubs-section {
+  background: linear-gradient(135deg, rgba($primary, 0.03) 0%, rgba($primary, 0.01) 100%);
+  padding: $sp-6 0;
+  margin-bottom: $sp-2;
+  border-top: 1rpx solid rgba($primary, 0.08);
+  border-bottom: 1rpx solid rgba($primary, 0.08);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: 0 $sp-8 $sp-4;
+}
+
+.section-title {
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-semibold;
+}
+
+.section-count {
+  font-size: 22rpx;
+  color: $white;
+  background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+  padding: $sp-1 $sp-3;
+  border-radius: $radius-full;
+  min-width: 32rpx;
+  height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: $font-weight-medium;
+}
+
+.joined-clubs-scroll {
+  white-space: nowrap;
+}
+
+.joined-clubs-container {
+  display: inline-flex;
+  padding: 0 $sp-8;
+  gap: $sp-4;
+}
+
+.joined-club-item {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-4;
+  background: $white;
+  border-radius: $radius-lg;
+  border: 1.5rpx solid rgba($primary, 0.1);
+  width: 160rpx;
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.04);
+  transition: all $transition-base;
+  position: relative;
+
+  &:active {
+    transform: scale(0.95);
+    box-shadow: 0 1rpx 4rpx rgba($gray-900, 0.03);
+  }
+}
+
+.joined-club-logo {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-lg;
+  background: linear-gradient(135deg, $gray-100 0%, $gray-50 100%);
+  border: 1rpx solid $gray-100;
+}
+
+.joined-club-name {
+  font-size: 24rpx;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
+  text-align: center;
+  @include text-ellipsis(1);
+  width: 100%;
+}
+
+.joined-club-enter {
+  position: absolute;
+  top: $sp-2;
+  right: $sp-2;
+  width: 32rpx;
+  height: 32rpx;
+  background: rgba($primary, 0.1);
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.enter-arrow {
+  font-size: 28rpx;
+  color: $primary;
+  line-height: 1;
+  font-weight: $font-weight-bold;
+}
+
+// ===================================
+// 结果信息 + 排序
 // ===================================
 .result-info {
   padding: $sp-4 $sp-8;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
 .result-count {
@@ -295,6 +694,107 @@ onMounted(() => {
   font-size: $font-size-base;
   color: $primary;
   font-weight: $font-weight-medium;
+}
+
+// MVP-2: 排序下拉
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  background: $gray-50;
+  border-radius: $radius-lg;
+  border: 1rpx solid $gray-200;
+  transition: all $transition-base;
+
+  &:active {
+    background: $gray-100;
+  }
+}
+
+.sort-icon {
+  color: $gray-600;
+}
+
+.sort-label {
+  font-size: $font-size-sm;
+  color: $gray-700;
+  font-weight: $font-weight-medium;
+}
+
+.dropdown-icon {
+  color: $gray-500;
+}
+
+// MVP-2: 排序菜单
+.sort-menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+}
+
+.sort-menu-content {
+  background: $white;
+  border-radius: $radius-2xl $radius-2xl 0 0;
+  padding: $sp-6 0 calc($sp-6 + env(safe-area-inset-bottom));
+  width: 100%;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.sort-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 $sp-8 $sp-5;
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.menu-title {
+  font-size: 32rpx;
+  color: $gray-900;
+  font-weight: $font-weight-semibold;
+}
+
+.close-icon {
+  color: $gray-500;
+  padding: $sp-2;
+}
+
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-5 $sp-8;
+  transition: background $transition-base;
+
+  &:active {
+    background: $gray-50;
+  }
+
+  &.active {
+    background: rgba($primary, 0.05);
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.sort-item-label {
+  font-size: $font-size-base;
+  color: $gray-700;
+}
+
+.check-icon {
+  color: $primary;
 }
 
 // ===================================
@@ -461,31 +961,6 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
-// P1优化: 已加入徽章
-.joined-badge {
-  display: flex;
-  align-items: center;
-  gap: $sp-1;
-  padding: $sp-1 $sp-3;
-  background: linear-gradient(135deg, rgba($success, 0.12) 0%, rgba($success, 0.06) 100%);
-  border-radius: $radius-full;
-  border: 1rpx solid rgba($success, 0.2);
-  flex-shrink: 0;
-}
-
-.joined-icon {
-  font-size: 20rpx;
-  line-height: 1;
-  color: $success;
-  font-weight: $font-weight-bold;
-}
-
-.joined-text {
-  font-size: 20rpx;
-  color: $success;
-  font-weight: $font-weight-medium;
-}
-
 // P0优化: 简介(2行截断)
 .club-desc {
   font-size: $font-size-sm;
@@ -545,33 +1020,68 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
-// P0优化: 进入按钮(替代单纯箭头)
-.enter-button {
+// MVP-4: 操作按钮(加入/申请中/已加入)
+.action-button {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: $sp-1;
-  padding: 0 $sp-4;
+  min-width: 120rpx;
+  padding: $sp-3 $sp-5;
   margin-left: $sp-4;
-  border-left: 1rpx solid $gray-100;
-  border-radius: 0 $radius-card $radius-card 0;
+  border-radius: $radius-2xl;
   flex-shrink: 0;
-  transition: background $transition-base; // P1优化: 添加背景过渡
-}
-
-.enter-text {
-  font-size: 22rpx;
-  color: $primary;
+  transition: all $transition-base;
   font-weight: $font-weight-medium;
-  transition: color $transition-base; // P1优化: 添加颜色过渡
+
+  // 未加入状态(加入按钮)
+  &.status-join {
+    background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.25);
+
+    .action-text {
+      color: $white;
+      font-size: $font-size-sm;
+    }
+
+    &:active {
+      transform: scale(0.95);
+      box-shadow: 0 1rpx 4rpx rgba($primary, 0.2);
+    }
+  }
+
+  // 申请中状态
+  &.status-pending {
+    background: linear-gradient(135deg, rgba($warning, 0.15) 0%, rgba($warning, 0.08) 100%);
+    border: 1.5rpx solid rgba($warning, 0.3);
+
+    .action-text {
+      color: $warning;
+      font-size: $font-size-sm;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  // 已加入状态
+  &.status-joined {
+    background: linear-gradient(135deg, rgba($success, 0.15) 0%, rgba($success, 0.08) 100%);
+    border: 1.5rpx solid rgba($success, 0.3);
+
+    .action-text {
+      color: $success;
+      font-size: $font-size-sm;
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
 }
 
-.arrow-icon {
-  font-size: 32rpx;
-  color: $primary;
-  line-height: 1;
-  transition: color $transition-base; // P1优化: 添加颜色过渡
+.action-text {
+  font-weight: $font-weight-medium;
 }
 
 // ===================================

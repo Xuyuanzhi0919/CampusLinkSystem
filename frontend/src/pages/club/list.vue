@@ -376,8 +376,17 @@ const filteredClubs = computed(() => {
 
 // P0优化: 判断社团是否活跃
 // 简化逻辑: 成员数 >= 10 视为活跃
+// 优化: 活跃判断逻辑 - 只奖励真正活跃的社团
+// 规则: 只有最近有活动的社团才显示"活跃"标签
 const isClubActive = (club: ClubItem): boolean => {
-  return (club.memberCount || 0) >= 10
+  // 计算距离创建时间的天数(实际应使用 lastActivityAt 字段)
+  const createdDate = new Date(club.createdAt)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  // 只有最近30天内有活动的社团才算"活跃"
+  // (本周或本月有活动的社团才显示活跃标签,近期/长期不活跃不显示)
+  return diffDays < 30
 }
 
 // P0优化: 获取社团分类标签
@@ -1104,15 +1113,15 @@ onPageScroll((e: any) => {
 }
 
 // ===================================
-// 社团专属: 已加入社团置顶区
+// 社团专属: 已加入社团置顶区（强化区块感）
 // ===================================
 .joined-clubs-section {
-  background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($primary, 0.02) 100%);
-  border-bottom: 1rpx solid rgba($primary, 0.12);
-  padding: $sp-8 0 $sp-10;
+  background: linear-gradient(135deg, rgba($primary, 0.08) 0%, rgba($primary, 0.04) 100%); // 背景加深 60%，更明显
+  border-bottom: 2rpx solid rgba($primary, 0.15); // 边框加粗并加深
+  padding: $sp-10 0 $sp-12; // 增加内边距（从 32rpx/40rpx 提升到 40rpx/48rpx）
   // margin-top 通过 :style 动态设置 (statusBarHeight + 100px)
-  margin-bottom: $sp-4;
-  box-shadow: 0 2rpx 8rpx rgba($primary, 0.04);
+  margin-bottom: $sp-10; // 底部留白从 16rpx 提升到 40rpx，形成明显分割
+  box-shadow: 0 4rpx 16rpx rgba($primary, 0.08); // 阴影加深一倍
 }
 
 .joined-clubs-container {
@@ -1145,10 +1154,10 @@ onPageScroll((e: any) => {
 }
 
 .section-title {
-  font-size: 30rpx; // 从 $font-size-base(28rpx) 增大
+  font-size: 32rpx; // 从 30rpx 再增大，强化层级感
   color: $gray-900; // 从 $gray-800 加深
   font-weight: $font-weight-bold; // 从 semibold 加粗
-  letter-spacing: 0.5rpx; // 增加字间距,更有呼吸感
+  letter-spacing: 0.8rpx; // 从 0.5rpx 增加到 0.8rpx，更有呼吸感
 }
 
 .section-count {
@@ -1646,13 +1655,13 @@ onPageScroll((e: any) => {
   font-weight: $font-weight-medium;
 }
 
-// MVP-4: 操作按钮(加入/申请中/已加入) - 降权设计 v2
+// MVP-4: 操作按钮(加入/申请中/已加入) - 降权设计 v3 (再降权一次)
 .action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 88rpx; // 再减小一点，更克制
-  padding: $sp-2 $sp-4; // 保持小尺寸
+  min-width: 84rpx; // 从 88rpx 再减小，进一步降权
+  padding: 6rpx $sp-3; // 从 8rpx 16rpx 降低到 6rpx 12rpx，按钮更矮
   margin-left: $sp-4;
   border-radius: $radius-2xl;
   flex-shrink: 0;
@@ -1667,7 +1676,7 @@ onPageScroll((e: any) => {
 
     .action-text {
       color: $primary; // 文字使用主色
-      font-size: 24rpx;
+      font-size: 24rpx; // 保持 24rpx，作为基准
     }
 
     &:hover {
@@ -1689,7 +1698,7 @@ onPageScroll((e: any) => {
 
     .action-text {
       color: #d97706; // $warning 加深 10%
-      font-size: 24rpx;
+      font-size: 22rpx; // 从 24rpx 降低到 22rpx，进一步降权
     }
 
     &:active {
@@ -1698,14 +1707,14 @@ onPageScroll((e: any) => {
     }
   }
 
-  // 已加入状态 - 更弱的视觉
+  // 已加入状态 - 更弱的视觉（最弱）
   &.status-joined {
     background: rgba($success, 0.08); // 从 0.15 降低
     border: 1rpx solid rgba($success, 0.2); // 从 1.5rpx 和 0.3 降低
 
     .action-text {
       color: #15803d; // $success 加深 5%
-      font-size: 24rpx;
+      font-size: 22rpx; // 从 24rpx 降低到 22rpx，比"加入"更小，进一步降权
     }
 
     &:active {

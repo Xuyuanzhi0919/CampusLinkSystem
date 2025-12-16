@@ -1,46 +1,87 @@
 <template>
   <view class="club-list-page">
-    <!-- ========== 固定顶部控制区(全宽) ========== -->
-    <view class="top-control-area">
-      <!-- 搜索栏 -->
-      <view class="search-bar">
-        <view class="search-bar-container">
-          <view class="search-input">
+    <!-- ========== 固定顶部导航区 ========== -->
+    <view class="top-nav-fixed">
+      <view class="top-nav-container">
+        <!-- Logo -->
+        <view class="brand-logo">
+          <Icon name="users" :size="20" class="logo-icon" />
+          <text class="logo-text">社团广场</text>
+        </view>
+
+        <!-- 搜索栏 -->
+        <view class="search-wrapper">
+          <view class="compact-search-bar">
             <Icon name="search" :size="16" class="search-icon" />
             <input
-              class="input"
-              type="text"
               v-model="searchKeyword"
-              placeholder="搜索社团名称"
+              class="search-input"
+              placeholder="搜索社团名称..."
+              confirm-type="search"
               @confirm="handleSearch"
             />
-            <Icon v-if="searchKeyword" name="x" :size="14" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
+            <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
+              <Icon name="x" :size="14" />
+            </view>
           </view>
         </view>
-      </view>
 
-      <!-- MVP-1: 分类筛选Tab -->
-      <view class="category-tabs">
-        <view class="category-tabs-container">
-          <scroll-view scroll-x class="tabs-scroll">
-            <view class="tabs-wrapper">
+        <!-- 创建社团按钮 -->
+        <view class="create-button" @click="handleCreateClub">
+          <Icon name="plus-circle" :size="16" class="create-icon" />
+          <text class="create-text">创建社团</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== Sticky 导航区(分类+排序) ========== -->
+    <view class="sticky-nav">
+      <view class="sticky-nav-container">
+        <!-- 左侧: 分类Tabs -->
+        <view class="category-tabs">
           <view
             v-for="cat in categories"
             :key="cat.value"
-            class="tab-item"
-            :class="{ active: currentCategory === cat.value }"
+            class="category-tab"
+            :class="{ 'category-tab--active': currentCategory === cat.value }"
             @click="handleCategoryChange(cat.value)"
           >
             <Icon :name="cat.iconName" :size="14" class="tab-icon" />
             <text class="tab-label">{{ cat.label }}</text>
-            <view v-if="cat.count && cat.count > 0" class="tab-badge">{{ cat.count }}</view>
           </view>
+        </view>
+
+        <!-- 右侧: 排序控制 -->
+        <view class="sort-controls">
+          <view class="sort-dropdown-wrapper">
+            <view class="sort-dropdown" @click="toggleSortMenu">
+              <Icon name="arrow-down-up" :size="14" class="sort-icon" />
+              <text class="sort-label">{{ currentSortLabel }}</text>
+              <Icon name="chevron-down" :size="14" class="dropdown-icon" />
             </view>
-          </scroll-view>
+
+            <!-- 排序菜单(出现在按钮下方) -->
+            <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
+              <view
+                v-for="option in sortOptions"
+                :key="option.value"
+                class="sort-menu-item"
+                :class="{ active: currentSort === option.value }"
+                @click="handleSortChange(option.value)"
+              >
+                <text class="sort-item-label">{{ option.label }}</text>
+                <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
+              </view>
+            </view>
+          </view>
         </view>
       </view>
 
-      <!-- MVP-3: 已加入社团置顶区 -->
+      <!-- 遮罩层(点击关闭菜单) -->
+      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
+    </view>
+
+    <!-- ========== 社团专属: 已加入社团置顶区 ========== -->
       <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
         <view class="joined-clubs-container">
           <view class="section-header">
@@ -74,40 +115,6 @@
     <!-- ========== 主内容区(居中容器) ========== -->
     <view class="main-content">
       <view class="content-container">
-        <!-- 结果信息 + 排序 -->
-        <view class="result-info" v-if="!loading">
-      <text class="result-count">
-        {{ searchKeyword ? `找到 ${filteredClubs.length} 个社团` : `${currentCategoryLabel} ${filteredClubs.length} 个社团` }}
-      </text>
-      <text v-if="userJoinedCount > 0 && !searchKeyword" class="joined-count"> · 你已加入 {{ userJoinedCount }} 个</text>
-
-      <!-- MVP-2: 排序下拉 -->
-      <view class="sort-dropdown" @click="toggleSortMenu">
-        <Icon name="arrow-down-up" :size="14" :stroke-width="1.5" class="sort-icon" />
-        <text class="sort-label">{{ currentSortLabel }}</text>
-        <Icon name="chevron-down" :size="14" :stroke-width="1.5" class="dropdown-icon" />
-      </view>
-    </view>
-
-    <!-- 排序菜单 -->
-    <view v-if="showSortMenu" class="sort-menu-overlay" @click="toggleSortMenu">
-      <view class="sort-menu-content" @click.stop>
-        <view class="sort-menu-header">
-          <text class="menu-title">排序方式</text>
-          <Icon name="x" :size="18" :stroke-width="1.5" class="close-icon" @click="toggleSortMenu" />
-        </view>
-        <view
-          v-for="option in sortOptions"
-          :key="option.value"
-          class="sort-menu-item"
-          :class="{ active: currentSort === option.value }"
-          @click="handleSortChange(option.value)"
-        >
-          <text class="sort-item-label">{{ option.label }}</text>
-          <Icon v-if="currentSort === option.value" name="check" :size="16" :stroke-width="2" class="check-icon" />
-        </view>
-      </view>
-    </view>
 
         <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
         <view v-if="!loading && clubs.length > 0 && clubs.length < 3 && !searchKeyword" class="guide-tip">
@@ -423,6 +430,18 @@ const handleBrowseRecommend = () => {
   // uni.navigateTo({ url: '/pages/club/recommend' })
 }
 
+// 创建社团(暂时提示功能开发中)
+const handleCreateClub = () => {
+  uni.showToast({
+    title: '创建社团功能开发中',
+    icon: 'none',
+    duration: 2000
+  })
+
+  // TODO: 后续实现创建社团逻辑
+  // uni.navigateTo({ url: '/pages/club/create' })
+}
+
 // MVP-1: 更新分类计数
 const updateCategoryCounts = () => {
   categories.value.forEach(cat => {
@@ -496,97 +515,30 @@ onMounted(() => {
 .club-list-page {
   min-height: 100vh;
   background: $bg-page;
+  padding-top: 120rpx; // 顶部导航高度(60px = 120rpx)
 }
 
 // ===================================
-// 顶部控制区(全宽背景 + 内容居中)
+// 固定顶部导航区(与资源广场/问答社区统一)
 // ===================================
-.top-control-area {
-  background: $white;
-  border-bottom: 1rpx solid $gray-100;
-  position: sticky;
+.top-nav-fixed {
+  position: fixed;
   top: 0;
   z-index: 100;
+  width: 100%;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
 }
 
-// 搜索栏
-.search-bar {
-  border-bottom: 1rpx solid $gray-100;
-}
-
-.search-bar-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: $sp-6 80rpx;
-
-  @media (max-width: 1600px) {
-    padding: $sp-6 64rpx;
-  }
-
-  @media (max-width: 1440px) {
-    padding: $sp-6 48rpx;
-  }
-
-  @media (max-width: 1200px) {
-    padding: $sp-6 32rpx;
-  }
-
-  @include mobile {
-    padding: $sp-6 $sp-8;
-  }
-}
-
-.search-input {
-  display: flex;
-  align-items: center;
-  background: $gray-100;
-  border-radius: $radius-2xl;
-  padding: $sp-4 $sp-8;
-  transition: background $transition-base;
-
-  &:focus-within {
-    background: $gray-50;
-    box-shadow: 0 0 0 2rpx rgba($primary, 0.1);
-  }
-}
-
-.search-icon {
-  color: $gray-500;
-  margin-right: $sp-4;
-  flex-shrink: 0;
-}
-
-.input {
-  flex: 1;
-  font-size: $font-size-base;
-  background: transparent;
-  color: $gray-900;
-
-  &::placeholder {
-    color: $gray-400;
-  }
-}
-
-.clear-icon {
-  color: $gray-400;
-  padding: 0 $sp-2;
-  cursor: pointer;
-  transition: color $transition-base;
-
-  &:hover {
-    color: $gray-600;
-  }
-}
-
-// MVP-1: 分类筛选Tab
-.category-tabs {
-  padding: $sp-4 0 $sp-5;
-}
-
-.category-tabs-container {
+.top-nav-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80rpx;
+  height: 120rpx; // 60px
+  display: flex;
+  align-items: center;
+  gap: 32rpx; // 16px
 
   @media (max-width: 1600px) {
     padding: 0 64rpx;
@@ -601,92 +553,352 @@ onMounted(() => {
   }
 
   @include mobile {
-    padding: 0 $sp-8;
+    padding: 0 32rpx;
+    gap: 24rpx;
   }
 }
 
-.tabs-scroll {
+// Logo
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-shrink: 0;
+  min-width: 240rpx;
+
+  @include mobile {
+    display: none; // 移动端隐藏Logo
+  }
+}
+
+.logo-icon {
+  color: $primary;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 32rpx;
+  font-weight: $font-weight-bold;
+  color: $gray-900;
   white-space: nowrap;
+}
+
+// 搜索栏
+.search-wrapper {
+  flex: 1;
+  min-width: 0;
+  max-width: 960rpx;
+
+  @include mobile {
+    max-width: none;
+  }
+}
+
+.compact-search-bar {
+  position: relative;
+  width: 100%;
+  height: 72rpx; // 36px
+  display: flex;
+  align-items: center;
+  background: $bg-page;
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  gap: 16rpx;
+  transition: all $transition-base;
+
+  &:focus-within {
+    background: darken($bg-page, 2%);
+    box-shadow: 0 0 0 2rpx rgba($primary, 0.15);
+  }
+}
+
+.search-icon {
+  color: $gray-500;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  font-size: 28rpx;
+  color: $gray-900;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  &::placeholder {
+    color: $gray-400;
+  }
+}
+
+.clear-icon {
+  color: $gray-400;
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 8rpx;
+  transition: color $transition-base;
+
+  &:hover {
+    color: $gray-600;
+  }
+}
+
+// 创建社团按钮
+.create-button {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 0 48rpx;
+  height: 72rpx;
+  background: $primary;
+  color: $white;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all $transition-base;
+  flex-shrink: 0;
+
+  &:hover {
+    background: darken($primary, 5%);
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  @include mobile {
+    padding: 0 32rpx;
+    height: 64rpx;
+  }
+}
+
+.create-icon {
+  flex-shrink: 0;
+}
+
+.create-text {
+  white-space: nowrap;
+
+  @include mobile {
+    display: none; // 移动端只显示图标
+  }
+}
+
+// ===================================
+// Sticky 导航区(分类+排序)
+// ===================================
+.sticky-nav {
+  position: sticky;
+  top: 120rpx; // 顶部导航高度
+  z-index: 99;
+  width: 100%;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+}
+
+.sticky-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+  height: 80rpx; // 40px
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40rpx;
+
+  @media (max-width: 1600px) {
+    padding: 0 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32rpx;
+  }
+
+  @include mobile {
+    padding: 0 32rpx;
+    gap: 24rpx;
+  }
+}
+
+// 分类Tabs
+.category-tabs {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  min-width: 0;
   overflow-x: auto;
 
-  // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;
   }
 }
 
-.tabs-wrapper {
-  display: inline-flex;
-  gap: $sp-4;
-}
-
-.tab-item {
-  display: inline-flex;
+.category-tab {
+  display: flex;
   align-items: center;
-  gap: $sp-2;
-  padding: $sp-3 $sp-5;
-  background: $gray-50;
-  border-radius: $radius-2xl;
-  border: 1.5rpx solid transparent;
-  transition: all $transition-base;
-  position: relative;
+  gap: 12rpx;
+  padding: 12rpx 28rpx;
+  border-radius: 36rpx;
+  font-size: 28rpx;
+  font-weight: $font-weight-medium;
+  color: $gray-700;
+  background: transparent;
+  cursor: pointer;
   flex-shrink: 0;
+  transition: all $transition-base;
+  white-space: nowrap;
 
-  &.active {
-    background: linear-gradient(135deg, rgba($primary, 0.1) 0%, rgba($primary, 0.05) 100%);
-    border-color: rgba($primary, 0.3);
+  .tab-icon {
+    color: $gray-600;
+    flex-shrink: 0;
+    transition: color $transition-base;
+  }
 
-    .tab-label {
-      color: $primary;
-      font-weight: $font-weight-semibold;
+  &:hover:not(.category-tab--active) {
+    background: $gray-100;
+    color: $gray-900;
+
+    .tab-icon {
+      color: $gray-900;
     }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
+  }
+
+  &.category-tab--active {
+    background: $primary !important;
+    color: $white !important;
+    font-weight: $font-weight-semibold;
+
+    .tab-icon {
+      color: $white !important;
+    }
   }
 }
 
-.tab-icon {
-  color: $gray-600;
-  flex-shrink: 0;
-  transition: color $transition-base;
-}
-
-.tab-label {
-  font-size: $font-size-sm;
-  color: $gray-700;
-  font-weight: $font-weight-medium;
-  transition: color $transition-base;
-}
-
-// 选中状态时图标变色
-.tab-item.active .tab-icon {
-  color: $primary;
-}
-
-.tab-badge {
-  font-size: 20rpx;
-  color: $gray-500;
-  background: $gray-100;
-  padding: 0rpx 8rpx;
-  border-radius: $radius-full;
-  min-width: 32rpx;
-  height: 28rpx;
+// 排序控制
+.sort-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
+  gap: 16rpx;
+  flex-shrink: 0;
 }
 
-// MVP-3: 已加入社团置顶区(全宽背景 + 强化边界感)
+.sort-dropdown-wrapper {
+  position: relative;
+}
+
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: $gray-50;
+  border-radius: 36rpx;
+  border: 1rpx solid $gray-200;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    background: $gray-100;
+    border-color: $gray-300;
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.sort-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+}
+
+.sort-label {
+  font-size: 26rpx;
+  color: $gray-700;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+}
+
+.dropdown-icon {
+  color: $gray-500;
+  flex-shrink: 0;
+}
+
+// 排序菜单
+.sort-menu-content {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  right: 0;
+  min-width: 240rpx;
+  background: $white;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  overflow: hidden;
+  z-index: 101;
+}
+
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  cursor: pointer;
+  transition: background $transition-base;
+
+  &:hover {
+    background: $gray-50;
+  }
+
+  &.active {
+    background: rgba($primary, 0.08);
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+}
+
+.sort-item-label {
+  font-size: 28rpx;
+  color: $gray-700;
+}
+
+.check-icon {
+  color: $primary;
+  flex-shrink: 0;
+}
+
+.sort-menu-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+}
+
+// ===================================
+// 社团专属: 已加入社团置顶区
+// ===================================
 .joined-clubs-section {
   background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($primary, 0.02) 100%);
-  border-top: 1rpx solid rgba($primary, 0.12);
   border-bottom: 1rpx solid rgba($primary, 0.12);
-  padding: $sp-8 0 $sp-10; // 增加底部留白,强化分割感
-  margin-bottom: $sp-4; // 与下方内容区拉开距离
-
-  // 模块底部阴影,增强层次感
+  padding: $sp-8 0 $sp-10;
+  margin-top: 80rpx; // sticky-nav 高度
+  margin-bottom: $sp-4;
   box-shadow: 0 2rpx 8rpx rgba($primary, 0.04);
 }
 

@@ -400,6 +400,13 @@
       <path d="M5 18H3" stroke="currentColor"/>
     </template>
 
+    <!-- Plus Circle 图标（添加/创建） -->
+    <template v-else-if="name === 'plus-circle'">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="8" x2="12" y2="16" stroke="currentColor"/>
+      <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor"/>
+    </template>
+
     <!-- External Link 图标（外链/新窗口） -->
     <template v-else-if="name === 'external-link'">
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" fill="none"/>

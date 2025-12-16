@@ -131,9 +131,13 @@
           </view>
         </view>
 
-        <!-- 加载状态 -->
-        <view v-if="loading" class="loading-container">
-          <text class="loading-text">加载中...</text>
+        <!-- 加载状态：骨架屏 -->
+        <view v-if="loading" class="club-list">
+          <SkeletonCard
+            v-for="i in 5"
+            :key="i"
+            layout="ranking"
+          />
         </view>
 
         <!-- 社团列表 -->
@@ -227,6 +231,7 @@ import { onPageScroll } from '@dcloudio/uni-app'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
+import SkeletonCard from '@/components/SkeletonCard.vue'
 
 // 获取系统状态栏高度
 const statusBarHeight = ref(0)
@@ -1378,16 +1383,20 @@ onPageScroll((e: any) => {
 }
 
 // ===================================
-// 加载状态
+// 加载状态：骨架屏样式覆盖
 // ===================================
-.loading-container {
-  @include flex-center;
-  padding: 160rpx 0;
-}
+.club-list {
+  :deep(.skeleton-card) {
+    margin-bottom: $sp-8; // 与真实卡片间距一致（16px）
 
-.loading-text {
-  font-size: $font-size-base;
-  color: $gray-400;
+    // 覆盖 SkeletonCard 的默认样式，使其更接近社团卡片
+    &.layout-ranking {
+      padding: $sp-6; // 与 .club-card 一致
+      border-radius: $radius-card;
+      box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.05);
+      border: 1.5rpx solid transparent;
+    }
+  }
 }
 
 // ===================================

@@ -142,12 +142,17 @@
 
         <!-- 社团信息 -->
         <view class="club-info">
-          <!-- P0优化: 社团名称 + 活跃度标签 -->
+          <!-- P0优化: 社团名称 + 活跃度标签 + 最近活动时间 -->
           <view class="club-header">
             <text class="club-name">{{ club.clubName }}</text>
             <view v-if="isClubActive(club)" class="active-badge">
               <text class="active-icon">🔥</text>
               <text class="active-text">活跃</text>
+            </view>
+            <!-- 优先3: 最近活动时间信号 -->
+            <view v-if="getRecentActivityTime(club)" class="activity-time">
+              <Icon name="calendar-check" :size="12" class="time-icon" />
+              <text class="time-text">{{ getRecentActivityTime(club) }}</text>
             </view>
           </view>
 
@@ -317,6 +322,22 @@ const getClubCategory = (club: ClubItem): string => {
   if (name.includes('志愿') || name.includes('公益') || name.includes('服务')) return '公益'
 
   return '兴趣' // 默认标签
+}
+
+// 优先3: 获取社团最近活动时间
+// 根据社团创建时间计算相对时间(实际应由后端返回 lastActivityAt 字段)
+const getRecentActivityTime = (club: ClubItem): string => {
+  // TODO: 后端应返回 lastActivityAt 字段
+  // 临时逻辑: 使用创建时间模拟
+  const createdDate = new Date(club.createdAt)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+
+  if (diffDays < 7) return '本周有活动'
+  if (diffDays < 30) return '本月有活动'
+  if (diffDays < 90) return '近期有活动'
+
+  return '' // 超过3个月不显示
 }
 
 // 加载社团列表
@@ -657,11 +678,16 @@ onMounted(() => {
   justify-content: center;
 }
 
-// MVP-3: 已加入社团置顶区(全宽背景)
+// MVP-3: 已加入社团置顶区(全宽背景 + 强化边界感)
 .joined-clubs-section {
-  background: linear-gradient(135deg, rgba($primary, 0.03) 0%, rgba($primary, 0.01) 100%);
-  border-top: 1rpx solid rgba($primary, 0.08);
-  padding: $sp-6 0;
+  background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($primary, 0.02) 100%);
+  border-top: 1rpx solid rgba($primary, 0.12);
+  border-bottom: 1rpx solid rgba($primary, 0.12);
+  padding: $sp-8 0 $sp-10; // 增加底部留白,强化分割感
+  margin-bottom: $sp-4; // 与下方内容区拉开距离
+
+  // 模块底部阴影,增强层次感
+  box-shadow: 0 2rpx 8rpx rgba($primary, 0.04);
 }
 
 .joined-clubs-container {
@@ -690,13 +716,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: $sp-3;
-  margin-bottom: $sp-4;
+  margin-bottom: $sp-5; // 标题与内容拉开距离
 }
 
 .section-title {
-  font-size: $font-size-base;
-  color: $gray-800;
-  font-weight: $font-weight-semibold;
+  font-size: 30rpx; // 从 $font-size-base(28rpx) 增大
+  color: $gray-900; // 从 $gray-800 加深
+  font-weight: $font-weight-bold; // 从 semibold 加粗
+  letter-spacing: 0.5rpx; // 增加字间距,更有呼吸感
 }
 
 .section-count {
@@ -1105,6 +1132,30 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
+// 优先3: 最近活动时间标签(低调设计)
+.activity-time {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  padding: $sp-1 $sp-2;
+  background: rgba($gray-500, 0.06); // 非常浅的灰色背景
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  margin-left: auto; // 推到最右侧
+}
+
+.time-icon {
+  color: $gray-500;
+  flex-shrink: 0;
+}
+
+.time-text {
+  font-size: 20rpx;
+  color: $gray-500;
+  font-weight: $font-weight-regular; // 不加粗,更低调
+  white-space: nowrap;
+}
+
 // P0优化: 简介(2行截断)
 .club-desc {
   font-size: $font-size-sm;
@@ -1164,62 +1215,69 @@ onMounted(() => {
   font-weight: $font-weight-medium;
 }
 
-// MVP-4: 操作按钮(加入/申请中/已加入)
+// MVP-4: 操作按钮(加入/申请中/已加入) - 降权设计
 .action-button {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 120rpx;
-  padding: $sp-3 $sp-5;
+  min-width: 100rpx; // 从 120rpx 减小
+  padding: $sp-2 $sp-4; // 从 $sp-3 $sp-5 减小
   margin-left: $sp-4;
   border-radius: $radius-2xl;
   flex-shrink: 0;
   transition: all $transition-base;
   font-weight: $font-weight-medium;
 
-  // 未加入状态(加入按钮)
+  // 未加入状态(加入按钮) - 降低饱和度
   &.status-join {
-    background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
-    box-shadow: 0 2rpx 8rpx rgba($primary, 0.25);
+    background: $primary; // 改为纯色,去掉渐变
+    box-shadow: none; // 移除阴影,减少侵占感
 
     .action-text {
       color: $white;
-      font-size: $font-size-sm;
+      font-size: 24rpx; // 从 $font-size-sm(26rpx) 减小
+    }
+
+    &:hover {
+      background: darken($primary, 5%);
+      box-shadow: 0 2rpx 6rpx rgba($primary, 0.2); // hover时才出现阴影
     }
 
     &:active {
-      transform: scale(0.95);
-      box-shadow: 0 1rpx 4rpx rgba($primary, 0.2);
+      transform: scale(0.96); // 从 0.95 改为 0.96,更轻微
+      background: darken($primary, 8%);
     }
   }
 
-  // 申请中状态
+  // 申请中状态 - 更弱的视觉
   &.status-pending {
-    background: linear-gradient(135deg, rgba($warning, 0.15) 0%, rgba($warning, 0.08) 100%);
-    border: 1.5rpx solid rgba($warning, 0.3);
+    background: rgba($warning, 0.08); // 从 0.15 降低
+    border: 1rpx solid rgba($warning, 0.2); // 从 1.5rpx 和 0.3 降低
 
     .action-text {
-      color: $warning;
-      font-size: $font-size-sm;
+      color: darken($warning, 10%); // 颜色稍微加深,提高可读性
+      font-size: 24rpx;
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
+      background: rgba($warning, 0.12);
     }
   }
 
-  // 已加入状态
+  // 已加入状态 - 更弱的视觉
   &.status-joined {
-    background: linear-gradient(135deg, rgba($success, 0.15) 0%, rgba($success, 0.08) 100%);
-    border: 1.5rpx solid rgba($success, 0.3);
+    background: rgba($success, 0.08); // 从 0.15 降低
+    border: 1rpx solid rgba($success, 0.2); // 从 1.5rpx 和 0.3 降低
 
     .action-text {
-      color: $success;
-      font-size: $font-size-sm;
+      color: darken($success, 5%); // 颜色稍微加深
+      font-size: 24rpx;
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.96);
+      background: rgba($success, 0.12);
     }
   }
 }

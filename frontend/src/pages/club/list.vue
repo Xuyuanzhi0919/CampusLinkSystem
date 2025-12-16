@@ -117,27 +117,28 @@
     <!-- ========== 主内容区(居中容器) ========== -->
     <view class="main-content" :style="{ paddingTop: getMainContentPaddingTop() }">
       <view class="content-container">
-
-        <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
-        <view v-if="!loading && clubs.length > 0 && clubs.length < 3 && !searchKeyword" class="guide-tip">
-          <view class="guide-icon">💡</view>
-          <view class="guide-content">
-            <text class="guide-title">校园社团是交流学习的好地方</text>
-            <text class="guide-subtitle">加入社团,解锁更多资源与活动</text>
+        <!-- 左侧: 主社团列表流 -->
+        <view class="main-column">
+          <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
+          <view v-if="!loading && clubs.length > 0 && clubs.length < 3 && !searchKeyword" class="guide-tip">
+            <view class="guide-icon">💡</view>
+            <view class="guide-content">
+              <text class="guide-title">校园社团是交流学习的好地方</text>
+              <text class="guide-subtitle">加入社团,解锁更多资源与活动</text>
+            </view>
           </view>
-        </view>
 
-        <!-- 加载状态：骨架屏 -->
-        <view v-if="loading" class="club-list">
-          <SkeletonCard
-            v-for="i in 5"
-            :key="i"
-            layout="ranking"
-          />
-        </view>
+          <!-- 加载状态：骨架屏 -->
+          <view v-if="loading" class="club-list">
+            <SkeletonCard
+              v-for="i in 5"
+              :key="i"
+              layout="ranking"
+            />
+          </view>
 
-        <!-- 社团列表 -->
-        <view v-else-if="clubs.length > 0" class="club-list">
+          <!-- 社团列表 -->
+          <view v-else-if="clubs.length > 0" class="club-list">
           <view
             v-for="club in filteredClubs"
             :key="club.clubId"
@@ -202,20 +203,84 @@
           </view>
         </view>
 
-        <!-- P1优化: 增强型空状态 -->
-        <view v-else class="empty-state">
-          <text class="empty-icon">{{ searchKeyword ? '🔍' : '🏫' }}</text>
-          <text class="empty-text">{{ searchKeyword ? '未找到相关社团' : '暂无社团' }}</text>
-          <text class="empty-hint">{{ searchKeyword ? '试试修改搜索关键词' : '还没有社团加入平台' }}</text>
+          <!-- P1优化: 增强型空状态 -->
+          <view v-else class="empty-state">
+            <text class="empty-icon">{{ searchKeyword ? '🔍' : '🏫' }}</text>
+            <text class="empty-text">{{ searchKeyword ? '未找到相关社团' : '暂无社团' }}</text>
+            <text class="empty-hint">{{ searchKeyword ? '试试修改搜索关键词' : '还没有社团加入平台' }}</text>
 
-          <!-- P1优化: 空状态下的行动引导 -->
-          <view v-if="!searchKeyword" class="empty-actions">
-            <view class="empty-action-btn" @click="handleBrowseRecommend">
-              <text class="action-icon">👉</text>
-              <text class="action-text">浏览推荐社团</text>
+            <!-- P1优化: 空状态下的行动引导 -->
+            <view v-if="!searchKeyword" class="empty-actions">
+              <view class="empty-action-btn" @click="handleBrowseRecommend">
+                <text class="action-icon">👉</text>
+                <text class="action-text">浏览推荐社团</text>
+              </view>
             </view>
           </view>
         </view>
+        <!-- /左侧主列 -->
+
+        <!-- 右侧: 辅助侧栏（弱右栏，决策辅助）-->
+        <view class="sidebar">
+          <!-- 1. 官方/校级社团（优先级最高）-->
+          <view class="sidebar-card">
+            <view class="card-header">
+              <Icon name="award" :size="14" class="header-icon" />
+              <text class="card-title">官方社团</text>
+            </view>
+            <view class="official-clubs-list">
+              <view
+                v-for="club in officialClubs"
+                :key="club.clubId"
+                class="official-club-item"
+                @click="goToClubDetail(club.clubId)"
+              >
+                <image class="official-club-logo" :src="club.logoUrl || '/static/default-club.png'" mode="aspectFill" />
+                <view class="official-club-info">
+                  <view class="official-club-name-row">
+                    <text class="official-club-name">{{ club.clubName }}</text>
+                    <view class="verified-badge">
+                      <Icon name="badge-check" :size="12" class="verified-icon" />
+                    </view>
+                  </view>
+                  <text class="official-club-desc">{{ club.description || '官方认证社团' }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 2. 热门社团 TOP 3 -->
+          <view class="sidebar-card">
+            <view class="card-header">
+              <Icon name="trending-up" :size="14" class="header-icon hot-icon" />
+              <text class="card-title">热门社团</text>
+            </view>
+            <view class="hot-clubs-list">
+              <view
+                v-for="(club, index) in hotClubs"
+                :key="club.clubId"
+                class="hot-club-item"
+                @click="goToClubDetail(club.clubId)"
+              >
+                <view class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</view>
+                <view class="hot-club-content">
+                  <text class="hot-club-name">{{ club.clubName }}</text>
+                  <text class="hot-club-meta">{{ club.memberCount || 0 }} 人</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 3. 创建社团入口（极简，文字链接级别）-->
+          <view class="sidebar-card create-club-card">
+            <view class="create-club-link" @click="handleCreateClub">
+              <Icon name="plus-circle" :size="14" class="create-link-icon" />
+              <text class="create-link-text">没找到合适的？创建一个</text>
+              <Icon name="chevron-right" :size="12" class="create-link-arrow" />
+            </view>
+          </view>
+        </view>
+        <!-- /右侧栏 -->
       </view>
     </view>
   </view>
@@ -242,6 +307,10 @@ const COLLAPSE_END = 120 // 完全折叠的阈值（120px）
 const loading = ref(false)
 const clubs = ref<ClubItem[]>([])
 const searchKeyword = ref('')
+
+// 右栏数据（弱右栏，辅助决策）
+const officialClubs = ref<ClubItem[]>([])  // 官方/校级社团（2-3个）
+const hotClubs = ref<ClubItem[]>([])       // 热门社团 TOP 3
 
 // P0优化: 用户已加入的社团数量(模拟数据,实际应从用户信息获取)
 const userJoinedCount = ref(1)
@@ -450,6 +519,23 @@ const loadClubList = async () => {
 
     // MVP-1: 更新分类计数
     updateCategoryCounts()
+
+    // 右栏数据填充（模拟，实际应由后端返回或单独接口获取）
+    // 1. 官方社团：选择前 2-3 个"认证"社团
+    // TODO: 后端应返回 isOfficial: boolean 字段
+    if (clubs.value.length >= 2) {
+      officialClubs.value = clubs.value.slice(0, 2).map(club => ({
+        ...club,
+        description: club.description || '校级官方认证社团'
+      }))
+    }
+
+    // 2. 热门社团：按成员数排序取 TOP 3
+    if (clubs.value.length >= 3) {
+      hotClubs.value = [...clubs.value]
+        .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
+        .slice(0, 3)
+    }
   } catch (error: any) {
     console.error('加载社团列表失败:', error)
     uni.showToast({
@@ -1264,22 +1350,35 @@ onPageScroll((e: any) => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80rpx;
+  display: flex; // 双栏布局：主列 + 右栏
+  gap: 48rpx; // 主列与右栏的间距（24px）
+  align-items: flex-start;
 
   @media (max-width: 1600px) {
     padding: 0 64rpx;
+    gap: 40rpx;
   }
 
   @media (max-width: 1440px) {
     padding: 0 48rpx;
+    gap: 32rpx;
   }
 
   @media (max-width: 1200px) {
     padding: 0 32rpx;
+    gap: 24rpx;
   }
 
   @include mobile {
     padding: 0 $sp-8;
+    display: block; // 移动端单栏
   }
+}
+
+// 主内容列（左侧，占据大部分空间）
+.main-column {
+  flex: 1; // 自适应宽度
+  min-width: 0; // 防止 flex 子元素溢出
 }
 
 // 结果信息 + 排序
@@ -1794,5 +1893,255 @@ onPageScroll((e: any) => {
   font-size: $font-size-base;
   color: $white;
   font-weight: $font-weight-medium;
+}
+
+// =============================================
+// 右侧辅助栏（弱右栏，决策辅助）
+// 设计约束：宽度更窄、视觉更弱、无阴影、无 hover 效果
+// =============================================
+.sidebar {
+  width: 260px; // 比资源页的 280-320px 更窄
+  flex-shrink: 0;
+  position: sticky;
+  top: 224rpx; // 120rpx (top-nav) + 80rpx (sticky-nav) + 24rpx (gap)
+  align-self: flex-start;
+  padding-bottom: 48rpx;
+
+  @media (max-width: 1200px) {
+    width: 240px; // 小屏再缩小
+    top: 216rpx;
+  }
+
+  @media (max-width: 1024px) {
+    display: none; // 平板及以下隐藏
+  }
+
+  @include mobile {
+    display: none; // 移动端完全隐藏
+  }
+}
+
+// 侧栏卡片（比资源页更弱的视觉）
+.sidebar-card {
+  background: $white;
+  border-radius: $radius-md;
+  padding: $sp-5; // 比资源页的 $sp-6 更小
+  margin-bottom: $sp-4;
+  border: 1rpx solid $gray-100; // 极浅边框，替代阴影
+  transition: none; // 无过渡效果，降低存在感
+
+  // 无 hover 效果，保持静态
+  // 与资源页的 hover box-shadow 形成对比
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  // 创建社团卡片特殊样式（最弱）
+  &.create-club-card {
+    background: rgba($gray-50, 0.5); // 极浅背景
+    border: 1rpx dashed $gray-200; // 虚线边框
+    padding: $sp-4; // 更小的内边距
+  }
+}
+
+// 卡片头部
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 6rpx; // 比资源页的 8rpx 更小
+  margin-bottom: 16rpx; // 比资源页的 20rpx 更小
+  padding-bottom: 10rpx; // 比资源页的 12rpx 更小
+  border-bottom: 1rpx solid rgba($gray-100, 0.6); // 更浅的分隔线
+
+  .header-icon {
+    color: $gray-600; // 比资源页的 $primary 更弱
+    flex-shrink: 0;
+
+    &.hot-icon {
+      color: $accent; // 热门图标保持橙色
+    }
+  }
+
+  .card-title {
+    font-size: 26rpx; // 比资源页的 28rpx 更小
+    color: $gray-800; // 比资源页的 $gray-900 更浅
+    font-weight: $font-weight-semibold; // 比资源页的 bold 更轻
+    flex: 1;
+  }
+}
+
+// 1. 官方社团列表
+.official-clubs-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+.official-club-item {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  padding: $sp-2;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: rgba($gray-50, 0.8); // 极浅 hover 背景
+  }
+
+  &:active {
+    background: rgba($gray-100, 0.6);
+  }
+}
+
+.official-club-logo {
+  width: 40rpx; // 20px，极小尺寸
+  height: 40rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+  border: 1rpx solid $gray-100;
+}
+
+.official-club-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.official-club-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  margin-bottom: 2rpx;
+}
+
+.official-club-name {
+  font-size: 24rpx; // 12px，较小字号
+  color: $gray-900;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis(1);
+}
+
+.verified-badge {
+  flex-shrink: 0;
+
+  .verified-icon {
+    color: $primary;
+  }
+}
+
+.official-club-desc {
+  font-size: 20rpx; // 10px，极小字号
+  color: $gray-500;
+  @include text-ellipsis(1);
+}
+
+// 2. 热门社团列表
+.hot-clubs-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.hot-club-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-2;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: rgba($gray-50, 0.8);
+  }
+
+  &:active {
+    background: rgba($gray-100, 0.6);
+  }
+}
+
+.hot-rank {
+  width: 32rpx; // 16px
+  height: 32rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx; // 10px
+  font-weight: $font-weight-bold;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: $gray-100;
+  color: $gray-600;
+
+  &.rank-1 {
+    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); // 金色
+    color: $white;
+  }
+
+  &.rank-2 {
+    background: linear-gradient(135deg, #C0C0C0 0%, #A0A0A0 100%); // 银色
+    color: $white;
+  }
+
+  &.rank-3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #B8733E 100%); // 铜色
+    color: $white;
+  }
+}
+
+.hot-club-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hot-club-name {
+  font-size: 24rpx; // 12px
+  color: $gray-900;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis(1);
+  display: block;
+  margin-bottom: 2rpx;
+}
+
+.hot-club-meta {
+  font-size: 20rpx; // 10px
+  color: $gray-500;
+}
+
+// 3. 创建社团入口（极简文字链接）
+.create-club-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+  padding: $sp-2 0;
+  cursor: pointer;
+  transition: opacity $transition-fast;
+
+  &:hover {
+    opacity: 0.7;
+  }
+
+  &:active {
+    opacity: 0.5;
+  }
+}
+
+.create-link-icon {
+  color: $gray-500; // 灰色图标，不是主色
+  flex-shrink: 0;
+}
+
+.create-link-text {
+  font-size: 22rpx; // 11px，极小
+  color: $gray-600;
+  font-weight: $font-weight-regular; // 不加粗
+}
+
+.create-link-arrow {
+  color: $gray-400; // 极浅箭头
+  flex-shrink: 0;
 }
 </style>

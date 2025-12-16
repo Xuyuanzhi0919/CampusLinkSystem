@@ -1,5 +1,5 @@
 <template>
-  <view class="club-list-page">
+  <view class="club-list-page" @click="handlePageClick">
     <!-- ========== 固定顶部导航区 ========== -->
     <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="top-nav-container">
@@ -54,7 +54,7 @@
         <!-- 右侧: 排序控制 -->
         <view class="sort-controls">
           <view class="sort-dropdown-wrapper">
-            <view class="sort-dropdown" @click="toggleSortMenu">
+            <view class="sort-dropdown" @click.stop="toggleSortMenu">
               <Icon name="arrow-down-up" :size="14" class="sort-icon" />
               <text class="sort-label">{{ currentSortLabel }}</text>
               <Icon name="chevron-down" :size="14" class="dropdown-icon" />
@@ -63,15 +63,7 @@
         </view>
       </view>
 
-      <!-- 排序菜单遮罩层 -->
-      <view
-        v-if="showSortMenu"
-        class="sort-menu-mask"
-        :class="{ 'show': showSortMenu }"
-        @click="showSortMenu = false"
-      ></view>
-
-      <!-- 排序菜单（重构版：简化定位，优化动画） -->
+      <!-- 排序菜单（重构版：无遮罩，轻量级弹窗） -->
       <view
         v-if="showSortMenu"
         class="sort-menu-dropdown"
@@ -467,13 +459,23 @@ const handleCategoryChange = (category: string) => {
 }
 
 // MVP-2: 切换排序
-const toggleSortMenu = () => {
+const toggleSortMenu = (event?: Event) => {
+  if (event) {
+    event.stopPropagation() // 阻止事件冒泡到页面
+  }
   showSortMenu.value = !showSortMenu.value
 }
 
 const handleSortChange = (sort: 'recommended' | 'member_count' | 'latest') => {
   currentSort.value = sort
   showSortMenu.value = false
+}
+
+// 点击页面任意位置关闭排序菜单
+const handlePageClick = () => {
+  if (showSortMenu.value) {
+    showSortMenu.value = false
+  }
 }
 
 // P1优化: 浏览推荐社团(暂时提示功能开发中)
@@ -972,26 +974,10 @@ onPageScroll((e: any) => {
 }
 
 // ===================================
-// 排序菜单（重构版：简化定位 + 优化动画）
+// 排序菜单（重构版：无遮罩 + 轻量级弹窗）
 // ===================================
 
-// 遮罩层
-.sort-menu-mask {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 998;
-  background: rgba(0, 0, 0, 0);
-  transition: background $transition-base;
-
-  &.show {
-    background: rgba(0, 0, 0, 0.15); // 轻微遮罩，不影响可读性
-  }
-}
-
-// 下拉菜单（紧贴排序按钮右下方）
+// 下拉菜单（紧贴排序按钮右下方，无遮罩）
 .sort-menu-dropdown {
   position: absolute;
   top: calc(100% + 8rpx); // 排序按钮下方 4px
@@ -1000,7 +986,7 @@ onPageScroll((e: any) => {
   min-width: 280rpx; // 140px
   background: $white;
   border-radius: $radius-lg;
-  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.15);
+  box-shadow: 0 12rpx 48rpx rgba($gray-900, 0.18), 0 4rpx 16rpx rgba($gray-900, 0.08); // 增强阴影，无遮罩时更突出
   border: 2rpx solid $gray-100;
   overflow: hidden;
   opacity: 0;

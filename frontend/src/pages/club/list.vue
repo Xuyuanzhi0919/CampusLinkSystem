@@ -82,33 +82,32 @@
     </view>
 
     <!-- ========== 社团专属: 已加入社团置顶区 ========== -->
-      <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
-        <view class="joined-clubs-container">
-          <view class="section-header">
-            <text class="section-title">我加入的社团</text>
-            <text class="section-count">{{ joinedClubs.length }}</text>
-          </view>
-          <scroll-view scroll-x class="joined-clubs-scroll">
-            <view class="joined-clubs-wrapper">
-          <view
-            v-for="club in joinedClubs.slice(0, 3)"
-            :key="club.clubId"
-            class="joined-club-item"
-            @click="goToClubDetail(club.clubId)"
-          >
-            <image
-              class="joined-club-logo"
-              :src="club.logoUrl || '/static/default-club.png'"
-              mode="aspectFill"
-            />
-            <text class="joined-club-name">{{ club.clubName }}</text>
-            <view class="joined-club-enter">
-              <text class="enter-arrow">›</text>
-            </view>
-          </view>
-            </view>
-          </scroll-view>
+    <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
+      <view class="joined-clubs-container">
+        <view class="section-header">
+          <text class="section-title">我加入的社团</text>
+          <text class="section-count">{{ joinedClubs.length }}</text>
         </view>
+        <scroll-view scroll-x class="joined-clubs-scroll">
+          <view class="joined-clubs-wrapper">
+            <view
+              v-for="club in joinedClubs.slice(0, 3)"
+              :key="club.clubId"
+              class="joined-club-item"
+              @click="goToClubDetail(club.clubId)"
+            >
+              <image
+                class="joined-club-logo"
+                :src="club.logoUrl || '/static/default-club.png'"
+                mode="aspectFill"
+              />
+              <text class="joined-club-name">{{ club.clubName }}</text>
+              <view class="joined-club-enter">
+                <text class="enter-arrow">›</text>
+              </view>
+            </view>
+          </view>
+        </scroll-view>
       </view>
     </view>
 
@@ -132,69 +131,69 @@
 
         <!-- 社团列表 -->
         <view v-else-if="clubs.length > 0" class="club-list">
-      <view
-        v-for="club in filteredClubs"
-        :key="club.clubId"
-        class="club-card"
-        @click="goToClubDetail(club.clubId)"
-      >
-        <!-- 社团Logo -->
-        <view class="club-logo-wrapper">
-          <image
-            class="club-logo"
-            :src="club.logoUrl || '/static/default-club.png'"
-            mode="aspectFill"
-          />
-        </view>
-
-        <!-- 社团信息 -->
-        <view class="club-info">
-          <!-- P0优化: 社团名称 + 活跃度标签 + 最近活动时间 -->
-          <view class="club-header">
-            <text class="club-name">{{ club.clubName }}</text>
-            <view v-if="isClubActive(club)" class="active-badge">
-              <text class="active-icon">🔥</text>
-              <text class="active-text">活跃</text>
+          <view
+            v-for="club in filteredClubs"
+            :key="club.clubId"
+            class="club-card"
+            @click="goToClubDetail(club.clubId)"
+          >
+            <!-- 社团Logo -->
+            <view class="club-logo-wrapper">
+              <image
+                class="club-logo"
+                :src="club.logoUrl || '/static/default-club.png'"
+                mode="aspectFill"
+              />
             </view>
-            <!-- 优先3: 最近活动时间信号 -->
-            <view v-if="getRecentActivityTime(club)" class="activity-time">
-              <Icon name="calendar-check" :size="12" class="time-icon" />
-              <text class="time-text">{{ getRecentActivityTime(club) }}</text>
+
+            <!-- 社团信息 -->
+            <view class="club-info">
+              <!-- P0优化: 社团名称 + 活跃度标签 + 最近活动时间 -->
+              <view class="club-header">
+                <text class="club-name">{{ club.clubName }}</text>
+                <view v-if="isClubActive(club)" class="active-badge">
+                  <text class="active-icon">🔥</text>
+                  <text class="active-text">活跃</text>
+                </view>
+                <!-- 优先3: 最近活动时间信号 -->
+                <view v-if="getRecentActivityTime(club)" class="activity-time">
+                  <Icon name="calendar-check" :size="12" class="time-icon" />
+                  <text class="time-text">{{ getRecentActivityTime(club) }}</text>
+                </view>
+              </view>
+
+              <!-- 简介(最多2行) -->
+              <text class="club-desc">{{ club.description || '暂无简介' }}</text>
+
+              <!-- P0优化: 统计数据 + 分类标签 -->
+              <view class="club-meta">
+                <view class="club-stats">
+                  <view class="stat-item">
+                    <text class="stat-icon">👥</text>
+                    <text class="stat-text">{{ club.memberCount || 0 }}</text>
+                  </view>
+                  <text class="stat-divider">·</text>
+                  <view class="stat-item">
+                    <text class="stat-icon">🏫</text>
+                    <text class="stat-text">{{ club.schoolName }}</text>
+                  </view>
+                </view>
+
+                <!-- P0优化: 社团类型标签 -->
+                <view v-if="getClubCategory(club)" class="club-tag">
+                  <text class="tag-text">{{ getClubCategory(club) }}</text>
+                </view>
+              </view>
+            </view>
+
+            <!-- MVP-4: 根据状态显示不同的按钮 -->
+            <view class="action-button" :class="getClubStatusClass(club)" @click.stop="handleClubAction(club)">
+              <text v-if="club.isMember" class="action-text joined">已加入</text>
+              <text v-else-if="club.isPending" class="action-text pending">申请中</text>
+              <text v-else class="action-text join">加入</text>
             </view>
           </view>
-
-          <!-- 简介(最多2行) -->
-          <text class="club-desc">{{ club.description || '暂无简介' }}</text>
-
-          <!-- P0优化: 统计数据 + 分类标签 -->
-          <view class="club-meta">
-            <view class="club-stats">
-              <view class="stat-item">
-                <text class="stat-icon">👥</text>
-                <text class="stat-text">{{ club.memberCount || 0 }}</text>
-              </view>
-              <text class="stat-divider">·</text>
-              <view class="stat-item">
-                <text class="stat-icon">🏫</text>
-                <text class="stat-text">{{ club.schoolName }}</text>
-              </view>
-            </view>
-
-            <!-- P0优化: 社团类型标签 -->
-            <view v-if="getClubCategory(club)" class="club-tag">
-              <text class="tag-text">{{ getClubCategory(club) }}</text>
-            </view>
-          </view>
         </view>
-
-        <!-- MVP-4: 根据状态显示不同的按钮 -->
-        <view class="action-button" :class="getClubStatusClass(club)" @click.stop="handleClubAction(club)">
-          <text v-if="club.isMember" class="action-text joined">已加入</text>
-          <text v-else-if="club.isPending" class="action-text pending">申请中</text>
-          <text v-else class="action-text join">加入</text>
-        </view>
-      </view>
-    </view>
 
         <!-- P1优化: 增强型空状态 -->
         <view v-else class="empty-state">
@@ -607,7 +606,7 @@ onMounted(() => {
   transition: all $transition-base;
 
   &:focus-within {
-    background: darken($bg-page, 2%);
+    background: #e8eaed; // $bg-page 加深 2%
     box-shadow: 0 0 0 2rpx rgba($primary, 0.15);
   }
 }
@@ -660,7 +659,7 @@ onMounted(() => {
   flex-shrink: 0;
 
   &:hover {
-    background: darken($primary, 5%);
+    background: #1d4ed8; // $primary 加深 5%
     box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
   }
 
@@ -941,7 +940,7 @@ onMounted(() => {
 .section-count {
   font-size: 22rpx;
   color: $white;
-  background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+  background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%); // $primary 加深 5%
   padding: $sp-1 $sp-3;
   border-radius: $radius-full;
   min-width: 32rpx;
@@ -1269,7 +1268,7 @@ onMounted(() => {
 
       .enter-text,
       .arrow-icon {
-        color: darken($primary, 10%);
+        color: #1e40af; // $primary 加深 10%
       }
     }
   }
@@ -1451,13 +1450,13 @@ onMounted(() => {
     }
 
     &:hover {
-      background: darken($primary, 5%);
+      background: #1d4ed8; // $primary 加深 5%
       box-shadow: 0 2rpx 6rpx rgba($primary, 0.2); // hover时才出现阴影
     }
 
     &:active {
       transform: scale(0.96); // 从 0.95 改为 0.96,更轻微
-      background: darken($primary, 8%);
+      background: #1e3a8a; // $primary 加深 8%
     }
   }
 
@@ -1467,7 +1466,7 @@ onMounted(() => {
     border: 1rpx solid rgba($warning, 0.2); // 从 1.5rpx 和 0.3 降低
 
     .action-text {
-      color: darken($warning, 10%); // 颜色稍微加深,提高可读性
+      color: #d97706; // $warning 加深 10%
       font-size: 24rpx;
     }
 
@@ -1483,7 +1482,7 @@ onMounted(() => {
     border: 1rpx solid rgba($success, 0.2); // 从 1.5rpx 和 0.3 降低
 
     .action-text {
-      color: darken($success, 5%); // 颜色稍微加深
+      color: #15803d; // $success 加深 5%
       font-size: 24rpx;
     }
 
@@ -1544,7 +1543,7 @@ onMounted(() => {
   justify-content: center;
   gap: $sp-3;
   padding: $sp-5 $sp-8;
-  background: linear-gradient(135deg, $primary 0%, darken($primary, 5%) 100%);
+  background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%); // $primary 加深 5%
   border-radius: $radius-2xl;
   box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
   transition: all $transition-base;

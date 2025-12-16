@@ -514,7 +514,7 @@ onMounted(() => {
 .club-list-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: 120rpx; // 顶部导航高度(60px = 120rpx)
+  padding-top: 200rpx; // 顶部导航(120rpx) + Sticky导航(80rpx) = 200rpx
 }
 
 // ===================================

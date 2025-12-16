@@ -749,14 +749,33 @@ onLoad((options) => {
 
 // =============================================
 // Hero 区（第一屏，极其重要）
+// 优化：增强视觉层次，避免"太平"
 // =============================================
 .hero-section {
-  background: linear-gradient(135deg, $white 0%, rgba($primary, 0.02) 100%);
-  border-bottom: 1rpx solid $gray-100;
-  padding: 48rpx 0;
+  background: linear-gradient(135deg,
+    rgba($primary, 0.03) 0%,
+    rgba($primary, 0.01) 50%,
+    $white 100%
+  );
+  border-bottom: 2rpx solid rgba($primary, 0.08); // 加强分隔线
+  padding: 64rpx 0; // 从 48rpx 增加到 64rpx，增加呼吸感
+  position: relative;
+
+  // 添加微妙的背景纹理
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle at 20% 50%, rgba($primary, 0.04) 0%, transparent 50%),
+                      radial-gradient(circle at 80% 80%, rgba($accent, 0.02) 0%, transparent 50%);
+    pointer-events: none;
+  }
 
   @include mobile {
-    padding: 32rpx 0;
+    padding: 40rpx 0;
   }
 }
 
@@ -767,6 +786,8 @@ onLoad((options) => {
   display: flex;
   gap: 48rpx;
   align-items: flex-start;
+  position: relative; // 确保在背景纹理之上
+  z-index: 1;
 
   @include mobile {
     padding: 0 $sp-8;
@@ -790,8 +811,16 @@ onLoad((options) => {
   height: 100%;
   border-radius: $radius-lg;
   background: $gray-100;
-  border: 2rpx solid $white;
-  box-shadow: $shadow-card;
+  border: 4rpx solid $white; // 从 2rpx 加粗到 4rpx，增强存在感
+  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.12), // 加强阴影层次
+              0 2rpx 8rpx rgba($gray-900, 0.08);
+  transition: transform $transition-base, box-shadow $transition-base;
+
+  &:hover {
+    transform: scale(1.02);
+    box-shadow: 0 12rpx 48rpx rgba($gray-900, 0.16),
+                0 4rpx 12rpx rgba($gray-900, 0.12);
+  }
 }
 
 .club-hero-info {
@@ -808,13 +837,15 @@ onLoad((options) => {
 }
 
 .club-title {
-  font-size: 48rpx; // 24px，大标题
+  font-size: 52rpx; // 从 48rpx 增大到 52rpx，增强视觉重量
   font-weight: $font-weight-bold;
   color: $gray-900;
   letter-spacing: 0.5rpx;
+  line-height: 1.2;
+  text-shadow: 0 1rpx 2rpx rgba($gray-900, 0.04); // 添加微妙的文字阴影
 
   @include mobile {
-    font-size: 36rpx;
+    font-size: 38rpx;
   }
 }
 
@@ -911,29 +942,30 @@ onLoad((options) => {
 
 // =============================================
 // 主内容区（双栏布局）
+// 优化：增加上边距，形成视觉分隔
 // =============================================
 .content-container {
   max-width: 1280px;
-  margin: 48rpx auto 0;
+  margin: 80rpx auto 0; // 从 48rpx 增加到 80rpx，增强分隔感
   padding: 0 80rpx 80rpx;
   display: flex;
-  gap: 48rpx;
+  gap: 64rpx; // 从 48rpx 增加到 64rpx，增强主列和右栏的分离感
   align-items: flex-start;
 
   @media (max-width: 1600px) {
     padding: 0 64rpx 64rpx;
-    gap: 40rpx;
+    gap: 48rpx;
   }
 
   @media (max-width: 1200px) {
     padding: 0 32rpx 64rpx;
-    gap: 32rpx;
+    gap: 40rpx;
   }
 
   @include mobile {
     padding: 0 $sp-8 80rpx;
     display: block;
-    margin-top: 32rpx;
+    margin-top: 40rpx;
   }
 }
 
@@ -945,16 +977,19 @@ onLoad((options) => {
 
 // =============================================
 // Tabs 导航
+// 优化：增强视觉层次，避免和内容区混为一体
 // =============================================
 .tabs-nav {
   display: flex;
-  background: $white;
+  background: linear-gradient(to bottom, $white 0%, rgba($gray-50, 0.5) 100%); // 添加渐变背景
   border-radius: $radius-lg;
-  padding: 8rpx;
-  margin-bottom: $sp-6;
-  box-shadow: $shadow-card;
+  padding: 12rpx; // 从 8rpx 增加到 12rpx
+  margin-bottom: 32rpx; // 从 $sp-6 (24rpx) 增加到 32rpx，增强和内容区的分隔
+  box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.08), // 增强阴影层次
+              0 1rpx 4rpx rgba($gray-900, 0.04);
   gap: 8rpx;
   overflow-x: auto;
+  border: 1rpx solid rgba($gray-200, 0.6); // 添加边框
 
   &::-webkit-scrollbar {
     display: none;
@@ -968,18 +1003,22 @@ onLoad((options) => {
   align-items: center;
   justify-content: center;
   gap: 6rpx;
-  padding: 16rpx 24rpx;
+  padding: 18rpx 24rpx; // 从 16rpx 增加到 18rpx，更有点击感
   border-radius: $radius-md;
   cursor: pointer;
   transition: all $transition-base;
   white-space: nowrap;
+  position: relative;
 
   &:hover {
-    background: rgba($primary, 0.05);
+    background: rgba($primary, 0.08); // 从 0.05 增加到 0.08
+    transform: translateY(-1rpx); // 添加微妙的上浮效果
   }
 
   &--active {
-    background: $primary;
+    background: linear-gradient(135deg, $primary 0%, rgba($primary, 0.9) 100%); // 渐变背景
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.25), // 激活态阴影
+                0 2rpx 4rpx rgba($primary, 0.15);
 
     .tab-icon,
     .tab-label,
@@ -1019,13 +1058,22 @@ onLoad((options) => {
 
 // =============================================
 // Tab 内容区
+// 优化：增强卡片感和呼吸空间
 // =============================================
 .tab-content {
   background: $white;
   border-radius: $radius-lg;
-  padding: $sp-8;
-  box-shadow: $shadow-card;
+  padding: 48rpx; // 从 $sp-8 (32rpx) 增加到 48rpx，增强呼吸感
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06), // 柔和的阴影
+              0 1rpx 4rpx rgba($gray-900, 0.04);
   min-height: 600rpx;
+  border: 1rpx solid rgba($gray-200, 0.4); // 添加边框
+  transition: box-shadow $transition-base;
+
+  &:hover {
+    box-shadow: 0 4rpx 20rpx rgba($gray-900, 0.08),
+                0 2rpx 8rpx rgba($gray-900, 0.06);
+  }
 }
 
 // ① 动态 Tab
@@ -1435,6 +1483,7 @@ onLoad((options) => {
 
 // =============================================
 // 右侧辅助栏（30-35%）
+// 优化：增强视觉独立性
 // =============================================
 .sidebar {
   width: 380px; // 比列表页的 260px 宽，因为详情页右栏更重要
@@ -1442,6 +1491,20 @@ onLoad((options) => {
   position: sticky;
   top: 32rpx;
   align-self: flex-start;
+
+  // 添加整体区域的视觉包裹感
+  &::before {
+    content: '';
+    position: absolute;
+    top: -16rpx;
+    left: -16rpx;
+    right: -16rpx;
+    bottom: -16rpx;
+    background: linear-gradient(135deg, rgba($primary, 0.02) 0%, transparent 100%);
+    border-radius: $radius-xl;
+    pointer-events: none;
+    opacity: 0.6;
+  }
 
   @media (max-width: 1200px) {
     width: 320px;
@@ -1459,13 +1522,19 @@ onLoad((options) => {
 .sidebar-card {
   background: $white;
   border-radius: $radius-md;
-  padding: $sp-6;
-  margin-bottom: $sp-5;
-  box-shadow: $shadow-card;
-  transition: $transition-base;
+  padding: 32rpx; // 从 $sp-6 (24rpx) 增加到 32rpx
+  margin-bottom: 32rpx; // 从 $sp-5 (20rpx) 增加到 32rpx，增强卡片间距
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06),
+              0 1rpx 4rpx rgba($gray-900, 0.04);
+  transition: all $transition-base;
+  border: 1rpx solid rgba($gray-200, 0.5);
+  position: relative; // 确保在 sidebar::before 之上
+  z-index: 1;
 
   &:hover {
-    box-shadow: $shadow-card-hover;
+    box-shadow: 0 4rpx 20rpx rgba($gray-900, 0.1),
+                0 2rpx 8rpx rgba($gray-900, 0.06);
+    transform: translateY(-2rpx); // 添加轻微上浮效果
   }
 
   &:last-child {

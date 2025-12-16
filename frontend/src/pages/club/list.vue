@@ -969,12 +969,12 @@ onPageScroll((e: any) => {
   right: 40px;
   z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
-  border-radius: 12px;
+  border-radius: 8px; // 减小圆角，与资源广场一致
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  min-width: 120px; // 从140px减小到120px
+  min-width: 120px;
   width: max-content; // 自适应内容宽度
   max-width: 160px; // 限制最大宽度
-  overflow: hidden;
+  overflow: hidden; // 重要：确保子元素不会溢出圆角
   border: 1px solid $gray-200;
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
@@ -987,15 +987,24 @@ onPageScroll((e: any) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 14px; // 从12px 16px减小，更紧凑
+  padding: 10px 14px;
   cursor: pointer;
   transition: background 0.2s;
   white-space: nowrap; // 防止文字换行
+  position: relative; // 确保背景色不会超出容器
 
   .sort-item-label {
-    font-size: 13px; // 从14px减小到13px
+    font-size: 13px;
     color: $gray-700;
     margin-right: 8px; // 文字和勾选图标之间的间距
+  }
+
+  &:first-child {
+    border-radius: 8px 8px 0 0; // 第一项顶部圆角
+  }
+
+  &:last-child {
+    border-radius: 0 0 8px 8px; // 最后一项底部圆角
   }
 
   &:hover {

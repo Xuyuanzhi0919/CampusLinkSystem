@@ -966,12 +966,14 @@ onPageScroll((e: any) => {
 .sort-menu-content {
   position: fixed;
   // top 通过内联样式动态设置
-  right: 40px; // 先使用简单的固定值测试
+  right: 40px;
   z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
   border-radius: 12px;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  min-width: 140px;
+  min-width: 120px; // 从140px减小到120px
+  width: max-content; // 自适应内容宽度
+  max-width: 160px; // 限制最大宽度
   overflow: hidden;
   border: 1px solid $gray-200;
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
@@ -985,13 +987,15 @@ onPageScroll((e: any) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 14px; // 从12px 16px减小，更紧凑
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap; // 防止文字换行
 
   .sort-item-label {
-    font-size: 14px;
+    font-size: 13px; // 从14px减小到13px
     color: $gray-700;
+    margin-right: 8px; // 文字和勾选图标之间的间距
   }
 
   &:hover {

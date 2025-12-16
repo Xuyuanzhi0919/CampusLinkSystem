@@ -59,26 +59,26 @@
               <text class="sort-label">{{ currentSortLabel }}</text>
               <Icon name="chevron-down" :size="14" class="dropdown-icon" />
             </view>
-          </view>
-        </view>
-      </view>
 
-      <!-- 排序菜单（重构版：无遮罩，轻量级弹窗） -->
-      <view
-        v-if="showSortMenu"
-        class="sort-menu-dropdown"
-        :class="{ 'show': showSortMenu, 'header-collapsed': isHeaderCollapsed }"
-        @click.stop
-      >
-        <view
-          v-for="option in sortOptions"
-          :key="option.value"
-          class="sort-menu-item"
-          :class="{ 'active': currentSort === option.value }"
-          @click="handleSortChange(option.value)"
-        >
-          <text class="sort-item-label">{{ option.label }}</text>
-          <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
+            <!-- 排序菜单（重构版：无遮罩，紧贴按钮正下方） -->
+            <view
+              v-if="showSortMenu"
+              class="sort-menu-dropdown"
+              :class="{ 'show': showSortMenu }"
+              @click.stop
+            >
+              <view
+                v-for="option in sortOptions"
+                :key="option.value"
+                class="sort-menu-item"
+                :class="{ 'active': currentSort === option.value }"
+                @click="handleSortChange(option.value)"
+              >
+                <text class="sort-item-label">{{ option.label }}</text>
+                <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
+              </view>
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -1006,16 +1006,16 @@ onPageScroll((e: any) => {
 }
 
 // ===================================
-// 排序菜单（重构版：无遮罩 + 轻量级弹窗）
+// 排序菜单（重构版：无遮罩 + 紧贴按钮正下方）
 // ===================================
 
-// 下拉菜单（紧贴排序按钮右下方，无遮罩）
+// 下拉菜单（相对于 .sort-dropdown-wrapper 定位）
 .sort-menu-dropdown {
   position: absolute;
   top: calc(100% + 8rpx); // 排序按钮下方 4px
-  right: 80rpx; // 与容器右边距一致
+  right: 0; // 与排序按钮右对齐（紧贴正下方）
   z-index: 999;
-  min-width: 280rpx; // 140px
+  min-width: 280rpx; // 140px，确保菜单宽度大于按钮
   background: $white;
   border-radius: $radius-lg;
   box-shadow: 0 12rpx 48rpx rgba($gray-900, 0.18), 0 4rpx 16rpx rgba($gray-900, 0.08); // 增强阴影，无遮罩时更突出
@@ -1032,21 +1032,7 @@ onPageScroll((e: any) => {
     pointer-events: all;
   }
 
-  // 响应式调整
-  @media (max-width: 1600px) {
-    right: 64rpx;
-  }
-
-  @media (max-width: 1440px) {
-    right: 48rpx;
-  }
-
-  @media (max-width: 1200px) {
-    right: 32rpx;
-  }
-
   @include mobile {
-    right: 32rpx;
     min-width: 240rpx; // 移动端稍窄
   }
 }

@@ -57,50 +57,69 @@
 
             <!-- CTA 按钮（核心决策点）-->
             <view class="hero-actions">
-              <!-- 未加入：主按钮 -->
-              <CButton
-                v-if="!isMember && !isPending"
-                type="primary"
-                size="lg"
-                @click="handleJoin"
-              >
-                加入社团
-              </CButton>
-              <!-- 申请中：次级按钮 -->
-              <CButton
-                v-else-if="isPending"
-                type="secondary"
-                size="lg"
-                disabled
-              >
-                申请审核中
-              </CButton>
-              <!-- 已加入：次级按钮 + 退出 -->
-              <template v-else>
+              <!-- 未加入：绝对中心化的唯一决策点 -->
+              <template v-if="!isMember && !isPending">
                 <CButton
                   type="primary"
                   size="lg"
-                  @click="handleEnter"
+                  block
+                  @click="handleJoin"
                 >
-                  进入讨论
-                </CButton>
-                <CButton
-                  type="text"
-                  size="md"
-                  @click="handleQuit"
-                >
-                  退出社团
+                  加入社团
                 </CButton>
               </template>
-              <!-- 管理员：管理入口 -->
-              <CButton
-                v-if="isAdmin"
-                type="accent"
-                size="md"
-                @click="handleManage"
-              >
-                管理社团
-              </CButton>
+
+              <!-- 申请中：审核等待状态 -->
+              <template v-else-if="isPending">
+                <view class="join-status">
+                  <text class="status-text pending">⏱️ 申请审核中</text>
+                </view>
+                <CButton
+                  type="secondary"
+                  size="md"
+                  disabled
+                >
+                  审核中
+                </CButton>
+              </template>
+
+              <!-- 已加入：集中表达"已是成员"状态 -->
+              <template v-else>
+                <view class="join-status">
+                  <text class="status-text joined">✓ 你已加入该社团</text>
+                </view>
+                <view class="action-group">
+                  <!-- 主操作：进入讨论 -->
+                  <CButton
+                    type="primary"
+                    size="lg"
+                    @click="handleEnter"
+                  >
+                    进入讨论
+                  </CButton>
+
+                  <!-- 次要操作：管理 / 退出 -->
+                  <view class="secondary-actions">
+                    <CButton
+                      v-if="isAdmin"
+                      type="accent"
+                      size="sm"
+                      plain
+                      @click="handleManage"
+                    >
+                      管理
+                    </CButton>
+                    <CButton
+                      type="text"
+                      size="sm"
+                      class="quit-btn"
+                      @click="handleQuit"
+                    >
+                      退出
+                    </CButton>
+                  </view>
+                </view>
+              </template>
             </view>
           </view>
         </view>
@@ -301,6 +320,11 @@
               <text class="card-title">社团信息</text>
             </view>
             <view class="status-list">
+              <!-- 已加入：显示成员位置 -->
+              <view v-if="isMember" class="status-item member-position">
+                <text class="status-label">你的位置</text>
+                <text class="status-value highlight">第 {{ memberPosition }} 位成员</text>
+              </view>
               <view class="status-item">
                 <text class="status-label">成员数量</text>
                 <text class="status-value">{{ club.memberCount || 0 }}</text>
@@ -406,6 +430,15 @@ const isPending = computed(() => club.value?.isPending || false)
 const isAdmin = computed(() => {
   // TODO: 实际应从后端返回 userRole 字段
   return false
+})
+
+// 成员位置（已加入时显示）
+const memberPosition = computed(() => {
+  // TODO: 实际应从后端返回 joinPosition 或根据 joinedAt 计算
+  // 临时逻辑：随机生成一个位置
+  if (!isMember.value) return 0
+  const maxPosition = club.value?.memberCount || 100
+  return Math.floor(Math.random() * maxPosition) + 1
 })
 
 // 社团属性
@@ -569,6 +602,8 @@ const handleJoin = async () => {
             icon: 'success'
           })
           await loadClubDetail(club.value!.clubId)
+          // 自动切换到 Feed 标签，引导用户参与
+          currentTab.value = 'feed'
         } catch (error: any) {
           uni.showToast({
             title: error.message || '操作失败',
@@ -935,9 +970,55 @@ onLoad((options) => {
 
 .hero-actions {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: $sp-4;
-  flex-wrap: wrap;
+  margin-top: $sp-6;
+}
+
+// 加入状态提示
+.join-status {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: $sp-2;
+}
+
+.status-text {
+  font-size: $font-size-base;
+  font-weight: 500;
+
+  &.pending {
+    color: $warning;
+  }
+
+  &.joined {
+    color: $success;
+    font-weight: 600;
+  }
+}
+
+// 已加入状态的操作组
+.action-group {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+  width: 100%;
+}
+
+// 次要操作组（管理/退出）
+.secondary-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-3;
+
+  .quit-btn {
+    color: $gray-500;
+
+    &:hover {
+      color: $error;
+    }
+  }
 }
 
 // =============================================
@@ -1572,6 +1653,22 @@ onLoad((options) => {
 .status-item {
   @include flex-between;
   padding: $sp-3 0;
+
+  // 成员位置：特殊样式
+  &.member-position {
+    background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($accent, 0.03) 100%);
+    padding: $sp-4;
+    margin: 0 (-$sp-8);
+    margin-bottom: $sp-4;
+    border-radius: $radius-md;
+    border: 1rpx solid rgba($primary, 0.1);
+
+    .status-value.highlight {
+      color: $primary;
+      font-weight: $font-weight-bold;
+      font-size: 28rpx;
+    }
+  }
 }
 
 .status-label {

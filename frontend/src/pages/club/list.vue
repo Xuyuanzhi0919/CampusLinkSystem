@@ -63,28 +63,32 @@
         </view>
       </view>
 
-      <!-- 排序菜单（移到外部，使用fixed定位，不受sticky-nav影响） -->
+      <!-- 排序菜单遮罩层 -->
       <view
         v-if="showSortMenu"
-        class="sort-menu-content"
-        :class="{ 'header-collapsed': isHeaderCollapsed }"
-        :style="{ top: getSortMenuTop() }"
+        class="sort-menu-mask"
+        :class="{ 'show': showSortMenu }"
+        @click="showSortMenu = false"
+      ></view>
+
+      <!-- 排序菜单（重构版：简化定位，优化动画） -->
+      <view
+        v-if="showSortMenu"
+        class="sort-menu-dropdown"
+        :class="{ 'show': showSortMenu, 'header-collapsed': isHeaderCollapsed }"
         @click.stop
       >
         <view
           v-for="option in sortOptions"
           :key="option.value"
           class="sort-menu-item"
-          :class="{ 'sort-menu-item--active': currentSort === option.value }"
+          :class="{ 'active': currentSort === option.value }"
           @click="handleSortChange(option.value)"
         >
           <text class="sort-item-label">{{ option.label }}</text>
           <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
         </view>
       </view>
-
-      <!-- 遮罩层(点击关闭菜单) -->
-      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
 
     <!-- ========== 社团专属: 已加入社团置顶区 ========== -->
@@ -311,17 +315,7 @@ const getMainContentPaddingTop = () => {
   return `${statusBarHeight.value + topNavHeight + stickyNavHeight}px`
 }
 
-// 计算排序菜单的顶部位置
-const getSortMenuTop = () => {
-  // 正常时：顶部导航60px + 分类栏40px + 间距4px = 104px
-  // 折叠时：顶部导航48px + 分类栏隐藏(0px) + 间距4px = 52px
-  // 注意：H5环境statusBarHeight通常为0，移动端才有状态栏
-  if (isHeaderCollapsed.value) {
-    return '52px'  // 折叠状态：48 + 0 + 4
-  } else {
-    return '104px' // 正常状态：60 + 40 + 4
-  }
-}
+// 排序菜单的顶部位置通过 CSS 自动计算，无需 JS 动态设置
 
 // 计算属性：筛选+排序后的社团列表
 const filteredClubs = computed(() => {
@@ -815,8 +809,9 @@ onPageScroll((e: any) => {
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
   max-height: 80rpx;
   opacity: 1;
-  overflow: hidden;
+  overflow: visible; // 从 hidden 改为 visible，让下拉菜单可以显示
   transition: all $transition-base;
+  position: relative; // 为下拉菜单建立定位上下文
 
   // 当顶部导航折叠时,分类导航完全隐藏
   &.header-collapsed {
@@ -976,79 +971,132 @@ onPageScroll((e: any) => {
   flex-shrink: 0;
 }
 
-// 排序菜单（使用fixed定位，移到sticky-nav外部）
-.sort-menu-content {
-  position: fixed;
-  // top 通过内联样式动态设置
-  right: max(calc((100vw - 1280px) / 2 + 40px), 40px); // 响应式右边距，与资源广场一致
-  z-index: 105; // 高于sticky-nav(99)
-  background: $white;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-  min-width: 140px;
-  overflow: hidden;
-  border: 1px solid $gray-200;
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+// ===================================
+// 排序菜单（重构版：简化定位 + 优化动画）
+// ===================================
 
-  @media (max-width: 1600px) {
-    right: max(calc((100vw - 1280px) / 2 + 64px), 64px);
-  }
-
-  @media (max-width: 1440px) {
-    right: max(calc((100vw - 1280px) / 2 + 48px), 48px);
-  }
-
-  @media (max-width: 1200px) {
-    right: max(calc((100vw - 1280px) / 2 + 32px), 32px);
-  }
-
-  @include mobile {
-    right: 16px;
-  }
-}
-
-.sort-menu-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: background 0.2s;
-
-  .sort-item-label {
-    font-size: 14px;
-    color: $gray-700;
-  }
-
-  &:hover {
-    background: $gray-50;
-  }
-
-  &--active {
-    background: rgba($primary, 0.08);
-
-    .sort-item-label {
-      color: $primary;
-      font-weight: 600;
-    }
-
-    .check-icon {
-      color: $primary;
-    }
-  }
-
-  .check-icon {
-    color: $primary;
-  }
-}
-
+// 遮罩层
 .sort-menu-mask {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 100;
+  z-index: 998;
+  background: rgba(0, 0, 0, 0);
+  transition: background $transition-base;
+
+  &.show {
+    background: rgba(0, 0, 0, 0.15); // 轻微遮罩，不影响可读性
+  }
+}
+
+// 下拉菜单（紧贴排序按钮右下方）
+.sort-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8rpx); // 排序按钮下方 4px
+  right: 80rpx; // 与容器右边距一致
+  z-index: 999;
+  min-width: 280rpx; // 140px
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.15);
+  border: 2rpx solid $gray-100;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(-8rpx) scale(0.95);
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1); // 弹性动画
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: all;
+  }
+
+  // 响应式调整
+  @media (max-width: 1600px) {
+    right: 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    right: 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    right: 32rpx;
+  }
+
+  @include mobile {
+    right: 32rpx;
+    min-width: 240rpx; // 移动端稍窄
+  }
+}
+
+// 菜单项
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  cursor: pointer;
+  transition: all $transition-base;
+  position: relative;
+
+  // 分割线（除最后一项）
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 32rpx;
+    right: 32rpx;
+    height: 1rpx;
+    background: $gray-100;
+  }
+
+  .sort-item-label {
+    font-size: 28rpx;
+    color: $gray-700;
+    font-weight: $font-weight-regular;
+    transition: all $transition-base;
+  }
+
+  .check-icon {
+    color: $primary;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all $transition-base;
+  }
+
+  // Hover 状态
+  &:hover {
+    background: rgba($primary, 0.03);
+
+    .sort-item-label {
+      color: $gray-900;
+    }
+  }
+
+  // 激活状态
+  &.active {
+    background: rgba($primary, 0.08);
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: $font-weight-semibold;
+    }
+
+    .check-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  // 点击反馈
+  &:active {
+    background: rgba($primary, 0.12);
+    transform: scale(0.98);
+  }
 }
 
 // ===================================

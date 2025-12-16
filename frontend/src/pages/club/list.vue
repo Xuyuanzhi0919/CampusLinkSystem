@@ -1,7 +1,7 @@
 <template>
   <view class="club-list-page">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed" :style="{ paddingTop: statusBarHeight + 'px' }">
+    <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
@@ -29,13 +29,13 @@
         <!-- 创建社团按钮 -->
         <view class="create-button" @click="handleCreateClub">
           <Icon name="plus-circle" :size="16" class="create-icon" />
-          <text class="create-text">创建社团</text>
+          <text class="create-text">创建</text>
         </view>
       </view>
     </view>
 
     <!-- ========== Sticky 导航区(分类+排序) ========== -->
-    <view class="sticky-nav" :style="{ top: (statusBarHeight + 60) + 'px' }">
+    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }" :style="{ top: (statusBarHeight + 60) + 'px' }">
       <view class="sticky-nav-container">
         <!-- 左侧: 分类Tabs -->
         <view class="category-tabs">
@@ -83,7 +83,7 @@
 
     <!-- ========== 社团专属: 已加入社团置顶区 ========== -->
     <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section"
-          :style="{ marginTop: (statusBarHeight + 100) + 'px' }">
+          :style="{ marginTop: getJoinedSectionTop() }">
       <view class="joined-clubs-container">
         <view class="section-header">
           <text class="section-title">我加入的社团</text>
@@ -113,7 +113,7 @@
     </view>
 
     <!-- ========== 主内容区(居中容器) ========== -->
-    <view class="main-content">
+    <view class="main-content" :style="{ paddingTop: getMainContentPaddingTop() }">
       <view class="content-container">
 
         <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
@@ -217,12 +217,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { onPageScroll } from '@dcloudio/uni-app'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
 
 // 获取系统状态栏高度
 const statusBarHeight = ref(0)
+
+// 顶部导航折叠状态
+const isHeaderCollapsed = ref(false)
+const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 状态
 const loading = ref(false)
@@ -270,6 +275,30 @@ const currentSortLabel = computed(() => {
 const joinedClubs = computed(() => {
   return clubs.value.filter(club => club.isMember === true)
 })
+
+// 计算"我加入的社团"区域的顶部间距
+const getJoinedSectionTop = () => {
+  // 顶部导航栏高度: 120rpx (60px)
+  // sticky-nav高度: 80rpx (40px)
+  // 状态栏高度: statusBarHeight
+  // 总计: statusBarHeight + 60px + 40px = statusBarHeight + 100px
+  // 当header折叠时,只计算状态栏 + 折叠后的header (96rpx/48px)
+  const topNavHeight = isHeaderCollapsed.value ? 48 : 60 // px
+  const stickyNavHeight = isHeaderCollapsed.value ? 0 : 40 // px,折叠时sticky-nav隐藏
+  return `${statusBarHeight.value + topNavHeight + stickyNavHeight}px`
+}
+
+// 计算主内容区的顶部padding
+const getMainContentPaddingTop = () => {
+  // 当有已加入社团时,不需要额外的padding,因为joined-clubs-section已经有marginTop
+  if (joinedClubs.value.length > 0 && !searchKeyword.value) {
+    return '0'
+  }
+  // 没有已加入社团时,需要添加padding避免被固定导航栏遮挡
+  const topNavHeight = isHeaderCollapsed.value ? 48 : 60 // px
+  const stickyNavHeight = isHeaderCollapsed.value ? 0 : 40 // px
+  return `${statusBarHeight.value + topNavHeight + stickyNavHeight}px`
+}
 
 // 计算属性：筛选+排序后的社团列表
 const filteredClubs = computed(() => {
@@ -514,6 +543,16 @@ onMounted(() => {
 
   loadClubList()
 })
+
+// 监听页面滚动
+onPageScroll((e: any) => {
+  const scrollTopValue = e.scrollTop || 0
+
+  // #ifdef H5
+  // 滚动超过阈值时折叠顶部导航
+  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
+  // #endif
+})
 </script>
 
 <style lang="scss" scoped>
@@ -537,6 +576,35 @@ onMounted(() => {
   background: $white;
   border-bottom: 1rpx solid $gray-200;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
+  transition: all $transition-base;
+
+  // 折叠状态:高度减小
+  &.collapsed {
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12); // 更明显的阴影
+
+    .top-nav-container {
+      height: 96rpx; // 从120rpx减小到96rpx (48px)
+      gap: 24rpx; // 折叠状态下间距也相应减小
+    }
+
+    .brand-logo {
+      min-width: 180rpx; // 减小宽度
+
+      .logo-text {
+        font-size: 28rpx; // 从32rpx减小
+      }
+    }
+
+    .compact-search-bar {
+      height: 64rpx; // 从72rpx减小到64rpx
+    }
+
+    .create-button {
+      height: 64rpx; // 从72rpx减小到64rpx
+      padding: 0 32rpx; // 从40rpx减小
+      min-width: 100rpx; // 折叠状态下最小宽度也减小
+    }
+  }
 }
 
 .top-nav-container {
@@ -546,7 +614,8 @@ onMounted(() => {
   height: 120rpx; // 60px
   display: flex;
   align-items: center;
-  gap: 32rpx; // 16px
+  gap: 32rpx; // 16px - 增加间距，让布局更舒展
+  transition: all $transition-base;
 
   @media (max-width: 1600px) {
     padding: 0 64rpx;
@@ -570,9 +639,9 @@ onMounted(() => {
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 16rpx; // 8px
   flex-shrink: 0;
-  min-width: 240rpx;
+  min-width: 200rpx; // 调整最小宽度，避免占用过多空间
 
   @include mobile {
     display: none; // 移动端隐藏Logo
@@ -595,7 +664,7 @@ onMounted(() => {
 .search-wrapper {
   flex: 1;
   min-width: 0;
-  max-width: 960rpx;
+  max-width: 1000rpx; // 增大最大宽度，让搜索框有更多空间
 
   @include mobile {
     max-width: none;
@@ -610,7 +679,7 @@ onMounted(() => {
   align-items: center;
   background: $bg-page;
   border-radius: 36rpx;
-  padding: 0 28rpx;
+  padding: 0 32rpx; // 从 28rpx 增大到 32rpx，让内部更有呼吸感
   gap: 16rpx;
   transition: all $transition-base;
 
@@ -656,7 +725,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  padding: 0 48rpx;
+  padding: 0 40rpx; // 从 48rpx 减小，使按钮更紧凑
   height: 72rpx;
   background: $primary;
   color: $white;
@@ -666,6 +735,7 @@ onMounted(() => {
   cursor: pointer;
   transition: all $transition-base;
   flex-shrink: 0;
+  min-width: 120rpx; // 添加最小宽度，保证按钮不会太小
 
   &:hover {
     background: #1d4ed8; // $primary 加深 5%
@@ -679,6 +749,7 @@ onMounted(() => {
   @include mobile {
     padding: 0 32rpx;
     height: 64rpx;
+    min-width: 100rpx;
   }
 }
 
@@ -705,6 +776,18 @@ onMounted(() => {
   background: $white;
   border-bottom: 1rpx solid $gray-100;
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+  max-height: 80rpx;
+  opacity: 1;
+  overflow: hidden;
+  transition: all $transition-base;
+
+  // 当顶部导航折叠时,分类导航完全隐藏
+  &.header-collapsed {
+    max-height: 0; // 高度变为0
+    opacity: 0; // 透明度为0
+    border-bottom: none; // 移除边框
+    box-shadow: none; // 移除阴影
+  }
 }
 
 .sticky-nav-container {
@@ -1038,10 +1121,11 @@ onMounted(() => {
 // ===================================
 .main-content {
   background: $bg-page;
-  padding: $sp-8 0 80rpx; // 底部留出 TabBar 空间
+  // paddingTop通过:style动态设置,根据是否有已加入社团和header折叠状态计算
+  padding-bottom: 80rpx; // 底部留出 TabBar 空间
 
   @include mobile {
-    padding: $sp-6 0 120rpx;
+    padding-bottom: 120rpx;
   }
 }
 

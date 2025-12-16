@@ -362,6 +362,44 @@
       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" stroke="currentColor"/>
     </template>
 
+    <!-- CPU 图标（技术） -->
+    <template v-else-if="name === 'cpu'">
+      <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" fill="none"/>
+      <rect x="9" y="9" width="6" height="6" stroke="currentColor" fill="none"/>
+      <line x1="9" y1="1" x2="9" y2="4" stroke="currentColor"/>
+      <line x1="15" y1="1" x2="15" y2="4" stroke="currentColor"/>
+      <line x1="9" y1="20" x2="9" y2="23" stroke="currentColor"/>
+      <line x1="15" y1="20" x2="15" y2="23" stroke="currentColor"/>
+      <line x1="20" y1="9" x2="23" y2="9" stroke="currentColor"/>
+      <line x1="20" y1="15" x2="23" y2="15" stroke="currentColor"/>
+      <line x1="1" y1="9" x2="4" y2="9" stroke="currentColor"/>
+      <line x1="1" y1="15" x2="4" y2="15" stroke="currentColor"/>
+    </template>
+
+    <!-- Heart Pulse 图标（体育） -->
+    <template v-else-if="name === 'heart-pulse'">
+      <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" stroke="currentColor" fill="none"/>
+      <path d="M3.22 12h3.08L7.5 9.5l3 7 1.5-3.5h3.72" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Palette 图标（艺术） -->
+    <template v-else-if="name === 'palette'">
+      <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" stroke="none"/>
+      <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" stroke="none"/>
+      <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" stroke="none"/>
+      <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" stroke="none"/>
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2Z" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Sparkles 图标（兴趣） -->
+    <template v-else-if="name === 'sparkles'">
+      <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" stroke="currentColor" fill="none"/>
+      <path d="M20 3v4" stroke="currentColor"/>
+      <path d="M22 5h-4" stroke="currentColor"/>
+      <path d="M4 17v2" stroke="currentColor"/>
+      <path d="M5 18H3" stroke="currentColor"/>
+    </template>
+
     <!-- External Link 图标（外链/新窗口） -->
     <template v-else-if="name === 'external-link'">
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" fill="none"/>

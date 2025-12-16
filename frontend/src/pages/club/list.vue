@@ -2,7 +2,7 @@
   <view class="club-list-page" @click="handlePageClick">
     <!-- ========== 固定顶部导航区 ========== -->
     <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }" :style="{ paddingTop: statusBarHeight + 'px' }">
-      <view class="top-nav-container">
+      <view class="top-nav-container" :style="navContainerStyle">
         <!-- Logo -->
         <view class="brand-logo">
           <Icon name="users" :size="20" class="logo-icon" />
@@ -35,7 +35,7 @@
     </view>
 
     <!-- ========== Sticky 导航区(分类+排序) ========== -->
-    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }" :style="{ top: (statusBarHeight + 60) + 'px' }">
+    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }" :style="{ top: (statusBarHeight + 60) + 'px', ...stickyNavStyle }">
       <view class="sticky-nav-container">
         <!-- 左侧: 分类Tabs -->
         <view class="category-tabs">
@@ -232,9 +232,11 @@ import SkeletonCard from '@/components/SkeletonCard.vue'
 // 获取系统状态栏高度
 const statusBarHeight = ref(0)
 
-// 顶部导航折叠状态
-const isHeaderCollapsed = ref(false)
-const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
+// 顶部导航折叠状态（渐进式）
+const scrollProgress = ref(0) // 0-1 之间的滚动进度
+const isHeaderCollapsed = ref(false) // 完全折叠标志
+const COLLAPSE_START = 60 // 开始折叠的阈值（60px）
+const COLLAPSE_END = 120 // 完全折叠的阈值（120px）
 
 // 状态
 const loading = ref(false)
@@ -308,6 +310,26 @@ const getMainContentPaddingTop = () => {
 }
 
 // 排序菜单的顶部位置通过 CSS 自动计算，无需 JS 动态设置
+
+// 计算属性：渐进式导航栏样式
+const navContainerStyle = computed(() => {
+  // 高度从 120rpx 渐进到 96rpx
+  const height = 120 - (24 * scrollProgress.value)
+  return {
+    height: `${height}rpx`
+  }
+})
+
+const stickyNavStyle = computed(() => {
+  // 透明度从 1 渐进到 0
+  const opacity = 1 - scrollProgress.value
+  // 高度从 80rpx 渐进到 0
+  const maxHeight = 80 * (1 - scrollProgress.value)
+  return {
+    opacity: opacity,
+    maxHeight: `${maxHeight}rpx`
+  }
+})
 
 // 计算属性：筛选+排序后的社团列表
 const filteredClubs = computed(() => {
@@ -572,13 +594,23 @@ onMounted(() => {
   loadClubList()
 })
 
-// 监听页面滚动
+// 监听页面滚动（渐进式折叠）
 onPageScroll((e: any) => {
   const scrollTopValue = e.scrollTop || 0
 
   // #ifdef H5
-  // 滚动超过阈值时折叠顶部导航
-  isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
+  // 计算滚动进度（0-1 之间）
+  if (scrollTopValue <= COLLAPSE_START) {
+    scrollProgress.value = 0
+    isHeaderCollapsed.value = false
+  } else if (scrollTopValue >= COLLAPSE_END) {
+    scrollProgress.value = 1
+    isHeaderCollapsed.value = true
+  } else {
+    // 渐进式过渡区间（60px - 120px）
+    scrollProgress.value = (scrollTopValue - COLLAPSE_START) / (COLLAPSE_END - COLLAPSE_START)
+    isHeaderCollapsed.value = false // 过渡期间不完全折叠
+  }
   // #endif
 })
 </script>
@@ -639,11 +671,11 @@ onPageScroll((e: any) => {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80rpx;
-  height: 120rpx; // 60px
+  height: 120rpx; // 60px（默认值，会被内联样式覆盖）
   display: flex;
   align-items: center;
   gap: 32rpx; // 16px - 增加间距，让布局更舒展
-  transition: all $transition-base;
+  transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); // 平滑的缓动函数
 
   @media (max-width: 1600px) {
     padding: 0 64rpx;
@@ -809,18 +841,18 @@ onPageScroll((e: any) => {
   background: $white;
   border-bottom: 1rpx solid $gray-100;
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
-  max-height: 80rpx;
-  opacity: 1;
+  max-height: 80rpx; // 默认值（会被内联样式覆盖）
+  opacity: 1; // 默认值（会被内联样式覆盖）
   overflow: visible; // 从 hidden 改为 visible，让下拉菜单可以显示
-  transition: all $transition-base;
+  transition: max-height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              box-shadow 0.3s ease; // 分别设置过渡，更精细
   position: relative; // 为下拉菜单建立定位上下文
 
-  // 当顶部导航折叠时,分类导航完全隐藏
+  // 当完全折叠时，隐藏边框和阴影
   &.header-collapsed {
-    max-height: 0; // 高度变为0
-    opacity: 0; // 透明度为0
-    border-bottom: none; // 移除边框
-    box-shadow: none; // 移除阴影
+    border-bottom: none;
+    box-shadow: none;
   }
 }
 

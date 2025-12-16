@@ -110,8 +110,7 @@
 		{
 			"path": "pages/club/list",
 			"style": {
-				"navigationBarTitleText": "社团列表",
-				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": true
 			}
 		},

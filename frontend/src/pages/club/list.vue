@@ -1,7 +1,7 @@
 <template>
   <view class="club-list-page">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed">
+    <view class="top-nav-fixed" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
@@ -35,7 +35,7 @@
     </view>
 
     <!-- ========== Sticky 导航区(分类+排序) ========== -->
-    <view class="sticky-nav">
+    <view class="sticky-nav" :style="{ top: (statusBarHeight + 60) + 'px' }">
       <view class="sticky-nav-container">
         <!-- 左侧: 分类Tabs -->
         <view class="category-tabs">
@@ -82,7 +82,8 @@
     </view>
 
     <!-- ========== 社团专属: 已加入社团置顶区 ========== -->
-    <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
+    <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section"
+          :style="{ marginTop: (statusBarHeight + 100) + 'px' }">
       <view class="joined-clubs-container">
         <view class="section-header">
           <text class="section-title">我加入的社团</text>
@@ -219,6 +220,9 @@ import { ref, computed, onMounted } from 'vue'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
+
+// 获取系统状态栏高度
+const statusBarHeight = ref(0)
 
 // 状态
 const loading = ref(false)
@@ -504,6 +508,10 @@ const handleClubAction = (club: ClubItem) => {
 
 // 页面加载时获取数据
 onMounted(() => {
+  // 获取系统信息(状态栏高度)
+  const systemInfo = uni.getSystemInfoSync()
+  statusBarHeight.value = systemInfo.statusBarHeight || 0
+
   loadClubList()
 })
 </script>
@@ -514,7 +522,8 @@ onMounted(() => {
 .club-list-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: 200rpx; // 顶部导航(120rpx) + Sticky导航(80rpx) = 200rpx
+  // 使用自定义导航栏,无需额外padding-top
+  // 顶部导航fixed定位已自动处理间距
 }
 
 // ===================================
@@ -690,7 +699,7 @@ onMounted(() => {
 // ===================================
 .sticky-nav {
   position: sticky;
-  top: 120rpx; // 顶部导航高度
+  // top 值通过 :style 动态设置 (statusBarHeight + 60px)
   z-index: 99;
   width: 100%;
   background: $white;
@@ -896,7 +905,7 @@ onMounted(() => {
   background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($primary, 0.02) 100%);
   border-bottom: 1rpx solid rgba($primary, 0.12);
   padding: $sp-8 0 $sp-10;
-  margin-top: 80rpx; // sticky-nav 高度
+  // margin-top 通过 :style 动态设置 (statusBarHeight + 100px)
   margin-bottom: $sp-4;
   box-shadow: 0 2rpx 8rpx rgba($primary, 0.04);
 }

@@ -827,10 +827,12 @@ onPageScroll((e: any) => {
 .category-tabs {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 8rpx; // 4px - 与资源广场保持一致，更紧凑
   flex: 1;
   min-width: 0;
   overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
@@ -840,10 +842,10 @@ onPageScroll((e: any) => {
 .category-tab {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 28rpx;
-  border-radius: 36rpx;
-  font-size: 28rpx;
+  gap: 12rpx; // 6px - 图标和文字之间的间距
+  padding: 12rpx 28rpx; // 6px 14px - 与资源广场保持一致
+  border-radius: 36rpx; // 18px
+  font-size: 28rpx; // 14px
   font-weight: $font-weight-medium;
   color: $gray-700;
   background: transparent;
@@ -879,6 +881,11 @@ onPageScroll((e: any) => {
     .tab-icon {
       color: $white !important;
     }
+  }
+
+  @include mobile {
+    padding: 10rpx 24rpx; // 5px 12px - 移动端稍小
+    font-size: 26rpx; // 13px
   }
 }
 

@@ -59,21 +59,21 @@
               <text class="sort-label">{{ currentSortLabel }}</text>
               <Icon name="chevron-down" :size="14" class="dropdown-icon" />
             </view>
-
-            <!-- 排序菜单(出现在按钮下方) -->
-            <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
-              <view
-                v-for="option in sortOptions"
-                :key="option.value"
-                class="sort-menu-item"
-                :class="{ active: currentSort === option.value }"
-                @click="handleSortChange(option.value)"
-              >
-                <text class="sort-item-label">{{ option.label }}</text>
-                <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
-              </view>
-            </view>
           </view>
+        </view>
+      </view>
+
+      <!-- 排序菜单（移到外部，使用fixed定位，不受sticky-nav影响） -->
+      <view v-if="showSortMenu" class="sort-menu-content" :class="{ 'header-collapsed': isHeaderCollapsed }" @click.stop>
+        <view
+          v-for="option in sortOptions"
+          :key="option.value"
+          class="sort-menu-item"
+          :class="{ 'sort-menu-item--active': currentSort === option.value }"
+          @click="handleSortChange(option.value)"
+        >
+          <text class="sort-item-label">{{ option.label }}</text>
+          <Icon v-if="currentSort === option.value" name="check" :size="16" class="check-icon" />
         </view>
       </view>
 
@@ -904,7 +904,6 @@ onPageScroll((e: any) => {
 
 .sort-dropdown-wrapper {
   position: relative;
-  z-index: 102; // 确保下拉菜单在遮罩层之上
 }
 
 .sort-dropdown {
@@ -945,17 +944,45 @@ onPageScroll((e: any) => {
   flex-shrink: 0;
 }
 
-// 排序菜单
+// 排序菜单（使用fixed定位，移到sticky-nav外部）
 .sort-menu-content {
-  position: absolute;
-  top: calc(100% + 8rpx);
-  right: 0;
-  min-width: 240rpx;
+  position: fixed;
+  top: 208rpx; // 120rpx(top-nav) + 80rpx(sticky-nav) + 8rpx
+  right: max(calc((100vw - 1280px) / 2 + 80rpx), 80rpx); // 响应式右边距
+  z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
-  border-radius: 16rpx;
-  box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+  border-radius: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  min-width: 280rpx;
   overflow: hidden;
-  z-index: 102; // 必须高于遮罩层(100)，确保菜单可以被点击
+  border: 2rpx solid $gray-200;
+  transition: top $transition-base;
+
+  // 当顶部导航折叠时，菜单位置上移（因为sticky-nav被隐藏了）
+  &.header-collapsed {
+    top: 104rpx; // 96rpx(折叠后top-nav) + 8rpx
+  }
+
+  @media (max-width: 1600px) {
+    right: max(calc((100vw - 1280px) / 2 + 64rpx), 64rpx);
+  }
+
+  @media (max-width: 1440px) {
+    right: max(calc((100vw - 1280px) / 2 + 48rpx), 48rpx);
+  }
+
+  @media (max-width: 1200px) {
+    right: max(calc((100vw - 1280px) / 2 + 32rpx), 32rpx);
+  }
+
+  @include mobile {
+    right: 32rpx;
+    top: 200rpx; // 112rpx + 80rpx + 8rpx
+
+    &.header-collapsed {
+      top: 104rpx; // 96rpx + 8rpx
+    }
+  }
 }
 
 .sort-menu-item {
@@ -966,11 +993,16 @@ onPageScroll((e: any) => {
   cursor: pointer;
   transition: background $transition-base;
 
+  .sort-item-label {
+    font-size: 28rpx;
+    color: $gray-700;
+  }
+
   &:hover {
     background: $gray-50;
   }
 
-  &.active {
+  &--active {
     background: rgba($primary, 0.08);
 
     .sort-item-label {
@@ -978,11 +1010,6 @@ onPageScroll((e: any) => {
       font-weight: $font-weight-semibold;
     }
   }
-}
-
-.sort-item-label {
-  font-size: 28rpx;
-  color: $gray-700;
 }
 
 .check-icon {

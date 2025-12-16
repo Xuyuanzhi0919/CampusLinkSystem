@@ -1,24 +1,29 @@
 <template>
   <view class="club-list-page">
-    <!-- 搜索栏 -->
-    <view class="search-bar">
-      <view class="search-input">
-        <text class="search-icon">🔍</text>
-        <input
-          class="input"
-          type="text"
-          v-model="searchKeyword"
-          placeholder="搜索社团名称"
-          @confirm="handleSearch"
-        />
-        <Icon v-if="searchKeyword" name="x" :size="18" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
+    <!-- ========== 固定顶部控制区(全宽) ========== -->
+    <view class="top-control-area">
+      <!-- 搜索栏 -->
+      <view class="search-bar">
+        <view class="search-bar-container">
+          <view class="search-input">
+            <Icon name="search" :size="16" class="search-icon" />
+            <input
+              class="input"
+              type="text"
+              v-model="searchKeyword"
+              placeholder="搜索社团名称"
+              @confirm="handleSearch"
+            />
+            <Icon v-if="searchKeyword" name="x" :size="14" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
+          </view>
+        </view>
       </view>
-    </view>
 
-    <!-- MVP-1: 分类筛选Tab -->
-    <view class="category-tabs">
-      <scroll-view scroll-x class="tabs-scroll">
-        <view class="tabs-container">
+      <!-- MVP-1: 分类筛选Tab -->
+      <view class="category-tabs">
+        <view class="category-tabs-container">
+          <scroll-view scroll-x class="tabs-scroll">
+            <view class="tabs-wrapper">
           <view
             v-for="cat in categories"
             :key="cat.value"
@@ -30,18 +35,20 @@
             <text class="tab-label">{{ cat.label }}</text>
             <view v-if="cat.count && cat.count > 0" class="tab-badge">{{ cat.count }}</view>
           </view>
+            </view>
+          </scroll-view>
         </view>
-      </scroll-view>
-    </view>
-
-    <!-- MVP-3: 已加入社团置顶区 -->
-    <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
-      <view class="section-header">
-        <text class="section-title">我加入的社团</text>
-        <text class="section-count">{{ joinedClubs.length }}</text>
       </view>
-      <scroll-view scroll-x class="joined-clubs-scroll">
+
+      <!-- MVP-3: 已加入社团置顶区 -->
+      <view v-if="joinedClubs.length > 0 && !searchKeyword" class="joined-clubs-section">
         <view class="joined-clubs-container">
+          <view class="section-header">
+            <text class="section-title">我加入的社团</text>
+            <text class="section-count">{{ joinedClubs.length }}</text>
+          </view>
+          <scroll-view scroll-x class="joined-clubs-scroll">
+            <view class="joined-clubs-wrapper">
           <view
             v-for="club in joinedClubs.slice(0, 3)"
             :key="club.clubId"
@@ -58,12 +65,17 @@
               <text class="enter-arrow">›</text>
             </view>
           </view>
+            </view>
+          </scroll-view>
         </view>
-      </scroll-view>
+      </view>
     </view>
 
-    <!-- 结果信息 + 排序 -->
-    <view class="result-info" v-if="!loading">
+    <!-- ========== 主内容区(居中容器) ========== -->
+    <view class="main-content">
+      <view class="content-container">
+        <!-- 结果信息 + 排序 -->
+        <view class="result-info" v-if="!loading">
       <text class="result-count">
         {{ searchKeyword ? `找到 ${filteredClubs.length} 个社团` : `${currentCategoryLabel} ${filteredClubs.length} 个社团` }}
       </text>
@@ -97,22 +109,22 @@
       </view>
     </view>
 
-    <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
-    <view v-if="!loading && clubs.length > 0 && clubs.length < 3 && !searchKeyword" class="guide-tip">
-      <view class="guide-icon">💡</view>
-      <view class="guide-content">
-        <text class="guide-title">校园社团是交流学习的好地方</text>
-        <text class="guide-subtitle">加入社团,解锁更多资源与活动</text>
-      </view>
-    </view>
+        <!-- P0优化: 引导型空状态 - 当社团数量较少时显示 -->
+        <view v-if="!loading && clubs.length > 0 && clubs.length < 3 && !searchKeyword" class="guide-tip">
+          <view class="guide-icon">💡</view>
+          <view class="guide-content">
+            <text class="guide-title">校园社团是交流学习的好地方</text>
+            <text class="guide-subtitle">加入社团,解锁更多资源与活动</text>
+          </view>
+        </view>
 
-    <!-- 加载状态 -->
-    <view v-if="loading" class="loading-container">
-      <text class="loading-text">加载中...</text>
-    </view>
+        <!-- 加载状态 -->
+        <view v-if="loading" class="loading-container">
+          <text class="loading-text">加载中...</text>
+        </view>
 
-    <!-- 社团列表 -->
-    <view v-else-if="clubs.length > 0" class="club-list">
+        <!-- 社团列表 -->
+        <view v-else-if="clubs.length > 0" class="club-list">
       <view
         v-for="club in filteredClubs"
         :key="club.clubId"
@@ -172,17 +184,19 @@
       </view>
     </view>
 
-    <!-- P1优化: 增强型空状态 -->
-    <view v-else class="empty-state">
-      <text class="empty-icon">{{ searchKeyword ? '🔍' : '🏫' }}</text>
-      <text class="empty-text">{{ searchKeyword ? '未找到相关社团' : '暂无社团' }}</text>
-      <text class="empty-hint">{{ searchKeyword ? '试试修改搜索关键词' : '还没有社团加入平台' }}</text>
+        <!-- P1优化: 增强型空状态 -->
+        <view v-else class="empty-state">
+          <text class="empty-icon">{{ searchKeyword ? '🔍' : '🏫' }}</text>
+          <text class="empty-text">{{ searchKeyword ? '未找到相关社团' : '暂无社团' }}</text>
+          <text class="empty-hint">{{ searchKeyword ? '试试修改搜索关键词' : '还没有社团加入平台' }}</text>
 
-      <!-- P1优化: 空状态下的行动引导 -->
-      <view v-if="!searchKeyword" class="empty-actions">
-        <view class="empty-action-btn" @click="handleBrowseRecommend">
-          <text class="action-icon">👉</text>
-          <text class="action-text">浏览推荐社团</text>
+          <!-- P1优化: 空状态下的行动引导 -->
+          <view v-if="!searchKeyword" class="empty-actions">
+            <view class="empty-action-btn" @click="handleBrowseRecommend">
+              <text class="action-icon">👉</text>
+              <text class="action-text">浏览推荐社团</text>
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -461,16 +475,44 @@ onMounted(() => {
 .club-list-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-bottom: $sp-8;
 }
 
 // ===================================
-// 搜索栏
+// 顶部控制区(全宽背景 + 内容居中)
 // ===================================
-.search-bar {
+.top-control-area {
   background: $white;
-  padding: $sp-6 $sp-8;
-  margin-bottom: $sp-4;
+  border-bottom: 1rpx solid $gray-100;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+// 搜索栏
+.search-bar {
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.search-bar-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: $sp-6 80rpx;
+
+  @media (max-width: 1600px) {
+    padding: $sp-6 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: $sp-6 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: $sp-6 32rpx;
+  }
+
+  @include mobile {
+    padding: $sp-6 $sp-8;
+  }
 }
 
 .search-input {
@@ -479,41 +521,81 @@ onMounted(() => {
   background: $gray-100;
   border-radius: $radius-2xl;
   padding: $sp-4 $sp-8;
+  transition: background $transition-base;
+
+  &:focus-within {
+    background: $gray-50;
+    box-shadow: 0 0 0 2rpx rgba($primary, 0.1);
+  }
 }
 
 .search-icon {
-  font-size: $font-size-lg;
+  color: $gray-500;
   margin-right: $sp-4;
+  flex-shrink: 0;
 }
 
 .input {
   flex: 1;
   font-size: $font-size-base;
   background: transparent;
+  color: $gray-900;
+
+  &::placeholder {
+    color: $gray-400;
+  }
 }
 
 .clear-icon {
-  font-size: 40rpx;
   color: $gray-400;
-  padding: 0 $sp-3;
+  padding: 0 $sp-2;
+  cursor: pointer;
+  transition: color $transition-base;
+
+  &:hover {
+    color: $gray-600;
+  }
 }
 
-// ===================================
 // MVP-1: 分类筛选Tab
-// ===================================
 .category-tabs {
-  background: $white;
   padding: $sp-4 0 $sp-5;
-  margin-bottom: $sp-2;
+}
+
+.category-tabs-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+
+  @media (max-width: 1600px) {
+    padding: 0 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32rpx;
+  }
+
+  @include mobile {
+    padding: 0 $sp-8;
+  }
 }
 
 .tabs-scroll {
   white-space: nowrap;
+  overflow-x: auto;
+
+  // 隐藏滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.tabs-container {
+.tabs-wrapper {
   display: inline-flex;
-  padding: 0 $sp-6;
   gap: $sp-4;
 }
 
@@ -575,22 +657,40 @@ onMounted(() => {
   justify-content: center;
 }
 
-// ===================================
-// MVP-3: 已加入社团置顶区
-// ===================================
+// MVP-3: 已加入社团置顶区(全宽背景)
 .joined-clubs-section {
   background: linear-gradient(135deg, rgba($primary, 0.03) 0%, rgba($primary, 0.01) 100%);
-  padding: $sp-6 0;
-  margin-bottom: $sp-2;
   border-top: 1rpx solid rgba($primary, 0.08);
-  border-bottom: 1rpx solid rgba($primary, 0.08);
+  padding: $sp-6 0;
+}
+
+.joined-clubs-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+
+  @media (max-width: 1600px) {
+    padding: 0 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32rpx;
+  }
+
+  @include mobile {
+    padding: 0 $sp-8;
+  }
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: $sp-3;
-  padding: 0 $sp-8 $sp-4;
+  margin-bottom: $sp-4;
 }
 
 .section-title {
@@ -615,11 +715,16 @@ onMounted(() => {
 
 .joined-clubs-scroll {
   white-space: nowrap;
+  overflow-x: auto;
+
+  // 隐藏滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.joined-clubs-container {
+.joined-clubs-wrapper {
   display: inline-flex;
-  padding: 0 $sp-8;
   gap: $sp-4;
 }
 
@@ -682,10 +787,42 @@ onMounted(() => {
 }
 
 // ===================================
-// 结果信息 + 排序
+// 主内容区(居中容器)
 // ===================================
+.main-content {
+  background: $bg-page;
+  padding: $sp-8 0 80rpx; // 底部留出 TabBar 空间
+
+  @include mobile {
+    padding: $sp-6 0 120rpx;
+  }
+}
+
+.content-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+
+  @media (max-width: 1600px) {
+    padding: 0 64rpx;
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48rpx;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32rpx;
+  }
+
+  @include mobile {
+    padding: 0 $sp-8;
+  }
+}
+
+// 结果信息 + 排序
 .result-info {
-  padding: $sp-4 $sp-8;
+  padding: 0 0 $sp-6;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -805,10 +942,10 @@ onMounted(() => {
 }
 
 // ===================================
-// P0优化: 引导型空状态
+// P0优化: 引导型空状态(已在 content-container 中)
 // ===================================
 .guide-tip {
-  margin: 0 $sp-8 $sp-6;
+  margin-bottom: $sp-6;
   padding: $sp-6 $sp-8;
   background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($primary, 0.02) 100%);
   border-radius: $radius-card;
@@ -858,10 +995,10 @@ onMounted(() => {
 }
 
 // ===================================
-// P0优化: 社团列表
+// 社团列表(已在 content-container 中,无需额外 padding)
 // ===================================
 .club-list {
-  padding: 0 $sp-8;
+  // 内容已由 content-container 居中,无需额外处理
 }
 
 .club-card {

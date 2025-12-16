@@ -662,12 +662,17 @@ onPageScroll((e: any) => {
 
 // 搜索栏
 .search-wrapper {
+  position: relative;
   flex: 1;
-  min-width: 0;
-  max-width: 1000rpx; // 增大最大宽度，让搜索框有更多空间
+  max-width: 960rpx; // 480px - 与资源广场保持一致
+  margin: 0 auto; // 关键：让搜索框居中显示
+  min-width: 0; // 允许缩小
 
   @include mobile {
     max-width: none;
+    margin: 0;
+    flex: 1;
+    min-width: 0; // 防止溢出
   }
 }
 

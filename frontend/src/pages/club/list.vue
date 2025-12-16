@@ -64,7 +64,13 @@
       </view>
 
       <!-- 排序菜单（移到外部，使用fixed定位，不受sticky-nav影响） -->
-      <view v-if="showSortMenu" class="sort-menu-content" :class="{ 'header-collapsed': isHeaderCollapsed }" @click.stop>
+      <view
+        v-if="showSortMenu"
+        class="sort-menu-content"
+        :class="{ 'header-collapsed': isHeaderCollapsed }"
+        :style="{ top: getSortMenuTop() }"
+        @click.stop
+      >
         <view
           v-for="option in sortOptions"
           :key="option.value"
@@ -298,6 +304,15 @@ const getMainContentPaddingTop = () => {
   const topNavHeight = isHeaderCollapsed.value ? 48 : 60 // px
   const stickyNavHeight = isHeaderCollapsed.value ? 0 : 40 // px
   return `${statusBarHeight.value + topNavHeight + stickyNavHeight}px`
+}
+
+// 计算排序菜单的顶部位置
+const getSortMenuTop = () => {
+  // 顶部导航栏高度 + sticky-nav高度 + 间距
+  const topNavHeight = isHeaderCollapsed.value ? 48 : 60 // px
+  const stickyNavHeight = isHeaderCollapsed.value ? 0 : 40 // px
+  const spacing = 4 // px
+  return `${statusBarHeight.value + topNavHeight + stickyNavHeight + spacing}px`
 }
 
 // 计算属性：筛选+排序后的社团列表
@@ -947,7 +962,7 @@ onPageScroll((e: any) => {
 // 排序菜单（使用fixed定位，移到sticky-nav外部）
 .sort-menu-content {
   position: fixed;
-  top: 104px; // 60px(top-nav) + 40px(sticky-nav) + 4px
+  // top 通过内联样式动态设置，考虑状态栏高度
   right: max(calc((100vw - 1280px) / 2 + 40px), 40px); // 响应式右边距
   z-index: 105; // 高于sticky-nav(99)和遮罩层(100)
   background: $white;
@@ -956,12 +971,7 @@ onPageScroll((e: any) => {
   min-width: 140px;
   overflow: hidden;
   border: 1px solid $gray-200;
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-
-  // 当顶部导航折叠时，菜单位置上移（因为sticky-nav被隐藏了）
-  &.header-collapsed {
-    top: 52px; // 48px(折叠后top-nav) + 4px
-  }
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
   @media (max-width: 1600px) {
     right: max(calc((100vw - 1280px) / 2 + 64px), 64px);
@@ -977,11 +987,6 @@ onPageScroll((e: any) => {
 
   @include mobile {
     right: 16px;
-    top: 100px; // 56px + 40px + 4px
-
-    &.header-collapsed {
-      top: 52px; // 48px + 4px
-    }
   }
 }
 

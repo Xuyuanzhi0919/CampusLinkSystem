@@ -1,6 +1,7 @@
 <template>
   <view class="home-page">
     <!-- 1. 顶部导航栏（全局固定） -->
+    <!-- #ifdef H5 -->
     <WebHeader
       v-if="isDesktop"
       @search="handleSearch"
@@ -8,9 +9,25 @@
       @login="showLoginModal = true"
     />
     <MobileHeader v-else @search="handleSearch" />
+    <!-- #endif -->
+
+    <!-- 小程序端用户信息卡片 -->
+    <!-- #ifdef MP-WEIXIN -->
+    <MiniProgramUserCard
+      @login="handleMiniLogin"
+      @profile="handleMiniProfile"
+    />
+    <!-- #endif -->
 
     <!-- 移动端金刚区导航 -->
+    <!-- #ifdef H5 -->
     <GridNavigation v-if="!isDesktop" />
+    <!-- #endif -->
+
+    <!-- 小程序端金刚区导航 -->
+    <!-- #ifdef MP-WEIXIN -->
+    <GridNavigation />
+    <!-- #endif -->
 
     <!-- 2. Hero 主视觉区 -->
     <HeroSection
@@ -132,6 +149,11 @@ import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
 // PC 端组件（仅 H5）
 // #ifdef H5
 import { WebHeader, PCFloatingNav } from '@/components/desktop'
+// #endif
+
+// 小程序专属组件
+// #ifdef MP-WEIXIN
+import MiniProgramUserCard from './components/MiniProgramUserCard.vue'
 // #endif
 
 // 首页组件
@@ -298,6 +320,23 @@ const handleForgotPassword = () => {
     fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
+
+// ===================== 小程序登录处理 =====================
+// #ifdef MP-WEIXIN
+const handleMiniLogin = () => {
+  // 小程序登录：跳转到个人中心页面，个人中心会处理登录
+  uni.switchTab({
+    url: '/pages/user/index'
+  })
+}
+
+const handleMiniProfile = () => {
+  // 跳转到个人中心
+  uni.switchTab({
+    url: '/pages/user/index'
+  })
+}
+// #endif
 
 // ===================== 登录引导弹窗处理 =====================
 

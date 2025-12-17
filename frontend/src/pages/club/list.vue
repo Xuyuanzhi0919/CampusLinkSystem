@@ -201,6 +201,19 @@
               <text v-else class="action-text join">加入</text>
             </view>
           </view>
+
+          <!-- 加载更多提示 -->
+          <view v-if="clubs.length > 0 && !loading" class="load-more-container">
+            <view v-if="loadingMore" class="loading-more">
+              <text class="loading-text">加载中...</text>
+            </view>
+            <view v-else-if="!hasMore" class="no-more">
+              <text class="no-more-text">已加载全部 {{ total }} 个社团</text>
+            </view>
+            <view v-else class="load-more-trigger" @click="loadMore">
+              <text class="load-more-text">点击加载更多</text>
+            </view>
+          </view>
         </view>
 
           <!-- P1优化: 增强型空状态 -->
@@ -288,7 +301,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { onPageScroll } from '@dcloudio/uni-app'
+import { onPageScroll, onReachBottom } from '@dcloudio/uni-app'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
@@ -305,8 +318,15 @@ const COLLAPSE_END = 120 // 完全折叠的阈值（120px）
 
 // 状态
 const loading = ref(false)
+const loadingMore = ref(false) // 加载更多状态
 const clubs = ref<ClubItem[]>([])
 const searchKeyword = ref('')
+
+// 分页状态
+const currentPage = ref(1)
+const pageSize = ref(20)
+const hasMore = ref(true)
+const total = ref(0)
 
 // 右栏数据（弱右栏，辅助决策）
 const officialClubs = ref<ClubItem[]>([])  // 官方/校级社团（2-3个）
@@ -489,20 +509,53 @@ const getRecentActivityTime = (club: ClubItem): string => {
 }
 
 // 加载社团列表
-const loadClubList = async () => {
-  loading.value = true
+const loadClubList = async (isRefresh = false) => {
+  // 如果是刷新,重置分页
+  if (isRefresh) {
+    currentPage.value = 1
+    hasMore.value = true
+    clubs.value = []
+  }
+
+  // 如果没有更多数据或正在加载,直接返回
+  if (!hasMore.value || (isRefresh ? loading.value : loadingMore.value)) {
+    return
+  }
+
+  // 设置加载状态
+  if (isRefresh) {
+    loading.value = true
+  } else {
+    loadingMore.value = true
+  }
+
   try {
     const res = await getClubList({
-      page: 1,
-      pageSize: 100
+      page: currentPage.value,
+      pageSize: pageSize.value
     })
-    clubs.value = res.list || []
+
+    // 更新分页信息
+    total.value = res.total || 0
+    hasMore.value = currentPage.value < (res.pages || 1)
+
+    // 追加或替换数据
+    if (isRefresh) {
+      clubs.value = res.list || []
+    } else {
+      clubs.value = [...clubs.value, ...(res.list || [])]
+    }
 
     // 注意: 以下字段应由后端在列表接口直接返回
     // - isMember: boolean - 用户是否已加入该社团
     // - isPending: boolean - 用户是否有待审核的加入申请
     // - activityCount: number - 社团历史活动总数
     // 如果后端未返回这些字段,前端将显示默认值 0
+
+    // 页码自增
+    if (!isRefresh) {
+      currentPage.value++
+    }
 
     // MVP-1: 更新分类计数
     updateCategoryCounts()
@@ -530,8 +583,17 @@ const loadClubList = async () => {
       icon: 'none'
     })
   } finally {
-    loading.value = false
+    if (isRefresh) {
+      loading.value = false
+    } else {
+      loadingMore.value = false
+    }
   }
+}
+
+// 加载更多
+const loadMore = () => {
+  loadClubList(false)
 }
 
 // 搜索
@@ -673,7 +735,13 @@ onMounted(() => {
   const systemInfo = uni.getSystemInfoSync()
   statusBarHeight.value = systemInfo.statusBarHeight || 0
 
-  loadClubList()
+  // 首次加载
+  loadClubList(true)
+})
+
+// 监听触底事件(自动加载更多)
+onReachBottom(() => {
+  loadMore()
 })
 
 // 监听页面滚动（渐进式折叠）
@@ -1811,6 +1879,63 @@ onPageScroll((e: any) => {
 }
 
 .action-text {
+  font-weight: $font-weight-medium;
+}
+
+// ===================================
+// 加载更多提示
+// ===================================
+.load-more-container {
+  padding: $sp-8 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading-more {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  color: $gray-500;
+  font-size: $font-size-sm;
+}
+
+.loading-text {
+  color: $gray-500;
+}
+
+.no-more {
+  padding: $sp-4 $sp-6;
+  background: rgba($gray-200, 0.5);
+  border-radius: $radius-full;
+}
+
+.no-more-text {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
+.load-more-trigger {
+  padding: $sp-3 $sp-8;
+  background: linear-gradient(135deg, rgba($primary, 0.08) 0%, rgba($primary, 0.04) 100%);
+  border-radius: $radius-full;
+  border: 1rpx solid rgba($primary, 0.15);
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    background: linear-gradient(135deg, rgba($primary, 0.12) 0%, rgba($primary, 0.06) 100%);
+    transform: translateY(-1rpx);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.load-more-text {
+  font-size: 26rpx;
+  color: $primary;
   font-weight: $font-weight-medium;
 }
 

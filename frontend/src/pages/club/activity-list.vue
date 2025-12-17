@@ -1340,9 +1340,11 @@ defineExpose({
 }
 
 .search-wrapper {
-  flex: 1;
   position: relative;
-  max-width: 800rpx;
+  flex: 1;
+  max-width: 960rpx; // 480px - 与社团广场保持一致
+  margin: 0 auto; // 关键：让搜索框居中显示
+  min-width: 0; // 允许缩小
 }
 
 .compact-search-bar {

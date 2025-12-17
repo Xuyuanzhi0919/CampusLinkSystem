@@ -49,7 +49,7 @@
         </view>
 
         <!-- 筛选按钮 -->
-        <view class="filter-button" @click="showFilterPopup = true">
+        <view class="filter-button" @click="showFilterPopup = true; tempFilters = { ...filters }">
           <Icon name="sliders" :size="16" class="filter-icon" />
           <text class="filter-text">筛选</text>
         </view>
@@ -99,7 +99,7 @@
           </view>
 
           <!-- 筛选按钮 -->
-          <view class="filter-btn" @click="showFilterPopup = true">
+          <view class="filter-btn" @click="showFilterPopup = true; tempFilters = { ...filters }">
             <Icon name="sliders" :size="14" class="filter-icon" />
             <text class="filter-label">筛选</text>
           </view>

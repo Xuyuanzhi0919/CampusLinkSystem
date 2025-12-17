@@ -1,33 +1,113 @@
 <template>
-  <CCard title="我的功能" class="function-grid" :no-padding="true">
-    <view class="grid-container">
-      <view
-        v-for="item in functionItems"
-        :key="item.id"
-        class="function-item"
-        :class="`type-${item.type}`"
-        @click="handleItemClick(item)"
-      >
-        <!-- 图标容器 -->
-        <view class="icon-wrapper">
-          <text class="icon">{{ item.icon }}</text>
-          <!-- 角标 -->
-          <view v-if="item.badge && item.badge > 0" class="badge">
-            <text class="badge-text">{{ badgeText(item.badge) }}</text>
+  <view class="function-sections">
+    <!-- ========== A. 我的内容（最高优先级） ========== -->
+    <view class="function-section">
+      <view class="section-header">
+        <Icon name="folder" :size="18" class="section-icon primary" />
+        <text class="section-title">我的内容</text>
+      </view>
+      <view class="section-items">
+        <view
+          v-for="item in myContentItems"
+          :key="item.id"
+          class="function-item primary"
+          @click="handleItemClick(item)"
+        >
+          <view class="item-left">
+            <Icon :name="item.icon" :size="20" class="item-icon" />
+            <text class="item-label">{{ item.label }}</text>
+          </view>
+          <view class="item-right">
+            <view v-if="item.badge && item.badge > 0" class="item-badge">
+              <text class="badge-text">{{ item.badge }}</text>
+            </view>
+            <Icon name="chevron-right" :size="16" class="item-arrow" />
           </view>
         </view>
-
-        <!-- 标签 -->
-        <text class="label">{{ item.label }}</text>
       </view>
     </view>
-  </CCard>
+
+    <!-- ========== B. 我的互动 ========== -->
+    <view class="function-section">
+      <view class="section-header">
+        <Icon name="message-square" :size="18" class="section-icon success" />
+        <text class="section-title">我的互动</text>
+      </view>
+      <view class="section-items">
+        <view
+          v-for="item in myInteractionItems"
+          :key="item.id"
+          class="function-item success"
+          @click="handleItemClick(item)"
+        >
+          <view class="item-left">
+            <Icon :name="item.icon" :size="20" class="item-icon" />
+            <text class="item-label">{{ item.label }}</text>
+          </view>
+          <view class="item-right">
+            <view v-if="item.badge && item.badge > 0" class="item-badge highlight">
+              <text class="badge-text">{{ badgeText(item.badge) }}</text>
+            </view>
+            <Icon name="chevron-right" :size="16" class="item-arrow" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== C. 我的成长（可选） ========== -->
+    <view class="function-section">
+      <view class="section-header">
+        <Icon name="trending-up" :size="18" class="section-icon accent" />
+        <text class="section-title">我的成长</text>
+      </view>
+      <view class="section-items">
+        <view
+          v-for="item in myGrowthItems"
+          :key="item.id"
+          class="function-item accent"
+          @click="handleItemClick(item)"
+        >
+          <view class="item-left">
+            <Icon :name="item.icon" :size="20" class="item-icon" />
+            <text class="item-label">{{ item.label }}</text>
+          </view>
+          <view class="item-right">
+            <Icon name="chevron-right" :size="16" class="item-arrow" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== D. 设置与管理（降权） ========== -->
+    <view class="function-section lowkey">
+      <view class="section-header">
+        <Icon name="settings" :size="18" class="section-icon gray" />
+        <text class="section-title">设置</text>
+      </view>
+      <view class="section-items">
+        <view
+          v-for="item in settingsItems"
+          :key="item.id"
+          class="function-item gray"
+          @click="handleItemClick(item)"
+        >
+          <view class="item-left">
+            <Icon :name="item.icon" :size="20" class="item-icon" />
+            <text class="item-label">{{ item.label }}</text>
+          </view>
+          <view class="item-right">
+            <Icon name="chevron-right" :size="16" class="item-arrow" />
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { FunctionItem } from '@/types/user'
-import CCard from '@/components/ui/CCard.vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   badges?: {
@@ -49,105 +129,145 @@ const emit = defineEmits<{
 }>()
 
 /**
- * 功能项配置
- * 按类型分组:
- * - study: 学习相关 (蓝色) - 通知、资源、问答、任务、活动
- * - asset: 个人资产 (黄色) - 积分、收藏
- * - system: 系统功能 (灰色) - 设置、关于
+ * A. 我的内容（核心闭环）
  */
-const functionItems = computed<FunctionItem[]>(() => [
-  // 学习相关 (蓝色)
-  {
-    id: 'notifications',
-    icon: '🔔',
-    label: '通知中心',
-    path: '/pages/notification/index',
-    type: 'study',
-    description: '查看系统通知和消息提醒',
-    badge: props.badges?.notifications
-  },
-  {
-    id: 'messages',
-    icon: '💬',
-    label: '我的消息',
-    path: '/pages/message/index',
-    type: 'study',
-    description: '查看私信和聊天记录',
-    badge: props.badges?.messages
-  },
+const myContentItems = computed<FunctionItem[]>(() => [
   {
     id: 'my-resources',
-    icon: '📚',
+    icon: 'file-text',
     label: '我的资源',
     path: '/pages/resource/my',
-    type: 'study',
+    type: 'content',
     description: '查看我上传的学习资料',
     badge: props.badges?.myResources
   },
   {
     id: 'my-questions',
-    icon: '❓',
-    label: '我的问答',
+    icon: 'message-circle',
+    label: '我的回答',
     path: '/pages/question/my',
-    type: 'study',
+    type: 'content',
     description: '查看我的提问和回答',
     badge: props.badges?.myQuestions
   },
   {
-    id: 'my-tasks',
-    icon: '📋',
-    label: '我的任务',
-    path: '/pages/task/my',
-    type: 'study',
-    description: '查看我发布和接取的任务',
-    badge: props.badges?.myTasks
-  },
-  {
     id: 'my-activities',
-    icon: '🎯',
+    icon: 'calendar',
     label: '我的活动',
     path: '/pages/club/my-activities',
-    type: 'study',
+    type: 'content',
     description: '查看我参与的社团活动',
     badge: props.badges?.myActivities
   },
+  {
+    id: 'my-clubs',
+    icon: 'users',
+    label: '我的社团',
+    path: '/pages/club/my-clubs',
+    type: 'content',
+    description: '查看我加入的社团'
+  }
+])
 
-  // 个人资产 (黄色)
+/**
+ * B. 我的互动
+ */
+const myInteractionItems = computed<FunctionItem[]>(() => [
+  {
+    id: 'notifications',
+    icon: 'bell',
+    label: '通知中心',
+    path: '/pages/notification/index',
+    type: 'interaction',
+    description: '查看系统通知和消息提醒',
+    badge: props.badges?.notifications
+  },
+  {
+    id: 'messages',
+    icon: 'mail',
+    label: '我的消息',
+    path: '/pages/message/index',
+    type: 'interaction',
+    description: '查看私信和聊天记录',
+    badge: props.badges?.messages
+  },
+  {
+    id: 'my-favorites',
+    icon: 'heart',
+    label: '收藏 / 点赞',
+    path: '/pages/user/favorites',
+    type: 'interaction',
+    description: '查看收藏的资源和问答',
+    badge: props.badges?.myFavorites
+  }
+])
+
+/**
+ * C. 我的成长（成就激励）
+ */
+const myGrowthItems = computed<FunctionItem[]>(() => [
   {
     id: 'points-history',
-    icon: '🎁',
+    icon: 'award',
     label: '积分记录',
     path: '/pages/user/points-history',
-    type: 'asset',
+    type: 'growth',
     description: '查看积分获取和消费记录',
     badge: props.badges?.pointsHistory
   },
   {
-    id: 'my-favorites',
-    icon: '⭐',
-    label: '我的收藏',
-    path: '/pages/user/favorites',
-    type: 'asset',
-    description: '查看收藏的资源和问答',
-    badge: props.badges?.myFavorites
+    id: 'achievements',
+    icon: 'star',
+    label: '成就徽章',
+    path: '/pages/user/achievements',
+    type: 'growth',
+    description: '查看获得的成就和徽章'
   },
-
-  // 系统功能 (灰色)
   {
-    id: 'settings',
-    icon: '⚙️',
-    label: '设置',
+    id: 'level-info',
+    icon: 'info',
+    label: '等级说明',
+    path: '/pages/user/level-info',
+    type: 'growth',
+    description: '了解等级体系和权益'
+  }
+])
+
+/**
+ * D. 设置与管理（降权）
+ */
+const settingsItems = computed<FunctionItem[]>(() => [
+  {
+    id: 'edit-profile',
+    icon: 'user',
+    label: '编辑资料',
+    path: '/pages/user/edit-profile',
+    type: 'settings',
+    description: '修改个人信息'
+  },
+  {
+    id: 'change-password',
+    icon: 'lock',
+    label: '修改密码',
+    path: '/pages/user/change-password',
+    type: 'settings',
+    description: '修改登录密码'
+  },
+  {
+    id: 'system-settings',
+    icon: 'sliders',
+    label: '系统设置',
     path: '/pages/user/settings',
-    type: 'system',
+    type: 'settings',
     description: '账号设置和偏好配置'
   },
   {
     id: 'about',
-    icon: '📖',
-    label: '关于',
+    icon: 'info',
+    label: '关于 CampusLink',
     path: '/pages/user/about',
-    type: 'system',
-    description: '关于 CampusLink'
+    type: 'settings',
+    description: '关于我们'
   }
 ])
 
@@ -169,115 +289,185 @@ const handleItemClick = (item: FunctionItem) => {
 <style lang="scss" scoped>
 // 变量已通过 uni.scss 全局注入
 
-.function-grid {
-  margin: $sp-6;
+.function-sections {
+  padding: 0 24rpx 24rpx;
 }
 
-.grid-container {
-  padding: 0 $sp-8 $sp-8;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: $sp-8 $sp-6;
+/* ========== 功能分区 ========== */
+.function-section {
+  background: $white;
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+
+  // 降权样式（设置区）
+  &.lowkey {
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* 分区标题 */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 24rpx 24rpx 16rpx;
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.section-icon {
+  flex-shrink: 0;
+
+  &.primary {
+    color: $primary;
+  }
+
+  &.success {
+    color: $success;
+  }
+
+  &.accent {
+    color: $accent;
+  }
+
+  &.gray {
+    color: $gray-500;
+  }
+}
+
+.section-title {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+/* 功能项列表 */
+.section-items {
+  padding: 0;
 }
 
 .function-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: $sp-3;
+  justify-content: space-between;
+  padding: 24rpx;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s ease;
+  border-bottom: 1rpx solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+  }
 
   &:active {
-    transform: scale(0.95);
+    background: $gray-50;
   }
 }
 
-.icon-wrapper {
-  position: relative;
-  width: 96rpx;
-  height: 96rpx;
-  border-radius: $radius-lg;
-  @include flex-center;
-  transition: $transition-base;
+.item-left {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex: 1;
+  min-width: 0;
 }
 
-.icon {
-  font-size: 48rpx;
+.item-icon {
+  flex-shrink: 0;
+  color: $gray-600;
 }
 
-.badge {
-  position: absolute;
-  top: -$sp-2;
-  right: -$sp-2;
-  min-width: $sp-8;
-  height: $sp-8;
-  padding: 0 $sp-2;
-  background: $error;
-  border-radius: $radius-card;
-  @include flex-center;
-  border: 2rpx solid $white;
+.item-label {
+  font-size: 28rpx;
+  color: $gray-800;
+  font-weight: 500;
+}
+
+.item-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.item-badge {
+  min-width: 32rpx;
+  height: 32rpx;
+  padding: 0 8rpx;
+  background: $gray-200;
+  color: $gray-700;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 600;
+
+  // 高亮角标（未读消息）
+  &.highlight {
+    background: $error;
+    color: $white;
+  }
 }
 
 .badge-text {
-  font-size: 20rpx;
-  font-weight: $font-weight-semibold;
-  color: $white;
   line-height: 1;
 }
 
-.label {
-  font-size: $font-size-sm;
-  color: $gray-600;
-  text-align: center;
-  white-space: nowrap;
+.item-arrow {
+  color: $gray-400;
+  flex-shrink: 0;
 }
 
-// 学习相关 (蓝色)
-.type-study {
-  .icon-wrapper {
+/* ========== 不同类型的视觉差异 ========== */
+
+// 我的内容（蓝色）
+.function-item.primary {
+  .item-icon {
+    color: $primary;
+  }
+
+  &:active {
     background: $primary-50;
-    border: 1rpx solid $primary-100;
-  }
-
-  .icon {
-    filter: grayscale(0);
-  }
-
-  &:active .icon-wrapper {
-    background: $primary-100;
   }
 }
 
-// 个人资产 (黄色)
-.type-asset {
-  .icon-wrapper {
+// 我的互动（绿色）
+.function-item.success {
+  .item-icon {
+    color: $success;
+  }
+
+  &:active {
+    background: $success-50;
+  }
+}
+
+// 我的成长（橙色）
+.function-item.accent {
+  .item-icon {
+    color: $accent;
+  }
+
+  &:active {
     background: $accent-50;
-    border: 1rpx solid $accent-100;
-  }
-
-  .icon {
-    filter: grayscale(0);
-  }
-
-  &:active .icon-wrapper {
-    background: $accent-100;
   }
 }
 
-// 系统功能 (灰色)
-.type-system {
-  .icon-wrapper {
+// 设置（灰色，降权）
+.function-item.gray {
+  .item-icon {
+    color: $gray-500;
+  }
+
+  .item-label {
+    color: $gray-600;
+    font-weight: 400; // 更轻的字重
+  }
+
+  &:active {
     background: $gray-100;
-    border: 1rpx solid $gray-200;
-  }
-
-  .icon {
-    filter: grayscale(0);
-  }
-
-  &:active .icon-wrapper {
-    background: $gray-200;
   }
 }
 </style>

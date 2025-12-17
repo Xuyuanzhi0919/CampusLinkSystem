@@ -1,65 +1,79 @@
 <template>
   <view class="profile-header">
-    <!-- 用户基本信息 -->
-    <view class="user-info">
-      <!-- 头像 -->
-      <image
-        class="avatar"
-        :src="profile?.avatarUrl || defaultAvatar"
-        mode="aspectFill"
-        @click="handleAvatarClick"
-        @longpress="handleEditProfile"
-      />
+    <!-- ========== ① 顶部：身份卡（重设计） ========== -->
+    <view class="identity-card">
+      <!-- 用户基本信息行 -->
+      <view class="user-basic-info">
+        <!-- 头像 -->
+        <image
+          class="avatar"
+          :src="profile?.avatarUrl || defaultAvatar"
+          mode="aspectFill"
+          @click="handleAvatarClick"
+        />
 
-      <!-- 用户资料 -->
-      <view class="info-content">
-        <view class="name-row">
-          <text class="nickname">{{ profile?.nickname || '未设置昵称' }}</text>
-          <LevelBadge :level="profile?.level || 1" />
+        <!-- 姓名+等级+徽章 -->
+        <view class="user-name-section">
+          <view class="name-row">
+            <text class="nickname">{{ profile?.nickname || '未设置昵称' }}</text>
+            <LevelBadge :level="profile?.level || 1" />
+            <text v-if="profile?.isVip" class="vip-badge">⭐</text>
+          </view>
+          <text class="user-meta">{{ studentIdText }} · {{ profile?.schoolName || '未设置学校' }}</text>
+        </view>
+      </view>
+
+      <!-- 成就数据行（积分+排名） -->
+      <view class="achievement-bar" @click="handlePointsClick">
+        <view class="achievement-item">
+          <text class="achievement-label">积分</text>
+          <text class="achievement-value primary">{{ profile?.points || 0 }}</text>
+        </view>
+        <view class="achievement-divider"></view>
+        <view class="achievement-item">
+          <text class="achievement-label">排名</text>
+          <text class="achievement-value accent">{{ rankingText }}</text>
+        </view>
+        <Icon name="chevron-right" :size="16" class="achievement-arrow" />
+      </view>
+
+      <!-- 🎯 核心行为按钮（取代编辑资料） -->
+      <view class="primary-actions">
+        <view
+          class="action-btn check-in-btn"
+          :class="{ disabled: isCheckedIn }"
+          @click="handleCheckIn"
+        >
+          <Icon :name="isCheckedIn ? 'check-circle' : 'calendar'" :size="18" class="action-icon" />
+          <text class="action-text">{{ checkInButtonText }}</text>
         </view>
 
-        <view class="meta-row">
-          <text class="student-id">{{ studentIdText }}</text>
-          <text class="school-name">{{ profile?.schoolName || '未设置学校' }}</text>
-        </view>
-
-        <view class="points-row" @click="handlePointsClick">
-          <text class="points-label">积分</text>
-          <text class="points-value">{{ profile?.points || 0 }}</text>
-          <text class="points-arrow">›</text>
+        <view class="action-btn publish-btn" @click="handlePublish">
+          <Icon name="plus-circle" :size="18" class="action-icon" />
+          <text class="action-text">发布内容</text>
         </view>
       </view>
     </view>
 
-    <!-- 统计数据 -->
-    <view class="stats-grid">
+    <!-- ========== ② 中部：可操作化数据卡 ========== -->
+    <view class="action-stats-grid">
       <view
-        v-for="stat in statsData"
+        v-for="stat in actionableStats"
         :key="stat.key"
-        class="stat-item"
+        class="action-stat-card"
+        :class="{ highlight: stat.highlight }"
         @click="handleStatClick(stat.key)"
       >
-        <text class="stat-value">{{ stat.value }}</text>
-        <text class="stat-label">{{ stat.label }}</text>
+        <view class="stat-header">
+          <Icon :name="stat.icon" :size="20" class="stat-icon" :style="{ color: stat.color }" />
+          <text class="stat-title">{{ stat.label }}</text>
+        </view>
+        <text class="stat-number">{{ stat.value }}</text>
+        <view class="stat-action">
+          <text class="stat-action-text">{{ stat.actionText }}</text>
+          <Icon name="arrow-right" :size="14" class="stat-action-arrow" />
+        </view>
       </view>
-    </view>
-
-    <!-- 操作按钮 - 使用 CButton 组件 -->
-    <view class="action-buttons">
-      <CButton type="secondary" size="md" @click="handleEditProfile">
-        <template #icon><text>✏️</text></template>
-        编辑资料
-      </CButton>
-
-      <CButton
-        type="primary"
-        size="md"
-        :disabled="isCheckedIn"
-        @click="handleCheckIn"
-      >
-        <template #icon><text>📅</text></template>
-        {{ checkInButtonText }}
-      </CButton>
     </view>
   </view>
 </template>
@@ -68,7 +82,7 @@
 import { computed } from 'vue'
 import type { UserProfileData, UserStatsData } from '@/types/user'
 import LevelBadge from './LevelBadge.vue'
-import CButton from '@/components/ui/CButton.vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   profile: UserProfileData | null
@@ -83,6 +97,7 @@ const emit = defineEmits<{
   checkIn: []
   statClick: [key: string]
   pointsClick: []
+  publish: []
 }>()
 
 // 默认头像
@@ -93,50 +108,67 @@ const studentIdText = computed(() => {
   return props.profile?.studentId || '未设置学号'
 })
 
-// 签到按钮文本
-const checkInButtonText = computed(() => {
-  return props.isCheckedIn ? '已签到' : '每日签到'
+// 🎯 排名文本（百分比）
+const rankingText = computed(() => {
+  // TODO: 后端提供真实排名数据
+  // 这里暂时用积分模拟排名：积分越高排名越靠前
+  const points = props.profile?.points || 0
+  if (points > 5000) return 'Top 5%'
+  if (points > 2000) return 'Top 15%'
+  if (points > 1000) return 'Top 30%'
+  if (points > 500) return 'Top 50%'
+  return 'Top 80%'
 })
 
-// 统计数据配置
-const statsData = computed(() => [
-  {
-    key: 'resources',
-    label: '资源',
-    value: props.stats?.resourceCount || 0
-  },
-  {
-    key: 'questions',
-    label: '问答',
-    value: props.stats?.questionCount || 0
-  },
-  {
-    key: 'tasks',
-    label: '任务',
-    value: (props.stats?.taskPublishCount || 0) + (props.stats?.taskAcceptedCount || 0)
-  },
-  {
-    key: 'favorites',
-    label: '收藏',
-    value: props.stats?.favoriteCount || 0
-  }
-])
+// 签到按钮文本
+const checkInButtonText = computed(() => {
+  return props.isCheckedIn ? '今日已签' : '每日签到'
+})
 
-/**
- * 处理编辑资料
- */
-const handleEditProfile = () => {
-  emit('editProfile')
-}
+// 🎯 可操作化统计数据（四格卡片）
+const actionableStats = computed(() => {
+  const taskCount = (props.stats?.taskPublishCount || 0) + (props.stats?.taskAcceptedCount || 0)
+  const ongoingTaskCount = props.stats?.taskAcceptedCount || 0 // 假设接受的任务就是进行中的
 
-/**
- * 处理签到
- */
-const handleCheckIn = () => {
-  if (!props.isCheckedIn) {
-    emit('checkIn')
-  }
-}
+  return [
+    {
+      key: 'resources',
+      label: '我的资源',
+      value: props.stats?.resourceCount || 0,
+      icon: 'file-text',
+      color: '#2563EB', // primary
+      actionText: '查看',
+      highlight: false
+    },
+    {
+      key: 'questions',
+      label: '我的回答',
+      value: props.stats?.questionCount || 0,
+      icon: 'message-circle',
+      color: '#16A34A', // success
+      actionText: '查看',
+      highlight: false
+    },
+    {
+      key: 'tasks',
+      label: '进行中任务',
+      value: ongoingTaskCount,
+      icon: 'clock',
+      color: '#F59E0B', // warning
+      actionText: ongoingTaskCount > 0 ? '去完成' : '查看',
+      highlight: ongoingTaskCount > 0 // 🎯 有进行中任务时高亮
+    },
+    {
+      key: 'favorites',
+      label: '我的收藏',
+      value: props.stats?.favoriteCount || 0,
+      icon: 'heart',
+      color: '#EF4444', // error
+      actionText: '查看',
+      highlight: false
+    }
+  ]
+})
 
 /**
  * 🎯 处理头像点击 - 预览头像
@@ -166,6 +198,22 @@ const handleAvatarClick = () => {
 }
 
 /**
+ * 处理签到
+ */
+const handleCheckIn = () => {
+  if (!props.isCheckedIn) {
+    emit('checkIn')
+  }
+}
+
+/**
+ * 🎯 处理发布内容（强转化按钮）
+ */
+const handlePublish = () => {
+  emit('publish')
+}
+
+/**
  * 处理统计项点击
  */
 const handleStatClick = (key: string) => {
@@ -184,154 +232,295 @@ const handlePointsClick = () => {
 // 变量已通过 uni.scss 全局注入
 
 .profile-header {
-  background: $white;
-  border-radius: $radius-2xl;
-  padding: $sp-8;
-  margin: $sp-6;
-  box-shadow: $shadow-card;
+  background: transparent;
+  padding: 0;
+  margin: 0;
 }
 
-// 用户基本信息
-.user-info {
+/* ========== ① 身份卡 ========== */
+.identity-card {
+  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  border-radius: 24rpx;
+  padding: 40rpx 32rpx;
+  margin: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.25);
+  position: relative;
+  overflow: hidden;
+
+  // 🎯 装饰性背景
+  &::before {
+    content: '';
+    position: absolute;
+    top: -100rpx;
+    right: -100rpx;
+    width: 300rpx;
+    height: 300rpx;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+}
+
+/* 用户基本信息行 */
+.user-basic-info {
   display: flex;
-  gap: $sp-6;
-  margin-bottom: $sp-8;
+  align-items: center;
+  gap: 24rpx;
+  margin-bottom: 32rpx;
+  position: relative;
+  z-index: 1;
 }
 
 .avatar {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: $radius-full;
-  background: $gray-100;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  border: 4rpx solid rgba(255, 255, 255, 0.2);
+  background: $white;
   flex-shrink: 0;
-  cursor: pointer;
-  transition: $transition-base;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s ease;
 
   &:active {
     transform: scale(0.95);
   }
 }
 
-.info-content {
+.user-name-section {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
   min-width: 0;
 }
 
 .name-row {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 12rpx;
+  margin-bottom: 8rpx;
 }
 
 .nickname {
   font-size: 36rpx;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
+  font-weight: 700;
+  color: $white;
   @include text-ellipsis(1);
 }
 
-.meta-row {
+.vip-badge {
+  font-size: 24rpx;
+  margin-left: -4rpx;
+}
+
+.user-meta {
+  font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.8);
+  @include text-ellipsis(1);
+}
+
+/* 成就数据行 */
+.achievement-bar {
   display: flex;
   align-items: center;
-  gap: $sp-4;
-  margin-top: $sp-2;
-}
-
-.student-id,
-.school-name {
-  font-size: $font-size-sm;
-  color: $gray-500;
-}
-
-.school-name {
-  &::before {
-    content: '•';
-    margin-right: $sp-2;
-  }
-}
-
-.points-row {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  margin-top: $sp-3;
-  padding: $sp-2 $sp-3 $sp-2 0;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx;
+  margin-bottom: 24rpx;
   cursor: pointer;
-  transition: $transition-base;
-  border-radius: $radius-base;
-  margin-left: -$sp-3;
-  padding-left: $sp-3;
+  transition: all 0.2s ease;
+  position: relative;
+  z-index: 1;
 
   &:active {
-    background: $accent-100;
+    background: rgba(255, 255, 255, 0.2);
     transform: scale(0.98);
   }
 }
 
-.points-label {
-  font-size: $font-size-sm;
-  color: $gray-500;
-}
-
-.points-value {
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
-  color: $accent;
-}
-
-.points-arrow {
-  font-size: $font-size-lg;
-  color: $accent-600;
-  font-weight: $font-weight-bold;
-  margin-left: $sp-1;
-}
-
-// 统计数据
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: $sp-6;
-  padding: $sp-6 0;
-  border-top: 1rpx solid $gray-100;
-  border-bottom: 1rpx solid $gray-100;
-}
-
-.stat-item {
+.achievement-item {
   display: flex;
   flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+}
+
+.achievement-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.achievement-value {
+  font-size: 32rpx;
+  font-weight: 700;
+
+  &.primary {
+    color: #FFD699; // 橙色（积分）
+  }
+
+  &.accent {
+    color: #A5F3FC; // 青色（排名）
+  }
+}
+
+.achievement-divider {
+  width: 1rpx;
+  height: 40rpx;
+  background: rgba(255, 255, 255, 0.2);
+  margin: 0 16rpx;
+}
+
+.achievement-arrow {
+  color: rgba(255, 255, 255, 0.6);
+  flex-shrink: 0;
+}
+
+/* 🎯 核心行为按钮 */
+.primary-actions {
+  display: flex;
+  gap: 16rpx;
+  position: relative;
+  z-index: 1;
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: $sp-2;
+  justify-content: center;
+  gap: 8rpx;
+  height: 72rpx;
+  border-radius: 16rpx;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s ease;
+  font-weight: 600;
+}
+
+.check-in-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
+
+  .action-icon {
+    color: $white;
+  }
+
+  .action-text {
+    color: $white;
+    font-size: 28rpx;
+  }
+
+  &:active:not(.disabled) {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(0.97);
+  }
+
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.publish-btn {
+  background: linear-gradient(135deg, #FF6B35 0%, #F59E0B 100%);
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+
+  .action-icon {
+    color: $white;
+  }
+
+  .action-text {
+    color: $white;
+    font-size: 28rpx;
+  }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.97);
+    box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.2);
   }
 }
 
-.stat-value {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $primary;
+/* ========== ② 可操作化数据卡 ========== */
+.action-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16rpx;
+  padding: 0 24rpx 24rpx;
 }
 
-.stat-label {
-  font-size: $font-size-sm;
-  color: $gray-500;
+.action-stat-card {
+  background: $white;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 2rpx solid transparent;
+
+  &:active {
+    transform: translateY(-2rpx);
+    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+  }
+
+  // 🎯 高亮状态（进行中任务）
+  &.highlight {
+    border-color: $accent;
+    background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
+
+    .stat-action-text {
+      color: $accent;
+      font-weight: 700;
+    }
+
+    .stat-action-arrow {
+      color: $accent;
+    }
+  }
 }
 
-// 操作按钮
-.action-buttons {
+.stat-header {
   display: flex;
-  gap: $sp-4;
-  margin-top: $sp-6;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 12rpx;
+}
 
-  // CButton 组件样式覆盖 - 让按钮等宽
-  :deep(.c-button) {
-    flex: 1;
-  }
+.stat-icon {
+  flex-shrink: 0;
+}
+
+.stat-title {
+  font-size: 26rpx;
+  color: $gray-600;
+  font-weight: 500;
+}
+
+.stat-number {
+  display: block;
+  font-size: 48rpx;
+  font-weight: 700;
+  color: $gray-900;
+  line-height: 1.2;
+  margin-bottom: 8rpx;
+}
+
+.stat-action {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.stat-action-text {
+  font-size: 24rpx;
+  color: $primary;
+  font-weight: 500;
+}
+
+.stat-action-arrow {
+  color: $primary;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.action-stat-card:active .stat-action-arrow {
+  transform: translateX(4rpx);
 }
 </style>

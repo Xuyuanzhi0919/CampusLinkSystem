@@ -17,6 +17,7 @@
         @check-in="handleCheckIn"
         @stat-click="handleStatClick"
         @points-click="handlePointsClick"
+        @publish="handlePublish"
       />
 
       <!-- 功能入口网格 -->
@@ -25,10 +26,8 @@
         @item-click="handleFunctionClick"
       />
 
-      <!-- 账户操作 -->
+      <!-- 账户操作（退出登录） -->
       <AccountActions
-        @edit-profile="handleEditProfile"
-        @change-password="handleChangePassword"
         @logout="handleLogout"
       />
 
@@ -209,6 +208,37 @@ const handleFunctionClick = (item: FunctionItem) => {
       }
     })
   }
+}
+
+/**
+ * 🎯 处理发布内容（强转化按钮）
+ */
+const handlePublish = () => {
+  // 显示发布选项弹窗
+  uni.showActionSheet({
+    itemList: ['发布资源', '发布任务', '发起提问', '发布活动'],
+    success: (res) => {
+      const tapIndex = res.tapIndex
+      const routes = [
+        '/pages/resource/publish',
+        '/pages/task/publish',
+        '/pages/question/ask',
+        '/pages/club/activity-publish'
+      ]
+
+      if (routes[tapIndex]) {
+        uni.navigateTo({
+          url: routes[tapIndex],
+          fail: () => {
+            uni.showToast({
+              title: '页面开发中...',
+              icon: 'none'
+            })
+          }
+        })
+      }
+    }
+  })
 }
 
 /**

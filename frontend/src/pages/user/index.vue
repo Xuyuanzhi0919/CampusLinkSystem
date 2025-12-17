@@ -1,5 +1,5 @@
 <template>
-  <view class="user-center-page">
+  <view class="user-profile-page">
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-container">
       <text class="loading-text">加载中...</text>
@@ -7,41 +7,26 @@
 
     <!-- 主内容 -->
     <view v-else class="content-container">
-      <!-- 🎯 第一层:身份与成长区(全宽) -->
-      <view class="hero-section">
-        <UserProfileHeader
-          v-if="userProfile"
-          :profile="userProfile"
-          :stats="userStats"
-          :is-checked-in="isCheckedInToday"
-          @edit-profile="handleEditProfile"
-          @points-click="handlePointsClick"
-        />
-      </view>
+      <!-- 🎯 ① 个人名片(唯一主视觉) -->
+      <ProfileCard
+        v-if="userProfile"
+        :profile="userProfile"
+        :stats="userStats"
+        @edit-profile="handleEditProfile"
+        @points-click="handlePointsClick"
+        @stat-click="handleStatClick"
+        @publish="handlePublish"
+      />
 
       <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
       <view class="main-content">
-        <!-- 🎯 第二层:行动区 -->
-        <ActionArea
-          :is-checked-in="isCheckedInToday"
-          @check-in="handleCheckIn"
-          @points-click="handlePointsClick"
-          @publish="handlePublish"
-        />
-
-        <!-- 🎯 第三层:数据总览卡片(间距24rpx) -->
-        <UserStatsCards
-          :stats="userStats"
-          @stat-click="handleStatClick"
-        />
-
-        <!-- 🎯 第四层:最近活动(唯一主内容块,间距48rpx) -->
+        <!-- 🎯 ② 我的校园足迹(内容主轴) -->
         <RecentActivity />
 
-        <!-- 🎯 第五层:能力面板(2x2卡片,间距32rpx) -->
+        <!-- 🎯 ③ 我的能力(功能入口,但低调) -->
         <view class="capability-section">
-          <view class="section-divider">
-            <text class="divider-text">快速入口</text>
+          <view class="section-title">
+            <text class="title-text">我的能力</text>
           </view>
           <CapabilityPanel
             :badges="capabilityBadges"
@@ -49,11 +34,14 @@
           />
         </view>
 
-        <!-- 🎯 第六层:设置入口(弱化,间距24rpx) -->
-        <SettingsSection @item-click="handleSettingsClick" />
-
-        <!-- 账户操作(退出登录) -->
-        <AccountActions @logout="handleLogout" />
+        <!-- 🎯 ④ 账户与系统(彻底降级) -->
+        <view class="account-section">
+          <view class="section-title">
+            <text class="title-text">账号与系统</text>
+          </view>
+          <SettingsSection @item-click="handleSettingsClick" />
+          <AccountActions @logout="handleLogout" />
+        </view>
 
         <!-- 底部安全距离 -->
         <view class="safe-area-bottom" />
@@ -75,9 +63,7 @@ import {
 } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
-import UserProfileHeader from './components/UserProfileHeader.vue'
-import ActionArea from './components/ActionArea.vue'
-import UserStatsCards from './components/UserStatsCards.vue'
+import ProfileCard from './components/ProfileCard.vue'
 import RecentActivity from './components/RecentActivity.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
@@ -101,9 +87,6 @@ const capabilityBadges = computed(() => ({
   messages: unreadMessages.value
 }))
 
-/**
- * 加载用户数据
- */
 const loadUserData = async () => {
   try {
     loading.value = true
@@ -138,37 +121,6 @@ const loadUserData = async () => {
 
 const handleEditProfile = () => {
   uni.navigateTo({ url: '/pages/user/edit-profile' })
-}
-
-const handleCheckIn = async () => {
-  try {
-    const res = await checkIn()
-
-    if (res.success) {
-      isCheckedInToday.value = true
-
-      if (userProfile.value) {
-        userProfile.value.points = res.totalPoints
-      }
-
-      uni.showToast({
-        title: `签到成功!获得 ${res.pointsEarned} 积分`,
-        icon: 'success',
-        duration: 2000
-      })
-    } else {
-      uni.showToast({
-        title: res.message || '今日已签到',
-        icon: 'none'
-      })
-    }
-  } catch (error: any) {
-    console.error('签到失败:', error)
-    uni.showToast({
-      title: error.message || '签到失败',
-      icon: 'none'
-    })
-  }
 }
 
 const handleStatClick = (key: string) => {
@@ -276,7 +228,7 @@ defineExpose({
 <style lang="scss" scoped>
 // 变量已通过 uni.scss 全局注入
 
-.user-center-page {
+.user-profile-page {
   min-height: 100vh;
   background: #F9FAFB;
 }
@@ -296,18 +248,12 @@ defineExpose({
   flex-direction: column;
 }
 
-/* 🎯 第一层:身份与成长区 - 全宽展开 */
-.hero-section {
-  width: 100%;
-  background: #EEF2FF;
-}
-
 /* 🎯 内容区 - 居中容器 */
 .main-content {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding-bottom: $sp-8;
+  padding: 0 0 $sp-8 0;
 
   @media (min-width: 768px) {
     padding-left: 32px;
@@ -322,18 +268,23 @@ defineExpose({
 
 /* 🎯 能力面板区域 */
 .capability-section {
-  margin-top: 32rpx; // 🎯 和最近活动拉开32rpx
+  margin-top: 32rpx; // 🎯 和足迹拉开32rpx
 }
 
-/* 🎯 分隔线标题 */
-.section-divider {
-  padding: 0 24rpx 24rpx;
+/* 🎯 账户区域 */
+.account-section {
+  margin-top: 48rpx; // 🎯 和能力面板拉开48rpx
 }
 
-.divider-text {
-  font-size: 28rpx;
-  color: #9CA3AF;
-  font-weight: 500;
+/* 🎯 区块标题(简洁版) */
+.section-title {
+  padding: 0 24rpx 20rpx;
+}
+
+.title-text {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: #111827;
   display: block;
 }
 

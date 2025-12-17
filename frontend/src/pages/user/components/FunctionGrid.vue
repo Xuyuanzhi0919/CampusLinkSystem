@@ -646,9 +646,9 @@ const handleItemClick = (item: FunctionItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  // 🎯 品牌蓝渐变(已解锁徽章)
-  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
-  box-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.15);
+  // 🎯 金色渐变(已解锁徽章) - 保留成就感但降低饱和度
+  background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
+  box-shadow: 0 2rpx 8rpx rgba(251, 191, 36, 0.2);
   transition: all 0.2s ease;
 
   .badge-card.locked & {
@@ -657,7 +657,7 @@ const handleItemClick = (item: FunctionItem) => {
   }
 
   .badge-card:active & {
-    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.2);
+    box-shadow: 0 4rpx 12rpx rgba(251, 191, 36, 0.25);
   }
 }
 

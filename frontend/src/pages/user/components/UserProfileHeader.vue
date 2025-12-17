@@ -629,15 +629,33 @@ const handlePointsClick = () => {
   justify-content: center;
   gap: 8rpx;
   padding: 16rpx;
-  background: $white; // 🎯 白色按钮
-  border: 1rpx solid #E5E7EB; // 灰色边框
+  background: $white; // 默认白色
+  border: 1rpx solid #E5E7EB;
   border-radius: 12rpx;
   cursor: pointer;
   transition: all 0.2s ease;
 
+  // 🎯 签到按钮特殊处理(浅蓝背景)
+  &:first-child:not(.disabled) {
+    background: #EFF6FF; // 浅蓝背景
+    border-color: #DBEAFE;
+
+    .action-icon-sm {
+      color: #2563EB; // 品牌蓝图标
+    }
+
+    .action-text-sm {
+      color: #1E40AF; // 深蓝文字
+    }
+  }
+
   &:active:not(.disabled) {
     background: #F9FAFB;
     transform: scale(0.97);
+  }
+
+  &:first-child:active:not(.disabled) {
+    background: #DBEAFE; // 签到按钮激活态
   }
 
   &.disabled {

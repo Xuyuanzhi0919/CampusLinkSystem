@@ -504,6 +504,27 @@
       <polyline points="15 3 21 3 21 9" stroke="currentColor" fill="none"/>
       <line x1="10" y1="14" x2="21" y2="3" stroke="currentColor"/>
     </template>
+
+    <!-- File Plus 图标（添加文件/上传资源） -->
+    <template v-else-if="name === 'file-plus'">
+      <path d="M14 2H6C4.89543 2 4 2.89543 4 4V20C4 21.1046 4.89543 22 6 22H18C19.1046 22 20 21.1046 20 20V8L14 2Z" stroke="currentColor" fill="none"/>
+      <polyline points="14 2 14 8 20 8" stroke="currentColor" fill="none"/>
+      <line x1="12" y1="11" x2="12" y2="17" stroke="currentColor"/>
+      <line x1="9" y1="14" x2="15" y2="14" stroke="currentColor"/>
+    </template>
+
+    <!-- Briefcase 图标（任务/工作） -->
+    <template v-else-if="name === 'briefcase'">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2" stroke="currentColor" fill="none"/>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Shopping Bag 图标（购物/商城） -->
+    <template v-else-if="name === 'shopping-bag'">
+      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z" stroke="currentColor" fill="none"/>
+      <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor"/>
+      <path d="M16 10a4 4 0 0 1-8 0" stroke="currentColor" fill="none"/>
+    </template>
   </svg>
 </template>
 

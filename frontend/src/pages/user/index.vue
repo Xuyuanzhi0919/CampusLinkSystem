@@ -7,23 +7,29 @@
 
     <!-- 主内容 -->
     <view v-else class="content-container">
-      <!-- 🎯 ① 个人名片(唯一主视觉) -->
-      <ProfileCard
+      <!-- 🎯 ① Hero Section - 个人门面区 -->
+      <HeroSection
         v-if="userProfile"
         :profile="userProfile"
-        :stats="userStats"
         @edit-profile="handleEditProfile"
         @points-click="handlePointsClick"
-        @stat-click="handleStatClick"
-        @publish="handlePublish"
+      />
+
+      <!-- 🎯 ② Quick Actions - 快速操作区 -->
+      <QuickActions
+        @publish-resource="handlePublishResource"
+        @ask-question="handleAskQuestion"
+        @publish-task="handlePublishTask"
+        @join-activity="handleJoinActivity"
+        @go-to-mall="handleGoToMall"
       />
 
       <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
       <view class="main-content">
-        <!-- 🎯 ② 我的校园足迹(内容主轴) -->
+        <!-- 🎯 ③ 成就展示区(暂时保留最近活动) -->
         <RecentActivity />
 
-        <!-- 🎯 ③ 我的能力(功能入口,但低调) -->
+        <!-- 🎯 ④ 我的能力 -->
         <view class="capability-section">
           <view class="section-title">
             <text class="title-text">我的能力</text>
@@ -34,7 +40,7 @@
           />
         </view>
 
-        <!-- 🎯 ④ 账户与系统(彻底降级) -->
+        <!-- 🎯 ⑤ 账户与系统 -->
         <view class="account-section">
           <view class="section-title">
             <text class="title-text">账号与系统</text>
@@ -63,7 +69,8 @@ import {
 } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
-import ProfileCard from './components/ProfileCard.vue'
+import HeroSection from './components/HeroSection.vue'
+import QuickActions from './components/QuickActions.vue'
 import RecentActivity from './components/RecentActivity.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
@@ -123,48 +130,41 @@ const handleEditProfile = () => {
   uni.navigateTo({ url: '/pages/user/edit-profile' })
 }
 
-const handleStatClick = (key: string) => {
-  const routeMap: Record<string, string> = {
-    resources: '/pages/resource/my',
-    questions: '/pages/question/my',
-    tasks: '/pages/task/my',
-    favorites: '/pages/user/favorites'
-  }
-
-  const url = routeMap[key]
-  if (url) {
-    uni.navigateTo({ url })
-  }
-}
-
 const handlePointsClick = () => {
   uni.navigateTo({ url: '/pages/user/points-history' })
 }
 
-const handlePublish = () => {
-  uni.showActionSheet({
-    itemList: ['发布资源', '发布任务', '发起提问', '发布活动'],
-    success: (res) => {
-      const routes = [
-        '/pages/resource/publish',
-        '/pages/task/publish',
-        '/pages/question/ask',
-        '/pages/club/activity-publish'
-      ]
-
-      if (routes[res.tapIndex]) {
-        uni.navigateTo({
-          url: routes[res.tapIndex],
-          fail: () => {
-            uni.showToast({
-              title: '页面开发中...',
-              icon: 'none'
-            })
-          }
-        })
-      }
-    }
+// 🎯 Quick Actions 处理函数
+const handlePublishResource = () => {
+  uni.navigateTo({
+    url: '/pages/resource/publish',
+    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
   })
+}
+
+const handleAskQuestion = () => {
+  uni.navigateTo({
+    url: '/pages/question/ask',
+    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+  })
+}
+
+const handlePublishTask = () => {
+  uni.navigateTo({
+    url: '/pages/task/publish',
+    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+  })
+}
+
+const handleJoinActivity = () => {
+  uni.navigateTo({
+    url: '/pages/club/activity-list',
+    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+  })
+}
+
+const handleGoToMall = () => {
+  uni.showToast({ title: '积分商城即将上线', icon: 'none' })
 }
 
 const handleCapabilityClick = (item: any) => {
@@ -230,7 +230,7 @@ defineExpose({
 
 .user-profile-page {
   min-height: 100vh;
-  background: #F9FAFB;
+  background: #F8FAFC; // $bg-page
 }
 
 .loading-container {
@@ -266,17 +266,17 @@ defineExpose({
   }
 }
 
-/* 🎯 能力面板区域 */
+/* 能力面板区域 */
 .capability-section {
-  margin-top: 32rpx; // 🎯 和足迹拉开32rpx
+  margin-top: 32rpx;
 }
 
-/* 🎯 账户区域 */
+/* 账户区域 */
 .account-section {
-  margin-top: 48rpx; // 🎯 和能力面板拉开48rpx
+  margin-top: 48rpx;
 }
 
-/* 🎯 区块标题(简洁版) */
+/* 区块标题 */
 .section-title {
   padding: 0 24rpx 20rpx;
 }
@@ -284,7 +284,7 @@ defineExpose({
 .title-text {
   font-size: 30rpx;
   font-weight: 700;
-  color: #111827;
+  color: #0F172A; // $text-primary
   display: block;
 }
 

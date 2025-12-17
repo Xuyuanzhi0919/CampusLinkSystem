@@ -296,7 +296,7 @@ defineExpose({
 
 .user-center-page {
   min-height: 100vh;
-  background: $gray-50;
+  background: #F7F8FA; // 🎯 浅灰背景(比白色深一点,让卡片跳出来)
 }
 
 .loading-container {

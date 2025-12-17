@@ -598,19 +598,19 @@ const handleItemClick = (item: FunctionItem) => {
 
 /* ========== 🎯 成长模块（视觉区块） ========== */
 .growth-section {
-  // 🎯 改为中性色承载,不再大面积橙色
-  background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
+  // 🎯 白色卡片,与其他区块统一
+  background: $white;
   border-radius: 20rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
-  border: 1rpx solid #E5E7EB;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid #F3F4F6;
 }
 
 /* 徽章展示区 */
 .badges-showcase {
   padding: 16rpx 0;
-  background: rgba(255, 255, 255, 0.6);
+  background: #F9FAFB; // 极浅灰背景
   border-bottom: 1rpx solid #E5E7EB;
 }
 
@@ -640,24 +640,24 @@ const handleItemClick = (item: FunctionItem) => {
 
 .badge-icon-wrapper {
   position: relative;
-  width: 80rpx;
-  height: 80rpx;
+  width: 72rpx; // 🎯 缩小尺寸
+  height: 72rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  // 🎯 降低橙色饱和度,改为更柔和的金色
-  background: linear-gradient(135deg, #FFC876 0%, #FFB347 100%);
-  box-shadow: 0 4rpx 12rpx rgba(255, 179, 71, 0.2); // 降低阴影强度
+  // 🎯 品牌蓝渐变(已解锁徽章)
+  background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%);
+  box-shadow: 0 2rpx 8rpx rgba(37, 99, 235, 0.15);
   transition: all 0.2s ease;
 
   .badge-card.locked & {
-    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%);
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+    background: #F3F4F6; // 浅灰(未解锁)
+    box-shadow: 0 1rpx 4rpx rgba(0, 0, 0, 0.06);
   }
 
   .badge-card:active & {
-    box-shadow: 0 2rpx 8rpx rgba(255, 179, 71, 0.15);
+    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.2);
   }
 }
 

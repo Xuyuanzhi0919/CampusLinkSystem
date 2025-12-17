@@ -367,27 +367,14 @@ const handlePointsClick = () => {
 
 /* ========== ① 身份卡（三段式） ========== */
 .identity-card {
-  // 🎯 降低饱和度:从高饱和蓝改为系统蓝
-  background: linear-gradient(135deg, #4B89DC 0%, #3B6FB6 100%);
+  // 🎯 浅蓝灰背景:轻盈、校园气质
+  background: #EEF2FF;
   border-radius: 24rpx;
   padding: 40rpx 32rpx 32rpx;
   margin: 24rpx;
-  box-shadow: 0 8rpx 32rpx rgba(75, 137, 220, 0.2); // 阴影也降低
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); // 极轻阴影
   position: relative;
-  overflow: hidden;
-
-  // 🎯 装饰性背景
-  &::before {
-    content: '';
-    position: absolute;
-    top: -100rpx;
-    right: -100rpx;
-    width: 300rpx;
-    height: 300rpx;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%); // 降低强度
-    border-radius: 50%;
-    pointer-events: none;
-  }
+  overflow: visible; // 改为visible,允许浮层突出
 }
 
 /* 🎯 第一行：身份 + 成就 */
@@ -404,10 +391,10 @@ const handlePointsClick = () => {
   width: 96rpx;
   height: 96rpx;
   border-radius: 50%;
-  border: 4rpx solid rgba(255, 255, 255, 0.2);
+  border: 4rpx solid $white; // 🎯 白色边框(从浅蓝灰中跳出)
   background: $white;
   flex-shrink: 0;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.12); // 淡蓝色阴影
   transition: transform 0.2s ease;
 
   &:active {
@@ -432,7 +419,7 @@ const handlePointsClick = () => {
 .nickname {
   font-size: 36rpx;
   font-weight: 700;
-  color: $white;
+  color: #111827; // 🎯 深灰文字(浅背景上)
   @include text-ellipsis(1);
 }
 
@@ -445,10 +432,10 @@ const handlePointsClick = () => {
 
 .user-title {
   font-size: 24rpx;
-  color: #FFD699;
-  font-weight: 600;
+  color: #9CA3AF; // 🎯 中性灰
+  font-weight: 500;
   padding: 4rpx 12rpx;
-  background: rgba(255, 214, 153, 0.15);
+  background: #F3F4F6; // 浅灰背景
   border-radius: 8rpx;
   white-space: nowrap;
 }
@@ -458,33 +445,32 @@ const handlePointsClick = () => {
   align-items: center;
   gap: 4rpx;
   padding: 4rpx 10rpx;
-  background: rgba(165, 243, 252, 0.15);
+  background: #DBEAFE; // 浅蓝背景
   border-radius: 8rpx;
 }
 
 .ranking-icon {
-  color: #A5F3FC;
+  color: #2563EB; // 🎯 品牌蓝
 }
 
 .ranking-text {
   font-size: 22rpx;
-  color: #A5F3FC;
+  color: #2563EB; // 🎯 品牌蓝
   font-weight: 600;
   white-space: nowrap;
 }
 
 .user-meta {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6B7280; // 🎯 中性灰
   @include text-ellipsis(1);
   margin-top: 2rpx;
 }
 
 /* 🎯 第二行：当前成长状态 */
 .growth-status {
-  // 🎯 改为中性色承载,不再用橙色背景
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  // 🎯 白色卡片浮层
+  background: $white;
   border-radius: 16rpx;
   padding: 24rpx;
   margin-bottom: 32rpx;
@@ -492,9 +478,10 @@ const handlePointsClick = () => {
   transition: all 0.2s ease;
   position: relative;
   z-index: 1;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 
   &:active {
-    background: rgba(255, 255, 255, 0.25);
+    background: #F9FAFB;
     transform: scale(0.98);
   }
 }
@@ -514,14 +501,14 @@ const handlePointsClick = () => {
 
 .points-label {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.7);
+  color: #6B7280; // 🎯 中性灰
   font-weight: 500;
 }
 
 .points-value {
   font-size: 40rpx;
   font-weight: 700;
-  color: #FFFFFF; // 🎯 改为白色,橙色只留在进度条
+  color: #111827; // 🎯 深灰(白卡片上)
 }
 
 .level-progress-info {
@@ -532,12 +519,12 @@ const handlePointsClick = () => {
 
 .progress-text {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.85);
+  color: #6B7280; // 🎯 中性灰
   font-weight: 500;
 }
 
 .status-arrow {
-  color: rgba(255, 255, 255, 0.6);
+  color: #9CA3AF; // 🎯 浅灰
   flex-shrink: 0;
 }
 
@@ -551,7 +538,7 @@ const handlePointsClick = () => {
 .progress-bar {
   flex: 1;
   height: 8rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: #E5E7EB; // 🎯 中性灰背景
   border-radius: 4rpx;
   overflow: hidden;
   position: relative;
@@ -559,37 +546,16 @@ const handlePointsClick = () => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #FFD699 0%, #FFB84D 100%);
+  background: #2563EB; // 🎯 品牌蓝(唯一强调色)
   border-radius: 4rpx;
   transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 8rpx rgba(255, 214, 153, 0.6);
+  box-shadow: none; // 🎯 移除发光
   position: relative;
-
-  // 🎯 进度条发光效果
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
-    animation: shimmer 2s infinite;
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
 }
 
 .progress-label {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.85);
+  color: #6B7280; // 🎯 中性灰
   font-weight: 600;
   white-space: nowrap;
   min-width: 60rpx;
@@ -610,17 +576,18 @@ const handlePointsClick = () => {
   display: flex;
   align-items: center;
   gap: 16rpx;
-  padding: 24rpx;
-  // 🎯 降低橙色强度,改为更柔和的暖色
-  background: linear-gradient(135deg, #FF8A5B 0%, #FFAB5A 100%);
-  border-radius: 16rpx;
+  padding: 20rpx 24rpx; // 🎯 收窄高度
+  // 🎯 唯一橙色 CTA
+  background: #F97316;
+  border-radius: 20rpx; // 🎯 更大圆角(社交感)
   cursor: pointer;
-  box-shadow: 0 4rpx 16rpx rgba(255, 138, 91, 0.25); // 降低阴影强度
+  box-shadow: 0 4rpx 12rpx rgba(249, 115, 22, 0.2); // 轻阴影
   transition: all 0.2s ease;
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0 2rpx 8rpx rgba(255, 138, 91, 0.2);
+    background: #EA580C; // 深一度
+    box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.15);
   }
 }
 
@@ -662,14 +629,14 @@ const handlePointsClick = () => {
   justify-content: center;
   gap: 8rpx;
   padding: 16rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  background: $white; // 🎯 白色按钮
+  border: 1rpx solid #E5E7EB; // 灰色边框
   border-radius: 12rpx;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:active:not(.disabled) {
-    background: rgba(255, 255, 255, 0.25);
+    background: #F9FAFB;
     transform: scale(0.97);
   }
 
@@ -680,13 +647,13 @@ const handlePointsClick = () => {
 }
 
 .action-icon-sm {
-  color: $white;
+  color: #6B7280; // 🎯 中性灰图标
   flex-shrink: 0;
 }
 
 .action-text-sm {
   font-size: 26rpx;
-  color: $white;
+  color: #374151; // 🎯 深灰文字
   font-weight: 600;
 }
 
@@ -700,30 +667,31 @@ const handlePointsClick = () => {
 
 .action-stat-card {
   background: $white;
-  border-radius: 20rpx;
+  border-radius: 16rpx; // 🎯 稍小圆角
   padding: 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); // 🎯 极轻阴影
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 2rpx solid transparent;
+  border: 1rpx solid #F3F4F6; // 浅灰边框
 
   &:active {
     transform: translateY(-2rpx);
-    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+    border-color: #E5E7EB;
   }
 
   // 🎯 高亮状态（进行中任务）
   &.highlight {
-    border-color: $accent;
-    background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
+    border-color: #F97316; // 橙色边框
+    background: #FFF7ED; // 极浅橙背景
 
     .stat-action-text {
-      color: $accent;
+      color: #F97316;
       font-weight: 700;
     }
 
     .stat-action-arrow {
-      color: $accent;
+      color: #F97316;
     }
   }
 }
@@ -754,29 +722,23 @@ const handlePointsClick = () => {
   margin-bottom: 4rpx;
 }
 
-/* 🎯 社会化比较反馈 */
+/* 🎯 社会化比较反馈 - 改为纯文本 */
 .stat-comparison {
-  display: flex;
+  display: none; // 🎯 暂时隐藏,降低信息密度
+  // 如果需要保留,改为纯灰色文本
   align-items: center;
   gap: 4rpx;
   margin-bottom: 8rpx;
-  padding: 4rpx 8rpx;
-  // 🎯 降低背景饱和度,改为更柔和的中性暖色
-  background: #F8F5F2;
-  border-radius: 8rpx;
-  border: 1rpx solid #E8E3DE;
-  align-self: flex-start;
 }
 
 .comparison-icon {
-  color: #D97706; // 保持图标颜色
-  flex-shrink: 0;
+  display: none; // 移除图标
 }
 
 .comparison-text {
   font-size: 20rpx;
-  color: #78716C; // 🎯 文字改为中性灰褐色
-  font-weight: 600;
+  color: #9CA3AF; // 极淡灰色
+  font-weight: 400;
   white-space: nowrap;
 }
 

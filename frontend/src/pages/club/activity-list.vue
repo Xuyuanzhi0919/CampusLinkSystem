@@ -208,48 +208,67 @@
           <Icon :name="activity.isFavorited ? 'heart' : 'heart'" :size="18" class="favorite-icon" :class="{ 'filled': activity.isFavorited }" />
         </view>
 
-        <!-- 活动信息 -->
+        <!-- 活动信息 - 三层信息权重 -->
         <view class="activity-info">
-          <!-- 🎯 标题 - 支持关键词高亮 -->
-          <view class="activity-title">
-            <text
-              v-for="(part, index) in highlightText(activity.title)"
-              :key="index"
-              :class="{ 'highlight': part.highlight }"
-            >{{ part.text }}</text>
-          </view>
-          <!-- 🎯 组织者信息（根据活动类型显示社团名称或组织者名称）-->
-          <text class="activity-club">
-            {{ activity.clubName || activity.organizerName || '校方组织' }}
-          </text>
-          <view class="activity-meta">
-            <view class="meta-item">
-              <Icon name="calendar" :size="12" class="meta-icon" />
-              <text>{{ formatDate(activity.startTime) }}</text>
-            </view>
-            <!-- 🎯 地点 - 支持关键词高亮 -->
-            <view class="meta-item location-item">
-              <Icon name="map-pin" :size="12" class="meta-icon" />
+          <!-- ========== 第一层：核心信息（强） ========== -->
+          <view class="info-primary">
+            <!-- 🎯 标题 - 更大更深，支持关键词高亮 -->
+            <view class="activity-title">
               <text
-                v-for="(part, index) in highlightText(activity.location || '待定')"
+                v-for="(part, index) in highlightText(activity.title)"
                 :key="index"
                 :class="{ 'highlight': part.highlight }"
               >{{ part.text }}</text>
             </view>
-          </view>
-          <view class="activity-meta">
-            <view class="meta-item">
-              <Icon name="users" :size="12" class="meta-icon" />
-              <text>{{ activity.currentParticipants }}/{{ activity.maxParticipants }}</text>
-            </view>
-            <view
-              class="meta-item remaining"
-              :class="{ 'urgent': getRemainingSlots(activity) < 10 && getRemainingSlots(activity) > 0 }"
-            >
-              <Icon name="ticket" :size="12" class="meta-icon" />
-              <text>剩余{{ getRemainingSlots(activity) }}个名额</text>
+
+            <!-- 🎯 紧急状态提示（名额紧张/即将开始） -->
+            <view v-if="getUrgentStatus(activity)" class="urgent-tip" :class="getUrgentStatus(activity).type">
+              <Icon :name="getUrgentStatus(activity).icon" :size="14" class="urgent-icon" />
+              <text class="urgent-text">{{ getUrgentStatus(activity).text }}</text>
             </view>
           </view>
+
+          <!-- ========== 第二层：关键决策信息（中） ========== -->
+          <view class="info-secondary">
+            <view class="meta-row">
+              <view class="meta-item meta-primary">
+                <Icon name="calendar" :size="14" class="meta-icon" />
+                <text>{{ formatDate(activity.startTime) }}</text>
+              </view>
+              <view class="meta-item meta-primary location-item">
+                <Icon name="map-pin" :size="14" class="meta-icon" />
+                <text
+                  v-for="(part, index) in highlightText(activity.location || '待定')"
+                  :key="index"
+                  :class="{ 'highlight': part.highlight }"
+                >{{ part.text }}</text>
+              </view>
+            </view>
+
+            <view class="meta-row">
+              <view class="meta-item meta-primary">
+                <Icon name="ticket" :size="14" class="meta-icon" />
+                <text class="remaining-text" :class="{ 'urgent': getRemainingSlots(activity) < 10 && getRemainingSlots(activity) > 0 }">
+                  {{ getRemainingText(activity) }}
+                </text>
+              </view>
+            </view>
+          </view>
+
+          <!-- ========== 第三层：辅助信息（弱） ========== -->
+          <view class="info-tertiary">
+            <text class="activity-organizer">
+              {{ activity.clubName || activity.organizerName || '校方组织' }}
+            </text>
+            <text class="activity-participants">
+              {{ activity.currentParticipants }}/{{ activity.maxParticipants }}人
+            </text>
+          </view>
+        </view>
+
+        <!-- 🎯 右侧行为区（填补空白） -->
+        <view class="action-area">
+          <Icon name="chevron-right" :size="18" class="detail-arrow" />
         </view>
       </view>
 
@@ -1098,6 +1117,71 @@ const getRemainingSlots = (activity: any) => {
 }
 
 /**
+ * 🎯 获取紧急状态提示（名额紧张/即将开始）
+ * 返回 { type, icon, text } 或 null
+ */
+const getUrgentStatus = (activity: any) => {
+  const remaining = getRemainingSlots(activity)
+  const now = new Date()
+  const startTime = new Date(activity.startTime)
+  const diffMs = startTime.getTime() - now.getTime()
+  const diffHours = Math.floor(diffMs / (60 * 60 * 1000))
+
+  // 优先级 1: 名额紧张（剩余 < 10 且不为0）
+  if (remaining > 0 && remaining < 10 && activity.status === 0) {
+    return {
+      type: 'slots-urgent',
+      icon: 'alert-circle',
+      text: '名额紧张'
+    }
+  }
+
+  // 优先级 2: 已报满
+  if (remaining === 0) {
+    return {
+      type: 'full',
+      icon: 'x-circle',
+      text: '已报满'
+    }
+  }
+
+  // 优先级 3: 即将开始（24小时内）
+  if (activity.status === 0 && diffHours > 0 && diffHours <= 24) {
+    if (diffHours <= 2) {
+      return {
+        type: 'starting-soon',
+        icon: 'clock',
+        text: '即将开始'
+      }
+    }
+    return {
+      type: 'starting-soon',
+      icon: 'clock',
+      text: '明天开始'
+    }
+  }
+
+  return null
+}
+
+/**
+ * 🎯 获取剩余名额文案（强化语义）
+ */
+const getRemainingText = (activity: any) => {
+  const remaining = getRemainingSlots(activity)
+
+  if (remaining === 0) {
+    return '已报满'
+  }
+
+  if (remaining < 10) {
+    return `仅剩 ${remaining} 个名额`
+  }
+
+  return `剩余 ${remaining} 个名额`
+}
+
+/**
  * 🎯 获取活动状态文本（整合倒计时）
  */
 const getStatusTextWithCountdown = (activity: any) => {
@@ -1357,7 +1441,7 @@ defineExpose({
     box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
 
     .top-nav-container {
-      height: 96rpx; // 从120rpx减小到96rpx (48px)
+      height: 80rpx; // 🎯 从100rpx减小到80rpx (40px),折叠后更紧凑
       gap: 24rpx; // 间距也相应减小
     }
 
@@ -1365,18 +1449,19 @@ defineExpose({
       min-width: 180rpx; // 减小宽度
 
       .logo-text {
-        font-size: 28rpx; // 从32rpx减小
+        font-size: 26rpx; // 🎯 从32rpx减小到26rpx
       }
     }
 
     .compact-search-bar {
-      height: 64rpx; // 从72rpx减小到64rpx
+      height: 56rpx; // 🎯 从64rpx减小到56rpx
+      border-radius: 28rpx; // 调整圆角
     }
 
     .filter-button {
-      height: 64rpx; // 从72rpx减小到64rpx
-      padding: 0 32rpx; // 从40rpx减小
-      min-width: 100rpx; // 折叠状态下最小宽度也减小
+      height: 56rpx; // 🎯 从64rpx减小到56rpx
+      padding: 0 24rpx; // 🎯 从32rpx减小
+      min-width: 80rpx; // 折叠状态下最小宽度也减小
     }
   }
 }
@@ -1384,7 +1469,7 @@ defineExpose({
 .top-nav-container {
   max-width: 1280px; // 居中容器最大宽度(640px * 2)
   margin: 0 auto;
-  height: 120rpx; // 60px
+  height: 100rpx; // 🎯 从120rpx降低到100rpx (50px),降低视觉权重
   display: flex;
   align-items: center;
   gap: 32rpx;
@@ -1446,10 +1531,10 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 16rpx;
-  height: 72rpx;
+  height: 64rpx; // 🎯 从72rpx降低到64rpx,更克制
   padding: 0 24rpx;
   background: $gray-50;
-  border-radius: 36rpx;
+  border-radius: 32rpx; // 🎯 调整圆角以匹配新高度
   border: 1rpx solid transparent;
   transition: all 0.2s ease;
 
@@ -1497,22 +1582,25 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 12rpx;
-  padding: 0 40rpx;
-  height: 72rpx;
-  background: $primary;
-  color: $white;
-  border-radius: 36rpx;
+  padding: 0 32rpx; // 🎯 从40rpx减小到32rpx
+  height: 64rpx; // 🎯 从72rpx降低到64rpx,匹配搜索框
+  background: $white; // 🎯 改为白色背景,降低视觉权重
+  color: $gray-700; // 🎯 从白色改为深灰色
+  border: 1rpx solid $gray-300; // 🎯 添加边框,轮廓样式
+  border-radius: 32rpx; // 🎯 调整圆角匹配新高度
   font-size: 28rpx;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
   flex-shrink: 0;
-  min-width: 120rpx;
+  min-width: 100rpx; // 🎯 从120rpx减小到100rpx
   white-space: nowrap;
 
   &:hover {
-    background: #1d4ed8; // $primary 加深
-    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.25);
+    background: $gray-50; // 🎯 hover改为浅灰背景
+    border-color: $primary;
+    color: $primary;
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
   }
 
   &:active {
@@ -1520,21 +1608,19 @@ defineExpose({
   }
 
   @include mobile {
-    padding: 0 32rpx;
-    height: 64rpx;
-    min-width: 100rpx;
+    padding: 0 28rpx;
+    height: 60rpx;
+    min-width: 90rpx;
   }
 }
 
 .filter-icon {
-  color: $white;
+  color: currentColor;
   flex-shrink: 0;
 }
 
 .filter-text {
-  font-size: 28rpx;
-  font-weight: 500;
-  color: $white;
+  color: currentColor;
 }
 
 /* Sticky 导航区（全宽）*/
@@ -1820,12 +1906,19 @@ defineExpose({
   padding: 24rpx;
   margin-bottom: 24rpx;
   box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
 }
 
+/* 🎯 Hover 浮起效果 - 专业级交互反馈 */
+.activity-item:hover {
+  transform: translateY(-4rpx);
+  box-shadow: 0 12rpx 24rpx rgba(0, 0, 0, 0.12);
+}
+
 .activity-item:active {
-  transform: scale(0.98);
+  transform: translateY(-2rpx) scale(0.99);
+  box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.08);
 }
 
 /* 🎯 已结束活动灰度处理 */
@@ -2219,24 +2312,69 @@ defineExpose({
   }
 }
 
+/* ========== 活动信息区（三层信息权重） ========== */
 .activity-info {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  min-width: 0; // 防止 flex 子元素溢出
+}
+
+/* ===== 第一层：核心信息（强） ===== */
+.info-primary {
   display: flex;
   flex-direction: column;
   gap: 12rpx;
 }
 
 .activity-title {
-  flex: 1;
-  font-size: 32rpx;
+  font-size: 34rpx; // 增大字号（原32rpx）
   font-weight: 600;
-  color: $text-primary;
+  color: $gray-900; // 更深的颜色（原 $text-primary）
   line-height: 1.4;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
+}
+
+/* 🎯 紧急状态提示 */
+.urgent-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 8rpx;
+  font-size: 24rpx;
+  font-weight: 600;
+  width: fit-content;
+  max-width: 200rpx;
+}
+
+.urgent-tip.slots-urgent {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE8CC 100%);
+  color: $accent;
+}
+
+.urgent-tip.full {
+  background: $gray-100;
+  color: $gray-600;
+}
+
+.urgent-tip.starting-soon {
+  background: linear-gradient(135deg, #E8F5FF 0%, #D1E9FF 100%);
+  color: $primary;
+}
+
+.urgent-icon {
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.urgent-text {
+  white-space: nowrap;
 }
 
 /* 🎯 搜索关键词高亮 */
@@ -2261,29 +2399,36 @@ defineExpose({
   }
 }
 
-.activity-club {
-  font-size: 26rpx;
-  color: $text-secondary;
-  line-height: 1;
+/* ===== 第二层：关键决策信息（中） ===== */
+.info-secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
 }
 
-.activity-meta {
+.meta-row {
   display: flex;
+  align-items: center;
   gap: 24rpx;
-  margin-top: auto;
+  flex-wrap: wrap;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
   gap: 8rpx;
-  font-size: 24rpx;
-  color: $gray-400;
-  line-height: 1;
+  font-size: 26rpx; // 略大于原24rpx
+  color: $gray-600; // 中性色
+  line-height: 1.2;
+}
+
+.meta-item.meta-primary {
+  color: $gray-700; // 第二层信息稍深
+  font-weight: 500;
 }
 
 .meta-icon {
-  color: $gray-400;
+  color: currentColor;
   flex-shrink: 0;
 }
 
@@ -2291,16 +2436,63 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 8rpx;
+  max-width: 300rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.meta-item.remaining {
-  color: $text-secondary;
+.remaining-text {
   font-weight: 500;
 }
 
-.meta-item.remaining.urgent {
+.remaining-text.urgent {
   color: $accent;
   font-weight: 600;
+}
+
+/* ===== 第三层：辅助信息（弱） ===== */
+.info-tertiary {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  font-size: 24rpx;
+  color: $gray-400; // 更淡的灰色
+  margin-top: auto;
+  padding-top: 8rpx;
+}
+
+.activity-organizer {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200rpx;
+}
+
+.activity-participants {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  white-space: nowrap;
+}
+
+/* ========== 右侧行为区 ========== */
+.action-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-left: 16rpx;
+  flex-shrink: 0;
+}
+
+.detail-arrow {
+  color: $gray-300;
+  transition: all 0.2s ease;
+}
+
+.activity-item:hover .detail-arrow {
+  color: $primary;
+  transform: translateX(4rpx);
 }
 
 /* 🎯 脉冲动画（用于紧急状态） */

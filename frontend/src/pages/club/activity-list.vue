@@ -1,117 +1,131 @@
 <template>
   <view class="activity-list-page" role="main" aria-label="活动列表页面">
-    <!-- 搜索栏 + 筛选按钮 -->
-    <view class="search-bar" role="search">
-      <view class="search-input-wrapper">
-        <view class="search-input">
-          <text class="search-icon" aria-hidden="true">🔍</text>
-          <input
-            class="input"
-            type="text"
-            v-model="searchKeyword"
-            placeholder="搜索活动名称或社团"
-            aria-label="搜索活动"
-            @focus="showSearchHistory = true"
-            @confirm="handleSearch"
-          />
-          <Icon v-if="searchKeyword" name="x" :size="18" :stroke-width="1.5" class="clear-icon" @click="clearSearch" />
+    <!-- ========== 固定顶部导航区 ========== -->
+    <view class="top-nav-fixed">
+      <view class="top-nav-container">
+        <!-- Logo -->
+        <view class="brand-logo">
+          <Icon name="calendar" :size="20" class="logo-icon" />
+          <text class="logo-text">活动广场</text>
         </view>
 
-        <!-- 🎯 搜索历史下拉列表 -->
-        <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
-          <view class="history-header">
-            <text class="history-title">搜索历史</text>
-            <text class="history-clear" @click="clearAllHistory">清空</text>
+        <!-- 紧凑搜索栏 -->
+        <view class="search-wrapper">
+          <view class="compact-search-bar">
+            <Icon name="search" :size="16" class="search-icon" />
+            <input
+              v-model="searchKeyword"
+              class="search-input"
+              placeholder="搜索活动名称或社团..."
+              confirm-type="search"
+              @confirm="handleSearch"
+              @focus="showSearchHistory = true"
+              @blur="handleSearchBlur"
+            />
+            <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
+              <Icon name="x" :size="14" />
+            </view>
           </view>
+
+          <!-- 搜索历史下拉面板 -->
+          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
+            <view class="history-header">
+              <text class="history-title">搜索历史</text>
+              <text class="history-clear" @click="clearAllHistory">清空</text>
+            </view>
+            <view class="history-list">
+              <view
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="history-item"
+                @click="selectHistory(item)"
+              >
+                <Icon name="clock" :size="14" class="history-icon" />
+                <text class="history-text">{{ item }}</text>
+                <Icon name="x" :size="14" class="history-remove" @click.stop="deleteHistory(index)" />
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <!-- 筛选按钮 -->
+        <view class="filter-button" @click="showFilterPopup = true">
+          <Icon name="sliders" :size="16" class="filter-icon" />
+          <text class="filter-text">筛选</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- ========== Sticky 筛选区（状态+类型） ========== -->
+    <view class="sticky-nav">
+      <view class="sticky-nav-container">
+        <!-- 🎯 主筛选：活动状态 -->
+        <view class="primary-filter-tabs">
           <view
-            v-for="(item, index) in searchHistory"
+            v-for="(tab, index) in statusFilterTabs"
             :key="index"
-            class="history-item"
-            @click="selectHistory(item)"
+            class="primary-tab-item"
+            :class="{ active: filters.status === tab.value }"
+            @click="handleQuickFilter(tab.value)"
           >
-            <Icon name="clock" :size="16" :stroke-width="1.5" class="history-icon" />
-            <text class="history-text">{{ item }}</text>
-            <Icon name="x" :size="16" :stroke-width="1.5" class="history-delete" @click.stop="deleteHistory(index)" />
+            <text class="primary-tab-icon">{{ tab.icon }}</text>
+            <text class="primary-tab-text">{{ tab.label }}</text>
+            <view v-if="filters.status === tab.value" class="primary-tab-indicator"></view>
+          </view>
+        </view>
+
+        <!-- 🎯 辅助筛选：活动来源 -->
+        <view class="secondary-filter-tabs">
+          <view
+            v-for="(tab, index) in activityTypeTabs"
+            :key="index"
+            class="secondary-tab-item"
+            :class="{ active: filters.activityType === tab.value }"
+            @click="handleTypeFilter(tab.value)"
+          >
+            <text class="secondary-tab-text">{{ tab.label }}</text>
           </view>
         </view>
       </view>
-
-      <view
-        class="filter-btn"
-        role="button"
-        aria-label="打开筛选面板"
-        tabindex="0"
-        @click="showFilterPopup = true"
-        @keydown.enter="showFilterPopup = true"
-        @keydown.space.prevent="showFilterPopup = true"
-      >
-        <Icon name="sliders" :size="20" :stroke-width="1.5" class="filter-icon" aria-hidden="true" />
-      </view>
     </view>
 
-    <!-- 🎯 主筛选：活动状态（第一优先级，默认进行中）-->
-    <view class="primary-filter-tabs">
-      <view
-        v-for="(tab, index) in statusFilterTabs"
-        :key="index"
-        class="primary-tab-item"
-        :class="{ active: filters.status === tab.value }"
-        @click="handleQuickFilter(tab.value)"
-      >
-        <text class="primary-tab-icon">{{ tab.icon }}</text>
-        <text class="primary-tab-text">{{ tab.label }}</text>
-        <view v-if="filters.status === tab.value" class="primary-tab-indicator"></view>
+    <!-- ========== 主内容区（居中容器） ========== -->
+    <view class="content-container">
+      <!-- 🎯 首屏轻提示 -->
+      <view v-if="!loading && activities.length > 0 && filters.status === 1" class="activity-hint">
+        <text class="hint-icon">🎯</text>
+        <text class="hint-text">当前有 <text class="hint-count">{{ activities.length }}</text> 个活动正在进行中</text>
       </view>
-    </view>
 
-    <!-- 🎯 辅助筛选：活动来源（第二优先级，轻量化）-->
-    <view class="secondary-filter-tabs">
-      <view
-        v-for="(tab, index) in activityTypeTabs"
-        :key="index"
-        class="secondary-tab-item"
-        :class="{ active: filters.activityType === tab.value }"
-        @click="handleTypeFilter(tab.value)"
-      >
-        <text class="secondary-tab-text">{{ tab.label }}</text>
+      <!-- 🎯 筛选结果信息栏 -->
+      <view class="result-info" v-if="(!loading || activities.length > 0) && filters.status !== 1">
+        <text class="result-count">
+          {{ hasActiveFilters || searchKeyword ? `找到 ${activities.length} 条活动` : `共 ${activities.length} 条活动` }}
+        </text>
+        <text v-if="hasActiveFilters" class="filtered-hint">（已筛选）</text>
       </view>
-    </view>
 
-    <!-- 🎯 首屏轻提示（引导用户参与）-->
-    <view v-if="!loading && activities.length > 0 && filters.status === 1" class="activity-hint">
-      <text class="hint-icon">🎯</text>
-      <text class="hint-text">当前有 <text class="hint-count">{{ activities.length }}</text> 个活动正在进行中</text>
-    </view>
+      <!-- 筛选标签栏 -->
+      <view class="filter-tags" v-if="hasActiveFilters">
+        <view class="tag" v-if="filters.status !== null">
+          <text class="tag-text">{{ getStatusLabel(filters.status) }}</text>
+          <text class="tag-close" @click="clearFilter('status')">×</text>
+        </view>
+        <view class="tag" v-if="filters.clubId">
+          <text class="tag-text">{{ filters.clubName }}</text>
+          <text class="tag-close" @click="clearFilter('clubId')">×</text>
+        </view>
+        <view class="tag" v-if="filters.sortBy !== 'time'">
+          <text class="tag-text">{{ getSortLabel(filters.sortBy) }}</text>
+          <text class="tag-close" @click="clearFilter('sortBy')">×</text>
+        </view>
+        <view class="clear-all-btn" @click="clearAllFilters">
+          <text class="clear-text">清空</text>
+        </view>
+      </view>
 
-    <!-- 🎯 筛选结果信息栏 -->
-    <view class="result-info" v-if="(!loading || activities.length > 0) && filters.status !== 1">
-      <text class="result-count">
-        {{ hasActiveFilters || searchKeyword ? `找到 ${activities.length} 条活动` : `共 ${activities.length} 条活动` }}
-      </text>
-      <text v-if="hasActiveFilters" class="filtered-hint">（已筛选）</text>
-    </view>
-
-    <!-- 筛选标签栏 -->
-    <view class="filter-tags" v-if="hasActiveFilters">
-      <view class="tag" v-if="filters.status !== null">
-        <text class="tag-text">{{ getStatusLabel(filters.status) }}</text>
-        <text class="tag-close" @click="clearFilter('status')">×</text>
-      </view>
-      <view class="tag" v-if="filters.clubId">
-        <text class="tag-text">{{ filters.clubName }}</text>
-        <text class="tag-close" @click="clearFilter('clubId')">×</text>
-      </view>
-      <view class="tag" v-if="filters.sortBy !== 'time'">
-        <text class="tag-text">{{ getSortLabel(filters.sortBy) }}</text>
-        <text class="tag-close" @click="clearFilter('sortBy')">×</text>
-      </view>
-      <view class="clear-all-btn" @click="clearAllFilters">
-        <text class="clear-text">清空</text>
-      </view>
-    </view>
-
-    <!-- 活动列表 -->
-    <view class="activity-list">
+      <!-- 活动列表 -->
+      <view class="activity-list">
       <!-- 🎯 骨架屏 - 首次加载时显示（符合文档规范）-->
       <view v-if="loading && activities.length === 0" class="skeleton-list">
         <view v-for="i in skeletonCount" :key="'skeleton-' + i" class="skeleton-item">
@@ -264,6 +278,8 @@
     >
       <text class="back-top-icon">↑</text>
     </view>
+    </view>
+    <!-- ========== 结束：主内容区 ========== -->
 
     <!-- 筛选弹窗 -->
     <view v-if="showFilterPopup" class="filter-popup" @click="showFilterPopup = false">
@@ -685,6 +701,16 @@ const clearSearch = () => {
   searchKeyword.value = ''
   showSearchHistory.value = false
   loadActivityList(true)
+}
+
+/**
+ * 搜索框失焦处理
+ */
+const handleSearchBlur = () => {
+  // 延迟隐藏，避免点击历史项时立即隐藏
+  setTimeout(() => {
+    showSearchHistory.value = false
+  }, 200)
 }
 
 /**
@@ -1265,9 +1291,259 @@ defineExpose({
 .activity-list-page {
   min-height: 100vh;
   background: $bg-page;
+  padding-top: 120rpx; // 为固定顶部导航留出空间 (60px)
 }
 
-/* 搜索栏 */
+/* ========== 全站统一布局骨架 ========== */
+
+/* 固定顶部导航区（全宽）*/
+.top-nav-fixed {
+  position: fixed;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+}
+
+.top-nav-container {
+  max-width: 1280px; // 居中容器最大宽度(640px * 2)
+  margin: 0 auto;
+  height: 120rpx; // 60px
+  display: flex;
+  align-items: center;
+  gap: 32rpx;
+  padding: 0 32rpx;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  min-width: 240rpx;
+  cursor: pointer;
+}
+
+.logo-icon {
+  color: $primary;
+}
+
+.logo-text {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $text-primary;
+  white-space: nowrap;
+}
+
+.search-wrapper {
+  flex: 1;
+  position: relative;
+  max-width: 800rpx;
+}
+
+.compact-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  height: 72rpx;
+  padding: 0 24rpx;
+  background: $gray-50;
+  border-radius: 36rpx;
+  border: 1rpx solid transparent;
+  transition: all 0.2s ease;
+
+  &:focus-within {
+    background: $white;
+    border-color: $primary;
+    box-shadow: 0 0 0 4rpx rgba(37, 99, 235, 0.1);
+  }
+}
+
+.search-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 28rpx;
+  color: $text-primary;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  &::placeholder {
+    color: $gray-400;
+  }
+}
+
+.clear-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32rpx;
+  height: 32rpx;
+  color: $gray-400;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $gray-600;
+  }
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 0 24rpx;
+  height: 72rpx;
+  background: $gray-50;
+  border-radius: 36rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.filter-icon {
+  color: $gray-600;
+}
+
+.filter-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-700;
+}
+
+/* Sticky 筛选区（全宽）*/
+.sticky-nav {
+  position: sticky;
+  top: 120rpx; // 紧贴顶部导航
+  z-index: 99;
+  width: 100%;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.15);
+}
+
+.sticky-nav-container {
+  max-width: 1280px; // 居中容器最大宽度(640px * 2)
+  margin: 0 auto;
+  padding: 20rpx 32rpx;
+}
+
+/* 主内容区（居中容器）*/
+.content-container {
+  max-width: 1280px; // 居中容器最大宽度(640px * 2)
+  margin: 0 auto;
+  padding: 32rpx;
+  min-height: calc(100vh - 240rpx);
+}
+
+/* ========== 搜索历史面板 ========== */
+.search-history-dropdown {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  left: 0;
+  right: 0;
+  background: $white;
+  border-radius: 16rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.12), 0 0 0 2rpx rgba(0, 0, 0, 0.05);
+  z-index: 110;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.history-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 24rpx;
+  border-bottom: 1rpx solid $border-color;
+}
+
+.history-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.history-clear {
+  font-size: 24rpx;
+  color: $primary;
+  cursor: pointer;
+  transition: color 0.2s;
+
+  &:hover {
+    color: $primary-dark;
+  }
+}
+
+.history-list {
+  max-height: 480rpx;
+  overflow-y: auto;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $gray-50;
+
+    .history-remove {
+      opacity: 1;
+    }
+  }
+}
+
+.history-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.history-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: $text-primary;
+}
+
+.history-remove {
+  color: $gray-400;
+  opacity: 0;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    color: $error;
+  }
+}
+
+/* ========== 旧版搜索栏样式（兼容，待删除） ========== */
 .search-bar {
   display: flex;
   align-items: center;
@@ -1405,7 +1681,7 @@ defineExpose({
 
 /* 活动列表 */
 .activity-list {
-  padding: 24rpx 32rpx;
+  // padding 由 .content-container 统一提供
 }
 
 .activity-item {
@@ -2021,8 +2297,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   gap: 48rpx;
-  padding: 28rpx 32rpx;
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  margin-bottom: 16rpx;
 }
 
 .primary-tab-item {
@@ -2091,11 +2366,8 @@ defineExpose({
 .secondary-filter-tabs {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: center;
   gap: 24rpx;
-  padding: 16rpx 32rpx;
-  background: $gray-50;
-  border-bottom: 1rpx solid $border-color;
   overflow-x: auto;
   white-space: nowrap;
   -webkit-overflow-scrolling: touch;
@@ -2106,31 +2378,31 @@ defineExpose({
 }
 
 .secondary-tab-item {
-  padding: 8rpx 20rpx;
+  padding: 10rpx 24rpx;
   cursor: pointer;
   transition: all 0.25s ease;
   flex-shrink: 0;
-  border-radius: 12rpx;
-  background: white;
+  border-radius: 16rpx;
+  background: rgba(255, 255, 255, 0.15);
   border: 1rpx solid transparent;
 }
 
 .secondary-tab-item.active {
-  background: $primary;
-  border-color: $primary;
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 .secondary-tab-text {
   font-size: 26rpx;
   font-weight: 500;
-  color: $gray-600;
+  color: rgba(255, 255, 255, 0.85);
   transition: all 0.25s ease;
   white-space: nowrap;
 }
 
 .secondary-tab-item.active .secondary-tab-text {
   color: white;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* 🎯 保留原有的快捷筛选样式（用于弹窗）*/
@@ -2201,6 +2473,7 @@ defineExpose({
   align-items: center;
   justify-content: center;
   gap: 12rpx;
+  margin: -32rpx -32rpx 24rpx -32rpx; // 负margin让信息条延伸到容器边缘
   padding: 20rpx 32rpx;
   background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
   border-bottom: 1rpx solid #FED7AA;
@@ -2237,6 +2510,7 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 8rpx;
+  margin: -32rpx -32rpx 16rpx -32rpx; // 负margin让信息条延伸到容器边缘
   padding: 12rpx 32rpx;
   background: $accent-50;
   border-bottom: 1rpx solid $accent-100;
@@ -2258,6 +2532,7 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 12rpx;
+  margin: 0 -32rpx 16rpx -32rpx; // 负margin让标签栏延伸到容器边缘
   padding: 16rpx 32rpx;
   background: white;
   border-bottom: 1rpx solid $border-color;

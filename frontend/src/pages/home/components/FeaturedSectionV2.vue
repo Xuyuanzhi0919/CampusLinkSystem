@@ -26,6 +26,16 @@
 
     <!-- Featured Grid (使用企业级卡片) -->
     <view v-else class="featured-grid">
+      <!-- Debug Info for Mini Program -->
+      <!-- #ifdef MP-WEIXIN -->
+      <view class="debug-info">
+        <text>📊 数据总数: {{ featuredList.length }}</text>
+        <text>问答: {{ featuredList.filter(i => i.type === 'question').length }}</text>
+        <text>资源: {{ featuredList.filter(i => i.type === 'resource').length }}</text>
+        <text>活动: {{ featuredList.filter(i => i.type === 'activity').length }}</text>
+      </view>
+      <!-- #endif -->
+
       <!-- 问答类型：使用 ClFeaturedQAItem -->
       <ClFeaturedQAItem
         v-for="item in featuredList.filter(i => i.type === 'question')"
@@ -388,4 +398,21 @@ defineExpose({
     }
   }
 }
+
+// Debug info for mini program
+/* #ifdef MP-WEIXIN */
+.debug-info {
+  padding: 24rpx;
+  background: #FFF3E0;
+  border-radius: 12rpx;
+  margin-bottom: 24rpx;
+
+  text {
+    display: block;
+    font-size: 24rpx;
+    color: #F57C00;
+    line-height: 1.8;
+  }
+}
+/* #endif */
 </style>

@@ -1,9 +1,9 @@
 <template>
   <view class="profile-header">
-    <!-- ========== ① 顶部：身份卡（重设计） ========== -->
+    <!-- ========== ① 顶部：身份卡（三段式纵向主线） ========== -->
     <view class="identity-card">
-      <!-- 用户基本信息行 -->
-      <view class="user-basic-info">
+      <!-- 🎯 第一行：身份 + 成就 -->
+      <view class="identity-section">
         <!-- 头像 -->
         <image
           class="avatar"
@@ -12,45 +12,69 @@
           @click="handleAvatarClick"
         />
 
-        <!-- 姓名+等级+徽章 -->
-        <view class="user-name-section">
-          <view class="name-row">
+        <!-- 身份信息 -->
+        <view class="identity-info">
+          <view class="name-line">
             <text class="nickname">{{ profile?.nickname || '未设置昵称' }}</text>
             <LevelBadge :level="profile?.level || 1" />
-            <text v-if="profile?.isVip" class="vip-badge">⭐</text>
+          </view>
+          <view class="title-line">
+            <text class="user-title">{{ userTitle }}</text>
+            <view class="ranking-badge">
+              <Icon name="trending-up" :size="12" class="ranking-icon" />
+              <text class="ranking-text">{{ rankingFullText }}</text>
+            </view>
           </view>
           <text class="user-meta">{{ studentIdText }} · {{ profile?.schoolName || '未设置学校' }}</text>
         </view>
       </view>
 
-      <!-- 成就数据行（积分+排名） -->
-      <view class="achievement-bar" @click="handlePointsClick">
-        <view class="achievement-item">
-          <text class="achievement-label">积分</text>
-          <text class="achievement-value primary">{{ profile?.points || 0 }}</text>
+      <!-- 🎯 第二行：当前成长状态 -->
+      <view class="growth-status" @click="handlePointsClick">
+        <view class="status-header">
+          <view class="points-info">
+            <text class="points-label">当前积分</text>
+            <text class="points-value">{{ profile?.points || 0 }}</text>
+          </view>
+          <view class="level-progress-info">
+            <text class="progress-text">{{ levelProgressText }}</text>
+            <Icon name="chevron-right" :size="14" class="status-arrow" />
+          </view>
         </view>
-        <view class="achievement-divider"></view>
-        <view class="achievement-item">
-          <text class="achievement-label">排名</text>
-          <text class="achievement-value accent">{{ rankingText }}</text>
+        <!-- 🎯 进度条（非常重要） -->
+        <view class="progress-bar-container">
+          <view class="progress-bar">
+            <view class="progress-fill" :style="{ width: levelProgress + '%' }"></view>
+          </view>
+          <text class="progress-label">{{ levelProgressPercent }}</text>
         </view>
-        <Icon name="chevron-right" :size="16" class="achievement-arrow" />
       </view>
 
-      <!-- 🎯 核心行为按钮（取代编辑资料） -->
-      <view class="primary-actions">
-        <view
-          class="action-btn check-in-btn"
-          :class="{ disabled: isCheckedIn }"
-          @click="handleCheckIn"
-        >
-          <Icon :name="isCheckedIn ? 'check-circle' : 'calendar'" :size="18" class="action-icon" />
-          <text class="action-text">{{ checkInButtonText }}</text>
+      <!-- 🎯 第三行：主行动按钮 -->
+      <view class="action-section">
+        <!-- 主按钮：发布内容（强调产出） -->
+        <view class="primary-action-btn" @click="handlePublish">
+          <Icon name="plus-circle" :size="20" class="action-icon" />
+          <view class="action-content">
+            <text class="action-title">发布内容</text>
+            <text class="action-subtitle">分享你的知识</text>
+          </view>
         </view>
 
-        <view class="action-btn publish-btn" @click="handlePublish">
-          <Icon name="plus-circle" :size="18" class="action-icon" />
-          <text class="action-text">发布内容</text>
+        <!-- 次按钮组 -->
+        <view class="secondary-actions">
+          <view
+            class="secondary-action-btn"
+            :class="{ disabled: isCheckedIn }"
+            @click="handleCheckIn"
+          >
+            <Icon :name="isCheckedIn ? 'check-circle' : 'calendar'" :size="16" class="action-icon-sm" />
+            <text class="action-text-sm">{{ checkInButtonText }}</text>
+          </view>
+          <view class="secondary-action-btn" @click="handlePointsClick">
+            <Icon name="trending-up" :size="16" class="action-icon-sm" />
+            <text class="action-text-sm">查看成长</text>
+          </view>
         </view>
       </view>
     </view>
@@ -69,6 +93,11 @@
           <text class="stat-title">{{ stat.label }}</text>
         </view>
         <text class="stat-number">{{ stat.value }}</text>
+        <!-- 🎯 社会化比较反馈 -->
+        <view v-if="stat.comparison" class="stat-comparison">
+          <Icon :name="stat.comparison.icon" :size="12" class="comparison-icon" />
+          <text class="comparison-text">{{ stat.comparison.text }}</text>
+        </view>
         <view class="stat-action">
           <text class="stat-action-text">{{ stat.actionText }}</text>
           <Icon name="arrow-right" :size="14" class="stat-action-arrow" />
@@ -108,46 +137,143 @@ const studentIdText = computed(() => {
   return props.profile?.studentId || '未设置学号'
 })
 
-// 🎯 排名文本（百分比）
-const rankingText = computed(() => {
-  // TODO: 后端提供真实排名数据
-  // 这里暂时用积分模拟排名：积分越高排名越靠前
+// 🎯 用户称号（根据积分/等级）
+const userTitle = computed(() => {
   const points = props.profile?.points || 0
-  if (points > 5000) return 'Top 5%'
-  if (points > 2000) return 'Top 15%'
-  if (points > 1000) return 'Top 30%'
-  if (points > 500) return 'Top 50%'
-  return 'Top 80%'
+  if (points > 5000) return '资深贡献者'
+  if (points > 2000) return '活跃贡献者'
+  if (points > 1000) return '热心助人者'
+  if (points > 500) return '积极参与者'
+  return '新手成员'
+})
+
+// 🎯 排名完整文本（全站前X%）
+const rankingFullText = computed(() => {
+  const points = props.profile?.points || 0
+  if (points > 5000) return '全站前 5%'
+  if (points > 2000) return '全站前 15%'
+  if (points > 1000) return '全站前 30%'
+  if (points > 500) return '全站前 50%'
+  return '全站前 80%'
+})
+
+// 🎯 等级进度（距离下一级）
+const levelProgress = computed(() => {
+  // TODO: 后端提供真实等级规则
+  // 这里简化：每500积分升1级
+  const points = props.profile?.points || 0
+  const currentLevelPoints = Math.floor(points / 500) * 500
+  const nextLevelPoints = currentLevelPoints + 500
+  const progressPoints = points - currentLevelPoints
+  return Math.floor((progressPoints / 500) * 100)
+})
+
+// 等级进度文本
+const levelProgressText = computed(() => {
+  const points = props.profile?.points || 0
+  const currentLevelPoints = Math.floor(points / 500) * 500
+  const nextLevelPoints = currentLevelPoints + 500
+  const remainingPoints = nextLevelPoints - points
+  return `距离下一级还差 ${remainingPoints} 分`
+})
+
+// 等级进度百分比
+const levelProgressPercent = computed(() => {
+  return `${levelProgress.value}%`
 })
 
 // 签到按钮文本
 const checkInButtonText = computed(() => {
-  return props.isCheckedIn ? '今日已签' : '每日签到'
+  return props.isCheckedIn ? '已签到' : '每日签到'
 })
+
+/**
+ * 🎯 计算社会化比较反馈
+ * 根据用户数据与平均水平对比,生成激励性文案
+ */
+const getComparison = (value: number, type: 'resources' | 'questions' | 'tasks' | 'favorites') => {
+  // TODO: 后端提供真实的用户平均数据
+  // 这里使用模拟数据来演示效果
+  const averages = {
+    resources: 3,   // 平均上传3个资源
+    questions: 8,   // 平均回答8个问题
+    tasks: 1,       // 平均进行中1个任务
+    favorites: 5    // 平均收藏5个内容
+  }
+
+  const avg = averages[type]
+
+  if (value === 0) {
+    return {
+      icon: 'alert-circle',
+      text: '快来试试吧',
+      type: 'neutral'
+    }
+  }
+
+  const percentage = Math.floor((value / avg) * 100)
+
+  if (percentage >= 200) {
+    return {
+      icon: 'trending-up',
+      text: `超过 90% 同学`,
+      type: 'excellent'
+    }
+  } else if (percentage >= 150) {
+    return {
+      icon: 'trending-up',
+      text: `超过 75% 同学`,
+      type: 'good'
+    }
+  } else if (percentage >= 100) {
+    return {
+      icon: 'trending-up',
+      text: `超过 60% 同学`,
+      type: 'average'
+    }
+  } else if (percentage >= 50) {
+    return {
+      icon: 'flame',
+      text: `加油,追赶中`,
+      type: 'below'
+    }
+  } else {
+    return {
+      icon: 'flame',
+      text: `潜力无限`,
+      type: 'below'
+    }
+  }
+}
 
 // 🎯 可操作化统计数据（四格卡片）
 const actionableStats = computed(() => {
   const taskCount = (props.stats?.taskPublishCount || 0) + (props.stats?.taskAcceptedCount || 0)
   const ongoingTaskCount = props.stats?.taskAcceptedCount || 0 // 假设接受的任务就是进行中的
+  const resourceCount = props.stats?.resourceCount || 0
+  const questionCount = props.stats?.questionCount || 0
+  const favoriteCount = props.stats?.favoriteCount || 0
 
   return [
     {
       key: 'resources',
       label: '我的资源',
-      value: props.stats?.resourceCount || 0,
+      value: resourceCount,
       icon: 'file-text',
       color: '#2563EB', // primary
       actionText: '查看',
-      highlight: false
+      highlight: false,
+      comparison: getComparison(resourceCount, 'resources')
     },
     {
       key: 'questions',
       label: '我的回答',
-      value: props.stats?.questionCount || 0,
+      value: questionCount,
       icon: 'message-circle',
       color: '#16A34A', // success
       actionText: '查看',
-      highlight: false
+      highlight: false,
+      comparison: getComparison(questionCount, 'questions')
     },
     {
       key: 'tasks',
@@ -156,16 +282,18 @@ const actionableStats = computed(() => {
       icon: 'clock',
       color: '#F59E0B', // warning
       actionText: ongoingTaskCount > 0 ? '去完成' : '查看',
-      highlight: ongoingTaskCount > 0 // 🎯 有进行中任务时高亮
+      highlight: ongoingTaskCount > 0, // 🎯 有进行中任务时高亮
+      comparison: getComparison(ongoingTaskCount, 'tasks')
     },
     {
       key: 'favorites',
       label: '我的收藏',
-      value: props.stats?.favoriteCount || 0,
+      value: favoriteCount,
       icon: 'heart',
       color: '#EF4444', // error
       actionText: '查看',
-      highlight: false
+      highlight: false,
+      comparison: getComparison(favoriteCount, 'favorites')
     }
   ]
 })
@@ -237,11 +365,11 @@ const handlePointsClick = () => {
   margin: 0;
 }
 
-/* ========== ① 身份卡 ========== */
+/* ========== ① 身份卡（三段式） ========== */
 .identity-card {
   background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
   border-radius: 24rpx;
-  padding: 40rpx 32rpx;
+  padding: 40rpx 32rpx 32rpx;
   margin: 24rpx;
   box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.25);
   position: relative;
@@ -261,10 +389,10 @@ const handlePointsClick = () => {
   }
 }
 
-/* 用户基本信息行 */
-.user-basic-info {
+/* 🎯 第一行：身份 + 成就 */
+.identity-section {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 24rpx;
   margin-bottom: 32rpx;
   position: relative;
@@ -272,13 +400,13 @@ const handlePointsClick = () => {
 }
 
 .avatar {
-  width: 100rpx;
-  height: 100rpx;
+  width: 96rpx;
+  height: 96rpx;
   border-radius: 50%;
   border: 4rpx solid rgba(255, 255, 255, 0.2);
   background: $white;
   flex-shrink: 0;
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
   transition: transform 0.2s ease;
 
   &:active {
@@ -286,16 +414,18 @@ const handlePointsClick = () => {
   }
 }
 
-.user-name-section {
+.identity-info {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
 }
 
-.name-row {
+.name-line {
   display: flex;
   align-items: center;
   gap: 12rpx;
-  margin-bottom: 8rpx;
 }
 
 .nickname {
@@ -305,27 +435,57 @@ const handlePointsClick = () => {
   @include text-ellipsis(1);
 }
 
-.vip-badge {
+.title-line {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-wrap: wrap;
+}
+
+.user-title {
   font-size: 24rpx;
-  margin-left: -4rpx;
+  color: #FFD699;
+  font-weight: 600;
+  padding: 4rpx 12rpx;
+  background: rgba(255, 214, 153, 0.15);
+  border-radius: 8rpx;
+  white-space: nowrap;
+}
+
+.ranking-badge {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  padding: 4rpx 10rpx;
+  background: rgba(165, 243, 252, 0.15);
+  border-radius: 8rpx;
+}
+
+.ranking-icon {
+  color: #A5F3FC;
+}
+
+.ranking-text {
+  font-size: 22rpx;
+  color: #A5F3FC;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .user-meta {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.7);
   @include text-ellipsis(1);
+  margin-top: 2rpx;
 }
 
-/* 成就数据行 */
-.achievement-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+/* 🎯 第二行：当前成长状态 */
+.growth-status {
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 16rpx;
-  padding: 20rpx 24rpx;
-  margin-bottom: 24rpx;
+  padding: 24rpx;
+  margin-bottom: 32rpx;
   cursor: pointer;
   transition: all 0.2s ease;
   position: relative;
@@ -337,76 +497,173 @@ const handlePointsClick = () => {
   }
 }
 
-.achievement-item {
+.status-header {
   display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16rpx;
 }
 
-.achievement-label {
-  font-size: 22rpx;
+.points-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
+.points-label {
+  font-size: 24rpx;
   color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
 }
 
-.achievement-value {
-  font-size: 32rpx;
+.points-value {
+  font-size: 40rpx;
   font-weight: 700;
-
-  &.primary {
-    color: #FFD699; // 橙色（积分）
-  }
-
-  &.accent {
-    color: #A5F3FC; // 青色（排名）
-  }
+  color: #FFD699; // 橙色（积分）
 }
 
-.achievement-divider {
-  width: 1rpx;
-  height: 40rpx;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 16rpx;
+.level-progress-info {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
 }
 
-.achievement-arrow {
+.progress-text {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+.status-arrow {
   color: rgba(255, 255, 255, 0.6);
   flex-shrink: 0;
 }
 
-/* 🎯 核心行为按钮 */
-.primary-actions {
+/* 🎯 进度条（核心视觉元素） */
+.progress-bar-container {
   display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8rpx;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #FFD699 0%, #FFB84D 100%);
+  border-radius: 4rpx;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 8rpx rgba(255, 214, 153, 0.6);
+  position: relative;
+
+  // 🎯 进度条发光效果
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progress-label {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 60rpx;
+  text-align: right;
+}
+
+/* 🎯 第三行：主行动按钮 */
+.action-section {
+  display: flex;
+  flex-direction: column;
   gap: 16rpx;
   position: relative;
   z-index: 1;
 }
 
-.action-btn {
+/* 主按钮：发布内容 */
+.primary-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 24rpx;
+  background: linear-gradient(135deg, #FF6B35 0%, #F59E0B 100%);
+  border-radius: 16rpx;
+  cursor: pointer;
+  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.35);
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.25);
+  }
+}
+
+.action-icon {
+  color: $white;
+  flex-shrink: 0;
+}
+
+.action-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.action-title {
+  font-size: 30rpx;
+  font-weight: 700;
+  color: $white;
+  line-height: 1.2;
+}
+
+.action-subtitle {
+  font-size: 22rpx;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+}
+
+/* 次按钮组（签到、查看成长） */
+.secondary-actions {
+  display: flex;
+  gap: 12rpx;
+}
+
+.secondary-action-btn {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  height: 72rpx;
-  border-radius: 16rpx;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-weight: 600;
-}
-
-.check-in-btn {
+  padding: 16rpx;
   background: rgba(255, 255, 255, 0.2);
   border: 1rpx solid rgba(255, 255, 255, 0.3);
-
-  .action-icon {
-    color: $white;
-  }
-
-  .action-text {
-    color: $white;
-    font-size: 28rpx;
-  }
+  border-radius: 12rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
   &:active:not(.disabled) {
     background: rgba(255, 255, 255, 0.25);
@@ -419,23 +676,15 @@ const handlePointsClick = () => {
   }
 }
 
-.publish-btn {
-  background: linear-gradient(135deg, #FF6B35 0%, #F59E0B 100%);
-  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+.action-icon-sm {
+  color: $white;
+  flex-shrink: 0;
+}
 
-  .action-icon {
-    color: $white;
-  }
-
-  .action-text {
-    color: $white;
-    font-size: 28rpx;
-  }
-
-  &:active {
-    transform: scale(0.97);
-    box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.2);
-  }
+.action-text-sm {
+  font-size: 26rpx;
+  color: $white;
+  font-weight: 600;
 }
 
 /* ========== ② 可操作化数据卡 ========== */
@@ -499,7 +748,32 @@ const handlePointsClick = () => {
   font-weight: 700;
   color: $gray-900;
   line-height: 1.2;
+  margin-bottom: 4rpx;
+}
+
+/* 🎯 社会化比较反馈 */
+.stat-comparison {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   margin-bottom: 8rpx;
+  padding: 4rpx 8rpx;
+  background: linear-gradient(135deg, #FFF9F0 0%, #FFE8CC 100%);
+  border-radius: 8rpx;
+  border: 1rpx solid #FFD699;
+  align-self: flex-start;
+}
+
+.comparison-icon {
+  color: #F59E0B;
+  flex-shrink: 0;
+}
+
+.comparison-text {
+  font-size: 20rpx;
+  color: #D97706;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .stat-action {

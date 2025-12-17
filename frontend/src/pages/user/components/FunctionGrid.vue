@@ -1,5 +1,31 @@
 <template>
   <view class="function-sections">
+    <!-- ========== 🎯 最近活动（行为动态） ========== -->
+    <view v-if="recentActivities.length > 0" class="recent-activities">
+      <view class="section-header">
+        <Icon name="activity" :size="18" class="section-icon activity" />
+        <text class="section-title">最近活动</text>
+        <text class="section-subtitle">{{ recentActivities.length }} 条</text>
+      </view>
+      <view class="activities-list">
+        <view
+          v-for="(activity, index) in recentActivities"
+          :key="index"
+          class="activity-item"
+          @click="handleActivityClick(activity)"
+        >
+          <view class="activity-icon-wrapper" :class="activity.type">
+            <Icon :name="activity.icon" :size="16" class="activity-icon" />
+          </view>
+          <view class="activity-content">
+            <text class="activity-text">{{ activity.text }}</text>
+            <text class="activity-time">{{ activity.time }}</text>
+          </view>
+          <Icon name="chevron-right" :size="14" class="activity-arrow" />
+        </view>
+      </view>
+    </view>
+
     <!-- ========== A. 我的内容（最高优先级） ========== -->
     <view class="function-section">
       <view class="section-header">
@@ -54,12 +80,38 @@
       </view>
     </view>
 
-    <!-- ========== C. 我的成长（可选） ========== -->
-    <view class="function-section">
+    <!-- ========== C. 🎯 我的成长（视觉区块） ========== -->
+    <view class="growth-section">
       <view class="section-header">
         <Icon name="trending-up" :size="18" class="section-icon accent" />
         <text class="section-title">我的成长</text>
+        <text class="section-subtitle">{{ totalBadges }} 枚徽章</text>
       </view>
+
+      <!-- 🎯 徽章展示区（横向滚动） -->
+      <view class="badges-showcase">
+        <scroll-view scroll-x class="badges-scroll">
+          <view class="badges-container">
+            <view
+              v-for="badge in mockBadges"
+              :key="badge.id"
+              class="badge-card"
+              :class="{ locked: !badge.unlocked }"
+              @click="handleBadgeClick(badge)"
+            >
+              <view class="badge-icon-wrapper">
+                <Icon :name="badge.icon" :size="32" class="badge-icon" />
+                <view v-if="!badge.unlocked" class="badge-lock">
+                  <Icon name="lock" :size="12" />
+                </view>
+              </view>
+              <text class="badge-name">{{ badge.name }}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <!-- 成长入口列表 -->
       <view class="section-items">
         <view
           v-for="item in myGrowthItems"
@@ -127,6 +179,67 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   itemClick: [item: FunctionItem]
 }>()
+
+/**
+ * 🎯 最近活动动态
+ * TODO: 后端提供真实的用户活动记录API
+ * 这里使用模拟数据演示
+ */
+interface RecentActivity {
+  type: 'resource' | 'question' | 'task' | 'activity'
+  icon: string
+  text: string
+  time: string
+  path?: string
+}
+
+const recentActivities = computed<RecentActivity[]>(() => {
+  // TODO: 从后端获取真实的用户活动记录
+  // 这里返回模拟数据
+  const mockActivities: RecentActivity[] = [
+    {
+      type: 'resource',
+      icon: 'file-text',
+      text: '上传了《数据结构期末复习笔记》',
+      time: '2小时前',
+      path: '/pages/resource/detail?id=123'
+    },
+    {
+      type: 'question',
+      icon: 'message-circle',
+      text: '回答了问题《如何理解红黑树？》',
+      time: '5小时前',
+      path: '/pages/question/detail?id=456'
+    },
+    {
+      type: 'task',
+      icon: 'clock',
+      text: '接受了任务《帮忙打印课件》',
+      time: '昨天',
+      path: '/pages/task/detail?id=789'
+    }
+  ]
+
+  // 只返回最近3条活动
+  return mockActivities.slice(0, 3)
+})
+
+/**
+ * 处理活动项点击
+ */
+const handleActivityClick = (activity: RecentActivity) => {
+  if (activity.path) {
+    uni.navigateTo({
+      url: activity.path,
+      fail: () => {
+        uni.showToast({
+          title: '页面开发中...',
+          icon: 'none'
+        })
+      }
+    })
+  }
+}
 
 /**
  * A. 我的内容（核心闭环）
@@ -201,6 +314,83 @@ const myInteractionItems = computed<FunctionItem[]>(() => [
     badge: props.badges?.myFavorites
   }
 ])
+
+/**
+ * 🎯 徽章系统
+ * TODO: 后端提供真实的徽章数据
+ */
+interface Badge {
+  id: string
+  name: string
+  icon: string
+  description: string
+  unlocked: boolean
+  progress?: number // 进度百分比 (0-100)
+}
+
+const mockBadges = computed<Badge[]>(() => [
+  {
+    id: 'early-bird',
+    name: '早起鸟',
+    icon: 'award',
+    description: '连续签到7天',
+    unlocked: true
+  },
+  {
+    id: 'resource-contributor',
+    name: '资源贡献者',
+    icon: 'star',
+    description: '上传10个资源',
+    unlocked: true
+  },
+  {
+    id: 'helper',
+    name: '热心助人',
+    icon: 'heart',
+    description: '回答50个问题',
+    unlocked: false,
+    progress: 60
+  },
+  {
+    id: 'task-master',
+    name: '任务达人',
+    icon: 'check-circle',
+    description: '完成20个任务',
+    unlocked: false,
+    progress: 35
+  },
+  {
+    id: 'social-butterfly',
+    name: '社交达人',
+    icon: 'users',
+    description: '参加10次活动',
+    unlocked: false,
+    progress: 80
+  }
+])
+
+const totalBadges = computed(() => {
+  return mockBadges.value.filter(badge => badge.unlocked).length
+})
+
+/**
+ * 处理徽章点击
+ */
+const handleBadgeClick = (badge: Badge) => {
+  if (badge.unlocked) {
+    uni.showToast({
+      title: `已获得：${badge.name}`,
+      icon: 'success'
+    })
+  } else {
+    const progressText = badge.progress ? ` (${badge.progress}%)` : ''
+    uni.showModal({
+      title: badge.name,
+      content: `${badge.description}${progressText}`,
+      showCancel: false
+    })
+  }
+}
 
 /**
  * C. 我的成长（成就激励）
@@ -291,6 +481,221 @@ const handleItemClick = (item: FunctionItem) => {
 
 .function-sections {
   padding: 0 24rpx 24rpx;
+}
+
+/* ========== 🎯 最近活动区域 ========== */
+.recent-activities {
+  background: $white;
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+}
+
+.section-subtitle {
+  font-size: 24rpx;
+  color: $gray-400;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.activities-list {
+  padding: 0;
+}
+
+.activity-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 20rpx 24rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-bottom: 1rpx solid $gray-50;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:active {
+    background: $gray-50;
+  }
+}
+
+.activity-icon-wrapper {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.resource {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  }
+
+  &.question {
+    background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  }
+
+  &.task {
+    background: linear-gradient(135deg, #FFF9F0 0%, #FFE8CC 100%);
+  }
+
+  &.activity {
+    background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  }
+}
+
+.activity-icon {
+  flex-shrink: 0;
+
+  .resource & {
+    color: $primary;
+  }
+
+  .question & {
+    color: $success;
+  }
+
+  .task & {
+    color: $accent;
+  }
+
+  .activity & {
+    color: $error;
+  }
+}
+
+.activity-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.activity-text {
+  font-size: 26rpx;
+  color: $gray-800;
+  font-weight: 500;
+  @include text-ellipsis(1);
+}
+
+.activity-time {
+  font-size: 22rpx;
+  color: $gray-400;
+}
+
+.activity-arrow {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.section-icon.activity {
+  color: #8B5CF6; // 紫色，区分于其他分类
+}
+
+/* ========== 🎯 成长模块（视觉区块） ========== */
+.growth-section {
+  background: linear-gradient(135deg, #FFF9F0 0%, #FFE8CC 100%);
+  border-radius: 20rpx;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.15);
+  border: 2rpx solid #FFD699;
+}
+
+/* 徽章展示区 */
+.badges-showcase {
+  padding: 16rpx 0;
+  background: rgba(255, 255, 255, 0.5);
+  border-bottom: 1rpx solid rgba(245, 158, 11, 0.1);
+}
+
+.badges-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.badges-container {
+  display: inline-flex;
+  gap: 16rpx;
+  padding: 0 24rpx;
+}
+
+.badge-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.badge-icon-wrapper {
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FFD699 0%, #FFB84D 100%);
+  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.25);
+  transition: all 0.2s ease;
+
+  .badge-card.locked & {
+    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 100%);
+    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+  }
+
+  .badge-card:active & {
+    box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.2);
+  }
+}
+
+.badge-icon {
+  color: $white;
+
+  .badge-card.locked & {
+    color: $gray-400;
+  }
+}
+
+.badge-lock {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 24rpx;
+  height: 24rpx;
+  border-radius: 50%;
+  background: $gray-600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid $white;
+
+  & > :deep(svg) {
+    color: $white;
+  }
+}
+
+.badge-name {
+  font-size: 22rpx;
+  color: $gray-700;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 80rpx;
+  @include text-ellipsis(1);
+
+  .badge-card.locked & {
+    color: $gray-400;
+  }
 }
 
 /* ========== 功能分区 ========== */

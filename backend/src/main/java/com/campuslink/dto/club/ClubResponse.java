@@ -70,6 +70,32 @@ public class ClubResponse {
     private Boolean isMember;
 
     /**
+     * 是否有待审核的加入申请
+     */
+    private Boolean isPending;
+
+    /**
+     * 用户加入位置(第几位成员)
+     * 仅当 isMember = true 时有值
+     */
+    private Integer joinPosition;
+
+    /**
+     * 是否官方/校级社团
+     */
+    private Boolean isOfficial;
+
+    /**
+     * 社团分类 (技术/学习/体育/艺术/公益/兴趣)
+     */
+    private String category;
+
+    /**
+     * 最近活动时间
+     */
+    private LocalDateTime lastActivityAt;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createdAt;
@@ -78,4 +104,9 @@ public class ClubResponse {
      * 更新时间
      */
     private LocalDateTime updatedAt;
+
+    /**
+     * 学校名称
+     */
+    private String schoolName;
 }

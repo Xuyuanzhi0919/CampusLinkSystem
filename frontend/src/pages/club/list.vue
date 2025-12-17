@@ -313,7 +313,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onPageScroll, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
-import { getClubList } from '@/services/club'
+import { getClubList, joinClub } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
@@ -435,14 +435,15 @@ const stickyNavStyle = computed(() => {
 // 前端直接使用 clubs.value 渲染,不再需要 filteredClubs 计算属性
 
 // P0优化: 判断社团是否活跃
-// 简化逻辑: 成员数 >= 10 视为活跃
 // 优化: 活跃判断逻辑 - 只奖励真正活跃的社团
 // 规则: 只有最近有活动的社团才显示"活跃"标签
 const isClubActive = (club: ClubItem): boolean => {
-  // 计算距离创建时间的天数(实际应使用 lastActivityAt 字段)
-  const createdDate = new Date(club.createdAt)
+  if (!club.lastActivityAt) return false // 没有活动记录,不活跃
+
+  // 计算距离最近活动的天数
+  const activityDate = new Date(club.lastActivityAt)
   const now = new Date()
-  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24))
 
   // 只有最近30天内有活动的社团才算"活跃"
   // (本周或本月有活动的社团才显示活跃标签,近期/长期不活跃不显示)
@@ -450,27 +451,19 @@ const isClubActive = (club: ClubItem): boolean => {
 }
 
 // P0优化: 获取社团分类标签
-// 根据社团名称关键词推断类型(实际应由后端返回)
+// 使用后端返回的 category 字段
 const getClubCategory = (club: ClubItem): string => {
-  const name = club.clubName.toLowerCase()
-
-  if (name.includes('计算机') || name.includes('编程') || name.includes('技术')) return '技术'
-  if (name.includes('学习') || name.includes('科学') || name.includes('研究')) return '学习'
-  if (name.includes('体育') || name.includes('篮球') || name.includes('足球')) return '体育'
-  if (name.includes('音乐') || name.includes('美术') || name.includes('艺术')) return '艺术'
-  if (name.includes('志愿') || name.includes('公益') || name.includes('服务')) return '公益'
-
-  return '兴趣' // 默认标签
+  return club.category || '兴趣' // 默认为兴趣分类
 }
 
 // 优先3: 获取社团最近活动时间
-// 根据社团创建时间计算相对时间(实际应由后端返回 lastActivityAt 字段)
+// 根据后端返回的 lastActivityAt 字段计算相对时间
 const getRecentActivityTime = (club: ClubItem): string => {
-  // TODO: 后端应返回 lastActivityAt 字段
-  // 临时逻辑: 使用创建时间模拟
-  const createdDate = new Date(club.createdAt)
+  if (!club.lastActivityAt) return '' // 没有活动记录
+
+  const activityDate = new Date(club.lastActivityAt)
   const now = new Date()
-  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
+  const diffDays = Math.floor((now.getTime() - activityDate.getTime()) / (1000 * 60 * 60 * 24))
 
   if (diffDays < 7) return '本周有活动'
   if (diffDays < 30) return '本月有活动'
@@ -573,9 +566,9 @@ const retry = () => {
 // 加载右侧栏数据(仅首次加载全部数据时调用)
 const loadSidebarData = () => {
   // 1. 官方社团：筛选 isOfficial = true 的社团
-  // TODO: 后端应返回 isOfficial 字段
-  // 临时逻辑:取前2个社团作为官方社团
-  officialClubs.value = allClubs.value.slice(0, 2)
+  officialClubs.value = allClubs.value
+    .filter(club => club.isOfficial === true)
+    .slice(0, 2) // 最多显示2个官方社团
 
   // 2. 热门社团：按成员数排序取 TOP 3
   hotClubs.value = [...allClubs.value]
@@ -733,14 +726,31 @@ const handleClubAction = (club: ClubItem) => {
       title: '加入社团',
       content: `确定要加入"${club.clubName}"吗?`,
       confirmText: '加入',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          // TODO: 调用加入社团接口
-          uni.showToast({
-            title: '申请已提交',
-            icon: 'success'
-          })
-          club.isPending = true
+          try {
+            // 调用加入社团接口
+            await joinClub(club.clubId)
+
+            // 更新本地状态
+            club.isMember = true
+            club.isPending = false
+
+            // 更新成员数量
+            if (club.memberCount !== undefined) {
+              club.memberCount++
+            }
+
+            uni.showToast({
+              title: '加入成功',
+              icon: 'success'
+            })
+          } catch (error: any) {
+            uni.showToast({
+              title: error.message || '加入失败',
+              icon: 'none'
+            })
+          }
         }
       }
     })

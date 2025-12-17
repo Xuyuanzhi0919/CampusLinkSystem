@@ -61,6 +61,17 @@ public class Club {
     private Integer status;
 
     /**
+     * 是否官方/校级社团：0-否，1-是
+     */
+    @TableField("is_official")
+    private Integer isOfficial;
+
+    /**
+     * 社团分类 (技术/学习/体育/艺术/公益/兴趣)
+     */
+    private String category;
+
+    /**
      * 创建时间
      */
     @TableField("created_at")

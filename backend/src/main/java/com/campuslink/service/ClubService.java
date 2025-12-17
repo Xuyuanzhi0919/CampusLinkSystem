@@ -10,11 +10,13 @@ import com.campuslink.dto.club.CreateClubRequest;
 import com.campuslink.entity.Activity;
 import com.campuslink.entity.Club;
 import com.campuslink.entity.ClubMember;
+import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.ActivityMapper;
 import com.campuslink.mapper.ClubMapper;
 import com.campuslink.mapper.ClubMemberMapper;
+import com.campuslink.mapper.SchoolMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +41,7 @@ public class ClubService {
     private final ClubMemberMapper clubMemberMapper;
     private final UserMapper userMapper;
     private final ActivityMapper activityMapper;
+    private final SchoolMapper schoolMapper;
 
     /**
      * 创建社团
@@ -300,11 +303,30 @@ public class ClubService {
             response.setFounderName(founder.getNickname());
         }
 
+        // 查询学校名称
+        School school = schoolMapper.selectById(club.getSchoolId());
+        if (school != null) {
+            response.setSchoolName(school.getSchoolName());
+        }
+
         // 查询社团活动总数
         LambdaQueryWrapper<Activity> activityWrapper = new LambdaQueryWrapper<>();
         activityWrapper.eq(Activity::getClubId, club.getClubId());
         Long activityCount = activityMapper.selectCount(activityWrapper);
         response.setActivityCount(activityCount.intValue());
+
+        // 查询最近活动时间
+        LambdaQueryWrapper<Activity> latestActivityWrapper = new LambdaQueryWrapper<>();
+        latestActivityWrapper.eq(Activity::getClubId, club.getClubId())
+                .orderByDesc(Activity::getCreatedAt)
+                .last("LIMIT 1");
+        Activity latestActivity = activityMapper.selectOne(latestActivityWrapper);
+        if (latestActivity != null) {
+            response.setLastActivityAt(latestActivity.getCreatedAt());
+        }
+
+        // 设置是否官方社团 (从 Club 实体的 isOfficial 字段转换为 Boolean)
+        response.setIsOfficial(club.getIsOfficial() != null && club.getIsOfficial() == 1);
 
         // 查询当前用户是否为成员及角色
         if (userId != null) {
@@ -316,10 +338,21 @@ public class ClubService {
             if (member != null) {
                 response.setIsMember(true);
                 response.setUserRole(member.getRole());
+
+                // 计算用户加入位置(第几位成员)
+                // 查询在该用户之前加入的成员数量 + 1
+                LambdaQueryWrapper<ClubMember> positionWrapper = new LambdaQueryWrapper<>();
+                positionWrapper.eq(ClubMember::getClubId, club.getClubId())
+                        .le(ClubMember::getJoinedAt, member.getJoinedAt());
+                Long position = clubMemberMapper.selectCount(positionWrapper);
+                response.setJoinPosition(position.intValue());
             } else {
                 response.setIsMember(false);
             }
         }
+
+        // TODO: 查询用户是否有待审核的加入申请 (需要加入申请表后实现)
+        response.setIsPending(false);
 
         return response;
     }

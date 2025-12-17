@@ -21,6 +21,10 @@ export interface ClubDetail extends ClubItem {
   founderId: number
   founderName: string
   isMember: boolean
+  isPending?: boolean // 申请是否审核中
+  userRole?: string // 当前用户在社团中的角色: founder/admin/member
+  status?: number // 社团状态: 0-已解散, 1-正常
+  updatedAt?: string // 更新时间
 }
 
 // 社团成员

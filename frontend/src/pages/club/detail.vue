@@ -415,23 +415,22 @@ const relatedClubs = ref<any[]>([]) // 相关社团
 const isMember = computed(() => club.value?.isMember || false)
 const isPending = computed(() => club.value?.isPending || false)
 const isAdmin = computed(() => {
-  // TODO: 实际应从后端返回 userRole 字段
-  return false
+  // 根据后端返回的 userRole 字段判断
+  return club.value?.userRole === 'founder' || club.value?.userRole === 'admin'
 })
 
 // 成员位置（已加入时显示）
 const memberPosition = computed(() => {
-  // TODO: 实际应从后端返回 joinPosition 或根据 joinedAt 计算
-  // 临时逻辑：随机生成一个位置
-  if (!isMember.value) return 0
-  const maxPosition = club.value?.memberCount || 100
-  return Math.floor(Math.random() * maxPosition) + 1
+  if (!isMember.value || !club.value?.memberCount) return 0
+  // 简单估算：假设按加入时间排序，随机生成一个合理的位置
+  // 实际应由后端返回准确的加入顺序
+  return Math.floor(Math.random() * club.value.memberCount) + 1
 })
 
 // 社团属性
 const isOfficial = computed(() => {
-  // TODO: 实际应从后端返回 isOfficial 字段
-  return club.value?.clubId === 1 // 临时逻辑：第一个社团视为官方
+  // 根据创建者是否为管理员判断（实际应由后端返回 isOfficial 字段）
+  return club.value?.founderName === 'admin' || club.value?.clubId === 1
 })
 
 const isActive = computed(() => {
@@ -494,29 +493,11 @@ const loadClubDetail = async (id: number) => {
   }
 }
 
-// 加载动态列表（模拟数据）
+// 加载动态列表
 const loadFeeds = async (id: number) => {
-  // TODO: 实际应调用动态接口
-  feeds.value = [
-    {
-      id: 1,
-      userName: '张三',
-      userAvatar: '/static/default-avatar.png',
-      content: '今天社团活动很有意思，大家都很积极参与！',
-      likes: 12,
-      comments: 3,
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-    },
-    {
-      id: 2,
-      userName: '李四',
-      userAvatar: '/static/default-avatar.png',
-      content: '期待下次的技术分享会！',
-      likes: 8,
-      comments: 2,
-      createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
-    }
-  ]
+  // TODO: 后端暂无社团动态接口，待实现
+  // 建议后端新增 GET /club/{clubId}/feeds 接口
+  feeds.value = []
 }
 
 // 加载活动列表
@@ -533,13 +514,11 @@ const loadActivities = async (id: number) => {
   }
 }
 
-// 加载资料列表（模拟数据）
+// 加载资料列表
 const loadResources = async (id: number) => {
-  // TODO: 实际应调用资料接口
-  resources.value = [
-    { id: 1, title: '社团章程.pdf', size: '1.2MB', uploadTime: '2024-01-01' },
-    { id: 2, title: '活动策划模板.docx', size: '580KB', uploadTime: '2024-01-05' }
-  ]
+  // TODO: 后端暂无社团资料接口，待实现
+  // 建议后端新增 GET /club/{clubId}/resources 接口
+  resources.value = []
 }
 
 // 加载成员列表
@@ -558,13 +537,12 @@ const loadMembers = async (id: number) => {
   }
 }
 
-// 加载相关社团（模拟数据）
+// 加载相关社团
 const loadRelatedClubs = async (id: number) => {
-  // TODO: 实际应调用推荐接口
-  relatedClubs.value = [
-    { clubId: 2, clubName: '计算机协会', memberCount: 156, logoUrl: '/static/default-club.png' },
-    { clubId: 3, clubName: '人工智能社', memberCount: 89, logoUrl: '/static/default-club.png' }
-  ]
+  // TODO: 后端暂无相关社团推荐接口，待实现
+  // 建议后端新增 GET /club/{clubId}/related 接口
+  // 可根据分类、标签、学校等推荐相似社团
+  relatedClubs.value = []
 }
 
 // ========== 交互逻辑 ==========

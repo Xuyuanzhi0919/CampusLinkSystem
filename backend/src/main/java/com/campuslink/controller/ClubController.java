@@ -39,9 +39,12 @@ public class ClubController {
     public Result<PageResult<ClubResponse>> getClubList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "recommended") String sortBy,
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize);
+        PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize, keyword, category, sortBy);
         return Result.success(result);
     }
 

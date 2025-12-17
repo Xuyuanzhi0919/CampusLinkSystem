@@ -78,11 +78,44 @@ public class ClubService {
     /**
      * 获取社团列表
      */
-    public PageResult<ClubResponse> getClubList(Long userId, Integer page, Integer pageSize) {
+    public PageResult<ClubResponse> getClubList(Long userId, Integer page, Integer pageSize,
+                                                 String keyword, String category, String sortBy) {
         Page<Club> clubPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Club> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Club::getStatus, 1)
-                .orderByDesc(Club::getCreatedAt);
+
+        // 基础条件：只查询正常状态的社团
+        wrapper.eq(Club::getStatus, 1);
+
+        // 关键词搜索：社团名称或简介包含关键词
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            wrapper.and(w -> w.like(Club::getClubName, keyword.trim())
+                    .or()
+                    .like(Club::getDescription, keyword.trim()));
+        }
+
+        // 分类筛选：根据社团名称或简介判断分类
+        // TODO: 后续可以在 club 表添加 category 字段
+        if (category != null && !category.trim().isEmpty() && !"all".equals(category)) {
+            wrapper.and(w -> w.like(Club::getClubName, category)
+                    .or()
+                    .like(Club::getDescription, category));
+        }
+
+        // 排序逻辑
+        switch (sortBy) {
+            case "member_count":
+                wrapper.orderByDesc(Club::getMemberCount);
+                break;
+            case "latest":
+                wrapper.orderByDesc(Club::getCreatedAt);
+                break;
+            case "recommended":
+            default:
+                // 推荐排序：成员数 >= 10 优先，然后按成员数降序
+                wrapper.orderByDesc(Club::getMemberCount)
+                        .orderByDesc(Club::getCreatedAt);
+                break;
+        }
 
         clubPage = clubMapper.selectPage(clubPage, wrapper);
 

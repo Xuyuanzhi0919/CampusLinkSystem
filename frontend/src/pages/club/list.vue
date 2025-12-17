@@ -128,8 +128,19 @@
             </view>
           </view>
 
+          <!-- 加载失败状态 -->
+          <view v-if="loadError && clubs.length === 0" class="error-state">
+            <text class="error-icon">⚠️</text>
+            <text class="error-text">加载失败</text>
+            <text class="error-hint">网络连接失败，请检查网络后重试</text>
+            <view class="retry-button" @click="retry">
+              <Icon name="refresh-cw" :size="16" class="retry-icon" />
+              <text class="retry-text">重新加载</text>
+            </view>
+          </view>
+
           <!-- 加载状态：骨架屏 -->
-          <view v-if="loading" class="club-list">
+          <view v-else-if="loading" class="club-list">
             <SkeletonCard
               v-for="i in 5"
               :key="i"
@@ -140,7 +151,7 @@
           <!-- 社团列表 -->
           <view v-else-if="clubs.length > 0" class="club-list">
           <view
-            v-for="club in filteredClubs"
+            v-for="club in clubs"
             :key="club.clubId"
             class="club-card"
             @click="goToClubDetail(club.clubId)"
@@ -301,7 +312,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { onPageScroll, onReachBottom } from '@dcloudio/uni-app'
+import { onPageScroll, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
 import { getClubList } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import Icon from '@/components/icons/index.vue'
@@ -319,7 +330,9 @@ const COLLAPSE_END = 120 // 完全折叠的阈值（120px）
 // 状态
 const loading = ref(false)
 const loadingMore = ref(false) // 加载更多状态
+const loadError = ref(false) // 加载失败状态
 const clubs = ref<ClubItem[]>([])
+const allClubs = ref<ClubItem[]>([]) // 存储全量数据,用于右侧栏统计
 const searchKeyword = ref('')
 
 // 分页状态
@@ -331,6 +344,7 @@ const total = ref(0)
 // 右栏数据（弱右栏，辅助决策）
 const officialClubs = ref<ClubItem[]>([])  // 官方/校级社团（2-3个）
 const hotClubs = ref<ClubItem[]>([])       // 热门社团 TOP 3
+const sidebarLoaded = ref(false) // 右侧栏是否已加载
 
 // P0优化: 用户已加入的社团数量(模拟数据,实际应从用户信息获取)
 const userJoinedCount = ref(1)
@@ -420,48 +434,8 @@ const stickyNavStyle = computed(() => {
   }
 })
 
-// 计算属性：筛选+排序后的社团列表
-const filteredClubs = computed(() => {
-  let result = clubs.value
-
-  // 1. 搜索筛选
-  if (searchKeyword.value.trim()) {
-    const keyword = searchKeyword.value.toLowerCase()
-    result = result.filter(club =>
-      club.clubName.toLowerCase().includes(keyword) ||
-      club.description?.toLowerCase().includes(keyword)
-    )
-  }
-
-  // 2. 分类筛选
-  if (currentCategory.value !== 'all') {
-    result = result.filter(club =>
-      getClubCategory(club) === currentCategory.value
-    )
-  }
-
-  // 3. 排序
-  result = [...result] // 创建副本避免直接修改
-  switch (currentSort.value) {
-    case 'member_count':
-      result.sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
-      break
-    case 'latest':
-      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      break
-    case 'recommended':
-    default:
-      // 推荐排序: 活跃度(成员数>=10) + 成员数降序
-      result.sort((a, b) => {
-        const aActive = (a.memberCount || 0) >= 10 ? 1 : 0
-        const bActive = (b.memberCount || 0) >= 10 ? 1 : 0
-        if (aActive !== bActive) return bActive - aActive
-        return (b.memberCount || 0) - (a.memberCount || 0)
-      })
-  }
-
-  return result
-})
+// 注意: 搜索、分类、排序逻辑已移到后端处理
+// 前端直接使用 clubs.value 渲染,不再需要 filteredClubs 计算属性
 
 // P0优化: 判断社团是否活跃
 // 简化逻辑: 成员数 >= 10 视为活跃
@@ -510,11 +484,12 @@ const getRecentActivityTime = (club: ClubItem): string => {
 
 // 加载社团列表
 const loadClubList = async (isRefresh = false) => {
-  // 如果是刷新,重置分页
+  // 如果是刷新,重置分页和错误状态
   if (isRefresh) {
     currentPage.value = 1
     hasMore.value = true
     clubs.value = []
+    loadError.value = false
   }
 
   // 如果没有更多数据或正在加载,直接返回
@@ -532,7 +507,10 @@ const loadClubList = async (isRefresh = false) => {
   try {
     const res = await getClubList({
       page: currentPage.value,
-      pageSize: pageSize.value
+      pageSize: pageSize.value,
+      keyword: searchKeyword.value.trim() || undefined,
+      category: currentCategory.value !== 'all' ? currentCategory.value : undefined,
+      sortBy: currentSort.value
     })
 
     // 更新分页信息
@@ -557,27 +535,25 @@ const loadClubList = async (isRefresh = false) => {
       currentPage.value++
     }
 
-    // MVP-1: 更新分类计数
+    // 只在首次加载且无筛选条件时,加载右侧栏数据
+    if (!sidebarLoaded.value && currentCategory.value === 'all' && !searchKeyword.value) {
+      allClubs.value = clubs.value
+      loadSidebarData()
+      sidebarLoaded.value = true
+    }
+
+    // MVP-1: 更新分类计数(基于全量数据)
     updateCategoryCounts()
 
-    // 右栏数据填充（模拟，实际应由后端返回或单独接口获取）
-    // 1. 官方社团：选择前 2-3 个"认证"社团
-    // TODO: 后端应返回 isOfficial: boolean 字段
-    if (clubs.value.length >= 2) {
-      officialClubs.value = clubs.value.slice(0, 2).map(club => ({
-        ...club,
-        description: club.description || '校级官方认证社团'
-      }))
-    }
-
-    // 2. 热门社团：按成员数排序取 TOP 3
-    if (clubs.value.length >= 3) {
-      hotClubs.value = [...clubs.value]
-        .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
-        .slice(0, 3)
-    }
+    // 成功加载后清除错误状态
+    loadError.value = false
   } catch (error: any) {
     console.error('加载社团列表失败:', error)
+
+    // 设置错误状态
+    loadError.value = true
+
+    // 显示错误提示
     uni.showToast({
       title: error.message || '加载失败',
       icon: 'none'
@@ -591,6 +567,25 @@ const loadClubList = async (isRefresh = false) => {
   }
 }
 
+// 重试加载
+const retry = () => {
+  loadError.value = false
+  loadClubList(true)
+}
+
+// 加载右侧栏数据(仅首次加载全部数据时调用)
+const loadSidebarData = () => {
+  // 1. 官方社团：筛选 isOfficial = true 的社团
+  // TODO: 后端应返回 isOfficial 字段
+  // 临时逻辑:取前2个社团作为官方社团
+  officialClubs.value = allClubs.value.slice(0, 2)
+
+  // 2. 热门社团：按成员数排序取 TOP 3
+  hotClubs.value = [...allClubs.value]
+    .sort((a, b) => (b.memberCount || 0) - (a.memberCount || 0))
+    .slice(0, 3)
+}
+
 // 加载更多
 const loadMore = () => {
   loadClubList(false)
@@ -598,12 +593,15 @@ const loadMore = () => {
 
 // 搜索
 const handleSearch = () => {
-  // 搜索逻辑已在 computed 中处理
+  // 搜索时重新加载数据
+  loadClubList(true)
 }
 
 // 清空搜索
 const clearSearch = () => {
   searchKeyword.value = ''
+  // 清空搜索后重新加载
+  loadClubList(true)
 }
 
 // 跳转到社团详情
@@ -622,6 +620,8 @@ const goToClubDetail = (clubId: number) => {
 // MVP-1: 切换分类
 const handleCategoryChange = (category: string) => {
   currentCategory.value = category
+  // 分类切换后重新加载数据
+  loadClubList(true)
 }
 
 // MVP-2: 切换排序
@@ -635,6 +635,8 @@ const toggleSortMenu = (event?: Event) => {
 const handleSortChange = (sort: 'recommended' | 'member_count' | 'latest') => {
   currentSort.value = sort
   showSortMenu.value = false
+  // 排序切换后重新加载数据
+  loadClubList(true)
 }
 
 // 点击页面任意位置关闭排序菜单
@@ -668,14 +670,33 @@ const handleCreateClub = () => {
   // uni.navigateTo({ url: '/pages/club/create' })
 }
 
-// MVP-1: 更新分类计数
+// MVP-1: 更新分类计数(优化:一次遍历统计所有分类)
 const updateCategoryCounts = () => {
-  categories.value.forEach(cat => {
-    if (cat.value === 'all') {
-      cat.count = clubs.value.length
-    } else {
-      cat.count = clubs.value.filter(club => getClubCategory(club) === cat.value).length
+  // 基于全量数据统计分类
+  const dataSource = allClubs.value.length > 0 ? allClubs.value : clubs.value
+
+  // 初始化计数对象
+  const counts: Record<string, number> = {
+    all: dataSource.length,
+    技术: 0,
+    学习: 0,
+    体育: 0,
+    艺术: 0,
+    公益: 0,
+    兴趣: 0
+  }
+
+  // 一次遍历统计所有分类
+  dataSource.forEach(club => {
+    const category = getClubCategory(club)
+    if (counts[category] !== undefined) {
+      counts[category]++
     }
+  })
+
+  // 更新分类计数
+  categories.value.forEach(cat => {
+    cat.count = counts[cat.value] || 0
   })
 }
 
@@ -742,6 +763,12 @@ onMounted(() => {
 // 监听触底事件(自动加载更多)
 onReachBottom(() => {
   loadMore()
+})
+
+// 监听下拉刷新
+onPullDownRefresh(async () => {
+  await loadClubList(true)
+  uni.stopPullDownRefresh()
 })
 
 // 监听页面滚动（渐进式折叠）
@@ -1936,6 +1963,70 @@ onPageScroll((e: any) => {
 .load-more-text {
   font-size: 26rpx;
   color: $primary;
+  font-weight: $font-weight-medium;
+}
+
+// ===================================
+// 错误状态
+// ===================================
+.error-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx $sp-8;
+  gap: $sp-4;
+}
+
+.error-icon {
+  font-size: 120rpx;
+  line-height: 1;
+  opacity: 0.6;
+}
+
+.error-text {
+  font-size: 32rpx;
+  color: $gray-700;
+  font-weight: $font-weight-semibold;
+}
+
+.error-hint {
+  font-size: $font-size-sm;
+  color: $gray-500;
+  text-align: center;
+  margin-bottom: $sp-4;
+}
+
+.retry-button {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-4 $sp-8;
+  background: linear-gradient(135deg, $primary 0%, #1d4ed8 100%);
+  border-radius: $radius-2xl;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &:hover {
+    background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    box-shadow: 0 6rpx 16rpx rgba($primary, 0.3);
+  }
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 2rpx 8rpx rgba($primary, 0.2);
+  }
+}
+
+.retry-icon {
+  color: $white;
+  flex-shrink: 0;
+}
+
+.retry-text {
+  font-size: $font-size-base;
+  color: $white;
   font-weight: $font-weight-medium;
 }
 

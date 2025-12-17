@@ -367,11 +367,12 @@ const handlePointsClick = () => {
 
 /* ========== ① 身份卡（三段式） ========== */
 .identity-card {
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  // 🎯 降低饱和度:从高饱和蓝改为系统蓝
+  background: linear-gradient(135deg, #4B89DC 0%, #3B6FB6 100%);
   border-radius: 24rpx;
   padding: 40rpx 32rpx 32rpx;
   margin: 24rpx;
-  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.25);
+  box-shadow: 0 8rpx 32rpx rgba(75, 137, 220, 0.2); // 阴影也降低
   position: relative;
   overflow: hidden;
 
@@ -383,7 +384,7 @@ const handlePointsClick = () => {
     right: -100rpx;
     width: 300rpx;
     height: 300rpx;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%); // 降低强度
     border-radius: 50%;
     pointer-events: none;
   }
@@ -481,7 +482,8 @@ const handlePointsClick = () => {
 
 /* 🎯 第二行：当前成长状态 */
 .growth-status {
-  background: rgba(255, 255, 255, 0.15);
+  // 🎯 改为中性色承载,不再用橙色背景
+  background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   border-radius: 16rpx;
   padding: 24rpx;
@@ -492,7 +494,7 @@ const handlePointsClick = () => {
   z-index: 1;
 
   &:active {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.25);
     transform: scale(0.98);
   }
 }
@@ -519,7 +521,7 @@ const handlePointsClick = () => {
 .points-value {
   font-size: 40rpx;
   font-weight: 700;
-  color: #FFD699; // 橙色（积分）
+  color: #FFFFFF; // 🎯 改为白色,橙色只留在进度条
 }
 
 .level-progress-info {
@@ -609,15 +611,16 @@ const handlePointsClick = () => {
   align-items: center;
   gap: 16rpx;
   padding: 24rpx;
-  background: linear-gradient(135deg, #FF6B35 0%, #F59E0B 100%);
+  // 🎯 降低橙色强度,改为更柔和的暖色
+  background: linear-gradient(135deg, #FF8A5B 0%, #FFAB5A 100%);
   border-radius: 16rpx;
   cursor: pointer;
-  box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.35);
+  box-shadow: 0 4rpx 16rpx rgba(255, 138, 91, 0.25); // 降低阴影强度
   transition: all 0.2s ease;
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0 2rpx 8rpx rgba(255, 107, 53, 0.25);
+    box-shadow: 0 2rpx 8rpx rgba(255, 138, 91, 0.2);
   }
 }
 
@@ -758,20 +761,21 @@ const handlePointsClick = () => {
   gap: 4rpx;
   margin-bottom: 8rpx;
   padding: 4rpx 8rpx;
-  background: linear-gradient(135deg, #FFF9F0 0%, #FFE8CC 100%);
+  // 🎯 降低背景饱和度,改为更柔和的中性暖色
+  background: #F8F5F2;
   border-radius: 8rpx;
-  border: 1rpx solid #FFD699;
+  border: 1rpx solid #E8E3DE;
   align-self: flex-start;
 }
 
 .comparison-icon {
-  color: #F59E0B;
+  color: #D97706; // 保持图标颜色
   flex-shrink: 0;
 }
 
 .comparison-text {
   font-size: 20rpx;
-  color: #D97706;
+  color: #78716C; // 🎯 文字改为中性灰褐色
   font-weight: 600;
   white-space: nowrap;
 }

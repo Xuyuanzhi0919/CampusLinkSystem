@@ -598,19 +598,20 @@ const handleItemClick = (item: FunctionItem) => {
 
 /* ========== 🎯 成长模块（视觉区块） ========== */
 .growth-section {
-  background: linear-gradient(135deg, #FFF9F0 0%, #FFE8CC 100%);
+  // 🎯 改为中性色承载,不再大面积橙色
+  background: linear-gradient(135deg, #FAFAFA 0%, #F5F5F5 100%);
   border-radius: 20rpx;
   margin-bottom: 24rpx;
   overflow: hidden;
-  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.15);
-  border: 2rpx solid #FFD699;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid #E5E7EB;
 }
 
 /* 徽章展示区 */
 .badges-showcase {
   padding: 16rpx 0;
-  background: rgba(255, 255, 255, 0.5);
-  border-bottom: 1rpx solid rgba(245, 158, 11, 0.1);
+  background: rgba(255, 255, 255, 0.6);
+  border-bottom: 1rpx solid #E5E7EB;
 }
 
 .badges-scroll {
@@ -645,8 +646,9 @@ const handleItemClick = (item: FunctionItem) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FFD699 0%, #FFB84D 100%);
-  box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.25);
+  // 🎯 降低橙色饱和度,改为更柔和的金色
+  background: linear-gradient(135deg, #FFC876 0%, #FFB347 100%);
+  box-shadow: 0 4rpx 12rpx rgba(255, 179, 71, 0.2); // 降低阴影强度
   transition: all 0.2s ease;
 
   .badge-card.locked & {
@@ -655,7 +657,7 @@ const handleItemClick = (item: FunctionItem) => {
   }
 
   .badge-card:active & {
-    box-shadow: 0 2rpx 8rpx rgba(245, 158, 11, 0.2);
+    box-shadow: 0 2rpx 8rpx rgba(255, 179, 71, 0.15);
   }
 }
 

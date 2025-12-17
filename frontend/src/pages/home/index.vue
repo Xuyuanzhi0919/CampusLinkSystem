@@ -324,9 +324,9 @@ const handleForgotPassword = () => {
 // ===================== 小程序登录处理 =====================
 // #ifdef MP-WEIXIN
 const handleMiniLogin = () => {
-  // 小程序登录：跳转到个人中心页面，个人中心会处理登录
-  uni.switchTab({
-    url: '/pages/user/index'
+  // 跳转到小程序登录页面
+  uni.navigateTo({
+    url: '/pages/auth/mp-login'
   })
 }
 

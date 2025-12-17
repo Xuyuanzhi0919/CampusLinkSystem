@@ -1,12 +1,24 @@
 <template>
   <view class="user-profile-page">
+    <!-- 未登录状态（仅小程序） -->
+    <!-- #ifdef MP-WEIXIN -->
+    <view v-if="!userStore.isLoggedIn && !loading" class="not-logged-in">
+      <view class="empty-icon">👤</view>
+      <text class="empty-text">还未登录</text>
+      <text class="empty-hint">登录后可查看个人信息和数据</text>
+      <button class="login-btn" @click="handleGoToLogin">
+        去登录
+      </button>
+    </view>
+    <!-- #endif -->
+
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-container">
       <text class="loading-text">加载中...</text>
     </view>
 
     <!-- 主内容 -->
-    <view v-else class="content-container">
+    <view v-else-if="userStore.isLoggedIn" class="content-container">
       <!-- 🎯 ① Hero Section - 个人门面区 -->
       <HeroSection
         v-if="userProfile"
@@ -256,6 +268,14 @@ const mockGrowthEvents = computed(() => [
 ])
 
 const loadUserData = async () => {
+  // #ifdef MP-WEIXIN
+  // 小程序端：未登录时不加载数据，避免 401 错误
+  if (!userStore.isLoggedIn) {
+    loading.value = false
+    return
+  }
+  // #endif
+
   try {
     loading.value = true
 
@@ -278,6 +298,16 @@ const loadUserData = async () => {
     }
   } catch (error: any) {
     console.error('加载用户数据失败:', error)
+
+    // #ifdef MP-WEIXIN
+    // 小程序端：401 错误时清除登录信息，显示登录引导
+    if (error.message?.includes('401') || error.message?.includes('未登录')) {
+      userStore.logout()
+      loading.value = false
+      return
+    }
+    // #endif
+
     uni.showToast({
       title: error.message || '加载失败',
       icon: 'none'
@@ -407,6 +437,15 @@ const handleSettingsClick = (item: any) => {
   }
 }
 
+// #ifdef MP-WEIXIN
+const handleGoToLogin = () => {
+  // 跳转到小程序登录页面
+  uni.navigateTo({
+    url: '/pages/auth/mp-login'
+  })
+}
+// #endif
+
 const handleLogout = () => {
   uni.showToast({
     title: '已退出登录',
@@ -444,6 +483,53 @@ defineExpose({
   min-height: 100vh;
   background: #F8FAFC; // $bg-page
 }
+
+/* #ifdef MP-WEIXIN */
+.not-logged-in {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64rpx;
+
+  .empty-icon {
+    font-size: 120rpx;
+    margin-bottom: 32rpx;
+    opacity: 0.3;
+  }
+
+  .empty-text {
+    font-size: 36rpx;
+    font-weight: 600;
+    color: #0F172A;
+    margin-bottom: 16rpx;
+  }
+
+  .empty-hint {
+    font-size: 28rpx;
+    color: #64748B;
+    margin-bottom: 48rpx;
+    text-align: center;
+  }
+
+  .login-btn {
+    width: 400rpx;
+    height: 88rpx;
+    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+    color: #FFFFFF;
+    font-size: 32rpx;
+    font-weight: 600;
+    border-radius: 44rpx;
+    border: none;
+    box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.25);
+
+    &::after {
+      border: none;
+    }
+  }
+}
+/* #endif */
 
 .loading-container {
   @include flex-center;

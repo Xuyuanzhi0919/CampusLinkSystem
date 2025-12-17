@@ -1132,6 +1132,7 @@ onPageScroll((e: any) => {
   max-height: 600rpx; // 300px
   overflow-y: auto;
 
+  /* #ifdef H5 */
   // 自定义滚动条样式
   &::-webkit-scrollbar {
     width: 12rpx;
@@ -1149,6 +1150,7 @@ onPageScroll((e: any) => {
       background: $gray-400;
     }
   }
+  /* #endif */
 }
 
 .history-item {
@@ -1326,12 +1328,15 @@ onPageScroll((e: any) => {
   flex: 1;
   min-width: 0;
   overflow-x: auto;
+
+  /* #ifdef H5 */
   scrollbar-width: none;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .category-tab {
@@ -1603,10 +1608,12 @@ onPageScroll((e: any) => {
   white-space: nowrap;
   overflow-x: auto;
 
-  // 隐藏滚动条
+  // 隐藏滚动条（仅H5）
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .joined-clubs-wrapper {

@@ -2633,12 +2633,14 @@ defineExpose({
   gap: 8rpx;
   flex: 1;
   overflow-x: auto;
+  /* #ifdef H5 */
   scrollbar-width: none;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .category-tab {
@@ -2855,9 +2857,11 @@ defineExpose({
   -webkit-overflow-scrolling: touch;
 }
 
+/* #ifdef H5 */
 .quick-filter-tabs::-webkit-scrollbar {
   display: none;
 }
+/* #endif */
 
 .tab-item {
   position: relative;

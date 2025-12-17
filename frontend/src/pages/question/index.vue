@@ -1161,6 +1161,7 @@ defineExpose({
   max-height: 300px;
   overflow-y: auto;
 
+  /* #ifdef H5 */
   // 自定义滚动条样式
   &::-webkit-scrollbar {
     width: 6px;
@@ -1178,6 +1179,7 @@ defineExpose({
       background: $gray-400;
     }
   }
+  /* #endif */
 }
 
 .history-item {
@@ -1383,9 +1385,11 @@ defineExpose({
   flex: 1;
   overflow-x: auto;
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .category-tab {
@@ -2077,6 +2081,7 @@ defineExpose({
   overflow-y: auto;
   padding: 20px 24px;
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -2089,6 +2094,7 @@ defineExpose({
     background: $gray-300;
     border-radius: 3px;
   }
+  /* #endif */
 }
 
 .filter-group {

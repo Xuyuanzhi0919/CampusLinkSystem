@@ -484,11 +484,13 @@ const handleRegister = () => {
     opacity: 1;
   }
 
+  /* #ifdef H5 */
   /* 优化：隐藏滚动条 */
   &::-webkit-scrollbar {
     display: none;
   }
   scrollbar-width: none;
+  /* #endif */
 }
 
 /* ========== 关闭按钮 ========== */

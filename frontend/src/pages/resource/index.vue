@@ -1680,12 +1680,14 @@ onUnmounted(() => {
   min-height: 100vh;
   background: $bg-page;
 
+  /* #ifdef H5 */
   // 隐藏页面滚动条
   &::-webkit-scrollbar {
     display: none;
   }
   -ms-overflow-style: none;  // IE和Edge
   scrollbar-width: none;  // Firefox
+  /* #endif */
 }
 
 // =============================================
@@ -1943,6 +1945,7 @@ onUnmounted(() => {
   max-height: 300px;
   overflow-y: auto;
 
+  /* #ifdef H5 */
   // 自定义滚动条样式
   &::-webkit-scrollbar {
     width: 6px;
@@ -1960,6 +1963,7 @@ onUnmounted(() => {
       background: $gray-400;
     }
   }
+  /* #endif */
 }
 
 .history-item {
@@ -2163,12 +2167,15 @@ onUnmounted(() => {
   gap: 4px;
   flex: 1;
   overflow-x: auto;
+
+  /* #ifdef H5 */
   scrollbar-width: none;
   -ms-overflow-style: none;
 
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .category-tab {

@@ -528,12 +528,14 @@ defineExpose({
   padding: 0 32rpx 24rpx;
   overflow-x: auto;
 
+  /* #ifdef H5 */
   // 隐藏滚动条但保持滚动能力
   &::-webkit-scrollbar {
     display: none;
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+  /* #endif */
 }
 
 .image-preview-item {

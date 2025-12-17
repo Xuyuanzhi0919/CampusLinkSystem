@@ -1027,9 +1027,11 @@ onLoad((options) => {
   overflow-x: auto;
   border: 1rpx solid rgba($gray-200, 0.6); // 添加边框
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .tab-item {

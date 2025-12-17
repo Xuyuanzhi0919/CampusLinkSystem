@@ -71,10 +71,12 @@ defineEmits<{
   white-space: nowrap;
   width: 100%;
 
-  // 隐藏滚动条
+  // 隐藏滚动条（仅H5）
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 // 🎯 响应式适配 - 桌面端居中显示

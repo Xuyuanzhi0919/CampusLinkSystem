@@ -90,9 +90,20 @@ public class ActivityService {
             wrapper.eq(Activity::getClubId, clubId);
         }
 
-        // 如果指定了状态，则过滤
+        // 🎯 如果指定了状态，使用动态状态判断（基于时间）
+        LocalDateTime now = LocalDateTime.now();
         if (status != null) {
-            wrapper.eq(Activity::getStatus, status);
+            if (status == 0) {
+                // 未开始：开始时间在未来
+                wrapper.gt(Activity::getStartTime, now);
+            } else if (status == 1) {
+                // 进行中：当前时间在开始和结束之间
+                wrapper.le(Activity::getStartTime, now)
+                       .gt(Activity::getEndTime, now);
+            } else if (status == 2) {
+                // 已结束：结束时间在过去
+                wrapper.le(Activity::getEndTime, now);
+            }
         }
 
         // 🎯 活动类型筛选 (新增)

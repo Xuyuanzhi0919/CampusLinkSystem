@@ -82,7 +82,7 @@ public class ActivityService {
      * 获取活动列表
      */
     public PageResult<ActivityResponse> getActivityList(Long userId, Integer page, Integer pageSize,
-                                                         Long clubId, Integer status, String sortBy, String keyword) {
+                                                         Long clubId, Integer status, String sortBy, String keyword, String activityType) {
         Page<Activity> activityPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Activity> wrapper = new LambdaQueryWrapper<>();
 
@@ -93,6 +93,11 @@ public class ActivityService {
         // 如果指定了状态，则过滤
         if (status != null) {
             wrapper.eq(Activity::getStatus, status);
+        }
+
+        // 🎯 活动类型筛选 (新增)
+        if (activityType != null && !activityType.trim().isEmpty() && !"all".equals(activityType)) {
+            wrapper.eq(Activity::getActivityType, activityType);
         }
 
         // 🎯 关键字搜索 - 搜索标题和地点
@@ -356,10 +361,12 @@ public class ActivityService {
         ActivityResponse response = new ActivityResponse();
         BeanUtils.copyProperties(activity, response);
 
-        // 查询社团名称
-        Club club = clubMapper.selectById(activity.getClubId());
-        if (club != null) {
-            response.setClubName(club.getClubName());
+        // 查询社团名称（仅社团活动有值）
+        if (activity.getClubId() != null) {
+            Club club = clubMapper.selectById(activity.getClubId());
+            if (club != null) {
+                response.setClubName(club.getClubName());
+            }
         }
 
         // 🎯 动态计算活动状态（基于时间）

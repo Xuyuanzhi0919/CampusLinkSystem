@@ -49,7 +49,21 @@
       </view>
     </view>
 
-    <!-- 🎯 快捷筛选 Tabs -->
+    <!-- 🎯 活动类型 Tabs（主要筛选）-->
+    <view class="activity-type-tabs">
+      <view
+        v-for="(tab, index) in activityTypeTabs"
+        :key="index"
+        class="type-tab-item"
+        :class="{ active: filters.activityType === tab.value }"
+        @click="handleTypeFilter(tab.value)"
+      >
+        <text class="type-tab-text">{{ tab.label }}</text>
+        <view v-if="filters.activityType === tab.value" class="type-tab-indicator"></view>
+      </view>
+    </view>
+
+    <!-- 🎯 活动状态 Tabs（次要筛选）-->
     <view class="quick-filter-tabs">
       <view
         v-for="(tab, index) in quickFilterTabs"
@@ -189,7 +203,10 @@
               :class="{ 'highlight': part.highlight }"
             >{{ part.text }}</text>
           </view>
-          <text class="activity-club">{{ activity.clubName }}</text>
+          <!-- 🎯 组织者信息（根据活动类型显示社团名称或组织者名称）-->
+          <text class="activity-club">
+            {{ activity.clubName || activity.organizerName || '校方组织' }}
+          </text>
           <view class="activity-meta">
             <text class="meta-item">📅 {{ formatDate(activity.startTime) }}</text>
             <!-- 🎯 地点 - 支持关键词高亮 -->
@@ -330,7 +347,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getActivityList } from '@/services/activity'
+import { getActivityList, type Activity, type ActivityType } from '@/services/activity'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import config from '@/config'
@@ -350,7 +367,7 @@ const MAX_HISTORY_COUNT = 5 // 最多保存5条历史
 const FILTER_STORAGE_KEY = 'activity_filter_conditions'
 
 // 活动列表
-const activities = ref<any[]>([])
+const activities = ref<Activity[]>([])
 const loading = ref(false)
 const page = ref(1)
 const pageSize = ref(20)
@@ -372,6 +389,7 @@ const showFilterPopup = ref(false)
 
 // 筛选条件
 const filters = ref({
+  activityType: 'all' as ActivityType | 'all', // 🎯 活动类型：all=全部, club=社团活动, campus=校园活动, official=官方活动
   status: null as number | null, // 活动状态：null=全部, 0=未开始, 1=进行中, 2=已结束
   clubId: null as number | null, // 社团ID（预留）
   clubName: '', // 社团名称（预留）
@@ -391,7 +409,15 @@ const statusOptions = [
   { label: '已结束', value: 2 }
 ]
 
-// 🎯 快捷筛选 Tabs（用于顶部快速切换）
+// 🎯 活动类型 Tabs（主要筛选）
+const activityTypeTabs = [
+  { label: '全部', value: 'all' as const },
+  { label: '社团活动', value: 'club' as const },
+  { label: '校园活动', value: 'campus' as const },
+  { label: '官方活动', value: 'official' as const }
+]
+
+// 🎯 快捷筛选 Tabs（用于顶部快速切换活动状态）
 const quickFilterTabs = [
   { label: '全部', value: null },
   { label: '未开始', value: 0 },
@@ -423,7 +449,8 @@ const joinStatusOptions = [
 
 // 是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
-  return filters.value.status !== null ||
+  return filters.value.activityType !== 'all' ||
+         filters.value.status !== null ||
          filters.value.clubId !== null ||
          filters.value.sortBy !== 'time' ||
          filters.value.timeRange !== 'all' ||
@@ -490,6 +517,11 @@ const loadActivityList = async (refresh = false) => {
     }
 
     // 添加筛选条件
+    // 🎯 活动类型筛选
+    if (filters.value.activityType !== 'all') {
+      params.activityType = filters.value.activityType
+    }
+
     if (filters.value.status !== null) {
       params.status = filters.value.status
     }
@@ -901,7 +933,16 @@ const clearAllFilters = () => {
 }
 
 /**
- * 🎯 快捷筛选 Tab 切换
+ * 🎯 活动类型 Tab 切换
+ */
+const handleTypeFilter = (type: ActivityType | 'all') => {
+  filters.value.activityType = type
+  saveFilterConditions() // 🎯 保存筛选条件
+  loadActivityList(true)
+}
+
+/**
+ * 🎯 活动状态快捷筛选 Tab 切换
  */
 const handleQuickFilter = (status: number | null) => {
   filters.value.status = status
@@ -1934,6 +1975,73 @@ defineExpose({
 }
 
 /* 🎯 快捷筛选 Tabs */
+/* 🎯 活动类型 Tabs（主要筛选）*/
+.activity-type-tabs {
+  display: flex;
+  align-items: center;
+  gap: 40rpx;
+  padding: 24rpx 32rpx;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.activity-type-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.type-tab-item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 16rpx;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  border-radius: 16rpx;
+}
+
+.type-tab-text {
+  font-size: 30rpx;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.7);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.type-tab-item.active {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.type-tab-item.active .type-tab-text {
+  color: white;
+  font-weight: 700;
+  font-size: 32rpx;
+}
+
+.type-tab-indicator {
+  width: 40rpx;
+  height: 6rpx;
+  background: white;
+  border-radius: 3rpx;
+  animation: typeTabIndicatorSlide 0.3s ease-out;
+}
+
+@keyframes typeTabIndicatorSlide {
+  from {
+    width: 0;
+    opacity: 0;
+  }
+  to {
+    width: 40rpx;
+    opacity: 1;
+  }
+}
+
+/* 🎯 活动状态 Tabs（次要筛选）*/
 .quick-filter-tabs {
   display: flex;
   align-items: center;

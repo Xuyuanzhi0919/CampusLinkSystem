@@ -60,6 +60,11 @@ defineEmits<{
   margin-top: -40rpx; // 🎯 向上覆盖 Hero 区域,制造层次感
   padding: 0 32rpx; // 0 $sp-8
   margin-bottom: 32rpx; // $sp-8
+  width: 100%;
+  max-width: 1200rpx; // 与内容区一致
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
 }
 
 .actions-scroll {
@@ -69,6 +74,16 @@ defineEmits<{
   // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+// 🎯 响应式适配 - 桌面端居中显示
+@media (min-width: 768px) {
+  .actions-scroll {
+    display: flex;
+    justify-content: center;
+    flex-wrap: nowrap;
+    overflow-x: auto;
   }
 }
 

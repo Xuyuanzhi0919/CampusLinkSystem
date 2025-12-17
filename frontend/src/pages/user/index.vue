@@ -490,7 +490,7 @@ defineExpose({
 
 /* 区块标题 */
 .section-title {
-  padding: 0 24rpx 20rpx;
+  padding: 0 32rpx 20rpx; // 🎯 与内容区保持一致
 }
 
 .title-text {

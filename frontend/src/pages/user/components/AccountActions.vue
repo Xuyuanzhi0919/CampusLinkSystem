@@ -38,7 +38,7 @@ const handleLogout = () => {
 // 变量已通过 uni.scss 全局注入
 
 .logout-section {
-  padding: 0 24rpx 32rpx; // 增加底部边距
+  padding: 0 32rpx 32rpx; // 🎯 与内容区保持一致,增加底部边距
   margin-top: 32rpx; // 增加与上方功能区的距离,强化隔离感
 }
 

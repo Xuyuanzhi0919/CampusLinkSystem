@@ -60,7 +60,7 @@ const handleItemClick = (item: SettingsItem) => {
 
 /* ========== 设置区域(弱化) ========== */
 .settings-section {
-  padding: 0 24rpx 24rpx;
+  padding: 0 32rpx; // 🎯 与内容区保持一致
 }
 
 .settings-item {

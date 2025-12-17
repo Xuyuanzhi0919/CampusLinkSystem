@@ -112,7 +112,7 @@ const handleCardClick = (item: CapabilityItem) => {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 16rpx;
-  padding: 0 24rpx 24rpx;
+  padding: 0 32rpx; // 🎯 与 Achievement Section 和 Content Hub 保持一致
 }
 
 .capability-card {

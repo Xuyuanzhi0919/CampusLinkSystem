@@ -1633,7 +1633,7 @@ defineExpose({
   border-bottom: 1rpx solid $gray-100; // 浅灰色分割线
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
-  overflow: hidden;
+  overflow: visible; // 🎯 改为 visible,允许下拉菜单显示
 
   // 🎯 折叠状态：隐藏边框和阴影
   &.header-collapsed {

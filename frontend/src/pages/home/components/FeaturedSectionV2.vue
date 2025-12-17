@@ -24,18 +24,21 @@
       <text>暂无推荐内容</text>
     </view>
 
-    <!-- Featured Grid (使用企业级卡片) -->
+    <!-- Featured Grid -->
     <view v-else class="featured-grid">
-      <!-- Debug Info for Mini Program -->
+      <!-- 小程序端：使用简化卡片 -->
       <!-- #ifdef MP-WEIXIN -->
-      <view class="debug-info">
-        <text>📊 数据总数: {{ featuredList.length }}</text>
-        <text>问答: {{ featuredList.filter(i => i.type === 'question').length }}</text>
-        <text>资源: {{ featuredList.filter(i => i.type === 'resource').length }}</text>
-        <text>活动: {{ featuredList.filter(i => i.type === 'activity').length }}</text>
-      </view>
+      <SimpleFeaturedCard
+        v-for="item in featuredList"
+        :key="`${item.type}-${item.id || item.qid || item.resourceId || item.activityId}`"
+        :type="item.type"
+        :data="item"
+        @click="handleCardClick(item)"
+      />
       <!-- #endif -->
 
+      <!-- H5 端：使用企业级卡片 -->
+      <!-- #ifdef H5 -->
       <!-- 问答类型：使用 ClFeaturedQAItem -->
       <ClFeaturedQAItem
         v-for="item in featuredList.filter(i => i.type === 'question')"
@@ -65,13 +68,24 @@
         @click="handleActivityClick"
         @register="handleRegister"
       />
+      <!-- #endif -->
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+
+// H5 端导入企业级组件
+// #ifdef H5
 import { ClFeaturedQAItem, ClResourceCard, ClEventCard } from '@/components/cl'
+// #endif
+
+// 小程序端导入简化组件
+// #ifdef MP-WEIXIN
+import SimpleFeaturedCard from './SimpleFeaturedCard.vue'
+// #endif
+
 import { getQuestionList } from '@/services/question'
 import { getResourceList } from '@/services/resource'
 import { getActivityList } from '@/services/activity'
@@ -320,6 +334,39 @@ const handleRegister = (event: any) => {
     url: `/pages/club/activity-detail?id=${event.id}&action=register`
   })
 }
+
+// 小程序端统一卡片点击处理
+// #ifdef MP-WEIXIN
+const handleCardClick = (item: any) => {
+  console.log('[FeaturedSection] 卡片点击:', item.type, item)
+
+  if (item.type === 'question') {
+    // 问答：跳转到问题详情
+    const qid = item.qid || item.id
+    if (qid) {
+      uni.navigateTo({
+        url: `/pages/question/detail?id=${qid}`
+      })
+    }
+  } else if (item.type === 'resource') {
+    // 资源：跳转到资源详情
+    const rid = item.resourceId || item.id
+    if (rid) {
+      uni.navigateTo({
+        url: `/pages/resource/detail?id=${rid}`
+      })
+    }
+  } else if (item.type === 'activity') {
+    // 活动：跳转到活动详情
+    const aid = item.activityId || item.id
+    if (aid) {
+      uni.navigateTo({
+        url: `/pages/club/activity-detail?id=${aid}`
+      })
+    }
+  }
+}
+// #endif
 
 // 初始化
 onMounted(() => {

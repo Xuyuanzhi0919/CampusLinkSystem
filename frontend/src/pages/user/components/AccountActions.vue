@@ -57,7 +57,7 @@ const handleLogout = () => {
 
   &:active {
     background: $gray-50; // 改为灰色激活态
-    border-color: $error-300; // 激活时才显示红色
+    border-color: $error-light; // 激活时才显示红色
     transform: scale(0.98);
   }
 }

@@ -1,8 +1,8 @@
 <template>
   <view class="activity-list-page" role="main" aria-label="活动列表页面">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed" :style="{ paddingTop: statusBarHeight + 'px' }">
-      <view class="top-nav-container">
+    <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }" :style="{ paddingTop: statusBarHeight + 'px' }">
+      <view class="top-nav-container" :style="navContainerStyle">
         <!-- Logo -->
         <view class="brand-logo">
           <Icon name="calendar" :size="20" class="logo-icon" />
@@ -57,7 +57,7 @@
     </view>
 
     <!-- ========== Sticky 导航区（状态+类型+筛选） ========== -->
-    <view class="sticky-nav" :style="{ top: (statusBarHeight + 60) + 'px', marginTop: (statusBarHeight + 60) + 'px' }">
+    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }" :style="{ top: (statusBarHeight + 60) + 'px', marginTop: (statusBarHeight + 60) + 'px', ...stickyNavStyle }">
       <view class="sticky-nav-container">
         <!-- 左侧：状态Tabs -->
         <view class="category-tabs">
@@ -380,6 +380,12 @@ import Icon from '@/components/icons/index.vue'
 // 🎯 系统状态栏高度
 const statusBarHeight = ref(0)
 
+// 🎯 顶部导航折叠状态（渐进式）
+const scrollProgress = ref(0) // 0-1 之间的滚动进度
+const isHeaderCollapsed = ref(false) // 完全折叠标志
+const COLLAPSE_START = 60 // 开始折叠的阈值（60px）
+const COLLAPSE_END = 120 // 完全折叠的阈值（120px）
+
 // 搜索关键词
 const searchKeyword = ref('')
 let searchTimer: number | null = null // 防抖定时器
@@ -536,6 +542,27 @@ const getSortLabel = (sortBy: string) => {
 const currentTypeLabel = computed(() => {
   const item = activityTypeTabs.find(tab => tab.value === filters.value.activityType)
   return item?.label || '全部'
+})
+
+// 🎯 顶部导航容器样式（渐进式高度变化）
+const navContainerStyle = computed(() => {
+  // 高度从 120rpx 渐进到 96rpx
+  const height = 120 - (24 * scrollProgress.value)
+  return {
+    height: `${height}rpx`
+  }
+})
+
+// 🎯 Sticky 导航样式（渐进式透明度和高度变化）
+const stickyNavStyle = computed(() => {
+  // 透明度从 1 渐进到 0
+  const opacity = 1 - scrollProgress.value
+  // 高度从 80rpx 渐进到 0
+  const maxHeight = 80 * (1 - scrollProgress.value)
+  return {
+    opacity: opacity,
+    maxHeight: `${maxHeight}rpx`
+  }
 })
 
 // 🎯 切换类型菜单
@@ -898,8 +925,26 @@ const handleScroll = () => {
  * 🎯 UniApp 页面滚动回调（用于小程序等）
  */
 const onPageScroll = (e: any) => {
-  scrollTop.value = e.scrollTop
-  showBackTop.value = e.scrollTop > 400
+  const scrollTopValue = e.scrollTop || 0
+
+  // 回到顶部按钮显示/隐藏
+  scrollTop.value = scrollTopValue
+  showBackTop.value = scrollTopValue > 400
+
+  // 🎯 渐进式折叠逻辑
+  // #ifdef H5
+  if (scrollTopValue <= COLLAPSE_START) {
+    scrollProgress.value = 0
+    isHeaderCollapsed.value = false
+  } else if (scrollTopValue >= COLLAPSE_END) {
+    scrollProgress.value = 1
+    isHeaderCollapsed.value = true
+  } else {
+    // 渐进式过渡区间（60px - 120px）
+    scrollProgress.value = (scrollTopValue - COLLAPSE_START) / (COLLAPSE_END - COLLAPSE_START)
+    isHeaderCollapsed.value = false // 过渡期间不完全折叠
+  }
+  // #endif
 }
 
 /**
@@ -1292,6 +1337,34 @@ defineExpose({
   border-bottom: 1rpx solid $gray-200;
   box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.08);
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+
+  // 🎯 折叠状态：高度减小，阴影增强
+  &.collapsed {
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.12);
+
+    .top-nav-container {
+      height: 96rpx; // 从120rpx减小到96rpx (48px)
+      gap: 24rpx; // 间距也相应减小
+    }
+
+    .brand-logo {
+      min-width: 180rpx; // 减小宽度
+
+      .logo-text {
+        font-size: 28rpx; // 从32rpx减小
+      }
+    }
+
+    .compact-search-bar {
+      height: 64rpx; // 从72rpx减小到64rpx
+    }
+
+    .filter-button {
+      height: 64rpx; // 从72rpx减小到64rpx
+      padding: 0 32rpx; // 从40rpx减小
+      min-width: 100rpx; // 折叠状态下最小宽度也减小
+    }
+  }
 }
 
 .top-nav-container {
@@ -1461,6 +1534,12 @@ defineExpose({
   box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
   transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
   overflow: hidden;
+
+  // 🎯 折叠状态：隐藏边框和阴影
+  &.header-collapsed {
+    border-bottom: none;
+    box-shadow: none;
+  }
 }
 
 .sticky-nav-container {

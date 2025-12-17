@@ -2218,6 +2218,7 @@ page {
 }
 /* #endif */
 
+/* #ifdef H5 */
 /* H5端隐藏所有滚动条 */
 ::-webkit-scrollbar {
   display: none;
@@ -2235,6 +2236,7 @@ uni-page-body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+/* #endif */
 
 /* 覆盖 uni-app 的 tabbar 高度计算，避免干扰自定义布局 */
 /* #ifdef H5 */

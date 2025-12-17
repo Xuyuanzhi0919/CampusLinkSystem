@@ -7,7 +7,7 @@
 
     <!-- 主内容 -->
     <view v-else class="content-container">
-      <!-- 🎯 顶部身份区(全宽) -->
+      <!-- 🎯 A层:身份与成长区(全宽) -->
       <view class="hero-section">
         <UserProfileHeader
           v-if="userProfile"
@@ -15,22 +15,38 @@
           :stats="userStats"
           :is-checked-in="isCheckedInToday"
           @edit-profile="handleEditProfile"
-          @check-in="handleCheckIn"
-          @stat-click="handleStatClick"
           @points-click="handlePointsClick"
-          @publish="handlePublish"
         />
       </view>
 
       <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
       <view class="main-content">
+        <!-- B层:行动区 -->
+        <ActionArea
+          :is-checked-in="isCheckedInToday"
+          @check-in="handleCheckIn"
+          @points-click="handlePointsClick"
+          @publish="handlePublish"
+        />
+
+        <!-- 数据总览卡片 -->
+        <UserStatsCards
+          :stats="userStats"
+          @stat-click="handleStatClick"
+        />
+
+        <!-- 🎯 缓冲区标题 -->
+        <view class="section-divider">
+          <text class="divider-text">你的校园足迹</text>
+        </view>
+
         <!-- 功能入口网格 -->
         <FunctionGrid
           :badges="functionBadges"
           @item-click="handleFunctionClick"
         />
 
-        <!-- 账户操作（退出登录） -->
+        <!-- 账户操作(退出登录) -->
         <AccountActions
           @logout="handleLogout"
         />
@@ -56,6 +72,8 @@ import {
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import UserProfileHeader from './components/UserProfileHeader.vue'
+import ActionArea from './components/ActionArea.vue'
+import UserStatsCards from './components/UserStatsCards.vue'
 import FunctionGrid from './components/FunctionGrid.vue'
 import AccountActions from './components/AccountActions.vue'
 
@@ -135,7 +153,7 @@ const handleCheckIn = async () => {
   try {
     const res = await checkIn()
 
-    // request 拦截器已经自动解包了 data 字段，直接使用 res
+    // request 拦截器已经自动解包了 data 字段,直接使用 res
     if (res.success) {
       // 更新签到状态
       isCheckedInToday.value = true
@@ -212,7 +230,7 @@ const handleFunctionClick = (item: FunctionItem) => {
 }
 
 /**
- * 🎯 处理发布内容（强转化按钮）
+ * 🎯 处理发布内容(强转化按钮)
  */
 const handlePublish = () => {
   // 显示发布选项弹窗
@@ -253,7 +271,7 @@ const handleChangePassword = () => {
 
 /**
  * 处理退出登录
- * 注意：AccountActions 组件内已经包含二次确认，这里直接执行退出逻辑
+ * 注意:AccountActions 组件内已经包含二次确认,这里直接执行退出逻辑
  */
 const handleLogout = () => {
   console.log('执行退出登录')
@@ -265,9 +283,9 @@ const handleLogout = () => {
     duration: 1500
   })
 
-  // 延迟执行退出，确保提示能显示
+  // 延迟执行退出,确保提示能显示
   setTimeout(() => {
-    // 清除用户信息和 Token（内部会跳转到首页）
+    // 清除用户信息和 Token(内部会跳转到首页)
     userStore.logout()
   }, 300)
 }
@@ -285,7 +303,7 @@ onMounted(() => {
   loadUserData()
 })
 
-// 页面显示时重新加载数据（从编辑页面返回时会触发）
+// 页面显示时重新加载数据(从编辑页面返回时会触发)
 onShow(() => {
   loadUserData()
 })
@@ -319,11 +337,10 @@ defineExpose({
   flex-direction: column;
 }
 
-/* 🎯 顶部身份区 - 全宽展开 */
+/* 🎯 A层:身份与成长区 - 全宽展开 */
 .hero-section {
   width: 100%;
   background: #EEF2FF; // 浅蓝灰背景(与身份卡统一)
-  padding-bottom: 32rpx;
 }
 
 /* 🎯 内容区 - 居中容器 */
@@ -331,17 +348,39 @@ defineExpose({
   width: 100%;
   max-width: 1200px; // 🎯 内容最大宽度1200px
   margin: 0 auto; // 水平居中
-  padding: 0 24rpx; // 左右留白
   padding-bottom: $sp-8;
 
   // PC端增加左右padding
   @media (min-width: 768px) {
-    padding: 0 32px;
+    padding-left: 32px;
+    padding-right: 32px;
   }
 
   // 大屏适配
   @media (min-width: 1280px) {
-    padding: 0 48px;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+/* 🎯 缓冲区标题(节奏设计) */
+.section-divider {
+  padding: 32rpx 24rpx 24rpx;
+  text-align: center;
+}
+
+.divider-text {
+  font-size: 28rpx;
+  color: #9CA3AF; // 中性灰
+  font-weight: 500;
+  position: relative;
+  display: inline-block;
+
+  &::before,
+  &::after {
+    content: '——';
+    color: #D1D5DB; // 更浅的灰
+    padding: 0 12rpx;
   }
 }
 

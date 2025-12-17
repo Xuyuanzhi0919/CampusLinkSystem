@@ -7,32 +7,37 @@
 
     <!-- 主内容 -->
     <view v-else class="content-container">
-      <!-- 用户资料头部 -->
-      <UserProfileHeader
-        v-if="userProfile"
-        :profile="userProfile"
-        :stats="userStats"
-        :is-checked-in="isCheckedInToday"
-        @edit-profile="handleEditProfile"
-        @check-in="handleCheckIn"
-        @stat-click="handleStatClick"
-        @points-click="handlePointsClick"
-        @publish="handlePublish"
-      />
+      <!-- 🎯 顶部身份区(全宽) -->
+      <view class="hero-section">
+        <UserProfileHeader
+          v-if="userProfile"
+          :profile="userProfile"
+          :stats="userStats"
+          :is-checked-in="isCheckedInToday"
+          @edit-profile="handleEditProfile"
+          @check-in="handleCheckIn"
+          @stat-click="handleStatClick"
+          @points-click="handlePointsClick"
+          @publish="handlePublish"
+        />
+      </view>
 
-      <!-- 功能入口网格 -->
-      <FunctionGrid
-        :badges="functionBadges"
-        @item-click="handleFunctionClick"
-      />
+      <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
+      <view class="main-content">
+        <!-- 功能入口网格 -->
+        <FunctionGrid
+          :badges="functionBadges"
+          @item-click="handleFunctionClick"
+        />
 
-      <!-- 账户操作（退出登录） -->
-      <AccountActions
-        @logout="handleLogout"
-      />
+        <!-- 账户操作（退出登录） -->
+        <AccountActions
+          @logout="handleLogout"
+        />
 
-      <!-- 底部安全距离 -->
-      <view class="safe-area-bottom" />
+        <!-- 底部安全距离 -->
+        <view class="safe-area-bottom" />
+      </view>
     </view>
   </view>
 </template>
@@ -310,7 +315,34 @@ defineExpose({
 }
 
 .content-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🎯 顶部身份区 - 全宽展开 */
+.hero-section {
+  width: 100%;
+  background: #EEF2FF; // 浅蓝灰背景(与身份卡统一)
+  padding-bottom: 32rpx;
+}
+
+/* 🎯 内容区 - 居中容器 */
+.main-content {
+  width: 100%;
+  max-width: 1200px; // 🎯 内容最大宽度1200px
+  margin: 0 auto; // 水平居中
+  padding: 0 24rpx; // 左右留白
   padding-bottom: $sp-8;
+
+  // PC端增加左右padding
+  @media (min-width: 768px) {
+    padding: 0 32px;
+  }
+
+  // 大屏适配
+  @media (min-width: 1280px) {
+    padding: 0 48px;
+  }
 }
 
 .safe-area-bottom {

@@ -42,34 +42,46 @@
               :class="{ 'favorited': activity.isFavorited }"
               @click="toggleFavorite"
             >
-              <text class="favorite-icon">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
+              <Icon name="heart" :size="20" class="favorite-icon" :class="{ 'filled': activity.isFavorited }" />
             </view>
           </view>
           <view class="activity-tags">
-            <view v-if="isHot" class="tag tag-hot">🔥 热门</view>
-            <view v-if="isNew" class="tag tag-new">🆕 新发布</view>
-            <view v-if="isUrgent" class="tag tag-urgent">⏰ 即将开始</view>
-            <view v-if="isCrowded" class="tag tag-crowded">🎯 名额紧张</view>
+            <view v-if="isHot" class="tag tag-hot">
+              <Icon name="flame" :size="12" class="tag-icon" />
+              <text class="tag-text">热门</text>
+            </view>
+            <view v-if="isNew" class="tag tag-new">
+              <Icon name="sparkles" :size="12" class="tag-icon" />
+              <text class="tag-text">新发布</text>
+            </view>
+            <view v-if="isUrgent" class="tag tag-urgent">
+              <Icon name="clock" :size="12" class="tag-icon" />
+              <text class="tag-text">即将开始</text>
+            </view>
+            <view v-if="isCrowded" class="tag tag-crowded">
+              <Icon name="zap" :size="12" class="tag-icon" />
+              <text class="tag-text">名额紧张</text>
+            </view>
           </view>
         </view>
 
         <!-- 基本信息卡片 -->
         <view class="info-card">
           <view class="info-item">
-            <text class="info-icon">📅</text>
+            <Icon name="calendar" :size="18" class="info-icon" />
             <view class="info-content">
               <text class="info-label">活动时间</text>
               <text class="info-value">{{ formatTime(activity.startTime) }} ~ {{ formatTime(activity.endTime) }}</text>
               <!-- 🎯 时间倒计时 -->
               <view v-if="countdown.show" class="countdown-box" :class="`countdown-${countdown.status}`">
-                <text class="countdown-icon">{{ countdown.icon }}</text>
+                <Icon :name="countdown.iconName" :size="11" class="countdown-icon" />
                 <text class="countdown-text">{{ countdown.text }}</text>
               </view>
             </view>
           </view>
 
           <view class="info-item">
-            <text class="info-icon">📍</text>
+            <Icon name="map-pin" :size="18" class="info-icon" />
             <view class="info-content">
               <text class="info-label">活动地点</text>
               <text class="info-value">{{ activity.location }}</text>
@@ -77,16 +89,16 @@
           </view>
 
           <view class="info-item" @click="goToClub">
-            <text class="info-icon">👥</text>
+            <Icon name="users" :size="18" class="info-icon" />
             <view class="info-content">
               <text class="info-label">主办方</text>
               <text class="info-value clickable">{{ activity.clubName }}</text>
             </view>
-            <text class="info-arrow">→</text>
+            <Icon name="chevron-right" :size="14" class="info-arrow" />
           </view>
 
           <view class="info-item">
-            <text class="info-icon">🎫</text>
+            <Icon name="ticket" :size="18" class="info-icon" />
             <view class="info-content">
               <text class="info-label">报名人数</text>
               <text class="info-value" :class="{ 'number-highlight': numberHighlight }">
@@ -160,7 +172,7 @@ const numberHighlight = ref(false)
 const countdown = ref({
   show: false,
   status: 'upcoming', // upcoming | ongoing | ended
-  icon: '⏰',
+  iconName: 'clock', // Lucide icon name
   text: ''
 })
 
@@ -599,7 +611,7 @@ const updateCountdown = () => {
   if (now > endTime) {
     countdown.value.show = true
     countdown.value.status = 'ended'
-    countdown.value.icon = '✅'
+    countdown.value.iconName = 'check-circle'
     countdown.value.text = '活动已结束'
     return
   }
@@ -612,7 +624,7 @@ const updateCountdown = () => {
 
     countdown.value.show = true
     countdown.value.status = 'ongoing'
-    countdown.value.icon = '🔥'
+    countdown.value.iconName = 'flame'
     countdown.value.text = `活动进行中，剩余 ${hours}小时${minutes}分钟`
     return
   }
@@ -626,7 +638,7 @@ const updateCountdown = () => {
 
   countdown.value.show = true
   countdown.value.status = 'upcoming'
-  countdown.value.icon = '⏰'
+  countdown.value.iconName = 'clock'
 
   if (days > 0) {
     countdown.value.text = `距离开始还有 ${days}天 ${hours}小时`
@@ -882,13 +894,17 @@ onUnmounted(() => {
 }
 
 .favorite-icon {
-  font-size: 40rpx;
-  line-height: 1;
-  transition: transform 0.3s ease;
+  color: $white;
+  transition: all 0.3s ease;
+
+  &.filled :deep(path) {
+    fill: currentColor;
+  }
 }
 
 .favorite-btn.favorited .favorite-icon {
   transform: scale(1.1);
+  color: $white;
 }
 
 @keyframes heart-beat {
@@ -913,10 +929,22 @@ onUnmounted(() => {
 }
 
 .tag {
-  padding: 8rpx 16rpx; /* 🎯 最终版：4px 8px */
-  border-radius: 12rpx; /* 🎯 最终版：6px */
-  font-size: 24rpx; /* 🎯 最终版：12px */
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
   font-weight: 600;
+  line-height: 1;
+}
+
+.tag-icon {
+  color: currentColor;
+  flex-shrink: 0;
+}
+
+.tag-text {
   line-height: 1;
 }
 
@@ -962,10 +990,8 @@ onUnmounted(() => {
 }
 
 .info-icon {
-  font-size: $font-size-xl;
-  line-height: 1;
   flex-shrink: 0;
-  color: $primary-light;
+  color: $primary;
 }
 
 .info-content {
@@ -1019,9 +1045,8 @@ onUnmounted(() => {
 }
 
 .info-arrow {
-  font-size: $font-size-sm;
-  color: $text-placeholder;
-  line-height: 1;
+  flex-shrink: 0;
+  color: $gray-400;
 }
 
 /* 🎯 倒计时盒子 */
@@ -1052,8 +1077,8 @@ onUnmounted(() => {
 }
 
 .countdown-icon {
-  font-size: 22rpx;
-  line-height: 1;
+  flex-shrink: 0;
+  color: currentColor;
 }
 
 .countdown-text {

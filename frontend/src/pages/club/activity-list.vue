@@ -49,36 +49,42 @@
       </view>
     </view>
 
-    <!-- 🎯 活动类型 Tabs（主要筛选）-->
-    <view class="activity-type-tabs">
+    <!-- 🎯 主筛选：活动状态（第一优先级，默认进行中）-->
+    <view class="primary-filter-tabs">
       <view
-        v-for="(tab, index) in activityTypeTabs"
+        v-for="(tab, index) in statusFilterTabs"
         :key="index"
-        class="type-tab-item"
-        :class="{ active: filters.activityType === tab.value }"
-        @click="handleTypeFilter(tab.value)"
-      >
-        <text class="type-tab-text">{{ tab.label }}</text>
-        <view v-if="filters.activityType === tab.value" class="type-tab-indicator"></view>
-      </view>
-    </view>
-
-    <!-- 🎯 活动状态 Tabs（次要筛选）-->
-    <view class="quick-filter-tabs">
-      <view
-        v-for="(tab, index) in quickFilterTabs"
-        :key="index"
-        class="tab-item"
+        class="primary-tab-item"
         :class="{ active: filters.status === tab.value }"
         @click="handleQuickFilter(tab.value)"
       >
-        <text class="tab-text">{{ tab.label }}</text>
-        <view v-if="filters.status === tab.value" class="tab-indicator"></view>
+        <text class="primary-tab-icon">{{ tab.icon }}</text>
+        <text class="primary-tab-text">{{ tab.label }}</text>
+        <view v-if="filters.status === tab.value" class="primary-tab-indicator"></view>
       </view>
     </view>
 
+    <!-- 🎯 辅助筛选：活动来源（第二优先级，轻量化）-->
+    <view class="secondary-filter-tabs">
+      <view
+        v-for="(tab, index) in activityTypeTabs"
+        :key="index"
+        class="secondary-tab-item"
+        :class="{ active: filters.activityType === tab.value }"
+        @click="handleTypeFilter(tab.value)"
+      >
+        <text class="secondary-tab-text">{{ tab.label }}</text>
+      </view>
+    </view>
+
+    <!-- 🎯 首屏轻提示（引导用户参与）-->
+    <view v-if="!loading && activities.length > 0 && filters.status === 1" class="activity-hint">
+      <text class="hint-icon">🎯</text>
+      <text class="hint-text">当前有 <text class="hint-count">{{ activities.length }}</text> 个活动正在进行中</text>
+    </view>
+
     <!-- 🎯 筛选结果信息栏 -->
-    <view class="result-info" v-if="!loading || activities.length > 0">
+    <view class="result-info" v-if="(!loading || activities.length > 0) && filters.status !== 1">
       <text class="result-count">
         {{ hasActiveFilters || searchKeyword ? `找到 ${activities.length} 条活动` : `共 ${activities.length} 条活动` }}
       </text>
@@ -135,6 +141,7 @@
         v-for="activity in activities"
         :key="activity.activityId"
         class="activity-item"
+        :class="{ 'activity-ended': activity.status === 2 }"
         role="article"
         :aria-label="`活动：${activity.title}`"
         tabindex="0"
@@ -389,8 +396,8 @@ const showFilterPopup = ref(false)
 
 // 筛选条件
 const filters = ref({
-  activityType: 'all' as ActivityType | 'all', // 🎯 活动类型：all=全部, club=社团活动, campus=校园活动, official=官方活动
-  status: null as number | null, // 活动状态：null=全部, 0=未开始, 1=进行中, 2=已结束
+  status: 1 as number | null, // 🎯 活动状态（主筛选）：null=全部, 0=未开始, 1=进行中（默认）, 2=已结束
+  activityType: 'all' as ActivityType | 'all', // 🎯 活动类型（辅助筛选）：all=全部, club=社团活动, campus=校园活动, official=官方活动
   clubId: null as number | null, // 社团ID（预留）
   clubName: '', // 社团名称（预留）
   sortBy: 'time' as 'time' | 'hot' | 'new', // 排序方式：time=时间, hot=热门, new=最新
@@ -409,15 +416,22 @@ const statusOptions = [
   { label: '已结束', value: 2 }
 ]
 
-// 🎯 活动类型 Tabs（主要筛选）
-const activityTypeTabs = [
-  { label: '全部', value: 'all' as const },
-  { label: '社团活动', value: 'club' as const },
-  { label: '校园活动', value: 'campus' as const },
-  { label: '官方活动', value: 'official' as const }
+// 🎯 主筛选 Tabs（活动状态，第一优先级）
+const statusFilterTabs = [
+  { label: '进行中', value: 1, icon: '🔥' }, // 默认选中
+  { label: '未开始', value: 0, icon: '⏰' },
+  { label: '已结束', value: 2, icon: '📋' }
 ]
 
-// 🎯 快捷筛选 Tabs（用于顶部快速切换活动状态）
+// 🎯 辅助筛选 Tabs（活动来源，第二优先级）
+const activityTypeTabs = [
+  { label: '全部', value: 'all' as const },
+  { label: '社团', value: 'club' as const },
+  { label: '校园', value: 'campus' as const },
+  { label: '官方', value: 'official' as const }
+]
+
+// 保留原有的完整状态选项（用于弹窗筛选）
 const quickFilterTabs = [
   { label: '全部', value: null },
   { label: '未开始', value: 0 },
@@ -1412,6 +1426,33 @@ defineExpose({
   transform: scale(0.98);
 }
 
+/* 🎯 已结束活动灰度处理 */
+.activity-item.activity-ended {
+  opacity: 0.65;
+  background: $gray-50;
+}
+
+.activity-item.activity-ended .cover-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12rpx;
+  pointer-events: none;
+}
+
+.activity-item.activity-ended .activity-title {
+  color: $gray-500;
+}
+
+.activity-item.activity-ended .activity-club,
+.activity-item.activity-ended .meta-item {
+  color: $gray-400;
+}
+
 .cover-wrapper {
   position: relative;
   width: 200rpx;
@@ -1974,74 +2015,125 @@ defineExpose({
   }
 }
 
-/* 🎯 快捷筛选 Tabs */
-/* 🎯 活动类型 Tabs（主要筛选）*/
-.activity-type-tabs {
+/* 🎯 主筛选 Tabs（活动状态，第一优先级）*/
+.primary-filter-tabs {
   display: flex;
   align-items: center;
-  gap: 40rpx;
-  padding: 24rpx 32rpx;
+  justify-content: center;
+  gap: 48rpx;
+  padding: 28rpx 32rpx;
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
 }
 
-.activity-type-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.type-tab-item {
+.primary-tab-item {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  padding: 12rpx 16rpx;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  border-radius: 16rpx;
+  border-radius: 20rpx;
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.type-tab-text {
-  font-size: 30rpx;
+.primary-tab-item.active {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
+
+.primary-tab-icon {
+  font-size: 36rpx;
+  transition: transform 0.3s ease;
+}
+
+.primary-tab-item.active .primary-tab-icon {
+  transform: scale(1.15);
+}
+
+.primary-tab-text {
+  font-size: 28rpx;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.85);
   transition: all 0.3s ease;
   white-space: nowrap;
 }
 
-.type-tab-item.active {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-.type-tab-item.active .type-tab-text {
+.primary-tab-item.active .primary-tab-text {
   color: white;
   font-weight: 700;
-  font-size: 32rpx;
+  font-size: 30rpx;
 }
 
-.type-tab-indicator {
-  width: 40rpx;
+.primary-tab-indicator {
+  width: 48rpx;
   height: 6rpx;
   background: white;
   border-radius: 3rpx;
-  animation: typeTabIndicatorSlide 0.3s ease-out;
+  box-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.4);
+  animation: primaryIndicatorSlide 0.3s ease-out;
 }
 
-@keyframes typeTabIndicatorSlide {
+@keyframes primaryIndicatorSlide {
   from {
     width: 0;
     opacity: 0;
   }
   to {
-    width: 40rpx;
+    width: 48rpx;
     opacity: 1;
   }
 }
 
-/* 🎯 活动状态 Tabs（次要筛选）*/
+/* 🎯 辅助筛选 Tabs（活动来源，第二优先级，轻量化）*/
+.secondary-filter-tabs {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24rpx;
+  padding: 16rpx 32rpx;
+  background: $gray-50;
+  border-bottom: 1rpx solid $border-color;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+}
+
+.secondary-filter-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.secondary-tab-item {
+  padding: 8rpx 20rpx;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+  border-radius: 12rpx;
+  background: white;
+  border: 1rpx solid transparent;
+}
+
+.secondary-tab-item.active {
+  background: $primary;
+  border-color: $primary;
+}
+
+.secondary-tab-text {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: $gray-600;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.secondary-tab-item.active .secondary-tab-text {
+  color: white;
+  font-weight: 600;
+}
+
+/* 🎯 保留原有的快捷筛选样式（用于弹窗）*/
 .quick-filter-tabs {
   display: flex;
   align-items: center;
@@ -2101,6 +2193,43 @@ defineExpose({
     width: 32rpx;
     opacity: 1;
   }
+}
+
+/* 🎯 首屏轻提示（引导参与）*/
+.activity-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 20rpx 32rpx;
+  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  border-bottom: 1rpx solid #FED7AA;
+}
+
+.hint-icon {
+  font-size: 32rpx;
+  animation: hintIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes hintIconPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.hint-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: #9A3412;
+}
+
+.hint-count {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $accent;
 }
 
 /* 🎯 筛选结果信息栏 */

@@ -30,7 +30,7 @@ UPDATE `activity` SET `activity_type` = 'club' WHERE `activity_type` IS NULL OR 
 
 -- 6. 插入测试数据：校园活动和官方活动示例
 INSERT INTO `activity` (
-  `activity_name`,
+  `title`,
   `club_id`,
   `activity_type`,
   `organizer_name`,
@@ -113,7 +113,7 @@ INSERT INTO `activity` (
 -- 7. 验证数据
 SELECT
   activity_id,
-  activity_name,
+  title,
   activity_type,
   organizer_name,
   CASE

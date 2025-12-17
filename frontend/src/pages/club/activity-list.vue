@@ -902,17 +902,31 @@ const scrollToTop = () => {
 }
 
 /**
- * 🎯 处理页面滚动事件 - 显示/隐藏回到顶部按钮 + 触发加载更多
+ * 🎯 处理页面滚动事件 - 显示/隐藏回到顶部按钮 + 触发加载更多 + 折叠导航
  */
 const handleScroll = () => {
   // #ifdef H5
-  scrollTop.value = window.pageYOffset || document.documentElement.scrollTop
-  showBackTop.value = scrollTop.value > 400
+  const scrollTopValue = window.pageYOffset || document.documentElement.scrollTop
+  scrollTop.value = scrollTopValue
+  showBackTop.value = scrollTopValue > 400
+
+  // 🎯 H5 端渐进式折叠逻辑
+  if (scrollTopValue <= COLLAPSE_START) {
+    scrollProgress.value = 0
+    isHeaderCollapsed.value = false
+  } else if (scrollTopValue >= COLLAPSE_END) {
+    scrollProgress.value = 1
+    isHeaderCollapsed.value = true
+  } else {
+    // 渐进式过渡区间（60px - 120px）
+    scrollProgress.value = (scrollTopValue - COLLAPSE_START) / (COLLAPSE_END - COLLAPSE_START)
+    isHeaderCollapsed.value = false // 过渡期间不完全折叠
+  }
 
   // 🎯 H5 端手动触发"到达底部"逻辑
   const scrollHeight = document.documentElement.scrollHeight
   const clientHeight = document.documentElement.clientHeight
-  const scrollBottom = scrollHeight - scrollTop.value - clientHeight
+  const scrollBottom = scrollHeight - scrollTopValue - clientHeight
 
   // 距离底部小于 50px 时触发加载
   if (scrollBottom < 50) {
@@ -931,8 +945,8 @@ const onPageScroll = (e: any) => {
   scrollTop.value = scrollTopValue
   showBackTop.value = scrollTopValue > 400
 
-  // 🎯 渐进式折叠逻辑
-  // #ifdef H5
+  // 🎯 小程序端渐进式折叠逻辑
+  // #ifndef H5
   if (scrollTopValue <= COLLAPSE_START) {
     scrollProgress.value = 0
     isHeaderCollapsed.value = false

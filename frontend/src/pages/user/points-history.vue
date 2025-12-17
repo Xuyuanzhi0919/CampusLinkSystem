@@ -272,25 +272,12 @@ defineExpose({
 })
 </script>
 
-<style lang="scss">
-/* H5 端禁用页面滚动 */
-page {
-  height: 100%;
-  overflow: hidden;
-}
-</style>
-
 <style lang="scss" scoped>
 // 变量已通过 uni.scss 全局注入
 
 .points-history-page {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: $gray-50;
-  overflow: hidden;
+  min-height: 100vh;
+  background: #F9FAFB; // 🎯 与个人中心页面背景一致
   display: flex;
   flex-direction: column;
 }
@@ -299,20 +286,22 @@ page {
 .points-overview {
   padding: $sp-8;
   flex-shrink: 0;
+  background: #F9FAFB; // 🎯 与个人中心页面背景一致
 }
 
 .overview-card {
-  @include gradient-primary;
+  // 🎯 改为浅蓝灰背景,与个人中心风格统一
+  background: #EEF2FF;
   border-radius: $radius-card;
   padding: $sp-12 $sp-8;
   text-align: center;
-  box-shadow: 0 8rpx 24rpx rgba($primary, 0.2);
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 .overview-title {
   display: block;
   font-size: $font-size-base;
-  color: rgba($white, 0.9);
+  color: #6B7280; // 🎯 中性灰
   margin-bottom: $sp-4;
 }
 
@@ -320,14 +309,14 @@ page {
   display: block;
   font-size: 64rpx;
   font-weight: $font-weight-bold;
-  color: $white;
+  color: #111827; // 🎯 深灰(浅背景上)
   margin-bottom: $sp-3;
 }
 
 .overview-desc {
   display: block;
   font-size: $font-size-sm;
-  color: rgba($white, 0.7);
+  color: #9CA3AF; // 🎯 浅灰
 }
 
 // 滚动区域

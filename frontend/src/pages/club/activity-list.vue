@@ -1352,6 +1352,7 @@ defineExpose({
   max-width: 960rpx; // 480px - 与社团广场保持一致
   margin: 0 auto; // 关键：让搜索框居中显示
   min-width: 0; // 允许缩小
+  background: transparent; // 确保外层无背景
 }
 
 .compact-search-bar {

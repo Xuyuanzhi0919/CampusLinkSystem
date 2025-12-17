@@ -26,7 +26,21 @@
 
       <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
       <view class="main-content">
-        <!-- 🎯 ③ 成就展示区(暂时保留最近活动) -->
+        <!-- 🎯 ③ Achievement Section - 成就展示区 -->
+        <AchievementSection
+          v-if="userProfile"
+          :level="userProfile.level || 1"
+          :level-name="levelName"
+          :current-exp="userProfile.experience || 0"
+          :next-level-exp="nextLevelExp"
+          :stats="achievementStats"
+          :badges="userBadges"
+          @stat-click="handleStatClick"
+          @badge-click="handleBadgeClick"
+          @view-all-badges="handleViewAllBadges"
+        />
+
+        <!-- 🎯 ④ 最近活动(内容足迹) -->
         <RecentActivity />
 
         <!-- 🎯 ④ 我的能力 -->
@@ -71,6 +85,7 @@ import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import HeroSection from './components/HeroSection.vue'
 import QuickActions from './components/QuickActions.vue'
+import AchievementSection from './components/AchievementSection.vue'
 import RecentActivity from './components/RecentActivity.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
@@ -85,6 +100,54 @@ const userStats = ref<UserStatsData | null>(null)
 const isCheckedInToday = ref(false)
 const unreadNotifications = ref(0)
 const unreadMessages = ref(0)
+
+// 🎯 等级计算
+const levelName = computed(() => {
+  const level = userProfile.value?.level || 1
+  if (level < 5) return '校园新星'
+  if (level < 10) return '活跃学子'
+  if (level < 20) return '知识达人'
+  if (level < 30) return '互助先锋'
+  return '校园传奇'
+})
+
+const nextLevelExp = computed(() => {
+  const level = userProfile.value?.level || 1
+  return level * 100 // 简单计算: 每级需要 level * 100 经验
+})
+
+// 🎯 成就统计数据
+const achievementStats = computed(() => [
+  {
+    key: 'resources',
+    label: '资源',
+    value: userStats.value?.resourceCount || 0
+  },
+  {
+    key: 'answers',
+    label: '回答',
+    value: userStats.value?.answerCount || 0
+  },
+  {
+    key: 'likes',
+    label: '获赞',
+    value: userStats.value?.receivedLikes || 0
+  },
+  {
+    key: 'collections',
+    label: '收藏',
+    value: userStats.value?.collectionCount || 0
+  }
+])
+
+// 🎯 用户徽章(示例数据,后续从API获取)
+const userBadges = computed(() => [
+  { id: 1, name: '新人报到', icon: 'star', unlocked: true, description: '完成首次登录' },
+  { id: 2, name: '资源贡献', icon: 'file-text', unlocked: (userStats.value?.resourceCount || 0) >= 5, description: '上传5个资源' },
+  { id: 3, name: '热心助人', icon: 'heart', unlocked: (userStats.value?.answerCount || 0) >= 10, description: '回答10个问题' },
+  { id: 4, name: '人气王', icon: 'users', unlocked: (userStats.value?.receivedLikes || 0) >= 50, description: '获得50个赞' },
+  { id: 5, name: '学习标兵', icon: 'book-open', unlocked: false, description: '连续签到30天' }
+])
 
 // 能力面板角标
 const capabilityBadges = computed(() => ({
@@ -165,6 +228,40 @@ const handleJoinActivity = () => {
 
 const handleGoToMall = () => {
   uni.showToast({ title: '积分商城即将上线', icon: 'none' })
+}
+
+// 🎯 Achievement Section 处理函数
+const handleStatClick = (key: string) => {
+  const routeMap: Record<string, string> = {
+    resources: '/pages/resource/my-list',
+    answers: '/pages/question/my-answers',
+    likes: '/pages/user/liked-list',
+    collections: '/pages/user/collection-list'
+  }
+
+  const url = routeMap[key]
+  if (url) {
+    uni.navigateTo({
+      url,
+      fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+    })
+  }
+}
+
+const handleBadgeClick = (badge: any) => {
+  uni.showModal({
+    title: badge.name,
+    content: badge.description || '恭喜解锁此徽章!',
+    showCancel: false,
+    confirmText: '知道了'
+  })
+}
+
+const handleViewAllBadges = () => {
+  uni.navigateTo({
+    url: '/pages/user/badges',
+    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+  })
 }
 
 const handleCapabilityClick = (item: any) => {

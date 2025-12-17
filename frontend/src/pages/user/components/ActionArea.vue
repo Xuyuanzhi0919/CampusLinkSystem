@@ -1,12 +1,14 @@
 <template>
   <!-- ========== B层:行动区(居中容器内) ========== -->
   <view class="action-area">
-    <!-- 🎯 主按钮:发布内容(降权处理) -->
-    <view class="primary-action-btn" @click="handlePublish">
-      <Icon name="plus-circle" :size="18" class="action-icon" />
-      <view class="action-content">
-        <text class="action-title">发布内容</text>
-        <text class="action-subtitle">分享你的知识</text>
+    <!-- 🎯 主按钮:发布内容(独立成行,宽度60%) -->
+    <view class="primary-action-container">
+      <view class="primary-action-btn" @click="handlePublish">
+        <Icon name="plus-circle" :size="20" class="action-icon" />
+        <view class="action-content">
+          <text class="action-title">发布内容</text>
+          <text class="action-subtitle">分享你的知识 ｜ 获得积分</text>
+        </view>
       </view>
     </view>
 
@@ -78,29 +80,38 @@ const handlePointsClick = () => {
 
 /* ========== B层:行动区(居中容器内) ========== */
 .action-area {
-  padding: 24rpx;
+  padding: 32rpx 24rpx 24rpx; // 🎯 增加上边距,拉开呼吸感
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 20rpx;
 }
 
-/* 🎯 主按钮:发布内容(降权处理) */
+/* 🎯 主按钮容器(居中,宽度60%) */
+.primary-action-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 8rpx; // 下方留足空白
+}
+
+/* 🎯 主按钮:发布内容(独立成行) */
 .primary-action-btn {
   display: flex;
   align-items: center;
-  gap: 12rpx; // 🎯 缩小间距
-  padding: 16rpx 20rpx; // 🎯 高度48-52px(16*2+20=52rpx≈26px)
-  // 🎯 唯一橙色 CTA,但降低饱和度
+  gap: 12rpx;
+  padding: 18rpx 32rpx; // 🎯 左右padding加大
+  width: 60%; // 🎯 宽度限制为60%
+  max-width: 480rpx;
+  // 🎯 唯一橙色 CTA
   background: #F97316;
-  border-radius: 16rpx; // 🎯 和卡片一致的圆角
+  border-radius: 24rpx; // 🎯 更大圆角
   cursor: pointer;
-  box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.15); // 🎯 更轻的阴影
+  box-shadow: 0 4rpx 12rpx rgba(249, 115, 22, 0.2);
   transition: all 0.2s ease;
 
   &:active {
     transform: scale(0.97);
-    background: #EA580C; // 深一度
-    box-shadow: 0 1rpx 4rpx rgba(249, 115, 22, 0.1);
+    background: #EA580C;
+    box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.15);
   }
 }
 
@@ -117,16 +128,16 @@ const handlePointsClick = () => {
 }
 
 .action-title {
-  font-size: 28rpx; // 🎯 缩小字号
-  font-weight: 600; // 🎯 降低字重(从700到600)
+  font-size: 30rpx;
+  font-weight: 600;
   color: $white;
   line-height: 1.2;
 }
 
 .action-subtitle {
   font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 400; // 🎯 降低字重
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
 }
 
 /* 次按钮组(签到、查看成长) */

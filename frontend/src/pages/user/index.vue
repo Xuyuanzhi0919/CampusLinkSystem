@@ -7,7 +7,7 @@
 
     <!-- 主内容 -->
     <view v-else class="content-container">
-      <!-- 🎯 A层:身份与成长区(全宽) -->
+      <!-- 🎯 第一层:身份与成长区(全宽) -->
       <view class="hero-section">
         <UserProfileHeader
           v-if="userProfile"
@@ -21,7 +21,7 @@
 
       <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
       <view class="main-content">
-        <!-- B层:行动区 -->
+        <!-- 🎯 第二层:行动区 -->
         <ActionArea
           :is-checked-in="isCheckedInToday"
           @check-in="handleCheckIn"
@@ -29,27 +29,31 @@
           @publish="handlePublish"
         />
 
-        <!-- 数据总览卡片 -->
+        <!-- 🎯 第三层:数据总览卡片(间距24rpx) -->
         <UserStatsCards
           :stats="userStats"
           @stat-click="handleStatClick"
         />
 
-        <!-- 🎯 缓冲区标题 -->
-        <view class="section-divider">
-          <text class="divider-text">你的校园足迹</text>
+        <!-- 🎯 第四层:最近活动(唯一主内容块,间距48rpx) -->
+        <RecentActivity />
+
+        <!-- 🎯 第五层:能力面板(2x2卡片,间距32rpx) -->
+        <view class="capability-section">
+          <view class="section-divider">
+            <text class="divider-text">快速入口</text>
+          </view>
+          <CapabilityPanel
+            :badges="capabilityBadges"
+            @item-click="handleCapabilityClick"
+          />
         </view>
 
-        <!-- 功能入口网格 -->
-        <FunctionGrid
-          :badges="functionBadges"
-          @item-click="handleFunctionClick"
-        />
+        <!-- 🎯 第六层:设置入口(弱化,间距24rpx) -->
+        <SettingsSection @item-click="handleSettingsClick" />
 
         <!-- 账户操作(退出登录) -->
-        <AccountActions
-          @logout="handleLogout"
-        />
+        <AccountActions @logout="handleLogout" />
 
         <!-- 底部安全距离 -->
         <view class="safe-area-bottom" />
@@ -62,7 +66,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/stores/user'
-import type { UserProfileData, UserStatsData, FunctionItem } from '@/types/user'
+import type { UserProfileData, UserStatsData } from '@/types/user'
 import {
   getUserProfile,
   getUserStats,
@@ -74,7 +78,9 @@ import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import UserProfileHeader from './components/UserProfileHeader.vue'
 import ActionArea from './components/ActionArea.vue'
 import UserStatsCards from './components/UserStatsCards.vue'
-import FunctionGrid from './components/FunctionGrid.vue'
+import RecentActivity from './components/RecentActivity.vue'
+import CapabilityPanel from './components/CapabilityPanel.vue'
+import SettingsSection from './components/SettingsSection.vue'
 import AccountActions from './components/AccountActions.vue'
 
 const userStore = useUserStore()
@@ -87,16 +93,12 @@ const isCheckedInToday = ref(false)
 const unreadNotifications = ref(0)
 const unreadMessages = ref(0)
 
-// 功能角标(未读消息等)
-const functionBadges = computed(() => ({
+// 能力面板角标
+const capabilityBadges = computed(() => ({
+  myResources: userStats.value?.resourceCount || 0,
+  myQuestions: userStats.value?.questionCount || 0,
   notifications: unreadNotifications.value,
-  messages: unreadMessages.value,
-  myResources: 0,
-  myQuestions: 0,
-  myTasks: 0,
-  myActivities: 0,
-  pointsHistory: 0,
-  myFavorites: 0
+  messages: unreadMessages.value
 }))
 
 /**
@@ -106,7 +108,6 @@ const loadUserData = async () => {
   try {
     loading.value = true
 
-    // 并行加载用户资料、统计数据、签到状态、未读通知数和未读私信数
     const [profileRes, statsRes, checkInRes, notificationRes, messageRes] = await Promise.all([
       getUserProfile(),
       getUserStats(),
@@ -115,14 +116,12 @@ const loadUserData = async () => {
       getMessageUnreadCount()
     ])
 
-    // request拦截器已自动解包data字段,直接使用响应
     userProfile.value = profileRes
     userStats.value = statsRes
     isCheckedInToday.value = checkInRes
     unreadNotifications.value = notificationRes
     unreadMessages.value = messageRes
 
-    // 更新 store 中的用户信息
     if (profileRes) {
       userStore.setUserInfo(profileRes)
     }
@@ -137,40 +136,27 @@ const loadUserData = async () => {
   }
 }
 
-/**
- * 处理编辑资料
- */
 const handleEditProfile = () => {
-  uni.navigateTo({
-    url: '/pages/user/edit-profile'
-  })
+  uni.navigateTo({ url: '/pages/user/edit-profile' })
 }
 
-/**
- * 处理每日签到
- */
 const handleCheckIn = async () => {
   try {
     const res = await checkIn()
 
-    // request 拦截器已经自动解包了 data 字段,直接使用 res
     if (res.success) {
-      // 更新签到状态
       isCheckedInToday.value = true
 
-      // 更新积分
       if (userProfile.value) {
         userProfile.value.points = res.totalPoints
       }
 
-      // 显示签到成功提示
       uni.showToast({
         title: `签到成功!获得 ${res.pointsEarned} 积分`,
         icon: 'success',
         duration: 2000
       })
     } else {
-      // 今日已签到
       uni.showToast({
         title: res.message || '今日已签到',
         icon: 'none'
@@ -185,9 +171,6 @@ const handleCheckIn = async () => {
   }
 }
 
-/**
- * 处理统计项点击
- */
 const handleStatClick = (key: string) => {
   const routeMap: Record<string, string> = {
     resources: '/pages/resource/my',
@@ -202,42 +185,14 @@ const handleStatClick = (key: string) => {
   }
 }
 
-/**
- * 处理积分点击
- */
 const handlePointsClick = () => {
-  uni.navigateTo({
-    url: '/pages/user/points-history'
-  })
+  uni.navigateTo({ url: '/pages/user/points-history' })
 }
 
-/**
- * 处理功能项点击
- */
-const handleFunctionClick = (item: FunctionItem) => {
-  if (item.path) {
-    uni.navigateTo({
-      url: item.path,
-      fail: (err) => {
-        console.error('页面跳转失败:', err)
-        uni.showToast({
-          title: '页面开发中...',
-          icon: 'none'
-        })
-      }
-    })
-  }
-}
-
-/**
- * 🎯 处理发布内容(强转化按钮)
- */
 const handlePublish = () => {
-  // 显示发布选项弹窗
   uni.showActionSheet({
     itemList: ['发布资源', '发布任务', '发起提问', '发布活动'],
     success: (res) => {
-      const tapIndex = res.tapIndex
       const routes = [
         '/pages/resource/publish',
         '/pages/task/publish',
@@ -245,9 +200,9 @@ const handlePublish = () => {
         '/pages/club/activity-publish'
       ]
 
-      if (routes[tapIndex]) {
+      if (routes[res.tapIndex]) {
         uni.navigateTo({
-          url: routes[tapIndex],
+          url: routes[res.tapIndex],
           fail: () => {
             uni.showToast({
               title: '页面开发中...',
@@ -260,55 +215,59 @@ const handlePublish = () => {
   })
 }
 
-/**
- * 处理修改密码
- */
-const handleChangePassword = () => {
-  uni.navigateTo({
-    url: '/pages/user/change-password'
-  })
+const handleCapabilityClick = (item: any) => {
+  if (item.path) {
+    uni.navigateTo({
+      url: item.path,
+      fail: () => {
+        uni.showToast({
+          title: '页面开发中...',
+          icon: 'none'
+        })
+      }
+    })
+  }
 }
 
-/**
- * 处理退出登录
- * 注意:AccountActions 组件内已经包含二次确认,这里直接执行退出逻辑
- */
-const handleLogout = () => {
-  console.log('执行退出登录')
+const handleSettingsClick = (item: any) => {
+  if (item.path) {
+    uni.navigateTo({
+      url: item.path,
+      fail: () => {
+        uni.showToast({
+          title: '页面开发中...',
+          icon: 'none'
+        })
+      }
+    })
+  }
+}
 
-  // 显示退出提示
+const handleLogout = () => {
   uni.showToast({
     title: '已退出登录',
     icon: 'success',
     duration: 1500
   })
 
-  // 延迟执行退出,确保提示能显示
   setTimeout(() => {
-    // 清除用户信息和 Token(内部会跳转到首页)
     userStore.logout()
   }, 300)
 }
 
-/**
- * 下拉刷新
- */
 const onPullDownRefresh = async () => {
   await loadUserData()
   uni.stopPullDownRefresh()
 }
 
-// 页面加载时获取数据
 onMounted(() => {
   loadUserData()
 })
 
-// 页面显示时重新加载数据(从编辑页面返回时会触发)
 onShow(() => {
   loadUserData()
 })
 
-// 暴露方法给页面配置
 defineExpose({
   onPullDownRefresh
 })
@@ -319,7 +278,7 @@ defineExpose({
 
 .user-center-page {
   min-height: 100vh;
-  background: #F9FAFB; // 🎯 偏暖浅灰背景(增加温度感)
+  background: #F9FAFB;
 }
 
 .loading-container {
@@ -337,51 +296,45 @@ defineExpose({
   flex-direction: column;
 }
 
-/* 🎯 A层:身份与成长区 - 全宽展开 */
+/* 🎯 第一层:身份与成长区 - 全宽展开 */
 .hero-section {
   width: 100%;
-  background: #EEF2FF; // 浅蓝灰背景(与身份卡统一)
+  background: #EEF2FF;
 }
 
 /* 🎯 内容区 - 居中容器 */
 .main-content {
   width: 100%;
-  max-width: 1200px; // 🎯 内容最大宽度1200px
-  margin: 0 auto; // 水平居中
+  max-width: 1200px;
+  margin: 0 auto;
   padding-bottom: $sp-8;
 
-  // PC端增加左右padding
   @media (min-width: 768px) {
     padding-left: 32px;
     padding-right: 32px;
   }
 
-  // 大屏适配
   @media (min-width: 1280px) {
     padding-left: 48px;
     padding-right: 48px;
   }
 }
 
-/* 🎯 缓冲区标题(节奏设计) */
+/* 🎯 能力面板区域 */
+.capability-section {
+  margin-top: 32rpx; // 🎯 和最近活动拉开32rpx
+}
+
+/* 🎯 分隔线标题 */
 .section-divider {
-  padding: 32rpx 24rpx 24rpx;
-  text-align: center;
+  padding: 0 24rpx 24rpx;
 }
 
 .divider-text {
   font-size: 28rpx;
-  color: #9CA3AF; // 中性灰
+  color: #9CA3AF;
   font-weight: 500;
-  position: relative;
-  display: inline-block;
-
-  &::before,
-  &::after {
-    content: '——';
-    color: #D1D5DB; // 更浅的灰
-    padding: 0 12rpx;
-  }
+  display: block;
 }
 
 .safe-area-bottom {

@@ -139,6 +139,18 @@
       <line x1="7" y1="7" x2="7.01" y2="7" stroke="currentColor"/>
     </template>
 
+    <!-- Map Pin 图标（地点/位置） -->
+    <template v-else-if="name === 'map-pin'">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" fill="none"/>
+      <circle cx="12" cy="10" r="3" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Ticket 图标（门票/名额） -->
+    <template v-else-if="name === 'ticket'">
+      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v2z" stroke="currentColor" fill="none"/>
+      <line x1="13" y1="5" x2="13" y2="19" stroke="currentColor" stroke-dasharray="2 2"/>
+    </template>
+
     <!-- Award 图标（奖励/悬赏） -->
     <template v-else-if="name === 'award'">
       <circle cx="12" cy="8" r="7" stroke="currentColor" fill="none"/>

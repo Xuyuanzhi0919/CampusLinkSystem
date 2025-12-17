@@ -68,7 +68,7 @@
             :class="{ active: filters.status === tab.value }"
             @click="handleQuickFilter(tab.value)"
           >
-            <text class="tab-icon">{{ tab.icon }}</text>
+            <Icon :name="tab.icon" :size="14" class="tab-icon" />
             <text class="tab-label">{{ tab.label }}</text>
           </view>
         </view>
@@ -114,7 +114,7 @@
     <view class="content-container">
       <!-- 🎯 首屏轻提示 -->
       <view v-if="!loading && activities.length > 0 && filters.status === 1" class="activity-hint">
-        <text class="hint-icon">🎯</text>
+        <Icon name="sparkles" :size="16" class="hint-icon" />
         <text class="hint-text">当前有 <text class="hint-count">{{ activities.length }}</text> 个活动正在进行中</text>
       </view>
 
@@ -205,7 +205,7 @@
           @keydown.enter.stop="toggleFavorite(activity)"
           @keydown.space.prevent.stop="toggleFavorite(activity)"
         >
-          <text class="favorite-icon" aria-hidden="true">{{ activity.isFavorited ? '❤️' : '🤍' }}</text>
+          <Icon :name="activity.isFavorited ? 'heart' : 'heart'" :size="18" class="favorite-icon" :class="{ 'filled': activity.isFavorited }" />
         </view>
 
         <!-- 活动信息 -->
@@ -223,10 +223,13 @@
             {{ activity.clubName || activity.organizerName || '校方组织' }}
           </text>
           <view class="activity-meta">
-            <text class="meta-item">📅 {{ formatDate(activity.startTime) }}</text>
+            <view class="meta-item">
+              <Icon name="calendar" :size="12" class="meta-icon" />
+              <text>{{ formatDate(activity.startTime) }}</text>
+            </view>
             <!-- 🎯 地点 - 支持关键词高亮 -->
             <view class="meta-item location-item">
-              <text>📍 </text>
+              <Icon name="map-pin" :size="12" class="meta-icon" />
               <text
                 v-for="(part, index) in highlightText(activity.location || '待定')"
                 :key="index"
@@ -235,13 +238,17 @@
             </view>
           </view>
           <view class="activity-meta">
-            <text class="meta-item">👥 {{ activity.currentParticipants }}/{{ activity.maxParticipants }}</text>
-            <text
+            <view class="meta-item">
+              <Icon name="users" :size="12" class="meta-icon" />
+              <text>{{ activity.currentParticipants }}/{{ activity.maxParticipants }}</text>
+            </view>
+            <view
               class="meta-item remaining"
               :class="{ 'urgent': getRemainingSlots(activity) < 10 && getRemainingSlots(activity) > 0 }"
             >
-              🎫 剩余{{ getRemainingSlots(activity) }}个名额
-            </text>
+              <Icon name="ticket" :size="12" class="meta-icon" />
+              <text>剩余{{ getRemainingSlots(activity) }}个名额</text>
+            </view>
           </view>
         </view>
       </view>
@@ -434,9 +441,9 @@ const statusOptions = [
 
 // 🎯 主筛选 Tabs（活动状态，第一优先级）
 const statusFilterTabs = [
-  { label: '进行中', value: 1, icon: '🔥' }, // 默认选中
-  { label: '未开始', value: 0, icon: '⏰' },
-  { label: '已结束', value: 2, icon: '📋' }
+  { label: '进行中', value: 1, icon: 'lightning' }, // 默认选中
+  { label: '未开始', value: 0, icon: 'clock' },
+  { label: '已结束', value: 2, icon: 'check-circle' }
 ]
 
 // 🎯 辅助筛选 Tabs（活动来源，第二优先级）
@@ -1971,13 +1978,21 @@ defineExpose({
 }
 
 .favorite-icon {
-  font-size: 28rpx;
-  line-height: 1;
-  transition: transform 0.3s ease;
+  color: $gray-300;
+  transition: all 0.3s ease;
+
+  &.filled {
+    color: #EF4444; // 红色填充
+  }
 }
 
 .favorite-btn.favorited .favorite-icon {
   transform: scale(1.1);
+
+  // 使用SVG的fill属性模拟填充效果
+  :deep(path) {
+    fill: currentColor;
+  }
 }
 
 @keyframes heart-beat {
@@ -2165,15 +2180,23 @@ defineExpose({
 }
 
 .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
   font-size: 24rpx;
   color: $gray-400;
   line-height: 1;
 }
 
+.meta-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
 .location-item {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 8rpx;
 }
 
 .meta-item.remaining {
@@ -2348,8 +2371,9 @@ defineExpose({
   flex-shrink: 0;
 
   .tab-icon {
-    font-size: 32rpx;
-    transition: transform 0.2s;
+    color: $gray-600;
+    flex-shrink: 0;
+    transition: color 0.2s, transform 0.2s;
   }
 
   .tab-label {
@@ -2371,6 +2395,10 @@ defineExpose({
   &.active {
     background: $primary;
     color: $white;
+
+    .tab-icon {
+      color: $white;
+    }
 
     .tab-label {
       color: $white;
@@ -2603,7 +2631,8 @@ defineExpose({
 }
 
 .hint-icon {
-  font-size: 32rpx;
+  color: $accent;
+  flex-shrink: 0;
   animation: hintIconPulse 2s ease-in-out infinite;
 }
 

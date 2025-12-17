@@ -40,10 +40,16 @@
           @view-all-badges="handleViewAllBadges"
         />
 
-        <!-- 🎯 ④ 最近活动(内容足迹) -->
-        <RecentActivity />
+        <!-- 🎯 ④ Content Hub - 内容中心 -->
+        <ContentHub
+          :resource-list="mockResourceList"
+          :answer-list="mockAnswerList"
+          :interaction-list="mockInteractionList"
+          :growth-events="mockGrowthEvents"
+          @item-click="handleContentItemClick"
+        />
 
-        <!-- 🎯 ④ 我的能力 -->
+        <!-- 🎯 ⑤ 我的能力 -->
         <view class="capability-section">
           <view class="section-title">
             <text class="title-text">我的能力</text>
@@ -86,7 +92,7 @@ import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import HeroSection from './components/HeroSection.vue'
 import QuickActions from './components/QuickActions.vue'
 import AchievementSection from './components/AchievementSection.vue'
-import RecentActivity from './components/RecentActivity.vue'
+import ContentHub from './components/ContentHub.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
 import AccountActions from './components/AccountActions.vue'
@@ -156,6 +162,98 @@ const capabilityBadges = computed(() => ({
   notifications: unreadNotifications.value,
   messages: unreadMessages.value
 }))
+
+// 🎯 Content Hub Mock数据(后续从API获取)
+const mockResourceList = computed(() => [
+  {
+    id: 1,
+    title: '计算机网络复习资料整理',
+    category: '课件',
+    downloads: 128,
+    views: 456,
+    createdAt: '2天前'
+  },
+  {
+    id: 2,
+    title: '数据结构期末考试真题(2023)',
+    category: '试题',
+    downloads: 89,
+    views: 234,
+    createdAt: '5天前'
+  }
+])
+
+const mockAnswerList = computed(() => [
+  {
+    id: 1,
+    questionTitle: 'TCP和UDP的区别是什么?',
+    content: 'TCP是面向连接的协议,提供可靠的数据传输...',
+    likes: 12,
+    adopted: true,
+    createdAt: '3天前'
+  },
+  {
+    id: 2,
+    questionTitle: '如何理解Java中的多态性?',
+    content: '多态是面向对象编程的三大特性之一...',
+    likes: 8,
+    adopted: false,
+    createdAt: '1周前'
+  }
+])
+
+const mockInteractionList = computed(() => [
+  {
+    id: 1,
+    action: 'like' as const,
+    type: 'resource',
+    targetId: 123,
+    title: '操作系统实验报告模板',
+    createdAt: '1小时前'
+  },
+  {
+    id: 2,
+    action: 'collect' as const,
+    type: 'question',
+    targetId: 456,
+    title: 'Spring Boot项目如何集成Redis?',
+    createdAt: '昨天'
+  },
+  {
+    id: 3,
+    action: 'comment' as const,
+    type: 'answer',
+    targetId: 789,
+    title: '数据库索引优化的几个技巧',
+    createdAt: '2天前'
+  }
+])
+
+const mockGrowthEvents = computed(() => [
+  {
+    id: 1,
+    type: 'level' as const,
+    title: '等级提升',
+    description: '恭喜你升到Lv.2,继续努力!',
+    points: 100,
+    createdAt: '今天'
+  },
+  {
+    id: 2,
+    type: 'badge' as const,
+    title: '解锁徽章: 资源贡献',
+    description: '上传了5个资源,帮助了很多同学',
+    createdAt: '3天前'
+  },
+  {
+    id: 3,
+    type: 'achievement' as const,
+    title: '首次回答被采纳',
+    description: '你的回答帮助他人解决了问题',
+    points: 20,
+    createdAt: '1周前'
+  }
+])
 
 const loadUserData = async () => {
   try {
@@ -262,6 +360,23 @@ const handleViewAllBadges = () => {
     url: '/pages/user/badges',
     fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
   })
+}
+
+// 🎯 Content Hub 处理函数
+const handleContentItemClick = (type: string, id: number) => {
+  const routeMap: Record<string, string> = {
+    resource: '/pages/resource/detail',
+    answer: '/pages/question/detail',
+    question: '/pages/question/detail'
+  }
+
+  const baseUrl = routeMap[type]
+  if (baseUrl) {
+    uni.navigateTo({
+      url: `${baseUrl}?id=${id}`,
+      fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
+    })
+  }
 }
 
 const handleCapabilityClick = (item: any) => {

@@ -422,9 +422,9 @@ const isAdmin = computed(() => {
 // 成员位置（已加入时显示）
 const memberPosition = computed(() => {
   if (!isMember.value || !club.value?.memberCount) return 0
-  // 简单估算：假设按加入时间排序，随机生成一个合理的位置
-  // 实际应由后端返回准确的加入顺序
-  return Math.floor(Math.random() * club.value.memberCount) + 1
+  // 简化逻辑：显示当前成员总数作为位置(即最新加入的成员)
+  // 实际应由后端返回准确的 joinPosition 字段
+  return club.value.memberCount
 })
 
 // 社团属性

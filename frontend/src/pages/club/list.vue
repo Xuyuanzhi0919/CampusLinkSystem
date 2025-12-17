@@ -498,24 +498,11 @@ const loadClubList = async () => {
     })
     clubs.value = res.list || []
 
-    // MVP-3/MVP-4: 模拟社团状态(实际应从后端返回)
-    // TODO: 后端应在列表接口返回以下字段：
-    // 1. isMember: boolean - 用户是否已加入该社团
-    // 2. isPending: boolean - 用户是否有待审核的加入申请
-    // 3. activityCount: number - 社团历史活动总数（用于活跃度判断）
-    if (clubs.value.length >= 3) {
-      clubs.value[0].isMember = true  // 第1个: 已加入
-      clubs.value[0].activityCount = 12 // 模拟活动数
-      clubs.value[1].isPending = true // 第2个: 申请中
-      clubs.value[1].activityCount = 5 // 模拟活动数
-      // 第3个及以后: 未加入(默认状态)
-      for (let i = 2; i < clubs.value.length; i++) {
-        clubs.value[i].activityCount = Math.floor(Math.random() * 20) // 模拟随机活动数 0-19
-      }
-    } else if (clubs.value.length > 0) {
-      clubs.value[0].isMember = true
-      clubs.value[0].activityCount = 8
-    }
+    // 注意: 以下字段应由后端在列表接口直接返回
+    // - isMember: boolean - 用户是否已加入该社团
+    // - isPending: boolean - 用户是否有待审核的加入申请
+    // - activityCount: number - 社团历史活动总数
+    // 如果后端未返回这些字段,前端将显示默认值 0
 
     // MVP-1: 更新分类计数
     updateCategoryCounts()

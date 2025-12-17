@@ -55,71 +55,63 @@
               </view>
             </view>
 
-            <!-- CTA 按钮（核心决策点）-->
+            <!-- 已加入身份提示（仅已加入时显示，作为指标行的补充）-->
+            <view v-if="isMember" class="member-badge">
+              <text class="member-badge-text">✓ 你是第 {{ memberPosition }} 位加入的成员</text>
+            </view>
+
+            <!-- CTA 按钮（核心决策点，布局始终保持一致）-->
             <view class="hero-actions">
-              <!-- 未加入：绝对中心化的唯一决策点 -->
-              <template v-if="!isMember && !isPending">
+              <!-- 未加入：主按钮 -->
+              <CButton
+                v-if="!isMember && !isPending"
+                type="primary"
+                size="lg"
+                @click="handleJoin"
+              >
+                加入社团
+              </CButton>
+
+              <!-- 申请中：禁用状态 -->
+              <CButton
+                v-else-if="isPending"
+                type="secondary"
+                size="lg"
+                disabled
+              >
+                ⏱️ 申请审核中
+              </CButton>
+
+              <!-- 已加入：主按钮变为"进入讨论" -->
+              <CButton
+                v-else
+                type="primary"
+                size="lg"
+                @click="handleEnter"
+              >
+                进入讨论
+              </CButton>
+
+              <!-- 次要操作：管理/退出（弱化，始终在按钮下方）-->
+              <view class="secondary-actions">
                 <CButton
-                  type="primary"
-                  size="lg"
-                  block
-                  @click="handleJoin"
+                  v-if="isAdmin"
+                  type="text"
+                  size="sm"
+                  @click="handleManage"
                 >
-                  加入社团
+                  管理社团
                 </CButton>
-              </template>
-
-              <!-- 申请中：审核等待状态 -->
-              <template v-else-if="isPending">
-                <view class="join-status">
-                  <text class="status-text pending">⏱️ 申请审核中</text>
-                </view>
                 <CButton
-                  type="secondary"
-                  size="md"
-                  disabled
+                  v-if="isMember"
+                  type="text"
+                  size="sm"
+                  class="quit-btn"
+                  @click="handleQuit"
                 >
-                  审核中
+                  退出
                 </CButton>
-              </template>
-
-              <!-- 已加入：集中表达"已是成员"状态 -->
-              <template v-else>
-                <view class="join-status">
-                  <text class="status-text joined">✓ 你已加入该社团</text>
-                </view>
-                <view class="action-group">
-                  <!-- 主操作：进入讨论 -->
-                  <CButton
-                    type="primary"
-                    size="lg"
-                    @click="handleEnter"
-                  >
-                    进入讨论
-                  </CButton>
-
-                  <!-- 次要操作：管理 / 退出 -->
-                  <view class="secondary-actions">
-                    <CButton
-                      v-if="isAdmin"
-                      type="accent"
-                      size="sm"
-                      plain
-                      @click="handleManage"
-                    >
-                      管理
-                    </CButton>
-                    <CButton
-                      type="text"
-                      size="sm"
-                      class="quit-btn"
-                      @click="handleQuit"
-                    >
-                      退出
-                    </CButton>
-                  </view>
-                </view>
-              </template>
+              </view>
             </view>
           </view>
         </view>
@@ -320,11 +312,6 @@
               <text class="card-title">社团信息</text>
             </view>
             <view class="status-list">
-              <!-- 已加入：显示成员位置 -->
-              <view v-if="isMember" class="status-item member-position">
-                <text class="status-label">你的位置</text>
-                <text class="status-value highlight">第 {{ memberPosition }} 位成员</text>
-              </view>
               <view class="status-item">
                 <text class="status-label">成员数量</text>
                 <text class="status-value">{{ club.memberCount || 0 }}</text>
@@ -968,52 +955,43 @@ onLoad((options) => {
   font-size: 24rpx;
 }
 
+// 成员身份标识（加入后显示）
+.member-badge {
+  margin-top: $sp-4;
+  padding: $sp-2 $sp-4;
+  background: linear-gradient(135deg, rgba($success, 0.08) 0%, rgba($success, 0.04) 100%);
+  border-radius: $radius-md;
+  border: 1rpx solid rgba($success, 0.15);
+  display: inline-flex;
+  align-items: center;
+}
+
+.member-badge-text {
+  font-size: 24rpx;
+  color: $success;
+  font-weight: $font-weight-medium;
+}
+
+// Hero 操作区（布局始终保持一致）
 .hero-actions {
   display: flex;
   flex-direction: column;
-  gap: $sp-4;
-  margin-top: $sp-6;
-}
-
-// 加入状态提示
-.join-status {
-  display: flex;
   align-items: center;
-  justify-content: center;
-  margin-bottom: $sp-2;
-}
-
-.status-text {
-  font-size: $font-size-base;
-  font-weight: 500;
-
-  &.pending {
-    color: $warning;
-  }
-
-  &.joined {
-    color: $success;
-    font-weight: 600;
-  }
-}
-
-// 已加入状态的操作组
-.action-group {
-  display: flex;
-  flex-direction: column;
   gap: $sp-3;
-  width: 100%;
+  margin-top: $sp-5;
 }
 
-// 次要操作组（管理/退出）
+// 次要操作组（管理/退出，始终在主按钮下方）
 .secondary-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $sp-3;
+  gap: $sp-4;
+  margin-top: $sp-1;
 
   .quit-btn {
-    color: $gray-500;
+    color: $gray-400;
+    font-size: 24rpx;
 
     &:hover {
       color: $error;
@@ -1653,22 +1631,6 @@ onLoad((options) => {
 .status-item {
   @include flex-between;
   padding: $sp-3 0;
-
-  // 成员位置：特殊样式
-  &.member-position {
-    background: linear-gradient(135deg, rgba($primary, 0.05) 0%, rgba($accent, 0.03) 100%);
-    padding: $sp-4;
-    margin: 0 (-$sp-8);
-    margin-bottom: $sp-4;
-    border-radius: $radius-md;
-    border: 1rpx solid rgba($primary, 0.1);
-
-    .status-value.highlight {
-      color: $primary;
-      font-weight: $font-weight-bold;
-      font-size: 28rpx;
-    }
-  }
 }
 
 .status-label {

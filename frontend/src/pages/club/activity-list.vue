@@ -1,7 +1,7 @@
 <template>
   <view class="activity-list-page" role="main" aria-label="活动列表页面">
     <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed">
+    <view class="top-nav-fixed" :style="{ paddingTop: statusBarHeight + 'px' }">
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
@@ -57,7 +57,7 @@
     </view>
 
     <!-- ========== Sticky 导航区（状态+类型+筛选） ========== -->
-    <view class="sticky-nav">
+    <view class="sticky-nav" :style="{ top: (statusBarHeight + 60) + 'px', marginTop: (statusBarHeight + 60) + 'px' }">
       <view class="sticky-nav-container">
         <!-- 左侧：状态Tabs -->
         <view class="category-tabs">
@@ -396,6 +396,9 @@ import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
 import config from '@/config'
 import Icon from '@/components/icons/index.vue'
+
+// 🎯 系统状态栏高度
+const statusBarHeight = ref(0)
 
 // 搜索关键词
 const searchKeyword = ref('')
@@ -1269,6 +1272,10 @@ onLoad((options) => {
 
 // 页面加载
 onMounted(() => {
+  // 🎯 获取系统状态栏高度
+  const systemInfo = uni.getSystemInfoSync()
+  statusBarHeight.value = systemInfo.statusBarHeight || 0
+
   calculateSkeletonCount() // 🎯 计算骨架屏数量
   loadSearchHistory() // 🎯 加载搜索历史
 
@@ -1350,19 +1357,42 @@ defineExpose({
   display: flex;
   align-items: center;
   gap: 32rpx;
-  padding: 0 32rpx;
+  padding: 0 80rpx; // 40px 默认padding,更舒展
+
+  @media (max-width: 1600px) {
+    padding: 0 64rpx; // 32px
+  }
+
+  @media (max-width: 1440px) {
+    padding: 0 48rpx; // 24px
+  }
+
+  @media (max-width: 1200px) {
+    padding: 0 32rpx; // 16px
+  }
+
+  @include mobile {
+    padding: 0 32rpx;
+    gap: 24rpx; // 移动端缩小间距
+  }
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  min-width: 240rpx;
+  gap: 16rpx; // 8px,与社团广场一致
+  flex-shrink: 0;
+  min-width: 200rpx; // 与社团广场一致
   cursor: pointer;
+
+  @include mobile {
+    display: none; // 移动端隐藏Logo,节省空间
+  }
 }
 
 .logo-icon {
   color: $primary;
+  flex-shrink: 0;
 }
 
 .logo-text {
@@ -1432,39 +1462,51 @@ defineExpose({
 .filter-button {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 0 24rpx;
+  gap: 12rpx;
+  padding: 0 40rpx;
   height: 72rpx;
-  background: $gray-50;
+  background: $primary;
+  color: $white;
   border-radius: 36rpx;
+  font-size: 28rpx;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  flex-shrink: 0;
+  min-width: 120rpx;
   white-space: nowrap;
 
   &:hover {
-    background: $gray-100;
+    background: #1d4ed8; // $primary 加深
+    box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.25);
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+  }
+
+  @include mobile {
+    padding: 0 32rpx;
+    height: 64rpx;
+    min-width: 100rpx;
   }
 }
 
 .filter-icon {
-  color: $gray-600;
+  color: $white;
+  flex-shrink: 0;
 }
 
 .filter-text {
   font-size: 28rpx;
   font-weight: 500;
-  color: $gray-700;
+  color: $white;
 }
 
 /* Sticky 导航区（全宽）*/
 .sticky-nav {
   position: sticky;
-  top: 120rpx; // 停留在顶部导航下方
-  margin-top: 120rpx; // 为固定顶部导航留出空间
+  // top 和 margin-top 通过 :style 动态设置 (statusBarHeight + 60px)
   z-index: 99;
   width: 100%;
   background: $white;

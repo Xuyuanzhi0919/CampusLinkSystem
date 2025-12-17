@@ -4,7 +4,7 @@
     <view v-if="!isLoggedIn" class="login-prompt" @click="handleLogin">
       <view class="user-avatar">
         <view class="avatar-placeholder">
-          <text class="avatar-icon">👤</text>
+          <uni-icons type="person-filled" size="28" color="#FFFFFF"></uni-icons>
         </view>
       </view>
       <view class="user-info">
@@ -23,7 +23,7 @@
           mode="aspectFill"
         />
         <view v-else class="avatar-placeholder">
-          <text class="avatar-icon">👤</text>
+          <uni-icons type="person-filled" size="28" color="#FFFFFF"></uni-icons>
         </view>
       </view>
       <view class="user-info">
@@ -169,12 +169,6 @@ const handleProfile = () => {
   align-items: center;
   justify-content: center;
   background: rgba(255, 255, 255, 0.2);
-}
-
-.avatar-icon {
-  font-size: 56rpx;
-  line-height: 1;
-  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 // =============================================

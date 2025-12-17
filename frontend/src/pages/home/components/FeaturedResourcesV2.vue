@@ -37,13 +37,22 @@
       >
         <view class="resource-header">
           <text class="resource-tag">{{ getResourceTypeText(resource.resourceType) }}</text>
-          <text class="resource-rating">⭐ {{ resource.rating || 0 }}</text>
+          <view class="resource-rating">
+            <uni-icons type="star-filled" size="12" color="#F59E0B"></uni-icons>
+            <text>{{ resource.rating || 0 }}</text>
+          </view>
         </view>
         <view class="resource-title">{{ resource.title }}</view>
         <view class="resource-meta">
-          <text>📥 {{ resource.downloadCount || 0 }}</text>
-          <text>👁 {{ resource.viewCount || 0 }}</text>
-          <text v-if="resource.uploaderNickname">by {{ resource.uploaderNickname }}</text>
+          <view class="meta-item">
+            <uni-icons type="download" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ resource.downloadCount || 0 }}</text>
+          </view>
+          <view class="meta-item">
+            <uni-icons type="eye" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ resource.viewCount || 0 }}</text>
+          </view>
+          <text v-if="resource.uploaderNickname" class="meta-author">by {{ resource.uploaderNickname }}</text>
         </view>
       </view>
       <!-- #endif -->
@@ -288,6 +297,9 @@ defineExpose({
 }
 
 .resource-rating {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   font-size: 24rpx;
   color: #F59E0B;
   font-weight: 500;
@@ -314,10 +326,14 @@ defineExpose({
   font-size: 24rpx;
   color: #94A3B8;
 
-  text {
+  .meta-item {
     display: flex;
     align-items: center;
-    gap: 4rpx;
+    gap: 6rpx;
+  }
+
+  .meta-author {
+    color: #94A3B8;
   }
 }
 /* #endif */

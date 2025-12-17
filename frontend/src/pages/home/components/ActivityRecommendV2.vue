@@ -37,14 +37,21 @@
       >
         <view class="activity-header">
           <text class="activity-tag">活动</text>
-          <text v-if="activity.maxParticipants" class="participants">
-            👥 {{ activity.currentParticipants || 0 }}/{{ activity.maxParticipants }}
-          </text>
+          <view v-if="activity.maxParticipants" class="participants">
+            <uni-icons type="person" size="12" color="#64748B"></uni-icons>
+            <text>{{ activity.currentParticipants || 0 }}/{{ activity.maxParticipants }}</text>
+          </view>
         </view>
         <view class="activity-title">{{ activity.title }}</view>
         <view class="activity-meta">
-          <text>📅 {{ formatDate(activity.activityTime) }}</text>
-          <text>📍 {{ activity.location || '待定' }}</text>
+          <view class="meta-item">
+            <uni-icons type="calendar" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ formatDate(activity.activityTime) }}</text>
+          </view>
+          <view class="meta-item">
+            <uni-icons type="location" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ activity.location || '待定' }}</text>
+          </view>
         </view>
       </view>
       <!-- #endif -->
@@ -294,6 +301,9 @@ defineExpose({
 }
 
 .participants {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   font-size: 24rpx;
   color: #6B7280;
   font-weight: 500;
@@ -320,10 +330,10 @@ defineExpose({
   font-size: 24rpx;
   color: #94A3B8;
 
-  text {
+  .meta-item {
     display: flex;
     align-items: center;
-    gap: 4rpx;
+    gap: 6rpx;
   }
 }
 /* #endif */

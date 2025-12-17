@@ -38,14 +38,21 @@
         <view class="question-header">
           <text class="question-tag">问答</text>
           <view v-if="question.bounty > 0" class="bounty-badge">
-            <text>💰 {{ question.bounty }}</text>
+            <uni-icons type="wallet-filled" size="12" color="#F97316"></uni-icons>
+            <text>{{ question.bounty }}</text>
           </view>
         </view>
         <view class="question-title">{{ question.title }}</view>
         <view class="question-meta">
-          <text>👀 {{ question.views || 0 }}</text>
-          <text>💬 {{ question.comments || 0 }}回答</text>
-          <text v-if="question.user?.username">by {{ question.user.username }}</text>
+          <view class="meta-item">
+            <uni-icons type="eye" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ question.views || 0 }}</text>
+          </view>
+          <view class="meta-item">
+            <uni-icons type="chat" size="14" color="#94A3B8"></uni-icons>
+            <text>{{ question.comments || 0 }}回答</text>
+          </view>
+          <text v-if="question.user?.username" class="meta-author">by {{ question.user.username }}</text>
         </view>
       </view>
       <!-- #endif -->
@@ -298,6 +305,9 @@ defineExpose({
 }
 
 .bounty-badge {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   padding: 4rpx 12rpx;
   font-size: 22rpx;
   font-weight: 500;
@@ -327,10 +337,14 @@ defineExpose({
   font-size: 24rpx;
   color: #94A3B8;
 
-  text {
+  .meta-item {
     display: flex;
     align-items: center;
-    gap: 4rpx;
+    gap: 6rpx;
+  }
+
+  .meta-author {
+    color: #94A3B8;
   }
 }
 /* #endif */

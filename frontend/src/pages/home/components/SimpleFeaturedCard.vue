@@ -5,14 +5,21 @@
       <view class="card-header">
         <text class="card-type-tag">问答</text>
         <view v-if="data.bounty > 0" class="bounty-tag">
-          <text>💰 {{ data.bounty }}积分</text>
+          <uni-icons type="wallet-filled" size="12" color="#F97316"></uni-icons>
+          <text class="bounty-text">{{ data.bounty }}积分</text>
         </view>
       </view>
       <view class="card-title">{{ data.title }}</view>
       <view class="card-meta">
-        <text>👀 {{ data.views || 0 }}</text>
-        <text>💬 {{ data.answerCount || 0 }}回答</text>
-        <text v-if="data.askerNickname">by {{ data.askerNickname }}</text>
+        <view class="meta-item">
+          <uni-icons type="eye" size="14" color="#64748B"></uni-icons>
+          <text>{{ data.views || 0 }}</text>
+        </view>
+        <view class="meta-item">
+          <uni-icons type="chat" size="14" color="#64748B"></uni-icons>
+          <text>{{ data.answerCount || 0 }}回答</text>
+        </view>
+        <text v-if="data.askerNickname" class="meta-author">by {{ data.askerNickname }}</text>
       </view>
     </view>
 
@@ -24,9 +31,15 @@
       </view>
       <view class="card-title">{{ data.title }}</view>
       <view class="card-meta">
-        <text>📥 {{ data.downloadCount || 0 }}下载</text>
-        <text>⭐ {{ data.rating || 0 }}</text>
-        <text v-if="data.uploaderNickname">by {{ data.uploaderNickname }}</text>
+        <view class="meta-item">
+          <uni-icons type="download" size="14" color="#64748B"></uni-icons>
+          <text>{{ data.downloadCount || 0 }}下载</text>
+        </view>
+        <view class="meta-item">
+          <uni-icons type="star" size="14" color="#F59E0B"></uni-icons>
+          <text>{{ data.rating || 0 }}</text>
+        </view>
+        <text v-if="data.uploaderNickname" class="meta-author">by {{ data.uploaderNickname }}</text>
       </view>
     </view>
 
@@ -34,14 +47,21 @@
     <view v-else-if="type === 'activity'" class="card-content">
       <view class="card-header">
         <text class="card-type-tag activity">活动</text>
-        <text v-if="data.maxParticipants" class="participants">
-          👥 {{ data.currentParticipants || 0 }}/{{ data.maxParticipants }}
-        </text>
+        <view v-if="data.maxParticipants" class="participants">
+          <uni-icons type="person" size="12" color="#64748B"></uni-icons>
+          <text>{{ data.currentParticipants || 0 }}/{{ data.maxParticipants }}</text>
+        </view>
       </view>
       <view class="card-title">{{ data.title }}</view>
       <view class="card-meta">
-        <text>📅 {{ formatDate(data.activityTime) }}</text>
-        <text>📍 {{ data.location || '待定' }}</text>
+        <view class="meta-item">
+          <uni-icons type="calendar" size="14" color="#64748B"></uni-icons>
+          <text>{{ formatDate(data.activityTime) }}</text>
+        </view>
+        <view class="meta-item">
+          <uni-icons type="location" size="14" color="#64748B"></uni-icons>
+          <text>{{ data.location || '待定' }}</text>
+        </view>
       </view>
     </view>
   </view>
@@ -128,12 +148,19 @@ const formatDate = (dateString: string) => {
 }
 
 .bounty-tag {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   padding: 4rpx 12rpx;
   font-size: 22rpx;
   font-weight: 500;
   color: #F97316;
   background: rgba(249, 115, 22, 0.1);
   border-radius: 8rpx;
+
+  .bounty-text {
+    line-height: 1;
+  }
 }
 
 .resource-type {
@@ -142,6 +169,9 @@ const formatDate = (dateString: string) => {
 }
 
 .participants {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
   font-size: 24rpx;
   color: #6B7280;
 }
@@ -167,10 +197,14 @@ const formatDate = (dateString: string) => {
   font-size: 24rpx;
   color: #94A3B8;
 
-  text {
+  .meta-item {
     display: flex;
     align-items: center;
-    gap: 4rpx;
+    gap: 6rpx;
+  }
+
+  .meta-author {
+    color: #94A3B8;
   }
 }
 </style>

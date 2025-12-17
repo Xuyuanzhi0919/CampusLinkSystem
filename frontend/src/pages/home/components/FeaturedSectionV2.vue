@@ -81,12 +81,29 @@ const loadData = async () => {
     loading.value = true
     hasError.value = false
 
+    console.log('[FeaturedSection] 开始加载推荐内容...')
+
     // 并行加载问答、资源、活动数据（使用正确的 API 参数）
     const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
-      getQuestionList({ page: 1, pageSize: 2 }).catch(() => ({ list: [] })),
-      getResourceList({ page: 1, pageSize: 2, status: 1 }).catch(() => ({ list: [] })),
-      getActivityList({ page: 1, pageSize: 2 }).catch(() => ({ list: [] }))
+      getQuestionList({ page: 1, pageSize: 2 }).catch((err) => {
+        console.error('[FeaturedSection] 问答列表加载失败:', err)
+        return { list: [] }
+      }),
+      getResourceList({ page: 1, pageSize: 2, status: 1 }).catch((err) => {
+        console.error('[FeaturedSection] 资源列表加载失败:', err)
+        return { list: [] }
+      }),
+      getActivityList({ page: 1, pageSize: 2 }).catch((err) => {
+        console.error('[FeaturedSection] 活动列表加载失败:', err)
+        return { list: [] }
+      })
     ])
+
+    console.log('[FeaturedSection] 数据加载完成:', {
+      questions: questionsRes.list?.length || 0,
+      resources: resourcesRes.list?.length || 0,
+      activities: activitiesRes.list?.length || 0
+    })
 
     // 合并数据并添加类型标识
     const allItems = [
@@ -95,11 +112,15 @@ const loadData = async () => {
       ...(activitiesRes.list || []).map((item: any) => ({ ...item, type: 'activity' }))
     ]
 
+    console.log('[FeaturedSection] 合并后数据总数:', allItems.length)
+
     // 打乱顺序（模拟 AI 推荐）
     featuredList.value = allItems.sort(() => Math.random() - 0.5).slice(0, 6)
 
+    console.log('[FeaturedSection] 最终推荐列表:', featuredList.value.length)
+
   } catch (error) {
-    console.error('加载推荐内容失败:', error)
+    console.error('[FeaturedSection] 加载推荐内容失败:', error)
     hasError.value = true
   } finally {
     loading.value = false

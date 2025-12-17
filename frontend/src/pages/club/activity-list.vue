@@ -118,33 +118,6 @@
         <text class="hint-text">当前有 <text class="hint-count">{{ activities.length }}</text> 个活动正在进行中</text>
       </view>
 
-      <!-- 🎯 筛选结果信息栏 -->
-      <view class="result-info" v-if="(!loading || activities.length > 0) && filters.status !== 1">
-        <text class="result-count">
-          {{ hasActiveFilters || searchKeyword ? `找到 ${activities.length} 条活动` : `共 ${activities.length} 条活动` }}
-        </text>
-        <text v-if="hasActiveFilters" class="filtered-hint">（已筛选）</text>
-      </view>
-
-      <!-- 筛选标签栏 -->
-      <view class="filter-tags" v-if="hasActiveFilters">
-        <view class="tag" v-if="filters.status !== null">
-          <text class="tag-text">{{ getStatusLabel(filters.status) }}</text>
-          <text class="tag-close" @click="clearFilter('status')">×</text>
-        </view>
-        <view class="tag" v-if="filters.clubId">
-          <text class="tag-text">{{ filters.clubName }}</text>
-          <text class="tag-close" @click="clearFilter('clubId')">×</text>
-        </view>
-        <view class="tag" v-if="filters.sortBy !== 'time'">
-          <text class="tag-text">{{ getSortLabel(filters.sortBy) }}</text>
-          <text class="tag-close" @click="clearFilter('sortBy')">×</text>
-        </view>
-        <view class="clear-all-btn" @click="clearAllFilters">
-          <text class="clear-text">清空</text>
-        </view>
-      </view>
-
       <!-- 活动列表 -->
       <view class="activity-list">
       <!-- 🎯 骨架屏 - 首次加载时显示（符合文档规范）-->
@@ -972,42 +945,6 @@ const resetFilters = () => {
     timeRange: 'all',
     joinStatus: 'all'
   }
-}
-
-/**
- * 清除单个筛选条件
- */
-const clearFilter = (key: string) => {
-  if (key === 'status') {
-    filters.value.status = null
-  } else if (key === 'clubId') {
-    filters.value.clubId = null
-    filters.value.clubName = ''
-  } else if (key === 'sortBy') {
-    filters.value.sortBy = 'time'
-  } else if (key === 'timeRange') {
-    filters.value.timeRange = 'all'
-  } else if (key === 'joinStatus') {
-    filters.value.joinStatus = 'all'
-  }
-  saveFilterConditions() // 🎯 保存筛选条件
-  loadActivityList(true)
-}
-
-/**
- * 清空所有筛选
- */
-const clearAllFilters = () => {
-  filters.value = {
-    status: null,
-    clubId: null,
-    clubName: '',
-    sortBy: 'time',
-    timeRange: 'all',
-    joinStatus: 'all'
-  }
-  saveFilterConditions() // 🎯 保存筛选条件
-  loadActivityList(true)
 }
 
 /**
@@ -2687,75 +2624,6 @@ defineExpose({
   font-size: 32rpx;
   font-weight: 700;
   color: $accent;
-}
-
-/* 🎯 筛选结果信息栏 */
-.result-info {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  margin: -32rpx -32rpx 16rpx -32rpx; // 负margin让信息条延伸到容器边缘
-  padding: 12rpx 32rpx;
-  background: $accent-50;
-  border-bottom: 1rpx solid $accent-100;
-}
-
-.result-count {
-  font-size: 26rpx;
-  font-weight: 500;
-  color: $accent;
-}
-
-.filtered-hint {
-  font-size: 24rpx;
-  color: $accent-light;
-}
-
-/* 筛选标签栏 */
-.filter-tags {
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin: 0 -32rpx 16rpx -32rpx; // 负margin让标签栏延伸到容器边缘
-  padding: 16rpx 32rpx;
-  background: white;
-  border-bottom: 1rpx solid $border-color;
-  overflow-x: auto;
-  white-space: nowrap;
-}
-
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 8rpx 16rpx;
-  background: $primary-50;
-  border: 1rpx solid $primary-200;
-  border-radius: 24rpx;
-}
-
-.tag-text {
-  font-size: 24rpx;
-  color: $primary;
-}
-
-.tag-close {
-  font-size: 32rpx;
-  color: $primary;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.clear-all-btn {
-  padding: 8rpx 16rpx;
-  background: $gray-100;
-  border-radius: 24rpx;
-  cursor: pointer;
-}
-
-.clear-text {
-  font-size: 24rpx;
-  color: $gray-500;
 }
 
 /* 筛选弹窗 */

@@ -384,6 +384,11 @@ defineExpose({
 
 .featured-section-v2 {
   width: 100%;
+
+  /* 小程序端：模块底部间距 */
+  /* #ifdef MP-WEIXIN */
+  margin-bottom: 48rpx;
+  /* #endif */
 }
 
 .section-header {
@@ -392,6 +397,11 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
+
+  /* 小程序端：左右间距 */
+  /* #ifdef MP-WEIXIN */
+  padding: 0 32rpx;
+  /* #endif */
 }
 
 .header-left {
@@ -416,10 +426,19 @@ defineExpose({
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: $spacing-6;
 
-  /* 移动端单列 */
+  /* H5 移动端单列 */
+  /* #ifdef H5 */
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
   }
+  /* #endif */
+
+  /* 小程序端：左右间距 + 卡片间距 */
+  /* #ifdef MP-WEIXIN */
+  padding: 0 32rpx;
+  gap: 24rpx;
+  grid-template-columns: 1fr;
+  /* #endif */
 }
 
 .loading-container,

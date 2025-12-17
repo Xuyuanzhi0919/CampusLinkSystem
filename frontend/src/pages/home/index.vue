@@ -510,9 +510,18 @@ onUnmounted(() => {
     padding-right: 32px;
   }
 
+  /* #ifdef H5 */
   @include mobile {
     padding: 16px 12px 0;
   }
+  /* #endif */
+
+  /* #ifdef MP-WEIXIN */
+  // 小程序端：无左右 padding，让子组件自己控制间距
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+  /* #endif */
 }
 
 .content-wrapper {

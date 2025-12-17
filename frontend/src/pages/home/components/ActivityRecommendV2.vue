@@ -194,6 +194,11 @@ defineExpose({
 
 .activity-recommend-v2 {
   width: 100%;
+
+  /* 小程序端：模块底部间距 */
+  /* #ifdef MP-WEIXIN */
+  margin-bottom: 48rpx;
+  /* #endif */
 }
 
 .section-header {
@@ -202,6 +207,11 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
+
+  /* 小程序端：左右间距 */
+  /* #ifdef MP-WEIXIN */
+  padding: 0 32rpx;
+  /* #endif */
 }
 
 .section-title {
@@ -251,7 +261,8 @@ defineExpose({
 .activities-list {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 24rpx;
+  padding: 0 32rpx;
 }
 
 .simple-activity-item {

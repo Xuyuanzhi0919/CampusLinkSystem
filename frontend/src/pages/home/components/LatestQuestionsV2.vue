@@ -204,6 +204,11 @@ defineExpose({
 
 .latest-questions-v2 {
   width: 100%;
+
+  /* 小程序端：模块底部间距 */
+  /* #ifdef MP-WEIXIN */
+  margin-bottom: 48rpx;
+  /* #endif */
 }
 
 .section-header {
@@ -212,6 +217,11 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
+
+  /* 小程序端：左右间距 */
+  /* #ifdef MP-WEIXIN */
+  padding: 0 32rpx;
+  /* #endif */
 }
 
 .section-title {
@@ -249,6 +259,12 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: $spacing-4;  // 紧凑的卡片间距
+
+  /* 小程序端：左右间距 */
+  /* #ifdef MP-WEIXIN */
+  padding: 0 32rpx;
+  gap: 24rpx;
+  /* #endif */
 }
 
 // 小程序简化样式

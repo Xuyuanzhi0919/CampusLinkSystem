@@ -88,11 +88,24 @@ const handleProfile = () => {
 
 <style scoped lang="scss">
 .mp-user-card {
-  margin: 24rpx 32rpx;
+  margin: 24rpx 32rpx 32rpx 32rpx;
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-  border-radius: 16rpx;
+  border-radius: 20rpx;
   overflow: hidden;
-  box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.15);
+  box-shadow: 0 8rpx 32rpx rgba(37, 99, 235, 0.25);
+  position: relative;
+
+  // 添加光泽效果
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 120rpx;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, transparent 100%);
+    pointer-events: none;
+  }
 }
 
 // =============================================
@@ -101,9 +114,11 @@ const handleProfile = () => {
 .login-prompt {
   display: flex;
   align-items: center;
-  padding: 32rpx 28rpx;
+  padding: 40rpx 32rpx;
   cursor: pointer;
   transition: transform 0.2s;
+  position: relative;
+  z-index: 1;
 
   &:active {
     transform: scale(0.98);
@@ -116,9 +131,11 @@ const handleProfile = () => {
 .user-profile {
   display: flex;
   align-items: center;
-  padding: 32rpx 28rpx;
+  padding: 40rpx 32rpx;
   cursor: pointer;
   transition: transform 0.2s;
+  position: relative;
+  z-index: 1;
 
   &:active {
     transform: scale(0.98);
@@ -129,13 +146,14 @@ const handleProfile = () => {
 // 用户头像
 // =============================================
 .user-avatar {
-  width: 96rpx;
-  height: 96rpx;
+  width: 104rpx;
+  height: 104rpx;
   border-radius: 50%;
   overflow: hidden;
-  border: 4rpx solid rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.1);
+  border: 4rpx solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.15);
   flex-shrink: 0;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.15);
 }
 
 .avatar-image {
@@ -154,8 +172,9 @@ const handleProfile = () => {
 }
 
 .avatar-icon {
-  font-size: 48rpx;
+  font-size: 56rpx;
   line-height: 1;
+  filter: drop-shadow(0 2rpx 4rpx rgba(0, 0, 0, 0.1));
 }
 
 // =============================================
@@ -171,16 +190,18 @@ const handleProfile = () => {
 .login-prompt .user-info {
   .username {
     display: block;
-    font-size: 32rpx;
-    font-weight: 600;
+    font-size: 36rpx;
+    font-weight: 700;
     color: #FFFFFF;
-    margin-bottom: 8rpx;
+    margin-bottom: 12rpx;
+    text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.15);
   }
 
   .login-text {
     display: block;
-    font-size: 24rpx;
-    color: rgba(255, 255, 255, 0.85);
+    font-size: 26rpx;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 500;
   }
 }
 

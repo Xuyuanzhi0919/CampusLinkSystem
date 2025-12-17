@@ -56,37 +56,58 @@
       </view>
     </view>
 
-    <!-- ========== Sticky 筛选区（状态+类型） ========== -->
+    <!-- ========== Sticky 导航区（状态+类型+筛选） ========== -->
     <view class="sticky-nav">
       <view class="sticky-nav-container">
-        <!-- 🎯 主筛选：活动状态 -->
-        <view class="primary-filter-tabs">
+        <!-- 左侧：状态Tabs -->
+        <view class="category-tabs">
           <view
             v-for="(tab, index) in statusFilterTabs"
             :key="index"
-            class="primary-tab-item"
+            class="category-tab"
             :class="{ active: filters.status === tab.value }"
             @click="handleQuickFilter(tab.value)"
           >
-            <text class="primary-tab-icon">{{ tab.icon }}</text>
-            <text class="primary-tab-text">{{ tab.label }}</text>
-            <view v-if="filters.status === tab.value" class="primary-tab-indicator"></view>
+            <text class="tab-icon">{{ tab.icon }}</text>
+            <text class="tab-label">{{ tab.label }}</text>
           </view>
         </view>
 
-        <!-- 🎯 辅助筛选：活动来源 -->
-        <view class="secondary-filter-tabs">
-          <view
-            v-for="(tab, index) in activityTypeTabs"
-            :key="index"
-            class="secondary-tab-item"
-            :class="{ active: filters.activityType === tab.value }"
-            @click="handleTypeFilter(tab.value)"
-          >
-            <text class="secondary-tab-text">{{ tab.label }}</text>
+        <!-- 右侧：活动类型+筛选 -->
+        <view class="sort-controls">
+          <!-- 活动类型下拉 -->
+          <view class="sort-dropdown-wrapper">
+            <view class="sort-dropdown" @click="toggleTypeMenu">
+              <Icon name="tag" :size="14" class="sort-icon" />
+              <text class="sort-label">{{ currentTypeLabel }}</text>
+              <Icon name="chevron-down" :size="14" class="dropdown-icon" />
+            </view>
+
+            <!-- 类型菜单 -->
+            <view v-if="showTypeMenu" class="sort-menu-content" @click.stop>
+              <view
+                v-for="(item, index) in activityTypeTabs"
+                :key="index"
+                class="sort-menu-item"
+                :class="{ active: filters.activityType === item.value }"
+                @click="handleTypeFilter(item.value)"
+              >
+                <text class="sort-item-label">{{ item.label }}</text>
+                <Icon v-if="filters.activityType === item.value" name="check" :size="16" class="check-icon" />
+              </view>
+            </view>
+          </view>
+
+          <!-- 筛选按钮 -->
+          <view class="filter-btn" @click="showFilterPopup = true">
+            <Icon name="sliders" :size="14" class="filter-icon" />
+            <text class="filter-label">筛选</text>
           </view>
         </view>
       </view>
+
+      <!-- 遮罩层（点击关闭菜单） -->
+      <view v-if="showTypeMenu" class="sort-menu-mask" @click="showTypeMenu = false"></view>
     </view>
 
     <!-- ========== 主内容区（居中容器） ========== -->
@@ -410,6 +431,9 @@ const skeletonCount = ref(3)
 // 筛选弹窗
 const showFilterPopup = ref(false)
 
+// 🎯 类型下拉菜单
+const showTypeMenu = ref(false)
+
 // 筛选条件
 const filters = ref({
   status: 1 as number | null, // 🎯 活动状态（主筛选）：null=全部, 0=未开始, 1=进行中（默认）, 2=已结束
@@ -523,6 +547,17 @@ const getStatusLabel = (status: number | null) => {
 // 获取排序标签
 const getSortLabel = (sortBy: string) => {
   return sortOptions.find(opt => opt.value === sortBy)?.label || ''
+}
+
+// 🎯 当前类型标签（用于下拉显示）
+const currentTypeLabel = computed(() => {
+  const item = activityTypeTabs.find(tab => tab.value === filters.value.activityType)
+  return item?.label || '全部'
+})
+
+// 🎯 切换类型菜单
+const toggleTypeMenu = () => {
+  showTypeMenu.value = !showTypeMenu.value
 }
 
 /**
@@ -977,6 +1012,7 @@ const clearAllFilters = () => {
  */
 const handleTypeFilter = (type: ActivityType | 'all') => {
   filters.value.activityType = type
+  showTypeMenu.value = false // 🎯 关闭下拉菜单
   saveFilterConditions() // 🎯 保存筛选条件
   loadActivityList(true)
 }
@@ -1425,20 +1461,28 @@ defineExpose({
   color: $gray-700;
 }
 
-/* Sticky 筛选区（全宽）*/
+/* Sticky 导航区（全宽）*/
 .sticky-nav {
   position: sticky;
   top: 120rpx; // 紧贴顶部导航
   z-index: 99;
   width: 100%;
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.15);
+  background: $white;
+  border-bottom: 1rpx solid $gray-100; // 浅灰色分割线
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02); // 轻微阴影
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
+  overflow: hidden;
 }
 
 .sticky-nav-container {
   max-width: 1280px; // 居中容器最大宽度(640px * 2)
   margin: 0 auto;
-  padding: 20rpx 32rpx;
+  padding: 0 32rpx;
+  height: 80rpx; // 40px
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40rpx;
 }
 
 /* 主内容区（居中容器）*/
@@ -2292,117 +2336,215 @@ defineExpose({
 }
 
 /* 🎯 主筛选 Tabs（活动状态，第一优先级）*/
-.primary-filter-tabs {
+/* 左侧：分类Tabs */
+.category-tabs {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 48rpx;
-  margin-bottom: 16rpx;
+  gap: 8rpx;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
-.primary-tab-item {
-  position: relative;
+.category-tab {
   display: flex;
-  flex-direction: column;
   align-items: center;
   gap: 12rpx;
-  padding: 16rpx 24rpx;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  flex-shrink: 0;
-  border-radius: 20rpx;
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.primary-tab-item.active {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
-}
-
-.primary-tab-icon {
-  font-size: 36rpx;
-  transition: transform 0.3s ease;
-}
-
-.primary-tab-item.active .primary-tab-icon {
-  transform: scale(1.15);
-}
-
-.primary-tab-text {
+  padding: 12rpx 28rpx;
+  border-radius: 36rpx;
   font-size: 28rpx;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  transition: all 0.3s ease;
+  color: $gray-700;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
   white-space: nowrap;
-}
+  flex-shrink: 0;
 
-.primary-tab-item.active .primary-tab-text {
-  color: white;
-  font-weight: 700;
-  font-size: 30rpx;
-}
-
-.primary-tab-indicator {
-  width: 48rpx;
-  height: 6rpx;
-  background: white;
-  border-radius: 3rpx;
-  box-shadow: 0 2rpx 8rpx rgba(255, 255, 255, 0.4);
-  animation: primaryIndicatorSlide 0.3s ease-out;
-}
-
-@keyframes primaryIndicatorSlide {
-  from {
-    width: 0;
-    opacity: 0;
+  .tab-icon {
+    font-size: 32rpx;
+    transition: transform 0.2s;
   }
-  to {
-    width: 48rpx;
-    opacity: 1;
+
+  .tab-label {
+    color: $gray-700;
+    transition: color 0.2s;
+  }
+
+  // Hover状态
+  &:hover:not(.active) {
+    background: $gray-100;
+    color: $gray-900;
+
+    .tab-label {
+      color: $gray-900;
+    }
+  }
+
+  // 激活状态
+  &.active {
+    background: $primary;
+    color: $white;
+
+    .tab-label {
+      color: $white;
+      font-weight: 700;
+    }
   }
 }
 
-/* 🎯 辅助筛选 Tabs（活动来源，第二优先级，轻量化）*/
-.secondary-filter-tabs {
+/* 右侧：排序+筛选控件 */
+.sort-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 24rpx;
-  overflow-x: auto;
-  white-space: nowrap;
-  -webkit-overflow-scrolling: touch;
-}
-
-.secondary-filter-tabs::-webkit-scrollbar {
-  display: none;
-}
-
-.secondary-tab-item {
-  padding: 10rpx 24rpx;
-  cursor: pointer;
-  transition: all 0.25s ease;
+  gap: 16rpx;
   flex-shrink: 0;
-  border-radius: 16rpx;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1rpx solid transparent;
 }
 
-.secondary-tab-item.active {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.4);
+.sort-dropdown-wrapper {
+  position: relative;
 }
 
-.secondary-tab-text {
-  font-size: 26rpx;
+.sort-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: $gray-50;
+  border-radius: 36rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.sort-icon,
+.dropdown-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+}
+
+.sort-label {
+  font-size: 28rpx;
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.85);
-  transition: all 0.25s ease;
+  color: $gray-700;
   white-space: nowrap;
 }
 
-.secondary-tab-item.active .secondary-tab-text {
-  color: white;
-  font-weight: 700;
+.filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 24rpx;
+  background: $gray-50;
+  border-radius: 36rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.filter-icon {
+  color: $gray-600;
+  flex-shrink: 0;
+}
+
+.filter-label {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $gray-700;
+  white-space: nowrap;
+}
+
+/* 下拉菜单 */
+.sort-menu-content {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  right: 0;
+  min-width: 240rpx;
+  background: $white;
+  border-radius: 16rpx;
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.12), 0 0 0 1rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  z-index: 200;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sort-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24rpx 32rpx;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx solid $gray-100;
+  }
+
+  &:hover {
+    background: $gray-50;
+  }
+
+  &.active {
+    background: $primary-50;
+
+    .sort-item-label {
+      color: $primary;
+      font-weight: 700;
+    }
+  }
+}
+
+.sort-item-label {
+  font-size: 28rpx;
+  color: $gray-700;
+  transition: color 0.2s;
+}
+
+.check-icon {
+  color: $primary;
+  flex-shrink: 0;
+}
+
+/* 遮罩层 */
+.sort-menu-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: transparent;
+  z-index: 199;
 }
 
 /* 🎯 保留原有的快捷筛选样式（用于弹窗）*/

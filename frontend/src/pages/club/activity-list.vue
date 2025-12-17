@@ -1327,7 +1327,6 @@ defineExpose({
 .activity-list-page {
   min-height: 100vh;
   background: $bg-page;
-  padding-top: 120rpx; // 为固定顶部导航留出空间 (60px)
 }
 
 /* ========== 全站统一布局骨架 ========== */
@@ -1464,7 +1463,8 @@ defineExpose({
 /* Sticky 导航区（全宽）*/
 .sticky-nav {
   position: sticky;
-  top: 120rpx; // 紧贴顶部导航
+  top: 120rpx; // 停留在顶部导航下方
+  margin-top: 120rpx; // 为固定顶部导航留出空间
   z-index: 99;
   width: 100%;
   background: $white;
@@ -2304,7 +2304,7 @@ defineExpose({
   box-shadow: 0 8rpx 24rpx rgba(255, 122, 0, 0.3);
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 999;
+  z-index: 50; // 低于顶部导航(100),避免遮挡
   animation: fadeIn 0.3s ease-out;
 }
 

@@ -25,8 +25,33 @@
       <text>暂无问答</text>
     </view>
 
-    <!-- Questions List (使用重构后的问答卡片) -->
+    <!-- Questions List -->
     <view v-else class="questions-list">
+      <!-- 小程序端：使用简化卡片 -->
+      <!-- #ifdef MP-WEIXIN -->
+      <view
+        v-for="question in questionList"
+        :key="question.id"
+        class="simple-question-item"
+        @click="handleQuestionClick(question)"
+      >
+        <view class="question-header">
+          <text class="question-tag">问答</text>
+          <view v-if="question.bounty > 0" class="bounty-badge">
+            <text>💰 {{ question.bounty }}</text>
+          </view>
+        </view>
+        <view class="question-title">{{ question.title }}</view>
+        <view class="question-meta">
+          <text>👀 {{ question.views || 0 }}</text>
+          <text>💬 {{ question.comments || 0 }}回答</text>
+          <text v-if="question.user?.username">by {{ question.user.username }}</text>
+        </view>
+      </view>
+      <!-- #endif -->
+
+      <!-- H5 端：使用企业级卡片 -->
+      <!-- #ifdef H5 -->
       <ClFeedQAItem
         v-for="question in questionList"
         :key="question.id"
@@ -37,13 +62,19 @@
         @like="handleLikeClick"
         @comment="handleCommentClick"
       />
+      <!-- #endif -->
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+
+// H5 端导入企业级组件
+// #ifdef H5
 import { ClFeedQAItem } from '@/components/cl'
+// #endif
+
 import { getQuestionList } from '@/services/question'
 import { requireLogin } from '@/utils/auth'
 
@@ -219,6 +250,74 @@ defineExpose({
   flex-direction: column;
   gap: $spacing-4;  // 紧凑的卡片间距
 }
+
+// 小程序简化样式
+/* #ifdef MP-WEIXIN */
+.simple-question-item {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.question-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.question-tag {
+  padding: 4rpx 16rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #2563EB;
+  background: rgba(37, 99, 235, 0.1);
+  border-radius: 8rpx;
+}
+
+.bounty-badge {
+  padding: 4rpx 12rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #F97316;
+  background: rgba(249, 115, 22, 0.1);
+  border-radius: 8rpx;
+}
+
+.question-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #0F172A;
+  line-height: 1.5;
+  margin-bottom: 12rpx;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.question-meta {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  font-size: 24rpx;
+  color: #94A3B8;
+
+  text {
+    display: flex;
+    align-items: center;
+    gap: 4rpx;
+  }
+}
+/* #endif */
 
 .loading-container,
 .error-container,

@@ -25,8 +25,32 @@
       <text>暂无活动</text>
     </view>
 
-    <!-- Activities List (使用企业级卡片) -->
+    <!-- Activities List -->
     <view v-else class="activities-list">
+      <!-- 小程序端：使用简化卡片 -->
+      <!-- #ifdef MP-WEIXIN -->
+      <view
+        v-for="activity in activityList"
+        :key="activity.id"
+        class="simple-activity-item"
+        @click="handleActivityClick(activity)"
+      >
+        <view class="activity-header">
+          <text class="activity-tag">活动</text>
+          <text v-if="activity.maxParticipants" class="participants">
+            👥 {{ activity.currentParticipants || 0 }}/{{ activity.maxParticipants }}
+          </text>
+        </view>
+        <view class="activity-title">{{ activity.title }}</view>
+        <view class="activity-meta">
+          <text>📅 {{ formatDate(activity.activityTime) }}</text>
+          <text>📍 {{ activity.location || '待定' }}</text>
+        </view>
+      </view>
+      <!-- #endif -->
+
+      <!-- H5 端：使用企业级卡片 -->
+      <!-- #ifdef H5 -->
       <ClEventCard
         v-for="activity in activityList"
         :key="activity.id"
@@ -35,13 +59,19 @@
         @register="handleRegister"
         @meta-click="handleMetaClick"
       />
+      <!-- #endif -->
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+
+// H5 端导入企业级组件
+// #ifdef H5
 import { ClEventCard } from '@/components/cl'
+// #endif
+
 import { getActivityList } from '@/services/activity'
 import { requireLogin } from '@/utils/auth'
 
@@ -139,6 +169,15 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
+// 小程序端辅助方法
+// #ifdef MP-WEIXIN
+const formatDate = (dateString: string) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+// #endif
+
 // 初始化
 onMounted(() => {
   loadData()
@@ -206,6 +245,77 @@ defineExpose({
     grid-template-columns: 1fr;
   }
 }
+
+// 小程序简化样式
+/* #ifdef MP-WEIXIN */
+.activities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.simple-activity-item {
+  background: #FFFFFF;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
+  transition: all 0.2s;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx;
+}
+
+.activity-tag {
+  padding: 4rpx 16rpx;
+  font-size: 22rpx;
+  font-weight: 500;
+  color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+  border-radius: 8rpx;
+}
+
+.participants {
+  font-size: 24rpx;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+.activity-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #0F172A;
+  line-height: 1.5;
+  margin-bottom: 12rpx;
+
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-meta {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  font-size: 24rpx;
+  color: #94A3B8;
+
+  text {
+    display: flex;
+    align-items: center;
+    gap: 4rpx;
+  }
+}
+/* #endif */
 
 .loading-container,
 .error-container,

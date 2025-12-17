@@ -346,9 +346,6 @@ const officialClubs = ref<ClubItem[]>([])  // 官方/校级社团（2-3个）
 const hotClubs = ref<ClubItem[]>([])       // 热门社团 TOP 3
 const sidebarLoaded = ref(false) // 右侧栏是否已加载
 
-// P0优化: 用户已加入的社团数量(模拟数据,实际应从用户信息获取)
-const userJoinedCount = ref(1)
-
 // MVP-1: 分类筛选状态
 const currentCategory = ref<string>('all')
 const showSortMenu = ref(false)

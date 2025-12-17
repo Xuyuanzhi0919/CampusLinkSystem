@@ -7,10 +7,12 @@ import com.campuslink.common.ResultCode;
 import com.campuslink.dto.club.ClubMemberResponse;
 import com.campuslink.dto.club.ClubResponse;
 import com.campuslink.dto.club.CreateClubRequest;
+import com.campuslink.entity.Activity;
 import com.campuslink.entity.Club;
 import com.campuslink.entity.ClubMember;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.ActivityMapper;
 import com.campuslink.mapper.ClubMapper;
 import com.campuslink.mapper.ClubMemberMapper;
 import com.campuslink.mapper.UserMapper;
@@ -36,6 +38,7 @@ public class ClubService {
     private final ClubMapper clubMapper;
     private final ClubMemberMapper clubMemberMapper;
     private final UserMapper userMapper;
+    private final ActivityMapper activityMapper;
 
     /**
      * 创建社团
@@ -263,6 +266,12 @@ public class ClubService {
         if (founder != null) {
             response.setFounderName(founder.getNickname());
         }
+
+        // 查询社团活动总数
+        LambdaQueryWrapper<Activity> activityWrapper = new LambdaQueryWrapper<>();
+        activityWrapper.eq(Activity::getClubId, club.getClubId());
+        Long activityCount = activityMapper.selectCount(activityWrapper);
+        response.setActivityCount(activityCount.intValue());
 
         // 查询当前用户是否为成员及角色
         if (userId != null) {

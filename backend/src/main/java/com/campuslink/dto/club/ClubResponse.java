@@ -50,6 +50,11 @@ public class ClubResponse {
     private Integer memberCount;
 
     /**
+     * 活动数量
+     */
+    private Integer activityCount;
+
+    /**
      * 状态：0-已解散，1-正常
      */
     private Integer status;

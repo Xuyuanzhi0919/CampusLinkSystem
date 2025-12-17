@@ -109,5 +109,8 @@ export const questionSearchHistory = new SearchHistoryManager(CACHE_KEYS.SEARCH_
 // 导出单例（资源模块）
 export const resourceSearchHistory = new SearchHistoryManager(CACHE_KEYS.RESOURCE_SEARCH_HISTORY)
 
+// 导出单例（社团模块）
+export const clubSearchHistory = new SearchHistoryManager(CACHE_KEYS.CLUB_SEARCH_HISTORY)
+
 // 导出类（可用于其他模块）
 export { SearchHistoryManager }

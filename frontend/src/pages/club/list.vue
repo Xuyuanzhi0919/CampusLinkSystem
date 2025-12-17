@@ -19,9 +19,31 @@
               placeholder="搜索社团名称..."
               confirm-type="search"
               @confirm="handleSearch"
+              @focus="handleSearchFocus"
+              @blur="handleSearchBlur"
             />
             <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
               <Icon name="x" :size="14" />
+            </view>
+          </view>
+
+          <!-- 搜索历史面板 -->
+          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
+            <view class="history-header">
+              <text class="history-title">搜索历史</text>
+              <text class="history-clear" @click="handleClearHistory">清空</text>
+            </view>
+            <view class="history-list">
+              <view
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="history-item"
+                @click="handleHistoryClick(item)"
+              >
+                <Icon name="clock" :size="14" class="history-icon" />
+                <text class="history-text">{{ item }}</text>
+                <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
+              </view>
             </view>
           </view>
         </view>
@@ -315,6 +337,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onPageScroll, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
 import { getClubList, joinClub } from '@/services/club'
 import type { ClubItem } from '@/types/club'
+import { clubSearchHistory } from '@/utils/searchHistory'
 import Icon from '@/components/icons/index.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 
@@ -334,6 +357,10 @@ const loadError = ref(false) // 加载失败状态
 const clubs = ref<ClubItem[]>([])
 const allClubs = ref<ClubItem[]>([]) // 存储全量数据,用于右侧栏统计
 const searchKeyword = ref('')
+
+// 搜索历史
+const showSearchHistory = ref(false)
+const searchHistory = ref<string[]>([])
 
 // 分页状态
 const currentPage = ref(1)
@@ -581,8 +608,36 @@ const loadMore = () => {
   loadClubList(false)
 }
 
+// 加载搜索历史
+const loadSearchHistory = () => {
+  searchHistory.value = clubSearchHistory.getHistory()
+}
+
+// 搜索框聚焦
+const handleSearchFocus = () => {
+  loadSearchHistory()
+  showSearchHistory.value = true
+}
+
+// 搜索框失焦
+const handleSearchBlur = () => {
+  // 延迟隐藏,以便点击历史项时能触发
+  setTimeout(() => {
+    showSearchHistory.value = false
+  }, 200)
+}
+
 // 搜索
 const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    // 保存到搜索历史
+    clubSearchHistory.add(searchKeyword.value.trim())
+    loadSearchHistory()
+  }
+
+  // 隐藏搜索历史面板
+  showSearchHistory.value = false
+
   // 搜索时重新加载数据
   loadClubList(true)
 }
@@ -592,6 +647,33 @@ const clearSearch = () => {
   searchKeyword.value = ''
   // 清空搜索后重新加载
   loadClubList(true)
+}
+
+// 点击搜索历史项
+const handleHistoryClick = (keyword: string) => {
+  searchKeyword.value = keyword
+  showSearchHistory.value = false
+  loadClubList(true)
+}
+
+// 删除单条搜索历史
+const handleRemoveHistory = (keyword: string) => {
+  clubSearchHistory.remove(keyword)
+  loadSearchHistory()
+}
+
+// 清空搜索历史
+const handleClearHistory = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定清空所有搜索历史吗?',
+    success: (res) => {
+      if (res.confirm) {
+        clubSearchHistory.clear()
+        loadSearchHistory()
+      }
+    }
+  })
 }
 
 // 跳转到社团详情
@@ -762,6 +844,9 @@ onMounted(() => {
   // 获取系统信息(状态栏高度)
   const systemInfo = uni.getSystemInfoSync()
   statusBarHeight.value = systemInfo.statusBarHeight || 0
+
+  // 加载搜索历史
+  loadSearchHistory()
 
   // 首次加载
   loadClubList(true)
@@ -966,6 +1051,171 @@ onPageScroll((e: any) => {
 
   &:hover {
     color: $gray-600;
+  }
+}
+
+// 搜索历史下拉面板
+.search-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 16rpx; // 8px
+  background: $white;
+  border-radius: 24rpx; // 12px
+  box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.12), 0 0 0 2rpx rgba(0, 0, 0, 0.05);
+  max-height: 720rpx; // 360px
+  overflow: hidden;
+  z-index: 101;
+  animation: slideDown 0.2s ease-out;
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-16rpx);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 28rpx 32rpx; // 14px 16px
+  border-bottom: 2rpx solid $gray-100;
+  background: $gray-50;
+}
+
+.history-title {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  font-size: 28rpx; // 14px
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 6rpx;
+    height: 28rpx;
+    background: $primary;
+    border-radius: 4rpx;
+  }
+}
+
+.history-clear {
+  font-size: 26rpx; // 13px
+  color: $primary;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  padding: 8rpx 16rpx;
+  border-radius: 12rpx;
+  transition: all $transition-base;
+
+  &:hover {
+    background: rgba($primary, 0.1);
+    color: #1d4ed8; // $primary 加深
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.history-list {
+  padding: 16rpx;
+  max-height: 600rpx; // 300px
+  overflow-y: auto;
+
+  // 自定义滚动条样式
+  &::-webkit-scrollbar {
+    width: 12rpx;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-300;
+    border-radius: 6rpx;
+
+    &:hover {
+      background: $gray-400;
+    }
+  }
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 20rpx; // 10px
+  padding: 22rpx 24rpx; // 11px 12px
+  border-radius: 16rpx; // 8px
+  cursor: pointer;
+  transition: all $transition-base;
+  position: relative;
+
+  &:hover {
+    background: $gray-50;
+    transform: translateX(4rpx);
+
+    .history-remove {
+      opacity: 1;
+    }
+  }
+
+  &:active {
+    background: $gray-100;
+    transform: translateX(0);
+  }
+}
+
+.history-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+  width: 40rpx; // 20px
+  height: 40rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 50%;
+  padding: 6rpx;
+}
+
+.history-text {
+  flex: 1;
+  font-size: 28rpx; // 14px
+  color: $gray-800;
+  font-weight: $font-weight-regular;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-remove {
+  color: $gray-400;
+  cursor: pointer;
+  padding: 8rpx;
+  border-radius: 12rpx;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all $transition-base;
+
+  &:hover {
+    background: rgba($error, 0.1);
+    color: $error;
+  }
+
+  &:active {
+    transform: scale(0.9);
   }
 }
 

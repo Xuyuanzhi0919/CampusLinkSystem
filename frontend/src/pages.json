@@ -48,6 +48,15 @@
 			}
 		},
 		{
+			"path": "pages/auth/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationBarBackgroundColor": "#EFF6FF",
+				"navigationBarTextStyle": "black",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/auth/mp-login",
 			"style": {
 				"navigationBarTitleText": "登录",

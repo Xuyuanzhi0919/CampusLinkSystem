@@ -644,6 +644,26 @@ public class UserService {
     }
 
     /**
+     * 记录积分变化日志（私有方法）
+     */
+    private void addPointsLog(Long userId, Integer points, String relatedType, String reason) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return;
+        }
+
+        PointsLog pointsLog = new PointsLog();
+        pointsLog.setUserId(userId);
+        pointsLog.setPointsChange(points);
+        pointsLog.setPointsAfter(user.getPoints());
+        pointsLog.setReason(reason);
+        pointsLog.setRelatedType(relatedType);
+        pointsLog.setRelatedId(userId);
+        pointsLog.setCreatedAt(LocalDateTime.now());
+        pointsLogMapper.insert(pointsLog);
+    }
+
+    /**
      * 生成随机字符串
      */
     private String generateRandomString(int length) {

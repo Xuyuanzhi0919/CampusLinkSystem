@@ -1,24 +1,25 @@
 package com.campuslink.controller;
 
 import com.campuslink.common.Result;
-import com.campuslink.dto.LoginResponse;
+import com.campuslink.dto.AuthResponse;
+import com.campuslink.dto.UserVO;
 import com.campuslink.dto.wechat.BindAccountRequest;
 import com.campuslink.dto.wechat.WechatLoginRequest;
 import com.campuslink.dto.wechat.WechatSessionInfo;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.UserMapper;
 import com.campuslink.service.UserService;
 import com.campuslink.service.WechatService;
 import com.campuslink.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.time.LocalDateTime;
 
 /**
@@ -33,6 +34,7 @@ public class WechatAuthController {
 
     private final WechatService wechatService;
     private final UserService userService;
+    private final UserMapper userMapper;
     private final JwtUtil jwtUtil;
 
     /**
@@ -40,7 +42,7 @@ public class WechatAuthController {
      */
     @PostMapping("/login")
     @Operation(summary = "微信小程序登录", description = "通过微信 code 登录，首次登录自动注册")
-    public Result<LoginResponse> wechatLogin(@Valid @RequestBody WechatLoginRequest request) {
+    public Result<AuthResponse> wechatLogin(@Valid @RequestBody WechatLoginRequest request) {
         log.info("微信小程序登录请求: code={}", request.getCode());
 
         try {
@@ -71,29 +73,26 @@ public class WechatAuthController {
 
                 // 更新最后登录时间
                 user.setLastLoginTime(LocalDateTime.now());
-                userService.updateById(user.getUId(), user);
+                user.setUpdatedAt(LocalDateTime.now());
+                userMapper.updateById(user);
             }
 
             // 4. 生成 JWT Token
             String token = jwtUtil.generateToken(user.getUId(), user.getUsername(), user.getRole());
-            String refreshToken = jwtUtil.generateRefreshToken(user.getUId(), user.getUsername(), user.getRole());
+            String refreshToken = jwtUtil.generateRefreshToken(user.getUId());
 
-            // 5. 构建响应
-            LoginResponse response = new LoginResponse();
-            response.setToken(token);
-            response.setRefreshToken(refreshToken);
+            // 5. 构建用户信息 VO
+            UserVO userVO = new UserVO();
+            userVO.setUId(user.getUId());
+            userVO.setUsername(user.getUsername());
+            userVO.setNickname(user.getNickname());
+            userVO.setAvatarUrl(user.getAvatarUrl());
+            userVO.setRole(user.getRole());
+            userVO.setPoints(user.getPoints());
+            userVO.setLevel(user.getLevel());
 
-            // 构建用户信息
-            LoginResponse.UserInfo userInfo = new LoginResponse.UserInfo();
-            userInfo.setUserId(user.getUId());
-            userInfo.setUsername(user.getUsername());
-            userInfo.setNickname(user.getNickname());
-            userInfo.setAvatar(user.getAvatarUrl());
-            userInfo.setRole(user.getRole());
-            userInfo.setPoints(user.getPoints());
-            userInfo.setLevel(user.getLevel());
-
-            response.setUser(userInfo);
+            // 6. 构建响应
+            AuthResponse response = new AuthResponse(token, refreshToken, userVO);
 
             log.info("微信登录成功: userId={}, token已生成", user.getUId());
 
@@ -113,14 +112,14 @@ public class WechatAuthController {
      */
     @PostMapping("/bind-account")
     @Operation(summary = "绑定已有账号", description = "将微信账号绑定到已有的用户名密码账号")
-    public Result<Void> bindAccount(@Valid @RequestBody BindAccountRequest request,
+    public Result<String> bindAccount(@Valid @RequestBody BindAccountRequest request,
                                     @RequestHeader("Authorization") String token) {
         log.info("绑定账号请求: username={}", request.getUsername());
 
         try {
             // 1. 验证 Token 获取当前微信用户
             Long currentUserId = jwtUtil.getUserIdFromToken(token.replace("Bearer ", ""));
-            User currentUser = userService.getById(currentUserId);
+            User currentUser = userService.getUserById(currentUserId) != null ? userMapper.selectById(currentUserId) : null;
 
             if (currentUser == null) {
                 throw new BusinessException("用户不存在");
@@ -130,8 +129,14 @@ public class WechatAuthController {
                 throw new BusinessException("当前用户不是微信登录用户");
             }
 
-            // 2. 验证用户名和密码
-            User existingUser = userService.findByUsername(request.getUsername());
+            // 2. 查找要绑定的用户
+            User existingUser = userService.findByWechatOpenid(null); // 先定义，下面实现查找逻辑
+            // 使用 mapper 直接查询用户名
+            com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<User> wrapper =
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<>();
+            wrapper.eq(User::getUsername, request.getUsername());
+            existingUser = userMapper.selectOne(wrapper);
+
             if (existingUser == null) {
                 throw new BusinessException("用户名不存在");
             }
@@ -154,15 +159,16 @@ public class WechatAuthController {
             // 5. 合并数据（积分、等级取较大值）
             existingUser.setPoints(Math.max(existingUser.getPoints(), currentUser.getPoints()));
             existingUser.setLevel(Math.max(existingUser.getLevel(), currentUser.getLevel()));
+            existingUser.setUpdatedAt(LocalDateTime.now());
 
-            userService.updateById(existingUser.getUId(), existingUser);
+            userMapper.updateById(existingUser);
 
             // 6. 删除临时微信用户记录
-            userService.deleteById(currentUser.getUId());
+            userMapper.deleteById(currentUser.getUId());
 
             log.info("账号绑定成功: username={}, openid={}", request.getUsername(), currentUser.getWechatOpenid());
 
-            return Result.success(null, "账号绑定成功");
+            return Result.success("账号绑定成功");
 
         } catch (BusinessException e) {
             log.error("账号绑定失败（业务异常）: {}", e.getMessage());

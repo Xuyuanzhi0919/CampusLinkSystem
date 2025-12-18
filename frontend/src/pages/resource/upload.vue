@@ -2,14 +2,16 @@
 import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import config from '@/config'
-import { getUploadSignature, createResource } from '@/services/resource'
+import { createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
+import { chooseFile as chooseFileUtil, uploadFile as uploadFileUtil, formatFileSize, getFileExtension } from '@/utils/file'
+import type { FileInfo } from '@/utils/file'
 
 /**
  * 🎯 文件状态
  */
-const file = ref<File | null>(null)
+const file = ref<FileInfo | null>(null)
 const fileUrl = ref('')
 const fileSize = ref(0)
 const fileType = ref('')
@@ -74,27 +76,9 @@ const canSubmit = computed(() => {
 })
 
 /**
- * 🎯 格式化文件大小
- */
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
-
-/**
- * 🎯 获取文件扩展名
- */
-const getFileExtension = (filename: string) => {
-  return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2).toLowerCase()
-}
-
-/**
  * 🎯 验证文件
  */
-const validateFile = (file: File) => {
+const validateFile = (file: FileInfo) => {
   const extension = getFileExtension(file.name)
 
   // 验证格式
@@ -116,47 +100,31 @@ const validateFile = (file: File) => {
 /**
  * 🎯 选择文件
  */
-const chooseFile = () => {
-  // #ifdef H5
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = ALLOWED_EXTENSIONS.map(ext => `.${ext}`).join(',')
+const chooseFile = async () => {
+  try {
+    const files = await chooseFileUtil({
+      extensions: ALLOWED_EXTENSIONS,
+      maxSize: MAX_FILE_SIZE,
+      multiple: false
+    })
 
-  input.onchange = (e: any) => {
-    const selectedFile = e.target.files[0]
-    if (selectedFile) {
-      handleFileSelected(selectedFile)
+    if (files.length > 0) {
+      await handleFileSelected(files[0])
     }
+  } catch (error: any) {
+    console.error('[Upload] 选择文件失败:', error)
+    uni.showToast({
+      title: error.message || '选择文件失败',
+      icon: 'none',
+      duration: 2000
+    })
   }
-
-  input.click()
-  // #endif
-
-  // #ifndef H5
-  uni.chooseMessageFile({
-    count: 1,
-    type: 'file',
-    extension: ALLOWED_EXTENSIONS,
-    success: (res) => {
-      const tempFile = res.tempFiles[0]
-      // 创建类似File对象的结构
-      handleFileSelected({
-        name: tempFile.name,
-        size: tempFile.size,
-        path: tempFile.path
-      } as any)
-    },
-    fail: (err) => {
-      console.error('[Upload] 选择文件失败:', err)
-    }
-  })
-  // #endif
 }
 
 /**
  * 🎯 处理文件选择
  */
-const handleFileSelected = async (selectedFile: File) => {
+const handleFileSelected = async (selectedFile: FileInfo) => {
   try {
     // 验证文件
     validateFile(selectedFile)
@@ -192,47 +160,20 @@ const handleFileSelected = async (selectedFile: File) => {
 /**
  * 🎯 上传文件到OSS
  */
-const uploadFile = async (fileToUpload: File) => {
+const uploadFile = async (fileToUpload: FileInfo) => {
   try {
     uploading.value = true
     uploadProgress.value = 0
 
-    // 1. 获取OSS签名
-    const signature = await getUploadSignature(fileName.value)
-
-    // 2. 构造表单数据 (注意: file 必须是最后一个字段)
-    const formData = new FormData()
-    formData.append('key', signature.key)
-    formData.append('policy', signature.policy)
-    formData.append('OSSAccessKeyId', signature.accessId)
-    formData.append('signature', signature.signature)
-    formData.append('success_action_status', '200')  // 添加成功状态码
-    formData.append('file', fileToUpload)  // file 必须在最后
-
-    // 3. 上传到OSS
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          uploadProgress.value = Math.round((e.loaded / e.total) * 100)
-        }
+    // 使用统一的文件上传 API
+    const url = await uploadFileUtil({
+      file: fileToUpload,
+      onProgress: (progress) => {
+        uploadProgress.value = progress
       }
-
-      xhr.onload = () => {
-        if (xhr.status === 200 || xhr.status === 204) {
-          fileUrl.value = `${signature.host}/${signature.key}`
-          resolve(fileUrl.value)
-        } else {
-          reject(new Error('上传失败'))
-        }
-      }
-
-      xhr.onerror = () => reject(new Error('网络错误'))
-
-      xhr.open('POST', signature.host)
-      xhr.send(formData)
     })
+
+    fileUrl.value = url
 
     uni.showToast({
       title: '上传成功',

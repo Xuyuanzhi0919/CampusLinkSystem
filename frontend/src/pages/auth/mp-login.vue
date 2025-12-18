@@ -96,10 +96,10 @@ const handleWechatLogin = async () => {
       // avatarUrl: userInfo.avatarUrl
     })
 
-    console.log('[微信登录] 登录成功，用户ID:', response.user.userId)
-
     // 3. 保存登录信息到 Store
     userStore.login(response)
+
+    console.log('[微信登录] 登录成功，用户ID:', response.user.uId || response.user.userId)
 
     // 4. 提示登录成功
     uni.showToast({

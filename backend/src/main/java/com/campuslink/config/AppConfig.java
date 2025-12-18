@@ -1,6 +1,5 @@
 package com.campuslink.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -20,10 +19,8 @@ public class AppConfig {
     }
 
     /**
-     * ObjectMapper Bean（用于 JSON 序列化/反序列化）
+     * 注意：不要在这里创建 ObjectMapper Bean
+     * Spring Boot 会自动配置一个支持 Java 8 日期时间的 ObjectMapper
+     * 如果需要自定义配置，应该使用 Jackson2ObjectMapperBuilderCustomizer
      */
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 }

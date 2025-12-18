@@ -122,3 +122,89 @@ export const sendCode = (data: SendCodeRequest) => {
     })
   }
 }
+
+// ========================================
+// 微信小程序登录相关接口
+// ========================================
+
+/**
+ * 微信小程序登录请求参数
+ */
+export interface WechatLoginRequest {
+  code: string          // 微信登录临时凭证（通过 wx.login() 获取）
+  nickname?: string     // 用户昵称（可选）
+  avatarUrl?: string    // 用户头像URL（可选）
+}
+
+/**
+ * 绑定已有账号请求参数
+ */
+export interface BindAccountRequest {
+  username: string  // 要绑定的用户名
+  password: string  // 要绑定账号的密码
+}
+
+/**
+ * 微信小程序一键登录
+ *
+ * 功能说明：
+ * 1. 通过微信 code 换取 openid 和 session_key
+ * 2. 如果用户不存在，自动注册新用户（赠送100积分）
+ * 3. 返回 JWT Token 和用户信息
+ *
+ * 使用示例：
+ * ```typescript
+ * // 1. 获取微信登录凭证
+ * const loginRes = await uni.login({ provider: 'weixin' })
+ *
+ * // 2. 调用后端登录接口
+ * const response = await wechatLogin({
+ *   code: loginRes.code,
+ *   nickname: '张三',  // 可选
+ *   avatarUrl: 'https://...'  // 可选
+ * })
+ *
+ * // 3. 保存 Token 和用户信息
+ * userStore.login(response)
+ * ```
+ *
+ * @param data 微信登录请求参数
+ * @returns 认证响应（包含 token、refreshToken、user）
+ */
+export const wechatLogin = (data: WechatLoginRequest) => {
+  return request.post<AuthResponse>('/auth/wechat/login', data)
+}
+
+/**
+ * 绑定微信账号到已有用户
+ *
+ * 功能说明：
+ * 1. 验证已有账号的用户名和密码
+ * 2. 将当前微信 openid 绑定到该账号
+ * 3. 合并数据（积分、等级取较大值）
+ * 4. 删除临时微信用户记录
+ *
+ * 使用场景：
+ * - 用户已有账号，想绑定微信方便登录
+ * - 用户误用微信注册了新账号，想合并到原账号
+ *
+ * 使用示例：
+ * ```typescript
+ * // 前置条件：用户已通过微信登录（即 userStore.token 存在）
+ * await bindWechatAccount({
+ *   username: 'zhangsan',
+ *   password: 'password123'
+ * })
+ *
+ * // 绑定成功后需要重新登录
+ * await userStore.logout()
+ * uni.showToast({ title: '绑定成功，请重新登录', icon: 'success' })
+ * uni.navigateTo({ url: '/pages/auth/mp-login' })
+ * ```
+ *
+ * @param data 绑定账号请求参数
+ * @returns 成功或失败
+ */
+export const bindWechatAccount = (data: BindAccountRequest) => {
+  return request.post<null>('/auth/wechat/bind-account', data)
+}

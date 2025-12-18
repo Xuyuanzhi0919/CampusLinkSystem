@@ -58,51 +58,83 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { wechatLogin } from '@/services/auth'
 
 const userStore = useUserStore()
 const loginLoading = ref(false)
 
-// 微信登录
+/**
+ * 微信一键登录
+ *
+ * 流程说明：
+ * 1. 调用 uni.login() 获取微信临时凭证 code
+ * 2. 将 code 发送到后端，后端调用微信接口换取 openid
+ * 3. 后端根据 openid 查询用户，不存在则自动注册
+ * 4. 返回 JWT Token 和用户信息
+ * 5. 保存登录状态并跳转到"我的"页面
+ */
 const handleWechatLogin = async () => {
   try {
     loginLoading.value = true
 
-    // TODO: 对接后端微信登录 API
-    // 目前先模拟登录成功
-    uni.showModal({
-      title: '提示',
-      content: '微信登录功能开发中，敬请期待！\n\n后续将支持：\n1. 微信授权登录\n2. 自动获取用户信息\n3. 一键完成注册',
-      showCancel: false
-    })
-
-    // 模拟登录流程（后续替换为真实 API）
-    /*
     // 1. 获取微信登录 code
+    console.log('[微信登录] 开始获取微信登录凭证...')
     const loginRes = await uni.login({ provider: 'weixin' }) as any
+
     if (!loginRes.code) {
-      throw new Error('获取微信登录凭证失败')
+      throw new Error('获取微信登录凭证失败，请重试')
     }
 
+    console.log('[微信登录] 成功获取 code:', loginRes.code.substring(0, 10) + '...')
+
     // 2. 调用后端登录接口
+    console.log('[微信登录] 调用后端登录接口...')
     const response = await wechatLogin({
       code: loginRes.code
+      // 可选：传递用户昵称和头像（需要用户授权）
+      // nickname: userInfo.nickName,
+      // avatarUrl: userInfo.avatarUrl
     })
 
-    // 3. 保存登录信息
+    console.log('[微信登录] 登录成功，用户ID:', response.user.userId)
+
+    // 3. 保存登录信息到 Store
     userStore.login(response)
 
-    // 4. 跳转到"我的"页面
-    uni.showToast({ title: '登录成功', icon: 'success' })
+    // 4. 提示登录成功
+    uni.showToast({
+      title: '登录成功',
+      icon: 'success',
+      duration: 1500
+    })
+
+    // 5. 延迟跳转到"我的"页面
     setTimeout(() => {
       uni.switchTab({ url: '/pages/user/index' })
-    }, 1000)
-    */
+    }, 1500)
 
   } catch (error: any) {
-    console.error('微信登录失败:', error)
+    console.error('[微信登录] 登录失败:', error)
+
+    // 根据错误类型显示不同提示
+    let errorMessage = '登录失败，请重试'
+
+    if (error.message) {
+      if (error.message.includes('code')) {
+        errorMessage = '微信登录凭证无效，请重试'
+      } else if (error.message.includes('网络')) {
+        errorMessage = '网络连接失败，请检查网络'
+      } else if (error.message.includes('频率')) {
+        errorMessage = '登录过于频繁，请稍后再试'
+      } else {
+        errorMessage = error.message
+      }
+    }
+
     uni.showToast({
-      title: error.message || '登录失败，请重试',
-      icon: 'none'
+      title: errorMessage,
+      icon: 'none',
+      duration: 2500
     })
   } finally {
     loginLoading.value = false

@@ -573,4 +573,86 @@ public class UserService {
 
         return userVO;
     }
+
+    /**
+     * 根据微信 OpenID 查询用户
+     */
+    public User findByWechatOpenid(String openid) {
+        return userMapper.selectOne(
+            new LambdaQueryWrapper<User>()
+                .eq(User::getWechatOpenid, openid)
+        );
+    }
+
+    /**
+     * 根据微信 UnionID 查询用户
+     */
+    public User findByWechatUnionid(String unionid) {
+        if (unionid == null || unionid.isEmpty()) {
+            return null;
+        }
+        return userMapper.selectOne(
+            new LambdaQueryWrapper<User>()
+                .eq(User::getWechatUnionid, unionid)
+        );
+    }
+
+    /**
+     * 创建微信小程序用户（自动注册）
+     */
+    @Transactional
+    public User createWechatUser(String openid, String unionid, String nickname, String avatarUrl) {
+        User user = new User();
+        user.setWechatOpenid(openid);
+        user.setWechatUnionid(unionid);
+
+        // 设置昵称（如果未提供则使用默认值）
+        if (nickname != null && !nickname.isEmpty()) {
+            user.setNickname(nickname);
+        } else {
+            user.setNickname("微信用户_" + generateRandomString(6));
+        }
+
+        // 设置用户名（使用 wx_ + openid前8位）
+        user.setUsername("wx_" + openid.substring(0, Math.min(8, openid.length())));
+
+        // 设置头像
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            user.setAvatarUrl(avatarUrl);
+        }
+
+        // 设置默认值
+        user.setRole("student");
+        user.setPoints(100);  // 注册赠送 100 积分
+        user.setLevel(1);
+        user.setStatus(1);  // 正常状态
+        user.setIsVerified(0);  // 未实名认证
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setLastLoginTime(LocalDateTime.now());
+
+        // 保存用户
+        userMapper.insert(user);
+
+        // 记录积分日志（注册赠送）
+        addPointsLog(user.getUId(), 100, "register", "注册奖励");
+
+        log.info("微信用户自动注册成功: userId={}, openid={}, username={}",
+                user.getUId(), openid, user.getUsername());
+
+        return user;
+    }
+
+    /**
+     * 生成随机字符串
+     */
+    private String generateRandomString(int length) {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
+    }
 }

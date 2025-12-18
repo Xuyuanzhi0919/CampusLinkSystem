@@ -421,6 +421,7 @@ import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
 import config from '@/config'
+import { downloadFile as downloadFileUtil } from '@/utils/file'
 
 // 页面参数
 const resourceId = ref<number>(0)
@@ -819,27 +820,10 @@ const confirmDownload = async () => {
     uni.hideLoading()
     uni.showToast({ title: '下载成功', icon: 'success' })
 
-    // 触发文件下载
-    uni.downloadFile({
+    // 使用统一的文件下载 API
+    await downloadFileUtil({
       url: res.downloadUrl,
-      success: (downloadRes) => {
-        if (downloadRes.statusCode === 200) {
-          // H5端打开新窗口
-          // #ifdef H5
-          window.open(res.downloadUrl, '_blank')
-          // #endif
-
-          // 小程序端打开文档
-          // #ifdef MP-WEIXIN
-          uni.openDocument({
-            filePath: downloadRes.tempFilePath,
-            success: () => {
-              console.log('打开文档成功')
-            },
-          })
-          // #endif
-        }
-      },
+      filename: resource.value.title || '资源文件'
     })
   } catch (err: any) {
     uni.hideLoading()

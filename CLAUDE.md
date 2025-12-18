@@ -367,7 +367,34 @@ docker-compose down
    - 所有 API 调用需使用 `try-catch` 捕获错误
    - 使用 `uni.showToast` 显示错误提示
 
-3. **图片上传流程**：
+3. **文件操作流程**：
+
+   **推荐方式**：使用统一文件 API (`utils/file.ts`)
+   ```javascript
+   import { chooseFile, uploadFile, downloadFile } from '@/utils/file'
+
+   // 1. 选择文件（跨平台）
+   const files = await chooseFile({
+     extensions: ['pdf', 'doc', 'docx'],
+     maxSize: 50 * 1024 * 1024
+   })
+
+   // 2. 上传文件（自动直传 OSS，支持进度回调）
+   const url = await uploadFile({
+     file: files[0],
+     onProgress: (progress) => {
+       console.log(`上传进度: ${progress}%`)
+     }
+   })
+
+   // 3. 下载文件（跨平台）
+   await downloadFile({
+     url: fileUrl,
+     filename: '资源文件'
+   })
+   ```
+
+   **传统方式**：图片上传流程
    ```javascript
    // 1. 获取 OSS 签名
    const signature = await getUploadSignature()
@@ -381,8 +408,9 @@ docker-compose down
    ```
 
 4. **多端兼容**：
-   - 使用 uni-app 提供的条件编译（`#ifdef MP-WEIXIN` 等）
-   - 避免使用平台特定 API，优先使用 uni-app 封装的方法
+   - **优先使用统一 API**：`utils/file.ts` 已封装跨平台文件操作，避免在业务代码中使用条件编译
+   - 使用 uni-app 提供的条件编译（`#ifdef MP-WEIXIN` 等）仅在必要时使用
+   - 避免使用平台特定 API，优先使用 uni-app 或项目封装的方法
 
 ## 测试要求
 
@@ -853,6 +881,92 @@ import { CButton } from '@/components/ui'
 
 **当前状态**：基础设施已完成，页面重构待进行
 
+### 6.6 跨平台文件操作 API (`utils/file.ts`)
+
+**重要**：项目已实现统一的跨平台文件操作 API，**强烈建议**在所有文件上传/下载场景中使用，而不是直接使用条件编译。
+
+**核心 API**：
+
+| 函数 | 功能 | 参数 | 返回值 |
+|------|------|------|--------|
+| `chooseFile()` | 跨平台文件选择 | `extensions`, `maxSize`, `multiple`, `count` | `Promise<FileInfo[]>` |
+| `uploadFile()` | 跨平台文件上传到 OSS | `file`, `onProgress`, `onSuccess`, `onError` | `Promise<string>` (文件 URL) |
+| `downloadFile()` | 跨平台文件下载 | `url`, `filename` | `Promise<void>` |
+| `uploadFiles()` | 批量上传文件 | `files`, `onProgress` | `Promise<string[]>` |
+| `formatFileSize()` | 格式化文件大小 | `bytes` | `string` (如 "2.5 MB") |
+| `getFileExtension()` | 获取文件扩展名 | `filename` | `string` |
+
+**FileInfo 接口**：
+```typescript
+interface FileInfo {
+  path: string      // H5: blob URL, 小程序: tempFilePath
+  name: string      // 文件名
+  size: number      // 文件大小（字节）
+  type?: string     // MIME 类型
+  raw?: File        // 原始 File 对象（仅 H5）
+}
+```
+
+**使用示例**：
+```typescript
+import { chooseFile, uploadFile, downloadFile } from '@/utils/file'
+
+// 完整的文件上传流程
+const handleUpload = async () => {
+  try {
+    // 1. 选择文件（自动验证格式和大小）
+    const files = await chooseFile({
+      extensions: ['pdf', 'doc', 'docx', 'ppt', 'pptx'],
+      maxSize: 50 * 1024 * 1024,  // 50MB
+      multiple: false
+    })
+
+    // 2. 上传到 OSS（自动获取签名并直传）
+    const url = await uploadFile({
+      file: files[0],
+      onProgress: (progress) => {
+        uploadProgress.value = progress  // 0-100
+      }
+    })
+
+    // 3. 保存文件 URL 到数据库
+    await createResource({ fileUrl: url, title: form.title })
+
+  } catch (error) {
+    uni.showToast({ title: error.message, icon: 'none' })
+  }
+}
+
+// 文件下载流程
+const handleDownload = async (fileUrl: string, filename: string) => {
+  try {
+    await downloadFile({ url: fileUrl, filename })
+    // H5: 自动触发浏览器下载
+    // 小程序: 下载后使用系统应用打开
+  } catch (error) {
+    uni.showToast({ title: '下载失败', icon: 'none' })
+  }
+}
+```
+
+**平台适配说明**：
+
+| 功能 | H5 实现 | 小程序实现 |
+|------|---------|----------|
+| 文件选择 | `<input type="file">` | `uni.chooseMessageFile()` |
+| 文件上传 | `XMLHttpRequest` + `upload.onprogress` | `uni.uploadFile()` + `onProgressUpdate` |
+| 文件下载 | `<a download>` 或 `window.open()` | `uni.downloadFile()` + `uni.openDocument()` |
+| 进度监控 | `xhr.upload.onprogress` | `uploadTask.onProgressUpdate()` |
+
+**已适配页面**：
+- ✅ `pages/resource/upload.vue` - 资源上传页面
+- ✅ `pages/resource/detail.vue` - 资源详情（下载功能）
+
+**参考文档**：
+- [FILE_API_USAGE_GUIDE.md](frontend/docs/FILE_API_USAGE_GUIDE.md) - 完整 API 文档
+- [RESOURCE_UPLOAD_TEST_GUIDE.md](frontend/docs/RESOURCE_UPLOAD_TEST_GUIDE.md) - 上传功能测试指南
+- [RESOURCE_DOWNLOAD_TEST_GUIDE.md](frontend/docs/RESOURCE_DOWNLOAD_TEST_GUIDE.md) - 下载功能测试指南
+
 ## 7. 调试技巧
 
 ### 7.1 后端调试
@@ -976,8 +1090,19 @@ localStorage.getItem('campuslink_refresh_token')
 
 ## 参考文档
 
+### 后端文档
 - [API 接口设计文档](docs/api-design.md) - 完整的 56 个 API 端点说明
 - [数据库设计文档](docs/database-design.md) - 17 张表的详细设计
 - [第三方服务配置](docs/third-party-services.md) - 阿里云、微信等服务申请与配置
 - [SQL 初始化脚本](sql/README.md) - 数据库建表与初始化数据
+
+### 前端文档
 - [语音搜索优化文档](frontend/VOICE_SEARCH_OPTIMIZATION.md) - 语音搜索功能实现详情
+- [统一文件 API 使用指南](frontend/docs/FILE_API_USAGE_GUIDE.md) - 跨平台文件操作完整指南
+- [资源上传测试指南](frontend/docs/RESOURCE_UPLOAD_TEST_GUIDE.md) - 上传功能测试用例
+- [资源下载测试指南](frontend/docs/RESOURCE_DOWNLOAD_TEST_GUIDE.md) - 下载功能测试用例
+- [登录系统分析报告](frontend/docs/LOGIN_SYSTEM_ANALYSIS.md) - 现有登录/注册模态系统分析
+- [多端功能适配清单](frontend/docs/MULTI_PLATFORM_COMPATIBILITY_CHECKLIST.md) - 56 功能点跨平台兼容性清单
+
+### 开发总结
+- [Week 1 开发总结](frontend/docs/WEEK1_SUMMARY.md) - 跨平台文件 API 实现总结

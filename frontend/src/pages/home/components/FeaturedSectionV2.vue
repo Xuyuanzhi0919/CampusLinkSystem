@@ -26,17 +26,6 @@
 
     <!-- Featured Grid -->
     <view v-else class="featured-grid">
-      <!-- 小程序端：使用简化卡片 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <SimpleFeaturedCard
-        v-for="item in featuredList"
-        :key="`${item.type}-${item.id || item.qid || item.resourceId || item.activityId}`"
-        :type="item.type"
-        :data="item"
-        @click="handleCardClick(item)"
-      />
-      <!-- #endif -->
-
       <!-- H5 端：使用企业级卡片 -->
       <!-- #ifdef H5 -->
       <!-- 问答类型：使用 ClFeaturedQAItem -->
@@ -80,12 +69,6 @@ import { ref, onMounted } from 'vue'
 // #ifdef H5
 import { ClFeaturedQAItem, ClResourceCard, ClEventCard } from '@/components/cl'
 // #endif
-
-// 小程序端导入简化组件
-// #ifdef MP-WEIXIN
-import SimpleFeaturedCard from './SimpleFeaturedCard.vue'
-// #endif
-
 import { getQuestionList } from '@/services/question'
 import { getResourceList } from '@/services/resource'
 import { getActivityList } from '@/services/activity'
@@ -335,39 +318,6 @@ const handleRegister = (event: any) => {
   })
 }
 
-// 小程序端统一卡片点击处理
-// #ifdef MP-WEIXIN
-const handleCardClick = (item: any) => {
-  console.log('[FeaturedSection] 卡片点击:', item.type, item)
-
-  if (item.type === 'question') {
-    // 问答：跳转到问题详情
-    const qid = item.qid || item.id
-    if (qid) {
-      uni.navigateTo({
-        url: `/pages/question/detail?id=${qid}`
-      })
-    }
-  } else if (item.type === 'resource') {
-    // 资源：跳转到资源详情
-    const rid = item.resourceId || item.id
-    if (rid) {
-      uni.navigateTo({
-        url: `/pages/resource/detail?id=${rid}`
-      })
-    }
-  } else if (item.type === 'activity') {
-    // 活动：跳转到活动详情
-    const aid = item.activityId || item.id
-    if (aid) {
-      uni.navigateTo({
-        url: `/pages/club/activity-detail?id=${aid}`
-      })
-    }
-  }
-}
-// #endif
-
 // 初始化
 onMounted(() => {
   loadData()
@@ -384,11 +334,6 @@ defineExpose({
 
 .featured-section-v2 {
   width: 100%;
-
-  /* 小程序端：模块底部间距 */
-  /* #ifdef MP-WEIXIN */
-  margin-bottom: 48rpx;
-  /* #endif */
 }
 
 .section-header {
@@ -397,11 +342,6 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
-
-  /* 小程序端：左右间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  /* #endif */
 }
 
 .header-left {
@@ -433,12 +373,6 @@ defineExpose({
   }
   /* #endif */
 
-  /* 小程序端：左右间距 + 卡片间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  gap: 24rpx;
-  grid-template-columns: 1fr;
-  /* #endif */
 }
 
 .loading-container,
@@ -464,21 +398,4 @@ defineExpose({
     }
   }
 }
-
-// Debug info for mini program
-/* #ifdef MP-WEIXIN */
-.debug-info {
-  padding: 24rpx;
-  background: #FFF3E0;
-  border-radius: 12rpx;
-  margin-bottom: 24rpx;
-
-  text {
-    display: block;
-    font-size: 24rpx;
-    color: #F57C00;
-    line-height: 1.8;
-  }
-}
-/* #endif */
 </style>

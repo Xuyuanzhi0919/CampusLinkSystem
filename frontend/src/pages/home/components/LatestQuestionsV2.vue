@@ -27,36 +27,6 @@
 
     <!-- Questions List -->
     <view v-else class="questions-list">
-      <!-- 小程序端：使用简化卡片 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <view
-        v-for="question in questionList"
-        :key="question.id"
-        class="simple-question-item"
-        @click="handleQuestionClick(question)"
-      >
-        <view class="question-header">
-          <text class="question-tag">问答</text>
-          <view v-if="question.bounty > 0" class="bounty-badge">
-            <uni-icons type="wallet-filled" size="12" color="#F97316"></uni-icons>
-            <text>{{ question.bounty }}</text>
-          </view>
-        </view>
-        <view class="question-title">{{ question.title }}</view>
-        <view class="question-meta">
-          <view class="meta-item">
-            <uni-icons type="eye" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ question.views || 0 }}</text>
-          </view>
-          <view class="meta-item">
-            <uni-icons type="chat" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ question.comments || 0 }}回答</text>
-          </view>
-          <text v-if="question.user?.username" class="meta-author">by {{ question.user.username }}</text>
-        </view>
-      </view>
-      <!-- #endif -->
-
       <!-- H5 端：使用企业级卡片 -->
       <!-- #ifdef H5 -->
       <ClFeedQAItem
@@ -211,11 +181,6 @@ defineExpose({
 
 .latest-questions-v2 {
   width: 100%;
-
-  /* 小程序端：模块底部间距 */
-  /* #ifdef MP-WEIXIN */
-  margin-bottom: 48rpx;
-  /* #endif */
 }
 
 .section-header {
@@ -225,10 +190,6 @@ defineExpose({
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
 
-  /* 小程序端：左右间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  /* #endif */
 }
 
 .section-title {
@@ -266,88 +227,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: $spacing-4;  // 紧凑的卡片间距
-
-  /* 小程序端：左右间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  gap: 24rpx;
-  /* #endif */
 }
-
-// 小程序简化样式
-/* #ifdef MP-WEIXIN */
-.simple-question-item {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.question-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
-}
-
-.question-tag {
-  padding: 4rpx 16rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  color: #2563EB;
-  background: rgba(37, 99, 235, 0.1);
-  border-radius: 8rpx;
-}
-
-.bounty-badge {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  padding: 4rpx 12rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  color: #F97316;
-  background: rgba(249, 115, 22, 0.1);
-  border-radius: 8rpx;
-}
-
-.question-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #0F172A;
-  line-height: 1.5;
-  margin-bottom: 12rpx;
-
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.question-meta {
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  font-size: 24rpx;
-  color: #94A3B8;
-
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6rpx;
-  }
-
-  .meta-author {
-    color: #94A3B8;
-  }
-}
-/* #endif */
 
 .loading-container,
 .error-container,

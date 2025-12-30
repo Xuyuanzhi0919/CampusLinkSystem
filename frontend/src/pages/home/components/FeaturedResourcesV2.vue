@@ -27,36 +27,6 @@
 
     <!-- Resources Grid -->
     <view v-else class="resources-grid">
-      <!-- 小程序端：使用简化卡片 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <view
-        v-for="resource in resourceList"
-        :key="resource.id"
-        class="simple-resource-item"
-        @click="handleResourceClick(resource)"
-      >
-        <view class="resource-header">
-          <text class="resource-tag">{{ getResourceTypeText(resource.resourceType) }}</text>
-          <view class="resource-rating">
-            <uni-icons type="star-filled" size="12" color="#F59E0B"></uni-icons>
-            <text>{{ resource.rating || 0 }}</text>
-          </view>
-        </view>
-        <view class="resource-title">{{ resource.title }}</view>
-        <view class="resource-meta">
-          <view class="meta-item">
-            <uni-icons type="download" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ resource.downloadCount || 0 }}</text>
-          </view>
-          <view class="meta-item">
-            <uni-icons type="eye" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ resource.viewCount || 0 }}</text>
-          </view>
-          <text v-if="resource.uploaderNickname" class="meta-author">by {{ resource.uploaderNickname }}</text>
-        </view>
-      </view>
-      <!-- #endif -->
-
       <!-- H5 端：使用企业级卡片 -->
       <!-- #ifdef H5 -->
       <ClResourceCard
@@ -168,19 +138,6 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
-// 小程序端辅助方法
-// #ifdef MP-WEIXIN
-const getResourceTypeText = (type: number) => {
-  const typeMap: Record<number, string> = {
-    1: '课件',
-    2: '试题',
-    3: '笔记',
-    4: '其他'
-  }
-  return typeMap[type] || '资源'
-}
-// #endif
-
 // 初始化
 onMounted(() => {
   loadData()
@@ -197,11 +154,6 @@ defineExpose({
 
 .featured-resources-v2 {
   width: 100%;
-
-  /* 小程序端：模块底部间距 */
-  /* #ifdef MP-WEIXIN */
-  margin-bottom: 48rpx;
-  /* #endif */
 }
 
 .section-header {
@@ -210,11 +162,6 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
-
-  /* 小程序端：左右间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  /* #endif */
 }
 
 .section-title {
@@ -258,85 +205,6 @@ defineExpose({
     grid-template-columns: 1fr;
   }
 }
-
-// 小程序简化样式
-/* #ifdef MP-WEIXIN */
-.resources-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 24rpx;
-  padding: 0 32rpx;
-}
-
-.simple-resource-item {
-  background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.06);
-  transition: all 0.2s;
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.resource-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12rpx;
-}
-
-.resource-tag {
-  padding: 4rpx 16rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  color: #16A34A;
-  background: rgba(22, 163, 74, 0.1);
-  border-radius: 8rpx;
-}
-
-.resource-rating {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  font-size: 24rpx;
-  color: #F59E0B;
-  font-weight: 500;
-}
-
-.resource-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #0F172A;
-  line-height: 1.5;
-  margin-bottom: 12rpx;
-
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.resource-meta {
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
-  font-size: 24rpx;
-  color: #94A3B8;
-
-  .meta-item {
-    display: flex;
-    align-items: center;
-    gap: 6rpx;
-  }
-
-  .meta-author {
-    color: #94A3B8;
-  }
-}
-/* #endif */
 
 .loading-container,
 .error-container,

@@ -150,57 +150,6 @@ export const chooseFile = async (
 
     input.click()
     // #endif
-
-    // #ifdef MP-WEIXIN
-    uni.chooseMessageFile({
-      count: multiple ? count : 1,
-      type: 'file',
-      extension: extensions.length > 0 ? extensions : undefined,
-      success: (res) => {
-        const files: FileInfo[] = []
-        const invalidFiles: string[] = []
-
-        for (const tempFile of res.tempFiles) {
-          // 验证大小
-          if (tempFile.size > maxSize) {
-            invalidFiles.push(`${tempFile.name}（超过 ${formatFileSize(maxSize)}）`)
-            continue
-          }
-
-          // 验证格式
-          if (extensions.length > 0) {
-            const ext = getFileExtension(tempFile.name)
-            if (!extensions.includes(ext)) {
-              invalidFiles.push(`${tempFile.name}（格式不支持）`)
-              continue
-            }
-          }
-
-          files.push({
-            path: tempFile.path,
-            name: tempFile.name,
-            size: tempFile.size,
-            type: tempFile.type || ''
-          })
-        }
-
-        if (invalidFiles.length > 0) {
-          reject(new Error(`以下文件不符合要求：\n${invalidFiles.join('\n')}`))
-          return
-        }
-
-        if (files.length === 0) {
-          reject(new Error('没有有效的文件'))
-          return
-        }
-
-        resolve(files)
-      },
-      fail: (err) => {
-        reject(new Error(err.errMsg || '选择文件失败'))
-      }
-    })
-    // #endif
   })
 }
 
@@ -287,40 +236,6 @@ const uploadToOSS = async (
     xhr.open('POST', signature.host)
     xhr.send(formData)
     // #endif
-
-    // #ifdef MP-WEIXIN
-    // 小程序使用 uni.uploadFile
-    const uploadTask = uni.uploadFile({
-      url: signature.host,
-      filePath: file.path,
-      name: 'file',
-      formData: {
-        key: signature.key,
-        policy: signature.policy,
-        OSSAccessKeyId: signature.accessId,
-        signature: signature.signature,
-        success_action_status: '200'
-      },
-      success: (res) => {
-        if (res.statusCode === 200 || res.statusCode === 204) {
-          const fileUrl = `${signature.host}/${signature.key}`
-          resolve(fileUrl)
-        } else {
-          reject(new Error('上传失败'))
-        }
-      },
-      fail: (err) => {
-        reject(new Error(err.errMsg || '上传失败'))
-      }
-    })
-
-    // 进度监听
-    if (onProgress) {
-      uploadTask.onProgressUpdate((res) => {
-        onProgress(res.progress)
-      })
-    }
-    // #endif
   })
 }
 
@@ -352,60 +267,6 @@ export const downloadFile = async (
     // H5 无法获取下载进度，直接返回成功
     if (onSuccess) {
       onSuccess()
-    }
-    // #endif
-
-    // #ifdef MP-WEIXIN
-    // 小程序使用 uni.downloadFile
-    const downloadTask = uni.downloadFile({
-      url: url,
-      success: (res) => {
-        if (res.statusCode === 200) {
-          // 获取文件扩展名
-          const ext = getFileExtension(filename)
-
-          // 打开文件
-          uni.openDocument({
-            filePath: res.tempFilePath,
-            fileType: ext,
-            success: () => {
-              if (onSuccess) {
-                onSuccess()
-              }
-            },
-            fail: (err) => {
-              const error = new Error('文件打开失败')
-              if (onError) {
-                onError(error)
-              } else {
-                throw error
-              }
-            }
-          })
-        } else {
-          const error = new Error('下载失败')
-          if (onError) {
-            onError(error)
-          } else {
-            throw error
-          }
-        }
-      },
-      fail: (err) => {
-        const error = new Error(err.errMsg || '下载失败')
-        if (onError) {
-          onError(error)
-        } else {
-          throw error
-        }
-      }
-    })
-
-    // 进度监听
-    if (onProgress) {
-      downloadTask.onProgressUpdate((res) => {
-        onProgress(res.progress)
-      })
     }
     // #endif
   } catch (error: any) {

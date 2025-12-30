@@ -1063,13 +1063,6 @@ const handleShare = () => {
     copyToClipboard(shareUrl)
   }
   // #endif
-
-  // #ifdef MP-WEIXIN
-  uni.showShareMenu({
-    withShareTicket: true,
-  })
-  uni.showToast({ title: '点击右上角分享', icon: 'none' })
-  // #endif
 }
 
 // 复制到剪贴板
@@ -1141,40 +1134,6 @@ const handlePreview = () => {
 
   // #ifdef H5
   showPreviewDialog.value = true
-  // #endif
-
-  // #ifdef MP-WEIXIN
-  // 微信小程序使用wx.downloadFile + wx.openDocument
-  uni.showLoading({ title: '加载中...' })
-  uni.downloadFile({
-    url: resource.value.fileUrl || '',
-    success: (res) => {
-      uni.hideLoading()
-      const filePath = res.tempFilePath
-      uni.openDocument({
-        filePath,
-        fileType: 'pdf',
-        success: () => {
-          console.log('打开文档成功')
-        },
-        fail: (err) => {
-          uni.showToast({
-            title: '无法打开文档',
-            icon: 'none'
-          })
-          console.error('打开文档失败:', err)
-        }
-      })
-    },
-    fail: (err) => {
-      uni.hideLoading()
-      uni.showToast({
-        title: '下载失败',
-        icon: 'none'
-      })
-      console.error('下载失败:', err)
-    }
-  })
   // #endif
 }
 

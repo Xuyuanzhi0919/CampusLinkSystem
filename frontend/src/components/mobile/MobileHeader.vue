@@ -76,10 +76,26 @@ const handleSearchClick = () => {
   align-items: center;
   gap: 4px;
   flex-shrink: 0;
+  cursor: pointer;
+  padding: 4px;
+  margin-left: -4px;
+  border-radius: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:active {
+    background-color: #f5f7fa;
+    transform: scale(0.95);
+  }
 
   .location-icon {
     font-size: 16px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  &:active .location-icon {
+    transform: scale(1.1);
+  }
+
   .location-text {
     font-size: 15px;
     font-weight: 600;
@@ -89,9 +105,15 @@ const handleSearchClick = () => {
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   .location-arrow {
     font-size: 12px;
     color: #999;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:active .location-arrow {
+    transform: rotate(180deg);
   }
 }
 
@@ -104,11 +126,24 @@ const handleSearchClick = () => {
   border-radius: 999px;
   padding: 0 12px;
   gap: 8px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:active {
+    background-color: #e5e7eb;
+    transform: scale(0.98);
+  }
 
   .search-icon {
     stroke: #9ca3af;
     flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+  &:active .search-icon {
+    transform: scale(1.1);
+  }
+
   .search-placeholder {
     flex: 1;
     font-size: 14px;

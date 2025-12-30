@@ -71,8 +71,7 @@ const loadData = async () => {
     const response = await getActivityList({
       page: 1,
       pageSize: 4,
-      sortBy: 'startTime',
-      order: 'desc'
+      sortBy: 'startTime'
     })
 
     /**

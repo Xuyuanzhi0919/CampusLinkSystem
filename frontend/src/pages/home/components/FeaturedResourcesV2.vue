@@ -71,9 +71,8 @@ const loadData = async () => {
     const response = await getResourceList({
       page: 1,
       pageSize: 6,
-      sortBy: 'createdAt',
-      order: 'desc',
-      status: 1  // 仅显示已审核通过的资源
+      sortBy: 'created_at',
+      sortOrder: 'desc'
     })
 
     /**

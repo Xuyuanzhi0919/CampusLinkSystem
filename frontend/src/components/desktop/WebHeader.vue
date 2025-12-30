@@ -517,6 +517,16 @@ defineExpose({
   cursor: pointer;
   user-select: none;
   letter-spacing: -0.02em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: scale(1.05);
+    color: $primary-dark;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
 }
 
 .main-nav {
@@ -526,22 +536,49 @@ defineExpose({
 }
 
 .nav-item {
+  position: relative;
   padding: 8px 16px;
   font-size: 14px;
   font-weight: $font-weight-medium;
   color: $text-secondary;
   cursor: pointer;
   border-radius: $radius-sm;
-  transition: $transition-fast;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    width: 60%;
+    height: 2px;
+    background: $primary;
+    border-radius: 2px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   &:hover {
     color: $primary;
     background: $primary-50;
+    transform: translateY(-1px);
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
   }
 
   &.active {
     color: $primary;
     font-weight: $font-weight-semibold;
+
+    &::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 }
 
@@ -562,11 +599,34 @@ defineExpose({
   background: $white;
   border: 1px solid $border-color;
   border-radius: $radius-full;
-  transition: $transition-fast;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    border-color: rgba($primary, 0.5);
+    box-shadow: 0 2px 8px rgba($primary, 0.08);
+  }
 
   &:focus-within {
+    width: 300px;
     border-color: $primary;
     box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+
+  // 响应式适配
+  @media (max-width: 1200px) {
+    width: 200px;
+
+    &:focus-within {
+      width: 240px;
+    }
+  }
+
+  @media (max-width: 1024px) {
+    width: 180px;
+
+    &:focus-within {
+      width: 200px;
+    }
   }
 }
 
@@ -653,12 +713,17 @@ defineExpose({
   border-radius: $radius-sm;
   cursor: pointer;
   color: $text-tertiary;
-  transition: $transition-fast;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
-  &:hover {
+  &:hover:not(.disabled) {
     background: rgba($primary, 0.06);
     color: $text-secondary;
     box-shadow: 0 2px 6px rgba($primary, 0.12);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(.disabled) {
+    transform: translateY(0) scale(0.95);
   }
 
   &.disabled {
@@ -730,14 +795,27 @@ defineExpose({
   font-size: 13px;
   font-weight: $font-weight-medium;
   cursor: pointer;
-  transition: $transition-fast;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba($primary, 0.2);
 
   &:hover {
     background: $primary-dark;
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 4px rgba($primary, 0.2);
   }
 
   svg {
     flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover svg {
+    transform: rotate(90deg);
   }
 }
 

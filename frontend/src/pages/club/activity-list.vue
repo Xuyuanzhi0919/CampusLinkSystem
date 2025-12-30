@@ -1024,6 +1024,7 @@ const applyFilters = () => {
 const resetFilters = () => {
   tempFilters.value = {
     status: null,
+    activityType: 'all',
     clubId: null,
     clubName: '',
     sortBy: 'time',

@@ -934,7 +934,7 @@ const loadAllResources = async () => {
     const res = await getResourceList({
       page: 1,
       pageSize: 100, // 获取前100条资源用于统计
-      sortBy: 'downloads', // 按下载量排序
+      sortBy: 'download_count', // 按下载量排序
       sortOrder: 'desc'
     })
 
@@ -999,8 +999,8 @@ const loadCommunityData = () => {
   const tagMap = new Map<string, number>()
 
   allResources.value.forEach(resource => {
-    // resource.category 现在是字符串类型(如"课件"、"试卷"、"笔记"等)
-    const categoryName = resource.category || '其他'
+    // resource.category 是枚举类型，需要转换为字符串
+    const categoryName = String(resource.category)
     tagMap.set(categoryName, (tagMap.get(categoryName) || 0) + 1)
   })
 

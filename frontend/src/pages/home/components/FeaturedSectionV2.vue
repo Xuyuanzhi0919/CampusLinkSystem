@@ -96,7 +96,7 @@ const loadData = async () => {
         console.error('[FeaturedSection] 问答列表加载失败:', err)
         return { list: [] }
       }),
-      getResourceList({ page: 1, pageSize: 2, status: 1 }).catch((err) => {
+      getResourceList({ page: 1, pageSize: 2 }).catch((err) => {
         console.error('[FeaturedSection] 资源列表加载失败:', err)
         return { list: [] }
       }),

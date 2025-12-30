@@ -73,8 +73,8 @@ const loadData = async () => {
     const response = await getQuestionList({
       page: 1,
       pageSize: 5,
-      sortBy: 'createdAt',
-      order: 'desc'
+      sortBy: 'created_at',
+      sortOrder: 'desc'
     })
 
     /**

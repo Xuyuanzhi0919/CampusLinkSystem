@@ -35,6 +35,9 @@ export interface Activity {
   isFavorited: boolean // 是否已收藏
   createdAt: string // 创建时间
   updatedAt: string // 更新时间
+  // 前端图片加载状态（可选）
+  _imageLoaded?: boolean
+  _imageError?: boolean
 }
 
 /**

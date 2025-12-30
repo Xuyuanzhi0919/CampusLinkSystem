@@ -3,11 +3,6 @@
     <!-- ========== 固定顶部导航区 ========== -->
     <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
       <view class="top-nav-container">
-        <!-- 🎯 返回按钮（仅在通过navigateTo进入时显示） -->
-        <view v-if="showBackButton" class="back-button" @click="handleBack">
-          <Icon name="arrow-left" :size="20" class="back-icon" />
-        </view>
-
         <!-- Logo -->
         <view class="brand-logo">
           <Icon name="message-circle" :size="isHeaderCollapsed ? 18 : 20" class="logo-icon" />
@@ -383,9 +378,6 @@ const {
 const loading = ref(false)
 const refreshing = ref(false)
 
-// 🎯 返回按钮相关
-const showBackButton = ref(false)
-
 // 搜索
 const searchKeyword = ref('')
 const showSearchHistory = ref(false)
@@ -617,17 +609,6 @@ const handleClearSearch = () => {
   loadQuestions(true)
 }
 
-// 🎯 处理返回按钮点击
-const handleBack = () => {
-  const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack()
-  } else {
-    // 兜底：如果页面栈为空，跳转到首页
-    uni.switchTab({ url: '/pages/home/index' })
-  }
-}
-
 // 快捷筛选
 const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
   // 清除问题列表缓存（避免旧数据干扰）
@@ -846,10 +827,6 @@ const isFirstShow = ref(true)
 
 // 页面加载
 onMounted(() => {
-  // 🎯 检测是否需要显示返回按钮（通过页面栈判断）
-  const pages = getCurrentPages()
-  showBackButton.value = pages.length > 1
-
   loadQuestions(true)
   loadSearchHistory()
 
@@ -997,37 +974,6 @@ defineExpose({
     padding: 0 16px;
     height: 56px; // 移动端稍小
     gap: 12px;
-  }
-}
-
-// 🎯 返回按钮样式
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex-shrink: 0;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  &:active {
-    background-color: rgba(0, 0, 0, 0.08);
-    transform: scale(0.95);
-  }
-
-  .back-icon {
-    color: $text-primary;
-  }
-
-  @include mobile {
-    width: 36px;
-    height: 36px;
   }
 }
 

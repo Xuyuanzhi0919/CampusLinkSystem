@@ -3,11 +3,6 @@
     <!-- ========== 固定顶部导航区 ========== -->
     <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
       <view class="top-nav-container">
-        <!-- 🎯 返回按钮（仅在通过navigateTo进入时显示） -->
-        <view v-if="showBackButton" class="back-button" @click="handleBack">
-          <Icon name="arrow-left" :size="20" class="back-icon" />
-        </view>
-
         <!-- Logo -->
         <view class="brand-logo">
           <Icon name="file-text" :size="20" class="logo-icon" />
@@ -421,9 +416,6 @@ const quickFilterTabs = [
   { label: '高赞', value: 'likes', iconName: 'heart' }
 ]
 
-// 🎯 返回按钮相关
-const showBackButton = ref(false)
-
 // 🎯 状态管理
 const resources = ref<ResourceItem[]>([])
 const loading = ref(false)
@@ -626,19 +618,6 @@ const handleSearchBlur = () => {
  */
 const handleMaskClick = () => {
   showSearchHistory.value = false
-}
-
-/**
- * 🎯 处理返回按钮点击
- */
-const handleBack = () => {
-  const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack()
-  } else {
-    // 兜底：如果页面栈为空，跳转到首页
-    uni.switchTab({ url: '/pages/home/index' })
-  }
 }
 
 /**
@@ -1602,9 +1581,6 @@ const handleDownloadCancel = () => {
 
 // 🎯 页面加载
 onMounted(() => {
-  // 🎯 检测是否需要显示返回按钮（通过页面栈判断）
-  const pages = getCurrentPages()
-  showBackButton.value = pages.length > 1
 
   // 加载用户学校ID（从本地存储）
   try {
@@ -1785,37 +1761,6 @@ onUnmounted(() => {
     padding: 0 32rpx; // 16px
     height: 112rpx; // 56px,移动端稍小
     gap: 24rpx; // 12px
-  }
-}
-
-// 🎯 返回按钮样式
-.back-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 80rpx;
-  height: 80rpx;
-  flex-shrink: 0;
-  cursor: pointer;
-  border-radius: 16rpx;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
-
-  &:active {
-    background-color: rgba(0, 0, 0, 0.08);
-    transform: scale(0.95);
-  }
-
-  .back-icon {
-    color: $text-primary;
-  }
-
-  @include mobile {
-    width: 72rpx;
-    height: 72rpx;
   }
 }
 

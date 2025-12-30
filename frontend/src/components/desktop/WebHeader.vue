@@ -50,7 +50,7 @@
         <div class="action-group">
           <!-- 用户头像 -->
           <div class="user-wrapper" ref="avatarContainer">
-            <template v-if="isLoggedIn">
+            <template v-if="isLoggedIn && userInfo">
               <UserAvatar
                 class="header-avatar"
                 :avatar-url="userInfo.avatar"
@@ -144,9 +144,10 @@ import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue'
 import config from '@/config'
 import { checkIn, getCheckInStatus, getUserStats } from '@/services/user'
 import { logout } from '@/services/auth'
-import { getUnreadNotifications, getUnreadCount, markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification'
+import { markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification'
 import type { NotificationResponse } from '@/services/notification'
 import type { UserStatsData } from '@/types/user'
+import { useHeaderLogic } from '@/composables/useHeaderLogic'
 
 // 导航配置
 const navItems = [
@@ -173,19 +174,20 @@ const emit = defineEmits<{
   login: []
 }>()
 
-const searchKeyword = ref('')
-const isLoggedIn = ref(false)
+// 使用共享逻辑层
+const {
+  isLoggedIn,
+  userInfo,
+  searchKeyword,
+  handleSearch: searchHandler,
+  clearSearch,
+  checkLoginStatus: syncLoginStatus,
+  loadNotifications: loadNotificationsData,
+  loadUnreadCount: loadUnreadCountData,
+  showLoginModal: showLoginGuide,
+} = useHeaderLogic()
+
 const showUserMenu = ref(false)
-const userInfo = ref({
-  userId: null as number | null,
-  nickname: '',
-  avatar: '',
-  email: '',
-  phone: '',
-  level: 1,
-  points: 0,
-  role: 'student' as 'student' | 'admin' | 'teacher' | 'user',
-})
 const isCheckedIn = ref(false)
 const avatarContainer = ref<HTMLElement | null>(null)
 const dropdownPosition = ref({ top: 0, left: 0 })
@@ -247,29 +249,10 @@ const syncCheckInStatus = async () => {
 }
 
 const checkLoginStatus = () => {
-  const token = uni.getStorageSync(config.tokenKey)
-  const userInfoStr = uni.getStorageSync(config.userInfoKey)
-  if (token && userInfoStr) {
-    try {
-      const parsedUserInfo = JSON.parse(userInfoStr)
-      userInfo.value = {
-        userId: parsedUserInfo.uId || parsedUserInfo.userId || parsedUserInfo.id || null,
-        nickname: parsedUserInfo.nickname || '用户',
-        avatar: parsedUserInfo.avatarUrl || parsedUserInfo.avatar || '',
-        email: parsedUserInfo.email || '',
-        phone: parsedUserInfo.phone || '',
-        level: parsedUserInfo.level || 1,
-        points: parsedUserInfo.points || 0,
-        role: parsedUserInfo.role || 'student',
-      }
-      isLoggedIn.value = true
-      syncCheckInStatus()
-      loadUserStats()
-    } catch (e) {
-      isLoggedIn.value = false
-    }
-  } else {
-    isLoggedIn.value = false
+  syncLoginStatus()
+  if (isLoggedIn.value) {
+    syncCheckInStatus()
+    loadUserStats()
   }
 }
 
@@ -322,17 +305,9 @@ const handleStatClick = (type: string) => {
   }
 }
 
-// 搜索
+// 搜索（使用共享逻辑）
 const handleSearch = () => {
-  const keyword = searchKeyword.value.trim()
-  if (!keyword) {
-    uni.showToast({ title: '请输入搜索关键词', icon: 'none' })
-    return
-  }
-  // 跳转到搜索结果页
-  uni.navigateTo({
-    url: `/pages/search/result?keyword=${encodeURIComponent(keyword)}`
-  })
+  searchHandler()
 }
 
 const handlePublish = () => {
@@ -347,10 +322,11 @@ const goToHome = () => {
   uni.switchTab({ url: '/pages/home/index' })
 }
 
+// 通知加载（使用共享逻辑）
 const loadUnreadCount = async () => {
   if (!isLoggedIn.value) return
   try {
-    const count = await getUnreadCount()
+    const count = await loadUnreadCountData()
     unreadCount.value = count
   } catch (error) {
     console.error('加载未读数量失败:', error)
@@ -359,8 +335,8 @@ const loadUnreadCount = async () => {
 
 const loadNotifications = async () => {
   try {
-    const result = await getUnreadNotifications({ page: 1, pageSize: 10 })
-    notifications.value = result.list
+    const result = await loadNotificationsData(1, 10)
+    notifications.value = result.list as NotificationResponse[]
   } catch (error) {
     console.error('加载通知列表失败:', error)
   }

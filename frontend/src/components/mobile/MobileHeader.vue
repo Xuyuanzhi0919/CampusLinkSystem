@@ -19,10 +19,13 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { useHeaderLogic } from '@/composables/useHeaderLogic'
+
+// 使用共享逻辑层
+const { goToSearchPage } = useHeaderLogic()
 
 const statusBarHeight = ref(0)
 const menuButtonInfo = ref({ top: 0, height: 0, right: 0, width: 0 })
-
 
 const headerStyle = computed(() => {
   const top = statusBarHeight.value
@@ -46,7 +49,7 @@ const handleLocationClick = () => {
 }
 
 const handleSearchClick = () => {
-  uni.navigateTo({ url: '/pages/search/index' })
+  goToSearchPage()
 }
 </script>
 

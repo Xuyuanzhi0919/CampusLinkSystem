@@ -11,22 +11,9 @@
     <MobileHeader v-else @search="handleSearch" />
     <!-- #endif -->
 
-    <!-- 小程序端用户信息卡片 -->
-    <!-- #ifdef MP-WEIXIN -->
-    <MiniProgramUserCard
-      @login="handleMiniLogin"
-      @profile="handleMiniProfile"
-    />
-    <!-- #endif -->
-
     <!-- 移动端金刚区导航 -->
     <!-- #ifdef H5 -->
     <GridNavigation v-if="!isDesktop" />
-    <!-- #endif -->
-
-    <!-- 小程序端金刚区导航 -->
-    <!-- #ifdef MP-WEIXIN -->
-    <GridNavigation />
     <!-- #endif -->
 
     <!-- 2. Hero 主视觉区 -->
@@ -149,11 +136,6 @@ import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
 // PC 端组件（仅 H5）
 // #ifdef H5
 import { WebHeader, PCFloatingNav } from '@/components/desktop'
-// #endif
-
-// 小程序专属组件
-// #ifdef MP-WEIXIN
-import MiniProgramUserCard from './components/MiniProgramUserCard.vue'
 // #endif
 
 // 首页组件
@@ -320,23 +302,6 @@ const handleForgotPassword = () => {
     fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
-
-// ===================== 小程序登录处理 =====================
-// #ifdef MP-WEIXIN
-const handleMiniLogin = () => {
-  // 跳转到小程序登录页面
-  uni.navigateTo({
-    url: '/pages/auth/mp-login'
-  })
-}
-
-const handleMiniProfile = () => {
-  // 跳转到个人中心
-  uni.switchTab({
-    url: '/pages/user/index'
-  })
-}
-// #endif
 
 // ===================== 登录引导弹窗处理 =====================
 
@@ -514,13 +479,6 @@ onUnmounted(() => {
   @include mobile {
     padding: 16px 12px 0;
   }
-  /* #endif */
-
-  /* #ifdef MP-WEIXIN */
-  // 小程序端：无左右 padding，让子组件自己控制间距
-  padding-top: 0;
-  padding-left: 0;
-  padding-right: 0;
   /* #endif */
 }
 

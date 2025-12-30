@@ -23,11 +23,6 @@ import { ref, computed } from 'vue'
 const statusBarHeight = ref(0)
 const menuButtonInfo = ref({ top: 0, height: 0, right: 0, width: 0 })
 
-// #ifdef MP-WEIXIN
-const systemInfo = uni.getSystemInfoSync()
-statusBarHeight.value = systemInfo.statusBarHeight || 0
-menuButtonInfo.value = uni.getMenuButtonBoundingClientRect()
-// #endif
 
 const headerStyle = computed(() => {
   const top = statusBarHeight.value

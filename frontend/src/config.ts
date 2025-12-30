@@ -6,10 +6,6 @@ const getBaseURL = (): string => {
   if (isProd) {
     return 'https://api.campuslink.com/api/v1'
   }
-  // #ifdef MP-WEIXIN
-  // 小程序开发环境：必须使用完整URL直接请求后端
-  return 'http://localhost:8080/api/v1'
-  // #endif
   // #ifdef H5
   // H5开发环境：通过Vite代理转发
   return '/api/v1'

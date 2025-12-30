@@ -53,11 +53,6 @@ onHide(() => {
 /* 导入 Design Tokens（企业级设计变量） */
 @import '@/styles/design-tokens.scss';
 
-/* 微信小程序专用样式 */
-/* #ifdef MP-WEIXIN */
-@import '@/styles/mp-weixin.scss';
-/* #endif */
-
 /* ========== 全局基调 Design Tokens（符合 uiDesign/index.md）========== */
 :root {
   /* 品牌主色 - #377DFF（CampusLink 专属蓝）*/
@@ -208,13 +203,6 @@ uni-page-body {
   uni-page-body {
     padding-bottom: 0 !important;
   }
-}
-/* #endif */
-
-/* 微信小程序端：使用原生 tabBar，无需自定义 */
-/* #ifdef MP-WEIXIN */
-uni-page-body {
-  padding-bottom: 0 !important; /* 小程序原生 tabBar 自动处理 */
 }
 /* #endif */
 

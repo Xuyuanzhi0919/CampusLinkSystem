@@ -27,35 +27,6 @@
 
     <!-- Activities List -->
     <view v-else class="activities-list">
-      <!-- 小程序端：使用简化卡片 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <view
-        v-for="activity in activityList"
-        :key="activity.id"
-        class="simple-activity-item"
-        @click="handleActivityClick(activity)"
-      >
-        <view class="activity-header">
-          <text class="activity-tag">活动</text>
-          <view v-if="activity.maxParticipants" class="participants">
-            <uni-icons type="person" size="12" color="#64748B"></uni-icons>
-            <text>{{ activity.currentParticipants || 0 }}/{{ activity.maxParticipants }}</text>
-          </view>
-        </view>
-        <view class="activity-title">{{ activity.title }}</view>
-        <view class="activity-meta">
-          <view class="meta-item">
-            <uni-icons type="calendar" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ formatDate(activity.activityTime) }}</text>
-          </view>
-          <view class="meta-item">
-            <uni-icons type="location" size="14" color="#94A3B8"></uni-icons>
-            <text>{{ activity.location || '待定' }}</text>
-          </view>
-        </view>
-      </view>
-      <!-- #endif -->
-
       <!-- H5 端：使用企业级卡片 -->
       <!-- #ifdef H5 -->
       <ClEventCard
@@ -176,15 +147,6 @@ const handleViewMore = () => {
   emit('view-more')
 }
 
-// 小程序端辅助方法
-// #ifdef MP-WEIXIN
-const formatDate = (dateString: string) => {
-  if (!dateString) return ''
-  const date = new Date(dateString)
-  return `${date.getMonth() + 1}月${date.getDate()}日`
-}
-// #endif
-
 // 初始化
 onMounted(() => {
   loadData()
@@ -201,11 +163,6 @@ defineExpose({
 
 .activity-recommend-v2 {
   width: 100%;
-
-  /* 小程序端：模块底部间距 */
-  /* #ifdef MP-WEIXIN */
-  margin-bottom: 48rpx;
-  /* #endif */
 }
 
 .section-header {
@@ -214,11 +171,6 @@ defineExpose({
   justify-content: space-between;
   margin-bottom: $spacing-8;
   padding: 0 $spacing-2;
-
-  /* 小程序端：左右间距 */
-  /* #ifdef MP-WEIXIN */
-  padding: 0 32rpx;
-  /* #endif */
 }
 
 .section-title {

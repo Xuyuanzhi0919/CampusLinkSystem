@@ -391,22 +391,6 @@ const handleLogin = async () => {
   }
 }
 
-// 微信登录
-const handleWechatLogin = () => {
-  // #ifdef MP-WEIXIN
-  uni.showToast({
-    title: '微信登录',
-    icon: 'none'
-  })
-  // #endif
-
-  // #ifndef MP-WEIXIN
-  uni.showToast({
-    title: '请在微信中打开',
-    icon: 'none'
-  })
-  // #endif
-}
 
 // QQ登录
 const handleQQLogin = () => {

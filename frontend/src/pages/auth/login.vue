@@ -65,19 +65,6 @@
           <text class="test-password">password123</text>
         </view>
       </view>
-
-      <!-- 小程序端显示微信登录 -->
-      <!-- #ifdef MP-WEIXIN -->
-      <view class="wechat-login">
-        <view class="divider">
-          <text class="divider-text">或</text>
-        </view>
-        <button class="wechat-btn" @click="handleWechatLogin">
-          <text class="wechat-icon">👤</text>
-          <text class="wechat-text">微信一键登录</text>
-        </button>
-      </view>
-      <!-- #endif -->
     </view>
   </view>
 </template>
@@ -142,10 +129,6 @@ const handleLogin = async () => {
     setTimeout(() => {
       // #ifdef H5
       uni.switchTab({ url: '/pages/home/index' })
-      // #endif
-
-      // #ifdef MP-WEIXIN
-      uni.switchTab({ url: '/pages/user/index' })
       // #endif
     }, 1500)
   } catch (error: any) {

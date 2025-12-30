@@ -21,7 +21,7 @@ const navItems = ref([
   { id: 'resource', icon: '📚', text: '资料库', url: '/pages/resource/index' },
   { id: 'qa', icon: '💡', text: '问答区', url: '/pages/question/index' },
   { id: 'task', icon: '🤝', text: '互助任务', url: '/pages/task/index' },
-  { id: 'club', icon: '🎭', text: '社团活动', url: '/pages/club/index' },
+  { id: 'club', icon: '🎭', text: '社团活动', url: '/pages/club/activity-list' },
 ])
 
 const handleNavigate = (url: string) => {

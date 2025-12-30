@@ -556,7 +556,9 @@ const handleBreadcrumbClick = (type: 'home' | 'question' | 'category') => {
 }
 
 const handleTagClick = (tag: string) => {
-  uni.navigateTo({ url: `/pages/question/index?tag=${tag}` })
+  // 🎯 TabBar页面不能用navigateTo传参,改用switchTab跳转
+  // TODO: 如需筛选功能,可以在问答首页通过全局事件或store传递筛选条件
+  uni.switchTab({ url: '/pages/question/index' })
 }
 
 const goBack = () => {

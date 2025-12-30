@@ -253,12 +253,6 @@
     <!-- #ifdef H5 -->
     <PCFloatingNav />
     <!-- #endif -->
-
-    <!-- 移动端自定义底部导航 -->
-    <!-- #ifndef MP-WEIXIN -->
-    <CustomTabBar />
-    <!-- #endif -->
-
     <!-- 🎯 下载确认对话框 -->
     <DownloadConfirmDialog
       :visible="showDownloadDialog"

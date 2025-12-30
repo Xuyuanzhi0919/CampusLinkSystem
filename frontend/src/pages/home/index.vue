@@ -80,9 +80,6 @@
     <!-- #endif -->
 
     <!-- 移动端自定义底部导航（非微信小程序时使用） -->
-    <!-- #ifndef MP-WEIXIN -->
-    <CustomTabBar />
-    <!-- #endif -->
 
     <!-- 登录弹窗 -->
     <LoginModal

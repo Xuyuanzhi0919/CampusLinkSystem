@@ -184,10 +184,6 @@ html, body {
 /* ========== 多端 TabBar 适配 ========== */
 
 /* H5/App 端：隐藏原生 tabBar，使用自定义 tabBar */
-/* #ifndef MP-WEIXIN */
-uni-tabbar {
-  display: none !important;
-}
 
 /* 移除页面底部的 padding（自定义 tabBar 占位） */
 uni-page-body {

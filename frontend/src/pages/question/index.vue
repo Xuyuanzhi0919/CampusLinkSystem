@@ -326,11 +326,6 @@
     <PCFloatingNav />
     <!-- #endif -->
 
-    <!-- 移动端自定义底部导航 -->
-    <!-- #ifndef MP-WEIXIN -->
-    <CustomTabBar />
-    <!-- #endif -->
-
     <!-- 🎯 全局悬浮发布按钮(FAB) -->
     <PublishFAB tabbar />
   </view>

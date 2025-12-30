@@ -134,12 +134,16 @@ const handleNavigate = (url: string) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   .item-icon {
+    width: 100%;
+    height: 100%;
     font-size: 24px;
     line-height: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: inherit;
+    opacity: 1;
   }
 }
 

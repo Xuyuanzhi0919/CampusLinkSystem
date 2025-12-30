@@ -1,19 +1,21 @@
 <template>
-  <scroll-view class="grid-navigation" scroll-x enable-flex>
-    <view
-      v-for="item in navItems"
-      :key="item.id"
-      class="grid-item"
-      @click="handleNavigate(item.url)"
-    >
-      <view class="icon-wrapper" :style="{ background: item.bgColor }">
-        <svg class="item-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-          <path :d="item.iconPath" :stroke="item.color" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+  <view class="grid-navigation-container">
+    <view class="grid-navigation">
+      <view
+        v-for="item in navItems"
+        :key="item.id"
+        class="grid-item"
+        @click="handleNavigate(item.url)"
+      >
+        <view class="icon-wrapper" :style="{ background: item.bgColor }">
+          <svg class="item-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <path :d="item.iconPath" :stroke="item.color" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </view>
+        <text class="item-text">{{ item.text }}</text>
       </view>
-      <text class="item-text">{{ item.text }}</text>
     </view>
-  </scroll-view>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -70,19 +72,12 @@ const handleNavigate = (url: string) => {
 </script>
 
 <style scoped lang="scss">
-.grid-navigation {
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 8px;
-  padding: 16px;
+.grid-navigation-container {
+  width: 100%;
   background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-  box-sizing: border-box;
   overflow-x: auto;
   overflow-y: hidden;
-  white-space: nowrap;
 
   // 隐藏滚动条
   &::-webkit-scrollbar {
@@ -90,6 +85,17 @@ const handleNavigate = (url: string) => {
   }
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.grid-navigation {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  padding: 16px;
+  width: max-content;
+  min-width: 100%;
 }
 
 .grid-item {

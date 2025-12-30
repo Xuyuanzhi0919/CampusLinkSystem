@@ -4,9 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-CampusLink 是一个多端统一的高校资源互助与问答平台，支持微信小程序、H5、App 等多端。技术栈：Spring Boot 3.4 (后端) + uni-app (前端) + MySQL + Redis。
+CampusLink 是一个基于 H5 的高校资源互助与问答平台，支持桌面端和移动端浏览器访问。技术栈：Spring Boot 3.4 (后端) + uni-app (前端) + MySQL + Redis。
 
-**当前状态**：项目核心功能已实现，包含完整的用户认证、资源管理、问答系统、任务系统、社团活动等模块，共 144+ Java 类。前端已实现语音搜索、多端适配、跨平台文件操作等特性。
+**当前状态**：项目核心功能已实现，包含完整的用户认证、资源管理、问答系统、任务系统、社团活动等模块，共 144+ Java 类。前端专注 H5 端，实现了响应式设计、语音搜索、文件操作等特性。
+
+**重要说明**：小程序相关代码已移除并备份到 `backup/miniprogram-code` 分支，项目当前聚焦 H5 端开发。
 
 ## 常用开发命令
 
@@ -42,13 +44,13 @@ npm install
 
 # 开发模式 - H5（默认端口 5173）
 npm run dev:h5
-
-# 开发模式 - 微信小程序
-npm run dev:mp-weixin
+# 或简写
+npm run dev
 
 # 构建生产版本
 npm run build:h5
-npm run build:mp-weixin
+# 或简写
+npm run build
 
 # TypeScript 类型检查
 npm run type-check

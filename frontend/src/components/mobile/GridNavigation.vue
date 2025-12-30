@@ -8,7 +8,7 @@
         @click="handleNavigate(item.url)"
       >
         <view class="icon-wrapper" :style="{ background: item.bgColor }">
-          <text class="item-icon">{{ item.icon }}</text>
+          <text class="item-icon" :style="{ fontSize: '24px', lineHeight: '1' }">{{ item.icon }}</text>
         </view>
         <text class="item-text">{{ item.text }}</text>
       </view>

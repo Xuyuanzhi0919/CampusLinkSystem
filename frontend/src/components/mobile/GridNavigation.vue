@@ -72,15 +72,30 @@ const handleNavigate = (url: string) => {
 <style scoped lang="scss">
 .grid-navigation {
   display: flex;
-  gap: 16px;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
   padding: 16px;
   background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   box-sizing: border-box;
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+
+  // 隐藏滚动条
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .grid-item {
+  flex-shrink: 0;
   min-width: 72px;
+  max-width: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -128,5 +143,7 @@ const handleNavigate = (url: string) => {
   font-weight: 600;
   letter-spacing: 0.01em;
   transition: all 0.2s ease;
+  white-space: nowrap;
+  text-align: center;
 }
 </style>

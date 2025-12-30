@@ -7,10 +7,10 @@
         class="grid-item"
         @click="handleNavigate(item.url)"
       >
-        <view class="icon-wrapper" :style="{ background: item.bgColor }">
-          <text class="item-icon">{{ item.icon }}</text>
+        <view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
+          <view class="icon-inner">{{ item.icon }}</view>
         </view>
-        <text class="item-text">{{ item.text }}</text>
+        <view class="item-text">{{ item.text }}</view>
       </view>
     </view>
   </view>
@@ -19,38 +19,33 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
-// 使用 Unicode 图标字符,更兼容
 const navItems = ref([
   {
     id: 'resource',
     text: '资料库',
     url: '/pages/resource/index',
-    icon: '📖', // 书本
-    color: '#2563EB',
+    icon: '📖',
     bgColor: '#EFF6FF',
   },
   {
     id: 'qa',
     text: '问答区',
     url: '/pages/question/index',
-    icon: '💬', // 对话
-    color: '#FF6B35',
+    icon: '💬',
     bgColor: '#FFF0EB',
   },
   {
     id: 'task',
     text: '互助任务',
     url: '/pages/task/index',
-    icon: '🤝', // 握手
-    color: '#16A34A',
+    icon: '🤝',
     bgColor: '#F0FDF4',
   },
   {
     id: 'club',
     text: '社团活动',
     url: '/pages/club/list',
-    icon: '🎯', // 目标
-    color: '#9333EA',
+    icon: '🎯',
     bgColor: '#FAF5FF',
   },
 ])
@@ -78,7 +73,6 @@ const handleNavigate = (url: string) => {
   overflow-x: auto;
   overflow-y: hidden;
 
-  // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;
   }
@@ -89,9 +83,8 @@ const handleNavigate = (url: string) => {
 .grid-navigation {
   display: flex;
   flex-direction: row;
-  justify-content: flex-start;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   padding: 16px;
   width: max-content;
   min-width: 100%;
@@ -99,62 +92,47 @@ const handleNavigate = (url: string) => {
 
 .grid-item {
   flex-shrink: 0;
-  min-width: 72px;
-  max-width: 72px;
+  width: 72px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px;
+  gap: 6px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.2s ease;
 
   &:active {
     transform: scale(0.92);
-
-    .icon-wrapper {
-      transform: scale(0.9);
-    }
-
-    .item-text {
-      opacity: 0.7;
-    }
   }
 }
 
 .icon-wrapper {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
 
-  .item-icon {
-    font-size: 24px;
-    line-height: 48px;
-    text-align: center;
-    display: block;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: inherit;
-    opacity: 1;
+  .icon-inner {
+    font-size: 28px;
+    line-height: 1;
   }
 }
 
-.grid-item:active .icon-wrapper .item-icon {
-  transform: scale(0.85);
+.grid-item:active .icon-wrapper {
+  transform: scale(0.9);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .item-text {
   font-size: 12px;
   color: #1F2937;
   font-weight: 600;
-  letter-spacing: 0.01em;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  line-height: 1.2;
   text-align: center;
+  white-space: nowrap;
 }
 </style>

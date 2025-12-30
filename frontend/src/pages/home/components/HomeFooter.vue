@@ -48,9 +48,9 @@
         <view class="link-group">
           <text class="group-title">应用下载</text>
           <view class="link-list">
-            <text class="link-item disabled">iOS App (开发中)</text>
-            <text class="link-item disabled">Android App (开发中)</text>
-            <text class="link-item" @click="handleNavigate('/pages/about/miniapp')">微信小程序</text>
+            <text class="link-item disabled">iOS App (规划中)</text>
+            <text class="link-item disabled">Android App (规划中)</text>
+            <text class="link-item disabled">微信小程序 (已下线)</text>
           </view>
         </view>
       </view>

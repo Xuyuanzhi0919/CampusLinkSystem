@@ -8,7 +8,7 @@
         @click="handleNavigate(item.url)"
       >
         <view class="icon-wrapper" :style="{ background: item.bgColor }">
-          <text class="item-icon" :style="{ fontSize: '24px', lineHeight: '1' }">{{ item.icon }}</text>
+          <view class="item-icon">{{ item.icon }}</view>
         </view>
         <text class="item-text">{{ item.text }}</text>
       </view>
@@ -132,15 +132,18 @@ const handleNavigate = (url: string) => {
   margin-bottom: 8px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  .item-icon {
+    font-size: 24px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 }
 
-.item-icon {
-  font-size: 24px;
-  line-height: 1;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.grid-item:active .item-icon {
+.grid-item:active .icon-wrapper .item-icon {
   transform: scale(0.85);
 }
 

@@ -118,23 +118,25 @@ $cream: $gray-50;            // 系统背景色
 // ==================== 对角斜切分割线 ====================
 .diagonal-divider {
   position: absolute;
-  top: 0;
-  left: 38%;
-  width: 6px;
-  height: 100%;
-  transform: rotate(-15deg) translateX(-50%);
-  transform-origin: top;
+  top: -10%;
+  left: 35%;
+  width: 8px;
+  height: 120%;
+  transform: rotate(-15deg);
+  transform-origin: top center;
   background: linear-gradient(180deg,
     transparent 0%,
-    $primary 15%,
+    $primary 10%,
     $campus-teal 50%,
-    $campus-amber 85%,
+    $campus-amber 90%,
     transparent 100%);
   box-shadow:
-    0 0 30px rgba($primary, 0.5),
-    0 0 60px rgba($campus-teal, 0.3);
+    0 0 40px rgba($primary, 0.6),
+    0 0 80px rgba($campus-teal, 0.4),
+    0 0 120px rgba($campus-amber, 0.3);
   z-index: 1;
   animation: dividerPulse 3s ease-in-out infinite;
+  filter: blur(1px);
 
   &::before,
   &::after {
@@ -194,8 +196,8 @@ $cream: $gray-50;            // 系统背景色
 
   // 网格图案背景
   background-image:
-    linear-gradient(rgba($primary, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba($primary, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba($primary, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($primary, 0.07) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: -1px -1px;
 }

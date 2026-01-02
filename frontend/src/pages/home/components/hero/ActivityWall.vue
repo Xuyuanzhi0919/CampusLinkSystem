@@ -264,7 +264,7 @@ $charcoal: $gray-900;        // 系统文本色
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: clamp(18px, 2vw, 24px);
+  font-size: clamp(20px, 2.2vw, 28px);
   font-weight: 900;
   letter-spacing: -0.03em;
 
@@ -505,11 +505,11 @@ $charcoal: $gray-900;        // 系统文本色
   }
   &:nth-child(2) {
     animation-delay: 0.35s;
-    transform: translateX(20px);
+    transform: translateX(30px);
   }
   &:nth-child(3) {
     animation-delay: 0.5s;
-    transform: translateX(40px);
+    transform: translateX(60px);
   }
 
   &::before {
@@ -550,10 +550,10 @@ $charcoal: $gray-900;        // 系统文本色
     transform: translateX(0) translateY(-6px) rotateX(2deg) scale(1.01);
   }
   &:nth-child(2):hover {
-    transform: translateX(20px) translateY(-6px) rotateX(2deg) scale(1.01);
+    transform: translateX(30px) translateY(-6px) rotateX(2deg) scale(1.01);
   }
   &:nth-child(3):hover {
-    transform: translateX(40px) translateY(-6px) rotateX(2deg) scale(1.01);
+    transform: translateX(60px) translateY(-6px) rotateX(2deg) scale(1.01);
   }
 
   &.item-question {

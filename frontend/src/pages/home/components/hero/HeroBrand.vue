@@ -120,6 +120,7 @@ $charcoal: $gray-900;
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
+  gap: 64px;
   z-index: 2;
 }
 
@@ -150,7 +151,7 @@ $charcoal: $gray-900;
 }
 
 .title-massive {
-  font-size: clamp(56px, 8vw, 88px);
+  font-size: clamp(56px, 8vw, 96px);
   font-weight: 900;
   color: $charcoal;
   letter-spacing: -0.04em;

@@ -133,11 +133,38 @@
         </view>
       </view>
     </scroll-view>
+
+    <!-- PC端悬浮导航（仅桌面端） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav v-if="isDesktop" />
+    <!-- #endif -->
+
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
   </view>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
+
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
+
+// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
 
 /**
  * 🎯 导航到具体发布页面

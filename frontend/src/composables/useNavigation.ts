@@ -215,6 +215,11 @@ export function useNavigation() {
     switchTab('/pages/home/index')
   }
 
+  /** 跳转到社区聚合页 (TabBar) */
+  const toCommunity = () => {
+    switchTab('/pages/community/index')
+  }
+
   // ================== 其他 ==================
 
   /** 跳转到 AI 助手 */
@@ -250,9 +255,11 @@ export function useNavigation() {
   return {
     // TabBar 主页面
     toHome,
-    toQuestionList,
     toResourceList,
+    toPublish,
+    toCommunity,
     toUserCenter,
+    toQuestionList,
 
     // 详情页
     toQuestionDetail,

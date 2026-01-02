@@ -11,6 +11,14 @@
 			}
 		},
 		{
+			"path": "pages/community/index",
+			"style": {
+				"navigationBarTitleText": "社区",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/search/result",
 			"style": {
 				"navigationBarTitleText": "搜索",
@@ -297,10 +305,16 @@
 				"text": "资源"
 			},
 			{
-				"pagePath": "pages/question/index",
-				"iconPath": "static/tabbar/question.png",
-				"selectedIconPath": "static/tabbar/question-active.png",
-				"text": "问答"
+				"pagePath": "pages/publish/index",
+				"iconPath": "static/tabbar/publish.png",
+				"selectedIconPath": "static/tabbar/publish-active.png",
+				"text": "发布"
+			},
+			{
+				"pagePath": "pages/community/index",
+				"iconPath": "static/tabbar/community.png",
+				"selectedIconPath": "static/tabbar/community-active.png",
+				"text": "社区"
 			},
 			{
 				"pagePath": "pages/user/index",

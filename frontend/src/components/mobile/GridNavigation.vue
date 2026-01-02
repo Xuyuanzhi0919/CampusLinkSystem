@@ -21,40 +21,40 @@ import { ref } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 
 // 使用统一导航 composable
-const { toResourceList, toQuestionList, toTaskList, toClubList } = useNavigation()
+const { toActivityList, toTaskList, toPublish, navigateTo } = useNavigation()
 
 const navItems = ref([
   {
-    id: 'resource',
-    text: '资料库',
-    url: '/pages/resource/index',
-    icon: '📖',
-    bgColor: '#EFF6FF',
-    handler: toResourceList,
-  },
-  {
-    id: 'qa',
-    text: '问答区',
-    url: '/pages/question/index',
-    icon: '💬',
-    bgColor: '#FFF0EB',
-    handler: toQuestionList,
+    id: 'activity',
+    text: '热门活动',
+    url: '/pages/club/activity-list',
+    icon: '🎯',
+    bgColor: '#FEF3C7',
+    handler: toActivityList,
   },
   {
     id: 'task',
     text: '互助任务',
     url: '/pages/task/index',
     icon: '🤝',
-    bgColor: '#F0FDF4',
+    bgColor: '#D1FAE5',
     handler: toTaskList,
   },
   {
-    id: 'club',
-    text: '社团活动',
-    url: '/pages/club/list',
-    icon: '🎯',
-    bgColor: '#FAF5FF',
-    handler: toClubList,
+    id: 'ranking',
+    text: '积分排行',
+    url: '/pages/user/ranking',
+    icon: '🏆',
+    bgColor: '#FEE2E2',
+    handler: () => navigateTo('/pages/user/ranking'),
+  },
+  {
+    id: 'publish',
+    text: '快捷发布',
+    url: '/pages/publish/index',
+    icon: '✨',
+    bgColor: '#E0E7FF',
+    handler: toPublish,
   },
 ])
 

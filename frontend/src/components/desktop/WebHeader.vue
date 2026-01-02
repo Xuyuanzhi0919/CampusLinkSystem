@@ -154,9 +154,7 @@ import { useNavigation } from '@/composables/useNavigation'
 const {
   toHome,
   toResourceList,
-  toQuestionList,
-  toClubList,
-  toActivityList,
+  toCommunity,
   toUserCenter,
   toFavorites,
   toEditProfile,
@@ -164,13 +162,11 @@ const {
   navigateTo
 } = useNavigation()
 
-// 导航配置
+// 导航配置 - 与移动端TabBar保持一致
 const navItems = [
   { label: '首页', path: '/pages/home/index', isTab: true, handler: toHome },
-  { label: '资料', path: '/pages/resource/index', isTab: true, handler: toResourceList },
-  { label: '问答', path: '/pages/question/index', isTab: true, handler: toQuestionList },
-  { label: '社团', path: '/pages/club/list', isTab: false, handler: toClubList },
-  { label: '活动', path: '/pages/club/activity-list', isTab: false, handler: toActivityList },
+  { label: '资源', path: '/pages/resource/index', isTab: true, handler: toResourceList },
+  { label: '社区', path: '/pages/community/index', isTab: true, handler: toCommunity },
 ]
 
 interface DisplayNotification {

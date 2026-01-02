@@ -34,18 +34,28 @@
               </g>
             </template>
 
-            <!-- 问答图标 - IconPark 线性风格 -->
+            <!-- 发布图标 - IconPark 线性风格 (加号) -->
             <template v-else-if="index === 2">
               <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 6h32c2.2 0 4 1.8 4 4v18c0 2.2-1.8 4-4 4H14l-8 8V10c0-2.2 1.8-4 4-4z"/>
-                <circle cx="16" cy="20" r="1.5" fill="currentColor"/>
-                <circle cx="24" cy="20" r="1.5" fill="currentColor"/>
-                <circle cx="32" cy="20" r="1.5" fill="currentColor"/>
+                <circle cx="24" cy="24" r="18"/>
+                <path d="M24 12v24M12 24h24"/>
+              </g>
+            </template>
+
+            <!-- 社区图标 - IconPark 线性风格 (三人群组) -->
+            <template v-else-if="index === 3">
+              <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="24" cy="12" r="6"/>
+                <circle cx="12" cy="16" r="5"/>
+                <circle cx="36" cy="16" r="5"/>
+                <path d="M32 44c0-4.4-3.6-8-8-8s-8 3.6-8 8"/>
+                <path d="M10 42c0-3.3 2.7-6 6-6h4"/>
+                <path d="M38 42c0-3.3-2.7-6-6-6h-4"/>
               </g>
             </template>
 
             <!-- 我的图标 - IconPark 线性风格 -->
-            <template v-else-if="index === 3">
+            <template v-else-if="index === 4">
               <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="24" cy="12" r="8"/>
                 <path d="M42 44c0-6-8-10-18-10S6 38 6 44"/>
@@ -71,13 +81,14 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 
 // 使用统一导航 composable
-const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
+const { toHome, toResourceList, toPublish, toCommunity, toUserCenter } = useNavigation()
 
 // Tab 列表配置（保留 path 用于页面索引检测）
 const tabList = [
   { text: '首页', path: '/pages/home/index', handler: toHome },
   { text: '资源', path: '/pages/resource/index', handler: toResourceList },
-  { text: '问答', path: '/pages/question/index', handler: toQuestionList },
+  { text: '发布', path: '/pages/publish/index', handler: toPublish },
+  { text: '社区', path: '/pages/community/index', handler: toCommunity },
   { text: '我的', path: '/pages/user/index', handler: toUserCenter }
 ]
 

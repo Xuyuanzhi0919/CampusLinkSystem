@@ -69,14 +69,14 @@ const handleBrowse = () => emit('browse')
 
 <style lang="scss">
 @import '@/uni.scss';
+@import '@/styles/variables.scss';
 
-// ==================== Campus-Inspired Color Palette (NO Purple!) ====================
-$terra: #D97757;        // Warm Terracotta
-$sage: #7FA99B;         // Fresh Sage Green
-$coral: #FF8370;        // Bright Coral
-$sky: #6B9BD1;          // Soft Sky Blue
-$cream: #FAF8F3;        // Warm Cream
-$charcoal: #2C3338;     // Deep Charcoal
+// ==================== 使用系统标准校园色系 ====================
+$primary: #2563EB;           // 系统主色 - 蓝
+$campus-teal: #14B8A6;       // 校园青绿 - 资源/社区
+$campus-amber: #F59E0B;      // 校园橙黄 - 活动/成就
+$accent: #FF6B35;            // 系统强调色 - 橙
+$cream: $gray-50;            // 系统背景色
 
 // ==================== Hero Section ====================
 .hero-section {
@@ -111,7 +111,7 @@ $charcoal: #2C3338;     // Deep Charcoal
 
 // Connection Lines - Animated flow
 .connection-line {
-  stroke: $sage;
+  stroke: $campus-teal;
   stroke-width: 1.5;
   stroke-dasharray: 5 3;
   opacity: 0.3;
@@ -140,18 +140,18 @@ $charcoal: #2C3338;     // Deep Charcoal
 
 // Network Nodes - Pulsing dots
 .node {
-  fill: $terra;
+  fill: $primary;
   opacity: 0.6;
   animation: nodePulse 3s ease-in-out infinite;
 
-  &.node-1 { animation-delay: 0s; fill: $terra; }
-  &.node-2 { animation-delay: 0.3s; fill: $sage; }
-  &.node-3 { animation-delay: 0.6s; fill: $coral; }
-  &.node-4 { animation-delay: 0.9s; fill: $sky; }
-  &.node-5 { animation-delay: 1.2s; fill: $terra; }
-  &.node-6 { animation-delay: 1.5s; fill: $sage; }
-  &.node-7 { animation-delay: 1.8s; fill: $coral; }
-  &.node-8 { animation-delay: 2.1s; fill: $sky; }
+  &.node-1 { animation-delay: 0s; fill: $primary; }
+  &.node-2 { animation-delay: 0.3s; fill: $campus-teal; }
+  &.node-3 { animation-delay: 0.6s; fill: $campus-amber; }
+  &.node-4 { animation-delay: 0.9s; fill: $primary; }
+  &.node-5 { animation-delay: 1.2s; fill: $campus-teal; }
+  &.node-6 { animation-delay: 1.5s; fill: $campus-amber; }
+  &.node-7 { animation-delay: 1.8s; fill: $primary; }
+  &.node-8 { animation-delay: 2.1s; fill: $campus-teal; }
 }
 
 @keyframes nodePulse {
@@ -183,28 +183,28 @@ $charcoal: #2C3338;     // Deep Charcoal
   &.particle-1 {
     top: 20%;
     left: 15%;
-    background: $terra;
+    background: $primary;
     animation-delay: 0s;
   }
 
   &.particle-2 {
     top: 60%;
     right: 20%;
-    background: $sage;
+    background: $campus-teal;
     animation-delay: 3s;
   }
 
   &.particle-3 {
     bottom: 30%;
     left: 25%;
-    background: $coral;
+    background: $campus-amber;
     animation-delay: 6s;
   }
 
   &.particle-4 {
     top: 40%;
     right: 30%;
-    background: $sky;
+    background: $primary;
     animation-delay: 9s;
   }
 }

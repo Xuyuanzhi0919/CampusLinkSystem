@@ -198,7 +198,7 @@ const displayItems = ref<ActivityItem[]>([
     type: 'question',
     author: '计算机系-张同学',
     avatar: '张',
-    avatarColor: 'linear-gradient(135deg, #7FA99B 0%, #5A8B7D 100%)',
+    avatarColor: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)',
     content: '数据结构中的红黑树和 AVL 树有什么本质区别？',
     time: '2分钟前',
     tags: ['数据结构', '算法'],
@@ -223,13 +223,14 @@ const displayItems = ref<ActivityItem[]>([
 </script>
 
 <style scoped lang="scss">
-// Campus-Inspired Colors (NO Purple!)
-$terra: #D97757;
-$sage: #7FA99B;
-$coral: #FF8370;
-$sky: #6B9BD1;
-$charcoal: #2C3338;
-$cream: #FAF8F3;
+@import '@/styles/variables.scss';
+
+// 使用系统标准校园色系
+$primary: #2563EB;           // 系统主色 - 蓝 (问答)
+$campus-teal: #14B8A6;       // 校园青绿 - 资源/分享
+$campus-amber: #F59E0B;      // 校园橙黄 - 活动/热门
+$accent: #FF6B35;            // 系统强调色 - 橙
+$charcoal: $gray-900;        // 系统文本色
 
 .activity-wall {
   display: flex;
@@ -265,7 +266,7 @@ $cream: #FAF8F3;
     position: relative;
 
     &.accent {
-      color: $coral;
+      color: $accent;
       position: relative;
 
       &::after {
@@ -275,7 +276,7 @@ $cream: #FAF8F3;
         left: 0;
         right: 0;
         height: 3px;
-        background: $coral;
+        background: $accent;
         border-radius: 2px;
         animation: underlineGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
       }
@@ -299,8 +300,8 @@ $cream: #FAF8F3;
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  background: rgba($coral, 0.1);
-  border: 1.5px solid rgba($coral, 0.3);
+  background: rgba($accent, 0.1);
+  border: 1.5px solid rgba($accent, 0.3);
   border-radius: 12px;
   animation: badgePulse 3s ease-in-out infinite;
 }
@@ -308,39 +309,39 @@ $cream: #FAF8F3;
 @keyframes badgePulse {
   0%, 100% {
     transform: scale(1);
-    border-color: rgba($coral, 0.3);
+    border-color: rgba($accent, 0.3);
   }
   50% {
     transform: scale(1.05);
-    border-color: rgba($coral, 0.5);
+    border-color: rgba($accent, 0.5);
   }
 }
 
 .live-dot {
   width: 6px;
   height: 6px;
-  background: $coral;
+  background: $accent;
   border-radius: 50%;
-  box-shadow: 0 0 0 0 rgba($coral, 0.7);
+  box-shadow: 0 0 0 0 rgba($accent, 0.7);
   animation: livePulse 2s ease-in-out infinite;
 }
 
 @keyframes livePulse {
   0% {
-    box-shadow: 0 0 0 0 rgba($coral, 0.7);
+    box-shadow: 0 0 0 0 rgba($accent, 0.7);
   }
   50% {
-    box-shadow: 0 0 0 6px rgba($coral, 0);
+    box-shadow: 0 0 0 6px rgba($accent, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba($coral, 0);
+    box-shadow: 0 0 0 0 rgba($accent, 0);
   }
 }
 
 .live-text {
   font-size: 11px;
   font-weight: 800;
-  color: $coral;
+  color: $accent;
   letter-spacing: 0.1em;
 }
 
@@ -349,9 +350,9 @@ $cream: #FAF8F3;
   display: flex;
   gap: 12px;
   padding: 14px 16px;
-  background: linear-gradient(135deg, rgba($sage, 0.08) 0%, rgba($sky, 0.08) 100%);
+  background: linear-gradient(135deg, rgba($campus-teal, 0.08) 0%, rgba($primary, 0.08) 100%);
   border-radius: 14px;
-  border: 1px solid rgba($sage, 0.15);
+  border: 1px solid rgba($campus-teal, 0.15);
 }
 
 .stat-pill {
@@ -378,7 +379,7 @@ $cream: #FAF8F3;
 .stat-value {
   font-size: 20px;
   font-weight: 900;
-  background: linear-gradient(135deg, $sage 0%, $sky 100%);
+  background: linear-gradient(135deg, $campus-teal 0%, $primary 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -473,15 +474,15 @@ $cream: #FAF8F3;
   height: 40%;
 
   &.accent-question {
-    background: linear-gradient(180deg, $sage 0%, darken($sage, 10%) 100%);
+    background: linear-gradient(180deg, $primary 0%, darken($primary, 10%) 100%);
   }
 
   &.accent-resource {
-    background: linear-gradient(180deg, $terra 0%, darken($terra, 10%) 100%);
+    background: linear-gradient(180deg, $campus-teal 0%, darken($campus-teal, 10%) 100%);
   }
 
   &.accent-activity {
-    background: linear-gradient(180deg, $sky 0%, darken($sky, 10%) 100%);
+    background: linear-gradient(180deg, $campus-amber 0%, darken($campus-amber, 10%) 100%);
   }
 }
 
@@ -510,21 +511,21 @@ $cream: #FAF8F3;
 }
 
 .badge-question {
-  color: $sage;
-  background: rgba($sage, 0.1);
-  border: 1px solid rgba($sage, 0.2);
+  color: $primary;
+  background: rgba($primary, 0.1);
+  border: 1px solid rgba($primary, 0.2);
 }
 
 .badge-resource {
-  color: $terra;
-  background: rgba($terra, 0.1);
-  border: 1px solid rgba($terra, 0.2);
+  color: $campus-teal;
+  background: rgba($campus-teal, 0.1);
+  border: 1px solid rgba($campus-teal, 0.2);
 }
 
 .badge-activity {
-  color: $sky;
-  background: rgba($sky, 0.1);
-  border: 1px solid rgba($sky, 0.2);
+  color: $campus-amber;
+  background: rgba($campus-amber, 0.1);
+  border: 1px solid rgba($campus-amber, 0.2);
 }
 
 .badge-text {
@@ -598,12 +599,12 @@ $cream: #FAF8F3;
 .tag {
   font-size: 11px;
   font-weight: 700;
-  color: $sage;
+  color: $primary;
   background: white;
   padding: 5px 10px;
   border-radius: 7px;
   letter-spacing: 0.01em;
-  border: 1px solid rgba($sage, 0.2);
+  border: 1px solid rgba($primary, 0.2);
 }
 
 .reply-badge {
@@ -641,15 +642,15 @@ $cream: #FAF8F3;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: $terra;
-  background: rgba($terra, 0.12);
+  color: $campus-teal;
+  background: rgba($campus-teal, 0.12);
   border-radius: 12px;
-  box-shadow: 0 2px 8px rgba($terra, 0.15);
+  box-shadow: 0 2px 8px rgba($campus-teal, 0.15);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
   .activity-item:hover & {
     transform: scale(1.08) rotateZ(-8deg);
-    box-shadow: 0 4px 12px rgba($terra, 0.25);
+    box-shadow: 0 4px 12px rgba($campus-teal, 0.25);
   }
 }
 
@@ -693,8 +694,8 @@ $cream: #FAF8F3;
 .file-size {
   font-size: 11px;
   font-weight: 700;
-  color: $terra;
-  background: rgba($terra, 0.1);
+  color: $campus-teal;
+  background: rgba($campus-teal, 0.1);
   padding: 3px 8px;
   border-radius: 6px;
 }
@@ -729,7 +730,7 @@ $cream: #FAF8F3;
   color: #666;
 
   svg {
-    color: $sky;
+    color: $campus-amber;
     flex-shrink: 0;
   }
 }

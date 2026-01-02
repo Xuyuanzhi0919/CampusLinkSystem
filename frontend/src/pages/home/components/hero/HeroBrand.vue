@@ -88,13 +88,14 @@ const animateNumber = (index: number) => {
 </script>
 
 <style scoped lang="scss">
-// Campus-Inspired Colors (NO Purple!)
-$terra: #D97757;
-$sage: #7FA99B;
-$coral: #FF8370;
-$sky: #6B9BD1;
-$charcoal: #2C3338;
-$cream: #FAF8F3;
+@import '@/styles/variables.scss';
+
+// 使用系统标准校园色系
+$primary: #2563EB;           // 系统主色 - 蓝
+$campus-teal: #14B8A6;       // 校园青绿 - 资源/社区
+$campus-amber: #F59E0B;      // 校园橙黄 - 活动/成就
+$accent: #FF6B35;            // 系统强调色 - 橙
+$charcoal: $gray-900;        // 系统文本色
 
 .hero-brand {
   display: flex;
@@ -146,7 +147,7 @@ $cream: #FAF8F3;
 
   // Highlight word with subtle accent
   &.highlight {
-    color: $coral;
+    color: $campus-amber;
     position: relative;
 
     &::after {
@@ -156,7 +157,7 @@ $cream: #FAF8F3;
       right: -4px;
       bottom: 8px;
       height: 12px;
-      background: rgba($coral, 0.15);
+      background: rgba($campus-amber, 0.15);
       border-radius: 3px;
       z-index: -1;
       animation: highlightGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
@@ -204,7 +205,7 @@ $cream: #FAF8F3;
     top: 6px;
     bottom: 6px;
     width: 3px;
-    background: linear-gradient(180deg, $sage 0%, $sky 100%);
+    background: linear-gradient(180deg, $campus-teal 0%, $primary 100%);
     border-radius: 2px;
     animation: accentSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
   }
@@ -300,18 +301,18 @@ $cream: #FAF8F3;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
   &.icon-1 {
-    background: rgba($terra, 0.12);
-    color: $terra;
+    background: rgba($campus-amber, 0.12);
+    color: $campus-amber;
   }
 
   &.icon-2 {
-    background: rgba($sage, 0.12);
-    color: $sage;
+    background: rgba($campus-teal, 0.12);
+    color: $campus-teal;
   }
 
   &.icon-3 {
-    background: rgba($sky, 0.12);
-    color: $sky;
+    background: rgba($primary, 0.12);
+    color: $primary;
   }
 
   svg {

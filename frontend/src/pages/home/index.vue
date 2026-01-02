@@ -109,9 +109,6 @@
       @confirm="handleLoginGuideConfirm"
       @cancel="handleLoginGuideCancel"
     />
-
-    <!-- 🎯 全局悬浮发布按钮(FAB) -->
-    <PublishFAB tabbar />
   </view>
 </template>
 
@@ -141,9 +138,6 @@ import ActivityRecommendV2 from './components/ActivityRecommendV2.vue'
 // import ActivityRecommend from './components/ActivityRecommend.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
 import HomeFooter from './components/HomeFooter.vue'
-
-// 全局组件
-import PublishFAB from '@/components/PublishFAB.vue'
 
 // 通用组件
 import LoginModal from '@/components/LoginModal.vue'

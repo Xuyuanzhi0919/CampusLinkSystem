@@ -347,9 +347,6 @@
       </view>
     </view>
 
-    <!-- 🎯 全局悬浮发布按钮(FAB) -->
-    <PublishFAB tabbar />
-
     <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
     <PCFloatingNav v-if="isDesktop" />
@@ -380,7 +377,6 @@ import EmptyState from '@/components/EmptyState.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
-import PublishFAB from '@/components/PublishFAB.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'

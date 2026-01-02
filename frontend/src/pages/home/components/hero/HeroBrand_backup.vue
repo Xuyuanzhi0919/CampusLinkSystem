@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 interface Stat {
   value: number
@@ -107,12 +107,12 @@ const animateNumber = (index: number) => {
 <style scoped lang="scss">
 @import '@/styles/variables.scss';
 
-// 系统标准校园色系
-$primary: #2563EB;
-$campus-teal: #14B8A6;
-$campus-amber: #F59E0B;
-$accent: #FF6B35;
-$charcoal: $gray-900;
+// 使用系统标准校园色系
+$primary: #2563EB;           // 系统主色 - 蓝
+$campus-teal: #14B8A6;       // 校园青绿 - 资源/社区
+$campus-amber: #F59E0B;      // 校园橙黄 - 活动/成就
+$accent: #FF6B35;            // 系统强调色 - 橙
+$charcoal: $gray-900;        // 系统文本色
 
 .hero-brand {
   position: relative;
@@ -129,24 +129,12 @@ $charcoal: $gray-900;
   animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 }
 
-@keyframes slideInLeft {
-  from {
-    opacity: 0;
-    transform: translateX(-60px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 .mega-title {
   margin: 0;
   display: flex;
   align-items: baseline;
   gap: 20px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
 }
 
 .title-massive {
@@ -186,40 +174,14 @@ $charcoal: $gray-900;
     0 8px 24px rgba($primary, 0.4),
     0 0 40px rgba($campus-teal, 0.3);
   animation: badgeFloat 3s ease-in-out infinite;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.3) 50%,
-      transparent 70%);
-    transform: translateX(-100%);
-    animation: shimmer 3s infinite;
-  }
 }
 
 @keyframes badgeFloat {
   0%, 100% {
     transform: translateY(0) rotate(-2deg);
-    box-shadow:
-      0 8px 24px rgba($primary, 0.4),
-      0 0 40px rgba($campus-teal, 0.3);
   }
   50% {
     transform: translateY(-6px) rotate(2deg);
-    box-shadow:
-      0 12px 32px rgba($primary, 0.5),
-      0 0 50px rgba($campus-teal, 0.4);
-  }
-}
-
-@keyframes shimmer {
-  to {
-    transform: translateX(100%);
   }
 }
 
@@ -242,50 +204,100 @@ $charcoal: $gray-900;
   letter-spacing: 0.1em;
 }
 
-// 副标题区
-.subtitle-block {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
-}
-
-.gradient-subtitle {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 40px);
+// 渐变文字
+.gradient-text {
+  font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 800;
-  line-height: 1.2;
-  background: linear-gradient(135deg, $primary 0%, $campus-teal 60%, $campus-amber 100%);
+  background: linear-gradient(135deg, $primary 0%, $campus-teal 50%, $campus-amber 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
   background-size: 200% 200%;
-  animation: gradientFlow 4s ease-in-out infinite;
 }
 
-@keyframes gradientFlow {
+@keyframes gradientShift {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
 
-.typing-line {
+@keyframes titleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 智能脉冲波
+.pulse-rings {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  border: 2px solid $primary;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  &.ring-1 {
+    animation-delay: 0s;
+  }
+
+  &.ring-2 {
+    animation-delay: 0.4s;
+  }
+
+  &.ring-3 {
+    animation-delay: 0.8s;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+// 智能副标题（打字机效果）
+.smart-subtitle {
   margin: 0;
-  font-size: clamp(14px, 1.5vw, 17px);
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.6;
   color: #666;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s backwards;
 }
 
 .typing-text {
   position: relative;
 }
 
-.cursor-blink {
+.ai-cursor {
   display: inline-block;
   width: 2px;
-  height: 16px;
+  height: 18px;
   background: $primary;
   animation: blink 1s step-end infinite;
 }
@@ -298,7 +310,7 @@ $charcoal: $gray-900;
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -306,59 +318,74 @@ $charcoal: $gray-900;
   }
 }
 
-// ==================== 三角形统计卡片组（左下） ====================
-.triangle-stats {
+// ==================== 全息数据卡片 ====================
+.holographic-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  position: relative;
+  gap: 20px;
+  margin-top: 16px;
 
-  // 错位三角形排列
-  .stat-card:nth-child(1) {
-    transform: translateY(0);
-  }
-  .stat-card:nth-child(2) {
-    transform: translateY(12px);
-  }
-  .stat-card:nth-child(3) {
-    transform: translateY(24px);
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
-.stat-card {
+.holo-card {
   position: relative;
-  padding: 20px 16px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
+  padding: 20px 18px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
   overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: cardSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: cardFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-  &.card-1 { animation-delay: 0.6s; }
-  &.card-2 { animation-delay: 0.75s; }
-  &.card-3 { animation-delay: 0.9s; }
+  &.card-1 { animation-delay: 0s; }
+  &.card-2 { animation-delay: 0.15s; }
+  &.card-3 { animation-delay: 0.3s; }
 
   &:hover {
-    transform: translateY(-8px) scale(1.03);
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba($primary, 0.2);
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.85);
 
-    .card-glow {
-      opacity: 0.8;
+    .glow-border {
+      opacity: 1;
     }
 
     .stat-icon {
-      transform: scale(1.2) rotate(5deg);
+      transform: scale(1.15) rotate(-5deg);
+    }
+
+    .data-flow {
+      animation-play-state: paused;
     }
   }
 }
 
-@keyframes cardSlideUp {
+// 发光边框
+.glow-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, $primary, $campus-teal, $campus-amber);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
+}
+
+@keyframes cardFloat {
   from {
     opacity: 0;
-    transform: translateY(40px) scale(0.9);
+    transform: translateY(30px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -366,64 +393,131 @@ $charcoal: $gray-900;
   }
 }
 
-.card-glow {
-  position: absolute;
-  inset: -2px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, transparent, transparent);
-  opacity: 0.3;
-  transition: opacity 0.5s ease;
-  filter: blur(10px);
-  z-index: 0;
-
-  .card-1 & {
-    background: linear-gradient(135deg, $campus-amber 0%, transparent 70%);
-  }
-  .card-2 & {
-    background: linear-gradient(135deg, $campus-teal 0%, transparent 70%);
-  }
-  .card-3 & {
-    background: linear-gradient(135deg, $primary 0%, transparent 70%);
-  }
-}
-
-.stat-content {
+.card-content {
   position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: 14px;
   z-index: 1;
 }
 
-.stat-number {
-  font-size: 32px;
-  font-weight: 900;
-  color: $charcoal;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
+.stat-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
-.stat-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.icon-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $primary, $campus-teal);
+  opacity: 0.2;
+  filter: blur(8px);
+  animation: iconGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconGlowPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.1);
+  }
 }
 
 .stat-icon {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 32px;
-  height: 32px;
-  opacity: 0.15;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  color: $primary;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
 
   .card-1 & { color: $campus-amber; }
   .card-2 & { color: $campus-teal; }
   .card-3 & { color: $primary; }
+}
+
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-number {
+  font-size: 28px;
+  font-weight: 900;
+  color: $charcoal;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #777;
+  letter-spacing: 0.01em;
+}
+
+// 数据流动线
+.data-flow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  opacity: 0.5;
+
+  path {
+    stroke: $primary;
+    animation: dataFlow 3s linear infinite;
+  }
+
+  .card-1 path { stroke: $campus-amber; }
+  .card-2 path { stroke: $campus-teal; }
+  .card-3 path { stroke: $primary; }
+}
+
+@keyframes dataFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+// ==================== AI 思维粒子流 ====================
+.particle-stream {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.4;
+}
+
+.ai-particle {
+  position: absolute;
+  bottom: -10px;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, $primary, $campus-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba($primary, 0.6);
+  animation: particleRise 4s linear infinite;
+}
+
+@keyframes particleRise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-600px) scale(0.3);
+    opacity: 0;
+  }
 }
 </style>

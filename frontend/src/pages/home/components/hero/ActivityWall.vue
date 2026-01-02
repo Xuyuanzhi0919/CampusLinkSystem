@@ -498,6 +498,20 @@ $charcoal: $gray-900;        // 系统文本色
   transform-style: preserve-3d;
   border: 1px solid rgba(0, 0, 0, 0.04);
 
+  // 对角线错位排列 - 沿 -15deg 斜线错开
+  &:nth-child(1) {
+    animation-delay: 0.2s;
+    transform: translateX(0);
+  }
+  &:nth-child(2) {
+    animation-delay: 0.35s;
+    transform: translateX(20px);
+  }
+  &:nth-child(3) {
+    animation-delay: 0.5s;
+    transform: translateX(40px);
+  }
+
   &::before {
     content: '';
     position: absolute;
@@ -516,10 +530,7 @@ $charcoal: $gray-900;        // 系统文本色
   }
 
   &:hover {
-    transform:
-      translateY(-6px)
-      rotateX(2deg)
-      scale(1.01);
+    transform: translateY(-6px) rotateX(2deg) scale(1.01);
     background: rgba(255, 255, 255, 0.95);
     box-shadow:
       0 12px 32px rgba(0, 0, 0, 0.1),
@@ -532,6 +543,17 @@ $charcoal: $gray-900;        // 系统文本色
     .accent-strip {
       height: 100%;
     }
+  }
+
+  // Hover 时保持错位位置
+  &:nth-child(1):hover {
+    transform: translateX(0) translateY(-6px) rotateX(2deg) scale(1.01);
+  }
+  &:nth-child(2):hover {
+    transform: translateX(20px) translateY(-6px) rotateX(2deg) scale(1.01);
+  }
+  &:nth-child(3):hover {
+    transform: translateX(40px) translateY(-6px) rotateX(2deg) scale(1.01);
   }
 
   &.item-question {
@@ -550,17 +572,6 @@ $charcoal: $gray-900;        // 系统文本色
     &::before {
       background: linear-gradient(135deg, $campus-amber 0%, $accent 100%);
     }
-  }
-
-  // Stagger animation delays
-  &:nth-child(1) {
-    animation-delay: 0.1s;
-  }
-  &:nth-child(2) {
-    animation-delay: 0.25s;
-  }
-  &:nth-child(3) {
-    animation-delay: 0.4s;
   }
 }
 

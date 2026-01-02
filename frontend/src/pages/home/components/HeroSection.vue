@@ -58,6 +58,9 @@
       </view>
     </view>
 
+    <!-- 对角斜切分割线 -->
+    <view class="diagonal-divider"></view>
+
     <view class="hero-container">
       <!-- Left: Brand with Color Blocks -->
       <view class="hero-left">
@@ -112,18 +115,89 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
+// ==================== 对角斜切分割线 ====================
+.diagonal-divider {
+  position: absolute;
+  top: 0;
+  left: 38%;
+  width: 6px;
+  height: 100%;
+  transform: rotate(-15deg) translateX(-50%);
+  transform-origin: top;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    $primary 15%,
+    $campus-teal 50%,
+    $campus-amber 85%,
+    transparent 100%);
+  box-shadow:
+    0 0 30px rgba($primary, 0.5),
+    0 0 60px rgba($campus-teal, 0.3);
+  z-index: 1;
+  animation: dividerPulse 3s ease-in-out infinite;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle, $campus-teal, transparent);
+    animation: dotPulse 2s ease-in-out infinite;
+  }
+
+  &::before {
+    top: 20%;
+  }
+
+  &::after {
+    bottom: 20%;
+    animation-delay: 1s;
+  }
+}
+
+@keyframes dividerPulse {
+  0%, 100% {
+    opacity: 0.6;
+    box-shadow:
+      0 0 30px rgba($primary, 0.5),
+      0 0 60px rgba($campus-teal, 0.3);
+  }
+  50% {
+    opacity: 0.9;
+    box-shadow:
+      0 0 40px rgba($primary, 0.7),
+      0 0 80px rgba($campus-teal, 0.5);
+  }
+}
+
+@keyframes dotPulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.5);
+    opacity: 1;
+  }
+}
+
 // ==================== AI 星座图背景 ====================
 .constellation-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
-  background: radial-gradient(
-    ellipse at 30% 40%,
-    rgba($primary, 0.03) 0%,
-    rgba($campus-teal, 0.02) 50%,
-    transparent 70%
-  );
+
+  // 网格图案背景
+  background-image:
+    linear-gradient(rgba($primary, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba($primary, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: -1px -1px;
 }
 
 .constellation-canvas {

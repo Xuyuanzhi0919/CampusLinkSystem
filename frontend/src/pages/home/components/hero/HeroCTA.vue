@@ -155,7 +155,6 @@ const avatars = ref([
     width: 100%;
     padding: 14px 24px;
   }
-}
 
   .cta-text {
     font-size: 15px;

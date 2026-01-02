@@ -346,8 +346,8 @@ onUnmounted(() => {
 
   /* 选中态 */
   &.icon-active {
-    color: #2E7CF6;
-    filter: drop-shadow(0 2px 4px rgba(46, 124, 246, 0.3));
+    color: #2563EB;
+    filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
     animation: iconBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
@@ -382,9 +382,9 @@ onUnmounted(() => {
   transform: translateX(-50%);
   width: 20px;
   height: 2px;
-  background: linear-gradient(90deg, #2E7CF6, #6C5CE7);
+  background: linear-gradient(90deg, #2563EB, #3B82F6);
   border-radius: 2px;
-  box-shadow: 0 0 8px rgba(46, 124, 246, 0.6);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.6);
   animation: underlineGlow 1.5s ease-in-out infinite;
 }
 
@@ -410,7 +410,7 @@ onUnmounted(() => {
 
   /* 选中态 */
   &.text-active {
-    color: #2E7CF6;
+    color: #2563EB;
     font-weight: 600;
   }
 }

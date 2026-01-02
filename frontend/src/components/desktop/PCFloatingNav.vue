@@ -49,7 +49,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 
 // 使用统一导航 composable
-const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
+const { toHome, toResourceList, toPublish, toCommunity, toUserCenter } = useNavigation()
 
 // 导航项配置
 interface NavItem {
@@ -60,11 +60,12 @@ interface NavItem {
   handler: () => void
 }
 
-// 使用 Unicode 符号代替 emoji
+// 使用 Unicode 符号代替 emoji - 与TabBar保持一致
 const navItems: NavItem[] = [
   { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index', handler: toHome },
-  { key: 'resource', label: '资源库', icon: '◈', path: '/pages/resource/index', handler: toResourceList },
-  { key: 'question', label: '问答', icon: '◉', path: '/pages/question/index', handler: toQuestionList },
+  { key: 'resource', label: '资源', icon: '◈', path: '/pages/resource/index', handler: toResourceList },
+  { key: 'publish', label: '发布', icon: '✚', path: '/pages/publish/index', handler: toPublish },
+  { key: 'community', label: '社区', icon: '◉', path: '/pages/community/index', handler: toCommunity },
   { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index', handler: toUserCenter },
 ]
 
@@ -272,11 +273,11 @@ onUnmounted(() => {
     border-color: rgba(46, 124, 246, 0.2);
 
     .item-icon {
-      color: var(--cl-primary, #2E7CF6);
+      color: var(--cl-primary, #2563EB);
     }
 
     .item-label {
-      color: var(--cl-primary, #2E7CF6);
+      color: var(--cl-primary, #2563EB);
       font-weight: 600;
     }
   }
@@ -438,7 +439,7 @@ onUnmounted(() => {
 
   .speed-dial-item.active .item-icon,
   .speed-dial-item.active .item-label {
-    color: var(--cl-primary, #2E7CF6);
+    color: var(--cl-primary, #2563EB);
   }
 }
 </style>

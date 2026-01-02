@@ -82,9 +82,9 @@ let lastScrollTop = 0
 const checkPCMode = () => {
   // #ifdef H5
   const width = window.innerWidth
-  isPCMode.value = width > 750
+  isPCMode.value = width >= 1024
   // #endif
-  
+
   // #ifndef H5
   isPCMode.value = false
   // #endif
@@ -194,8 +194,8 @@ onUnmounted(() => {
     pointer-events: none;
   }
 
-  /* 移动端隐藏 */
-  @media (max-width: 750px) {
+  /* 移动端隐藏 - 统一使用 1024px 断点 */
+  @media (max-width: 1023px) {
     display: none;
   }
 }

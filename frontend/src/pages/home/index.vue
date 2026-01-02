@@ -166,10 +166,10 @@ import { useNavigation } from '@/composables/useNavigation'
 // 统一导航
 const nav = useNavigation()
 
-// 平台判断
+// 平台判断 - 统一使用 1024px 作为桌面端断点
 const isDesktop = computed(() => {
   // #ifdef H5
-  return window.innerWidth > 768
+  return window.innerWidth >= 1024
   // #endif
   // #ifndef H5
   return false

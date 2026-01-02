@@ -1,48 +1,59 @@
 <template>
   <view class="hero-brand">
-    <!-- 状态标签条 -->
-    <view class="status-bar">
-      <view class="status-indicator">
-        <view class="live-dot"></view>
-        <text class="status-text">校园学习互助进行中</text>
-      </view>
-      <view class="status-divider"></view>
-      <view class="status-scroll">
-        <view class="scroll-track" :style="{ transform: `translateX(-${scrollIndex * 100}%)` }">
-          <text class="scroll-item">今天已有 <text class="highlight">{{ stats.todayQuestions }}</text> 位同学发起提问</text>
-          <text class="scroll-item">已有 <text class="highlight">{{ stats.schoolCount }}</text> 所高校加入</text>
-          <text class="scroll-item"><text class="highlight">{{ stats.solvedRate }}%</text> 问题 3 分钟内响应</text>
-        </view>
-      </view>
+    <!-- Live Status Pill -->
+    <view class="status-pill">
+      <view class="pulse-ring"></view>
+      <view class="pulse-dot"></view>
+      <text class="status-text">{{ currentStat.text }}</text>
     </view>
 
-    <!-- 主标题 + 副标题 -->
-    <view class="headline-section">
-      <view class="headline">
-        <text class="title-line-1">学习不掉线</text>
-        <view class="title-line-2">
-          <text class="title-normal">校园里，</text>
-          <view class="title-highlight-wrapper">
-            <text class="title-highlight">随时有人解答</text>
-            <view class="highlight-underline"></view>
-          </view>
-        </view>
-      </view>
-      <text class="subtitle">
-        不只是问答平台，更是你所在高校的「<text class="emphasis">学习互助中枢</text>」
-      </text>
+    <!-- Headline -->
+    <view class="headline">
+      <h1 class="title">
+        <span class="title-line">
+          <span class="word word-1">学习</span>
+          <span class="word word-2">不掉线</span>
+        </span>
+        <span class="title-line title-line-2">
+          <span class="word-static">校园里，</span>
+          <span class="word-highlight">
+            <span class="highlight-text">随时有人解答</span>
+            <svg class="highlight-underline" viewBox="0 0 200 20" preserveAspectRatio="none">
+              <path d="M0 15 Q 50 5, 100 15 T 200 15" stroke="url(#gradient)" stroke-width="3" fill="none" stroke-linecap="round"/>
+              <defs>
+                <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#3B82F6" stop-opacity="0.4"/>
+                  <stop offset="50%" stop-color="#60A5FA" stop-opacity="0.6"/>
+                  <stop offset="100%" stop-color="#3B82F6" stop-opacity="0.4"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </span>
+        </span>
+      </h1>
+      <p class="subtitle">
+        <span class="subtitle-badge">AI加持</span>
+        <span class="subtitle-text">不只是问答平台，更是你所在高校的</span>
+        <span class="subtitle-emphasis">「学习互助中枢」</span>
+      </p>
     </view>
 
-    <!-- 价值点三连 -->
-    <view class="value-points">
-      <view class="value-item" v-for="item in valuePoints" :key="item.label">
-        <view class="value-icon" :class="item.type">
-          <component :is="getIcon(item.type)" />
+    <!-- Dynamic Stats Grid -->
+    <view class="stats-grid">
+      <view
+        v-for="(stat, index) in stats"
+        :key="stat.label"
+        class="stat-card"
+        :style="{ animationDelay: `${index * 0.1}s` }"
+      >
+        <view class="stat-icon" :class="`stat-${stat.type}`">
+          <component :is="getIcon(stat.type)" />
         </view>
-        <view class="value-data">
-          <text class="value-number">{{ item.displayValue }}</text>
-          <text class="value-label">{{ item.label }}</text>
+        <view class="stat-content">
+          <text class="stat-value">{{ stat.displayValue }}</text>
+          <text class="stat-label">{{ stat.label }}</text>
         </view>
+        <view class="stat-glow" :class="`glow-${stat.type}`"></view>
       </view>
     </view>
   </view>
@@ -51,74 +62,52 @@
 <script setup lang="ts">
 import { ref, h, onMounted, onUnmounted } from 'vue'
 
-interface Stats {
-  todayQuestions: number
-  schoolCount: number
-  solvedRate: number
-}
-
-interface ValuePoint {
-  type: 'solved' | 'users' | 'response'
+interface Stat {
+  type: 'questions' | 'users' | 'response'
   value: number
   displayValue: string
   label: string
-  suffix?: string
+  icon: string
 }
 
-const stats = ref<Stats>({
-  todayQuestions: 132,
-  schoolCount: 56,
-  solvedRate: 95,
-})
+interface CurrentStat {
+  text: string
+}
 
-const scrollIndex = ref(0)
-const valuePoints = ref<ValuePoint[]>([
-  { type: 'solved', value: 3420, displayValue: '0', label: '已解决问题', suffix: '+' },
-  { type: 'users', value: 8960, displayValue: '0', label: '参与同学', suffix: '+' },
-  { type: 'response', value: 95, displayValue: '0', label: '3分钟响应率', suffix: '%' }
+const currentStat = ref<CurrentStat>({ text: '今日132位同学发起提问' })
+const stats = ref<Stat[]>([
+  { type: 'questions', value: 3420, displayValue: '0+', label: '已解决问题', icon: '✓' },
+  { type: 'users', value: 8960, displayValue: '0+', label: '参与同学', icon: '👥' },
+  { type: 'response', value: 95, displayValue: '0%', label: '3分钟响应', icon: '⚡' }
 ])
 
-// 图标组件
-const getIcon = (type: string) => {
-  const icons: Record<string, () => ReturnType<typeof h>> = {
-    solved: () => h('svg', { width: '22', height: '22', viewBox: '0 0 24 24', fill: 'none' }, [
-      h('path', { d: 'M9 12L11 14L15 10', stroke: 'currentColor', 'stroke-width': '2.5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }),
-      h('circle', { cx: '12', cy: '12', r: '9', stroke: 'currentColor', 'stroke-width': '2' })
-    ]),
-    users: () => h('svg', { width: '22', height: '22', viewBox: '0 0 24 24', fill: 'none' }, [
-      h('path', { d: 'M17 21V19C17 16.7909 15.2091 15 13 15H5C2.79086 15 1 16.7909 1 19V21', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round' }),
-      h('circle', { cx: '9', cy: '7', r: '4', stroke: 'currentColor', 'stroke-width': '2' })
-    ]),
-    response: () => h('svg', { width: '22', height: '22', viewBox: '0 0 24 24', fill: 'none' }, [
-      h('path', { d: 'M13 2L3 14H12L11 22L21 10H12L13 2Z', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
-    ])
-  }
-  return icons[type] || icons.solved
-}
+const statTexts = [
+  '今日132位同学发起提问',
+  '已有56所高校加入',
+  '95%问题3分钟内响应'
+]
+let statIndex = 0
 
-// 状态栏滚动
-let scrollTimer: number | null = null
+// Cycle through stats
+let statTimer: number | null = null
 onMounted(() => {
-  scrollTimer = window.setInterval(() => {
-    scrollIndex.value = (scrollIndex.value + 1) % 3
-  }, 3000)
+  statTimer = window.setInterval(() => {
+    statIndex = (statIndex + 1) % statTexts.length
+    currentStat.value.text = statTexts[statIndex]
+  }, 3500)
 
-  // 数字动画
-  valuePoints.value.forEach((point, index) => {
-    animateNumber(index)
+  // Animate numbers
+  stats.value.forEach((stat, index) => {
+    animateValue(index)
   })
 })
 
 onUnmounted(() => {
-  if (scrollTimer) {
-    clearInterval(scrollTimer)
-  }
+  if (statTimer) clearInterval(statTimer)
 })
 
-// 数字滚动动画
-const animateNumber = (index: number) => {
-  const target = valuePoints.value[index].value
-  const suffix = valuePoints.value[index].suffix || ''
+const animateValue = (index: number) => {
+  const target = stats.value[index].value
   const duration = 2000
   const steps = 60
   const increment = target / steps
@@ -130,290 +119,396 @@ const animateNumber = (index: number) => {
       current = target
       clearInterval(timer)
     }
-    valuePoints.value[index].displayValue = Math.floor(current).toLocaleString() + suffix
+    const suffix = stats.value[index].type === 'response' ? '%' : '+'
+    stats.value[index].displayValue = Math.floor(current).toLocaleString() + suffix
   }, duration / steps)
+}
+
+// Icon components
+const getIcon = (type: string) => {
+  const icons: Record<string, () => ReturnType<typeof h>> = {
+    questions: () => h('svg', { width: '24', height: '24', viewBox: '0 0 24 24', fill: 'none' }, [
+      h('circle', { cx: '12', cy: '12', r: '10', stroke: 'currentColor', 'stroke-width': '2' }),
+      h('path', { d: 'M9 12L11 14L15 10', stroke: 'currentColor', 'stroke-width': '2.5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' })
+    ]),
+    users: () => h('svg', { width: '24', height: '24', viewBox: '0 0 24 24', fill: 'none' }, [
+      h('circle', { cx: '9', cy: '7', r: '4', stroke: 'currentColor', 'stroke-width': '2' }),
+      h('path', { d: 'M3 21v-2c0-3.87 3.13-7 7-7 1.27 0 2.47.34 3.5.93', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round' }),
+      h('circle', { cx: '17', cy: '17', r: '3', stroke: 'currentColor', 'stroke-width': '2' })
+    ]),
+    response: () => h('svg', { width: '24', height: '24', viewBox: '0 0 24 24', fill: 'none' }, [
+      h('path', { d: 'M13 2L3 14h9l-1 8 10-12h-9l1-8z', stroke: 'currentColor', 'stroke-width': '2', 'stroke-linecap': 'round', 'stroke-linejoin': 'round', fill: 'currentColor' })
+    ])
+  }
+  return icons[type] || icons.questions
 }
 </script>
 
 <style scoped lang="scss">
+$electric: #3B82F6;
+$neon: #60A5FA;
+$accent: #F59E0B;
+$success: #10B981;
+
 .hero-brand {
   display: flex;
   flex-direction: column;
-  gap: 32px;
-}
-
-// 状态标签条
-.status-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  background: rgba(37, 99, 235, 0.05);
-  border: 1px solid rgba(37, 99, 235, 0.1);
-  border-radius: 24px;
-  width: fit-content;
+  gap: 40px;
 
   @media (max-width: 768px) {
-    padding: 8px 12px;
-    gap: 8px;
-    font-size: 12px;
+    gap: 32px;
   }
 }
 
-.status-indicator {
-  display: flex;
+// ==================== Live Status Pill ====================
+.status-pill {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 12px 20px;
+  background: rgba(white, 0.08);
+  border: 1px solid rgba(white, 0.15);
+  border-radius: 100px;
+  backdrop-filter: blur(20px);
+  width: fit-content;
+  animation: pillFloat 3s ease-in-out infinite;
 }
 
-.live-dot {
-  width: 8px;
-  height: 8px;
-  background: #10B981;
+@keyframes pillFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.pulse-ring {
+  position: absolute;
+  left: 12px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid $success;
   border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
+  animation: pulse-ring 2s ease-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.8);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: $success;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba($success, 0.6);
 }
 
 .status-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #1F2937;
+  color: rgba(white, 0.9);
+  letter-spacing: 0.02em;
+  animation: textFade 3.5s ease-in-out infinite;
 }
 
-.status-divider {
-  width: 1px;
-  height: 16px;
-  background: rgba(0, 0, 0, 0.1);
+@keyframes textFade {
+  0%, 90%, 100% { opacity: 1; }
+  45%, 55% { opacity: 0.7; }
 }
 
-.status-scroll {
-  overflow: hidden;
-  width: 280px;
-
-  @media (max-width: 768px) {
-    width: 200px;
-  }
-
-  @media (max-width: 480px) {
-    width: 160px;
-  }
-}
-
-.scroll-track {
-  display: flex;
-  transition: transform 0.5s ease;
-}
-
-.scroll-item {
-  flex-shrink: 0;
-  width: 280px;
-  font-size: 13px;
-  color: #6B7280;
-
-  .highlight {
-    color: #2563EB;
-    font-weight: 700;
-  }
-
-  @media (max-width: 768px) {
-    width: 200px;
-    font-size: 12px;
-  }
-
-  @media (max-width: 480px) {
-    width: 160px;
-    font-size: 11px;
-  }
-}
-
-// 主标题区
-.headline-section {
+// ==================== Headline ====================
+.headline {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
-.headline {
+.title {
+  margin: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.title-line-1 {
-  font-size: 48px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: #111827;
-  letter-spacing: -0.02em;
-
-  @media (max-width: 768px) {
-    font-size: 36px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 28px;
-  }
-}
-
-.title-line-2 {
+.title-line {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
 
-  @media (max-width: 768px) {
-    gap: 8px;
-    flex-wrap: wrap;
+.word {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  color: white;
+  letter-spacing: -0.03em;
+  display: inline-block;
+  animation: wordSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  &.word-1 {
+    animation-delay: 0.1s;
+  }
+
+  &.word-2 {
+    background: linear-gradient(135deg, $electric 0%, $neon 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation-delay: 0.2s;
   }
 }
 
-.title-normal {
-  font-size: 48px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: #111827;
-
-  @media (max-width: 768px) {
-    font-size: 36px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 28px;
-  }
+.word-static {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  color: white;
+  letter-spacing: -0.03em;
+  opacity: 0.9;
 }
 
-.title-highlight-wrapper {
+.word-highlight {
   position: relative;
+  display: inline-block;
 }
 
-.title-highlight {
-  font-size: 48px;
-  font-weight: 800;
-  line-height: 1.1;
-  color: #2563EB;
+.highlight-text {
+  font-size: clamp(40px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  background: linear-gradient(135deg, $electric 0%, $neon 50%, #93C5FD 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.03em;
   position: relative;
   z-index: 1;
+  animation: gradientShift 3s ease-in-out infinite;
+}
 
-  @media (max-width: 768px) {
-    font-size: 36px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 28px;
-  }
+@keyframes gradientShift {
+  0%, 100% { filter: hue-rotate(0deg); }
+  50% { filter: hue-rotate(10deg); }
 }
 
 .highlight-underline {
   position: absolute;
-  bottom: 8px;
+  bottom: -8px;
   left: 0;
-  right: 0;
-  height: 12px;
-  background: linear-gradient(90deg, rgba(37, 99, 235, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
-  border-radius: 6px;
+  width: 100%;
+  height: 20px;
   z-index: 0;
+  animation: underlineDraw 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
 }
 
+@keyframes underlineDraw {
+  from {
+    opacity: 0;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+  }
+  to {
+    opacity: 1;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes wordSlide {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ==================== Subtitle ====================
 .subtitle {
-  font-size: 18px;
+  margin: 0;
+  font-size: clamp(16px, 2vw, 20px);
   line-height: 1.6;
-  color: #6B7280;
-
-  .emphasis {
-    color: #2563EB;
-    font-weight: 600;
-  }
-
-  @media (max-width: 768px) {
-    font-size: 16px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 14px;
-  }
-}
-
-// 价值点
-.value-points {
-  display: flex;
-  gap: 32px;
-
-  @media (max-width: 768px) {
-    gap: 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  @media (max-width: 480px) {
-    gap: 16px;
-  }
-}
-
-.value-item {
+  color: rgba(white, 0.7);
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
-.value-icon {
-  width: 44px;
-  height: 44px;
+.subtitle-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: linear-gradient(135deg, $accent, #F97316);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: 0 2px 8px rgba($accent, 0.3);
+}
+
+.subtitle-text {
+  color: rgba(white, 0.75);
+}
+
+.subtitle-emphasis {
+  color: $neon;
+  font-weight: 700;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, $neon, transparent);
+    animation: emphasisGlow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes emphasisGlow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+// ==================== Stats Grid ====================
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.stat-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px;
+  background: rgba(white, 0.05);
+  border: 1px solid rgba(white, 0.1);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: statSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  &:hover {
+    transform: translateY(-4px);
+    background: rgba(white, 0.08);
+    border-color: rgba(white, 0.2);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+
+    .stat-glow {
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 16px 18px;
+  }
+}
+
+@keyframes statSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stat-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
+  color: white;
+  position: relative;
+  z-index: 1;
 
-  &.solved {
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
+  &.stat-questions {
+    background: linear-gradient(135deg, $success 0%, #059669 100%);
+    box-shadow: 0 4px 16px rgba($success, 0.3);
   }
 
-  &.users {
-    background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
-    color: white;
+  &.stat-users {
+    background: linear-gradient(135deg, $electric 0%, #1E40AF 100%);
+    box-shadow: 0 4px 16px rgba($electric, 0.3);
   }
 
-  &.response {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
-    color: white;
+  &.stat-response {
+    background: linear-gradient(135deg, $accent 0%, #D97706 100%);
+    box-shadow: 0 4px 16px rgba($accent, 0.3);
   }
 }
 
-.value-data {
+.stat-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 2px;
 }
 
-.value-number {
-  font-size: 24px;
-  font-weight: 700;
-  color: #111827;
+.stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: white;
   line-height: 1;
+  letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
-    font-size: 20px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 18px;
+    font-size: 24px;
   }
 }
 
-.value-label {
-  font-size: 13px;
-  color: #6B7280;
-  margin-top: 4px;
+.stat-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(white, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
 
-  @media (max-width: 768px) {
-    font-size: 12px;
+.stat-glow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  border-radius: 16px;
+
+  &.glow-questions {
+    background: radial-gradient(circle at 50% 50%, rgba($success, 0.15) 0%, transparent 70%);
   }
 
-  @media (max-width: 480px) {
-    font-size: 11px;
+  &.glow-users {
+    background: radial-gradient(circle at 50% 50%, rgba($electric, 0.15) 0%, transparent 70%);
+  }
+
+  &.glow-response {
+    background: radial-gradient(circle at 50% 50%, rgba($accent, 0.15) 0%, transparent 70%);
   }
 }
 </style>

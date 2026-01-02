@@ -30,22 +30,57 @@
       </view>
     </transition-group>
 
+    <!-- Tooltip 提示 -->
+    <transition name="tooltip-fade">
+      <view
+        v-show="!isExpanded && showTooltip"
+        class="fab-tooltip"
+      >
+        {{ tooltipText }}
+      </view>
+    </transition>
+
     <!-- 主悬浮按钮 FAB -->
     <view
       class="main-fab"
-      :class="{ expanded: isExpanded }"
-      @click="toggleMenu"
-      aria-label="打开快速菜单"
+      :class="{ expanded: isExpanded, 'has-progress': showProgress }"
+      @click="handleFabClick"
+      @mouseenter="showTooltip = true"
+      @mouseleave="showTooltip = false"
+      aria-label="快捷操作"
       role="button"
       tabindex="0"
     >
-      <text class="fab-icon">{{ isExpanded ? '×' : '≡' }}</text>
+      <!-- 滚动进度环 -->
+      <svg
+        v-if="showProgress"
+        class="progress-ring"
+        width="64"
+        height="64"
+      >
+        <circle
+          class="progress-ring-bg"
+          cx="32"
+          cy="32"
+          r="28"
+        />
+        <circle
+          class="progress-ring-progress"
+          cx="32"
+          cy="32"
+          r="28"
+          :style="{ strokeDashoffset: progressOffset }"
+        />
+      </svg>
+
+      <!-- FAB 图标 -->
+      <text class="fab-icon">{{ fabIcon }}</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 
 // 使用统一导航 composable
@@ -74,7 +109,49 @@ const isExpanded = ref(false)
 const currentPage = ref('')
 const isPCMode = ref(false)
 const isHidden = ref(false)
+const showTooltip = ref(false)
+const scrollTop = ref(0)
+const scrollHeight = ref(0)
+const clientHeight = ref(0)
+
 let lastScrollTop = 0
+
+// 滚动进度 (0-100)
+const scrollProgress = computed(() => {
+  if (scrollHeight.value <= clientHeight.value) return 0
+  const progress = (scrollTop.value / (scrollHeight.value - clientHeight.value)) * 100
+  return Math.min(100, Math.max(0, progress))
+})
+
+// 是否显示进度环
+const showProgress = computed(() => scrollTop.value > 100)
+
+// 进度环参数
+const circumference = 2 * Math.PI * 28 // 2πr, r=28
+const progressOffset = computed(() => {
+  const progress = scrollProgress.value
+  return circumference - (progress / 100) * circumference
+})
+
+// 智能图标切换
+const fabIcon = computed(() => {
+  if (isExpanded.value) {
+    return '×' // 展开状态：关闭图标
+  } else if (scrollTop.value < 300) {
+    return '≡' // 顶部：菜单图标
+  } else {
+    return '↑' // 下方：返回顶部图标
+  }
+})
+
+// Tooltip 文字
+const tooltipText = computed(() => {
+  if (scrollTop.value < 300) {
+    return '快捷导航'
+  } else {
+    return '返回顶部'
+  }
+})
 
 /**
  * 检测是否为PC模式
@@ -105,6 +182,31 @@ const closeMenu = () => {
 }
 
 /**
+ * 返回顶部
+ */
+const scrollToTop = () => {
+  // #ifdef H5
+  window.scrollTo({ top: 0, behavior: 'smooth' })
+  // #endif
+  // #ifndef H5
+  uni.pageScrollTo({ scrollTop: 0, duration: 300 })
+  // #endif
+}
+
+/**
+ * FAB 点击处理 - 智能行为
+ */
+const handleFabClick = () => {
+  if (scrollTop.value < 300) {
+    // 顶部：展开菜单
+    toggleMenu()
+  } else {
+    // 下方：返回顶部
+    scrollToTop()
+  }
+}
+
+/**
  * 导航到指定页面 - 使用 useNavigation 统一导航
  */
 const navigateTo = (item: NavItem) => {
@@ -125,22 +227,27 @@ const getCurrentPage = () => {
 }
 
 /**
- * 处理滚动 - 下滑隐藏，上滑显示
+ * 处理滚动 - 下滑隐藏，上滑显示 + 进度计算
  */
 const handleScroll = () => {
   // #ifdef H5
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
+  const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop
+  scrollTop.value = currentScrollTop
+  scrollHeight.value = document.documentElement.scrollHeight
+  clientHeight.value = document.documentElement.clientHeight
 
-  if (scrollTop > lastScrollTop && scrollTop > 100) {
+  // 下滑隐藏，上滑显示
+  if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
     // 向下滚动且超过 100px，隐藏 FAB
     isHidden.value = true
     isExpanded.value = false
-  } else if (scrollTop < lastScrollTop) {
+    showTooltip.value = false
+  } else if (currentScrollTop < lastScrollTop) {
     // 向上滚动，显示 FAB
     isHidden.value = false
   }
 
-  lastScrollTop = scrollTop
+  lastScrollTop = currentScrollTop
   // #endif
 }
 
@@ -150,6 +257,11 @@ const handleScroll = () => {
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && isExpanded.value) {
     closeMenu()
+  }
+  // Home 键返回顶部
+  if (e.key === 'Home') {
+    e.preventDefault()
+    scrollToTop()
   }
 }
 
@@ -165,6 +277,10 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll, { passive: true })
   // 监听键盘事件
   window.addEventListener('keydown', handleKeydown)
+
+  // 初始化滚动数据
+  scrollHeight.value = document.documentElement.scrollHeight
+  clientHeight.value = document.documentElement.clientHeight
   // #endif
 })
 
@@ -181,13 +297,13 @@ onUnmounted(() => {
 /* ========== 容器 ========== */
 .floating-nav {
   position: fixed;
-  right: 16px; /* 文档规范：离右边 16 */
-  bottom: 16px; /* 文档规范：离下边 16 */
+  right: 24px;
+  bottom: 24px;
   z-index: 9999;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
               opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* 隐藏状态 - 文档规范：滚动隐藏、上滑出现 */
+  /* 隐藏状态 */
   &.hidden {
     transform: translateY(100px);
     opacity: 0;
@@ -200,11 +316,11 @@ onUnmounted(() => {
   }
 }
 
-/* ========== 遮罩层 - 文档规范：rgba(14,19,32,.18) ========== */
+/* ========== 遮罩层 ========== */
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(14, 19, 32, 0.18); /* 文档规范 */
+  background: rgba(14, 19, 32, 0.18);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: -1;
@@ -214,14 +330,14 @@ onUnmounted(() => {
   }
 }
 
-/* ========== Speed Dial 菜单项容器 - 文档规范：向上弹出 ========== */
+/* ========== Speed Dial 菜单项容器 ========== */
 .speed-dial-items {
   position: absolute;
   right: 0;
-  bottom: 72px; /* FAB 56px + 间距 16px */
+  bottom: 80px; /* FAB 64px + 间距 16px */
   display: flex;
   flex-direction: column;
-  gap: 8px; /* 间距增加 */
+  gap: 8px;
 }
 
 /* ========== Speed Dial 单项 ========== */
@@ -252,7 +368,7 @@ onUnmounted(() => {
 
     /* 焦点环 */
     &:focus-visible {
-      outline: 2px solid rgba(46, 124, 246, 0.35);
+      outline: 2px solid rgba(37, 99, 235, 0.35);
       outline-offset: 2px;
     }
   }
@@ -269,8 +385,8 @@ onUnmounted(() => {
 
   /* 激活态 */
   &.active .item-content {
-    background: rgba(46, 124, 246, 0.10);
-    border-color: rgba(46, 124, 246, 0.2);
+    background: rgba(37, 99, 235, 0.10);
+    border-color: rgba(37, 99, 235, 0.2);
 
     .item-icon {
       color: var(--cl-primary, #2563EB);
@@ -299,28 +415,65 @@ onUnmounted(() => {
   transition: all 0.2s ease;
 }
 
-/* ========== 主悬浮按钮 FAB - 文档规范 ========== */
+/* ========== Tooltip 提示 ========== */
+.fab-tooltip {
+  position: absolute;
+  right: 76px; /* FAB 64px + 间距 12px */
+  top: 50%;
+  transform: translateY(-50%);
+
+  background: rgba(31, 41, 55, 0.95);
+  color: #FFFFFF;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  z-index: 10000;
+
+  /* 小箭头 */
+  &::after {
+    content: '';
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%) rotate(45deg);
+    width: 8px;
+    height: 8px;
+    background: rgba(31, 41, 55, 0.95);
+  }
+}
+
+/* ========== 主悬浮按钮 FAB ========== */
 .main-fab {
-  width: 56px; /* 文档规范：直径 56 */
-  height: 56px;
-  min-width: 56px;
-  min-height: 56px;
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  min-height: 64px;
   border-radius: 50%;
   position: relative;
 
-  /* 主色背景 */
-  background: var(--cl-primary, #2563EB);
+  /* 渐变色背景 + 呼吸动画 */
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
 
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
 
-  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
+  box-shadow:
+    0 4px 14px rgba(37, 99, 235, 0.25),
+    0 0 0 0 rgba(37, 99, 235, 0.4);
 
-  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1); /* 文档规范：200ms */
+  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
 
-  /* 焦点环 - 文档规范：2px 主色 35% 透明 */
+  /* 呼吸动画 */
+  animation: breathe 2s ease-in-out infinite;
+
+  /* 焦点环 */
   &:focus-visible {
     outline: 2px solid rgba(37, 99, 235, 0.35);
     outline-offset: 2px;
@@ -329,15 +482,18 @@ onUnmounted(() => {
   /* 悬停态 */
   &:hover {
     transform: scale(1.05);
-    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
-    filter: brightness(0.95);
+    box-shadow:
+      0 6px 20px rgba(37, 99, 235, 0.35),
+      0 0 20px rgba(37, 99, 235, 0.2);
+    animation: none; /* 悬停时停止呼吸动画 */
   }
 
   /* 按下态 */
   &:active {
     transform: scale(0.98);
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2),
-                0 4px 12px rgba(46, 124, 246, 0.2);
+    box-shadow:
+      inset 0 2px 8px rgba(0, 0, 0, 0.2),
+      0 4px 12px rgba(37, 99, 235, 0.2);
   }
 
   /* 展开态 */
@@ -346,17 +502,64 @@ onUnmounted(() => {
       transform: rotate(180deg) scale(0.9);
     }
   }
+
+  /* 有进度时增加内边距给进度环留空间 */
+  &.has-progress {
+    .fab-icon {
+      z-index: 2;
+    }
+  }
 }
 
 .fab-icon {
-  font-size: 24px;
+  font-size: 28px;
   color: #ffffff;
   font-weight: 400;
   line-height: 1;
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  z-index: 1;
+}
+
+/* ========== 滚动进度环 ========== */
+.progress-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotate(-90deg);
+  pointer-events: none;
+}
+
+.progress-ring-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 3;
+}
+
+.progress-ring-progress {
+  fill: none;
+  stroke: #FFFFFF;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 175.93; /* 2πr = 2 × π × 28 */
+  transition: stroke-dashoffset 0.2s ease;
 }
 
 /* ========== 动画 ========== */
+
+/* 呼吸动画 */
+@keyframes breathe {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px rgba(37, 99, 235, 0.25),
+      0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 4px 14px rgba(37, 99, 235, 0.25),
+      0 0 0 8px rgba(37, 99, 235, 0);
+  }
+}
 
 /* 遮罩淡入淡出 */
 .fade-enter-active {
@@ -369,6 +572,17 @@ onUnmounted(() => {
 
 .fade-enter-from,
 .fade-leave-to {
+  opacity: 0;
+}
+
+/* Tooltip 淡入淡出 */
+.tooltip-fade-enter-active,
+.tooltip-fade-leave-active {
+  transition: opacity 0.15s ease;
+}
+
+.tooltip-fade-enter-from,
+.tooltip-fade-leave-to {
   opacity: 0;
 }
 
@@ -408,6 +622,10 @@ onUnmounted(() => {
   transition-delay: 75ms;
 }
 
+.speed-dial-item:nth-child(5) {
+  transition-delay: 100ms;
+}
+
 /* ========== 深色模式 ========== */
 @media (prefers-color-scheme: dark) {
   .backdrop {
@@ -433,8 +651,8 @@ onUnmounted(() => {
   }
 
   .speed-dial-item.active .item-content {
-    background: rgba(46, 124, 246, 0.15);
-    border-color: rgba(46, 124, 246, 0.3);
+    background: rgba(37, 99, 235, 0.15);
+    border-color: rgba(37, 99, 235, 0.3);
   }
 
   .speed-dial-item.active .item-icon,
@@ -443,4 +661,3 @@ onUnmounted(() => {
   }
 }
 </style>
-

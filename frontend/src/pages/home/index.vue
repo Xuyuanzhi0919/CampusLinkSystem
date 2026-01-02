@@ -112,16 +112,6 @@
 
     <!-- 🎯 全局悬浮发布按钮(FAB) -->
     <PublishFAB tabbar />
-
-    <!-- 快速返回顶部按钮 -->
-    <view
-      v-if="showBackToTop"
-      class="back-to-top-btn"
-      :class="{ hidden: hideForFooter }"
-      @click="scrollToTop"
-    >
-      <text class="back-to-top-icon">↑</text>
-    </view>
   </view>
 </template>
 
@@ -186,11 +176,6 @@ const loginGuideActionType = ref('default')
 const loginGuideTitle = ref('需要登录')
 const loginGuideContent = ref('登录后即可继续操作')
 let loginGuideCallback: (() => void) | null = null
-
-// 返回顶部
-const showBackToTop = ref(false)
-const hideForFooter = ref(false)
-let scrollTimer: any = null
 
 // 组件引用
 const featuredRef = ref<any>(null)
@@ -313,36 +298,6 @@ const handleLoginGuideCancel = () => {
   loginGuideCallback = null
 }
 
-// ===================== 滚动处理 =====================
-
-const handlePageScroll = () => {
-  // #ifdef H5
-  if (scrollTimer) clearTimeout(scrollTimer)
-  scrollTimer = setTimeout(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-    showBackToTop.value = scrollTop > 300
-
-    // 检测是否滚动到 Footer 区域
-    const footer = document.querySelector('.home-footer')
-    if (footer) {
-      const footerTop = footer.getBoundingClientRect().top
-      const windowHeight = window.innerHeight
-      // 当 Footer 进入视口时隐藏 FAB
-      hideForFooter.value = footerTop < windowHeight - 100
-    }
-  }, 100)
-  // #endif
-}
-
-const scrollToTop = () => {
-  // #ifdef H5
-  window.scrollTo({ top: 0, behavior: 'smooth' })
-  // #endif
-  // #ifndef H5
-  uni.pageScrollTo({ scrollTop: 0, duration: 300 })
-  // #endif
-}
-
 // ===================== 下拉刷新 =====================
 
 onPullDownRefresh(() => {
@@ -361,10 +316,6 @@ onPullDownRefresh(() => {
 // ===================== 生命周期 =====================
 
 onMounted(() => {
-  // #ifdef H5
-  window.addEventListener('scroll', handlePageScroll)
-  // #endif
-
   // 监听直接打开登录弹窗事件
   uni.$on('show-login-modal', () => {
     showLoginModal.value = true
@@ -381,11 +332,6 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  // #ifdef H5
-  window.removeEventListener('scroll', handlePageScroll)
-  if (scrollTimer) clearTimeout(scrollTimer)
-  // #endif
-
   uni.$off('show-login-modal')
   uni.$off('show-login-guide')
 })
@@ -586,54 +532,6 @@ onUnmounted(() => {
 
   @include mobile {
     display: none;
-  }
-}
-
-// 返回顶部按钮（使用统一校园样式）
-.back-to-top-btn {
-  position: fixed;
-  right: 32px;
-  bottom: 80px;
-  width: 48px;
-  height: 48px;
-  background: $white;
-  border-radius: $campus-radius;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: $campus-shadow;
-  cursor: pointer;
-  z-index: $z-fixed;
-  transition: $transition-base;
-  border: 1px solid rgba($campus-blue, 0.1);
-
-  &:hover {
-    box-shadow: $campus-shadow-hover;
-    transform: translateY(-2px);
-    border-color: rgba($campus-blue, 0.2);
-  }
-
-  &.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(20px);
-  }
-
-  @include mobile {
-    right: 16px;
-    bottom: 100px;
-    width: 44px;
-    height: 44px;
-  }
-}
-
-.back-to-top-icon {
-  font-size: 20px;
-  color: $campus-blue;
-  font-weight: $font-weight-bold;
-
-  @include mobile {
-    font-size: 18px;
   }
 }
 </style>

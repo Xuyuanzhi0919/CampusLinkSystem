@@ -18,6 +18,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useNavigation } from '@/composables/useNavigation'
+
+// 使用统一导航 composable
+const { toResourceList, toQuestionList, toTaskList, toClubList } = useNavigation()
 
 const navItems = ref([
   {
@@ -26,6 +30,7 @@ const navItems = ref([
     url: '/pages/resource/index',
     icon: '📖',
     bgColor: '#EFF6FF',
+    handler: toResourceList,
   },
   {
     id: 'qa',
@@ -33,6 +38,7 @@ const navItems = ref([
     url: '/pages/question/index',
     icon: '💬',
     bgColor: '#FFF0EB',
+    handler: toQuestionList,
   },
   {
     id: 'task',
@@ -40,6 +46,7 @@ const navItems = ref([
     url: '/pages/task/index',
     icon: '🤝',
     bgColor: '#F0FDF4',
+    handler: toTaskList,
   },
   {
     id: 'club',
@@ -47,20 +54,17 @@ const navItems = ref([
     url: '/pages/club/list',
     icon: '🎯',
     bgColor: '#FAF5FF',
+    handler: toClubList,
   },
 ])
 
+/**
+ * 处理导航点击 - 使用 useNavigation 统一导航
+ */
 const handleNavigate = (url: string) => {
-  const tabBarPages = [
-    '/pages/home/index',
-    '/pages/resource/index',
-    '/pages/question/index',
-    '/pages/user/index',
-  ]
-  if (tabBarPages.includes(url)) {
-    uni.switchTab({ url })
-  } else {
-    uni.navigateTo({ url })
+  const item = navItems.value.find(item => item.url === url)
+  if (item?.handler) {
+    item.handler()
   }
 }
 </script>

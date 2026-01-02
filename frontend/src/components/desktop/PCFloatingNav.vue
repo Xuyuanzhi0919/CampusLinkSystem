@@ -46,6 +46,10 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useNavigation } from '@/composables/useNavigation'
+
+// 使用统一导航 composable
+const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
 
 // 导航项配置
 interface NavItem {
@@ -53,14 +57,15 @@ interface NavItem {
   label: string
   icon: string
   path: string
+  handler: () => void
 }
 
 // 使用 Unicode 符号代替 emoji
 const navItems: NavItem[] = [
-  { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index' },
-  { key: 'resource', label: '资源库', icon: '◈', path: '/pages/resource/index' },
-  { key: 'question', label: '问答', icon: '◉', path: '/pages/question/index' },
-  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index' },
+  { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index', handler: toHome },
+  { key: 'resource', label: '资源库', icon: '◈', path: '/pages/resource/index', handler: toResourceList },
+  { key: 'question', label: '问答', icon: '◉', path: '/pages/question/index', handler: toQuestionList },
+  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index', handler: toUserCenter },
 ]
 
 // 状态
@@ -99,34 +104,12 @@ const closeMenu = () => {
 }
 
 /**
- * 导航到指定页面
+ * 导航到指定页面 - 使用 useNavigation 统一导航
  */
 const navigateTo = (item: NavItem) => {
-  // 如果是 tabBar 页面，使用 switchTab
-  const tabBarPages = [
-    '/pages/home/index',
-    '/pages/resource/index',
-    '/pages/question/index',
-    '/pages/user/index',
-  ]
-
-  if (tabBarPages.includes(item.path)) {
-    uni.switchTab({
-      url: item.path,
-      success: () => {
-        currentPage.value = item.path
-        isExpanded.value = false
-      },
-    })
-  } else {
-    uni.navigateTo({
-      url: item.path,
-      success: () => {
-        currentPage.value = item.path
-        isExpanded.value = false
-      },
-    })
-  }
+  item.handler()
+  currentPage.value = item.path
+  isExpanded.value = false
 }
 
 /**

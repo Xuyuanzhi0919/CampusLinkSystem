@@ -68,13 +68,17 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useNavigation } from '@/composables/useNavigation'
 
-// Tab 列表配置
+// 使用统一导航 composable
+const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
+
+// Tab 列表配置（保留 path 用于页面索引检测）
 const tabList = [
-  { text: '首页', path: '/pages/home/index' },
-  { text: '资源', path: '/pages/resource/index' },
-  { text: '问答', path: '/pages/question/index' },
-  { text: '我的', path: '/pages/user/index' }
+  { text: '首页', path: '/pages/home/index', handler: toHome },
+  { text: '资源', path: '/pages/resource/index', handler: toResourceList },
+  { text: '问答', path: '/pages/question/index', handler: toQuestionList },
+  { text: '我的', path: '/pages/user/index', handler: toUserCenter }
 ]
 
 // 当前选中索引
@@ -90,17 +94,15 @@ const isDarkMode = ref(false)
 let lastScrollTop = 0
 
 /**
- * 切换 Tab
+ * 切换 Tab - 使用 useNavigation 统一导航
  */
 const switchTab = (index: number) => {
   if (index === currentIndex.value) return
-  
+
   currentIndex.value = index
-  
-  // 使用 uni.switchTab 切换页面
-  uni.switchTab({
-    url: tabList[index].path
-  })
+
+  // 使用 useNavigation 的语义化方法
+  tabList[index].handler()
 }
 
 /**

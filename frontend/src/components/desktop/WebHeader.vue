@@ -148,14 +148,29 @@ import { markNotificationRead, markAllNotificationsRead, getNotificationIcon, fo
 import type { NotificationResponse } from '@/services/notification'
 import type { UserStatsData } from '@/types/user'
 import { useHeaderLogic } from '@/composables/useHeaderLogic'
+import { useNavigation } from '@/composables/useNavigation'
+
+// 使用统一导航 composable
+const {
+  toHome,
+  toResourceList,
+  toQuestionList,
+  toClubList,
+  toActivityList,
+  toUserCenter,
+  toFavorites,
+  toEditProfile,
+  toMessages,
+  navigateTo
+} = useNavigation()
 
 // 导航配置
 const navItems = [
-  { label: '首页', path: '/pages/home/index', isTab: true },
-  { label: '资料', path: '/pages/resource/index', isTab: true },
-  { label: '问答', path: '/pages/question/index', isTab: true },
-  { label: '社团', path: '/pages/club/list', isTab: false },
-  { label: '活动', path: '/pages/club/activity-list', isTab: false },
+  { label: '首页', path: '/pages/home/index', isTab: true, handler: toHome },
+  { label: '资料', path: '/pages/resource/index', isTab: true, handler: toResourceList },
+  { label: '问答', path: '/pages/question/index', isTab: true, handler: toQuestionList },
+  { label: '社团', path: '/pages/club/list', isTab: false, handler: toClubList },
+  { label: '活动', path: '/pages/club/activity-list', isTab: false, handler: toActivityList },
 ]
 
 interface DisplayNotification {
@@ -231,12 +246,11 @@ const isActive = (path: string) => {
   return false
 }
 
-const handleNavClick = (item: { path: string; isTab: boolean }) => {
-  if (item.isTab) {
-    uni.switchTab({ url: item.path })
-  } else {
-    uni.navigateTo({ url: item.path })
-  }
+/**
+ * 导航栏点击 - 使用 useNavigation 统一导航
+ */
+const handleNavClick = (item: { path: string; isTab: boolean; handler: () => void }) => {
+  item.handler()
 }
 
 const syncCheckInStatus = async () => {
@@ -287,20 +301,22 @@ const handleCheckIn = async () => {
   }
 }
 
-// 统计项点击处理
+/**
+ * 统计项点击处理 - 使用 useNavigation 统一导航
+ */
 const handleStatClick = (type: string) => {
   switch (type) {
     case 'answers':
-      uni.navigateTo({ url: '/pages/user/my-answers' })
+      navigateTo('/pages/user/my-answers')
       break
     case 'resources':
-      uni.navigateTo({ url: '/pages/user/my-resources' })
+      navigateTo('/pages/user/my-resources')
       break
     case 'checkin':
       // 签到天数点击不跳转
       break
     case 'likes':
-      uni.navigateTo({ url: '/pages/user/index' })
+      toUserCenter()
       break
   }
 }
@@ -318,8 +334,11 @@ const handleLogin = () => {
   emit('login')
 }
 
+/**
+ * Logo 点击跳转首页 - 使用 useNavigation 统一导航
+ */
 const goToHome = () => {
-  uni.switchTab({ url: '/pages/home/index' })
+  toHome()
 }
 
 // 通知加载（使用共享逻辑）
@@ -397,28 +416,33 @@ const handleNotificationClick = async (notification: any) => {
       unreadCount.value = Math.max(0, unreadCount.value - 1)
     }
     if (notification.linkUrl) {
-      uni.navigateTo({ url: notification.linkUrl })
+      navigateTo(notification.linkUrl)
     }
   } catch (error) {
     console.error('操作失败:', error)
   }
 }
 
+/**
+ * 查看所有通知 - 使用 useNavigation 统一导航
+ */
 const handleViewAllNotifications = () => {
-  uni.navigateTo({ url: '/pages/message/index' })
+  toMessages()
 }
 
+/**
+ * 用户菜单点击 - 使用 useNavigation 统一导航
+ */
 const handleMenuClick = (menuId: string) => {
   switch (menuId) {
     case 'profile':
-      // user/index 是 tabBar 页面，必须用 switchTab
-      uni.switchTab({ url: '/pages/user/index' })
+      toUserCenter()
       break
     case 'favorites':
-      uni.navigateTo({ url: '/pages/user/favorites' })
+      toFavorites()
       break
     case 'settings':
-      uni.navigateTo({ url: '/pages/user/edit-profile' })
+      toEditProfile()
       break
     case 'logout':
       // 显示自定义退出确认弹窗

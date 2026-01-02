@@ -208,6 +208,13 @@ export function useNavigation() {
     navigateTo(`/pages/message/chat?userId=${userId}`)
   }
 
+  // ================== TabBar 主要页面 ==================
+
+  /** 跳转到首页 (TabBar) */
+  const toHome = () => {
+    switchTab('/pages/home/index')
+  }
+
   // ================== 其他 ==================
 
   /** 跳转到 AI 助手 */
@@ -241,6 +248,12 @@ export function useNavigation() {
   }
 
   return {
+    // TabBar 主页面
+    toHome,
+    toQuestionList,
+    toResourceList,
+    toUserCenter,
+
     // 详情页
     toQuestionDetail,
     toResourceDetail,
@@ -258,8 +271,6 @@ export function useNavigation() {
     toPublishActivity,
 
     // 列表页
-    toQuestionList,
-    toResourceList,
     toActivityList,
     toClubList,
     toTaskList,
@@ -270,7 +281,6 @@ export function useNavigation() {
     toSearchResult,
 
     // 用户中心
-    toUserCenter,
     toEditProfile,
     toFavorites,
     toPointsHistory,

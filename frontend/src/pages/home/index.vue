@@ -80,7 +80,7 @@
     <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->
-    <CustomTabBar />
+    <CustomTabBar v-if="!isDesktop" />
 
     <!-- 登录弹窗 -->
     <LoginModal

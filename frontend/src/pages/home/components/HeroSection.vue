@@ -121,9 +121,7 @@ $hero-blue: #2563EB;
   position: relative;
 
   @media (max-width: 1024px) {
-    width: 100%;
-    max-width: 420px;
-    margin: 0 auto;
+    display: none; // 移动端隐藏,优化首屏加载和用户体验
   }
 }
 </style>

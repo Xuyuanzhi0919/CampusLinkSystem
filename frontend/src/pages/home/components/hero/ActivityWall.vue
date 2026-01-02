@@ -153,6 +153,15 @@ onUnmounted(() => {
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 16px;
+  }
 }
 
 .wall-header {
@@ -160,12 +169,22 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   margin-bottom: 20px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
 }
 
 .wall-title {
   font-size: 18px;
   font-weight: 700;
   color: #111827;
+
+  @media (max-width: 480px) {
+    font-size: 16px;
+  }
 }
 
 .live-badge {
@@ -217,6 +236,15 @@ onUnmounted(() => {
     background: #E5E7EB;
     border-radius: 2px;
   }
+
+  @media (max-width: 768px) {
+    max-height: 350px;
+  }
+
+  @media (max-width: 480px) {
+    max-height: 300px;
+    gap: 10px;
+  }
 }
 
 .activity-card {
@@ -230,6 +258,11 @@ onUnmounted(() => {
     border-color: #E5E7EB;
     background: white;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px;
+    border-radius: 10px;
   }
 }
 
@@ -279,6 +312,10 @@ onUnmounted(() => {
   color: #374151;
   line-height: 1.5;
   margin-bottom: 8px;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
 }
 
 .card-tags {
@@ -332,11 +369,20 @@ onUnmounted(() => {
   margin-top: 16px;
   padding-top: 16px;
   border-top: 1px solid #E5E7EB;
+
+  @media (max-width: 480px) {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
 }
 
 .footer-text {
   font-size: 12px;
   color: #9CA3AF;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
 }
 
 .refresh-dot {

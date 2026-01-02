@@ -80,12 +80,18 @@ const avatars = ref([
 .cta-buttons {
   display: flex;
   gap: 16px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 12px;
+  }
 }
 
 .cta-primary {
   position: relative;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
   padding: 14px 28px;
   background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
@@ -98,6 +104,12 @@ const avatars = ref([
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
   }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    padding: 16px 24px;
+  }
+}
 
   .cta-glow {
     position: absolute;
@@ -125,6 +137,7 @@ const avatars = ref([
 .cta-secondary {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   padding: 14px 24px;
   background: transparent;
@@ -137,6 +150,12 @@ const avatars = ref([
     border-color: #2563EB;
     background: rgba(37, 99, 235, 0.05);
   }
+
+  @media (max-width: 640px) {
+    width: 100%;
+    padding: 14px 24px;
+  }
+}
 
   .cta-text {
     font-size: 15px;
@@ -165,12 +184,24 @@ const avatars = ref([
   svg {
     color: #F59E0B;
   }
+
+  @media (max-width: 640px) {
+    font-size: 12px;
+    justify-content: center;
+    text-align: center;
+  }
 }
 
 .social-proof {
   display: flex;
   align-items: center;
   gap: 12px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
+  }
 }
 
 .avatar-stack {
@@ -202,6 +233,10 @@ const avatars = ref([
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  @media (max-width: 640px) {
+    align-items: center;
+  }
 }
 
 .proof-text {
@@ -211,6 +246,10 @@ const avatars = ref([
   .school-names {
     font-weight: 600;
     color: #2563EB;
+  }
+
+  @media (max-width: 640px) {
+    font-size: 12px;
   }
 }
 

@@ -16,14 +16,15 @@
     <GridNavigation v-if="!isDesktop" />
     <!-- #endif -->
 
-    <!-- 2. Hero 主视觉区 -->
+    <!-- 2. Hero 主视觉区（桌面端和移动端自适应） -->
+    <!-- #ifdef H5 -->
     <HeroSection
-      v-if="isDesktop"
       @upload="handleUpload"
       @ask="handleAsk"
       @task="handleTask"
       @tag-click="handleTagClick"
     />
+    <!-- #endif -->
 
     <!-- 3. 页面主体（8:4 栅格布局） -->
     <view class="main-content">

@@ -80,7 +80,7 @@ const valuePoints = ref<ValuePoint[]>([
 
 // 图标组件
 const getIcon = (type: string) => {
-  const icons = {
+  const icons: Record<string, () => ReturnType<typeof h>> = {
     solved: () => h('svg', { width: '22', height: '22', viewBox: '0 0 24 24', fill: 'none' }, [
       h('path', { d: 'M9 12L11 14L15 10', stroke: 'currentColor', 'stroke-width': '2.5', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }),
       h('circle', { cx: '12', cy: '12', r: '9', stroke: 'currentColor', 'stroke-width': '2' })
@@ -152,6 +152,12 @@ const animateNumber = (index: number) => {
   border: 1px solid rgba(37, 99, 235, 0.1);
   border-radius: 24px;
   width: fit-content;
+
+  @media (max-width: 768px) {
+    padding: 8px 12px;
+    gap: 8px;
+    font-size: 12px;
+  }
 }
 
 .status-indicator {
@@ -188,6 +194,14 @@ const animateNumber = (index: number) => {
 .status-scroll {
   overflow: hidden;
   width: 280px;
+
+  @media (max-width: 768px) {
+    width: 200px;
+  }
+
+  @media (max-width: 480px) {
+    width: 160px;
+  }
 }
 
 .scroll-track {
@@ -204,6 +218,16 @@ const animateNumber = (index: number) => {
   .highlight {
     color: #2563EB;
     font-weight: 700;
+  }
+
+  @media (max-width: 768px) {
+    width: 200px;
+    font-size: 12px;
+  }
+
+  @media (max-width: 480px) {
+    width: 160px;
+    font-size: 11px;
   }
 }
 
@@ -226,12 +250,25 @@ const animateNumber = (index: number) => {
   line-height: 1.1;
   color: #111827;
   letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
 }
 
 .title-line-2 {
   display: flex;
   align-items: center;
   gap: 12px;
+
+  @media (max-width: 768px) {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
 }
 
 .title-normal {
@@ -239,6 +276,14 @@ const animateNumber = (index: number) => {
   font-weight: 800;
   line-height: 1.1;
   color: #111827;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
 }
 
 .title-highlight-wrapper {
@@ -252,6 +297,14 @@ const animateNumber = (index: number) => {
   color: #2563EB;
   position: relative;
   z-index: 1;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
 }
 
 .highlight-underline {
@@ -274,12 +327,30 @@ const animateNumber = (index: number) => {
     color: #2563EB;
     font-weight: 600;
   }
+
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 }
 
 // 价值点
 .value-points {
   display: flex;
   gap: 32px;
+
+  @media (max-width: 768px) {
+    gap: 20px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  @media (max-width: 480px) {
+    gap: 16px;
+  }
 }
 
 .value-item {
@@ -322,11 +393,27 @@ const animateNumber = (index: number) => {
   font-weight: 700;
   color: #111827;
   line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
 }
 
 .value-label {
   font-size: 13px;
   color: #6B7280;
   margin-top: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
 }
 </style>

@@ -9,7 +9,6 @@
  */
 
 export { default as PCFloatingNav } from './PCFloatingNav.vue'
-export { default as PCBottomNav } from './PCBottomNav.vue'
 export { default as WebHeader } from './WebHeader.vue'
 export { default as PDFViewer } from './PDFViewer.vue'
 export { default as UserDropdownMenu } from './UserDropdownMenu.vue'

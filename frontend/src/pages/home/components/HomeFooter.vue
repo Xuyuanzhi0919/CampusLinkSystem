@@ -128,15 +128,23 @@ const handleFeedback = () => {
 <style lang="scss" scoped>
 .home-footer {
   position: relative;
-  z-index: 2;
-  // 优化:使用浅色背景,与页面整体风格一致
-  background: linear-gradient(180deg, #F9FAFB 0%, #F3F4F6 100%);
+  z-index: 2; // 确保在雾化背景层之上
+  background: $gray-900;
   padding: 80rpx 0 40rpx;
-  padding-bottom: calc(104rpx + env(safe-area-inset-bottom, 0)); // 适配底部导航栏 (64px = 128rpx) + 原有间距
-  margin-top: 0;
+  padding-bottom: calc(40rpx + env(safe-area-inset-bottom, 0)); // 适配安全区域
+  margin-top: 0; // 移除多余的上边距，由内容区控制
 
-  // 顶部分隔线,替代过渡渐变
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  // 顶部过渡渐变，使 Footer 与内容区自然衔接
+  &::before {
+    content: '';
+    position: absolute;
+    top: -48px;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: linear-gradient(180deg, transparent 0%, #FAFBFC 100%);
+    pointer-events: none;
+  }
 }
 
 .footer-container {
@@ -190,7 +198,7 @@ const handleFeedback = () => {
 .group-title {
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
-  color: $gray-900;
+  color: $white;
   margin-bottom: 24rpx;
 }
 
@@ -202,20 +210,20 @@ const handleFeedback = () => {
 
 .link-item {
   font-size: $font-size-sm;
-  color: $gray-600;
+  color: $gray-400;
   cursor: pointer;
   transition: $transition-fast;
 
   &:hover {
-    color: $primary;
+    color: $white;
   }
 
   &.disabled {
-    color: $gray-400;
+    color: $gray-600;
     cursor: not-allowed;
 
     &:hover {
-      color: $gray-400;
+      color: $gray-600;
     }
   }
 }

@@ -349,6 +349,14 @@
 
     <!-- 🎯 全局悬浮发布按钮(FAB) -->
     <PublishFAB tabbar />
+
+    <!-- PC端悬浮导航（仅桌面端） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav v-if="isDesktop" />
+    <!-- #endif -->
+
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
   </view>
 </template>
 
@@ -409,6 +417,16 @@ const quickFilterTabs = [
   { label: '热门下载', value: 'downloads', iconName: 'trending-up' },
   { label: '高赞', value: 'likes', iconName: 'heart' }
 ]
+
+// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
 
 // 🎯 状态管理
 const resources = ref<ResourceItem[]>([])

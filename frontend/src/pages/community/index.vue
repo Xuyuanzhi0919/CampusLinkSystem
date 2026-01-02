@@ -59,17 +59,43 @@
         </scroll-view>
       </swiper-item>
     </swiper>
+
+    <!-- PC端悬浮导航（仅桌面端） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav v-if="isDesktop" />
+    <!-- #endif -->
+
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import QuestionList from './components/QuestionList.vue'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
 import { getQuestions } from '@/services/question'
 import { getClubs } from '@/services/club'
 import { getActivities } from '@/services/activity'
+
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
+
+// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
 
 // Tab 配置
 const tabs = [

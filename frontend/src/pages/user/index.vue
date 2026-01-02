@@ -73,6 +73,14 @@
         <view class="safe-area-bottom" />
       </view>
     </view>
+
+    <!-- PC端悬浮导航（仅桌面端） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav v-if="isDesktop" />
+    <!-- #endif -->
+
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
   </view>
 </template>
 
@@ -97,7 +105,25 @@ import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
 import AccountActions from './components/AccountActions.vue'
 
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
+
 const userStore = useUserStore()
+
+// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
 
 // 数据状态
 const loading = ref(true)

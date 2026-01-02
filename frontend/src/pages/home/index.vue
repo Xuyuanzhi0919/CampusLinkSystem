@@ -75,9 +75,9 @@
     <!-- 4. 底部区块 - 仅桌面端显示 -->
     <HomeFooter v-if="isDesktop" @navigate="handleNavigate" />
 
-    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
-    <PCFloatingNav />
+    <PCFloatingNav v-if="isDesktop" />
     <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->

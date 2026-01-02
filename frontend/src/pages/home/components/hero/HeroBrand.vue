@@ -201,7 +201,7 @@ $charcoal: $gray-900;        // 系统文本色
 }
 
 .word {
-  font-size: clamp(48px, 6vw, 72px);
+  font-size: clamp(40px, 5vw, 56px);
   font-weight: 900;
   color: $charcoal;
   letter-spacing: -0.03em;
@@ -270,7 +270,7 @@ $charcoal: $gray-900;        // 系统文本色
 
 // 渐变文字
 .gradient-text {
-  font-size: clamp(28px, 4vw, 42px);
+  font-size: clamp(24px, 3.5vw, 36px);
   font-weight: 800;
   background: linear-gradient(135deg, $primary 0%, $campus-teal 50%, $campus-amber 100%);
   -webkit-background-clip: text;

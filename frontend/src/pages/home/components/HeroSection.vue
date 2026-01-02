@@ -103,7 +103,7 @@ $cream: $gray-50;            // 系统背景色
   position: relative;
   overflow: hidden;
   margin-top: 64px;
-  min-height: 750px;
+  min-height: 650px;
   background: linear-gradient(165deg, $cream 0%, #FFF 60%);
 
   @media (max-width: 1024px) {
@@ -273,29 +273,29 @@ $cream: $gray-50;            // 系统背景色
 .hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 100px 64px 80px;
+  padding: 90px 64px 70px;
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 54% 46%;
-  gap: 80px;
+  grid-template-columns: 50% 50%;
+  gap: 72px;
   align-items: start;
 
   @media (max-width: 1600px) {
-    padding: 90px 56px 70px;
-    gap: 72px;
-  }
-
-  @media (max-width: 1440px) {
-    padding: 80px 48px 60px;
-    grid-template-columns: 1fr 440px;
+    padding: 85px 56px 65px;
     gap: 64px;
   }
 
-  @media (max-width: 1200px) {
-    padding: 70px 40px 50px;
-    grid-template-columns: 1fr 400px;
+  @media (max-width: 1440px) {
+    padding: 75px 48px 55px;
+    grid-template-columns: 1fr 460px;
     gap: 56px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 65px 40px 45px;
+    grid-template-columns: 1fr 420px;
+    gap: 48px;
   }
 
   @media (max-width: 1024px) {

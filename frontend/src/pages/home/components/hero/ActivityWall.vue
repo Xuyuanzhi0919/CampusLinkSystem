@@ -264,7 +264,7 @@ $charcoal: $gray-900;        // 系统文本色
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 20px;
+  font-size: clamp(18px, 2vw, 24px);
   font-weight: 900;
   letter-spacing: -0.03em;
 
@@ -685,7 +685,7 @@ $charcoal: $gray-900;        // 系统文本色
 }
 
 .question-text {
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.7;
   color: #374151;
   font-weight: 500;
@@ -774,7 +774,7 @@ $charcoal: $gray-900;        // 系统文本色
 }
 
 .resource-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: $charcoal;
   line-height: 1.4;

@@ -127,53 +127,55 @@ const displayItems = ref<ActivityItem[]>([
 </script>
 
 <style scoped lang="scss">
-$campus-blue: #5B8FF9;
-$campus-purple: #9270FF;
-$campus-green: #3DD68C;
-$campus-orange: #FF9A3E;
+// Campus-Inspired Colors (NO Purple!)
+$terra: #D97757;
+$sage: #7FA99B;
+$coral: #FF8370;
+$sky: #6B9BD1;
+$charcoal: #2C3338;
 
 .activity-wall {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+  perspective: 1200px; // Enable 3D space for child elements
 }
 
-// ==================== Clean Header ====================
+// ==================== Simplified Header ====================
 .wall-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-bottom: 16px;
-  border-bottom: 1.5px solid #E5E7EB;
+  padding-bottom: 12px;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .wall-title {
   margin: 0;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 800;
-  color: #111827;
-  letter-spacing: -0.01em;
+  color: $charcoal;
+  letter-spacing: -0.02em;
 }
 
 .live-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(#EF4444, 0.1);
-  border-radius: 12px;
+  gap: 5px;
+  padding: 3px 8px;
+  background: rgba($coral, 0.12);
+  border-radius: 10px;
 }
 
 .live-dot {
-  width: 6px;
-  height: 6px;
-  background: #EF4444;
+  width: 5px;
+  height: 5px;
+  background: $coral;
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -181,49 +183,84 @@ $campus-orange: #FF9A3E;
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
+    transform: scale(1.2);
   }
 }
 
 .live-text {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  color: #EF4444;
-  letter-spacing: 0.05em;
+  color: $coral;
+  letter-spacing: 0.08em;
 }
 
-// ==================== Clean Activity Feed ====================
+// ==================== Isometric 3D Card Feed ====================
 .activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .activity-item {
-  padding: 20px;
+  position: relative;
+  padding: 20px 22px;
   background: white;
-  border: 1.5px solid #E5E7EB;
-  border-radius: 16px;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  animation: itemFadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-radius: 14px;
+  box-shadow:
+    0 4px 12px rgba(0, 0, 0, 0.06),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: cardFloatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-style: preserve-3d;
+
+  // Floating animation
+  animation: cardFloatIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both,
+             gentleFloat 6s ease-in-out infinite;
 
   &:hover {
-    border-color: rgba($campus-blue, 0.25);
-    box-shadow: 0 4px 16px rgba($campus-blue, 0.08);
-    transform: translateY(-2px);
+    transform:
+      translateY(-8px)
+      rotateX(4deg)
+      rotateY(-2deg)
+      scale(1.02);
+    box-shadow:
+      0 16px 40px rgba(0, 0, 0, 0.12),
+      0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  // Stagger animation delays
+  &:nth-child(1) {
+    animation-delay: 0s, 0s;
+  }
+  &:nth-child(2) {
+    animation-delay: 0.15s, 2s;
+  }
+  &:nth-child(3) {
+    animation-delay: 0.3s, 4s;
   }
 }
 
-@keyframes itemFadeIn {
+@keyframes cardFloatIn {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(40px) rotateX(-15deg) scale(0.9);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) rotateX(0deg) scale(1);
+  }
+}
+
+@keyframes gentleFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
   }
 }
 
@@ -236,16 +273,17 @@ $campus-orange: #FF9A3E;
 }
 
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   color: white;
-  font-size: 14px;
+  font-size: 13px;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .question-info {
@@ -256,23 +294,24 @@ $campus-orange: #FF9A3E;
 }
 
 .author {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  color: $charcoal;
 }
 
 .time {
-  font-size: 12px;
-  color: #9ca3af;
+  font-size: 11px;
+  color: #888;
   font-weight: 500;
 }
 
 .question-content {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #374151;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #4a5568;
   margin-bottom: 12px;
   display: block;
+  font-weight: 500;
 }
 
 .question-footer {
@@ -284,24 +323,25 @@ $campus-orange: #FF9A3E;
 
 .tags {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   flex: 1;
 }
 
 .tag {
-  font-size: 12px;
-  font-weight: 600;
-  color: $campus-purple;
-  background: rgba($campus-purple, 0.08);
-  padding: 4px 10px;
-  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  color: $sage;
+  background: rgba($sage, 0.12);
+  padding: 4px 9px;
+  border-radius: 6px;
+  letter-spacing: 0.01em;
 }
 
 .reply-count {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #999;
   flex-shrink: 0;
 }
 
@@ -309,19 +349,25 @@ $campus-orange: #FF9A3E;
 .resource-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .resource-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: $campus-green;
-  background: rgba($campus-green, 0.1);
-  border-radius: 10px;
+  color: $terra;
+  background: rgba($terra, 0.12);
+  border-radius: 11px;
+  box-shadow: 0 2px 6px rgba($terra, 0.15);
+  transition: all 0.3s ease;
+
+  .activity-item:hover & {
+    transform: scale(1.1) rotateZ(-5deg);
+  }
 }
 
 .resource-info {
@@ -332,35 +378,41 @@ $campus-orange: #FF9A3E;
 }
 
 .resource-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  color: $charcoal;
   line-height: 1.4;
 }
 
 .resource-meta {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #999;
 }
 
 // ==================== Activity Type ====================
 .event-item {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .event-icon {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  color: $campus-orange;
-  background: rgba($campus-orange, 0.1);
-  border-radius: 10px;
+  color: $sky;
+  background: rgba($sky, 0.12);
+  border-radius: 11px;
+  box-shadow: 0 2px 6px rgba($sky, 0.15);
+  transition: all 0.3s ease;
+
+  .activity-item:hover & {
+    transform: scale(1.1) rotateZ(5deg);
+  }
 }
 
 .event-info {
@@ -371,14 +423,14 @@ $campus-orange: #FF9A3E;
 }
 
 .event-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
-  color: #111827;
+  color: $charcoal;
 }
 
 .event-meta {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #999;
 }
 </style>

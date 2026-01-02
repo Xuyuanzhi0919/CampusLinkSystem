@@ -1,36 +1,31 @@
 <template>
   <view class="hero-brand">
-    <!-- Minimal Status Badge (简化) -->
-    <view class="status-badge">
-      <view class="status-dot"></view>
-      <text class="status-text">{{ currentStatus }}</text>
-    </view>
-
-    <!-- Clean Headline -->
+    <!-- Bold Headline with Color Blocking -->
     <view class="headline">
       <h1 class="title">
-        <span class="title-main">
-          校园互助，
-          <span class="highlight">随时在线</span>
+        <span class="title-block block-1">知识</span>
+        <span class="title-block block-2">在这里</span>
+        <span class="title-line-2">
+          <span class="title-block block-3">互联互通</span>
         </span>
       </h1>
       <p class="subtitle">
-        每个问题都有答案，每份资料都能共享
+        连接每一位求知者，让答案不再遥远
       </p>
     </view>
 
-    <!-- Simplified Stats (2列，更简洁) -->
-    <view class="stats-grid">
+    <!-- Stats with Distinctive Layout -->
+    <view class="stats-cluster">
       <view
         v-for="(stat, index) in stats"
         :key="stat.label"
-        class="stat-card"
-        :style="{ animationDelay: `${index * 0.1}s` }"
+        class="stat-item"
+        :class="`stat-${index + 1}`"
+        :style="{ animationDelay: `${index * 0.15}s` }"
       >
-        <view class="stat-content">
-          <text class="stat-value">{{ stat.displayValue }}</text>
-          <text class="stat-label">{{ stat.label }}</text>
-        </view>
+        <view class="stat-accent"></view>
+        <text class="stat-number">{{ stat.displayValue }}</text>
+        <text class="stat-label">{{ stat.label }}</text>
       </view>
     </view>
   </view>
@@ -45,29 +40,13 @@ interface Stat {
   label: string
 }
 
-const currentStatus = ref('今日 156 位同学提问')
 const stats = ref<Stat[]>([
-  { value: 4280, displayValue: '4,280+', label: '问题已解决' },
-  { value: 9520, displayValue: '9,520+', label: '活跃同学' },
+  { value: 4280, displayValue: '4,280', label: '问题已解决' },
+  { value: 9520, displayValue: '9,520', label: '活跃同学' },
   { value: 95, displayValue: '95%', label: '快速响应' }
 ])
 
-const statusTexts = [
-  '今日 156 位同学提问',
-  '24小时在线答疑',
-  '已有 68 所高校加入'
-]
-
-let statusIndex = 0
-let statusTimer: number | null = null
-
 onMounted(() => {
-  statusTimer = window.setInterval(() => {
-    statusIndex = (statusIndex + 1) % statusTexts.length
-    currentStatus.value = statusTexts[statusIndex]
-  }, 4000)
-
-  // Animate numbers
   stats.value.forEach((stat, index) => {
     if (index < 2) {
       animateNumber(index)
@@ -75,14 +54,10 @@ onMounted(() => {
   })
 })
 
-onUnmounted(() => {
-  if (statusTimer) clearInterval(statusTimer)
-})
-
 const animateNumber = (index: number) => {
   const target = stats.value[index].value
   const duration = 2000
-  const steps = 50
+  const steps = 60
   const increment = target / steps
   let current = 0
 
@@ -92,139 +67,107 @@ const animateNumber = (index: number) => {
       current = target
       clearInterval(timer)
     }
-    stats.value[index].displayValue = Math.floor(current).toLocaleString() + '+'
+    stats.value[index].displayValue = Math.floor(current).toLocaleString()
   }, duration / steps)
 }
 </script>
 
 <style scoped lang="scss">
-$campus-blue: #5B8FF9;
-$campus-purple: #9270FF;
-$campus-green: #3DD68C;
+// Campus-Inspired Colors (NO Purple!)
+$terra: #D97757;
+$sage: #7FA99B;
+$coral: #FF8370;
+$sky: #6B9BD1;
+$charcoal: #2C3338;
 
 .hero-brand {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 56px;
 
   @media (max-width: 768px) {
-    gap: 32px;
+    gap: 44px;
   }
 }
 
-// ==================== Minimal Status Badge ====================
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 18px;
-  background: rgba($campus-blue, 0.08);
-  border: 1.5px solid rgba($campus-blue, 0.15);
-  border-radius: 100px;
-  width: fit-content;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  background: $campus-green;
-  border-radius: 50%;
-  animation: dotPulse 2s ease-in-out infinite;
-}
-
-@keyframes dotPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba($campus-green, 0.7);
-  }
-  50% {
-    box-shadow: 0 0 0 6px rgba($campus-green, 0);
-  }
-}
-
-.status-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: #4b5563;
-  letter-spacing: 0.01em;
-}
-
-// ==================== Clean Headline ====================
+// ==================== Bold Color-Blocked Headline ====================
 .headline {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .title {
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.title-main {
-  font-size: clamp(42px, 5vw, 64px);
-  font-weight: 800;
-  line-height: 1.2;
-  color: #111827;
-  letter-spacing: -0.02em;
-  display: block;
+.title-block {
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  display: inline-block;
+  padding: 8px 16px;
+  border-radius: 4px;
+  width: fit-content;
+  animation: blockSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  // Color-blocked style - each word gets a background
+  &.block-1 {
+    background: $terra;
+    color: white;
+    animation-delay: 0.1s;
+    transform-origin: left center;
+  }
+
+  &.block-2 {
+    background: $sage;
+    color: white;
+    animation-delay: 0.25s;
+    margin-left: 16px;
+    transform-origin: left center;
+  }
+
+  &.block-3 {
+    background: $coral;
+    color: white;
+    animation-delay: 0.4s;
+    transform-origin: left center;
+  }
 }
 
-.highlight {
-  background: linear-gradient(135deg, $campus-blue 0%, $campus-purple 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  position: relative;
+.title-line-2 {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 4px;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, $campus-blue, $campus-purple);
-    opacity: 0.3;
-    border-radius: 2px;
+@keyframes blockSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px) rotateY(-15deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) rotateY(0deg);
   }
 }
 
 .subtitle {
   margin: 0;
-  font-size: clamp(16px, 2vw, 19px);
-  line-height: 1.6;
-  color: #6b7280;
+  font-size: clamp(17px, 2.2vw, 21px);
+  line-height: 1.7;
+  color: #5a5a5a;
   font-weight: 500;
-  max-width: 520px;
+  max-width: 480px;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s both;
 }
 
-// ==================== Simplified Stats Grid ====================
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-}
-
-.stat-card {
-  padding: 20px 24px;
-  background: white;
-  border: 1.5px solid #E5E7EB;
-  border-radius: 16px;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  animation: cardFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
-
-  &:hover {
-    transform: translateY(-4px);
-    border-color: rgba($campus-blue, 0.3);
-    box-shadow: 0 8px 24px rgba($campus-blue, 0.12);
-  }
-}
-
-@keyframes cardFadeIn {
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -235,24 +178,90 @@ $campus-green: #3DD68C;
   }
 }
 
-.stat-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+// ==================== Asymmetric Stats Cluster ====================
+.stats-cluster {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  position: relative;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
 }
 
-.stat-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: $campus-blue;
+.stat-item {
+  position: relative;
+  padding: 24px 20px;
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: statPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+
+    .stat-accent {
+      transform: scaleX(1);
+    }
+  }
+
+  // Accent border on left
+  .stat-accent {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  &.stat-1 .stat-accent {
+    background: $terra;
+  }
+
+  &.stat-2 .stat-accent {
+    background: $sage;
+  }
+
+  &.stat-3 .stat-accent {
+    background: $sky;
+  }
+}
+
+@keyframes statPop {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.stat-number {
+  font-size: 36px;
+  font-weight: 900;
+  color: $charcoal;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: #9ca3af;
+  color: #888;
   letter-spacing: 0.01em;
 }
 </style>

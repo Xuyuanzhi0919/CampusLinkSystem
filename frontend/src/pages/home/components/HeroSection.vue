@@ -1,33 +1,51 @@
 <template>
   <view class="hero-section">
-    <!-- Clean Background with Abstract Shapes -->
-    <view class="hero-bg">
-      <!-- Soft Gradient Base -->
-      <view class="gradient-base"></view>
+    <!-- Animated Network Background -->
+    <view class="network-bg">
+      <!-- Connection Nodes -->
+      <svg class="network-canvas" viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid slice">
+        <!-- Animated connection lines -->
+        <g class="connections">
+          <line x1="200" y1="150" x2="400" y2="250" class="connection-line line-1"/>
+          <line x1="400" y1="250" x2="600" y2="180" class="connection-line line-2"/>
+          <line x1="600" y1="180" x2="850" y2="320" class="connection-line line-3"/>
+          <line x1="300" y1="450" x2="500" y2="380" class="connection-line line-4"/>
+          <line x1="500" y1="380" x2="750" y2="480" class="connection-line line-5"/>
+          <line x1="850" y1="320" x2="1100" y2="400" class="connection-line line-6"/>
+          <line x1="200" y1="150" x2="300" y2="450" class="connection-line line-7"/>
+          <line x1="750" y1="480" x2="1100" y2="400" class="connection-line line-8"/>
+        </g>
 
-      <!-- Abstract Geometric Decorations (替换 Emoji) -->
-      <view class="floating-elements">
-        <!-- 圆形 -->
-        <view class="float-shape circle shape-1"></view>
-        <!-- 方形 -->
-        <view class="float-shape square shape-2"></view>
-        <!-- 三角形 -->
-        <view class="float-shape triangle shape-3"></view>
+        <!-- Network Nodes (Students) -->
+        <g class="nodes">
+          <circle cx="200" cy="150" r="8" class="node node-1"/>
+          <circle cx="400" cy="250" r="10" class="node node-2"/>
+          <circle cx="600" cy="180" r="7" class="node node-3"/>
+          <circle cx="850" cy="320" r="12" class="node node-4"/>
+          <circle cx="300" cy="450" r="9" class="node node-5"/>
+          <circle cx="500" cy="380" r="8" class="node node-6"/>
+          <circle cx="750" cy="480" r="11" class="node node-7"/>
+          <circle cx="1100" cy="400" r="10" class="node node-8"/>
+        </g>
+      </svg>
+
+      <!-- Floating particles -->
+      <view class="particles">
+        <view class="particle particle-1"></view>
+        <view class="particle particle-2"></view>
+        <view class="particle particle-3"></view>
+        <view class="particle particle-4"></view>
       </view>
-
-      <!-- Subtle Accent Shapes -->
-      <view class="accent-shape accent-1"></view>
-      <view class="accent-shape accent-2"></view>
     </view>
 
     <view class="hero-container">
-      <!-- Left: Brand Narrative (60%) -->
+      <!-- Left: Brand with Color Blocks -->
       <view class="hero-left">
         <HeroBrand />
         <HeroCTA @ask="handleAsk" @browse="handleBrowse" />
       </view>
 
-      <!-- Right: Live Activity Feed (40%) -->
+      <!-- Right: 3D Isometric Cards -->
       <view class="hero-right">
         <ActivityWall />
       </view>
@@ -52,18 +70,21 @@ const handleBrowse = () => emit('browse')
 <style lang="scss">
 @import '@/uni.scss';
 
-// ==================== Refined Campus Color Palette ====================
-$campus-blue: #5B8FF9;
-$campus-purple: #9270FF;
-$campus-pink: #FF85C0;
+// ==================== Campus-Inspired Color Palette (NO Purple!) ====================
+$terra: #D97757;        // Warm Terracotta
+$sage: #7FA99B;         // Fresh Sage Green
+$coral: #FF8370;        // Bright Coral
+$sky: #6B9BD1;          // Soft Sky Blue
+$cream: #FAF8F3;        // Warm Cream
+$charcoal: #2C3338;     // Deep Charcoal
 
-// ==================== Hero Section Container ====================
+// ==================== Hero Section ====================
 .hero-section {
   position: relative;
   overflow: hidden;
   margin-top: 64px;
-  min-height: 720px;
-  background: #FEFEFE;
+  min-height: 750px;
+  background: linear-gradient(165deg, $cream 0%, #FFF 60%);
 
   @media (max-width: 1024px) {
     min-height: auto;
@@ -71,128 +92,135 @@ $campus-pink: #FF85C0;
   }
 }
 
-// ==================== Clean Background ====================
-.hero-bg {
+// ==================== Animated Network Background ====================
+.network-bg {
   position: absolute;
   inset: 0;
   z-index: 0;
   overflow: hidden;
 }
 
-// 极简渐变基底
-.gradient-base {
+.network-canvas {
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 20% 15%, rgba($campus-blue, 0.04) 0%, transparent 50%),
-    radial-gradient(circle at 80% 85%, rgba($campus-purple, 0.03) 0%, transparent 50%);
-  animation: gradientPulse 12s ease-in-out infinite;
+  top: -10%;
+  left: -5%;
+  width: 110%;
+  height: 110%;
+  opacity: 0.4;
 }
 
-@keyframes gradientPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+// Connection Lines - Animated flow
+.connection-line {
+  stroke: $sage;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 3;
+  opacity: 0.3;
+  animation: flowPulse 4s ease-in-out infinite;
+
+  &.line-1 { animation-delay: 0s; }
+  &.line-2 { animation-delay: 0.5s; }
+  &.line-3 { animation-delay: 1s; }
+  &.line-4 { animation-delay: 1.5s; }
+  &.line-5 { animation-delay: 2s; }
+  &.line-6 { animation-delay: 2.5s; }
+  &.line-7 { animation-delay: 3s; }
+  &.line-8 { animation-delay: 3.5s; }
 }
 
-// 抽象几何装饰 (替换 Emoji)
-.floating-elements {
+@keyframes flowPulse {
+  0%, 100% {
+    opacity: 0.2;
+    stroke-width: 1.5;
+  }
+  50% {
+    opacity: 0.5;
+    stroke-width: 2;
+  }
+}
+
+// Network Nodes - Pulsing dots
+.node {
+  fill: $terra;
+  opacity: 0.6;
+  animation: nodePulse 3s ease-in-out infinite;
+
+  &.node-1 { animation-delay: 0s; fill: $terra; }
+  &.node-2 { animation-delay: 0.3s; fill: $sage; }
+  &.node-3 { animation-delay: 0.6s; fill: $coral; }
+  &.node-4 { animation-delay: 0.9s; fill: $sky; }
+  &.node-5 { animation-delay: 1.2s; fill: $terra; }
+  &.node-6 { animation-delay: 1.5s; fill: $sage; }
+  &.node-7 { animation-delay: 1.8s; fill: $coral; }
+  &.node-8 { animation-delay: 2.1s; fill: $sky; }
+}
+
+@keyframes nodePulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.3);
+  }
+}
+
+// Floating Particles
+.particles {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.float-shape {
+.particle {
   position: absolute;
-  opacity: 0.08;
-  animation: gentleFloat 20s ease-in-out infinite;
-
-  // 圆形
-  &.circle {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, $campus-blue, $campus-purple);
-
-    &.shape-1 {
-      top: 15%;
-      left: 10%;
-      animation-delay: 0s;
-    }
-  }
-
-  // 方形
-  &.square {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
-    background: linear-gradient(135deg, $campus-purple, $campus-pink);
-    transform: rotate(15deg);
-
-    &.shape-2 {
-      top: 55%;
-      right: 15%;
-      animation-delay: 7s;
-    }
-  }
-
-  // 三角形
-  &.triangle {
-    width: 0;
-    height: 0;
-    border-left: 35px solid transparent;
-    border-right: 35px solid transparent;
-    border-bottom: 60px solid rgba($campus-blue, 0.15);
-
-    &.shape-3 {
-      bottom: 25%;
-      left: 12%;
-      animation-delay: 14s;
-    }
-  }
-}
-
-@keyframes gentleFloat {
-  0%, 100% {
-    transform: translate(0, 0);
-  }
-  50% {
-    transform: translate(0, -20px);
-  }
-}
-
-// 柔和装饰形状
-.accent-shape {
-  position: absolute;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
-  opacity: 0.05;
-  animation: shapeFloat 18s ease-in-out infinite;
-  filter: blur(80px);
+  opacity: 0.3;
+  animation: particleFloat 15s ease-in-out infinite;
+
+  &.particle-1 {
+    top: 20%;
+    left: 15%;
+    background: $terra;
+    animation-delay: 0s;
+  }
+
+  &.particle-2 {
+    top: 60%;
+    right: 20%;
+    background: $sage;
+    animation-delay: 3s;
+  }
+
+  &.particle-3 {
+    bottom: 30%;
+    left: 25%;
+    background: $coral;
+    animation-delay: 6s;
+  }
+
+  &.particle-4 {
+    top: 40%;
+    right: 30%;
+    background: $sky;
+    animation-delay: 9s;
+  }
 }
 
-.accent-1 {
-  width: 300px;
-  height: 300px;
-  top: 10%;
-  right: 15%;
-  background: linear-gradient(135deg, $campus-blue, $campus-purple);
-  animation-delay: 0s;
-}
-
-.accent-2 {
-  width: 250px;
-  height: 250px;
-  bottom: 15%;
-  left: 10%;
-  background: linear-gradient(135deg, $campus-pink, $campus-purple);
-  animation-delay: 9s;
-}
-
-@keyframes shapeFloat {
+@keyframes particleFloat {
   0%, 100% {
     transform: translate(0, 0);
+    opacity: 0.2;
   }
-  50% {
-    transform: translate(20px, -20px);
+  33% {
+    transform: translate(40px, -60px);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translate(-30px, -40px);
+    opacity: 0.3;
   }
 }
 
@@ -204,7 +232,7 @@ $campus-pink: #FF85C0;
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: 56% 44%;
+  grid-template-columns: 54% 46%;
   gap: 80px;
   align-items: start;
 
@@ -215,13 +243,13 @@ $campus-pink: #FF85C0;
 
   @media (max-width: 1440px) {
     padding: 80px 48px 60px;
-    grid-template-columns: 1fr 420px;
+    grid-template-columns: 1fr 440px;
     gap: 64px;
   }
 
   @media (max-width: 1200px) {
     padding: 70px 40px 50px;
-    grid-template-columns: 1fr 380px;
+    grid-template-columns: 1fr 400px;
     gap: 56px;
   }
 
@@ -242,7 +270,7 @@ $campus-pink: #FF85C0;
   display: flex;
   flex-direction: column;
   gap: 48px;
-  animation: slideInLeft 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 1024px) {
     align-items: center;
@@ -251,10 +279,10 @@ $campus-pink: #FF85C0;
   }
 }
 
-@keyframes slideInLeft {
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(40px);
   }
   to {
     opacity: 1;
@@ -265,21 +293,10 @@ $campus-pink: #FF85C0;
 // ==================== Right Section ====================
 .hero-right {
   position: relative;
-  animation: slideInRight 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+  animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 
   @media (max-width: 1024px) {
     display: none;
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 </style>

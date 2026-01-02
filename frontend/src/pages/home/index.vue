@@ -74,9 +74,9 @@
     <!-- 4. 底部区块 - 仅桌面端显示 -->
     <HomeFooter v-if="isDesktop" @navigate="handleNavigate" />
 
-    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- PC端底部导航（仅 H5） -->
     <!-- #ifdef H5 -->
-    <PCFloatingNav />
+    <PCBottomNav v-if="isDesktop" />
     <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->
@@ -133,7 +133,7 @@ import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
 
 // PC 端组件（仅 H5）
 // #ifdef H5
-import { WebHeader, PCFloatingNav } from '@/components/desktop'
+import { WebHeader, PCBottomNav } from '@/components/desktop'
 // #endif
 
 // 首页组件

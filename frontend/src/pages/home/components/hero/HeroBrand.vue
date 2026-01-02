@@ -1,47 +1,95 @@
 <template>
   <view class="hero-brand">
-    <!-- Refined Headline with Subtle Accents -->
-    <view class="headline">
-      <h1 class="title">
-        <span class="title-word">知识</span>
-        <span class="title-word highlight">互联</span>
-        <span class="title-word">校园</span>
+    <!-- AI 智能标题 -->
+    <view class="ai-headline">
+      <h1 class="main-title">
+        <span class="title-line">
+          <span class="word" data-word="智能">智能</span>
+          <span class="ai-chip">
+            <svg class="chip-icon" viewBox="0 0 24 24">
+              <rect x="3" y="3" width="18" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="2"/>
+              <circle cx="12" cy="12" r="3" fill="currentColor"/>
+              <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
+            </svg>
+            AI
+          </span>
+        </span>
+        <span class="title-line gradient-text">
+          连接每一个求知者
+        </span>
       </h1>
-      <p class="subtitle">
-        连接每一位求知者，让答案不再遥远
+
+      <!-- 智能脉冲波 -->
+      <view class="pulse-rings">
+        <view class="pulse-ring ring-1"></view>
+        <view class="pulse-ring ring-2"></view>
+        <view class="pulse-ring ring-3"></view>
+      </view>
+
+      <p class="smart-subtitle">
+        <span class="typing-text">{{ displayedText }}</span>
+        <span class="ai-cursor"></span>
       </p>
-      <view class="subtitle-accent"></view>
     </view>
 
-    <!-- Minimalist Stats Grid -->
-    <view class="stats-grid">
+    <!-- 全息数据卡片 -->
+    <view class="holographic-stats">
       <view
         v-for="(stat, index) in stats"
         :key="stat.label"
-        class="stat-card"
+        class="holo-card"
         :class="`card-${index + 1}`"
-        :style="{ animationDelay: `${index * 0.12}s` }"
+        :style="{ animationDelay: `${index * 0.15}s` }"
       >
-        <view class="stat-header">
-          <view class="stat-icon" :class="`icon-${index + 1}`">
-            <svg v-if="index === 0" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M9 12L11 14L15 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+        <!-- 发光边框 -->
+        <view class="glow-border"></view>
+
+        <!-- 数据内容 -->
+        <view class="card-content">
+          <view class="stat-icon-wrapper">
+            <view class="icon-glow"></view>
+            <svg v-if="index === 0" class="stat-icon" viewBox="0 0 24 24">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"
+                    fill="none" stroke="currentColor" stroke-width="2"/>
             </svg>
-            <svg v-else-if="index === 1" width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M17 21V19C17 17.9391 16.5786 16.9217 15.8284 16.1716C15.0783 15.4214 14.0609 15 13 15H5C3.93913 15 2.92172 15.4214 2.17157 16.1716C1.42143 16.9217 1 17.9391 1 19V21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/>
-              <path d="M23 21V19C22.9993 18.1137 22.7044 17.2528 22.1614 16.5523C21.6184 15.8519 20.8581 15.3516 20 15.13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M16 3.13C16.8604 3.35031 17.623 3.85071 18.1676 4.55232C18.7122 5.25392 19.0078 6.11683 19.0078 7.005C19.0078 7.89318 18.7122 8.75608 18.1676 9.45769C17.623 10.1593 16.8604 10.6597 16 10.88" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg v-else-if="index === 1" class="stat-icon" viewBox="0 0 24 24">
+              <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <svg v-else width="18" height="18" viewBox="0 0 24 24" fill="none">
-              <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <svg v-else class="stat-icon" viewBox="0 0 24 24">
+              <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor"/>
             </svg>
           </view>
-          <text class="stat-label">{{ stat.label }}</text>
+
+          <view class="stat-data">
+            <text class="stat-number">{{ stat.displayValue }}</text>
+            <text class="stat-label">{{ stat.label }}</text>
+          </view>
         </view>
-        <text class="stat-number">{{ stat.displayValue }}</text>
+
+        <!-- 数据流动线 -->
+        <svg class="data-flow" viewBox="0 0 100 4">
+          <path d="M0,2 Q25,0 50,2 T100,2"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-dasharray="10 5"/>
+        </svg>
       </view>
+    </view>
+
+    <!-- AI 思维粒子流 -->
+    <view class="particle-stream">
+      <view
+        v-for="i in 20"
+        :key="i"
+        class="ai-particle"
+        :style="{
+          left: `${Math.random() * 100}%`,
+          animationDelay: `${Math.random() * 3}s`,
+          animationDuration: `${3 + Math.random() * 2}s`
+        }"
+      ></view>
     </view>
   </view>
 </template>
@@ -61,12 +109,28 @@ const stats = ref<Stat[]>([
   { value: 95, displayValue: '95%', label: '快速响应' }
 ])
 
+// AI 打字机效果
+const fullText = "AI 驱动的智能互助 · 让知识以光速传播"
+const displayedText = ref("")
+
 onMounted(() => {
+  // 数字动画
   stats.value.forEach((stat, index) => {
     if (index < 2) {
       animateNumber(index)
     }
   })
+
+  // 打字机效果
+  let index = 0
+  const typingInterval = setInterval(() => {
+    if (index < fullText.length) {
+      displayedText.value += fullText[index]
+      index++
+    } else {
+      clearInterval(typingInterval)
+    }
+  }, 60)
 })
 
 const animateNumber = (index: number) => {
@@ -98,74 +162,216 @@ $accent: #FF6B35;            // 系统强调色 - 橙
 $charcoal: $gray-900;        // 系统文本色
 
 .hero-brand {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 64px;
-
-  @media (max-width: 768px) {
-    gap: 48px;
-  }
+  gap: 48px;
+  z-index: 1;
 }
 
-// ==================== Refined Headline ====================
-.headline {
+// ==================== AI 智能标题区 ====================
+.ai-headline {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 24px;
-  position: relative;
 }
 
-.title {
+.main-title {
   margin: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  align-items: baseline;
+  flex-direction: column;
+  gap: 12px;
   line-height: 1.1;
 }
 
-.title-word {
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-  font-size: clamp(42px, 5.5vw, 64px);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  color: $charcoal;
-  position: relative;
-  animation: wordFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+.title-line {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: titleSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
   &:nth-child(1) {
     animation-delay: 0.1s;
   }
 
   &:nth-child(2) {
-    animation-delay: 0.2s;
-  }
-
-  &:nth-child(3) {
     animation-delay: 0.3s;
-  }
-
-  // Highlight word with subtle accent
-  &.highlight {
-    color: $campus-amber;
-    position: relative;
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: -4px;
-      right: -4px;
-      bottom: 8px;
-      height: 12px;
-      background: rgba($campus-amber, 0.15);
-      border-radius: 3px;
-      z-index: -1;
-      animation: highlightGrow 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
-    }
   }
 }
 
-@keyframes wordFadeIn {
+.word {
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 900;
+  color: $charcoal;
+  letter-spacing: -0.03em;
+  position: relative;
+
+  &::after {
+    content: attr(data-word);
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    opacity: 0;
+    animation: wordGlow 2s ease-in-out infinite;
+  }
+}
+
+@keyframes wordGlow {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.3; }
+}
+
+// AI 芯片徽章
+.ai-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
+  border-radius: 20px;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  box-shadow:
+    0 4px 12px rgba($primary, 0.3),
+    0 0 20px rgba($campus-teal, 0.2);
+  animation: chipPulse 2s ease-in-out infinite;
+}
+
+.chip-icon {
+  width: 20px;
+  height: 20px;
+  color: white;
+  animation: chipRotate 4s linear infinite;
+}
+
+@keyframes chipPulse {
+  0%, 100% {
+    box-shadow:
+      0 4px 12px rgba($primary, 0.3),
+      0 0 20px rgba($campus-teal, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 6px 16px rgba($primary, 0.4),
+      0 0 30px rgba($campus-teal, 0.3);
+  }
+}
+
+@keyframes chipRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// 渐变文字
+.gradient-text {
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 800;
+  background: linear-gradient(135deg, $primary 0%, $campus-teal 50%, $campus-amber 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease-in-out infinite;
+  background-size: 200% 200%;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes titleSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 智能脉冲波
+.pulse-rings {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 140px;
+  height: 140px;
+  pointer-events: none;
+}
+
+.pulse-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 60px;
+  border: 2px solid $primary;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  &.ring-1 {
+    animation-delay: 0s;
+  }
+
+  &.ring-2 {
+    animation-delay: 0.4s;
+  }
+
+  &.ring-3 {
+    animation-delay: 0.8s;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+// 智能副标题（打字机效果）
+.smart-subtitle {
+  margin: 0;
+  font-size: clamp(15px, 1.8vw, 18px);
+  line-height: 1.6;
+  color: #666;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.6s backwards;
+}
+
+.typing-text {
+  position: relative;
+}
+
+.ai-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  background: $primary;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes fadeInUp {
   from {
     opacity: 0;
     transform: translateY(20px);
@@ -176,107 +382,74 @@ $charcoal: $gray-900;        // 系统文本色
   }
 }
 
-@keyframes highlightGrow {
-  from {
-    transform: scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: scaleX(1);
-    opacity: 1;
-  }
-}
-
-.subtitle {
-  margin: 0;
-  font-size: clamp(16px, 2vw, 19px);
-  line-height: 1.75;
-  color: #666;
-  font-weight: 500;
-  max-width: 460px;
-  animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
-  position: relative;
-  padding-left: 20px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 6px;
-    bottom: 6px;
-    width: 3px;
-    background: linear-gradient(180deg, $campus-teal 0%, $primary 100%);
-    border-radius: 2px;
-    animation: accentSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s both;
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes accentSlideIn {
-  from {
-    transform: scaleY(0);
-    transform-origin: top;
-  }
-  to {
-    transform: scaleY(1);
-    transform-origin: top;
-  }
-}
-
-// ==================== Minimalist Stats Grid ====================
-.stats-grid {
+// ==================== 全息数据卡片 ====================
+.holographic-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
+  margin-top: 16px;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 16px;
   }
 }
 
-.stat-card {
+.holo-card {
   position: relative;
   padding: 20px 18px;
-  background: white;
-  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.06),
-    0 1px 2px rgba(0, 0, 0, 0.04);
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: cardFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: cardFloat 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.card-1 { animation-delay: 0s; }
+  &.card-2 { animation-delay: 0.15s; }
+  &.card-3 { animation-delay: 0.3s; }
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow:
-      0 8px 24px rgba(0, 0, 0, 0.1),
-      0 4px 12px rgba(0, 0, 0, 0.06);
-    border-color: rgba(0, 0, 0, 0.08);
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.85);
+
+    .glow-border {
+      opacity: 1;
+    }
 
     .stat-icon {
-      transform: scale(1.1) rotate(5deg);
+      transform: scale(1.15) rotate(-5deg);
+    }
+
+    .data-flow {
+      animation-play-state: paused;
     }
   }
+}
+
+// 发光边框
+.glow-border {
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  padding: 2px;
+  background: linear-gradient(135deg, $primary, $campus-teal, $campus-amber);
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.5;
+  transition: opacity 0.4s ease;
 }
 
 @keyframes cardFloat {
   from {
     opacity: 0;
-    transform: translateY(25px) scale(0.96);
+    transform: translateY(30px) scale(0.95);
   }
   to {
     opacity: 1;
@@ -284,40 +457,66 @@ $charcoal: $gray-900;        // 系统文本色
   }
 }
 
-.stat-header {
+.card-content {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
+  z-index: 1;
+}
+
+.stat-icon-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.icon-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, $primary, $campus-teal);
+  opacity: 0.2;
+  filter: blur(8px);
+  animation: iconGlowPulse 2s ease-in-out infinite;
+}
+
+@keyframes iconGlowPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.1);
+  }
 }
 
 .stat-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  color: $primary;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 1;
 
-  &.icon-1 {
-    background: rgba($campus-amber, 0.12);
-    color: $campus-amber;
-  }
+  .card-1 & { color: $campus-amber; }
+  .card-2 & { color: $campus-teal; }
+  .card-3 & { color: $primary; }
+}
 
-  &.icon-2 {
-    background: rgba($campus-teal, 0.12);
-    color: $campus-teal;
-  }
+.stat-data {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
 
-  &.icon-3 {
-    background: rgba($primary, 0.12);
-    color: $primary;
-  }
-
-  svg {
-    flex-shrink: 0;
-  }
+.stat-number {
+  font-size: 28px;
+  font-weight: 900;
+  color: $charcoal;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
@@ -327,13 +526,62 @@ $charcoal: $gray-900;        // 系统文本色
   letter-spacing: 0.01em;
 }
 
-.stat-number {
-  font-size: 32px;
-  font-weight: 900;
-  color: $charcoal;
-  line-height: 1;
-  letter-spacing: -0.02em;
-  font-variant-numeric: tabular-nums;
-  margin-left: 46px; // Align with label after icon
+// 数据流动线
+.data-flow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  opacity: 0.5;
+
+  path {
+    stroke: $primary;
+    animation: dataFlow 3s linear infinite;
+  }
+
+  .card-1 path { stroke: $campus-amber; }
+  .card-2 path { stroke: $campus-teal; }
+  .card-3 path { stroke: $primary; }
+}
+
+@keyframes dataFlow {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+// ==================== AI 思维粒子流 ====================
+.particle-stream {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  opacity: 0.4;
+}
+
+.ai-particle {
+  position: absolute;
+  bottom: -10px;
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(135deg, $primary, $campus-teal);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba($primary, 0.6);
+  animation: particleRise 4s linear infinite;
+}
+
+@keyframes particleRise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-600px) scale(0.3);
+    opacity: 0;
+  }
 }
 </style>

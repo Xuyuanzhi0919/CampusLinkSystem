@@ -1,29 +1,36 @@
 <template>
   <view class="activity-wall">
-    <!-- Bold Header with Live Stats -->
+    <!-- AI 实时监控头部 -->
     <view class="wall-header">
       <view class="header-top">
         <h3 class="wall-title">
-          <span class="title-word">实时</span>
+          <span class="title-word gradient-word">实时</span>
           <span class="title-word accent">互助</span>
         </h3>
         <view class="live-badge">
           <view class="live-dot"></view>
           <text class="live-text">LIVE</text>
+          <svg class="wave-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L12 6M12 18L12 22M6 12L2 12M22 12L18 12M19.07 4.93L16.24 7.76M7.76 16.24L4.93 19.07M7.76 7.76L4.93 4.93M19.07 19.07L16.24 16.24"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
         </view>
       </view>
 
-      <!-- Live Stats Bar -->
+      <!-- 全息数据统计条 -->
       <view class="stats-bar">
-        <view class="stat-pill">
+        <view class="holo-stat-pill">
+          <view class="pill-glow"></view>
           <text class="stat-value">{{ liveStats.onlineUsers }}</text>
           <text class="stat-label">在线</text>
         </view>
-        <view class="stat-pill">
+        <view class="holo-stat-pill">
+          <view class="pill-glow"></view>
           <text class="stat-value">{{ liveStats.todayQuestions }}</text>
           <text class="stat-label">今日提问</text>
         </view>
-        <view class="stat-pill">
+        <view class="holo-stat-pill">
+          <view class="pill-glow"></view>
           <text class="stat-value">{{ liveStats.todayHelps }}</text>
           <text class="stat-label">完成互助</text>
         </view>
@@ -256,7 +263,7 @@ $charcoal: $gray-900;        // 系统文本色
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-size: 20px;
   font-weight: 900;
   letter-spacing: -0.03em;
@@ -264,10 +271,20 @@ $charcoal: $gray-900;        // 系统文本色
   .title-word {
     color: $charcoal;
     position: relative;
+    animation: titleFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+
+    &.gradient-word {
+      background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation-delay: 0.1s;
+    }
 
     &.accent {
       color: $accent;
       position: relative;
+      animation-delay: 0.2s;
 
       &::after {
         content: '';
@@ -278,9 +295,20 @@ $charcoal: $gray-900;        // 系统文本色
         height: 3px;
         background: $accent;
         border-radius: 2px;
-        animation: underlineGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s both;
+        animation: underlineGrow 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
       }
     }
+  }
+}
+
+@keyframes titleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -299,22 +327,37 @@ $charcoal: $gray-900;        // 系统文本色
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
-  background: rgba($accent, 0.1);
-  border: 1.5px solid rgba($accent, 0.3);
-  border-radius: 12px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, rgba($accent, 0.15) 0%, rgba($accent, 0.1) 100%);
+  border: 1.5px solid rgba($accent, 0.4);
+  border-radius: 14px;
   animation: badgePulse 3s ease-in-out infinite;
+  box-shadow: 0 4px 12px rgba($accent, 0.2);
 }
 
 @keyframes badgePulse {
   0%, 100% {
     transform: scale(1);
-    border-color: rgba($accent, 0.3);
+    border-color: rgba($accent, 0.4);
+    box-shadow: 0 4px 12px rgba($accent, 0.2);
   }
   50% {
     transform: scale(1.05);
-    border-color: rgba($accent, 0.5);
+    border-color: rgba($accent, 0.6);
+    box-shadow: 0 6px 16px rgba($accent, 0.3);
   }
+}
+
+.wave-icon {
+  width: 14px;
+  height: 14px;
+  color: $accent;
+  animation: waveRotate 4s linear infinite;
+}
+
+@keyframes waveRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .live-dot {
@@ -345,24 +388,39 @@ $charcoal: $gray-900;        // 系统文本色
   letter-spacing: 0.1em;
 }
 
-// ==================== Live Stats Bar ====================
+// ==================== 全息数据统计条 ====================
 .stats-bar {
   display: flex;
   gap: 12px;
-  padding: 14px 16px;
-  background: linear-gradient(135deg, rgba($campus-teal, 0.08) 0%, rgba($primary, 0.08) 100%);
-  border-radius: 14px;
-  border: 1px solid rgba($campus-teal, 0.15);
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  border: 1px solid rgba($campus-teal, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.stat-pill {
+.holo-stat-pill {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 0;
+  gap: 5px;
+  padding: 10px 8px;
   position: relative;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: scale(1.05);
+
+    .pill-glow {
+      opacity: 0.8;
+    }
+  }
 
   &:not(:last-child)::after {
     content: '';
@@ -376,8 +434,17 @@ $charcoal: $gray-900;        // 系统文本色
   }
 }
 
+.pill-glow {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, $campus-teal 0%, $primary 100%);
+  opacity: 0.15;
+  transition: opacity 0.4s ease;
+}
+
 .stat-value {
-  font-size: 20px;
+  position: relative;
+  font-size: 22px;
   font-weight: 900;
   background: linear-gradient(135deg, $campus-teal 0%, $primary 100%);
   -webkit-background-clip: text;
@@ -385,14 +452,17 @@ $charcoal: $gray-900;        // 系统文本色
   background-clip: text;
   line-height: 1;
   animation: countUp 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  z-index: 1;
 }
 
 .stat-label {
+  position: relative;
   font-size: 10px;
   font-weight: 700;
   color: #666;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  z-index: 1;
 }
 
 @keyframes countUp {
@@ -416,7 +486,8 @@ $charcoal: $gray-900;        // 系统文本色
 .activity-item {
   position: relative;
   padding: 0;
-  background: white;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   overflow: hidden;
   box-shadow:
@@ -425,18 +496,59 @@ $charcoal: $gray-900;        // 系统文本色
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   animation: cardSlideIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
   transform-style: preserve-3d;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 16px;
+    padding: 1.5px;
+    background: linear-gradient(135deg, transparent 0%, transparent 100%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+  }
 
   &:hover {
     transform:
       translateY(-6px)
       rotateX(2deg)
       scale(1.01);
+    background: rgba(255, 255, 255, 0.95);
     box-shadow:
       0 12px 32px rgba(0, 0, 0, 0.1),
       0 6px 16px rgba(0, 0, 0, 0.06);
 
+    &::before {
+      opacity: 0.6;
+    }
+
     .accent-strip {
       height: 100%;
+    }
+  }
+
+  &.item-question {
+    &::before {
+      background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
+    }
+  }
+
+  &.item-resource {
+    &::before {
+      background: linear-gradient(135deg, $campus-teal 0%, $primary 100%);
+    }
+  }
+
+  &.item-activity {
+    &::before {
+      background: linear-gradient(135deg, $campus-amber 0%, $accent 100%);
     }
   }
 

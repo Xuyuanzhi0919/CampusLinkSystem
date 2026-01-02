@@ -183,19 +183,19 @@ html, body {
 
 /* ========== 多端 TabBar 适配 ========== */
 
-/* H5/App 端：隐藏原生 tabBar，使用自定义 tabBar */
+/* #ifdef H5 */
+/* H5 端：隐藏原生 uni-tabbar,使用自定义 TabBar */
+uni-tabbar {
+  display: none !important;
+}
 
 /* 移除页面底部的 padding（自定义 tabBar 占位） */
 uni-page-body {
   padding-bottom: 56px !important; /* 自定义 tabBar 高度 */
 }
 
-/* PC 端隐藏自定义 tabBar（使用悬浮导航） */
-@media (min-width: 751px) {
-  .custom-tabbar {
-    display: none !important;
-  }
-
+/* PC 端（桌面端 >= 1024px）：移除底部 padding */
+@media (min-width: 1024px) {
   uni-page-body {
     padding-bottom: 0 !important;
   }

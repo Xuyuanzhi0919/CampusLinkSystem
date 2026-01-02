@@ -103,13 +103,16 @@ const avatars = ref([
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+
+    .cta-glow {
+      opacity: 1;
+    }
   }
 
   @media (max-width: 640px) {
     width: 100%;
     padding: 16px 24px;
   }
-}
 
   .cta-glow {
     position: absolute;
@@ -117,10 +120,6 @@ const avatars = ref([
     background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.3), transparent 60%);
     opacity: 0;
     transition: opacity 0.3s ease;
-  }
-
-  &:hover .cta-glow {
-    opacity: 1;
   }
 
   .cta-text {
@@ -149,6 +148,11 @@ const avatars = ref([
   &:hover {
     border-color: #2563EB;
     background: rgba(37, 99, 235, 0.05);
+
+    .cta-arrow {
+      transform: translateX(4px);
+      color: #2563EB;
+    }
   }
 
   @media (max-width: 640px) {
@@ -165,11 +169,6 @@ const avatars = ref([
   .cta-arrow {
     color: #9CA3AF;
     transition: transform 0.3s ease;
-  }
-
-  &:hover .cta-arrow {
-    transform: translateX(4px);
-    color: #2563EB;
   }
 }
 
@@ -270,5 +269,14 @@ const avatars = ref([
   font-size: 12px;
   font-weight: 600;
   color: #10B981;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }
 </style>

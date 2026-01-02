@@ -42,7 +42,16 @@
         <!-- Resource Type -->
         <template v-else-if="item.type === 'resource'">
           <view class="resource-item">
-            <text class="resource-icon">📄</text>
+            <!-- SVG 文档图标 -->
+            <view class="resource-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M14 2V8H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 13H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 17H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M10 9H9H8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </view>
             <view class="resource-info">
               <text class="resource-title">{{ item.title }}</text>
               <text class="resource-meta">{{ item.downloads }}次下载</text>
@@ -53,7 +62,15 @@
         <!-- Activity Type -->
         <template v-else-if="item.type === 'activity'">
           <view class="event-item">
-            <text class="event-icon">{{ item.icon }}</text>
+            <!-- SVG 日历图标 -->
+            <view class="event-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M16 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M8 2V6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M3 10H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </view>
             <view class="event-info">
               <text class="event-title">{{ item.title }}</text>
               <text class="event-meta">{{ item.time }}</text>
@@ -79,7 +96,6 @@ interface ActivityItem {
   time?: string
   tags?: string[]
   downloads?: number
-  icon?: string
   replies?: number
 }
 
@@ -105,7 +121,6 @@ const displayItems = ref<ActivityItem[]>([
     id: 3,
     type: 'activity',
     title: '周末编程马拉松',
-    icon: '💻',
     time: '明天 14:00',
   }
 ])
@@ -115,6 +130,7 @@ const displayItems = ref<ActivityItem[]>([
 $campus-blue: #5B8FF9;
 $campus-purple: #9270FF;
 $campus-green: #3DD68C;
+$campus-orange: #FF9A3E;
 
 .activity-wall {
   display: flex;
@@ -297,8 +313,15 @@ $campus-green: #3DD68C;
 }
 
 .resource-icon {
-  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: $campus-green;
+  background: rgba($campus-green, 0.1);
+  border-radius: 10px;
 }
 
 .resource-info {
@@ -329,8 +352,15 @@ $campus-green: #3DD68C;
 }
 
 .event-icon {
-  font-size: 32px;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: $campus-orange;
+  background: rgba($campus-orange, 0.1);
+  border-radius: 10px;
 }
 
 .event-info {

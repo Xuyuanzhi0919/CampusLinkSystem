@@ -1,20 +1,23 @@
 <template>
   <view class="hero-section">
-    <!-- Clean Background with Minimal Decoration -->
+    <!-- Clean Background with Abstract Shapes -->
     <view class="hero-bg">
       <!-- Soft Gradient Base -->
       <view class="gradient-base"></view>
 
-      <!-- Minimal Floating Elements (只保留3个关键元素) -->
+      <!-- Abstract Geometric Decorations (替换 Emoji) -->
       <view class="floating-elements">
-        <view class="float-item float-book">📚</view>
-        <view class="float-item float-star">✨</view>
-        <view class="float-item float-heart">💡</view>
+        <!-- 圆形 -->
+        <view class="float-shape circle shape-1"></view>
+        <!-- 方形 -->
+        <view class="float-shape square shape-2"></view>
+        <!-- 三角形 -->
+        <view class="float-shape triangle shape-3"></view>
       </view>
 
-      <!-- Subtle Accent Shapes (更小更柔和) -->
-      <view class="accent-shape shape-1"></view>
-      <view class="accent-shape shape-2"></view>
+      <!-- Subtle Accent Shapes -->
+      <view class="accent-shape accent-1"></view>
+      <view class="accent-shape accent-2"></view>
     </view>
 
     <view class="hero-container">
@@ -53,9 +56,6 @@ const handleBrowse = () => emit('browse')
 $campus-blue: #5B8FF9;
 $campus-purple: #9270FF;
 $campus-pink: #FF85C0;
-$campus-orange: #FF9A3E;
-$campus-green: #3DD68C;
-$campus-yellow: #FFD666;
 
 // ==================== Hero Section Container ====================
 .hero-section {
@@ -63,7 +63,7 @@ $campus-yellow: #FFD666;
   overflow: hidden;
   margin-top: 64px;
   min-height: 720px;
-  background: #FEFEFE; // 纯净白色底
+  background: #FEFEFE;
 
   @media (max-width: 1024px) {
     min-height: auto;
@@ -79,7 +79,7 @@ $campus-yellow: #FFD666;
   overflow: hidden;
 }
 
-// 极简渐变基底 (非常淡)
+// 极简渐变基底
 .gradient-base {
   position: absolute;
   inset: 0;
@@ -94,38 +94,60 @@ $campus-yellow: #FFD666;
   50% { opacity: 0.7; }
 }
 
-// 精简浮动元素 (只保留3个，更大更优雅)
+// 抽象几何装饰 (替换 Emoji)
 .floating-elements {
   position: absolute;
   inset: 0;
   pointer-events: none;
 }
 
-.float-item {
+.float-shape {
   position: absolute;
-  font-size: 56px;
-  opacity: 0.12;
+  opacity: 0.08;
   animation: gentleFloat 20s ease-in-out infinite;
-  filter: blur(0.5px);
 
-  &.float-book {
-    top: 12%;
-    left: 8%;
-    animation-delay: 0s;
+  // 圆形
+  &.circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $campus-blue, $campus-purple);
+
+    &.shape-1 {
+      top: 15%;
+      left: 10%;
+      animation-delay: 0s;
+    }
   }
 
-  &.float-star {
-    top: 60%;
-    right: 12%;
-    animation-delay: 7s;
-    font-size: 48px;
+  // 方形
+  &.square {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, $campus-purple, $campus-pink);
+    transform: rotate(15deg);
+
+    &.shape-2 {
+      top: 55%;
+      right: 15%;
+      animation-delay: 7s;
+    }
   }
 
-  &.float-heart {
-    bottom: 20%;
-    left: 15%;
-    animation-delay: 14s;
-    font-size: 52px;
+  // 三角形
+  &.triangle {
+    width: 0;
+    height: 0;
+    border-left: 35px solid transparent;
+    border-right: 35px solid transparent;
+    border-bottom: 60px solid rgba($campus-blue, 0.15);
+
+    &.shape-3 {
+      bottom: 25%;
+      left: 12%;
+      animation-delay: 14s;
+    }
   }
 }
 
@@ -134,20 +156,20 @@ $campus-yellow: #FFD666;
     transform: translate(0, 0);
   }
   50% {
-    transform: translate(0, -15px);
+    transform: translate(0, -20px);
   }
 }
 
-// 柔和装饰形状 (更小，更透明)
+// 柔和装饰形状
 .accent-shape {
   position: absolute;
   border-radius: 50%;
-  opacity: 0.06;
+  opacity: 0.05;
   animation: shapeFloat 18s ease-in-out infinite;
   filter: blur(80px);
 }
 
-.shape-1 {
+.accent-1 {
   width: 300px;
   height: 300px;
   top: 10%;
@@ -156,12 +178,12 @@ $campus-yellow: #FFD666;
   animation-delay: 0s;
 }
 
-.shape-2 {
+.accent-2 {
   width: 250px;
   height: 250px;
   bottom: 15%;
   left: 10%;
-  background: linear-gradient(135deg, $campus-pink, $campus-orange);
+  background: linear-gradient(135deg, $campus-pink, $campus-purple);
   animation-delay: 9s;
 }
 

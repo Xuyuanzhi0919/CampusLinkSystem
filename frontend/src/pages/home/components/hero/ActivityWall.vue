@@ -267,7 +267,6 @@ $charcoal: $gray-900;
 
   &:hover {
     border-color: rgba($primary, 0.3);
-    box-shadow: 0 8px 24px rgba($primary, 0.1);
   }
 
   // 左侧彩色条 - 加粗
@@ -291,6 +290,28 @@ $charcoal: $gray-900;
 
   &.item-activity::before {
     background: linear-gradient(180deg, $campus-amber, $accent);
+  }
+
+  // 彩色 hover 光效 - 根据类型显示不同颜色
+  &.item-question:hover {
+    box-shadow:
+      0 8px 32px rgba($primary, 0.2),
+      0 4px 16px rgba($campus-teal, 0.15),
+      0 0 40px rgba($primary, 0.1);
+  }
+
+  &.item-resource:hover {
+    box-shadow:
+      0 8px 32px rgba($campus-teal, 0.2),
+      0 4px 16px rgba($campus-amber, 0.15),
+      0 0 40px rgba($campus-teal, 0.1);
+  }
+
+  &.item-activity:hover {
+    box-shadow:
+      0 8px 32px rgba($campus-amber, 0.2),
+      0 4px 16px rgba($accent, 0.15),
+      0 0 40px rgba($campus-amber, 0.1);
   }
 }
 
@@ -321,6 +342,10 @@ $charcoal: $gray-900;
   font-size: 12px;
   font-weight: 600;
 
+  svg {
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
   &.badge-question {
     background: rgba($primary, 0.08);
     color: $primary;
@@ -334,6 +359,31 @@ $charcoal: $gray-900;
   &.badge-activity {
     background: rgba($campus-amber, 0.08);
     color: $campus-amber;
+  }
+
+  // Hover 时图标动画 - 根据类型不同的效果
+  .activity-item:hover & {
+    svg {
+      animation: iconBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+  }
+}
+
+@keyframes iconBounce {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.2) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(-3deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
   }
 }
 

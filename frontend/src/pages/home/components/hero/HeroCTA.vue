@@ -105,8 +105,8 @@ $charcoal: $gray-900;
   padding: 16px 24px;
   flex: 1;
   background: linear-gradient(135deg,
-    rgba($primary, 0.08) 0%,
-    rgba($campus-teal, 0.08) 100%);
+    rgba($primary, 0.12) 0%,
+    rgba($campus-teal, 0.1) 100%);
   backdrop-filter: blur(10px);
   border: 1.5px solid rgba($primary, 0.3);
   border-radius: 12px;
@@ -114,17 +114,61 @@ $charcoal: $gray-900;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: 'Courier New', 'JetBrains Mono', monospace;
+  box-shadow:
+    0 4px 16px rgba($primary, 0.15),
+    0 2px 8px rgba($campus-teal, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
   @media (max-width: 640px) {
     width: 100%;
   }
 
+  // 顶部高光（使用 ::before）
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      transparent 100%);
+    opacity: 0.8;
+  }
+
+  // 内部光晕（使用新的 ::after）
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(ellipse at center,
+      rgba($primary, 0.15) 0%,
+      transparent 60%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
   &:hover {
     transform: translateY(-2px);
     border-color: rgba($primary, 0.6);
+    background: linear-gradient(135deg,
+      rgba($primary, 0.18) 0%,
+      rgba($campus-teal, 0.15) 100%);
     box-shadow:
-      0 8px 24px rgba($primary, 0.2),
-      0 0 40px rgba($campus-teal, 0.1);
+      0 8px 32px rgba($primary, 0.25),
+      0 4px 16px rgba($campus-teal, 0.2),
+      0 0 40px rgba($primary, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+    &::after {
+      opacity: 1;
+    }
 
     .scan-line {
       animation: scan 1.5s ease-in-out infinite;
@@ -241,7 +285,6 @@ $charcoal: $gray-900;
   gap: 8px;
   padding: 16px 20px;
   background: transparent;
-  border: 1px solid rgba($primary, 0.15);
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -252,9 +295,36 @@ $charcoal: $gray-900;
     width: 100%;
   }
 
+  // 渐变描边（使用 ::before）
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 12px;
+    background: linear-gradient(135deg,
+      rgba($primary, 0.3) 0%,
+      rgba($campus-teal, 0.2) 50%,
+      rgba($campus-amber, 0.15) 100%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+  }
+
   &:hover {
-    border-color: rgba($primary, 0.4);
     background: rgba($primary, 0.03);
+
+    &::before {
+      opacity: 1;
+      background: linear-gradient(135deg,
+        rgba($primary, 0.5) 0%,
+        rgba($campus-teal, 0.4) 50%,
+        rgba($campus-amber, 0.3) 100%);
+    }
 
     .hover-underline {
       width: 100%;

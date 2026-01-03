@@ -32,7 +32,6 @@
         class="stat-card"
         :class="`card-${index + 1}`"
       >
-        <view class="card-glow"></view>
         <view class="stat-content">
           <view class="stat-number">{{ stat.displayValue }}</view>
           <view class="stat-label">{{ stat.label }}</view>
@@ -329,25 +328,69 @@ $charcoal: $gray-900;
 .stat-card {
   position: relative;
   padding: 20px 16px;
-  background: rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(255, 255, 255, 0.7) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
   border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.06);
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
   animation: cardSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  box-shadow:
+    0 8px 32px rgba($primary, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 
   &.card-1 { animation-delay: 0.6s; }
   &.card-2 { animation-delay: 0.75s; }
   &.card-3 { animation-delay: 0.9s; }
 
+  // 渐变边框（使用 ::before）
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: 16px;
+    background: linear-gradient(135deg,
+      rgba($primary, 0.4) 0%,
+      rgba($campus-teal, 0.4) 50%,
+      rgba($campus-amber, 0.3) 100%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.6;
+    transition: opacity 0.5s ease;
+  }
+
+  // 内部光晕（使用 ::after）
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 30%;
+    background: radial-gradient(ellipse at center,
+      rgba(255, 255, 255, 0.6) 0%,
+      transparent 70%);
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
   &:hover {
     transform: translateY(-8px) scale(1.03);
-    background: rgba(255, 255, 255, 0.9);
-    border-color: rgba($primary, 0.2);
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(255, 255, 255, 0.85) 100%);
+    box-shadow:
+      0 12px 40px rgba($primary, 0.15),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
 
-    .card-glow {
-      opacity: 0.8;
+    &::before {
+      opacity: 1;
     }
 
     .stat-icon {
@@ -367,26 +410,7 @@ $charcoal: $gray-900;
   }
 }
 
-.card-glow {
-  position: absolute;
-  inset: -2px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, transparent, transparent);
-  opacity: 0.3;
-  transition: opacity 0.5s ease;
-  filter: blur(10px);
-  z-index: 0;
-
-  .card-1 & {
-    background: linear-gradient(135deg, $campus-amber 0%, transparent 70%);
-  }
-  .card-2 & {
-    background: linear-gradient(135deg, $campus-teal 0%, transparent 70%);
-  }
-  .card-3 & {
-    background: linear-gradient(135deg, $primary 0%, transparent 70%);
-  }
-}
+// 移除旧的 card-glow，改用 ::before 和 ::after 伪元素实现渐变边框和内部光晕
 
 .stat-content {
   position: relative;

@@ -195,9 +195,9 @@ $charcoal: $gray-900;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   height: 100%;
-  min-height: 500px;
+  min-height: 580px;  // 🔧 增加最小高度,容纳三层卡片
 }
 
 // ==================== 3D 舞台 ====================
@@ -207,12 +207,13 @@ $charcoal: $gray-900;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;  // 🔧 改为顶部对齐
+  padding-top: 20px;            // 🔧 顶部留白
   gap: 0;
 
   // 🎯 3D 透视容器
-  perspective: 1200px;
-  perspective-origin: 50% 50%;
+  perspective: 1400px;          // 🔧 增加透视深度,增强3D效果
+  perspective-origin: 50% 40%;  // 🔧 调整视角,更好展示层叠
   transform-style: preserve-3d;
 }
 
@@ -277,7 +278,7 @@ $charcoal: $gray-900;
     top: 0;
     left: 0;
     z-index: 3;
-    transform: translateZ(60px) translateY(-40px) rotateX(2deg);
+    transform: translateZ(80px) translateY(-30px) rotateX(3deg) rotateY(-2deg);  // 🔧 增强3D角度
     animation: cardFloat1 4s ease-in-out infinite;
 
     .card-glow {
@@ -288,10 +289,10 @@ $charcoal: $gray-900;
     }
 
     &:hover {
-      transform: translateZ(100px) translateY(-50px) rotateX(0deg) scale(1.02);
+      transform: translateZ(120px) translateY(-35px) rotateX(0deg) rotateY(0deg) scale(1.03);  // 🔧 更强提升
       box-shadow:
-        0 30px 80px rgba($primary, 0.25),
-        0 12px 32px rgba($campus-teal, 0.2),
+        0 35px 90px rgba($primary, 0.3),
+        0 15px 40px rgba($campus-teal, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 1);
 
       .card-glow {
@@ -302,12 +303,12 @@ $charcoal: $gray-900;
 
   // 卡片2 (中层): 资源
   &.card-resource {
-    top: 90px;
+    top: 70px;  // 🔧 缩小间距 90px → 70px
     left: 0;
     z-index: 2;
-    transform: translateZ(30px) translateY(-10px) rotateX(1deg);
+    transform: translateZ(40px) translateY(-8px) rotateX(2deg) rotateY(-1deg);  // 🔧 增强3D角度
     animation: cardFloat2 4.5s ease-in-out infinite;
-    opacity: 0.92;
+    opacity: 0.94;  // 🔧 提高不透明度
 
     .card-glow {
       background: linear-gradient(135deg,
@@ -317,11 +318,11 @@ $charcoal: $gray-900;
     }
 
     &:hover {
-      transform: translateZ(100px) translateY(-20px) rotateX(0deg) scale(1.02);
+      transform: translateZ(120px) translateY(-15px) rotateX(0deg) rotateY(0deg) scale(1.03);
       opacity: 1;
       box-shadow:
-        0 30px 80px rgba($campus-teal, 0.25),
-        0 12px 32px rgba($campus-amber, 0.2),
+        0 35px 90px rgba($campus-teal, 0.3),
+        0 15px 40px rgba($campus-amber, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 1);
       z-index: 4; // 提升到最上层
 
@@ -333,12 +334,12 @@ $charcoal: $gray-900;
 
   // 卡片3 (底层): 活动
   &.card-activity {
-    top: 180px;
+    top: 140px;  // 🔧 缩小间距 180px → 140px
     left: 0;
     z-index: 1;
-    transform: translateZ(0px) translateY(20px) rotateX(0deg);
+    transform: translateZ(0px) translateY(15px) rotateX(1deg);  // 🔧 添加轻微倾斜
     animation: cardFloat3 5s ease-in-out infinite;
-    opacity: 0.85;
+    opacity: 0.88;  // 🔧 提高不透明度
 
     .card-glow {
       background: linear-gradient(135deg,
@@ -348,11 +349,11 @@ $charcoal: $gray-900;
     }
 
     &:hover {
-      transform: translateZ(100px) translateY(10px) rotateX(0deg) scale(1.02);
+      transform: translateZ(120px) translateY(5px) rotateX(0deg) scale(1.03);
       opacity: 1;
       box-shadow:
-        0 30px 80px rgba($campus-amber, 0.25),
-        0 12px 32px rgba($accent, 0.2),
+        0 35px 90px rgba($campus-amber, 0.3),
+        0 15px 40px rgba($accent, 0.25),
         inset 0 1px 0 rgba(255, 255, 255, 1);
       z-index: 4; // 提升到最上层
 
@@ -366,28 +367,28 @@ $charcoal: $gray-900;
 // ==================== 悬浮动画 ====================
 @keyframes cardFloat1 {
   0%, 100% {
-    transform: translateZ(60px) translateY(-40px) rotateX(2deg);
+    transform: translateZ(80px) translateY(-30px) rotateX(3deg) rotateY(-2deg);
   }
   50% {
-    transform: translateZ(60px) translateY(-46px) rotateX(2deg);
+    transform: translateZ(80px) translateY(-36px) rotateX(3deg) rotateY(-2deg);
   }
 }
 
 @keyframes cardFloat2 {
   0%, 100% {
-    transform: translateZ(30px) translateY(-10px) rotateX(1deg);
+    transform: translateZ(40px) translateY(-8px) rotateX(2deg) rotateY(-1deg);
   }
   50% {
-    transform: translateZ(30px) translateY(-16px) rotateX(1deg);
+    transform: translateZ(40px) translateY(-14px) rotateX(2deg) rotateY(-1deg);
   }
 }
 
 @keyframes cardFloat3 {
   0%, 100% {
-    transform: translateZ(0px) translateY(20px) rotateX(0deg);
+    transform: translateZ(0px) translateY(15px) rotateX(1deg);
   }
   50% {
-    transform: translateZ(0px) translateY(14px) rotateX(0deg);
+    transform: translateZ(0px) translateY(9px) rotateX(1deg);
   }
 }
 
@@ -679,23 +680,42 @@ $charcoal: $gray-900;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
+  padding: 14px 24px;  // 🔧 调整内边距
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.5) 100%);  // 🔧 渐变背景
+  backdrop-filter: blur(16px) saturate(150%);  // 🔧 增强模糊
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.8);  // 🔧 更明显边框
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);  // 🔧 内高光
+
+  // 🎨 顶部高光
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.9) 50%,
+      transparent 100%);
+  }
 }
 
 .hint-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  color: $gray-600;
+  color: $gray-700;  // 🔧 加深文字颜色
+  letter-spacing: 0.02em;
 }
 
 .hint-dots {
   display: flex;
-  gap: 8px;
+  gap: 10px;  // 🔧 增加间距
 }
 
 .dot {
@@ -703,48 +723,114 @@ $charcoal: $gray-900;
   height: 8px;
   background: $gray-300;
   border-radius: 50%;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);  // 🔧 平滑过渡
+  position: relative;
+
+  // 🌟 未激活状态的微光
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: radial-gradient(circle, rgba($gray-400, 0.2), transparent);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
 
   &.active {
-    background: $primary;
-    box-shadow: 0 0 12px rgba($primary, 0.6);
-    transform: scale(1.2);
+    background: linear-gradient(135deg, $primary, lighten($primary, 10%));  // 🔧 渐变蓝
+    box-shadow:
+      0 0 16px rgba($primary, 0.7),
+      0 0 8px rgba($primary, 0.4);  // 🔧 双层发光
+    transform: scale(1.3);  // 🔧 更明显放大
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  // Hover 效果
+  &:hover {
+    background: $gray-400;
+    transform: scale(1.1);
+
+    &.active {
+      transform: scale(1.4);
+    }
   }
 }
 
 // ==================== 响应式 ====================
 @media (max-width: 1440px) {
+  .hero-cards-3d {
+    min-height: 550px;  // 🔧 调整最小高度
+  }
+
+  .cards-stage {
+    perspective: 1300px;  // 🔧 调整透视
+  }
+
   .card-3d {
     max-width: 380px;
     padding: 24px;
 
     &.card-question {
-      transform: translateZ(50px) translateY(-35px) rotateX(2deg);
+      transform: translateZ(70px) translateY(-28px) rotateX(3deg) rotateY(-2deg);
     }
     &.card-resource {
-      top: 80px;
-      transform: translateZ(25px) translateY(-8px) rotateX(1deg);
+      top: 65px;  // 🔧 调整间距
+      transform: translateZ(35px) translateY(-6px) rotateX(2deg) rotateY(-1deg);
     }
     &.card-activity {
-      top: 160px;
+      top: 130px;  // 🔧 调整间距
     }
+  }
+
+  // 🔧 更新动画
+  @keyframes cardFloat1 {
+    0%, 100% { transform: translateZ(70px) translateY(-28px) rotateX(3deg) rotateY(-2deg); }
+    50% { transform: translateZ(70px) translateY(-34px) rotateX(3deg) rotateY(-2deg); }
+  }
+  @keyframes cardFloat2 {
+    0%, 100% { transform: translateZ(35px) translateY(-6px) rotateX(2deg) rotateY(-1deg); }
+    50% { transform: translateZ(35px) translateY(-12px) rotateX(2deg) rotateY(-1deg); }
   }
 }
 
 @media (max-width: 1200px) {
+  .hero-cards-3d {
+    min-height: 520px;  // 🔧 调整最小高度
+  }
+
+  .cards-stage {
+    perspective: 1200px;  // 🔧 调整透视
+    padding-top: 15px;
+  }
+
   .card-3d {
     max-width: 340px;
     padding: 20px;
 
     &.card-question {
-      transform: translateZ(40px) translateY(-30px) rotateX(2deg);
+      transform: translateZ(60px) translateY(-25px) rotateX(3deg) rotateY(-2deg);
     }
     &.card-resource {
-      top: 70px;
+      top: 60px;  // 🔧 进一步缩小间距
+      transform: translateZ(30px) translateY(-5px) rotateX(2deg) rotateY(-1deg);
     }
     &.card-activity {
-      top: 140px;
+      top: 120px;  // 🔧 进一步缩小间距
     }
+  }
+
+  // 🔧 更新动画
+  @keyframes cardFloat1 {
+    0%, 100% { transform: translateZ(60px) translateY(-25px) rotateX(3deg) rotateY(-2deg); }
+    50% { transform: translateZ(60px) translateY(-31px) rotateX(3deg) rotateY(-2deg); }
+  }
+  @keyframes cardFloat2 {
+    0%, 100% { transform: translateZ(30px) translateY(-5px) rotateX(2deg) rotateY(-1deg); }
+    50% { transform: translateZ(30px) translateY(-11px) rotateX(2deg) rotateY(-1deg); }
   }
 }
 </style>

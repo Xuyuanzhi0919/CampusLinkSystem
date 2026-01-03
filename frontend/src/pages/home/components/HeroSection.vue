@@ -68,9 +68,9 @@
         <HeroCTA @ask="handleAsk" @browse="handleBrowse" />
       </view>
 
-      <!-- Right: 3D Isometric Cards -->
+      <!-- Right: 3D Cards -->
       <view class="hero-right">
-        <ActivityWall />
+        <HeroCards3D />
       </view>
     </view>
   </view>
@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import HeroBrand from './hero/HeroBrand.vue'
 import HeroCTA from './hero/HeroCTA.vue'
-import ActivityWall from './hero/ActivityWall.vue'
+import HeroCards3D from './hero/HeroCards3D.vue'
 
 const emit = defineEmits<{
   (e: 'ask'): void

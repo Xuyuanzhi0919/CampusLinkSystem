@@ -1,282 +1,560 @@
 <template>
   <view class="hero-cta">
-    <!-- 主 CTA 按钮组 -->
-    <view class="cta-buttons">
-      <view class="cta-primary" @click="$emit('ask')">
-        <view class="cta-glow"></view>
-        <text class="cta-text">立即提问</text>
-        <svg class="cta-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          <path d="M9.09 9C9.3251 8.33167 9.78915 7.76811 10.4 7.40913C11.0108 7.05016 11.7289 6.91894 12.4272 7.03871C13.1255 7.15849 13.7588 7.52152 14.2151 8.06353C14.6713 8.60553 14.9211 9.29152 14.92 10C14.92 12 11.92 13 11.92 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <circle cx="12" cy="17" r="1" fill="currentColor"/>
-        </svg>
-      </view>
-      <view class="cta-secondary" @click="$emit('browse')">
-        <text class="cta-text">先逛逛学习社区</text>
-        <svg class="cta-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </view>
-    </view>
+    <!-- AI 终端边框装饰 -->
+    <view class="terminal-border"></view>
 
-    <!-- 响应时间提示 -->
-    <view class="cta-hint">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- 主指令按钮 -->
+    <view class="cta-primary" @click="handleAsk">
+      <view class="scan-line"></view>
+      <view class="matrix-bg"></view>
+      <text class="terminal-prompt">&gt;</text>
+      <text class="cta-text">立即提问</text>
+      <view class="cursor-blink">_</view>
+      <svg class="ai-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+        <circle cx="12" cy="12" r="3" fill="currentColor"/>
+        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
       </svg>
-      <text>平均 3 分钟内收到 1–3 条同学回复</text>
     </view>
 
-    <!-- 社交证明 -->
-    <view class="social-proof">
-      <view class="avatar-stack">
-        <view
-          class="stack-avatar"
-          v-for="(avatar, index) in avatars"
-          :key="index"
-          :style="{ background: avatar.color, zIndex: 6 - index }"
-        >
-          <text class="avatar-char">{{ avatar.char }}</text>
-        </view>
+    <!-- 次指令按钮 -->
+    <view class="cta-secondary" @click="$emit('browse')">
+      <text class="command-prefix">/browse</text>
+      <text class="cta-text">浏览社区</text>
+      <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <view class="hover-underline"></view>
+    </view>
+
+    <!-- 状态输出栏 -->
+    <view class="status-bar">
+      <view class="status-item">
+        <svg class="status-icon" width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <text class="status-label">[STATUS]</text>
+        <text class="status-value">平均响应: <text class="highlight">3min</text></text>
       </view>
-      <view class="proof-content">
-        <text class="proof-text">
-          来自 <text class="school-names">北大 / 上交 / 浙大</text> 等高校的同学正在使用
-        </text>
-        <view class="online-indicator">
-          <view class="online-dot"></view>
-          <text class="online-count">{{ onlineCount }} 人在线</text>
-        </view>
+      <view class="status-divider">|</view>
+      <view class="status-item">
+        <view class="online-pulse"></view>
+        <text class="status-label">[ONLINE]</text>
+        <text class="status-value"><text class="highlight">{{ onlineCount }}</text> 人在线</text>
       </view>
+    </view>
+
+    <!-- 活跃度进度条 -->
+    <view class="activity-progress">
+      <view class="progress-header">
+        <text class="progress-label">[ACTIVITY] 今日活跃度</text>
+        <text class="progress-percent">{{ activityPercent }}%</text>
+      </view>
+      <view class="progress-track">
+        <view class="progress-fill" :style="{ width: activityPercent + '%' }">
+          <view class="progress-glow"></view>
+        </view>
+        <view class="progress-indicator" :style="{ left: activityPercent + '%' }"></view>
+      </view>
+      <text class="progress-schools">北大 · 上交 · 浙大 等高校同学正在使用</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
-defineEmits<{
+const emit = defineEmits<{
   ask: []
   browse: []
 }>()
 
 const onlineCount = ref(892)
-const avatars = ref([
-  { char: '李', color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
-  { char: '王', color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
-  { char: '张', color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
-  { char: '刘', color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
-  { char: '陈', color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' }
-])
+const activityPercent = ref(0)
+const isAsking = ref(false)
+
+// 活跃度动画
+onMounted(() => {
+  setTimeout(() => {
+    activityPercent.value = 82
+  }, 300)
+
+  // 在线人数轻微波动
+  setInterval(() => {
+    const delta = Math.floor(Math.random() * 5) - 2
+    onlineCount.value = Math.max(880, Math.min(900, onlineCount.value + delta))
+  }, 5000)
+
+  // 活跃度轻微增长
+  setInterval(() => {
+    if (activityPercent.value < 85) {
+      activityPercent.value = Math.min(85, activityPercent.value + 0.5)
+    }
+  }, 8000)
+})
+
+const handleAsk = () => {
+  isAsking.value = true
+  setTimeout(() => {
+    emit('ask')
+    isAsking.value = false
+  }, 1200)
+}
 </script>
 
 <style scoped lang="scss">
+@import '@/styles/variables.scss';
+
+// ==================== 使用系统标准校园色系 ====================
+$primary: #2563EB;
+$campus-teal: #14B8A6;
+$campus-amber: #F59E0B;
+$accent: #FF6B35;
+$charcoal: $gray-900;
+
 .hero-cta {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
-}
-
-.cta-buttons {
-  display: flex;
   gap: 16px;
+  padding: 24px;
+  background: linear-gradient(135deg,
+    rgba($primary, 0.02) 0%,
+    rgba($campus-teal, 0.02) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba($primary, 0.1);
 
-  @media (max-width: 640px) {
-    flex-direction: column;
-    gap: 12px;
+  // 微妙的对角线纹理
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      -15deg,
+      transparent,
+      transparent 10px,
+      rgba($primary, 0.02) 10px,
+      rgba($primary, 0.02) 11px
+    );
+    border-radius: 16px;
+    pointer-events: none;
   }
 }
 
+// ==================== 终端边框装饰 ====================
+.terminal-border {
+  position: absolute;
+  top: -1px;
+  left: 20%;
+  width: 60%;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    $primary 20%,
+    $campus-teal 50%,
+    $campus-amber 80%,
+    transparent 100%);
+  opacity: 0.6;
+  animation: borderPulse 3s ease-in-out infinite;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 6px;
+    background: $campus-teal;
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba($campus-teal, 0.8);
+  }
+
+  &::before {
+    left: -8px;
+  }
+
+  &::after {
+    right: -8px;
+  }
+}
+
+@keyframes borderPulse {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+// ==================== 主指令按钮 ====================
 .cta-primary {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 14px 28px;
-  background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+  gap: 8px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg,
+    rgba($primary, 0.08) 0%,
+    rgba($campus-teal, 0.08) 100%);
+  backdrop-filter: blur(10px);
+  border: 1.5px solid rgba($primary, 0.3);
   border-radius: 12px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: 'Courier New', 'JetBrains Mono', monospace;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 12px 24px rgba(37, 99, 235, 0.3);
+    border-color: rgba($primary, 0.6);
+    box-shadow:
+      0 8px 24px rgba($primary, 0.2),
+      0 0 40px rgba($campus-teal, 0.1);
 
-    .cta-glow {
+    .scan-line {
+      animation: scan 1.5s ease-in-out infinite;
+    }
+
+    .matrix-bg {
       opacity: 1;
     }
-  }
 
-  @media (max-width: 640px) {
-    width: 100%;
-    padding: 16px 24px;
-  }
-
-  .cta-glow {
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.3), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .cta-text {
-    font-size: 16px;
-    font-weight: 600;
-    color: white;
-  }
-
-  .cta-icon {
-    color: white;
-  }
-}
-
-.cta-secondary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px 24px;
-  background: transparent;
-  border: 2px solid #E5E7EB;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #2563EB;
-    background: rgba(37, 99, 235, 0.05);
-
-    .cta-arrow {
-      transform: translateX(4px);
-      color: #2563EB;
+    .cursor-blink {
+      animation-duration: 0.3s;
     }
   }
 
-  @media (max-width: 640px) {
-    width: 100%;
-    padding: 14px 24px;
-  }
-
-  .cta-text {
-    font-size: 15px;
-    font-weight: 600;
-    color: #374151;
-  }
-
-  .cta-arrow {
-    color: #9CA3AF;
-    transition: transform 0.3s ease;
+  &:active {
+    transform: translateY(0);
   }
 }
 
-.cta-hint {
+// 对角线扫描线
+.scan-line {
+  position: absolute;
+  top: -100%;
+  left: -10%;
+  width: 120%;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba($campus-teal, 0.6) 50%,
+    transparent 100%);
+  transform: rotate(-15deg);
+  opacity: 0;
+}
+
+@keyframes scan {
+  0% {
+    top: -100%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 200%;
+    opacity: 0;
+  }
+}
+
+// 矩阵数字雨背景
+.matrix-bg {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(transparent 50%, rgba($primary, 0.05) 50%),
+    linear-gradient(90deg, transparent 50%, rgba($campus-teal, 0.05) 50%);
+  background-size: 4px 4px, 4px 4px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  animation: matrixScroll 20s linear infinite;
+}
+
+@keyframes matrixScroll {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: 0 100px, 100px 0;
+  }
+}
+
+.terminal-prompt {
+  font-size: 18px;
+  font-weight: 700;
+  color: $campus-teal;
+  font-family: 'Courier New', monospace;
+}
+
+.cta-primary .cta-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: $charcoal;
+  letter-spacing: 0.02em;
+}
+
+.cursor-blink {
+  font-size: 18px;
+  font-weight: 700;
+  color: $primary;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.ai-icon {
+  margin-left: auto;
+  color: $primary;
+  animation: aiRotate 4s linear infinite;
+}
+
+@keyframes aiRotate {
+  0%, 90% { transform: rotate(0deg); }
+  95% { transform: rotate(90deg); }
+  100% { transform: rotate(0deg); }
+}
+
+// ==================== 次指令按钮 ====================
+.cta-secondary {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
-  color: #6B7280;
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid rgba($primary, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Courier New', monospace;
 
-  svg {
-    color: #F59E0B;
-  }
+  &:hover {
+    border-color: rgba($primary, 0.4);
+    background: rgba($primary, 0.03);
 
-  @media (max-width: 640px) {
-    font-size: 12px;
-    justify-content: center;
-    text-align: center;
+    .hover-underline {
+      width: 100%;
+    }
+
+    .arrow-icon {
+      transform: translateX(4px);
+      color: $primary;
+    }
   }
 }
 
-.social-proof {
+.command-prefix {
+  font-size: 14px;
+  font-weight: 600;
+  color: $campus-amber;
+}
+
+.cta-secondary .cta-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: $charcoal;
+}
+
+.arrow-icon {
+  margin-left: auto;
+  color: $gray-400;
+  transition: all 0.3s ease;
+}
+
+.hover-underline {
+  position: absolute;
+  bottom: 8px;
+  left: 20px;
+  width: 0;
+  height: 1px;
+  background: linear-gradient(90deg, $primary, $campus-teal);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: skewX(-15deg);
+}
+
+// ==================== 状态输出栏 ====================
+.status-bar {
   display: flex;
   align-items: center;
   gap: 12px;
+  padding: 10px 16px;
+  background: rgba($charcoal, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba($primary, 0.08);
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
 
   @media (max-width: 640px) {
     flex-direction: column;
     gap: 8px;
-    text-align: center;
+    align-items: flex-start;
   }
 }
 
-.avatar-stack {
-  display: flex;
-}
-
-.stack-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid white;
-  margin-left: -12px;
-
-  &:first-child {
-    margin-left: 0;
-  }
-
-  .avatar-char {
-    font-size: 14px;
-    font-weight: 600;
-    color: white;
-  }
-}
-
-.proof-content {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  @media (max-width: 640px) {
-    align-items: center;
-  }
-}
-
-.proof-text {
-  font-size: 13px;
-  color: #6B7280;
-
-  .school-names {
-    font-weight: 600;
-    color: #2563EB;
-  }
-
-  @media (max-width: 640px) {
-    font-size: 12px;
-  }
-}
-
-.online-indicator {
+.status-item {
   display: flex;
   align-items: center;
   gap: 6px;
 }
 
-.online-dot {
+.status-icon {
+  color: $campus-amber;
+}
+
+.status-label {
+  font-weight: 700;
+  color: $primary;
+  font-size: 11px;
+}
+
+.status-value {
+  color: $gray-600;
+  font-size: 12px;
+
+  .highlight {
+    font-weight: 700;
+    color: $campus-teal;
+  }
+}
+
+.status-divider {
+  color: rgba($primary, 0.2);
+  font-weight: 300;
+}
+
+.online-pulse {
   width: 6px;
   height: 6px;
   background: #10B981;
   border-radius: 50%;
+  box-shadow: 0 0 8px rgba(#10B981, 0.6);
   animation: pulse 2s ease-in-out infinite;
-}
-
-.online-count {
-  font-size: 12px;
-  font-weight: 600;
-  color: #10B981;
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.6;
+    transform: scale(1.2);
+  }
+}
+
+// ==================== 活跃度进度条 ====================
+.activity-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Courier New', monospace;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.progress-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: $primary;
+}
+
+.progress-percent {
+  font-size: 13px;
+  font-weight: 700;
+  color: $campus-teal;
+}
+
+.progress-track {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: rgba($primary, 0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: relative;
+  height: 100%;
+  background: linear-gradient(90deg,
+    $primary 0%,
+    $campus-teal 50%,
+    $campus-amber 100%);
+  border-radius: 4px;
+  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 12px rgba($campus-teal, 0.4);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(white, 0.3) 50%,
+      transparent 100%);
+    animation: shimmer 2s ease-in-out infinite;
+  }
+}
+
+.progress-glow {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(white, 0.4) 100%);
+  filter: blur(4px);
+}
+
+.progress-indicator {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 12px;
+  height: 12px;
+  background: $campus-teal;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba($campus-teal, 0.8);
+  transition: left 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: indicatorPulse 2s ease-in-out infinite;
+}
+
+@keyframes indicatorPulse {
+  0%, 100% {
+    box-shadow: 0 0 12px rgba($campus-teal, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba($campus-teal, 1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.progress-schools {
+  font-size: 11px;
+  color: $gray-500;
+
+  @media (max-width: 640px) {
+    font-size: 10px;
   }
 }
 </style>

@@ -60,28 +60,37 @@ const handleClick = (item: any) => {
 
 <style scoped lang="scss">
 .grid-nav {
+  width: 100%;
+  min-height: 100px;
   display: flex;
   flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
   padding: 20px 16px;
-  background: white;
+  background: #FFFFFF;
   gap: 16px;
   overflow-x: auto;
   overflow-y: hidden;
+  box-sizing: border-box;
 
   // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;
   }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   min-width: 70px;
   flex-shrink: 0;
   cursor: pointer;
+  transition: transform 0.2s ease;
 
   &:active {
     transform: scale(0.95);
@@ -98,10 +107,13 @@ const handleClick = (item: any) => {
   font-size: 28px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
+  flex-shrink: 0;
+}
 
-  text {
-    line-height: 1;
-  }
+.nav-icon text {
+  font-size: 28px;
+  line-height: 1;
+  display: inline-block;
 }
 
 .nav-item:active .nav-icon {
@@ -116,5 +128,6 @@ const handleClick = (item: any) => {
   text-align: center;
   white-space: nowrap;
   line-height: 1.2;
+  display: block;
 }
 </style>

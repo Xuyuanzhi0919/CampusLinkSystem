@@ -1149,12 +1149,12 @@ const scrollToBottom = () => {
   }
 }
 
-// 会话列表
+// 会话列表（与搜索栏对齐）
 .session-list {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; // 防止水平滚动
-  padding: 6px 6px 16px; // 进一步减少左右内边距：8px → 6px
+  padding: 6px 0 16px; // 左右不要内边距，由卡片自己控制 margin
 
   // 自定义滚动条样式
   &::-webkit-scrollbar {
@@ -1195,7 +1195,7 @@ const scrollToBottom = () => {
 
 .group-label {
   display: block;
-  padding: 8px 6px 6px; // 与容器内边距对齐：8px → 6px
+  padding: 8px 12px 6px; // 与搜索栏对齐：margin 12px
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1203,14 +1203,14 @@ const scrollToBottom = () => {
   color: $gray-500;
 }
 
-// 会话卡片 - 极简扁平设计（修复宽度超出问题）
+// 会话卡片 - 按搜索栏标准对齐（margin + padding 模式）
 .session-item {
   position: relative; // 为绝对定位的操作按钮提供定位上下文
   display: flex;
   align-items: flex-start;
-  gap: 8px; // 减少间距：10px → 8px
-  padding: 9px 10px; // 减少内边距：10px 12px → 9px 10px
-  margin-bottom: 4px;
+  gap: 8px;
+  margin: 0 12px 4px; // 左右 margin 与搜索栏对齐
+  padding: 9px 10px; // 内边距适当留白
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;

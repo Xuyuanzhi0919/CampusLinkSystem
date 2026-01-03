@@ -17,6 +17,8 @@
     "@dcloudio/uni-ui": "^1.5.11",
     "@iconify/vue": "^5.0.0",
     "dayjs": "^1.11.19",
+    "highlight.js": "^11.11.1",
+    "marked": "^17.0.1",
     "pdfjs-dist": "^5.4.394",
     "pinia": "^3.0.4",
     "vue": "^3.4.21",

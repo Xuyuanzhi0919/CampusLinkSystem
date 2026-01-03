@@ -123,7 +123,13 @@
               <text class="ai-label">AI 助手</text>
             </view>
             <view class="ai-content">
-              <text class="ai-text">{{ pair.assistant.content }}</text>
+              <!-- 使用 Markdown 渲染组件 -->
+              <MarkdownRenderer
+                v-if="!pair.assistant.isStreaming"
+                :content="pair.assistant.content"
+              />
+              <!-- 打字机效果时显示纯文本 -->
+              <text v-else class="ai-text">{{ pair.assistant.content }}</text>
               <view v-if="pair.assistant.isStreaming" class="typing-cursor"></view>
             </view>
             <view v-if="!pair.assistant.isStreaming" class="ai-footer">
@@ -199,6 +205,7 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import type { Message, QuickPrompt } from '@/types/ai'
 import { sendMessage, saveChatHistory, loadChatHistory, clearChatHistory } from '@/services/ai'
 import { useUserStore } from '@/stores/user'
+import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
 const userStore = useUserStore()
 const messages = ref<Message[]>([])
@@ -797,21 +804,17 @@ const scrollToBottom = () => {
 .ai-content {
   margin-bottom: 14px;
   position: relative;
+  max-width: 680px; // 控制最大行宽
 }
 
+// 打字机效果时的纯文本样式
 .ai-text {
   display: block;
   font-size: 15px;
-  line-height: 1.75; // 更舒适的行高
+  line-height: 1.75;
   color: $gray-900;
   word-wrap: break-word;
   white-space: pre-wrap;
-  max-width: 680px; // 控制最大行宽
-
-  // 段落间距（如果有换行）
-  p + p, & + & {
-    margin-top: 8px;
-  }
 }
 
 .typing-cursor {

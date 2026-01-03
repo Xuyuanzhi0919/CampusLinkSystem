@@ -341,7 +341,7 @@ import {
   renameSession
 } from '@/services/ai'
 import { useUserStore } from '@/stores/user'
-import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
+import MarkdownRenderer from '@/components/MarkdownRenderer-enhanced.vue'
 
 const userStore = useUserStore()
 const messages = ref<Message[]>([])

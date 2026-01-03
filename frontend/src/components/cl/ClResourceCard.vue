@@ -9,8 +9,8 @@
         <ClIcon :name="fileTypeConfig.icon" size="xl" :color="fileTypeConfig.color" />
       </view>
 
-      <!-- 文件类型胶囊标签 -->
-      <view class="featured-resource__capsule" :style="{ background: fileTypeConfig.capsuleBg, color: fileTypeConfig.color }">
+      <!-- 文件类型胶囊标签 - 统一使用品牌色 -->
+      <view class="featured-resource__capsule">
         {{ getFileTypeName(resource.fileType) }}
       </view>
     </view>
@@ -207,7 +207,7 @@ const handleDownloadClick = () => emit('download', props.resource)
     transition: $transition-all;
   }
 
-  /* 文件类型胶囊标签 */
+  /* 文件类型胶囊标签 - 统一使用品牌色 */
   &__capsule {
     flex-shrink: 0;
     display: inline-flex;
@@ -217,6 +217,8 @@ const handleDownloadClick = () => emit('download', props.resource)
     border-radius: $capsule-tag-radius;
     font-size: $capsule-tag-font-size;
     font-weight: $font-weight-semibold;
+    color: $campus-blue;
+    background: rgba($campus-blue, 0.1);
   }
 
   /* ========== Body ========== */

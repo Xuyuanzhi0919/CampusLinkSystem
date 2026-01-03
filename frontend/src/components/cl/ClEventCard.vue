@@ -200,7 +200,7 @@ const handleRegisterClick = () => emit('register', props.event)
     transition: $transition-all;
   }
 
-  /* 状态胶囊标签 */
+  /* 状态胶囊标签 - 统一样式 */
   &__capsule {
     flex-shrink: 0;
     display: inline-flex;
@@ -210,16 +210,16 @@ const handleRegisterClick = () => emit('register', props.event)
     padding: $capsule-tag-padding;
     border-radius: $capsule-tag-radius;
     font-size: $capsule-tag-font-size;
-    font-weight: $font-weight-medium;
+    font-weight: $font-weight-semibold;  // 统一字重
 
     &--ended {
-      background: $color-bg-hover;
       color: $color-text-tertiary;
+      background: rgba($color-text-tertiary, 0.08);
     }
 
     &--registering {
-      background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
-      color: #FFFFFF;
+      color: $color-success;               // 使用语义色而非渐变
+      background: rgba($color-success, 0.1);
     }
   }
 

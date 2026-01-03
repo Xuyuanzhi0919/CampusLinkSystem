@@ -216,22 +216,25 @@ const handleCommentClick = () => emit('comment', props.question)
     white-space: nowrap;
   }
 
-  /* 状态标签（弱化） */
+  /* 状态标签（统一样式） */
   &__status {
     flex-shrink: 0;
-    font-size: 20rpx;
-    font-weight: $font-weight-medium;
-    padding: 4rpx 12rpx;
-    border-radius: $radius-sm;
+    display: inline-flex;
+    align-items: center;
+    height: $capsule-tag-height;        // 统一高度 40rpx
+    padding: $capsule-tag-padding;      // 统一内边距
+    border-radius: $capsule-tag-radius; // 统一圆角 20rpx
+    font-size: $capsule-tag-font-size;  // 统一字号
+    font-weight: $font-weight-semibold; // 统一字重
 
     &--pending {
       color: $campus-blue;
-      background: rgba($campus-blue, 0.08);
+      background: rgba($campus-blue, 0.1);
     }
 
     &--solved {
       color: $color-text-tertiary;
-      background: $color-bg-hover;
+      background: rgba($color-text-tertiary, 0.08);
     }
   }
 

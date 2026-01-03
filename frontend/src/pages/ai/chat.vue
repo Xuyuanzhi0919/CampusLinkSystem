@@ -480,38 +480,40 @@ const scrollToBottom = () => {
 
 // ==================== 欢迎屏幕 ====================
 .welcome-screen {
-  max-width: 720px;
-  margin: 60px auto 0;
+  max-width: 800px;
+  margin: 48px auto 0;
   padding: 0 32px;
 }
 
 .welcome-card {
   background: $white;
-  border-radius: 16px;
-  padding: 48px 32px;
+  border: 1px solid $gray-200;
+  border-radius: 20px;
+  padding: 56px 40px;
   text-align: center;
   box-shadow: 0 2px 12px rgba($black, 0.05);
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .welcome-icon {
-  width: 100px;
-  height: 100px;
-  margin: 0 auto 24px;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 28px;
 
   svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 4px 12px rgba($primary, 0.15));
+    filter: drop-shadow(0 4px 16px rgba($primary, 0.2));
   }
 }
 
 .welcome-title {
   display: block;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 600;
   color: $gray-900;
   margin-bottom: 12px;
+  letter-spacing: -0.01em;
 }
 
 .welcome-desc {
@@ -519,30 +521,31 @@ const scrollToBottom = () => {
   font-size: 15px;
   color: $gray-600;
   line-height: 1.6;
+  font-weight: 400;
 }
 
 .suggestions-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 12px;
 }
 
 .suggestion-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 16px;
+  gap: 14px;
+  padding: 18px 20px;
   background: $white;
   border: 1px solid $gray-200;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s;
 
   &:hover {
     border-color: $primary;
     background: $primary-50;
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba($primary, 0.12);
+    box-shadow: 0 6px 20px rgba($primary, 0.15);
   }
 
   &:active {
@@ -551,26 +554,28 @@ const scrollToBottom = () => {
 }
 
 .suggestion-icon-wrap {
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
 .suggestion-label {
   flex: 1;
-  font-size: 14px;
-  color: $gray-700;
+  font-size: 15px;
+  color: $gray-800;
   font-weight: 500;
+  line-height: 1.4;
 }
 
 // ==================== 对话容器 ====================
 .conversation-container {
-  max-width: 780px;
+  max-width: 800px;
   margin: 0 auto;
-  padding: 32px 24px 120px;
+  padding: 24px 32px 140px;
 }
 
 .message-wrapper {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   animation: fadeIn 0.3s ease-out;
 
   &:last-of-type {
@@ -589,23 +594,24 @@ const scrollToBottom = () => {
   }
 }
 
-// ==================== 用户消息卡片 ====================
+// ==================== 用户问题卡片（层级1：最高） ====================
 .user-message-card {
   background: linear-gradient(135deg, $primary, $primary-light);
   border-radius: 16px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 8px rgba($primary, 0.2);
-  margin-left: 80px;
+  padding: 20px 24px;
+  box-shadow: 0 4px 12px rgba($primary, 0.25);
+  margin-bottom: 4px;
 }
 
 .user-content {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .user-text {
   display: block;
-  font-size: 16px;
-  line-height: 1.6;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.65;
   color: $white;
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -613,35 +619,36 @@ const scrollToBottom = () => {
 
 .msg-timestamp {
   font-size: 12px;
-  color: rgba($white, 0.8);
+  color: rgba($white, 0.75);
+  font-weight: 400;
 }
 
-// ==================== AI 消息卡片 ====================
+// ==================== AI 回复卡片（层级2：次高） ====================
 .ai-message-card {
   background: $white;
-  border: 1px solid $gray-100;
+  border: 1px solid $gray-200;
   border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba($black, 0.04);
-  margin-right: 80px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba($black, 0.06);
 }
 
 .ai-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid $gray-100;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .ai-avatar {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  background: $primary-50;
+  border-radius: 50%;
+  padding: 6px;
 
   svg {
     width: 100%;
@@ -650,20 +657,21 @@ const scrollToBottom = () => {
 }
 
 .ai-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
-  color: $gray-700;
+  color: $gray-800;
+  letter-spacing: 0.01em;
 }
 
 .ai-content {
-  margin-bottom: 12px;
+  margin-bottom: 16px;
   position: relative;
 }
 
 .ai-text {
   display: block;
   font-size: 16px;
-  line-height: 1.7;
+  line-height: 1.75;
   color: $gray-900;
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -672,7 +680,7 @@ const scrollToBottom = () => {
 .typing-cursor {
   display: inline-block;
   width: 2px;
-  height: 18px;
+  height: 20px;
   background: $primary;
   margin-left: 4px;
   vertical-align: middle;
@@ -689,11 +697,12 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 8px;
+  padding-top: 12px;
   border-top: 1px solid $gray-100;
 
   .msg-timestamp {
     color: $gray-400;
+    font-size: 12px;
   }
 }
 
@@ -701,20 +710,21 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 14px;
   background: $gray-50;
-  border-radius: 8px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     color: $gray-600;
   }
 
   text {
     font-size: 13px;
+    font-weight: 500;
     color: $gray-600;
   }
 
@@ -728,7 +738,7 @@ const scrollToBottom = () => {
   }
 
   &:active {
-    transform: scale(0.96);
+    transform: scale(0.97);
   }
 }
 
@@ -736,94 +746,97 @@ const scrollToBottom = () => {
   height: 1px;
 }
 
-// ==================== 底部输入栏 ====================
+// ==================== 底部输入栏（层级3：主动作区） ====================
 .input-section {
   position: relative;
   z-index: 100;
-  background: rgba($white, 0.98);
-  backdrop-filter: blur(10px);
-  border-top: 1px solid rgba($gray-200, 0.8);
-  padding: 20px 24px;
-  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+  background: $white;
+  border-top: 2px solid $gray-100;
+  padding: 24px 32px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -2px 16px rgba($black, 0.04);
 }
 
 .input-inner {
-  max-width: 780px;
+  max-width: 800px;
   margin: 0 auto;
   display: flex;
   align-items: flex-end;
-  gap: 12px;
+  gap: 16px;
 }
 
 .input-field {
   flex: 1;
-  background: $gray-50;
-  border: 2px solid $gray-200;
-  border-radius: 16px;
-  padding: 14px 18px;
-  transition: all 0.2s;
+  background: $white;
+  border: 2px solid $gray-300;
+  border-radius: 20px;
+  padding: 16px 20px;
+  transition: all 0.25s;
 
   &:focus-within {
-    background: $white;
     border-color: $primary;
-    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+    box-shadow: 0 0 0 4px rgba($primary, 0.12);
+    transform: translateY(-1px);
   }
 }
 
 .input-textarea {
   width: 100%;
-  min-height: 48px;
-  max-height: 120px;
-  font-size: 16px;
-  line-height: 1.5;
+  min-height: 52px;
+  max-height: 140px;
+  font-size: 17px;
+  line-height: 1.6;
   color: $gray-900;
   background: transparent;
   border: none;
   outline: none;
+  font-weight: 400;
 
   &::placeholder {
     color: $gray-400;
+    font-weight: 400;
   }
 }
 
 .send-btn {
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-200;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   svg {
-    width: 24px;
-    height: 24px;
-    color: $gray-500;
+    width: 26px;
+    height: 26px;
+    color: $gray-400;
   }
 
   &.active {
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 4px 16px rgba($primary, 0.3);
+    box-shadow: 0 6px 20px rgba($primary, 0.35);
 
     svg {
       color: $white;
     }
 
     &:hover {
-      transform: scale(1.05);
-      box-shadow: 0 6px 20px rgba($primary, 0.4);
+      transform: scale(1.08);
+      box-shadow: 0 8px 28px rgba($primary, 0.45);
     }
 
     &:active {
-      transform: scale(0.98);
+      transform: scale(0.96);
     }
   }
 
   &.loading {
     background: linear-gradient(135deg, $primary, $primary-light);
+    box-shadow: 0 6px 20px rgba($primary, 0.35);
     pointer-events: none;
 
     svg {
@@ -943,45 +956,57 @@ const scrollToBottom = () => {
 // ==================== 移动端适配 ====================
 @media (max-width: 750px) {
   .navbar-content {
-    height: 88px;
-    padding: 0 16px;
+    height: 92px;
+    padding: 0 20px;
+  }
+
+  .back-icon {
+    width: 22px;
+    height: 22px;
   }
 
   .navbar-title {
-    font-size: 16px;
+    font-size: 17px;
   }
 
   .online-badge {
-    padding: 3px 8px;
+    padding: 4px 9px;
     font-size: 12px;
   }
 
+  .online-dot {
+    width: 5px;
+    height: 5px;
+  }
+
   .clear-btn {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
 
     svg {
-      width: 18px;
-      height: 18px;
+      width: 19px;
+      height: 19px;
     }
   }
 
   .welcome-screen {
-    margin-top: 40px;
+    margin-top: 32px;
     padding: 0 20px;
   }
 
   .welcome-card {
-    padding: 36px 24px;
+    padding: 44px 28px;
+    border-radius: 18px;
   }
 
   .welcome-icon {
-    width: 80px;
-    height: 80px;
+    width: 84px;
+    height: 84px;
+    margin-bottom: 24px;
   }
 
   .welcome-title {
-    font-size: 20px;
+    font-size: 22px;
   }
 
   .welcome-desc {
@@ -990,52 +1015,126 @@ const scrollToBottom = () => {
 
   .suggestions-list {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
+  }
+
+  .suggestion-item {
+    padding: 16px 18px;
+    border-radius: 12px;
+  }
+
+  .suggestion-icon-wrap {
+    font-size: 28px;
+  }
+
+  .suggestion-label {
+    font-size: 14px;
   }
 
   .conversation-container {
-    padding: 24px 16px 100px;
+    padding: 20px 20px 120px;
+  }
+
+  .message-wrapper {
+    margin-bottom: 14px;
   }
 
   .user-message-card {
-    margin-left: 40px;
-    padding: 14px 16px;
+    padding: 18px 20px;
+    border-radius: 14px;
   }
 
   .user-text {
-    font-size: 15px;
+    font-size: 16px;
   }
 
   .ai-message-card {
-    margin-right: 40px;
-    padding: 16px;
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  .ai-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .ai-label {
+    font-size: 13px;
   }
 
   .ai-text {
     font-size: 15px;
+    line-height: 1.7;
+  }
+
+  .action-copy {
+    padding: 7px 12px;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    text {
+      font-size: 12px;
+    }
   }
 
   .input-section {
-    padding: 16px;
+    padding: 20px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+  }
+
+  .input-inner {
+    gap: 14px;
   }
 
   .input-field {
-    padding: 12px 16px;
+    padding: 14px 18px;
+    border-radius: 18px;
   }
 
   .input-textarea {
-    font-size: 15px;
-    min-height: 44px;
+    font-size: 16px;
+    min-height: 48px;
   }
 
   .send-btn {
-    width: 52px;
-    height: 52px;
+    width: 56px;
+    height: 56px;
 
     svg {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
     }
+  }
+
+  .modal-box {
+    padding: 28px;
+    border-radius: 18px;
+  }
+
+  .modal-icon-wrap {
+    width: 56px;
+    height: 56px;
+
+    svg {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  .modal-title {
+    font-size: 18px;
+  }
+
+  .modal-desc {
+    font-size: 13px;
+  }
+
+  .modal-btn {
+    height: 44px;
+    font-size: 15px;
   }
 }
 </style>

@@ -385,8 +385,8 @@ const scrollToBottom = () => {
 }
 
 .navbar-content {
-  height: 100px;
-  padding: 0 24px;
+  height: 56px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -395,7 +395,7 @@ const scrollToBottom = () => {
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   cursor: pointer;
   transition: opacity 0.2s;
 
@@ -405,13 +405,13 @@ const scrollToBottom = () => {
 }
 
 .back-icon {
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   color: $gray-700;
 }
 
 .navbar-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: $gray-900;
 }
@@ -419,18 +419,18 @@ const scrollToBottom = () => {
 .online-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
+  gap: 4px;
+  padding: 3px 8px;
   background: rgba($success, 0.1);
-  border-radius: 12px;
-  font-size: 13px;
+  border-radius: 10px;
+  font-size: 12px;
   color: $success;
   font-weight: 500;
 }
 
 .online-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   background: $success;
   border-radius: 50%;
   animation: pulse-dot 2s infinite;
@@ -442,19 +442,19 @@ const scrollToBottom = () => {
 }
 
 .clear-btn {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-50;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 
   svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     color: $gray-600;
   }
 
@@ -481,71 +481,71 @@ const scrollToBottom = () => {
 // ==================== 欢迎屏幕 ====================
 .welcome-screen {
   max-width: 800px;
-  margin: 48px auto 0;
-  padding: 0 32px;
+  margin: 32px auto 0;
+  padding: 0 24px;
 }
 
 .welcome-card {
   background: $white;
   border: 1px solid $gray-200;
-  border-radius: 20px;
-  padding: 56px 40px;
+  border-radius: 16px;
+  padding: 36px 28px;
   text-align: center;
-  box-shadow: 0 2px 12px rgba($black, 0.05);
-  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba($black, 0.04);
+  margin-bottom: 20px;
 }
 
 .welcome-icon {
-  width: 96px;
-  height: 96px;
-  margin: 0 auto 28px;
+  width: 72px;
+  height: 72px;
+  margin: 0 auto 20px;
 
   svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 4px 16px rgba($primary, 0.2));
+    filter: drop-shadow(0 2px 8px rgba($primary, 0.15));
   }
 }
 
 .welcome-title {
   display: block;
-  font-size: 26px;
+  font-size: 20px;
   font-weight: 600;
   color: $gray-900;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   letter-spacing: -0.01em;
 }
 
 .welcome-desc {
   display: block;
-  font-size: 15px;
+  font-size: 14px;
   color: $gray-600;
-  line-height: 1.6;
+  line-height: 1.5;
   font-weight: 400;
 }
 
 .suggestions-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 
 .suggestion-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 18px 20px;
+  gap: 12px;
+  padding: 14px 16px;
   background: $white;
   border: 1px solid $gray-200;
-  border-radius: 14px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.2s;
 
   &:hover {
     border-color: $primary;
     background: $primary-50;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba($primary, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.12);
   }
 
   &:active {
@@ -554,28 +554,28 @@ const scrollToBottom = () => {
 }
 
 .suggestion-icon-wrap {
-  font-size: 32px;
+  font-size: 24px;
   line-height: 1;
   flex-shrink: 0;
 }
 
 .suggestion-label {
   flex: 1;
-  font-size: 15px;
+  font-size: 14px;
   color: $gray-800;
   font-weight: 500;
-  line-height: 1.4;
+  line-height: 1.3;
 }
 
 // ==================== 对话容器 ====================
 .conversation-container {
   max-width: 800px;
   margin: 0 auto;
-  padding: 24px 32px 140px;
+  padding: 20px 24px 100px;
 }
 
 .message-wrapper {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   animation: fadeIn 0.3s ease-out;
 
   &:last-of-type {
@@ -586,7 +586,7 @@ const scrollToBottom = () => {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -597,29 +597,29 @@ const scrollToBottom = () => {
 // ==================== 用户问题卡片（层级1：最高） ====================
 .user-message-card {
   background: linear-gradient(135deg, $primary, $primary-light);
-  border-radius: 16px;
-  padding: 20px 24px;
-  box-shadow: 0 4px 12px rgba($primary, 0.25);
+  border-radius: 14px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba($primary, 0.2);
   margin-bottom: 4px;
 }
 
 .user-content {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .user-text {
   display: block;
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.65;
+  line-height: 1.6;
   color: $white;
   word-wrap: break-word;
   white-space: pre-wrap;
 }
 
 .msg-timestamp {
-  font-size: 12px;
-  color: rgba($white, 0.75);
+  font-size: 11px;
+  color: rgba($white, 0.7);
   font-weight: 400;
 }
 
@@ -627,28 +627,28 @@ const scrollToBottom = () => {
 .ai-message-card {
   background: $white;
   border: 1px solid $gray-200;
-  border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba($black, 0.06);
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 6px rgba($black, 0.04);
 }
 
 .ai-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .ai-avatar {
-  width: 36px;
-  height: 36px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   background: $primary-50;
   border-radius: 50%;
-  padding: 6px;
+  padding: 5px;
 
   svg {
     width: 100%;
@@ -657,21 +657,20 @@ const scrollToBottom = () => {
 }
 
 .ai-label {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: $gray-800;
-  letter-spacing: 0.01em;
 }
 
 .ai-content {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   position: relative;
 }
 
 .ai-text {
   display: block;
-  font-size: 16px;
-  line-height: 1.75;
+  font-size: 15px;
+  line-height: 1.7;
   color: $gray-900;
   word-wrap: break-word;
   white-space: pre-wrap;
@@ -680,9 +679,9 @@ const scrollToBottom = () => {
 .typing-cursor {
   display: inline-block;
   width: 2px;
-  height: 20px;
+  height: 16px;
   background: $primary;
-  margin-left: 4px;
+  margin-left: 3px;
   vertical-align: middle;
   animation: blink 1s step-end infinite;
 }
@@ -697,33 +696,33 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 12px;
+  padding-top: 10px;
   border-top: 1px solid $gray-100;
 
   .msg-timestamp {
     color: $gray-400;
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
 .action-copy {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 5px;
+  padding: 6px 12px;
   background: $gray-50;
-  border-radius: 10px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
 
   svg {
-    width: 15px;
-    height: 15px;
+    width: 13px;
+    height: 13px;
     color: $gray-600;
   }
 
   text {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 500;
     color: $gray-600;
   }
@@ -751,10 +750,10 @@ const scrollToBottom = () => {
   position: relative;
   z-index: 100;
   background: $white;
-  border-top: 2px solid $gray-100;
-  padding: 24px 32px;
-  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0));
-  box-shadow: 0 -2px 16px rgba($black, 0.04);
+  border-top: 1px solid $gray-200;
+  padding: 16px 24px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+  box-shadow: 0 -1px 8px rgba($black, 0.03);
 }
 
 .input-inner {
@@ -762,30 +761,29 @@ const scrollToBottom = () => {
   margin: 0 auto;
   display: flex;
   align-items: flex-end;
-  gap: 16px;
+  gap: 12px;
 }
 
 .input-field {
   flex: 1;
   background: $white;
   border: 2px solid $gray-300;
-  border-radius: 20px;
-  padding: 16px 20px;
-  transition: all 0.25s;
+  border-radius: 16px;
+  padding: 12px 16px;
+  transition: all 0.2s;
 
   &:focus-within {
     border-color: $primary;
-    box-shadow: 0 0 0 4px rgba($primary, 0.12);
-    transform: translateY(-1px);
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
   }
 }
 
 .input-textarea {
   width: 100%;
-  min-height: 52px;
-  max-height: 140px;
-  font-size: 17px;
-  line-height: 1.6;
+  min-height: 44px;
+  max-height: 120px;
+  font-size: 15px;
+  line-height: 1.5;
   color: $gray-900;
   background: transparent;
   border: none;
@@ -800,33 +798,33 @@ const scrollToBottom = () => {
 
 .send-btn {
   flex-shrink: 0;
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-200;
   border-radius: 50%;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   svg {
-    width: 26px;
-    height: 26px;
+    width: 22px;
+    height: 22px;
     color: $gray-400;
   }
 
   &.active {
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 6px 20px rgba($primary, 0.35);
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
 
     svg {
       color: $white;
     }
 
     &:hover {
-      transform: scale(1.08);
-      box-shadow: 0 8px 28px rgba($primary, 0.45);
+      transform: scale(1.06);
+      box-shadow: 0 6px 16px rgba($primary, 0.4);
     }
 
     &:active {
@@ -836,7 +834,7 @@ const scrollToBottom = () => {
 
   &.loading {
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 6px 20px rgba($primary, 0.35);
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
     pointer-events: none;
 
     svg {

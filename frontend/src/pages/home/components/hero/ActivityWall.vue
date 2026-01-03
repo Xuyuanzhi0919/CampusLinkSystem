@@ -264,7 +264,7 @@ $charcoal: $gray-900;        // 系统文本色
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: clamp(20px, 2.2vw, 28px);
+  font-size: clamp(22px, 2.5vw, 32px);
   font-weight: 900;
   letter-spacing: -0.03em;
 
@@ -636,7 +636,7 @@ $charcoal: $gray-900;        // 系统文本色
 .badge-question {
   color: $primary;
   background: rgba($primary, 0.1);
-  border: 1px solid rgba($primary, 0.2);
+  border: 1px solid rgba($primary, 0.15);
 }
 
 .badge-resource {
@@ -727,7 +727,7 @@ $charcoal: $gray-900;        // 系统文本色
   padding: 5px 10px;
   border-radius: 7px;
   letter-spacing: 0.01em;
-  border: 1px solid rgba($primary, 0.2);
+  border: 1px solid rgba($primary, 0.15);
 }
 
 .reply-badge {

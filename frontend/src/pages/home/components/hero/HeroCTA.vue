@@ -1,8 +1,5 @@
 <template>
   <view class="hero-cta">
-    <!-- AI 终端边框装饰 -->
-    <view class="terminal-border"></view>
-
     <!-- 主指令按钮 -->
     <view class="cta-primary" @click="handleAsk">
       <view class="scan-line"></view>
@@ -116,72 +113,13 @@ $charcoal: $gray-900;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  gap: 20px;
+  padding: 20px;
   background: linear-gradient(135deg,
     rgba($primary, 0.02) 0%,
     rgba($campus-teal, 0.02) 100%);
   border-radius: 16px;
   border: 1px solid rgba($primary, 0.1);
-
-  // 微妙的对角线纹理
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image: repeating-linear-gradient(
-      -15deg,
-      transparent,
-      transparent 10px,
-      rgba($primary, 0.02) 10px,
-      rgba($primary, 0.02) 11px
-    );
-    border-radius: 16px;
-    pointer-events: none;
-  }
-}
-
-// ==================== 终端边框装饰 ====================
-.terminal-border {
-  position: absolute;
-  top: -1px;
-  left: 20%;
-  width: 60%;
-  height: 3px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    $primary 20%,
-    $campus-teal 50%,
-    $campus-amber 80%,
-    transparent 100%);
-  opacity: 0.6;
-  animation: borderPulse 3s ease-in-out infinite;
-
-  &::before,
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 6px;
-    height: 6px;
-    background: $campus-teal;
-    border-radius: 50%;
-    box-shadow: 0 0 8px rgba($campus-teal, 0.8);
-  }
-
-  &::before {
-    left: -8px;
-  }
-
-  &::after {
-    right: -8px;
-  }
-}
-
-@keyframes borderPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.8; }
 }
 
 // ==================== 主指令按钮 ====================

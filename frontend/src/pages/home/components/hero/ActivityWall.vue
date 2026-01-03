@@ -108,13 +108,6 @@ const activityItems = ref<ActivityItem[]>([
     time: '刚刚',
     title: '操作系统期末复习笔记.pdf',
     downloads: 3102
-  },
-  {
-    id: 3,
-    type: 'activity',
-    time: '今晚 19:30',
-    title: '开源项目分享交流会',
-    participants: 234
   }
 ])
 
@@ -238,45 +231,38 @@ $charcoal: $gray-900;
 .activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 24px;
 }
 
 .activity-item {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 16px;
+  gap: 14px;
+  padding: 24px;
   background: white;
   border: 1px solid rgba($primary, 0.15);
-  border-radius: 12px;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
 
-  // 对角线错位排列
+  // 对角线错位排列 - 只有2张卡片
   &:nth-child(1) {
     animation-delay: 0.2s;
     transform: translateX(0);
   }
   &:nth-child(2) {
-    animation-delay: 0.35s;
-    transform: translateX(30px);
-  }
-  &:nth-child(3) {
-    animation-delay: 0.5s;
-    transform: translateX(60px);
+    animation-delay: 0.4s;
+    transform: translateX(80px);
   }
 
   // Hover 保持错位
   &:nth-child(1):hover {
-    transform: translateX(0) translateY(-4px);
+    transform: translateX(0) translateY(-6px);
   }
   &:nth-child(2):hover {
-    transform: translateX(30px) translateY(-4px);
-  }
-  &:nth-child(3):hover {
-    transform: translateX(60px) translateY(-4px);
+    transform: translateX(80px) translateY(-6px);
   }
 
   &:hover {
@@ -284,15 +270,15 @@ $charcoal: $gray-900;
     box-shadow: 0 8px 24px rgba($primary, 0.1);
   }
 
-  // 左侧彩色条
+  // 左侧彩色条 - 加粗
   &::before {
     content: '';
     position: absolute;
     left: 0;
     top: 0;
     bottom: 0;
-    width: 3px;
-    border-radius: 12px 0 0 12px;
+    width: 4px;
+    border-radius: 16px 0 0 16px;
   }
 
   &.item-question::before {
@@ -329,10 +315,10 @@ $charcoal: $gray-900;
 .type-badge {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 11px;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: 600;
 
   &.badge-question {
@@ -352,11 +338,11 @@ $charcoal: $gray-900;
 }
 
 .badge-text {
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .item-time {
-  font-size: 11px;
+  font-size: 12px;
   color: $gray-400;
 }
 
@@ -370,9 +356,10 @@ $charcoal: $gray-900;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 14px;
+  font-size: 15px;
   line-height: 1.6;
   color: $charcoal;
+  font-weight: 500;
 }
 
 // ==================== 卡片底部 ====================
@@ -394,7 +381,8 @@ $charcoal: $gray-900;
 }
 
 .metric-text {
-  font-size: 12px;
+  font-size: 13px;
   color: $gray-600;
+  font-weight: 500;
 }
 </style>

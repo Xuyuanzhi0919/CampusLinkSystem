@@ -11,7 +11,26 @@
       <view class="ai-avatar-section">
         <view class="ai-avatar">
           <view class="avatar-circle">
-            <text class="avatar-emoji">🤖</text>
+            <!-- SVG AI 图标 -->
+            <svg class="avatar-icon" viewBox="0 0 48 48" fill="none">
+              <!-- 机器人头部外框 -->
+              <rect x="12" y="16" width="24" height="20" rx="4" stroke="url(#ai-gradient)" stroke-width="2.5" fill="none"/>
+              <!-- 天线 -->
+              <path d="M24 8L24 16" stroke="url(#ai-gradient)" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="24" cy="8" r="2.5" fill="url(#ai-gradient)"/>
+              <!-- 眼睛 -->
+              <circle cx="19" cy="24" r="2.5" fill="url(#ai-gradient)"/>
+              <circle cx="29" cy="24" r="2.5" fill="url(#ai-gradient)"/>
+              <!-- 嘴巴笑脸 -->
+              <path d="M18 30C18 30 20 32 24 32C28 32 30 30 30 30" stroke="url(#ai-gradient)" stroke-width="2.5" stroke-linecap="round"/>
+              <!-- 渐变定义 -->
+              <defs>
+                <linearGradient id="ai-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#377DFF"/>
+                  <stop offset="100%" stop-color="#8B5CF6"/>
+                </linearGradient>
+              </defs>
+            </svg>
             <view class="avatar-pulse"></view>
           </view>
           <view class="status-indicator">
@@ -24,21 +43,28 @@
       <!-- AI 问候语 + 动态打字效果 -->
       <view class="ai-greeting">
         <text class="greeting-text">嗨！我是你的 AI 学习助手</text>
-        <text class="greeting-subtext">随时为你答疑解惑 ✨</text>
+        <text class="greeting-subtext">随时为你答疑解惑</text>
       </view>
 
       <!-- 快速功能入口（3个气泡按钮） -->
       <view class="ai-quick-actions">
         <view class="quick-action-bubble bubble-1" @click.stop="handleQuickAction('recommend')">
-          <text class="bubble-emoji">🎯</text>
+          <svg class="bubble-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+          </svg>
           <text class="bubble-text">智能推荐</text>
         </view>
         <view class="quick-action-bubble bubble-2" @click.stop="handleQuickAction('qa')">
-          <text class="bubble-emoji">💬</text>
+          <svg class="bubble-icon" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           <text class="bubble-text">即问即答</text>
         </view>
         <view class="quick-action-bubble bubble-3" @click.stop="handleQuickAction('search')">
-          <text class="bubble-emoji">🔍</text>
+          <svg class="bubble-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/>
+            <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
           <text class="bubble-text">资源查找</text>
         </view>
       </view>
@@ -46,8 +72,13 @@
       <!-- 主 CTA 按钮（呼吸光效） -->
       <view class="ai-main-cta">
         <view class="cta-glow"></view>
+        <svg class="cta-icon" viewBox="0 0 24 24" fill="none">
+          <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="9" cy="10" r="1" fill="currentColor"/>
+          <circle cx="12" cy="10" r="1" fill="currentColor"/>
+          <circle cx="15" cy="10" r="1" fill="currentColor"/>
+        </svg>
         <text class="cta-text">开始对话</text>
-        <view class="cta-sparkle">✨</view>
       </view>
     </view>
 
@@ -961,9 +992,9 @@ onMounted(() => {
     inset 0 2rpx 4rpx rgba(255, 255, 255, 0.8);
 }
 
-.avatar-emoji {
-  font-size: 64rpx;
-  line-height: 1;
+.avatar-icon {
+  width: 80rpx;
+  height: 80rpx;
   animation: robot-bounce 3s infinite ease-in-out;
 }
 
@@ -1094,9 +1125,15 @@ onMounted(() => {
   }
 }
 
-.bubble-emoji {
-  font-size: 32rpx;
-  line-height: 1;
+.bubble-icon {
+  width: 36rpx;
+  height: 36rpx;
+  color: $campus-blue;
+  transition: transform 0.3s ease;
+}
+
+.quick-action-bubble:hover .bubble-icon {
+  transform: scale(1.1);
 }
 
 .bubble-text {
@@ -1147,6 +1184,20 @@ onMounted(() => {
   50% { transform: scale(1.2); opacity: 0.6; }
 }
 
+.cta-icon {
+  width: 28rpx;
+  height: 28rpx;
+  color: #FFFFFF;
+  position: relative;
+  z-index: 1;
+  animation: icon-pulse 2s infinite ease-in-out;
+}
+
+@keyframes icon-pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
 .cta-text {
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
@@ -1154,21 +1205,6 @@ onMounted(() => {
   letter-spacing: 0.5px;
   position: relative;
   z-index: 1;
-}
-
-.cta-sparkle {
-  font-size: $font-size-lg;
-  line-height: 1;
-  position: relative;
-  z-index: 1;
-  animation: sparkle-rotate 4s infinite linear;
-}
-
-@keyframes sparkle-rotate {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  25% { transform: rotate(90deg) scale(1.1); }
-  50% { transform: rotate(180deg) scale(0.9); }
-  75% { transform: rotate(270deg) scale(1.1); }
 }
 
 </style>

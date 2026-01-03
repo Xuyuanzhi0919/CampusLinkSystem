@@ -20,17 +20,27 @@
       </view>
 
       <!-- 错误状态 -->
-      <view v-else-if="questionsError" class="card-empty">
-        <text class="empty-text">加载失败</text>
-        <view class="empty-action" @click="loadHotQuestions">
-          <text>点击重试</text>
-        </view>
-      </view>
+      <EmptyState
+        v-else-if="questionsError"
+        type="error"
+        size="small"
+        title="加载失败"
+        action-text="重试"
+        action-type="secondary"
+        @action="loadHotQuestions"
+      />
 
       <!-- 空状态 -->
-      <view v-else-if="hotQuestions.length === 0" class="card-empty">
-        <text class="empty-text">暂无热门问题</text>
-      </view>
+      <EmptyState
+        v-else-if="hotQuestions.length === 0"
+        type="empty"
+        size="small"
+        title="今天还没有热问"
+        description="发个问题让大家讨论吧"
+        action-text="去提问"
+        action-type="primary"
+        @action="handleGoAsk"
+      />
 
       <!-- 正常列表 -->
       <view v-else class="hot-list">
@@ -69,17 +79,27 @@
       </view>
 
       <!-- 错误状态 -->
-      <view v-else-if="tagsError" class="card-empty">
-        <text class="empty-text">加载失败</text>
-        <view class="empty-action" @click="loadHotTags">
-          <text>点击重试</text>
-        </view>
-      </view>
+      <EmptyState
+        v-else-if="tagsError"
+        type="error"
+        size="small"
+        title="加载失败"
+        action-text="重试"
+        action-type="secondary"
+        @action="loadHotTags"
+      />
 
       <!-- 空状态 -->
-      <view v-else-if="hotTags.length === 0" class="card-empty">
-        <text class="empty-text">暂无热门话题</text>
-      </view>
+      <EmptyState
+        v-else-if="hotTags.length === 0"
+        type="empty"
+        size="small"
+        title="还没有热门话题"
+        description="发布内容后会自动生成话题"
+        action-text="去发布"
+        action-type="primary"
+        @action="handleGoPublish"
+      />
 
       <!-- 正常列表（新样式：排行榜风格） -->
       <view v-else class="topic-list">
@@ -139,6 +159,10 @@
 import { ref, onMounted } from 'vue'
 import { getQuestionList } from '@/services/question'
 import { getHotTags, type TagItem } from '@/services/tag'
+import { EmptyState } from '@/components/empty-state'
+import { useNavigation } from '@/composables/useNavigation'
+
+const nav = useNavigation()
 
 interface HotQuestion {
   id: number
@@ -223,6 +247,15 @@ const handleViewMoreTopics = () => {
   uni.navigateTo({
     url: '/pages/search/result?source=topics'
   })
+}
+
+// 空状态处理函数
+const handleGoAsk = () => {
+  nav.toPublish()
+}
+
+const handleGoPublish = () => {
+  nav.toPublish()
 }
 
 // 加载热问榜单
@@ -475,30 +508,6 @@ onMounted(() => {
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.5; }
-}
-
-/* ========== 空状态 ========== */
-.card-empty {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: $spacing-8 0;
-  gap: $spacing-3;
-}
-
-.empty-text {
-  font-size: $font-size-sm;
-  color: $color-text-tertiary;
-}
-
-.empty-action {
-  font-size: $font-size-xs;
-  color: $campus-blue;
-  cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 /* ========== 模块1: 今日热问榜单 ========== */

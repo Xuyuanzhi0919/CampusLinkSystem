@@ -154,15 +154,23 @@
             <!-- 指标行：浏览/回答/热度 -->
             <view class="question-metrics">
               <view class="metric-item">
-                <text class="metric-icon">👁</text>
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 5C7 5 2.73 8.11 1 12.5C2.73 16.89 7 20 12 20C17 20 21.27 16.89 23 12.5C21.27 8.11 17 5 12 5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="12" cy="12.5" r="3.5" stroke="currentColor" stroke-width="2"/>
+                </svg>
                 <text class="metric-value">{{ formatMetric(item.views) }}</text>
               </view>
               <view class="metric-item">
-                <text class="metric-icon">💬</text>
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <text class="metric-value">{{ item.answerCount || 0 }} 回答</text>
               </view>
               <view v-if="item.heat" class="metric-item metric-item--heat">
-                <text class="metric-icon">🔥</text>
+                <svg class="metric-icon" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2C12 2 7 6 7 12C7 15.31 9.69 18 13 18C16.31 18 19 15.31 19 12C19 6 14 2 14 2C14 2 14.5 5 12 8C9.5 5 12 2 12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M12 22C10.5 22 9.2 21.2 8.5 20C8.2 19.5 8 18.8 8 18.1C8 16.3 9.79 15 11.25 15C12.75 15 14 16.34 14 17.88C14 19.4 12.88 20.63 11.47 20.94" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <text class="metric-value">{{ item.heat }}</text>
               </view>
             </view>
@@ -906,9 +914,11 @@ onMounted(() => {
 }
 
 .metric-icon {
-  font-size: 24rpx;
-  line-height: 1;
-  opacity: 0.8;
+  width: 28rpx;
+  height: 28rpx;
+  flex-shrink: 0;
+  color: currentColor;
+  opacity: 0.7;
 }
 
 .metric-value {

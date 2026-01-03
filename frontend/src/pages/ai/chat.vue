@@ -1190,7 +1190,7 @@ const scrollToBottom = () => {
   color: $gray-500;
 }
 
-// 会话卡片 - 极简扁平设计
+// 会话卡片 - 极简扁平设计（修复布局超出问题）
 .session-item {
   display: flex;
   align-items: flex-start;
@@ -1200,17 +1200,12 @@ const scrollToBottom = () => {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
-  position: relative;
 
   // 默认无背景
   background: transparent;
 
   &:hover {
     background: $gray-100;
-
-    .session-actions {
-      opacity: 1;
-    }
   }
 
   &.active {
@@ -1260,6 +1255,7 @@ const scrollToBottom = () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  margin-right: 8px; // 为操作按钮留出空间
 }
 
 .session-header {
@@ -1296,21 +1292,27 @@ const scrollToBottom = () => {
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
+  padding-right: 4px; // 防止文字贴边
 }
 
-// 操作按钮组
+// 操作按钮组（改为内联布局）
 .session-actions {
   display: flex;
   gap: 2px;
   align-items: center;
+  flex-shrink: 0; // 防止被压缩
   opacity: 0; // 默认隐藏
-  transition: opacity 0.2s;
-  position: absolute;
-  right: 8px;
-  top: 10px;
+  visibility: hidden; // 完全隐藏，不占空间
+  transition: opacity 0.2s, visibility 0.2s;
+
+  .session-item:hover & {
+    opacity: 1;
+    visibility: visible;
+  }
 
   .session-item.active & {
-    opacity: 1; // 选中状态始终显示
+    opacity: 1;
+    visibility: visible;
   }
 }
 
@@ -1322,8 +1324,8 @@ const scrollToBottom = () => {
   justify-content: center;
   border-radius: 6px;
   transition: all 0.15s;
-  background: rgba($white, 0.8);
-  backdrop-filter: blur(4px);
+  background: transparent; // 默认透明
+  flex-shrink: 0;
 
   svg {
     width: 14px;
@@ -1333,32 +1335,40 @@ const scrollToBottom = () => {
 
   &.rename-btn {
     svg {
-      color: $gray-600;
+      color: $gray-500;
     }
 
     &:hover {
-      background: rgba($primary, 0.1);
+      background: rgba($primary, 0.15);
       svg {
         color: $primary;
       }
+    }
+
+    &:active {
+      background: rgba($primary, 0.25);
     }
   }
 
   &.delete-btn {
     svg {
-      color: $gray-600;
+      color: $gray-500;
     }
 
     &:hover {
-      background: rgba($error, 0.1);
+      background: rgba($error, 0.15);
       svg {
         color: $error;
       }
     }
+
+    &:active {
+      background: rgba($error, 0.25);
+    }
   }
 
   &:active {
-    transform: scale(0.9);
+    transform: scale(0.92);
   }
 }
 

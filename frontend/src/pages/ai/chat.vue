@@ -1012,7 +1012,7 @@ const scrollToBottom = () => {
 
 // 头部区域
 .drawer-header {
-  padding: 20px 20px 16px;
+  padding: 16px 12px 12px; // 减少左右内边距：20px → 12px
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1092,14 +1092,14 @@ const scrollToBottom = () => {
 
 // 搜索栏
 .search-bar {
-  margin: 12px 16px;
-  padding: 10px 14px;
+  margin: 10px 12px; // 减少外边距：16px → 12px
+  padding: 9px 12px; // 减少内边距：14px → 12px
   background: $gray-50;
   border: 1.5px solid $gray-200;
   border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px; // 减少间距：10px → 8px
   transition: all 0.2s;
 
   &:focus-within {
@@ -1154,7 +1154,7 @@ const scrollToBottom = () => {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden; // 防止水平滚动
-  padding: 8px 8px 16px; // 减少左右内边距：12px → 8px
+  padding: 6px 6px 16px; // 进一步减少左右内边距：8px → 6px
 
   // 自定义滚动条样式
   &::-webkit-scrollbar {
@@ -1195,7 +1195,7 @@ const scrollToBottom = () => {
 
 .group-label {
   display: block;
-  padding: 8px 8px 6px; // 与容器内边距对齐：12px → 8px
+  padding: 8px 6px 6px; // 与容器内边距对齐：8px → 6px
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1208,8 +1208,8 @@ const scrollToBottom = () => {
   position: relative; // 为绝对定位的操作按钮提供定位上下文
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px;
+  gap: 8px; // 减少间距：10px → 8px
+  padding: 9px 10px; // 减少内边距：10px 12px → 9px 10px
   margin-bottom: 4px;
   border-radius: 10px;
   cursor: pointer;

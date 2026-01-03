@@ -82,22 +82,28 @@
       </view>
     </view>
 
-    <!-- 模块2: 今日热问榜单 -->
+    <!-- 模块2: 今日热问榜单（增强版） -->
     <view class="sidebar-card">
       <view class="card-header">
         <view class="header-indicator"></view>
-        <text class="header-title">今日热问</text>
-        <view class="header-more" @click="handleViewMoreQuestions">
-          <text>更多</text>
-          <text class="more-arrow">›</text>
+        <view class="header-title-group">
+          <text class="header-title">今日热问</text>
+          <text class="header-subtitle">· 近24h</text>
+        </view>
+        <view class="header-more header-more--enhanced" @click="handleViewMoreQuestions">
+          <text>查看全部</text>
+          <text class="more-arrow">→</text>
         </view>
       </view>
 
       <!-- 加载状态 -->
       <view v-if="questionsLoading" class="card-loading">
-        <view v-for="i in 5" :key="i" class="skeleton-item">
+        <view v-for="i in 5" :key="i" class="skeleton-question">
           <view class="skeleton-rank"></view>
-          <view class="skeleton-text"></view>
+          <view class="skeleton-content">
+            <view class="skeleton-title"></view>
+            <view class="skeleton-meta"></view>
+          </view>
         </view>
       </view>
 
@@ -132,20 +138,55 @@
           class="hot-item"
           @click="handleQuestionClick(item)"
         >
+          <!-- 排名 -->
           <text class="rank-num" :class="getRankClass(index)">{{ index + 1 }}</text>
-          <text class="item-title">{{ item.title }}</text>
+
+          <!-- 问题内容 -->
+          <view class="question-content">
+            <!-- 标题行：标题 + 状态标签 -->
+            <view class="question-header">
+              <text class="question-title">{{ item.title }}</text>
+              <view v-if="item.statusTag" class="status-tag" :class="`tag-${item.statusTag}`">
+                {{ getStatusTagText(item.statusTag) }}
+              </view>
+            </view>
+
+            <!-- 指标行：浏览/回答/热度 -->
+            <view class="question-metrics">
+              <view class="metric-item">
+                <text class="metric-icon">👁</text>
+                <text class="metric-value">{{ formatMetric(item.views) }}</text>
+              </view>
+              <view class="metric-item">
+                <text class="metric-icon">💬</text>
+                <text class="metric-value">{{ item.answerCount || 0 }} 回答</text>
+              </view>
+              <view v-if="item.heat" class="metric-item metric-item--heat">
+                <text class="metric-icon">🔥</text>
+                <text class="metric-value">{{ item.heat }}</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 操作按钮 -->
+          <view class="question-action" @click.stop="handleQuestionAction(item)">
+            <text>{{ item.isSolved ? '查看' : '回答' }}</text>
+          </view>
         </view>
       </view>
     </view>
 
-    <!-- 模块2: 热门话题（列表风格 + 趋势） -->
+    <!-- 模块3: 热门话题（重构版：活跃度可视化） -->
     <view class="sidebar-card">
       <view class="card-header">
         <view class="header-indicator header-indicator--hot"></view>
-        <text class="header-title">热门话题</text>
-        <view class="header-more" @click="handleViewMoreTopics">
-          <text>更多</text>
-          <text class="more-arrow">›</text>
+        <view class="header-title-group">
+          <text class="header-title">热门话题</text>
+          <text class="header-subtitle">· 实时热度</text>
+        </view>
+        <view class="header-more header-more--enhanced" @click="handleViewMoreTopics">
+          <text>发现更多</text>
+          <text class="more-arrow">→</text>
         </view>
       </view>
 
@@ -155,7 +196,7 @@
           <view class="skeleton-rank"></view>
           <view class="skeleton-content">
             <view class="skeleton-name"></view>
-            <view class="skeleton-stats"></view>
+            <view class="skeleton-bar"></view>
           </view>
         </view>
       </view>
@@ -183,7 +224,7 @@
         @action="handleGoPublish"
       />
 
-      <!-- 正常列表（新样式：排行榜风格） -->
+      <!-- 正常列表（新版：热度条 + 隐藏0%） -->
       <view v-else class="topic-list">
         <view
           v-for="(tag, index) in hotTags"
@@ -197,17 +238,32 @@
           <!-- 话题信息 -->
           <view class="topic-info">
             <view class="topic-header">
-              <text class="topic-name">{{ tag.name }}</text>
-              <!-- 趋势指示器：箭头 + 百分比 -->
-              <view v-if="tag.trend" class="topic-trend" :class="`trend-${tag.trend}`">
+              <!-- 话题标签（Tag 样式） -->
+              <view class="topic-tag">
+                <text class="topic-name"># {{ tag.name }}</text>
+              </view>
+              <!-- 趋势指示器：仅显示有效增幅 (>5%) -->
+              <view
+                v-if="shouldShowTrend(tag.trend, tag.trendPercent)"
+                class="topic-trend"
+                :class="`trend-${tag.trend}`"
+              >
                 <text class="trend-arrow">{{ getTrendArrow(tag.trend) }}</text>
-                <text class="trend-percent">
-                  {{ formatTrendPercent(tag.trend, tag.trendPercent) }}
-                </text>
+                <text class="trend-percent">{{ Math.abs(tag.trendPercent || 0) }}%</text>
               </view>
             </view>
-            <!-- 讨论热度 -->
-            <text class="topic-count">{{ formatCount(tag.discussionCount) }} 讨论</text>
+
+            <!-- 活跃度可视化：热度条 + 讨论数 -->
+            <view class="topic-activity">
+              <view class="activity-bar-wrapper">
+                <view
+                  class="activity-bar"
+                  :class="getActivityLevel(tag.discussionCount)"
+                  :style="{ width: getActivityWidth(tag.discussionCount) }"
+                ></view>
+              </view>
+              <text class="activity-count">{{ formatCount(tag.discussionCount) }} 讨论</text>
+            </view>
           </view>
         </view>
       </view>
@@ -228,6 +284,11 @@ const nav = useNavigation()
 interface HotQuestion {
   id: number
   title: string
+  views?: number
+  answerCount?: number
+  heat?: number  // 热度值
+  statusTag?: 'new' | 'hot' | 'answered' | 'pending'  // 状态标签
+  isSolved?: boolean
 }
 
 interface HotTag {
@@ -334,10 +395,38 @@ const loadHotQuestions = async () => {
       sortOrder: 'desc'
     })
     const dataList = (res as any)?.list || (res as any)?.records || []
-    hotQuestions.value = dataList.map((q: any) => ({
-      id: q.qid || q.questionId || q.id,
-      title: q.title
-    }))
+    const now = Date.now()
+    hotQuestions.value = dataList.map((q: any, index: number) => {
+      // 计算热度值（基于浏览量和回答数）
+      const views = q.views || q.viewCount || 0
+      const answerCount = q.answerCount || q.answers || 0
+      const heat = Math.floor((views * 0.7 + answerCount * 30) / 10)
+
+      // 确定状态标签
+      let statusTag: 'new' | 'hot' | 'answered' | 'pending' | undefined
+      const createdTime = q.createdAt ? new Date(q.createdAt).getTime() : 0
+      const isNew = (now - createdTime) < 24 * 60 * 60 * 1000  // 24小时内
+
+      if (isNew && answerCount === 0) {
+        statusTag = 'new'
+      } else if (heat > 50 || index === 0) {
+        statusTag = 'hot'
+      } else if (q.isSolved || answerCount > 0) {
+        statusTag = 'answered'
+      } else {
+        statusTag = 'pending'
+      }
+
+      return {
+        id: q.qid || q.questionId || q.id,
+        title: q.title,
+        views,
+        answerCount,
+        heat,
+        statusTag,
+        isSolved: q.isSolved || false
+      }
+    })
   } catch (error) {
     console.error('[HomeSidebar] 加载热问榜单失败:', error)
     questionsError.value = true
@@ -401,31 +490,22 @@ const loadHotTags = async () => {
   }
 }
 
-// 获取趋势箭头符号（方案A：简洁箭头）
+// 获取趋势箭头符号
 const getTrendArrow = (trend: string) => {
   const arrows: Record<string, string> = {
-    up: '▲',      // 上升：实心三角
-    down: '▼',    // 下降：实心三角
-    stable: '■'   // 持平：小方块
+    up: '↗',      // 上升：右上箭头
+    down: '↘',    // 下降：右下箭头
+    stable: '→'   // 持平：右箭头
   }
   return arrows[trend] || ''
 }
 
-// 格式化趋势百分比显示
-const formatTrendPercent = (trend: string, percent?: number) => {
-  if (trend === 'stable') {
-    return '0%'
-  }
-  if (!percent) {
-    return trend === 'up' ? '+0%' : '-0%'
-  }
-  const absPercent = Math.abs(percent)
-  if (trend === 'up') {
-    return `+${absPercent}%`
-  } else if (trend === 'down') {
-    return `-${absPercent}%`
-  }
-  return `${absPercent}%`
+// 判断是否显示趋势标签（隐藏 0% 和低增幅）
+const shouldShowTrend = (trend?: string, percent?: number) => {
+  if (!trend || trend === 'stable') return false
+  if (!percent) return false
+  // 只显示增幅 > 5% 的趋势
+  return Math.abs(percent) > 5
 }
 
 // 格式化数量（超过1000显示 1k+）
@@ -434,6 +514,46 @@ const formatCount = (count: number) => {
     return (count / 1000).toFixed(1) + 'k'
   }
   return count.toString()
+}
+
+// 格式化指标（浏览量、回答数等）
+const formatMetric = (num?: number) => {
+  if (!num) return '0'
+  if (num >= 1000) {
+    return (num / 1000).toFixed(1) + 'k'
+  }
+  return num.toString()
+}
+
+// 获取状态标签文字
+const getStatusTagText = (status: string) => {
+  const map: Record<string, string> = {
+    new: '新',
+    hot: '热',
+    answered: '已答',
+    pending: '待答'
+  }
+  return map[status] || ''
+}
+
+// 获取活跃度等级（用于热度条颜色）
+const getActivityLevel = (count: number) => {
+  if (count >= 100) return 'activity-high'
+  if (count >= 50) return 'activity-medium'
+  return 'activity-low'
+}
+
+// 计算活跃度条宽度（基于最大值）
+const getActivityWidth = (count: number) => {
+  const maxCount = Math.max(...hotTags.value.map(t => t.discussionCount))
+  if (maxCount === 0) return '0%'
+  const percent = (count / maxCount) * 100
+  return `${Math.max(5, Math.min(100, percent))}%`  // 最小 5%，最大 100%
+}
+
+// 处理问题操作按钮点击
+const handleQuestionAction = (item: HotQuestion) => {
+  handleQuestionClick(item)
 }
 
 // 暴露刷新方法
@@ -499,11 +619,23 @@ onMounted(() => {
   }
 }
 
-.header-title {
+.header-title-group {
   flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: $spacing-1;
+}
+
+.header-title {
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
+}
+
+.header-subtitle {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-normal;
 }
 
 .header-more {
@@ -513,7 +645,7 @@ onMounted(() => {
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   cursor: pointer;
-  transition: color $transition-fast;
+  transition: all $transition-fast;
 
   &:hover {
     color: $campus-blue;
@@ -523,6 +655,28 @@ onMounted(() => {
     font-size: $font-size-md;
     line-height: 1;
   }
+
+  // 增强样式：更明显的按钮感
+  &--enhanced {
+    padding: 4rpx 12rpx;
+    border-radius: $radius-md;
+    background: transparent;
+    border: 1px solid transparent;
+
+    &:hover {
+      background: rgba($campus-blue, 0.06);
+      border-color: rgba($campus-blue, 0.2);
+      color: $campus-blue;
+
+      .more-arrow {
+        transform: translateX(4rpx);
+      }
+    }
+
+    .more-arrow {
+      transition: transform $transition-fast;
+    }
+  }
 }
 
 /* ========== 加载状态骨架屏 ========== */
@@ -530,42 +684,62 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
-  // 🔧 修复: 设置最小高度,防止数据加载后容器高度突变导致错位
-  min-height: 280rpx; // 约等于 5 个列表项的高度 (5 × 56rpx)
+  min-height: 280rpx;
 }
 
-.skeleton-item {
+.skeleton-question,
+.skeleton-topic {
   display: flex;
   align-items: center;
   gap: $spacing-3;
+  padding: $spacing-2 0;
 }
 
 .skeleton-rank {
-  width: 32rpx;
-  height: 32rpx;
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
   background: $color-bg-hover;
   border-radius: $radius-sm;
   animation: skeleton-pulse 1.5s infinite;
 }
 
-.skeleton-text {
+.skeleton-content {
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.skeleton-title {
+  width: 85%;
   height: 28rpx;
   background: $color-bg-hover;
   border-radius: $radius-sm;
   animation: skeleton-pulse 1.5s infinite;
 }
 
-.tags-loading {
-  flex-direction: row;
-  flex-wrap: wrap;
+.skeleton-meta {
+  width: 60%;
+  height: 20rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+  animation: skeleton-pulse 1.5s infinite;
 }
 
-.skeleton-tag {
-  width: 120rpx;
-  height: 48rpx;
+.skeleton-name {
+  width: 70%;
+  height: 28rpx;
   background: $color-bg-hover;
-  border-radius: 24rpx;
+  border-radius: $radius-sm;
+  animation: skeleton-pulse 1.5s infinite;
+}
+
+.skeleton-bar {
+  width: 50%;
+  height: 8rpx;
+  background: $color-bg-hover;
+  border-radius: 4rpx;
   animation: skeleton-pulse 1.5s infinite;
 }
 
@@ -574,12 +748,11 @@ onMounted(() => {
   50% { opacity: 0.5; }
 }
 
-/* ========== 模块1: 今日热问榜单 ========== */
+/* ========== 模块2: 今日热问榜单（增强版） ========== */
 .hot-list {
   display: flex;
   flex-direction: column;
-  gap: $spacing-4; // 16rpx 增加行距
-  // 🔧 平滑过渡:避免从骨架屏到真实内容的跳跃感
+  gap: $spacing-3;
   animation: fadeInUp 0.3s ease-out;
 }
 
@@ -598,69 +771,182 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   gap: $spacing-3;
-  padding: $spacing-2 $spacing-3;
-  border-radius: $radius-sm;
+  padding: $spacing-3;
+  border-radius: $radius-md;
   cursor: pointer;
-  transition: background $transition-fast;
+  transition: all $transition-fast;
+  border: 1px solid transparent;
 
   &:hover {
-    background: $color-bg-hover;
+    background: linear-gradient(135deg, rgba($campus-blue, 0.04), transparent);
+    border-color: rgba($campus-blue, 0.15);
+    transform: translateX(4rpx);
 
-    .item-title {
+    .question-title {
       color: $campus-blue;
+    }
+
+    .question-action {
+      background: $campus-blue;
+      color: #FFFFFF;
+      border-color: $campus-blue;
     }
   }
 }
 
 .rank-num {
   flex-shrink: 0;
-  width: 32rpx;
-  height: 32rpx;
+  width: 36rpx;
+  height: 36rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
+  font-weight: $font-weight-bold;
   border-radius: $radius-sm;
+  margin-top: 4rpx;
 
-  // 弱化排名视觉，使用统一灰底
   &.rank-normal {
     background: $color-bg-hover;
     color: $color-text-tertiary;
   }
 
-  // 前三名使用弱化的品牌色调
   &.rank-1 {
-    background: rgba(255, 183, 77, 0.15);
+    background: linear-gradient(135deg, #FEF3C7, #FDE68A);
     color: #D97706;
+    box-shadow: 0 2rpx 8rpx rgba(217, 119, 6, 0.2);
   }
 
   &.rank-2 {
-    background: rgba(156, 163, 175, 0.15);
+    background: linear-gradient(135deg, #F3F4F6, #E5E7EB);
     color: #6B7280;
+    box-shadow: 0 2rpx 8rpx rgba(107, 114, 128, 0.15);
   }
 
   &.rank-3 {
-    background: rgba(180, 140, 100, 0.15);
-    color: #92400E;
+    background: linear-gradient(135deg, #FED7AA, #FDBA74);
+    color: #C2410C;
+    box-shadow: 0 2rpx 8rpx rgba(194, 65, 12, 0.2);
   }
 }
 
-.item-title {
+/* 问题内容区 */
+.question-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.question-header {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-2;
+}
+
+.question-title {
   flex: 1;
   font-size: $font-size-sm;
-  color: $color-text-secondary;
-  line-height: $line-height-normal;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  line-height: 1.5;
   transition: color $transition-fast;
   @include text-ellipsis(2);
 }
 
-/* ========== 模块2: 热门话题（排行榜风格） ========== */
+/* 状态标签 */
+.status-tag {
+  flex-shrink: 0;
+  padding: 2rpx 10rpx;
+  border-radius: 6rpx;
+  font-size: 20rpx;
+  font-weight: $font-weight-semibold;
+  line-height: 1.4;
+
+  &.tag-new {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
+    color: #059669;
+  }
+
+  &.tag-hot {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+    color: #DC2626;
+  }
+
+  &.tag-answered {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1));
+    color: #2563EB;
+  }
+
+  &.tag-pending {
+    background: rgba(156, 163, 175, 0.12);
+    color: #6B7280;
+  }
+}
+
+/* 指标行 */
+.question-metrics {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+}
+
+.metric-item {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+
+  &--heat {
+    color: #EF4444;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.metric-icon {
+  font-size: 24rpx;
+  line-height: 1;
+  opacity: 0.8;
+}
+
+.metric-value {
+  line-height: 1;
+}
+
+/* 操作按钮 */
+.question-action {
+  flex-shrink: 0;
+  align-self: flex-start;
+  padding: 8rpx 16rpx;
+  margin-top: 4rpx;
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  color: $campus-blue;
+  background: transparent;
+  border: 1px solid rgba($campus-blue, 0.3);
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all $transition-fast;
+  white-space: nowrap;
+
+  &:hover {
+    background: $campus-blue;
+    color: #FFFFFF;
+    border-color: $campus-blue;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+/* ========== 模块3: 热门话题（重构版：活跃度可视化） ========== */
 .topic-list {
   display: flex;
   flex-direction: column;
   gap: $spacing-3;
-  // 🔧 平滑过渡:避免从骨架屏到真实内容的跳跃感
   animation: fadeInUp 0.3s ease-out;
 }
 
@@ -668,14 +954,15 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-2 $spacing-3;
+  padding: $spacing-3;
   border-radius: $radius-md;
   cursor: pointer;
   transition: all $transition-fast;
-  position: relative;
+  border: 1px solid transparent;
 
   &:hover {
-    background: linear-gradient(135deg, rgba($campus-blue, 0.06), rgba($campus-blue, 0.02));
+    background: linear-gradient(135deg, rgba($campus-blue, 0.04), transparent);
+    border-color: rgba($campus-blue, 0.15);
     transform: translateX(4rpx);
 
     .topic-name {
@@ -683,29 +970,12 @@ onMounted(() => {
     }
 
     .topic-rank {
-      transform: scale(1.1);
+      transform: scale(1.05);
     }
 
-    // 显示箭头指示
-    &::after {
-      content: '→';
-      position: absolute;
-      right: $spacing-2;
-      color: $campus-blue;
-      opacity: 1;
-      transform: translateX(0);
+    .activity-bar {
+      filter: brightness(1.1);
     }
-  }
-
-  &::after {
-    content: '→';
-    position: absolute;
-    right: $spacing-2;
-    color: $campus-blue;
-    opacity: 0;
-    transform: translateX(-8rpx);
-    transition: all $transition-fast;
-    font-size: $font-size-sm;
   }
 }
 
@@ -721,13 +991,11 @@ onMounted(() => {
   border-radius: $radius-sm;
   transition: transform $transition-fast;
 
-  // 弱化排名视觉
   &.rank-normal {
     background: $color-bg-hover;
     color: $color-text-tertiary;
   }
 
-  // 前三名使用渐变色 + 微阴影
   &.rank-1 {
     background: linear-gradient(135deg, #FEF3C7, #FDE68A);
     color: #D97706;
@@ -752,7 +1020,7 @@ onMounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: $spacing-2;
 }
 
 .topic-header {
@@ -762,116 +1030,110 @@ onMounted(() => {
   gap: $spacing-2;
 }
 
-.topic-name {
+/* 话题标签（Tag 风格） */
+.topic-tag {
   flex: 1;
+  min-width: 0;
+  padding: 6rpx 16rpx;
+  background: linear-gradient(135deg, rgba($campus-blue, 0.08), rgba($campus-blue, 0.04));
+  border: 1px solid rgba($campus-blue, 0.15);
+  border-radius: 20rpx;
+  transition: all $transition-fast;
+
+  .topic-item:hover & {
+    background: linear-gradient(135deg, rgba($campus-blue, 0.12), rgba($campus-blue, 0.06));
+    border-color: rgba($campus-blue, 0.25);
+  }
+}
+
+.topic-name {
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
   color: $color-text-primary;
-  transition: color $transition-fast;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color $transition-fast;
 }
 
-/* 趋势指示器：箭头 + 百分比 */
+/* 趋势指示器（仅显示 >5% 的增幅） */
 .topic-trend {
   display: flex;
   align-items: center;
-  gap: 6rpx;
+  gap: 4rpx;
   flex-shrink: 0;
-  padding: 4rpx 10rpx;
-  border-radius: 8rpx;
-  background: transparent;
+  padding: 4rpx 12rpx;
+  border-radius: 12rpx;
 
-  /* 上升趋势：绿色系 */
   &.trend-up {
-    background: rgba(34, 197, 94, 0.08);
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(16, 185, 129, 0.08));
 
-    .trend-arrow {
-      color: #22C55E;
-    }
-
+    .trend-arrow,
     .trend-percent {
-      color: #16A34A;
+      color: #059669;
     }
   }
 
-  /* 下降趋势：红色系 */
   &.trend-down {
-    background: rgba(239, 68, 68, 0.08);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12), rgba(220, 38, 38, 0.08));
 
-    .trend-arrow {
-      color: #EF4444;
-    }
-
+    .trend-arrow,
     .trend-percent {
       color: #DC2626;
     }
   }
-
-  /* 持平趋势：灰色系 */
-  &.trend-stable {
-    background: rgba(156, 163, 175, 0.08);
-
-    .trend-arrow {
-      color: #9CA3AF;
-      font-size: 12rpx; /* 小方块缩小 */
-    }
-
-    .trend-percent {
-      color: #6B7280;
-    }
-  }
 }
 
-/* 趋势箭头：与数字对齐 */
 .trend-arrow {
-  font-size: 16rpx;
+  font-size: 20rpx;
   line-height: 1;
   font-weight: $font-weight-bold;
 }
 
-/* 趋势百分比：略加粗突出 */
 .trend-percent {
-  font-size: 22rpx;
+  font-size: 20rpx;
   font-weight: $font-weight-semibold;
   line-height: 1;
 }
 
-.topic-count {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-}
-
-/* 骨架屏样式 */
-.skeleton-topic {
+/* 活跃度可视化 */
+.topic-activity {
   display: flex;
   align-items: center;
   gap: $spacing-3;
-  padding: $spacing-2 0;
 }
 
-.skeleton-content {
+.activity-bar-wrapper {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 8rpx;
+  height: 10rpx;
+  background: rgba($campus-blue, 0.08);
+  border-radius: 5rpx;
+  overflow: hidden;
 }
 
-.skeleton-name {
-  width: 70%;
-  height: 28rpx;
-  background: $color-bg-hover;
-  border-radius: $radius-sm;
-  animation: skeleton-pulse 1.5s infinite;
+.activity-bar {
+  height: 100%;
+  border-radius: 5rpx;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &.activity-high {
+    background: linear-gradient(90deg, #EF4444 0%, #F97316 100%);
+  }
+
+  &.activity-medium {
+    background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 100%);
+  }
+
+  &.activity-low {
+    background: linear-gradient(90deg, $campus-blue 0%, #60A5FA 100%);
+  }
 }
 
-.skeleton-stats {
-  width: 40%;
-  height: 20rpx;
-  background: $color-bg-hover;
-  border-radius: $radius-sm;
-  animation: skeleton-pulse 1.5s infinite;
+.activity-count {
+  flex-shrink: 0;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  white-space: nowrap;
 }
 
 /* ========== 模块1: AI 智能助手（创意重构版） ========== */

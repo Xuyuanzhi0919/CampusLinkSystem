@@ -90,6 +90,10 @@ $campus-amber: #F59E0B;
   height: 500px;
   pointer-events: none;
 
+  // 🎯 鼠标视差效果
+  --mouse-x: 0;
+  --mouse-y: 0;
+
   @media (max-width: 1600px) {
     right: 64px;
     width: 240px;
@@ -132,54 +136,45 @@ $campus-amber: #F59E0B;
       inset 0 1px 0 rgba(255, 255, 255, 1);
   }
 
-  // 气泡 1: 右上角
+  // 气泡 1: 右上角 (轻微视差)
   &.bubble-1 {
     top: 0;
     right: 0;
-    animation: floatBubble1 6s ease-in-out infinite;
+    // 🎯 视差移动：轻微跟随鼠标
+    transform: translate(
+      calc(var(--mouse-x, 0) * 8px),
+      calc(var(--mouse-y, 0) * 8px)
+    );
+    transition: transform 0.3s ease-out;
   }
 
-  // 气泡 2: 中部偏左
+  // 气泡 2: 中部偏左 (中等视差)
   &.bubble-2 {
     top: 45%;
     left: -40px;
-    animation: floatBubble2 7s ease-in-out infinite 1s;
+    // 🎯 视差移动：中等幅度
+    transform: translate(
+      calc(var(--mouse-x, 0) * 15px),
+      calc(var(--mouse-y, 0) * 15px)
+    );
+    transition: transform 0.4s ease-out;
   }
 
-  // 气泡 3: 右下角
+  // 气泡 3: 右下角 (最大视差)
   &.bubble-3 {
     bottom: 20px;
     right: 20px;
-    animation: floatBubble3 8s ease-in-out infinite 2s;
+    // 🎯 视差移动：最大幅度
+    transform: translate(
+      calc(var(--mouse-x, 0) * 20px),
+      calc(var(--mouse-y, 0) * 20px)
+    );
+    transition: transform 0.5s ease-out;
   }
 }
 
-@keyframes floatBubble1 {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-12px) translateX(6px);
-  }
-}
-
-@keyframes floatBubble2 {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(10px) translateX(-8px);
-  }
-}
-
-@keyframes floatBubble3 {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-  }
-  50% {
-    transform: translateY(-8px) translateX(-6px);
-  }
-}
+// 注意: 浮动动画已移除,改用鼠标视差效果
+// 如果需要同时保留浮动和视差,需要在 :hover 时禁用 animation
 
 // 气泡图标
 .bubble-icon {
@@ -265,8 +260,8 @@ $campus-amber: #F59E0B;
   border-radius: 24px;
   filter: blur(40px);
   opacity: 0.15;
-  animation: decoFloat 10s ease-in-out infinite;
   pointer-events: none;
+  transition: transform 0.6s ease-out;
 
   &.deco-1 {
     top: 10%;
@@ -274,6 +269,11 @@ $campus-amber: #F59E0B;
     width: 180px;
     height: 180px;
     background: linear-gradient(135deg, $primary, $campus-teal);
+    // 🎯 反向视差：与气泡相反方向移动
+    transform: translate(
+      calc(var(--mouse-x, 0) * -12px),
+      calc(var(--mouse-y, 0) * -12px)
+    );
   }
 
   &.deco-2 {
@@ -282,16 +282,11 @@ $campus-amber: #F59E0B;
     width: 140px;
     height: 140px;
     background: linear-gradient(135deg, $campus-teal, $campus-amber);
-    animation-delay: 3s;
-  }
-}
-
-@keyframes decoFloat {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-20px) scale(1.1);
+    // 🎯 反向视差：增加层次感
+    transform: translate(
+      calc(var(--mouse-x, 0) * -18px),
+      calc(var(--mouse-y, 0) * -18px)
+    );
   }
 }
 </style>

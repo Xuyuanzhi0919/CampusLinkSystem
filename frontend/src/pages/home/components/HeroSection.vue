@@ -75,6 +75,7 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import HeroBrand from './hero/HeroBrand.vue'
 import HeroCTA from './hero/HeroCTA.vue'
 import HeroFloatingStats from './hero/HeroFloatingStats.vue'
@@ -86,6 +87,43 @@ const emit = defineEmits<{
 
 const handleAsk = () => emit('ask')
 const handleBrowse = () => emit('browse')
+
+// 鼠标视差效果
+const mouseX = ref(0)
+const mouseY = ref(0)
+
+const handleMouseMove = (e: MouseEvent) => {
+  // #ifdef H5
+  const heroSection = (e.currentTarget as HTMLElement)
+  const rect = heroSection.getBoundingClientRect()
+
+  // 计算鼠标相对于容器中心的位置（-1 到 1）
+  mouseX.value = ((e.clientX - rect.left) / rect.width - 0.5) * 2
+  mouseY.value = ((e.clientY - rect.top) / rect.height - 0.5) * 2
+
+  // 应用视差效果到CSS变量
+  heroSection.style.setProperty('--mouse-x', String(mouseX.value))
+  heroSection.style.setProperty('--mouse-y', String(mouseY.value))
+  // #endif
+}
+
+onMounted(() => {
+  // #ifdef H5
+  const heroElement = document.querySelector('.hero-section') as HTMLElement
+  if (heroElement) {
+    heroElement.addEventListener('mousemove', handleMouseMove)
+  }
+  // #endif
+})
+
+onUnmounted(() => {
+  // #ifdef H5
+  const heroElement = document.querySelector('.hero-section') as HTMLElement
+  if (heroElement) {
+    heroElement.removeEventListener('mousemove', handleMouseMove)
+  }
+  // #endif
+})
 </script>
 
 <style lang="scss">
@@ -123,14 +161,13 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
-// ==================== 对角斜切分割线（弱化装饰） ====================
+// ==================== 对角斜切分割线（弱化装饰 + 视差） ====================
 .diagonal-divider {
   position: absolute;
   top: -10%;
   left: 35%;
   width: 6px;
   height: 120%;
-  transform: rotate(-15deg);
   transform-origin: top center;
   background: linear-gradient(180deg,
     transparent 0%,
@@ -142,9 +179,18 @@ $cream: $gray-50;            // 系统背景色
     0 0 20px rgba($primary, 0.15),
     0 0 40px rgba($campus-teal, 0.1);
   z-index: 1;
-  animation: dividerPulse 3s ease-in-out infinite;
   filter: blur(2px);
   opacity: 0.4;
+
+  // 🎯 视差旋转 + 移动
+  transform:
+    rotate(-15deg)
+    translate(
+      calc(var(--mouse-x, 0) * 10px),
+      calc(var(--mouse-y, 0) * 15px)
+    )
+    rotate(calc(var(--mouse-x, 0) * 2deg));
+  transition: transform 0.4s ease-out;
 
   @media (max-width: 1024px) {
     display: none;
@@ -284,7 +330,7 @@ $cream: $gray-50;            // 系统背景色
   &.node-8 { fill: $campus-teal; }
 }
 
-// 智能粒子流（弱化装饰）
+// 智能粒子流（弱化装饰 + 视差）
 .smart-particles {
   position: absolute;
   inset: 0;
@@ -300,72 +346,77 @@ $cream: $gray-50;            // 系统背景色
   background: linear-gradient(135deg, $primary, $campus-teal);
   border-radius: 50%;
   box-shadow: 0 0 8px rgba($primary, 0.4);
-  animation: smartFloat 12s ease-in-out infinite;
   opacity: 0.4;
+  transition: transform 0.5s ease-out;
 
   &.particle-1 {
     top: 15%;
     left: 10%;
-    animation-delay: 0s;
+    // 🎯 轻微视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * 5px),
+      calc(var(--mouse-y, 0) * 5px)
+    );
   }
 
   &.particle-2 {
     top: 50%;
     left: 20%;
-    animation-delay: 2s;
     background: linear-gradient(135deg, $campus-teal, $campus-amber);
-    box-shadow: 0 0 12px rgba($campus-teal, 0.7);
+    box-shadow: 0 0 8px rgba($campus-teal, 0.4);
+    // 🎯 中等视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * 10px),
+      calc(var(--mouse-y, 0) * 10px)
+    );
   }
 
   &.particle-3 {
     top: 30%;
     left: 65%;
-    animation-delay: 4s;
     background: linear-gradient(135deg, $campus-amber, $accent);
-    box-shadow: 0 0 12px rgba($campus-amber, 0.7);
+    box-shadow: 0 0 8px rgba($campus-amber, 0.4);
+    // 🎯 反向视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * -8px),
+      calc(var(--mouse-y, 0) * -8px)
+    );
   }
 
   &.particle-4 {
     top: 70%;
     left: 80%;
-    animation-delay: 6s;
     background: linear-gradient(135deg, $primary, $campus-teal);
-    box-shadow: 0 0 12px rgba($primary, 0.7);
+    box-shadow: 0 0 8px rgba($primary, 0.4);
+    // 🎯 强视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * 15px),
+      calc(var(--mouse-y, 0) * 15px)
+    );
   }
 
   &.particle-5 {
     top: 25%;
     left: 45%;
-    animation-delay: 8s;
     background: linear-gradient(135deg, $campus-teal, $primary);
-    box-shadow: 0 0 12px rgba($campus-teal, 0.7);
+    box-shadow: 0 0 8px rgba($campus-teal, 0.4);
+    // 🎯 反向中等视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * -12px),
+      calc(var(--mouse-y, 0) * -12px)
+    );
   }
 
   &.particle-6 {
     top: 85%;
     left: 30%;
-    animation-delay: 10s;
     background: linear-gradient(135deg, $accent, $campus-amber);
-    box-shadow: 0 0 12px rgba($accent, 0.7);
-  }
-}
-
-@keyframes smartFloat {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.4;
-  }
-  25% {
-    transform: translate(25px, -35px) scale(1.3);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translate(-20px, 15px) scale(0.8);
-    opacity: 0.5;
-  }
-  75% {
-    transform: translate(15px, 30px) scale(1.1);
-    opacity: 0.7;
+    box-shadow: 0 0 8px rgba($accent, 0.4);
+    // 🎯 轻微反向视差
+    transform: translate(
+      calc(var(--mouse-x, 0) * -6px),
+      calc(var(--mouse-y, 0) * -6px)
+    );
   }
 }
 

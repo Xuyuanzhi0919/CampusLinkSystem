@@ -1,6 +1,45 @@
 <template>
   <view class="home-sidebar">
-    <!-- 模块1: 今日热问榜单（轻版） -->
+    <!-- 模块1: AI 智能推荐入口（置顶） -->
+    <view class="sidebar-card card-ai">
+      <view class="card-header">
+        <view class="ai-header-icon">✨</view>
+        <text class="header-title">AI 智能助手</text>
+      </view>
+
+      <view class="ai-content">
+        <view class="ai-feature">
+          <view class="feature-icon">🎯</view>
+          <view class="feature-text">
+            <text class="feature-title">智能推荐</text>
+            <text class="feature-desc">个性化学习路径</text>
+          </view>
+        </view>
+
+        <view class="ai-feature">
+          <view class="feature-icon">💡</view>
+          <view class="feature-text">
+            <text class="feature-title">即时解答</text>
+            <text class="feature-desc">24/7 在线问答</text>
+          </view>
+        </view>
+
+        <view class="ai-feature">
+          <view class="feature-icon">📚</view>
+          <view class="feature-text">
+            <text class="feature-title">知识检索</text>
+            <text class="feature-desc">海量资源查找</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="ai-cta" @click="handleAIClick">
+        <text class="cta-text">开始对话</text>
+        <text class="cta-arrow">→</text>
+      </view>
+    </view>
+
+    <!-- 模块2: 今日热问榜单 -->
     <view class="sidebar-card">
       <view class="card-header">
         <view class="header-indicator"></view>
@@ -131,27 +170,6 @@
       </view>
     </view>
 
-    <!-- 模块3: AI 小助手（轻卡摘要模式） -->
-    <view class="sidebar-card card-ai">
-      <view class="card-header">
-        <view class="header-indicator header-indicator--ai"></view>
-        <text class="header-title">AI 助手</text>
-      </view>
-
-      <view class="ai-summary">
-        <view class="ai-icon">🤖</view>
-        <view class="ai-text">
-          <text class="ai-label">今日推荐学习</text>
-          <text class="ai-content">{{ aiRecommendation }}</text>
-        </view>
-      </view>
-
-      <view class="ai-action" @click="handleAIClick">
-        <text class="action-text">向 AI 提问</text>
-        <text class="action-arrow">→</text>
-      </view>
-    </view>
-
   </view>
 </template>
 
@@ -196,9 +214,6 @@ const hotQuestions = ref<HotQuestion[]>([])
 
 // 热门标签
 const hotTags = ref<HotTag[]>([])
-
-// AI 推荐（静态示例，实际项目中可接入 AI 服务）
-const aiRecommendation = ref('Java 多线程核心原理')
 
 // 获取排名样式类
 const getRankClass = (index: number) => {
@@ -810,70 +825,130 @@ onMounted(() => {
   animation: skeleton-pulse 1.5s infinite;
 }
 
-/* ========== 模块3: AI 小助手（轻卡模式） ========== */
+/* ========== 模块1: AI 智能推荐入口（重构版） ========== */
 .card-ai {
-  // 轻微区分，不使用渐变背景
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), rgba(99, 102, 241, 0.02));
+  // 去除旧的渐变背景，使用统一卡片样式
+  position: relative;
+  overflow: visible;
+
+  // AI 卡片特殊装饰：左上角渐变光斑
+  &::before {
+    content: '';
+    position: absolute;
+    top: -20rpx;
+    right: -20rpx;
+    width: 120rpx;
+    height: 120rpx;
+    background: radial-gradient(circle, rgba($campus-blue, 0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 0;
+  }
 }
 
-.ai-summary {
-  display: flex;
-  align-items: flex-start;
-  gap: $spacing-4;
-  margin-bottom: $spacing-5;
-}
-
-.ai-icon {
-  font-size: 48rpx;
+.ai-header-icon {
+  font-size: 32rpx;
   line-height: 1;
+  animation: sparkle 2s infinite ease-in-out;
 }
 
-.ai-text {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-1;
-}
-
-.ai-label {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
+@keyframes sparkle {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.1); opacity: 0.8; }
 }
 
 .ai-content {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-  color: $color-text-primary;
-  line-height: $line-height-normal;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  margin-bottom: $spacing-5;
+  position: relative;
+  z-index: 1;
 }
 
-.ai-action {
+.ai-feature {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+  padding: $spacing-3 $spacing-4;
+  background: rgba($campus-blue, 0.03);
+  border-radius: $radius-md;
+  border-left: 3px solid rgba($campus-blue, 0.3);
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba($campus-blue, 0.06);
+    border-left-color: $campus-blue;
+    transform: translateX(4rpx);
+  }
+}
+
+.feature-icon {
+  font-size: 36rpx;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.feature-title {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.2;
+}
+
+.feature-desc {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.3;
+}
+
+.ai-cta {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
-  padding: $spacing-4;
+  padding: $spacing-4 $spacing-6;
   background: transparent;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba($campus-blue, 0.3);
   border-radius: $radius-md;
   cursor: pointer;
   transition: all $transition-fast;
+  position: relative;
+  z-index: 1;
 
   &:hover {
-    background: rgba(139, 92, 246, 0.08);
-    border-color: rgba(139, 92, 246, 0.5);
+    background: rgba($campus-blue, 0.06);
+    border-color: $campus-blue;
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba($campus-blue, 0.15);
   }
 
-  .action-text {
-    font-size: $font-size-sm;
-    color: #7C3AED;
-    font-weight: $font-weight-medium;
+  &:active {
+    transform: translateY(0);
   }
+}
 
-  .action-arrow {
-    font-size: $font-size-sm;
-    color: #7C3AED;
-  }
+.cta-text {
+  font-size: $font-size-sm;
+  color: $campus-blue;
+  font-weight: $font-weight-semibold;
+}
+
+.cta-arrow {
+  font-size: $font-size-md;
+  color: $campus-blue;
+  transition: transform $transition-fast;
+}
+
+.ai-cta:hover .cta-arrow {
+  transform: translateX(4rpx);
 }
 
 </style>

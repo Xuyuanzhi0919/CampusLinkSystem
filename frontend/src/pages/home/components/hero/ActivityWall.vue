@@ -134,9 +134,34 @@ $charcoal: $gray-900;
 
 // ==================== 极简头部 ====================
 .wall-header {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(10px) saturate(150%);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 4px 16px rgba($primary, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 1);
+
+  // 顶部高光
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 20%;
+    right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      transparent 100%);
+  }
 }
 
 .wall-title {
@@ -181,14 +206,38 @@ $charcoal: $gray-900;
 }
 
 .live-badge {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(#10B981, 0.08);
-  border: 1px solid rgba(#10B981, 0.2);
+  background: linear-gradient(135deg,
+    rgba(#10B981, 0.12) 0%,
+    rgba(#10B981, 0.08) 100%);
+  backdrop-filter: blur(8px);
   border-radius: 20px;
   animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+  box-shadow:
+    0 2px 8px rgba(#10B981, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+
+  // 渐变边框
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: 20px;
+    background: linear-gradient(135deg,
+      rgba(#10B981, 0.4) 0%,
+      rgba(#10B981, 0.2) 100%);
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.8;
+  }
 }
 
 .live-dot {
@@ -196,18 +245,51 @@ $charcoal: $gray-900;
   height: 6px;
   background: #10B981;
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(#10B981, 0.8);
-  animation: pulse 2s ease-in-out infinite;
+  box-shadow:
+    0 0 8px rgba(#10B981, 0.8),
+    0 0 16px rgba(#10B981, 0.4);
+  animation: pulseDot 2s ease-in-out infinite;
+  position: relative;
+  z-index: 1;
+
+  // 外层光晕环
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    background: radial-gradient(circle,
+      rgba(#10B981, 0.3) 0%,
+      transparent 70%);
+    border-radius: 50%;
+    animation: pulseRing 2s ease-in-out infinite;
+  }
 }
 
-@keyframes pulse {
+@keyframes pulseDot {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
+    box-shadow:
+      0 0 8px rgba(#10B981, 0.8),
+      0 0 16px rgba(#10B981, 0.4);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.2);
+    opacity: 0.7;
+    transform: scale(1.3);
+    box-shadow:
+      0 0 12px rgba(#10B981, 1),
+      0 0 24px rgba(#10B981, 0.6);
+  }
+}
+
+@keyframes pulseRing {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0;
   }
 }
 
@@ -240,12 +322,17 @@ $charcoal: $gray-900;
   flex-direction: column;
   gap: 14px;
   padding: 24px;
-  background: white;
-  border: 1px solid rgba($primary, 0.15);
+  background: linear-gradient(135deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 255, 255, 0.85) 100%);
+  backdrop-filter: blur(16px) saturate(180%);
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  box-shadow:
+    0 4px 20px rgba($primary, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
   // 对角线错位排列 - 只有2张卡片
   &:nth-child(1) {
@@ -265,10 +352,6 @@ $charcoal: $gray-900;
     transform: translateX(80px) translateY(-6px);
   }
 
-  &:hover {
-    border-color: rgba($primary, 0.3);
-  }
-
   // 左侧彩色条 - 加粗
   &::before {
     content: '';
@@ -278,6 +361,7 @@ $charcoal: $gray-900;
     bottom: 0;
     width: 4px;
     border-radius: 16px 0 0 16px;
+    z-index: 2;
   }
 
   &.item-question::before {
@@ -292,26 +376,85 @@ $charcoal: $gray-900;
     background: linear-gradient(180deg, $campus-amber, $accent);
   }
 
+  // 渐变边框（根据类型显示不同颜色）
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: 16px;
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0.5;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+  }
+
+  &.item-question::after {
+    background: linear-gradient(135deg,
+      rgba($primary, 0.4) 0%,
+      rgba($campus-teal, 0.3) 100%);
+  }
+
+  &.item-resource::after {
+    background: linear-gradient(135deg,
+      rgba($campus-teal, 0.4) 0%,
+      rgba($campus-amber, 0.3) 100%);
+  }
+
+  &.item-activity::after {
+    background: linear-gradient(135deg,
+      rgba($campus-amber, 0.4) 0%,
+      rgba($accent, 0.3) 100%);
+  }
+
   // 彩色 hover 光效 - 根据类型显示不同颜色
   &.item-question:hover {
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.92) 100%);
     box-shadow:
       0 8px 32px rgba($primary, 0.2),
       0 4px 16px rgba($campus-teal, 0.15),
-      0 0 40px rgba($primary, 0.1);
+      0 0 40px rgba($primary, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+
+    &::after {
+      opacity: 1;
+    }
   }
 
   &.item-resource:hover {
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.92) 100%);
     box-shadow:
       0 8px 32px rgba($campus-teal, 0.2),
       0 4px 16px rgba($campus-amber, 0.15),
-      0 0 40px rgba($campus-teal, 0.1);
+      0 0 40px rgba($campus-teal, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+
+    &::after {
+      opacity: 1;
+    }
   }
 
   &.item-activity:hover {
+    background: linear-gradient(135deg,
+      rgba(255, 255, 255, 0.98) 0%,
+      rgba(255, 255, 255, 0.92) 100%);
     box-shadow:
       0 8px 32px rgba($campus-amber, 0.2),
       0 4px 16px rgba($accent, 0.15),
-      0 0 40px rgba($campus-amber, 0.1);
+      0 0 40px rgba($campus-amber, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+
+    &::after {
+      opacity: 1;
+    }
   }
 }
 
@@ -334,6 +477,7 @@ $charcoal: $gray-900;
 }
 
 .type-badge {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -341,24 +485,49 @@ $charcoal: $gray-900;
   border-radius: 8px;
   font-size: 12px;
   font-weight: 600;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 
   svg {
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    z-index: 1;
   }
 
   &.badge-question {
-    background: rgba($primary, 0.08);
+    background: linear-gradient(135deg,
+      rgba($primary, 0.12) 0%,
+      rgba($primary, 0.08) 100%);
     color: $primary;
   }
 
   &.badge-resource {
-    background: rgba($campus-teal, 0.08);
+    background: linear-gradient(135deg,
+      rgba($campus-teal, 0.12) 0%,
+      rgba($campus-teal, 0.08) 100%);
     color: $campus-teal;
   }
 
   &.badge-activity {
-    background: rgba($campus-amber, 0.08);
+    background: linear-gradient(135deg,
+      rgba($campus-amber, 0.12) 0%,
+      rgba($campus-amber, 0.08) 100%);
     color: $campus-amber;
+  }
+
+  // 顶部微光
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 1px;
+    background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      transparent 100%);
+    opacity: 0.7;
   }
 
   // Hover 时图标动画 - 根据类型不同的效果
@@ -424,9 +593,18 @@ $charcoal: $gray-900;
   align-items: center;
   gap: 4px;
   color: $gray-500;
+  transition: all 0.3s ease;
 
   svg {
     opacity: 0.6;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .activity-item:hover & {
+    svg {
+      opacity: 0.8;
+      transform: scale(1.1);
+    }
   }
 }
 
@@ -434,5 +612,10 @@ $charcoal: $gray-900;
   font-size: 13px;
   color: $gray-600;
   font-weight: 500;
+  transition: color 0.3s ease;
+
+  .activity-item:hover & {
+    color: $gray-700;
+  }
 }
 </style>

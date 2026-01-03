@@ -375,7 +375,8 @@ $cream: $gray-50;            // 系统背景色
 .hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 90px 64px 70px;
+  // 🎯 压缩顶部留白：从 90px 减至 48px，视觉重心上移
+  padding: 48px 64px 70px;
   position: relative;
   z-index: 1;
   display: grid;
@@ -384,30 +385,30 @@ $cream: $gray-50;            // 系统背景色
   align-items: start;
 
   @media (max-width: 1600px) {
-    padding: 85px 56px 65px;
+    padding: 45px 56px 65px;
     gap: 64px;
   }
 
   @media (max-width: 1440px) {
-    padding: 75px 48px 55px;
+    padding: 40px 48px 55px;
     grid-template-columns: 1fr 460px;
     gap: 56px;
   }
 
   @media (max-width: 1200px) {
-    padding: 65px 40px 45px;
+    padding: 36px 40px 45px;
     grid-template-columns: 1fr 420px;
     gap: 48px;
   }
 
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;  // 🔧 单列布局
-    padding: 40px 24px;
+    padding: 32px 24px;
     gap: 40px;
   }
 
   @media (max-width: 768px) {
-    padding: 32px 20px;  // 🔧 减小内边距
+    padding: 28px 20px;  // 🔧 减小内边距
     gap: 32px;
   }
 

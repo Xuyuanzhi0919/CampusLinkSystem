@@ -2,22 +2,27 @@
   <view class="hero-brand">
     <!-- 超大主标题区（左上） -->
     <view class="mega-title-area">
+      <!-- AI 标签：缩小移至右上角 -->
+      <view class="ai-tag">
+        <svg class="ai-icon" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+        <span class="ai-text">AI 驱动</span>
+      </view>
+
+      <!-- 主标题：完整语义表述 -->
       <h1 class="mega-title">
-        <span class="title-massive">智能</span>
-        <span class="ai-badge">
-          <svg class="ai-icon" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor"/>
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
-          </svg>
-          <span class="ai-text">AI</span>
-        </span>
+        <span class="title-main">智能校园</span>
+        <span class="title-sub">互助平台</span>
       </h1>
 
-      <!-- 副标题区 -->
+      <!-- 副标题：价值主张 -->
       <view class="subtitle-block">
-        <h2 class="gradient-subtitle">校园互助平台</h2>
-        <p class="typing-line">
+        <h2 class="value-subtitle">让每个问题都能找到答案</h2>
+        <!-- 功能点提示 -->
+        <p class="feature-line">
           <span class="typing-text">{{ displayedText }}</span>
           <span class="cursor-blink"></span>
         </p>
@@ -140,44 +145,126 @@ $charcoal: $gray-900;
   }
 }
 
-.mega-title {
-  margin: 0;
-  display: flex;
-  align-items: baseline;
-  gap: 20px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
+// AI 标签：缩小至小标签样式，绝对定位到右上角
+.ai-tag {
+  position: absolute;
+  top: -8px;
+  right: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba($primary, 0.3);
+  animation: tagFloat 3s ease-in-out infinite;
+  z-index: 10;
 
-  // 🔧 移动端调整布局
   @media (max-width: 768px) {
-    gap: 12px;
-    margin-bottom: 20px;
-    justify-content: center;  // 居中对齐
-  }
-}
-
-.title-massive {
-  font-size: clamp(56px, 8vw, 96px);
-  font-weight: 900;
-  color: $charcoal;
-  letter-spacing: -0.04em;
-  line-height: 0.9;
-  text-shadow:
-    2px 2px 0 rgba($primary, 0.1),
-    4px 4px 0 rgba($campus-teal, 0.08);
-  animation: titlePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
-
-  // 🔧 移动端字号调整
-  @media (max-width: 768px) {
-    font-size: clamp(42px, 12vw, 64px);  // 缩小字号范围
-    line-height: 1;
-    text-shadow:
-      1px 1px 0 rgba($primary, 0.08),
-      2px 2px 0 rgba($campus-teal, 0.06);
+    top: -6px;
+    gap: 4px;
+    padding: 5px 10px;
+    border-radius: 10px;
   }
 
   @media (max-width: 480px) {
-    font-size: clamp(36px, 14vw, 52px);  // 小屏幕进一步缩小
+    padding: 4px 8px;
+  }
+}
+
+@keyframes tagFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+.ai-icon {
+  width: 14px;
+  height: 14px;
+  color: white;
+  animation: rotate 8s linear infinite;
+
+  @media (max-width: 768px) {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.ai-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.05em;
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+  }
+}
+
+// 主标题：两行结构，缩小字号
+.mega-title {
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (max-width: 768px) {
+    gap: 6px;
+    margin-bottom: 16px;
+    align-items: center;
+  }
+}
+
+.title-main {
+  font-size: clamp(48px, 6vw, 72px);
+  font-weight: 900;
+  color: $charcoal;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  text-shadow:
+    1px 1px 0 rgba($primary, 0.08),
+    2px 2px 0 rgba($campus-teal, 0.06);
+  animation: titlePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+
+  @media (max-width: 768px) {
+    font-size: clamp(36px, 10vw, 56px);
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(32px, 12vw, 48px);
+  }
+}
+
+.title-sub {
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 900;
+  background: linear-gradient(135deg, $primary 0%, $campus-teal 60%, $campus-amber 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientFlow 4s ease-in-out infinite, titlePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+  line-height: 1;
+  letter-spacing: -0.02em;
+
+  @media (max-width: 768px) {
+    font-size: clamp(32px, 9vw, 52px);
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(28px, 11vw, 44px);
   }
 }
 
@@ -195,159 +282,60 @@ $charcoal: $gray-900;
   }
 }
 
-.ai-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
-  background: linear-gradient(135deg, $primary 0%, $campus-teal 100%);
-  border-radius: 24px;
-  box-shadow:
-    0 8px 24px rgba($primary, 0.4),
-    0 0 40px rgba($campus-teal, 0.3);
-  animation: badgeFloat 3s ease-in-out infinite;
-  position: relative;
-  overflow: hidden;
-
-  // 🔧 移动端缩小徽章
-  @media (max-width: 768px) {
-    gap: 8px;
-    padding: 10px 16px;
-    border-radius: 20px;
-    box-shadow:
-      0 6px 18px rgba($primary, 0.35),
-      0 0 30px rgba($campus-teal, 0.25);
-  }
-
-  @media (max-width: 480px) {
-    padding: 8px 14px;
-    gap: 6px;
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(45deg,
-      transparent 30%,
-      rgba(255, 255, 255, 0.3) 50%,
-      transparent 70%);
-    transform: translateX(-100%);
-    animation: shimmer 3s infinite;
-  }
-}
-
-@keyframes badgeFloat {
-  0%, 100% {
-    transform: translateY(0) rotate(-2deg);
-    box-shadow:
-      0 8px 24px rgba($primary, 0.4),
-      0 0 40px rgba($campus-teal, 0.3);
-  }
-  50% {
-    transform: translateY(-6px) rotate(2deg);
-    box-shadow:
-      0 12px 32px rgba($primary, 0.5),
-      0 0 50px rgba($campus-teal, 0.4);
-  }
-}
-
-@keyframes shimmer {
-  to {
-    transform: translateX(100%);
-  }
-}
-
-.ai-icon {
-  width: 24px;
-  height: 24px;
-  color: white;
-  animation: rotate 6s linear infinite;
-
-  // 🔧 移动端缩小图标
-  @media (max-width: 768px) {
-    width: 20px;
-    height: 20px;
-  }
-
-  @media (max-width: 480px) {
-    width: 18px;
-    height: 18px;
-  }
-}
-
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.ai-text {
-  font-size: 20px;
-  font-weight: 800;
-  color: white;
-  letter-spacing: 0.1em;
-
-  // 🔧 移动端字号调整
-  @media (max-width: 768px) {
-    font-size: 17px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 15px;
-  }
-}
-
-// 副标题区
-.subtitle-block {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
-
-  // 🔧 移动端居中对齐
-  @media (max-width: 768px) {
-    align-items: center;
-    text-align: center;
-    gap: 12px;
-  }
-}
-
-.gradient-subtitle {
-  margin: 0;
-  font-size: clamp(28px, 4vw, 40px);
-  font-weight: 800;
-  line-height: 1.2;
-  background: linear-gradient(135deg, $primary 0%, $campus-teal 60%, $campus-amber 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  background-size: 200% 200%;
-  animation: gradientFlow 4s ease-in-out infinite;
-
-  // 🔧 移动端字号调整
-  @media (max-width: 768px) {
-    font-size: clamp(22px, 6vw, 32px);
-    line-height: 1.3;
-  }
-
-  @media (max-width: 480px) {
-    font-size: clamp(20px, 7vw, 28px);
-  }
-}
-
 @keyframes gradientFlow {
   0%, 100% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
 }
 
-.typing-line {
+// 副标题区：清晰的三层结构
+.subtitle-block {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
+
+  @media (max-width: 768px) {
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+}
+
+// 价值主张副标题：比主标题小，但比功能点大
+.value-subtitle {
   margin: 0;
-  font-size: clamp(14px, 1.5vw, 17px);
-  color: #666;
+  font-size: clamp(20px, 2.5vw, 28px);
+  font-weight: 700;
+  line-height: 1.3;
+  color: $charcoal;
+  opacity: 0.85;
+
+  @media (max-width: 768px) {
+    font-size: clamp(18px, 4.5vw, 24px);
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(16px, 5vw, 22px);
+  }
+}
+
+// 功能点提示行：最小字号
+.feature-line {
+  margin: 0;
+  font-size: clamp(13px, 1.4vw, 16px);
+  color: #777;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 4px;
+
+  @media (max-width: 768px) {
+    font-size: clamp(12px, 3vw, 15px);
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(11px, 3.5vw, 14px);
+  }
 }
 
 .typing-text {

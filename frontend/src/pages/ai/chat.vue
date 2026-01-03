@@ -1205,15 +1205,16 @@ const scrollToBottom = () => {
 
 // 会话卡片 - 极简扁平设计（修复宽度超出问题）
 .session-item {
+  position: relative; // 为绝对定位的操作按钮提供定位上下文
   display: flex;
   align-items: flex-start;
-  gap: 10px; // 减少间距：12px → 10px
-  padding: 10px 12px; // 减少垂直内边距
+  gap: 10px;
+  padding: 10px 12px;
   margin-bottom: 4px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 0; // 允许 flex 子项收缩
+  min-width: 0;
 
   // 默认无背景
   background: transparent;
@@ -1270,6 +1271,7 @@ const scrollToBottom = () => {
   flex-direction: column;
   gap: 4px;
   overflow: hidden; // 防止内容溢出
+  padding-right: 60px; // 为绝对定位的操作按钮留出空间（2按钮 + 间距 ≈ 54px + 余量）
 }
 
 .session-header {
@@ -1309,48 +1311,52 @@ const scrollToBottom = () => {
   padding-right: 4px; // 防止文字贴边
 }
 
-// 操作按钮组（优化宽度）
+// 操作按钮组（使用绝对定位完全不占空间）
 .session-actions {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%); // 垂直居中
   display: flex;
-  gap: 2px; // 最小间距
+  gap: 2px;
   align-items: center;
-  flex-shrink: 0; // 防止被压缩
-  margin-left: 4px; // 与内容区域保持间距
-  opacity: 0; // 默认隐藏
-  visibility: hidden; // 完全隐藏，不占空间
-  transition: opacity 0.2s, visibility 0.2s;
+  opacity: 0;
+  pointer-events: none; // 默认不可点击
+  transition: opacity 0.2s;
 
   .session-item:hover & {
     opacity: 1;
-    visibility: visible;
+    pointer-events: auto; // hover 时可点击
   }
 
   .session-item.active & {
     opacity: 1;
-    visibility: visible;
+    pointer-events: auto; // 选中时可点击
   }
 }
 
 .action-btn {
-  width: 26px; // 28px → 26px（减小尺寸）
+  width: 26px;
   height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 5px;
   transition: all 0.15s;
-  background: transparent; // 默认透明
+  background: rgba($white, 0.9); // 半透明白色背景，确保可读性
+  backdrop-filter: blur(4px); // 毛玻璃效果
+  box-shadow: 0 1px 3px rgba($black, 0.1); // 轻微阴影
   flex-shrink: 0;
 
   svg {
-    width: 13px; // 14px → 13px
+    width: 13px;
     height: 13px;
     display: block;
   }
 
   &.rename-btn {
     svg {
-      color: $gray-500;
+      color: $gray-600;
     }
 
     &:hover {
@@ -1362,12 +1368,13 @@ const scrollToBottom = () => {
 
     &:active {
       background: rgba($primary, 0.25);
+      transform: scale(0.92);
     }
   }
 
   &.delete-btn {
     svg {
-      color: $gray-500;
+      color: $gray-600;
     }
 
     &:hover {
@@ -1379,11 +1386,8 @@ const scrollToBottom = () => {
 
     &:active {
       background: rgba($error, 0.25);
+      transform: scale(0.92);
     }
-  }
-
-  &:active {
-    transform: scale(0.92);
   }
 }
 

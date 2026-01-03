@@ -1,7 +1,5 @@
 <template>
   <view class="activity-wall">
-    <view class="wall-shell">
-      <view class="wall-glow"></view>
     <!-- 极简头部 - 只保留标题和 LIVE 徽章 -->
     <view class="wall-header">
       <h3 class="wall-title">
@@ -21,7 +19,7 @@
         :key="item.id"
         class="activity-item"
         :class="`item-${item.type}`"
-        :style="{ animationDelay: `${index * 0.12}s`, '--stack-x': `${stackX(index)}px`, '--stack-y': `${stackY(index)}px` }"
+        :style="{ animationDelay: `${index * 0.15}s` }"
       >
         <!-- 顶部:类型徽章 + 时间 -->
         <view class="item-header">
@@ -79,7 +77,6 @@
         </view>
       </view>
     </view>
-    </view>
   </view>
 </template>
 
@@ -112,34 +109,9 @@ const activityItems = ref<ActivityItem[]>([
     title: '操作系统期末复习笔记.pdf',
     downloads: 3102
   }
-
-  {
-    id: 3,
-    type: 'activity',
-    time: '5???',
-    title: '??????????',
-    participants: 128
-  },
-  {
-    id: 4,
-    type: 'question',
-    time: '7???',
-    content: '??????????????????',
-    replies: 21
-  }
 ])
 
 const displayItems = computed(() => activityItems.value)
-
-const stackX = (index: number) => {
-  const offsets = [0, 26, 8, 32]
-  return offsets[index] ?? 0
-}
-
-const stackY = (index: number) => {
-  const offsets = [0, 6, 12, 18]
-  return offsets[index] ?? 0
-}
 </script>
 
 <style scoped lang="scss">
@@ -154,58 +126,10 @@ $charcoal: $gray-900;
 
 // ==================== 活动墙容器 ====================
 .activity-wall {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: 20px;
   height: 100%;
-}
-
-// ==================== ????====================
-.wall-shell {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 24px;
-  border-radius: 24px;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 255, 255, 0.55) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(18px) saturate(160%);
-  box-shadow:
-    0 30px 80px rgba($primary, 0.18),
-    0 8px 24px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  overflow: hidden;
-
-  &::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba($primary, 0.05) 1px, transparent 1px),
-      linear-gradient(90deg, rgba($primary, 0.05) 1px, transparent 1px);
-    background-size: 28px 28px;
-    opacity: 0.6;
-    pointer-events: none;
-  }
-}
-
-.wall-glow {
-  position: absolute;
-  top: -20%;
-  right: -15%;
-  width: 60%;
-  height: 60%;
-  background: radial-gradient(circle,
-    rgba($campus-teal, 0.35) 0%,
-    rgba($primary, 0.15) 40%,
-    transparent 70%);
-  filter: blur(8px);
-  pointer-events: none;
-  z-index: 0;
 }
 
 // ==================== 极简头部 ====================
@@ -238,7 +162,6 @@ $charcoal: $gray-900;
       rgba(255, 255, 255, 0.8) 50%,
       transparent 100%);
   }
-  z-index: 1;
 }
 
 .wall-title {
@@ -390,10 +313,7 @@ $charcoal: $gray-900;
 .activity-feed {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding-right: 32px;
-  position: relative;
-  z-index: 1;
+  gap: 24px;
 }
 
 .activity-item {
@@ -409,18 +329,19 @@ $charcoal: $gray-900;
   border-radius: 16px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: slideInUpStacked 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+  animation: slideInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
   box-shadow:
     0 4px 20px rgba($primary, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 
   // 对角线错位排列 - 只有2张卡片
-  transform: translateX(var(--stack-x, 0px)) translateY(var(--stack-y, 0px));
-  z-index: 1;
-
-  // Hover ????
-  &:hover {
-    transform: translateX(var(--stack-x, 0px)) translateY(calc(var(--stack-y, 0px) - 6px));
+  &:nth-child(1) {
+    animation-delay: 0.2s;
+    transform: translateX(0);
+  }
+  &:nth-child(2) {
+    animation-delay: 0.4s;
+    transform: translateX(80px);
   }
 
   // Hover 保持错位
@@ -537,16 +458,11 @@ $charcoal: $gray-900;
   }
 }
 
-@keyframes slideInUpStacked {
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateX(var(--stack-x, 0px)) translateY(calc(var(--stack-y, 0px) + 18px));
+    transform: translateY(20px);
   }
-  to {
-    opacity: 1;
-    transform: translateX(var(--stack-x, 0px)) translateY(var(--stack-y, 0px));
-  }
-}
   to {
     opacity: 1;
     transform: translateY(0);

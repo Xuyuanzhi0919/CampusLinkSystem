@@ -67,6 +67,9 @@
         <HeroBrand />
         <HeroCTA @ask="handleAsk" @browse="handleBrowse" />
       </view>
+
+      <!-- 右侧浮动数据气泡 -->
+      <HeroFloatingStats />
     </view>
   </view>
 </template>
@@ -74,6 +77,7 @@
 <script setup lang="ts">
 import HeroBrand from './hero/HeroBrand.vue'
 import HeroCTA from './hero/HeroCTA.vue'
+import HeroFloatingStats from './hero/HeroFloatingStats.vue'
 
 const emit = defineEmits<{
   (e: 'ask'): void
@@ -374,6 +378,7 @@ $cream: $gray-50;            // 系统背景色
   z-index: 1;
   display: flex;
   justify-content: flex-start;
+  min-height: 500px;
 
   @media (max-width: 1600px) {
     padding: 45px 64px 65px;

@@ -1,9 +1,12 @@
 <template>
-  <view class="markdown-body" v-html="renderedHtml"></view>
+  <view class="markdown-body">
+    <!-- 使用 ref 引用,渲染完成后添加复制按钮 -->
+    <view ref="contentRef" v-html="renderedHtml"></view>
+  </view>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted, watch, nextTick } from 'vue'
 import MarkdownIt from 'markdown-it'
 // @ts-ignore
 import 'katex/dist/katex.min.css'
@@ -119,6 +122,8 @@ md.use(markdownItContainer, 'danger', {
   }
 })
 
+const contentRef = ref<HTMLElement | null>(null)
+
 const renderedHtml = computed(() => {
   if (!props.content) return ''
 
@@ -128,6 +133,140 @@ const renderedHtml = computed(() => {
     console.error('Markdown 渲染失败:', e)
     return props.content
   }
+})
+
+// 为代码块添加复制按钮
+const addCopyButtons = () => {
+  if (!contentRef.value) return
+
+  // 使用原生 DOM API 获取所有代码块
+  const codeBlocks = contentRef.value.querySelectorAll('pre.hljs')
+
+  codeBlocks.forEach((block: any) => {
+    // 检查是否已经添加过复制按钮
+    if (block.querySelector('.copy-btn')) return
+
+    // 创建复制按钮容器
+    const btnContainer = document.createElement('div')
+    btnContainer.className = 'code-header'
+
+    // 创建复制按钮
+    const copyBtn = document.createElement('button')
+    copyBtn.className = 'copy-btn'
+    copyBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+      <span>复制</span>
+    `
+
+    // 复制功能
+    copyBtn.addEventListener('click', () => {
+      const codeElement = block.querySelector('code')
+      if (!codeElement) return
+
+      const code = codeElement.textContent || ''
+
+      // H5 环境使用 Clipboard API
+      // #ifdef H5
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+          // 显示复制成功
+          copyBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>已复制</span>
+          `
+          copyBtn.classList.add('copied')
+
+          setTimeout(() => {
+            copyBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+              <span>复制</span>
+            `
+            copyBtn.classList.remove('copied')
+          }, 2000)
+        }).catch(() => {
+          uni.showToast({
+            title: '复制失败',
+            icon: 'none'
+          })
+        })
+      } else {
+        // 降级方案:使用 uni.setClipboardData
+        uni.setClipboardData({
+          data: code,
+          success: () => {
+            copyBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span>已复制</span>
+            `
+            copyBtn.classList.add('copied')
+
+            setTimeout(() => {
+              copyBtn.innerHTML = `
+                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                </svg>
+                <span>复制</span>
+              `
+              copyBtn.classList.remove('copied')
+            }, 2000)
+          },
+          fail: () => {
+            uni.showToast({
+              title: '复制失败',
+              icon: 'none'
+            })
+          }
+        })
+      }
+      // #endif
+
+      // #ifndef H5
+      // 小程序等其他平台使用 uni.setClipboardData
+      uni.setClipboardData({
+        data: code,
+        success: () => {
+          uni.showToast({
+            title: '已复制',
+            icon: 'success',
+            duration: 1500
+          })
+        },
+        fail: () => {
+          uni.showToast({
+            title: '复制失败',
+            icon: 'none'
+          })
+        }
+      })
+      // #endif
+    })
+
+    btnContainer.appendChild(copyBtn)
+    block.insertBefore(btnContainer, block.firstChild)
+  })
+}
+
+// 监听内容变化,重新添加复制按钮
+watch(() => props.content, async () => {
+  await nextTick()
+  addCopyButtons()
+})
+
+// 组件挂载时添加复制按钮
+onMounted(async () => {
+  await nextTick()
+  addCopyButtons()
 })
 </script>
 
@@ -246,9 +385,10 @@ const renderedHtml = computed(() => {
   }
 
   pre {
+    position: relative;
     margin-top: 0;
     margin-bottom: 12px;
-    padding: 14px 16px;
+    padding: 44px 16px 14px; // 顶部留空间给复制按钮
     background: $gray-900;
     border-radius: 8px;
     overflow-x: auto;
@@ -262,6 +402,65 @@ const renderedHtml = computed(() => {
       color: #e6edf3;
       line-height: 1.6;
       display: block;
+    }
+  }
+
+  // 代码块头部（包含复制按钮）
+  .code-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px 8px 0 0;
+  }
+
+  // 复制按钮
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    color: #e6edf3;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+
+    svg {
+      flex-shrink: 0;
+    }
+
+    span {
+      white-space: nowrap;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+
+    &.copied {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #10b981;
+
+      svg {
+        stroke: #10b981;
+      }
     }
   }
 

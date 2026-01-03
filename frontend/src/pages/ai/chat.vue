@@ -148,7 +148,7 @@
     </scroll-view>
 
     <!-- 底部输入栏 -->
-    <view class="input-section">
+    <view class="input-container-outer">
       <view class="input-inner">
         <view class="input-field">
           <textarea

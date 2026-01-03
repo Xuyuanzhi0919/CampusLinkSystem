@@ -57,148 +57,42 @@
       </view>
     </view>
 
-    <!-- 会话列表抽屉 - 全新专业设计 -->
+    <!-- 会话列表抽屉 -->
     <view v-if="showSessionDrawer" class="session-drawer-overlay" @click="showSessionDrawer = false">
       <view class="session-drawer" @click.stop>
-        <!-- 顶部 Header -->
         <view class="drawer-header">
-          <view class="header-content">
-            <view class="header-title-group">
-              <svg class="header-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M8 10H8.01M12 10H12.01M16 10H16.01M9 16H5C3.89543 16 3 15.1046 3 14V6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V14C21 15.1046 20.1046 16 19 16H14L9 21V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <view class="header-text">
-                <text class="drawer-title">对话历史</text>
-                <text class="drawer-subtitle">{{ sessions.length }} 个对话</text>
-              </view>
-            </view>
-            <view class="close-drawer" @click="showSessionDrawer = false">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </view>
-          </view>
-        </view>
-
-        <!-- 新建对话按钮 -->
-        <view class="drawer-actions">
-          <view class="new-chat-btn" @click="handleNewSession">
-            <svg class="plus-icon" viewBox="0 0 24 24" fill="none">
-              <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <text class="drawer-title">对话列表</text>
+          <view class="close-drawer" @click="showSessionDrawer = false">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
-            <text class="new-chat-text">新建对话</text>
           </view>
         </view>
 
-        <!-- 会话列表 -->
         <scroll-view class="session-list" scroll-y>
-          <!-- 今天 -->
-          <view v-if="sessionsByDate.today.length > 0" class="session-group">
-            <text class="group-label">今天</text>
-            <view
-              v-for="session in sessionsByDate.today"
-              :key="session.id"
-              class="session-item"
-              :class="{ active: session.id === currentSessionId }"
-              @click="handleSelectSession(session.id)"
-            >
-              <view class="session-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 10H8.01M12 10H12.01M16 10H16.01M9 16H5C3.89543 16 3 15.1046 3 14V6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V14C21 15.1046 20.1046 16 19 16H14L9 21V16Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <view
+            v-for="session in sessions"
+            :key="session.id"
+            class="session-item"
+            :class="{ active: session.id === currentSessionId }"
+            @click="handleSelectSession(session.id)"
+          >
+            <view class="session-info">
+              <text class="session-title">{{ session.title }}</text>
+              <text class="session-meta">{{ session.messageCount || 0 }}条消息 · {{ formatSessionTime(session.updatedAt) }}</text>
+            </view>
+            <view class="session-actions" @click.stop>
+              <view class="delete-session" @click="handleDeleteSession(session.id)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path d="M13 4L12.5 13C12.4 13.6 11.9 14 11.3 14H4.7C4.1 14 3.6 13.6 3.5 13L3 4M6 6V11M10 6V11M11 4V2.5C11 2.2 10.8 2 10.5 2H5.5C5.2 2 5 2.2 5 2.5V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
                 </svg>
-              </view>
-              <view class="session-content">
-                <text class="session-title">{{ session.title }}</text>
-                <view class="session-meta">
-                  <text class="meta-item">{{ session.messageCount || 0 }} 条消息</text>
-                  <text class="meta-dot">·</text>
-                  <text class="meta-item">{{ formatSessionTime(session.updatedAt) }}</text>
-                </view>
-              </view>
-              <view class="session-actions" @click.stop>
-                <view class="action-btn delete-btn" @click="handleDeleteSession(session.id)">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </view>
               </view>
             </view>
           </view>
 
-          <!-- 昨天 -->
-          <view v-if="sessionsByDate.yesterday.length > 0" class="session-group">
-            <text class="group-label">昨天</text>
-            <view
-              v-for="session in sessionsByDate.yesterday"
-              :key="session.id"
-              class="session-item"
-              :class="{ active: session.id === currentSessionId }"
-              @click="handleSelectSession(session.id)"
-            >
-              <view class="session-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 10H8.01M12 10H12.01M16 10H16.01M9 16H5C3.89543 16 3 15.1046 3 14V6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V14C21 15.1046 20.1046 16 19 16H14L9 21V16Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </view>
-              <view class="session-content">
-                <text class="session-title">{{ session.title }}</text>
-                <view class="session-meta">
-                  <text class="meta-item">{{ session.messageCount || 0 }} 条消息</text>
-                  <text class="meta-dot">·</text>
-                  <text class="meta-item">{{ formatSessionTime(session.updatedAt) }}</text>
-                </view>
-              </view>
-              <view class="session-actions" @click.stop>
-                <view class="action-btn delete-btn" @click="handleDeleteSession(session.id)">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 更早 -->
-          <view v-if="sessionsByDate.earlier.length > 0" class="session-group">
-            <text class="group-label">更早</text>
-            <view
-              v-for="session in sessionsByDate.earlier"
-              :key="session.id"
-              class="session-item"
-              :class="{ active: session.id === currentSessionId }"
-              @click="handleSelectSession(session.id)"
-            >
-              <view class="session-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M8 10H8.01M12 10H12.01M16 10H16.01M9 16H5C3.89543 16 3 15.1046 3 14V6C3 4.89543 3.89543 4 5 4H19C20.1046 4 21 4.89543 21 6V14C21 15.1046 20.1046 16 19 16H14L9 21V16Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </view>
-              <view class="session-content">
-                <text class="session-title">{{ session.title }}</text>
-                <view class="session-meta">
-                  <text class="meta-item">{{ session.messageCount || 0 }} 条消息</text>
-                  <text class="meta-dot">·</text>
-                  <text class="meta-item">{{ formatSessionTime(session.updatedAt) }}</text>
-                </view>
-              </view>
-              <view class="session-actions" @click.stop>
-                <view class="action-btn delete-btn" @click="handleDeleteSession(session.id)">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 空状态 -->
           <view v-if="sessions.length === 0" class="empty-sessions">
-            <svg class="empty-icon" viewBox="0 0 64 64" fill="none">
-              <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="2" opacity="0.2"/>
-              <path d="M22 28H22.02M32 28H32.02M42 28H42.02M25 40H18C15.7909 40 14 38.2091 14 36V22C14 19.7909 15.7909 18 18 18H46C48.2091 18 50 19.7909 50 22V36C50 38.2091 48.2091 40 46 40H36L25 50V40Z" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
             <text class="empty-text">暂无对话记录</text>
-            <text class="empty-hint">点击「新建对话」开始与 AI 助手交流</text>
+            <text class="empty-hint">开始新对话探索 AI 助手功能</text>
           </view>
         </scroll-view>
       </view>
@@ -427,35 +321,6 @@ const deduplicateSessions = (sessions: ChatSession[]): ChatSession[] => {
     return acc
   }, [] as ChatSession[])
 }
-
-// 按日期分组会话列表（今天、昨天、更早）
-const sessionsByDate = computed(() => {
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  const result = {
-    today: [] as ChatSession[],
-    yesterday: [] as ChatSession[],
-    earlier: [] as ChatSession[]
-  }
-
-  sessions.value.forEach(session => {
-    const sessionDate = new Date(session.updatedAt)
-    const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate())
-
-    if (sessionDay.getTime() === today.getTime()) {
-      result.today.push(session)
-    } else if (sessionDay.getTime() === yesterday.getTime()) {
-      result.yesterday.push(session)
-    } else {
-      result.earlier.push(session)
-    }
-  })
-
-  return result
-})
 
 const messagePairs = computed(() => {
   const pairs: Array<{ user: Message; assistant?: Message }> = []
@@ -954,14 +819,14 @@ const scrollToBottom = () => {
   }
 }
 
-// ==================== 会话列表抽屉 - 全新专业设计 ====================
+// ==================== 会话列表抽屉 ====================
 .session-drawer-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba($black, 0.6);
-  backdrop-filter: blur(6px);
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba($black, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s;
 }
 
 .session-drawer {
@@ -969,379 +834,185 @@ const scrollToBottom = () => {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 360px;
+  width: 320px;
   max-width: 85vw;
-  background: linear-gradient(to bottom, $white, rgba($gray-50, 0.5));
-  box-shadow: 8px 0 32px rgba($black, 0.12);
+  background: $white;
+  box-shadow: 4px 0 20px rgba($black, 0.15);
   display: flex;
   flex-direction: column;
-  animation: slideInLeft 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slideInLeft 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
-    opacity: 0;
   }
   to {
     transform: translateX(0);
-    opacity: 1;
   }
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-// Header 区域
 .drawer-header {
-  padding: 20px 20px 16px;
-  border-bottom: 1px solid $gray-200;
-  background: $white;
-}
-
-.header-content {
+  height: 60px;
+  padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
-
-.header-title-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.header-icon {
-  width: 28px;
-  height: 28px;
-  padding: 5px;
-  background: linear-gradient(135deg, $primary, rgba($primary, 0.8));
-  border-radius: 8px;
-  color: $white;
-  flex-shrink: 0;
-}
-
-.header-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  border-bottom: 1px solid $gray-200;
 }
 
 .drawer-title {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: $gray-900;
-  line-height: 1.3;
-}
-
-.drawer-subtitle {
-  font-size: 12px;
-  color: $gray-500;
-  font-weight: 400;
 }
 
 .close-drawer {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: $gray-600;
-    transition: all 0.2s;
-  }
-
-  &:hover {
-    background: $gray-100;
-
-    svg {
-      color: $gray-900;
-    }
-  }
-
-  &:active {
-    transform: scale(0.92);
-    background: $gray-200;
-  }
-}
-
-// 新建对话按钮
-.drawer-actions {
-  padding: 16px 20px;
-  background: $white;
-  border-bottom: 1px solid $gray-100;
-}
-
-.new-chat-btn {
-  width: 100%;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  background: linear-gradient(135deg, $primary, rgba($primary, 0.9));
-  color: $white;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba($primary, 0.25);
-
-  .plus-icon {
-    width: 20px;
-    height: 20px;
-    stroke-width: 2.5;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba($primary, 0.35);
-    background: linear-gradient(135deg, rgba($primary, 0.9), $primary);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba($primary, 0.2);
-  }
-}
-
-// 会话列表容器
-.session-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 8px 16px 16px 16px;
-
-  // 自定义滚动条样式
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 3px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba($gray-400, 0.3);
-    border-radius: 3px;
-    transition: background 0.2s;
-
-    &:hover {
-      background: rgba($gray-400, 0.5);
-    }
-
-    &:active {
-      background: rgba($gray-500, 0.6);
-    }
-  }
-
-  scrollbar-width: thin;
-  scrollbar-color: rgba($gray-400, 0.3) transparent;
-}
-
-// 会话分组
-.session-group {
-  margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-.group-label {
-  display: block;
-  font-size: 11px;
-  font-weight: 600;
-  color: $gray-500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 0 4px 8px;
-  margin-bottom: 8px;
-}
-
-// 会话列表项 - 全新设计
-.session-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  margin-bottom: 6px;
-  background: $white;
-  border: 1.5px solid transparent;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 11px;
-    background: linear-gradient(135deg, rgba($primary, 0.05), transparent);
-    opacity: 0;
-    transition: opacity 0.25s;
-  }
-
-  &:hover {
-    border-color: rgba($primary, 0.3);
-    transform: translateX(4px);
-    box-shadow: 0 2px 8px rgba($primary, 0.08);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .session-icon {
-      background: linear-gradient(135deg, rgba($primary, 0.15), rgba($primary, 0.1));
-
-      svg {
-        color: $primary;
-      }
-    }
-
-    .delete-btn {
-      opacity: 1;
-    }
-  }
-
-  &.active {
-    border-color: $primary;
-    background: linear-gradient(135deg, rgba($primary, 0.08), rgba($primary, 0.03));
-    box-shadow: 0 3px 12px rgba($primary, 0.15);
-
-    &::before {
-      opacity: 0;
-    }
-
-    .session-icon {
-      background: linear-gradient(135deg, $primary, rgba($primary, 0.9));
-
-      svg {
-        color: $white;
-      }
-    }
-
-    .session-title {
-      color: $primary;
-      font-weight: 600;
-    }
-  }
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-}
-
-// 会话图标
-.session-icon {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: $gray-100;
-  border-radius: 10px;
-  flex-shrink: 0;
-  transition: all 0.25s;
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: $gray-600;
-    transition: all 0.25s;
-  }
-}
-
-// 会话内容
-.session-content {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.session-title {
-  font-size: 14px;
-  font-weight: 500;
-  color: $gray-900;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: all 0.2s;
-  line-height: 1.4;
-}
-
-.session-meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: $gray-500;
-  line-height: 1.3;
-
-  .meta-item {
-    white-space: nowrap;
-  }
-
-  .meta-dot {
-    opacity: 0.5;
-  }
-}
-
-// 操作按钮
-.session-actions {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-
-.action-btn {
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s;
-  opacity: 0;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: $gray-600;
+  }
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 16px 16px 12px; // 右侧增加内边距，防止阴影被裁切
+  overflow-x: visible; // 允许阴影溢出
+
+  // 自定义滚动条样式（仅在支持的浏览器中生效）
+  &::-webkit-scrollbar {
+    width: 6px; // 滚动条宽度
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; // 轨道透明
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gray-400, 0.3); // 滑块颜色（半透明灰色）
+    border-radius: 3px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba($gray-400, 0.5); // hover 时加深
+    }
+
+    &:active {
+      background: rgba($gray-500, 0.6); // 拖动时更深
+    }
+  }
+
+  // Firefox 滚动条样式
+  scrollbar-width: thin; // 细滚动条
+  scrollbar-color: rgba($gray-400, 0.3) transparent; // 滑块颜色 轨道颜色
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 10px; // 增加间距，防止阴影重叠
+  margin-right: 2px; // 右侧留出空间给阴影
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba($black, 0.05); // 默认轻微阴影
+
+  &:hover {
+    border-color: $primary;
+    background: $primary-50;
+    transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba($primary, 0.1); // hover 时阴影不被裁切
+  }
+
+  &.active {
+    border-color: $primary;
+    background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary, 0.05));
+    box-shadow: 0 3px 10px rgba($primary, 0.2); // 增强阴影，同时留出足够空间
+    margin-top: 2px; // 顶部留出间距
+    margin-bottom: 12px; // 底部增加间距
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.session-info {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.session-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: $gray-900;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  display: block;
+  font-size: 12px;
+  color: $gray-500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-actions {
+  display: flex;
+  gap: 4px;
+  align-items: center; // 确保操作按钮垂直居中
+  flex-shrink: 0; // 防止被压缩
+}
+
+.delete-session {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+  flex-shrink: 0; // 防止图标被压缩
 
   svg {
     width: 16px;
     height: 16px;
-    display: block;
-    transition: all 0.2s;
-  }
-
-  .session-item.active & {
-    opacity: 1;
-  }
-}
-
-.delete-btn {
-  svg {
     color: $gray-500;
+    display: block; // 移除 inline 导致的基线对齐问题
   }
 
   &:hover {
-    background: rgba($error, 0.1);
-
+    background: $error-50;
     svg {
       color: $error;
     }
@@ -1349,40 +1020,25 @@ const scrollToBottom = () => {
 
   &:active {
     transform: scale(0.9);
-    background: rgba($error, 0.15);
   }
 }
 
-// 空状态
 .empty-sessions {
-  padding: 80px 24px;
+  padding: 60px 20px;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-}
-
-.empty-icon {
-  width: 80px;
-  height: 80px;
-  color: $gray-300;
-  margin-bottom: 8px;
-  opacity: 0.8;
 }
 
 .empty-text {
-  font-size: 16px;
-  font-weight: 500;
-  color: $gray-700;
-  margin-bottom: 4px;
+  display: block;
+  font-size: 15px;
+  color: $gray-600;
+  margin-bottom: 8px;
 }
 
 .empty-hint {
+  display: block;
   font-size: 13px;
-  color: $gray-500;
-  line-height: 1.6;
-  max-width: 240px;
+  color: $gray-400;
 }
 
 // ==================== 消息区域 ====================

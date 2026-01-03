@@ -97,11 +97,17 @@
         >
           <!-- 用户问题 -->
           <template v-if="msg.role === 'user'">
-            <view class="user-message-card">
-              <view class="user-content">
-                <text class="user-text">{{ msg.content }}</text>
+            <view class="user-message-group">
+              <view class="user-avatar">
+                <image v-if="userAvatar" :src="userAvatar" class="avatar-img" mode="aspectFill" />
+                <text v-else class="avatar-text">{{ userInitial }}</text>
               </view>
-              <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
+              <view class="user-message-card">
+                <view class="user-content">
+                  <text class="user-text">{{ msg.content }}</text>
+                </view>
+                <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
+              </view>
             </view>
           </template>
 
@@ -197,7 +203,9 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import type { Message, QuickPrompt } from '@/types/ai'
 import { sendMessage, saveChatHistory, loadChatHistory, clearChatHistory } from '@/services/ai'
+import { useUserStore } from '@/stores/user'
 
+const userStore = useUserStore()
 const messages = ref<Message[]>([])
 const inputText = ref('')
 const isLoading = ref(false)
@@ -212,6 +220,11 @@ const suggestions: QuickPrompt[] = [
 ]
 
 const canSend = computed(() => inputText.value.trim().length > 0 && !isLoading.value)
+const userAvatar = computed(() => userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '')
+const userInitial = computed(() => {
+  const nickname = userStore.userInfo?.nickname || userStore.userInfo?.username || '我'
+  return nickname.charAt(0).toUpperCase()
+})
 
 onMounted(() => {
   const history = loadChatHistory()
@@ -595,12 +608,46 @@ const scrollToBottom = () => {
 }
 
 // ==================== 用户问题卡片（层级1：最高） ====================
+.user-message-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex-direction: row-reverse;
+}
+
+.user-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, $primary, $primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba($primary, 0.25);
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: $white;
+  line-height: 1;
+}
+
 .user-message-card {
+  flex: 1;
+  max-width: calc(100% - 48px);
   background: linear-gradient(135deg, $primary, $primary-light);
   border-radius: 14px;
   padding: 14px 18px;
   box-shadow: 0 2px 8px rgba($primary, 0.2);
-  margin-bottom: 4px;
 }
 
 .user-content {
@@ -1061,8 +1108,18 @@ const scrollToBottom = () => {
     margin-bottom: 14px;
   }
 
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  .avatar-text {
+    font-size: 18px;
+  }
+
   .user-message-card {
-    padding: 18px 20px;
+    max-width: calc(100% - 52px);
+    padding: 16px 18px;
     border-radius: 14px;
   }
 

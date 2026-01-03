@@ -83,13 +83,7 @@ $charcoal: $gray-900;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 20px;
-  background: linear-gradient(135deg,
-    rgba($primary, 0.02) 0%,
-    rgba($campus-teal, 0.02) 100%);
-  border-radius: 16px;
-  border: 1px solid rgba($primary, 0.1);
+  gap: 20px;
 }
 
 // ==================== 按钮组 - 横向排列 ====================
@@ -307,10 +301,7 @@ $charcoal: $gray-900;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 12px 16px;
-  background: rgba($charcoal, 0.02);
-  border-radius: 8px;
-  border: 1px solid rgba($primary, 0.08);
+  padding: 10px 0;
   font-family: 'Courier New', monospace;
   font-size: 13px;
 

@@ -57,11 +57,22 @@
       </view>
     </view>
 
-    <!-- 会话列表抽屉 -->
+    <!-- 会话列表抽屉 - 重构版（现代化极简设计） -->
     <view v-if="showSessionDrawer" class="session-drawer-overlay" @click="showSessionDrawer = false">
       <view class="session-drawer" @click.stop>
+        <!-- 头部区域 -->
         <view class="drawer-header">
-          <text class="drawer-title">对话列表</text>
+          <view class="header-left">
+            <view class="drawer-icon">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path d="M8 10H16M8 14H13M5 6C5 4.89543 5.89543 4 7 4H17C18.1046 4 19 4.89543 19 6V16C19 17.1046 18.1046 18 17 18H10L5 21V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </view>
+            <view class="header-text">
+              <text class="drawer-title">历史对话</text>
+              <text class="drawer-count">{{ sessions.length }} 个会话</text>
+            </view>
+          </view>
           <view class="close-drawer" @click="showSessionDrawer = false">
             <svg viewBox="0 0 24 24" fill="none">
               <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -69,30 +80,87 @@
           </view>
         </view>
 
+        <!-- 搜索栏 -->
+        <view class="search-bar">
+          <svg class="search-icon" viewBox="0 0 20 20" fill="none">
+            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <input
+            v-model="searchKeyword"
+            class="search-input"
+            type="text"
+            placeholder="搜索对话..."
+            @input="handleSearch"
+          />
+          <view v-if="searchKeyword" class="clear-search" @click="searchKeyword = ''">
+            <svg viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.2"/>
+              <path d="M10 6L6 10M6 6L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </view>
+        </view>
+
+        <!-- 会话列表 -->
         <scroll-view class="session-list" scroll-y>
-          <view
-            v-for="session in sessions"
-            :key="session.id"
-            class="session-item"
-            :class="{ active: session.id === currentSessionId }"
-            @click="handleSelectSession(session.id)"
-          >
-            <view class="session-info">
-              <text class="session-title">{{ session.title }}</text>
-              <text class="session-meta">{{ session.messageCount || 0 }}条消息 · {{ formatSessionTime(session.updatedAt) }}</text>
-            </view>
-            <view class="session-actions" @click.stop>
-              <view class="delete-session" @click="handleDeleteSession(session.id)">
-                <svg viewBox="0 0 16 16" fill="none">
-                  <path d="M13 4L12.5 13C12.4 13.6 11.9 14 11.3 14H4.7C4.1 14 3.6 13.6 3.5 13L3 4M6 6V11M10 6V11M11 4V2.5C11 2.2 10.8 2 10.5 2H5.5C5.2 2 5 2.2 5 2.5V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                </svg>
+          <!-- 时间分组标题 -->
+          <template v-for="group in groupedSessions" :key="group.label">
+            <view class="session-group">
+              <text class="group-label">{{ group.label }}</text>
+
+              <view
+                v-for="session in group.sessions"
+                :key="session.id"
+                class="session-item"
+                :class="{ active: session.id === currentSessionId }"
+                @click="handleSelectSession(session.id)"
+              >
+                <!-- 会话图标 -->
+                <view class="session-icon">
+                  <svg viewBox="0 0 20 20" fill="none">
+                    <path d="M6 7H14M6 10H11M4 4H16C17.1046 4 18 4.89543 18 6V12C18 13.1046 17.1046 14 16 14H8L4 17V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </view>
+
+                <!-- 会话信息 -->
+                <view class="session-content">
+                  <view class="session-header">
+                    <text class="session-title">{{ session.title }}</text>
+                    <text class="session-time">{{ formatSessionTime(session.updatedAt) }}</text>
+                  </view>
+                  <text class="session-preview">{{ session.lastMessage || '暂无消息' }}</text>
+                </view>
+
+                <!-- 操作按钮组 -->
+                <view class="session-actions" @click.stop>
+                  <!-- 重命名按钮 -->
+                  <view class="action-btn rename-btn" @click="handleRenameSession(session.id)">
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <path d="M11.5 3.5L12.5 4.5M2 14L3.5 13.5L12 5L11 4L2.5 12.5L2 14Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </view>
+
+                  <!-- 删除按钮 -->
+                  <view class="action-btn delete-btn" @click="handleDeleteSession(session.id)">
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <path d="M13 4L12.5 13C12.4 13.6 11.9 14 11.3 14H4.7C4.1 14 3.6 13.6 3.5 13L3 4M6 6V11M10 6V11M11 4V2.5C11 2.2 10.8 2 10.5 2H5.5C5.2 2 5 2.2 5 2.5V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                  </view>
+                </view>
               </view>
             </view>
-          </view>
+          </template>
 
-          <view v-if="sessions.length === 0" class="empty-sessions">
-            <text class="empty-text">暂无对话记录</text>
-            <text class="empty-hint">开始新对话探索 AI 助手功能</text>
+          <!-- 空状态 -->
+          <view v-if="filteredSessions.length === 0" class="empty-sessions">
+            <view class="empty-icon">
+              <svg viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2" opacity="0.2"/>
+                <path d="M20 26H44M20 32H36M16 16H48C49.1046 16 50 16.8954 50 18V38C50 39.1046 49.1046 40 48 40H28L16 48V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </view>
+            <text class="empty-text">{{ searchKeyword ? '未找到匹配的对话' : '暂无对话记录' }}</text>
+            <text class="empty-hint">{{ searchKeyword ? '尝试其他关键词' : '开始新对话探索 AI 助手功能' }}</text>
           </view>
         </scroll-view>
       </view>
@@ -269,7 +337,8 @@ import {
   createSession,
   deleteSession,
   getSession,
-  updateSession
+  updateSession,
+  renameSession
 } from '@/services/ai'
 import { useUserStore } from '@/stores/user'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
@@ -285,6 +354,7 @@ const scrollIntoView = ref('')
 const sessions = ref<ChatSession[]>([])
 const currentSessionId = ref<string>('')
 const showSessionDrawer = ref(false)
+const searchKeyword = ref('') // 搜索关键词
 
 // 输入框字数统计
 const inputCharCount = computed(() => inputText.value.length)
@@ -321,6 +391,55 @@ const deduplicateSessions = (sessions: ChatSession[]): ChatSession[] => {
     return acc
   }, [] as ChatSession[])
 }
+
+// 搜索过滤后的会话列表
+const filteredSessions = computed(() => {
+  if (!searchKeyword.value.trim()) {
+    return sessions.value
+  }
+
+  const keyword = searchKeyword.value.toLowerCase()
+  return sessions.value.filter(session => {
+    return (
+      session.title.toLowerCase().includes(keyword) ||
+      session.lastMessage?.toLowerCase().includes(keyword)
+    )
+  })
+})
+
+// 按时间分组的会话列表
+const groupedSessions = computed(() => {
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  const thisWeek = new Date(today)
+  thisWeek.setDate(thisWeek.getDate() - 7)
+
+  const groups = [
+    { label: '今天', sessions: [] as ChatSession[] },
+    { label: '昨天', sessions: [] as ChatSession[] },
+    { label: '最近 7 天', sessions: [] as ChatSession[] },
+    { label: '更早', sessions: [] as ChatSession[] }
+  ]
+
+  filteredSessions.value.forEach(session => {
+    const sessionDate = new Date(session.updatedAt)
+
+    if (sessionDate >= today) {
+      groups[0].sessions.push(session)
+    } else if (sessionDate >= yesterday) {
+      groups[1].sessions.push(session)
+    } else if (sessionDate >= thisWeek) {
+      groups[2].sessions.push(session)
+    } else {
+      groups[3].sessions.push(session)
+    }
+  })
+
+  // 过滤掉空分组
+  return groups.filter(group => group.sessions.length > 0)
+})
 
 const messagePairs = computed(() => {
   const pairs: Array<{ user: Message; assistant?: Message }> = []
@@ -592,6 +711,31 @@ const handleDeleteSession = (sessionId: string) => {
   })
 }
 
+// 搜索处理
+const handleSearch = () => {
+  // 搜索逻辑已通过 computed 自动处理
+}
+
+// 重命名会话
+const handleRenameSession = (sessionId: string) => {
+  const session = sessions.value.find(s => s.id === sessionId)
+  if (!session) return
+
+  uni.showModal({
+    title: '重命名对话',
+    editable: true,
+    placeholderText: session.title,
+    content: session.title,
+    success: (res) => {
+      if (res.confirm && res.content && res.content.trim()) {
+        renameSession(sessionId, res.content.trim())
+        sessions.value = deduplicateSessions(getAllSessions())
+        uni.showToast({ title: '已重命名', icon: 'success', duration: 1500 })
+      }
+    }
+  })
+}
+
 // 格式化会话时间
 const formatSessionTime = (timestamp: number): string => {
   const date = new Date(timestamp)
@@ -819,14 +963,14 @@ const scrollToBottom = () => {
   }
 }
 
-// ==================== 会话列表抽屉 ====================
+// ==================== 会话列表抽屉 - 重构版 ====================
 .session-drawer-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
-  background: rgba($black, 0.5);
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.2s;
+  background: rgba($black, 0.4);
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.25s ease-out;
 }
 
 .session-drawer {
@@ -834,48 +978,89 @@ const scrollToBottom = () => {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 320px;
+  width: 340px;
   max-width: 85vw;
   background: $white;
-  box-shadow: 4px 0 20px rgba($black, 0.15);
+  box-shadow: 2px 0 24px rgba($black, 0.12);
   display: flex;
   flex-direction: column;
-  animation: slideInLeft 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slideInLeft 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
 @keyframes slideInLeft {
   from {
     transform: translateX(-100%);
+    opacity: 0;
   }
   to {
     transform: translateX(0);
+    opacity: 1;
   }
 }
 
+// 头部区域
 .drawer-header {
-  height: 60px;
-  padding: 0 20px;
+  padding: 20px 20px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid $gray-200;
+  border-bottom: 1px solid $gray-100;
+  background: linear-gradient(to bottom, $white, rgba($gray-50, 0.5));
 }
 
-.drawer-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: $gray-900;
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
 }
 
-.close-drawer {
-  width: 32px;
-  height: 32px;
+.drawer-icon {
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  background: linear-gradient(135deg, $primary, lighten($primary, 10%));
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba($primary, 0.25);
+
+  svg {
+    width: 22px;
+    height: 22px;
+    color: $white;
+  }
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.drawer-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: $gray-900;
+  letter-spacing: -0.2px;
+}
+
+.drawer-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: $gray-500;
+}
+
+.close-drawer {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
+  flex-shrink: 0;
 
   svg {
     width: 20px;
@@ -888,133 +1073,287 @@ const scrollToBottom = () => {
   }
 
   &:active {
+    transform: scale(0.92);
+    background: $gray-200;
+  }
+}
+
+// 搜索栏
+.search-bar {
+  margin: 12px 16px;
+  padding: 10px 14px;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.2s;
+
+  &:focus-within {
+    background: $white;
+    border-color: $primary;
+    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+  }
+}
+
+.search-icon {
+  width: 18px;
+  height: 18px;
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.search-input {
+  flex: 1;
+  font-size: 14px;
+  color: $gray-900;
+  border: none;
+  background: transparent;
+  outline: none;
+
+  &::placeholder {
+    color: $gray-400;
+  }
+}
+
+.clear-search {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: $gray-500;
+  }
+
+  &:active {
     transform: scale(0.9);
   }
 }
 
+// 会话列表
 .session-list {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 16px 16px 12px; // 右侧增加内边距，防止阴影被裁切
-  overflow-x: visible; // 允许阴影溢出
+  padding: 8px 12px 16px;
 
-  // 自定义滚动条样式（仅在支持的浏览器中生效）
+  // 自定义滚动条样式
   &::-webkit-scrollbar {
-    width: 6px; // 滚动条宽度
+    width: 6px;
   }
 
   &::-webkit-scrollbar-track {
-    background: transparent; // 轨道透明
+    background: transparent;
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba($gray-400, 0.3); // 滑块颜色（半透明灰色）
+    background: rgba($gray-400, 0.3);
     border-radius: 3px;
     transition: background 0.2s;
 
     &:hover {
-      background: rgba($gray-400, 0.5); // hover 时加深
+      background: rgba($gray-400, 0.5);
     }
 
     &:active {
-      background: rgba($gray-500, 0.6); // 拖动时更深
+      background: rgba($gray-500, 0.6);
     }
   }
 
-  // Firefox 滚动条样式
-  scrollbar-width: thin; // 细滚动条
-  scrollbar-color: rgba($gray-400, 0.3) transparent; // 滑块颜色 轨道颜色
+  scrollbar-width: thin;
+  scrollbar-color: rgba($gray-400, 0.3) transparent;
 }
 
-.session-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 16px;
-  margin-bottom: 10px; // 增加间距，防止阴影重叠
-  margin-right: 2px; // 右侧留出空间给阴影
-  background: $white;
-  border: 1.5px solid $gray-200;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba($black, 0.05); // 默认轻微阴影
-
-  &:hover {
-    border-color: $primary;
-    background: $primary-50;
-    transform: translateX(4px);
-    box-shadow: 0 2px 6px rgba($primary, 0.1); // hover 时阴影不被裁切
-  }
-
-  &.active {
-    border-color: $primary;
-    background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary, 0.05));
-    box-shadow: 0 3px 10px rgba($primary, 0.2); // 增强阴影，同时留出足够空间
-    margin-top: 2px; // 顶部留出间距
-    margin-bottom: 12px; // 底部增加间距
-  }
+// 分组
+.session-group {
+  margin-bottom: 20px;
 
   &:last-child {
     margin-bottom: 0;
   }
 }
 
-.session-info {
+.group-label {
+  display: block;
+  padding: 8px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: $gray-500;
+}
+
+// 会话卡片 - 极简扁平设计
+.session-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+
+  // 默认无背景
+  background: transparent;
+
+  &:hover {
+    background: $gray-100;
+
+    .session-actions {
+      opacity: 1;
+    }
+  }
+
+  &.active {
+    background: rgba($primary, 0.08);
+
+    .session-icon {
+      background: $primary;
+      svg {
+        color: $white;
+      }
+    }
+
+    .session-title {
+      color: $primary;
+      font-weight: 600;
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// 会话图标
+.session-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-200;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 0.2s;
+
+  svg {
+    width: 18px;
+    height: 18px;
+    color: $gray-600;
+  }
+}
+
+// 会话内容区域
+.session-content {
   flex: 1;
-  overflow: hidden;
-  margin-right: 12px;
+  min-width: 0; // 确保文本截断生效
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.session-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .session-title {
-  display: block;
   font-size: 14px;
   font-weight: 500;
   color: $gray-900;
-  margin-bottom: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+  line-height: 1.4;
+  transition: all 0.2s;
 }
 
-.session-meta {
-  display: block;
+.session-time {
+  font-size: 11px;
+  font-weight: 500;
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.session-preview {
   font-size: 12px;
   color: $gray-500;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  display: block;
 }
 
+// 操作按钮组
 .session-actions {
   display: flex;
-  gap: 4px;
-  align-items: center; // 确保操作按钮垂直居中
-  flex-shrink: 0; // 防止被压缩
+  gap: 2px;
+  align-items: center;
+  opacity: 0; // 默认隐藏
+  transition: opacity 0.2s;
+  position: absolute;
+  right: 8px;
+  top: 10px;
+
+  .session-item.active & {
+    opacity: 1; // 选中状态始终显示
+  }
 }
 
-.delete-session {
-  width: 30px;
-  height: 30px;
+.action-btn {
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
-  transition: all 0.2s;
-  flex-shrink: 0; // 防止图标被压缩
+  transition: all 0.15s;
+  background: rgba($white, 0.8);
+  backdrop-filter: blur(4px);
 
   svg {
-    width: 16px;
-    height: 16px;
-    color: $gray-500;
-    display: block; // 移除 inline 导致的基线对齐问题
+    width: 14px;
+    height: 14px;
+    display: block;
   }
 
-  &:hover {
-    background: $error-50;
+  &.rename-btn {
     svg {
-      color: $error;
+      color: $gray-600;
+    }
+
+    &:hover {
+      background: rgba($primary, 0.1);
+      svg {
+        color: $primary;
+      }
+    }
+  }
+
+  &.delete-btn {
+    svg {
+      color: $gray-600;
+    }
+
+    &:hover {
+      background: rgba($error, 0.1);
+      svg {
+        color: $error;
+      }
     }
   }
 
@@ -1023,22 +1362,40 @@ const scrollToBottom = () => {
   }
 }
 
+// 空状态
 .empty-sessions {
-  padding: 60px 20px;
+  padding: 80px 24px;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.empty-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 8px;
+  opacity: 0.4;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    color: $gray-400;
+  }
 }
 
 .empty-text {
-  display: block;
   font-size: 15px;
-  color: $gray-600;
-  margin-bottom: 8px;
+  font-weight: 500;
+  color: $gray-700;
 }
 
 .empty-hint {
-  display: block;
   font-size: 13px;
-  color: $gray-400;
+  color: $gray-500;
+  max-width: 200px;
+  line-height: 1.5;
 }
 
 // ==================== 消息区域 ====================

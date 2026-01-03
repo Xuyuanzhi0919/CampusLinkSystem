@@ -73,6 +73,10 @@ const handleClick = (item: any) => {
   overflow-y: hidden;
   box-sizing: border-box;
 
+  // 🔧 关键修复：提升 z-index，避免被 Hero 区域覆盖
+  position: relative;
+  z-index: 10;
+
   // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;

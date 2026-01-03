@@ -25,9 +25,14 @@
           <svg v-else-if="item.icon === 'ranking'" class="icon-svg" viewBox="0 0 24 24" fill="none">
             <path d="M16 11V3H8V9H2V21H22V11H16ZM10 5H14V19H10V5ZM4 11H8V19H4V11ZM20 19H16V13H20V19Z" fill="currentColor"/>
           </svg>
-          <svg v-else-if="item.icon === 'publish'" class="icon-svg" viewBox="0 0 24 24" fill="none">
-            <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          <svg v-else-if="item.icon === 'ai'" class="icon-svg" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/>
+            <circle cx="12" cy="12" r="3" fill="currentColor"/>
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
+            <circle cx="8" cy="8" r="1.5" fill="currentColor" opacity="0.6"/>
+            <circle cx="16" cy="8" r="1.5" fill="currentColor" opacity="0.6"/>
+            <circle cx="8" cy="16" r="1.5" fill="currentColor" opacity="0.6"/>
+            <circle cx="16" cy="16" r="1.5" fill="currentColor" opacity="0.6"/>
           </svg>
         </view>
         <text class="nav-text">{{ item.label }}</text>
@@ -71,12 +76,12 @@ const items = ref([
   },
   {
     id: 4,
-    icon: 'publish',
-    label: '快捷发布',
-    desc: '一键上传',
+    icon: 'ai',
+    label: 'AI 助手',
+    desc: '智能答疑',
     color: 'linear-gradient(135deg, #DBEAFE 0%, #2563EB 100%)',
-    url: '/pages/publish/index',
-    isPrimary: true  // 标记为主要入口
+    url: '/pages/ai/chat',
+    isPrimary: true  // 标记为主要入口（差异化功能）
   }
 ])
 

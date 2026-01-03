@@ -1,27 +1,30 @@
 <template>
   <view class="hero-cta">
-    <!-- 主指令按钮 -->
-    <view class="cta-primary" @click="handleAsk">
-      <view class="scan-line"></view>
-      <view class="matrix-bg"></view>
-      <text class="terminal-prompt">&gt;</text>
-      <text class="cta-text">立即提问</text>
-      <view class="cursor-blink">_</view>
-      <svg class="ai-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-        <circle cx="12" cy="12" r="3" fill="currentColor"/>
-        <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
-      </svg>
-    </view>
+    <!-- 按钮组 - 横向排列 -->
+    <view class="cta-buttons">
+      <!-- 主指令按钮 -->
+      <view class="cta-primary" @click="handleAsk">
+        <view class="scan-line"></view>
+        <view class="matrix-bg"></view>
+        <text class="terminal-prompt">&gt;</text>
+        <text class="cta-text">立即提问</text>
+        <view class="cursor-blink">_</view>
+        <svg class="ai-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
+          <circle cx="12" cy="12" r="3" fill="currentColor"/>
+          <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </view>
 
-    <!-- 次指令按钮 -->
-    <view class="cta-secondary" @click="$emit('browse')">
-      <text class="command-prefix">/browse</text>
-      <text class="cta-text">浏览社区</text>
-      <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-      <view class="hover-underline"></view>
+      <!-- 次指令按钮 -->
+      <view class="cta-secondary" @click="$emit('browse')">
+        <text class="command-prefix">/browse</text>
+        <text class="cta-text">浏览社区</text>
+        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <view class="hover-underline"></view>
+      </view>
     </view>
 
     <!-- 状态输出栏 -->
@@ -40,21 +43,6 @@
         <text class="status-value"><text class="highlight">{{ onlineCount }}</text> 人在线</text>
       </view>
     </view>
-
-    <!-- 活跃度进度条 -->
-    <view class="activity-progress">
-      <view class="progress-header">
-        <text class="progress-label">[ACTIVITY] 今日活跃度</text>
-        <text class="progress-percent">{{ activityPercent }}%</text>
-      </view>
-      <view class="progress-track">
-        <view class="progress-fill" :style="{ width: activityPercent + '%' }">
-          <view class="progress-glow"></view>
-        </view>
-        <view class="progress-indicator" :style="{ left: activityPercent + '%' }"></view>
-      </view>
-      <text class="progress-schools">北大 · 上交 · 浙大 等高校同学正在使用</text>
-    </view>
   </view>
 </template>
 
@@ -67,35 +55,17 @@ const emit = defineEmits<{
 }>()
 
 const onlineCount = ref(892)
-const activityPercent = ref(0)
-const isAsking = ref(false)
 
-// 活跃度动画
+// 在线人数轻微波动
 onMounted(() => {
-  setTimeout(() => {
-    activityPercent.value = 82
-  }, 300)
-
-  // 在线人数轻微波动
   setInterval(() => {
     const delta = Math.floor(Math.random() * 5) - 2
     onlineCount.value = Math.max(880, Math.min(900, onlineCount.value + delta))
   }, 5000)
-
-  // 活跃度轻微增长
-  setInterval(() => {
-    if (activityPercent.value < 85) {
-      activityPercent.value = Math.min(85, activityPercent.value + 0.5)
-    }
-  }, 8000)
 })
 
 const handleAsk = () => {
-  isAsking.value = true
-  setTimeout(() => {
-    emit('ask')
-    isAsking.value = false
-  }, 1200)
+  emit('ask')
 }
 </script>
 
@@ -113,13 +83,23 @@ $charcoal: $gray-900;
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   padding: 20px;
   background: linear-gradient(135deg,
     rgba($primary, 0.02) 0%,
     rgba($campus-teal, 0.02) 100%);
   border-radius: 16px;
   border: 1px solid rgba($primary, 0.1);
+}
+
+// ==================== 按钮组 - 横向排列 ====================
+.cta-buttons {
+  display: flex;
+  gap: 12px;
+
+  @media (max-width: 640px) {
+    flex-direction: column;
+  }
 }
 
 // ==================== 主指令按钮 ====================
@@ -129,6 +109,7 @@ $charcoal: $gray-900;
   align-items: center;
   gap: 8px;
   padding: 16px 24px;
+  flex: 1;
   background: linear-gradient(135deg,
     rgba($primary, 0.08) 0%,
     rgba($campus-teal, 0.08) 100%);
@@ -139,6 +120,10 @@ $charcoal: $gray-900;
   overflow: hidden;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: 'Courier New', 'JetBrains Mono', monospace;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
 
   &:hover {
     transform: translateY(-2px);
@@ -260,13 +245,18 @@ $charcoal: $gray-900;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 12px 20px;
+  padding: 16px 20px;
   background: transparent;
   border: 1px solid rgba($primary, 0.15);
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Courier New', monospace;
+  white-space: nowrap;
+
+  @media (max-width: 640px) {
+    width: 100%;
+  }
 
   &:hover {
     border-color: rgba($primary, 0.4);
@@ -317,12 +307,12 @@ $charcoal: $gray-900;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 16px;
+  padding: 12px 16px;
   background: rgba($charcoal, 0.02);
   border-radius: 8px;
   border: 1px solid rgba($primary, 0.08);
   font-family: 'Courier New', monospace;
-  font-size: 12px;
+  font-size: 13px;
 
   @media (max-width: 640px) {
     flex-direction: column;
@@ -344,12 +334,12 @@ $charcoal: $gray-900;
 .status-label {
   font-weight: 700;
   color: $primary;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .status-value {
   color: $gray-600;
-  font-size: 12px;
+  font-size: 13px;
 
   .highlight {
     font-weight: 700;
@@ -379,120 +369,6 @@ $charcoal: $gray-900;
   50% {
     opacity: 0.6;
     transform: scale(1.2);
-  }
-}
-
-// ==================== 活跃度进度条 ====================
-.activity-progress {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-family: 'Courier New', monospace;
-}
-
-.progress-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.progress-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: $primary;
-}
-
-.progress-percent {
-  font-size: 13px;
-  font-weight: 700;
-  color: $campus-teal;
-}
-
-.progress-track {
-  position: relative;
-  width: 100%;
-  height: 8px;
-  background: rgba($primary, 0.08);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.progress-fill {
-  position: relative;
-  height: 100%;
-  background: linear-gradient(90deg,
-    $primary 0%,
-    $campus-teal 50%,
-    $campus-amber 100%);
-  border-radius: 4px;
-  transition: width 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 0 12px rgba($campus-teal, 0.4);
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-    background: linear-gradient(90deg,
-      transparent 0%,
-      rgba(white, 0.3) 50%,
-      transparent 100%);
-    animation: shimmer 2s ease-in-out infinite;
-  }
-}
-
-.progress-glow {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 30%;
-  height: 100%;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(white, 0.4) 100%);
-  filter: blur(4px);
-}
-
-.progress-indicator {
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  background: $campus-teal;
-  border: 2px solid white;
-  border-radius: 50%;
-  box-shadow: 0 0 12px rgba($campus-teal, 0.8);
-  transition: left 1.5s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: indicatorPulse 2s ease-in-out infinite;
-}
-
-@keyframes indicatorPulse {
-  0%, 100% {
-    box-shadow: 0 0 12px rgba($campus-teal, 0.8);
-  }
-  50% {
-    box-shadow: 0 0 20px rgba($campus-teal, 1);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(200%);
-  }
-}
-
-.progress-schools {
-  font-size: 11px;
-  color: $gray-500;
-
-  @media (max-width: 640px) {
-    font-size: 10px;
   }
 }
 </style>

@@ -254,12 +254,13 @@ class Request {
   }
 
   // POST 请求
-  post<T = any>(url: string, data?: any, options?: { header?: any }): Promise<T> {
+  post<T = any>(url: string, data?: any, options?: { header?: any; timeout?: number }): Promise<T> {
     return this.request<T>({
       url,
       method: 'POST',
       data,
       header: options?.header,
+      timeout: options?.timeout,
     })
   }
 

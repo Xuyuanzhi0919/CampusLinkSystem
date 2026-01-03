@@ -25,6 +25,7 @@ export async function sendMessage(
         content: msg.content
       }))
 
+    // AI 接口需要更长的超时时间（60秒）
     const response = await request.post<{
       content: string
       category?: string
@@ -34,6 +35,8 @@ export async function sendMessage(
       message,
       history: chatHistory,
       category
+    }, {
+      timeout: 60000 // 60秒超时
     })
 
     return {

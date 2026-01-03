@@ -1,150 +1,120 @@
 <template>
-  <view class="grid-navigation-container">
-    <view class="grid-navigation">
-      <view
-        v-for="item in navItems"
-        :key="item.id"
-        class="grid-item"
-        @click="handleNavigate(item.url)"
-      >
-        <view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
-          <text class="icon-inner">{{ item.icon }}</text>
-        </view>
-        <text class="item-text">{{ item.text }}</text>
+  <view class="grid-nav">
+    <view
+      v-for="item in items"
+      :key="item.id"
+      class="nav-item"
+      @click="handleClick(item)"
+    >
+      <view class="nav-icon" :style="{ background: item.color }">
+        <text>{{ item.icon }}</text>
       </view>
+      <text class="nav-text">{{ item.label }}</text>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useNavigation } from '@/composables/useNavigation'
 
-// 使用统一导航 composable
-const { toActivityList, toTaskList, toPublish, navigateTo } = useNavigation()
-
-const navItems = ref([
+const items = ref([
   {
-    id: 'activity',
-    text: '热门活动',
-    url: '/pages/club/activity-list',
+    id: 1,
     icon: '🎯',
-    bgColor: '#FEF3C7',
-    handler: toActivityList,
+    label: '热门活动',
+    color: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
+    url: '/pages/club/activity-list'
   },
   {
-    id: 'task',
-    text: '互助任务',
-    url: '/pages/task/index',
+    id: 2,
     icon: '🤝',
-    bgColor: '#D1FAE5',
-    handler: toTaskList,
+    label: '互助任务',
+    color: 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)',
+    url: '/pages/task/index'
   },
   {
-    id: 'ranking',
-    text: '积分排行',
-    url: '/pages/user/ranking',
+    id: 3,
     icon: '🏆',
-    bgColor: '#FEE2E2',
-    handler: () => navigateTo('/pages/user/ranking'),
+    label: '积分排行',
+    color: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)',
+    url: '/pages/user/ranking'
   },
   {
-    id: 'publish',
-    text: '快捷发布',
-    url: '/pages/publish/index',
+    id: 4,
     icon: '✨',
-    bgColor: '#E0E7FF',
-    handler: toPublish,
-  },
+    label: '快捷发布',
+    color: 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)',
+    url: '/pages/publish/index'
+  }
 ])
 
-/**
- * 处理导航点击 - 使用 useNavigation 统一导航
- */
-const handleNavigate = (url: string) => {
-  const item = navItems.value.find(item => item.url === url)
-  if (item?.handler) {
-    item.handler()
-  }
+const handleClick = (item: any) => {
+  uni.navigateTo({
+    url: item.url,
+    fail: () => {
+      uni.showToast({ title: '功能开发中', icon: 'none' })
+    }
+  })
 }
 </script>
 
 <style scoped lang="scss">
-.grid-navigation-container {
-  width: 100%;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+.grid-nav {
+  display: flex;
+  flex-direction: row;
+  padding: 20px 16px;
+  background: white;
+  gap: 16px;
   overflow-x: auto;
   overflow-y: hidden;
-  min-height: 100px; // 确保容器有高度
-  display: block; // 明确指定为块级元素
 
+  // 隐藏滚动条
   &::-webkit-scrollbar {
     display: none;
   }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 
-.grid-navigation {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 12px;
-  padding: 16px;
-  width: max-content;
-  min-width: 100%;
-  box-sizing: border-box;
-}
-
-.grid-item {
-  flex-shrink: 0;
-  width: 72px;
+.nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
+  min-width: 70px;
+  flex-shrink: 0;
   cursor: pointer;
-  transition: transform 0.2s ease;
 
   &:active {
-    transform: scale(0.92);
+    transform: scale(0.95);
   }
 }
 
-.icon-wrapper {
-  width: 52px;
-  height: 52px;
+.nav-icon {
+  width: 56px;
+  height: 56px;
   border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  font-size: 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.2s ease;
-  flex-shrink: 0;
 
-  .icon-inner {
-    font-size: 28px;
+  text {
     line-height: 1;
-    display: block;
   }
 }
 
-.grid-item:active .icon-wrapper {
-  transform: scale(0.9);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+.nav-item:active .nav-icon {
+  transform: scale(0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
-.item-text {
-  font-size: 12px;
-  color: #1F2937;
+.nav-text {
+  font-size: 13px;
   font-weight: 600;
-  line-height: 1.2;
+  color: #374151;
   text-align: center;
   white-space: nowrap;
-  display: block;
-  width: 100%;
+  line-height: 1.2;
 }
 </style>

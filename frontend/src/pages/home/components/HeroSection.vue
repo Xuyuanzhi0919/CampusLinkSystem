@@ -112,6 +112,11 @@ $cream: $gray-50;            // 系统背景色
   @media (max-width: 1024px) {
     min-height: auto;
     margin-top: 0;
+    padding-top: 80px;  // 🔧 移动端顶部留白
+  }
+
+  @media (max-width: 768px) {
+    padding-top: 60px;  // 🔧 小屏幕减小留白
   }
 }
 
@@ -137,6 +142,11 @@ $cream: $gray-50;            // 系统背景色
   z-index: 1;
   animation: dividerPulse 3s ease-in-out infinite;
   filter: blur(1px);
+
+  // 🔧 移动端隐藏分割线
+  @media (max-width: 1024px) {
+    display: none;
+  }
 
   &::before,
   &::after {
@@ -200,6 +210,12 @@ $cream: $gray-50;            // 系统背景色
     linear-gradient(90deg, rgba($primary, 0.07) 1px, transparent 1px);
   background-size: 40px 40px;
   background-position: -1px -1px;
+
+  // 🔧 移动端简化背景
+  @media (max-width: 768px) {
+    background-size: 20px 20px;  // 缩小网格
+    opacity: 0.5;  // 降低不透明度
+  }
 }
 
 .constellation-canvas {
@@ -209,6 +225,11 @@ $cream: $gray-50;            // 系统背景色
   width: 110%;
   height: 110%;
   opacity: 0.5;
+
+  // 🔧 移动端隐藏复杂SVG
+  @media (max-width: 768px) {
+    display: none;
+  }
 }
 
 // AI 数据流连线
@@ -375,14 +396,19 @@ $cream: $gray-50;            // 系统背景色
   }
 
   @media (max-width: 1024px) {
-    grid-template-columns: 1fr;
-    padding: 48px 24px;
-    gap: 48px;
+    grid-template-columns: 1fr;  // 🔧 单列布局
+    padding: 40px 24px;
+    gap: 40px;
   }
 
   @media (max-width: 768px) {
-    padding: 40px 20px;
-    gap: 40px;
+    padding: 32px 20px;  // 🔧 减小内边距
+    gap: 32px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 24px 16px;  // 🔧 小屏幕进一步减小
+    gap: 24px;
   }
 }
 

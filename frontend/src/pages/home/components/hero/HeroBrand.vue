@@ -147,6 +147,13 @@ $charcoal: $gray-900;
   gap: 20px;
   margin-bottom: 24px;
   flex-wrap: wrap;
+
+  // 🔧 移动端调整布局
+  @media (max-width: 768px) {
+    gap: 12px;
+    margin-bottom: 20px;
+    justify-content: center;  // 居中对齐
+  }
 }
 
 .title-massive {
@@ -159,6 +166,19 @@ $charcoal: $gray-900;
     2px 2px 0 rgba($primary, 0.1),
     4px 4px 0 rgba($campus-teal, 0.08);
   animation: titlePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: clamp(42px, 12vw, 64px);  // 缩小字号范围
+    line-height: 1;
+    text-shadow:
+      1px 1px 0 rgba($primary, 0.08),
+      2px 2px 0 rgba($campus-teal, 0.06);
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(36px, 14vw, 52px);  // 小屏幕进一步缩小
+  }
 }
 
 @keyframes titlePop {
@@ -188,6 +208,21 @@ $charcoal: $gray-900;
   animation: badgeFloat 3s ease-in-out infinite;
   position: relative;
   overflow: hidden;
+
+  // 🔧 移动端缩小徽章
+  @media (max-width: 768px) {
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 20px;
+    box-shadow:
+      0 6px 18px rgba($primary, 0.35),
+      0 0 30px rgba($campus-teal, 0.25);
+  }
+
+  @media (max-width: 480px) {
+    padding: 8px 14px;
+    gap: 6px;
+  }
 
   &::before {
     content: '';
@@ -228,6 +263,17 @@ $charcoal: $gray-900;
   height: 24px;
   color: white;
   animation: rotate 6s linear infinite;
+
+  // 🔧 移动端缩小图标
+  @media (max-width: 768px) {
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 480px) {
+    width: 18px;
+    height: 18px;
+  }
 }
 
 @keyframes rotate {
@@ -240,6 +286,15 @@ $charcoal: $gray-900;
   font-weight: 800;
   color: white;
   letter-spacing: 0.1em;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: 17px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
 }
 
 // 副标题区
@@ -248,6 +303,13 @@ $charcoal: $gray-900;
   flex-direction: column;
   gap: 16px;
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
+
+  // 🔧 移动端居中对齐
+  @media (max-width: 768px) {
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
 }
 
 .gradient-subtitle {
@@ -261,6 +323,16 @@ $charcoal: $gray-900;
   background-clip: text;
   background-size: 200% 200%;
   animation: gradientFlow 4s ease-in-out infinite;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: clamp(22px, 6vw, 32px);
+    line-height: 1.3;
+  }
+
+  @media (max-width: 480px) {
+    font-size: clamp(20px, 7vw, 28px);
+  }
 }
 
 @keyframes gradientFlow {
@@ -323,6 +395,22 @@ $charcoal: $gray-900;
   .stat-card:nth-child(3) {
     transform: translateY(24px);
   }
+
+  // 🔧 移动端调整布局
+  @media (max-width: 768px) {
+    gap: 12px;
+
+    // 移动端取消错位,平铺排列
+    .stat-card:nth-child(1),
+    .stat-card:nth-child(2),
+    .stat-card:nth-child(3) {
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 480px) {
+    gap: 10px;
+  }
 }
 
 .stat-card {
@@ -339,6 +427,20 @@ $charcoal: $gray-900;
   box-shadow:
     0 8px 32px rgba($primary, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
+
+  // 🔧 移动端缩小卡片
+  @media (max-width: 768px) {
+    padding: 16px 12px;
+    border-radius: 14px;
+    box-shadow:
+      0 6px 24px rgba($primary, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  @media (max-width: 480px) {
+    padding: 14px 10px;
+    border-radius: 12px;
+  }
 
   &.card-1 { animation-delay: 0.6s; }
   &.card-2 { animation-delay: 0.75s; }
@@ -427,6 +529,15 @@ $charcoal: $gray-900;
   line-height: 1;
   letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: 26px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 22px;
+  }
 }
 
 .stat-label {
@@ -435,6 +546,15 @@ $charcoal: $gray-900;
   color: #777;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+  }
 }
 
 .stat-icon {

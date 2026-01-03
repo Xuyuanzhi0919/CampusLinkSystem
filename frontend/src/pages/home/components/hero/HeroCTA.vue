@@ -91,8 +91,13 @@ $charcoal: $gray-900;
   display: flex;
   gap: 12px;
 
-  @media (max-width: 640px) {
-    flex-direction: column;
+  @media (max-width: 768px) {
+    flex-direction: column;  // 🔧 移动端垂直排列
+    gap: 10px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 8px;
   }
 }
 
@@ -119,8 +124,16 @@ $charcoal: $gray-900;
     0 2px 8px rgba($campus-teal, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
-  @media (max-width: 640px) {
+  // 🔧 移动端全宽按钮
+  @media (max-width: 768px) {
     width: 100%;
+    padding: 14px 20px;
+    justify-content: center;  // 居中内容
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 18px;
+    gap: 6px;
   }
 
   // 顶部高光（使用 ::before）
@@ -244,6 +257,15 @@ $charcoal: $gray-900;
   font-weight: 700;
   color: $campus-teal;
   font-family: 'Courier New', monospace;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 15px;
+  }
 }
 
 .cta-primary .cta-text {
@@ -251,6 +273,15 @@ $charcoal: $gray-900;
   font-weight: 600;
   color: $charcoal;
   letter-spacing: 0.02em;
+
+  // 🔧 移动端字号调整
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
 }
 
 .cursor-blink {
@@ -291,8 +322,16 @@ $charcoal: $gray-900;
   font-family: 'Courier New', monospace;
   white-space: nowrap;
 
-  @media (max-width: 640px) {
+  // 🔧 移动端全宽按钮
+  @media (max-width: 768px) {
     width: 100%;
+    padding: 14px 18px;
+    justify-content: center;  // 居中内容
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 16px;
+    gap: 6px;
   }
 
   // 渐变描边（使用 ::before）
@@ -375,10 +414,17 @@ $charcoal: $gray-900;
   font-family: 'Courier New', monospace;
   font-size: 13px;
 
-  @media (max-width: 640px) {
+  // 🔧 移动端调整布局
+  @media (max-width: 768px) {
     flex-direction: column;
     gap: 8px;
-    align-items: flex-start;
+    align-items: center;  // 居中对齐
+    text-align: center;
+  }
+
+  @media (max-width: 480px) {
+    gap: 6px;
+    font-size: 12px;
   }
 }
 

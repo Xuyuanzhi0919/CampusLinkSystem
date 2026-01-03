@@ -6,7 +6,151 @@ import type { Message, MessageCategory, AIResponse, ChatSession } from '@/types/
 import request from '@/utils/request'
 
 /**
- * 发送消息给 AI 助手
+ * 发送消息给 AI 助手（流式输出 SSE）
+ * @param message 用户消息
+ * @param history 对话历史
+ * @param category 消息分类
+ * @param onChunk 接收流式数据块的回调
+ * @param onComplete 完成回调
+ * @param onError 错误回调
+ */
+export function sendMessageStream(
+  message: string,
+  history: Message[],
+  category: MessageCategory | undefined,
+  onChunk: (text: string) => void,
+  onComplete: () => void,
+  onError: (error: any) => void
+): () => void {
+  // 将消息历史转换为 API 格式（只保留最近 10 轮对话，20 条消息）
+  const chatHistory = history
+    .slice(-20)
+    .map(msg => ({
+      role: msg.role === 'user' ? 'user' : 'assistant',
+      content: msg.content
+    }))
+
+  const requestBody = {
+    message,
+    history: chatHistory,
+    category
+  }
+
+  // #ifdef H5
+  // H5 使用 fetch + ReadableStream 处理 SSE
+  let aborted = false
+  const abortController = new AbortController()
+
+  fetch('/api/v1/ai/chat/stream', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream'
+    },
+    body: JSON.stringify(requestBody),
+    signal: abortController.signal
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const reader = response.body?.getReader()
+      const decoder = new TextDecoder()
+
+      if (!reader) {
+        throw new Error('无法获取响应流')
+      }
+
+      let buffer = ''
+
+      while (!aborted) {
+        const { done, value } = await reader.read()
+
+        if (done) {
+          onComplete()
+          break
+        }
+
+        // 解码数据块
+        buffer += decoder.decode(value, { stream: true })
+
+        // 按行分割SSE数据
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || '' // 保留最后一行不完整的数据
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const data = line.substring(6).trim()
+
+            if (data === '[DONE]') {
+              onComplete()
+              return
+            }
+
+            try {
+              // 直接使用文本数据
+              if (data) {
+                onChunk(data)
+              }
+            } catch (error) {
+              console.error('解析 SSE 数据失败:', error)
+            }
+          } else if (line.startsWith('event: ')) {
+            const eventType = line.substring(7).trim()
+            if (eventType === 'done') {
+              onComplete()
+              return
+            } else if (eventType === 'error') {
+              onError(new Error('服务器返回错误'))
+              return
+            }
+          }
+        }
+      }
+    })
+    .catch((error) => {
+      if (error.name !== 'AbortError') {
+        console.error('流式请求失败:', error)
+        onError(error)
+      }
+    })
+
+  // 返回取消函数
+  return () => {
+    aborted = true
+    abortController.abort()
+  }
+  // #endif
+
+  // #ifndef H5
+  // 小程序等平台降级到非流式
+  sendMessage(message, history, category)
+    .then(response => {
+      // 模拟流式输出
+      const chars = response.content.split('')
+      let index = 0
+
+      const interval = setInterval(() => {
+        if (index < chars.length) {
+          onChunk(chars[index])
+          index++
+        } else {
+          clearInterval(interval)
+          onComplete()
+        }
+      }, 20)
+
+      return () => clearInterval(interval)
+    })
+    .catch(onError)
+
+  return () => {} // 小程序返回空函数
+  // #endif
+}
+
+/**
+ * 发送消息给 AI 助手（非流式，保留兼容性）
  * @param message 用户消息
  * @param history 对话历史
  * @param category 消息分类

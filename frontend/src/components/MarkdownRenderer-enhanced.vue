@@ -382,11 +382,11 @@ onMounted(async () => {
     position: relative;
     margin-top: 0;
     margin-bottom: 12px;
-    padding: 44px 16px 14px; // 顶部留空间给复制按钮
+    padding: 48px 16px 16px; // 顶部留空间给复制按钮(40px头部 + 8px间距)
     background: $gray-900;
     border-radius: 8px;
     overflow-x: auto;
-    box-shadow: 0 2px 8px rgba($black, 0.1);
+    box-shadow: 0 2px 12px rgba($black, 0.15);
 
     code {
       padding: 0;
@@ -394,7 +394,7 @@ onMounted(async () => {
       border-radius: 0;
       font-size: 13px;
       color: #e6edf3;
-      line-height: 1.6;
+      line-height: 1.7;
       display: block;
     }
   }
@@ -405,55 +405,70 @@ onMounted(async () => {
     top: 0;
     left: 0;
     right: 0;
-    height: 36px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    padding: 0 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 0 16px;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 8px 8px 0 0;
+    backdrop-filter: blur(4px);
   }
 
   // 复制按钮
   .copy-btn {
     display: flex;
     align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 6px;
-    color: #e6edf3;
-    font-size: 13px;
+    gap: 5px;
+    padding: 5px 10px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 
     svg {
       flex-shrink: 0;
+      opacity: 0.9;
+      transition: opacity 0.2s;
     }
 
     span {
       white-space: nowrap;
+      line-height: 1;
     }
 
     &:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.25);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      transform: translateY(-1px);
+
+      svg {
+        opacity: 1;
+      }
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: translateY(0) scale(0.98);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     }
 
     &.copied {
-      background: rgba(16, 185, 129, 0.2);
+      background: rgba(16, 185, 129, 0.25);
       border-color: rgba(16, 185, 129, 0.4);
-      color: #10b981;
+      color: #34d399;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
 
       svg {
-        stroke: #10b981;
+        stroke: #34d399;
+        opacity: 1;
       }
     }
   }

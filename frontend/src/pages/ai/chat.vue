@@ -27,21 +27,74 @@
     <!-- 简洁顶部导航栏 -->
     <view class="chat-navbar">
       <view class="navbar-content">
-        <view class="navbar-left" @click="handleBack">
-          <svg viewBox="0 0 24 24" fill="none" class="back-icon">
-            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <text class="navbar-title">AI 智能助手</text>
+        <view class="navbar-left">
+          <!-- 会话列表按钮 -->
+          <view class="sessions-btn" @click="showSessionDrawer = true">
+            <svg viewBox="0 0 24 24" fill="none" class="menu-icon">
+              <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </view>
+          <text class="navbar-title">{{ currentSessionTitle }}</text>
           <view class="online-badge">
             <view class="online-dot"></view>
             <text>在线</text>
           </view>
         </view>
-        <view class="clear-btn" @click="handleClearChat">
-          <svg viewBox="0 0 20 20" fill="none">
-            <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
+        <view class="navbar-right">
+          <!-- 新建会话按钮 -->
+          <view class="new-session-btn" @click="handleNewSession">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </view>
+          <!-- 清空当前对话按钮 -->
+          <view class="clear-btn" @click="handleClearChat">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </view>
         </view>
+      </view>
+    </view>
+
+    <!-- 会话列表抽屉 -->
+    <view v-if="showSessionDrawer" class="session-drawer-overlay" @click="showSessionDrawer = false">
+      <view class="session-drawer" @click.stop>
+        <view class="drawer-header">
+          <text class="drawer-title">对话列表</text>
+          <view class="close-drawer" @click="showSessionDrawer = false">
+            <svg viewBox="0 0 24 24" fill="none">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </view>
+        </view>
+
+        <scroll-view class="session-list" scroll-y>
+          <view
+            v-for="session in sessions"
+            :key="session.id"
+            class="session-item"
+            :class="{ active: session.id === currentSessionId }"
+            @click="handleSelectSession(session.id)"
+          >
+            <view class="session-info">
+              <text class="session-title">{{ session.title }}</text>
+              <text class="session-meta">{{ session.messageCount || 0 }}条消息 · {{ formatSessionTime(session.updatedAt) }}</text>
+            </view>
+            <view class="session-actions" @click.stop>
+              <view class="delete-session" @click="handleDeleteSession(session.id)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <path d="M13 4L12.5 13C12.4 13.6 11.9 14 11.3 14H4.7C4.1 14 3.6 13.6 3.5 13L3 4M6 6V11M10 6V11M11 4V2.5C11 2.2 10.8 2 10.5 2H5.5C5.2 2 5 2.2 5 2.5V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                </svg>
+              </view>
+            </view>
+          </view>
+
+          <view v-if="sessions.length === 0" class="empty-sessions">
+            <text class="empty-text">暂无对话记录</text>
+            <text class="empty-hint">开始新对话探索 AI 助手功能</text>
+          </view>
+        </scroll-view>
       </view>
     </view>
 
@@ -159,10 +212,14 @@
             class="input-textarea"
             placeholder="输入你的问题..."
             :auto-height="true"
-            :maxlength="500"
+            :maxlength="inputMaxLength"
             :disabled="isLoading"
             @focus="handleInputFocus"
           />
+          <!-- 字数统计 -->
+          <view class="char-count" :class="{ warning: inputCharCount > inputMaxLength * 0.9 }">
+            {{ inputCharCount }}/{{ inputMaxLength }}
+          </view>
         </view>
         <view
           class="send-btn"
@@ -204,8 +261,16 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import type { Message, QuickPrompt } from '@/types/ai'
-import { sendMessage, saveChatHistory, loadChatHistory, clearChatHistory } from '@/services/ai'
+import type { Message, QuickPrompt, ChatSession } from '@/types/ai'
+import {
+  sendMessage,
+  saveChatHistory,
+  getAllSessions,
+  createSession,
+  deleteSession,
+  getSession,
+  updateSession
+} from '@/services/ai'
 import { useUserStore } from '@/stores/user'
 import MarkdownRenderer from '@/components/MarkdownRenderer.vue'
 
@@ -215,6 +280,15 @@ const inputText = ref('')
 const isLoading = ref(false)
 const showClearModal = ref(false)
 const scrollIntoView = ref('')
+
+// 会话管理
+const sessions = ref<ChatSession[]>([])
+const currentSessionId = ref<string>('')
+const showSessionDrawer = ref(false)
+
+// 输入框字数统计
+const inputCharCount = computed(() => inputText.value.length)
+const inputMaxLength = 2000
 
 const suggestions: QuickPrompt[] = [
   { id: '1', text: '如何高效复习备考？', category: 'study', icon: '📚' },
@@ -228,6 +302,13 @@ const userAvatar = computed(() => userStore.userInfo?.avatar || userStore.userIn
 const userInitial = computed(() => {
   const nickname = userStore.userInfo?.nickname || userStore.userInfo?.username || '我'
   return nickname.charAt(0).toUpperCase()
+})
+
+// 当前会话标题
+const currentSessionTitle = computed(() => {
+  if (!currentSessionId.value) return '新对话'
+  const session = sessions.value.find(s => s.id === currentSessionId.value)
+  return session?.title || '新对话'
 })
 
 // 将消息配对成问答组（修复：支持连续用户消息、未回复消息）
@@ -273,10 +354,20 @@ const messagePairs = computed(() => {
 })
 
 onMounted(() => {
-  const history = loadChatHistory()
-  if (history.length > 0) {
-    messages.value = history
+  // 加载所有会话
+  sessions.value = getAllSessions()
+
+  // 如果有会话,加载最新的一个
+  if (sessions.value.length > 0) {
+    const latestSession = sessions.value[0]
+    currentSessionId.value = latestSession.id
+    messages.value = latestSession.messages
     scrollToBottom()
+  } else {
+    // 没有会话时创建新会话
+    const newSession = createSession()
+    currentSessionId.value = newSession.id
+    sessions.value = getAllSessions()
   }
 })
 
@@ -347,7 +438,8 @@ const handleSend = async () => {
           messages.value.splice(aiMsgIndex, 1, completedMsg)
         }
 
-        saveChatHistory(messages.value)
+        saveChatHistory(messages.value, currentSessionId.value)
+        sessions.value = getAllSessions() // 刷新会话列表
         isLoading.value = false
         scrollToBottom()
       }
@@ -413,9 +505,92 @@ const handleClearChat = () => {
 
 const confirmClear = () => {
   messages.value = []
-  clearChatHistory()
+  // 更新当前会话为空
+  if (currentSessionId.value) {
+    updateSession(currentSessionId.value, [])
+    sessions.value = getAllSessions()
+  }
   showClearModal.value = false
-  uni.showToast({ title: '已清空', icon: 'success' })
+  uni.showToast({ title: '已清空当前对话', icon: 'success' })
+}
+
+// 新建会话
+const handleNewSession = () => {
+  const newSession = createSession()
+  currentSessionId.value = newSession.id
+  messages.value = []
+  sessions.value = getAllSessions()
+  showSessionDrawer.value = false
+  uni.showToast({ title: '已创建新对话', icon: 'success', duration: 1500 })
+}
+
+// 选择会话
+const handleSelectSession = (sessionId: string) => {
+  if (sessionId === currentSessionId.value) {
+    showSessionDrawer.value = false
+    return
+  }
+
+  const session = getSession(sessionId)
+  if (session) {
+    currentSessionId.value = sessionId
+    messages.value = session.messages
+    showSessionDrawer.value = false
+    scrollToBottom()
+  }
+}
+
+// 删除会话
+const handleDeleteSession = (sessionId: string) => {
+  uni.showModal({
+    title: '删除对话',
+    content: '确定要删除这个对话吗？删除后无法恢复',
+    success: (res) => {
+      if (res.confirm) {
+        deleteSession(sessionId)
+        sessions.value = getAllSessions()
+
+        // 如果删除的是当前会话,切换到其他会话或创建新会话
+        if (sessionId === currentSessionId.value) {
+          if (sessions.value.length > 0) {
+            const newSession = sessions.value[0]
+            currentSessionId.value = newSession.id
+            messages.value = newSession.messages
+          } else {
+            const newSession = createSession()
+            currentSessionId.value = newSession.id
+            messages.value = []
+            sessions.value = getAllSessions()
+          }
+        }
+
+        uni.showToast({ title: '已删除', icon: 'success' })
+      }
+    }
+  })
+}
+
+// 格式化会话时间
+const formatSessionTime = (timestamp: number): string => {
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diff = now.getTime() - timestamp
+
+  if (diff < 60000) return '刚刚'
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
+
+  if (date.toDateString() === now.toDateString()) {
+    return '今天'
+  }
+
+  const yesterday = new Date(now)
+  yesterday.setDate(yesterday.getDate() - 1)
+  if (date.toDateString() === yesterday.toDateString()) {
+    return '昨天'
+  }
+
+  return `${date.getMonth() + 1}月${date.getDate()}日`
 }
 
 const handleBack = () => {
@@ -559,6 +734,15 @@ const scrollToBottom = () => {
   50% { opacity: 0.5; }
 }
 
+// 导航栏右侧按钮组
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sessions-btn,
+.new-session-btn,
 .clear-btn {
   width: 36px;
   height: 36px;
@@ -577,15 +761,220 @@ const scrollToBottom = () => {
   }
 
   &:hover {
-    background: $error-50;
-    svg {
-      color: $error;
-    }
+    background: $gray-100;
   }
 
   &:active {
     transform: scale(0.95);
   }
+}
+
+.sessions-btn {
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: $primary-50;
+    svg {
+      color: $primary;
+    }
+  }
+}
+
+.new-session-btn:hover {
+  background: $primary-50;
+  svg {
+    color: $primary;
+  }
+}
+
+.clear-btn:hover {
+  background: $error-50;
+  svg {
+    color: $error;
+  }
+}
+
+// ==================== 会话列表抽屉 ====================
+.session-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba($black, 0.5);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.2s;
+}
+
+.session-drawer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 320px;
+  max-width: 85vw;
+  background: $white;
+  box-shadow: 4px 0 20px rgba($black, 0.15);
+  display: flex;
+  flex-direction: column;
+  animation: slideInLeft 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.drawer-header {
+  height: 60px;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid $gray-200;
+}
+
+.drawer-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.close-drawer {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    color: $gray-600;
+  }
+
+  &:hover {
+    background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.9);
+  }
+}
+
+.session-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: $primary;
+    background: $primary-50;
+    transform: translateX(4px);
+  }
+
+  &.active {
+    border-color: $primary;
+    background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary, 0.05));
+    box-shadow: 0 2px 8px rgba($primary, 0.15);
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.session-info {
+  flex: 1;
+  overflow: hidden;
+  margin-right: 12px;
+}
+
+.session-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: $gray-900;
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  display: block;
+  font-size: 12px;
+  color: $gray-500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.delete-session {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    color: $gray-500;
+  }
+
+  &:hover {
+    background: $error-50;
+    svg {
+      color: $error;
+    }
+  }
+}
+
+.empty-sessions {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-text {
+  display: block;
+  font-size: 15px;
+  color: $gray-600;
+  margin-bottom: 8px;
+}
+
+.empty-hint {
+  display: block;
+  font-size: 13px;
+  color: $gray-400;
 }
 
 // ==================== 消息区域 ====================
@@ -953,8 +1342,9 @@ const scrollToBottom = () => {
 .input-field {
   flex: 1;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   min-height: 48px;
+  position: relative;
 }
 
 .input-textarea {
@@ -970,10 +1360,30 @@ const scrollToBottom = () => {
   font-weight: 400;
   resize: none;
   padding: 12px 0;
+  padding-right: 60px; // 为字数统计留出空间
 
   &::placeholder {
     color: $gray-400;
     font-weight: 400;
+  }
+}
+
+// 字数统计
+.char-count {
+  position: absolute;
+  right: 0;
+  bottom: 8px;
+  font-size: 11px;
+  color: $gray-400;
+  font-weight: 400;
+  padding: 2px 6px;
+  background: rgba($gray-50, 0.8);
+  border-radius: 4px;
+  transition: all 0.2s;
+
+  &.warning {
+    color: $warning;
+    background: rgba($warning, 0.1);
   }
 }
 

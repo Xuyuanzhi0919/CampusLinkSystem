@@ -27,6 +27,8 @@ export interface ChatSession {
   messages: Message[]
   createdAt: number
   updatedAt: number
+  messageCount?: number
+  lastMessage?: string
 }
 
 export interface AIResponse {

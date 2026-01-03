@@ -7,19 +7,18 @@
         <view class="scan-line"></view>
         <view class="matrix-bg"></view>
         <text class="terminal-prompt">&gt;</text>
-        <text class="cta-text">立即提问</text>
+        <text class="cta-text">发布需求</text>
+        <text class="cta-subtitle">提问/发任务/上传资料</text>
         <view class="cursor-blink">_</view>
         <svg class="ai-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-          <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/>
-          <circle cx="12" cy="12" r="3" fill="currentColor"/>
-          <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
+          <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
       </view>
 
       <!-- 次指令按钮 -->
       <view class="cta-secondary" @click="$emit('browse')">
-        <text class="command-prefix">/browse</text>
-        <text class="cta-text">浏览社区</text>
+        <text class="command-prefix">/explore</text>
+        <text class="cta-text">探索互助</text>
         <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
           <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -270,7 +269,7 @@ $charcoal: $gray-900;
 
 .cta-primary .cta-text {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: $charcoal;
   letter-spacing: 0.02em;
 
@@ -281,6 +280,21 @@ $charcoal: $gray-900;
 
   @media (max-width: 480px) {
     font-size: 14px;
+  }
+}
+
+.cta-subtitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: $gray-600;
+  letter-spacing: 0.01em;
+
+  @media (max-width: 768px) {
+    font-size: 10px;
+  }
+
+  @media (max-width: 480px) {
+    display: none;  // 小屏幕隐藏副标题
   }
 }
 

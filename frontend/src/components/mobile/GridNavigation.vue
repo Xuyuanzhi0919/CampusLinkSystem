@@ -1,15 +1,39 @@
 ﻿<template>
-  <view class="grid-nav">
-    <view
-      v-for="item in items"
-      :key="item.id"
-      class="nav-item"
-      @click="handleClick(item)"
-    >
-      <view class="nav-icon" :style="{ background: item.color }">
-        <text>{{ item.icon }}</text>
+  <view class="grid-nav-wrapper">
+    <!-- 区域标题 -->
+    <view class="nav-header">
+      <text class="nav-title">快捷入口</text>
+      <text class="nav-subtitle">高效互助，一键直达</text>
+    </view>
+
+    <!-- 金刚区按钮 -->
+    <view class="grid-nav">
+      <view
+        v-for="item in items"
+        :key="item.id"
+        class="nav-item"
+        :class="{ 'nav-item-primary': item.isPrimary }"
+        @click="handleClick(item)"
+      >
+        <view class="nav-icon" :style="{ background: item.color }">
+          <svg v-if="item.icon === 'activity'" class="icon-svg" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+          <svg v-else-if="item.icon === 'task'" class="icon-svg" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+          </svg>
+          <svg v-else-if="item.icon === 'ranking'" class="icon-svg" viewBox="0 0 24 24" fill="none">
+            <path d="M16 11V3H8V9H2V21H22V11H16ZM10 5H14V19H10V5ZM4 11H8V19H4V11ZM20 19H16V13H20V19Z" fill="currentColor"/>
+          </svg>
+          <svg v-else-if="item.icon === 'publish'" class="icon-svg" viewBox="0 0 24 24" fill="none">
+            <path d="M19 13H13V19H11V13H5V11H11V5H13V11H19V13Z" fill="currentColor"/>
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+          </svg>
+        </view>
+        <text class="nav-text">{{ item.label }}</text>
+        <text v-if="item.desc" class="nav-desc">{{ item.desc }}</text>
+        <view v-if="item.isPrimary" class="primary-badge">推荐</view>
       </view>
-      <text class="nav-text">{{ item.label }}</text>
     </view>
   </view>
 </template>
@@ -20,31 +44,39 @@ import { ref } from 'vue'
 const items = ref([
   {
     id: 1,
-    icon: '🎯',
+    icon: 'activity',
     label: '热门活动',
-    color: 'linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%)',
-    url: '/pages/club/activity-list'
+    desc: '校园精彩',
+    color: 'linear-gradient(135deg, #FEF3C7 0%, #FBBF24 100%)',
+    url: '/pages/club/activity-list',
+    isPrimary: false
   },
   {
     id: 2,
-    icon: '🤝',
+    icon: 'task',
     label: '互助任务',
-    color: 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)',
-    url: '/pages/task/index'
+    desc: '快速匹配',
+    color: 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)',
+    url: '/pages/task/index',
+    isPrimary: false
   },
   {
     id: 3,
-    icon: '🏆',
+    icon: 'ranking',
     label: '积分排行',
-    color: 'linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%)',
-    url: '/pages/user/ranking'
+    desc: '贡献榜单',
+    color: 'linear-gradient(135deg, #FEE2E2 0%, #EF4444 100%)',
+    url: '/pages/user/ranking',
+    isPrimary: false
   },
   {
     id: 4,
-    icon: '✍️',
+    icon: 'publish',
     label: '快捷发布',
-    color: 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)',
-    url: '/pages/publish/index'
+    desc: '一键上传',
+    color: 'linear-gradient(135deg, #DBEAFE 0%, #2563EB 100%)',
+    url: '/pages/publish/index',
+    isPrimary: true  // 标记为主要入口
   }
 ])
 
@@ -59,23 +91,49 @@ const handleClick = (item: any) => {
 </script>
 
 <style scoped lang="scss">
-.grid-nav {
+// 整体容器
+.grid-nav-wrapper {
   width: 100%;
-  min-height: 100px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: flex-start;
-  padding: 20px 16px;
-  background: #FFFFFF;
-  gap: 16px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  box-sizing: border-box;
-
-  // 🔧 关键修复：提升 z-index，避免被 Hero 区域覆盖
+  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
+  padding: 20px 16px 24px;
   position: relative;
   z-index: 10;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+// 标题区
+.nav-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 16px;
+  padding: 0 4px;
+}
+
+.nav-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+
+.nav-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  line-height: 1.2;
+}
+
+// 金刚区容器
+.grid-nav {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
 
   // 隐藏滚动条
   &::-webkit-scrollbar {
@@ -85,22 +143,43 @@ const handleClick = (item: any) => {
   scrollbar-width: none;
 }
 
+// 单个导航项
 .nav-item {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 70px;
-  flex-shrink: 0;
+  justify-content: flex-start;
+  gap: 6px;
+  flex: 1;
+  min-width: 72px;
+  max-width: 90px;
   cursor: pointer;
   transition: transform 0.2s ease;
 
   &:active {
-    transform: scale(0.95);
+    transform: translateY(2px);
+  }
+
+  // 主要入口（快捷发布）强化样式
+  &.nav-item-primary {
+    .nav-icon {
+      width: 64px;
+      height: 64px;
+      box-shadow:
+        0 4px 12px rgba(37, 99, 235, 0.25),
+        0 2px 6px rgba(37, 99, 235, 0.15);
+      border: 2px solid rgba(255, 255, 255, 0.9);
+    }
+
+    .nav-text {
+      font-weight: 700;
+      color: #2563EB;
+    }
   }
 }
 
+// 图标容器
 .nav-icon {
   width: 56px;
   height: 56px;
@@ -108,23 +187,33 @@ const handleClick = (item: any) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  transition: all 0.2s ease;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-}
+  position: relative;
 
-.nav-icon text {
-  font-size: 28px;
-  line-height: 1;
-  display: inline-block;
+  .icon-svg {
+    width: 26px;
+    height: 26px;
+    color: rgba(0, 0, 0, 0.75);
+    transition: transform 0.2s ease;
+  }
 }
 
 .nav-item:active .nav-icon {
-  transform: scale(0.92);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  transform: scale(0.94);
+  box-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.1),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+
+  .icon-svg {
+    transform: scale(1.05);
+  }
 }
 
+// 主标签
 .nav-text {
   font-size: 13px;
   font-weight: 600;
@@ -133,5 +222,32 @@ const handleClick = (item: any) => {
   white-space: nowrap;
   line-height: 1.2;
   display: block;
+}
+
+// 描述文字
+.nav-desc {
+  font-size: 11px;
+  font-weight: 500;
+  color: #9CA3AF;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1;
+  display: block;
+}
+
+// 推荐角标
+.primary-badge {
+  position: absolute;
+  top: -4px;
+  right: 4px;
+  padding: 2px 6px;
+  background: linear-gradient(135deg, #EF4444, #DC2626);
+  border-radius: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: white;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+  transform: scale(0.9);
 }
 </style>

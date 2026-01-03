@@ -16,7 +16,7 @@
 
       <!-- 副标题区 -->
       <view class="subtitle-block">
-        <h2 class="gradient-subtitle">连接每一个求知者</h2>
+        <h2 class="gradient-subtitle">校园互助平台</h2>
         <p class="typing-line">
           <span class="typing-text">{{ displayedText }}</span>
           <span class="cursor-blink"></span>
@@ -62,7 +62,7 @@ const stats = ref<Stat[]>([
 ])
 
 // AI 打字机效果
-const fullText = "AI 驱动的智能互助 · 让知识以光速传播"
+const fullText = "秒找资料 · 快速提问 · 任务匹配 · 积分奖励"
 const displayedText = ref("")
 
 onMounted(() => {

@@ -447,13 +447,12 @@ onUnmounted(() => {
 }
 
 // 左侧主内容区（8栅格 = 66.67%）
-// 单列信息流布局 - 最佳阅读体验
+// 🎯 左对齐信息流 - 与Hero风格统一
 .main-area {
   flex: 8;
   min-width: 0;
-  // 为分区背景提供溢出空间
+  max-width: 880px; // 与Hero左侧内容宽度接近(680px + padding)
   overflow: visible;
-  // 底部添加额外内边距，确保与 Footer 有足够间距
   padding-bottom: 32px;
 
   // 模块之间统一 48px 间距（8pt 设计系统）
@@ -463,6 +462,7 @@ onUnmounted(() => {
 
   @include mobile {
     flex: 1;
+    max-width: 100%;
     padding-bottom: 24px;
     gap: 20px;
   }

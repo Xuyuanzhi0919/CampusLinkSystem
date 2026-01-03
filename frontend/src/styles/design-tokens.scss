@@ -206,12 +206,12 @@ $breakpoint-2xl: 1536px;         // 大屏桌面
    10. 卡片专用 Tokens - Card Specific
    ======================================== */
 
-/* 卡片结构变量 */
-$card-bg: $color-bg-card;
-$card-border: $color-border-light;
+/* 卡片结构变量 - 玻璃态风格（统一 Hero 设计） */
+$card-bg: rgba(255, 255, 255, 0.85);  // 半透明白色
+$card-border: rgba(255, 255, 255, 0.6);  // 半透明边框
 $card-radius: $radius-card;
-$card-shadow: $shadow-card;
-$card-shadow-hover: $shadow-card-hover;
+$card-shadow: 0 8px 32px rgba($campus-blue, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);  // 玻璃态阴影
+$card-shadow-hover: 0 12px 40px rgba($campus-blue, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1);  // Hover 增强阴影
 $card-padding: $spacing-card-padding;
 $card-gap: $spacing-card-gap;
 
@@ -303,11 +303,13 @@ $meta-item-gap: $spacing-8;                      // 16px（项目之间间距）
    14. 卡片 Mixins - Card Utilities
    ======================================== */
 
-/* 卡片基础样式 */
+/* 卡片基础样式 - 玻璃态设计 */
 @mixin card-base {
   display: flex;
   flex-direction: column;
   background: $card-bg;
+  backdrop-filter: blur(20px) saturate(180%);  // 🔧 玻璃态磨砂效果
+  border: 1px solid $card-border;  // 🔧 添加半透明边框
   border-radius: $card-radius;
   box-shadow: $card-shadow;
   transition: $transition-all;

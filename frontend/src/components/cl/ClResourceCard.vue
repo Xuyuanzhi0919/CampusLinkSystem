@@ -303,18 +303,19 @@ const handleDownloadClick = () => emit('download', props.resource)
     cursor: pointer;
     transition: $transition-all;
 
-    /* Outline 风格 */
+    /* Outline 风格 - 统一使用品牌蓝色 */
     &--outline {
       background: transparent;
-      color: $type-color-resource;
-      border: 1px solid $type-color-resource;
+      color: $campus-blue;
+      border: 1px solid rgba($campus-blue, 0.3);
 
       &:hover {
-        background: rgba(155, 89, 182, 0.08);
+        background: rgba($campus-blue, 0.06);
+        border-color: $campus-blue;
       }
 
       &:active {
-        background: rgba(155, 89, 182, 0.12);
+        background: rgba($campus-blue, 0.1);
       }
     }
   }

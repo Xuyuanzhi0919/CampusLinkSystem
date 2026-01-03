@@ -166,20 +166,9 @@ const handleCommentClick = () => emit('comment', props.question)
 @import '@/styles/design-tokens.scss';
 
 .cl-feed-qa {
-  display: flex;
-  flex-direction: column;
+  @include card-base;  // 🔧 统一使用玻璃态卡片基础样式
   gap: $spacing-3;
-  padding: $spacing-4 $spacing-5;  // 紧凑的内边距
-  background: $card-bg;
-  border-radius: $card-radius;
-  box-shadow: $card-shadow;
-  transition: $transition-all;
-  cursor: pointer;
-
-  &:hover {
-    box-shadow: $card-shadow-hover;
-    transform: translateY(-1px);
-  }
+  padding: $spacing-5;  // 统一内边距 20rpx (10px)
 
   &:active {
     transform: translateY(0);

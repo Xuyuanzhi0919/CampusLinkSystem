@@ -292,18 +292,19 @@ const handleRegisterClick = () => emit('register', props.event)
     cursor: pointer;
     transition: $transition-all;
 
-    /* Outline 风格 */
+    /* Outline 风格 - 统一使用品牌蓝色 */
     &--outline {
       background: transparent;
-      color: $type-color-activity;
-      border: 1px solid $type-color-activity;
+      color: $campus-blue;
+      border: 1px solid rgba($campus-blue, 0.3);
 
       &:hover {
-        background: rgba(39, 174, 96, 0.08);
+        background: rgba($campus-blue, 0.06);
+        border-color: $campus-blue;
       }
 
       &:active {
-        background: rgba(39, 174, 96, 0.12);
+        background: rgba($campus-blue, 0.1);
       }
     }
 

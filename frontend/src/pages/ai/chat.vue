@@ -1,28 +1,46 @@
 <template>
   <view class="ai-chat-page">
-    <!-- 顶部导航栏 -->
+    <!-- 背景：继承首页星座网络风格 -->
+    <view class="constellation-bg">
+      <svg class="constellation-canvas" viewBox="0 0 1400 700" preserveAspectRatio="xMidYMid slice">
+        <g class="ai-connections">
+          <line x1="200" y1="150" x2="400" y2="250" class="ai-line"/>
+          <line x1="400" y1="250" x2="600" y2="180" class="ai-line"/>
+          <line x1="600" y1="180" x2="850" y2="320" class="ai-line"/>
+          <line x1="300" y1="450" x2="500" y2="380" class="ai-line"/>
+          <line x1="500" y1="380" x2="750" y2="480" class="ai-line"/>
+        </g>
+        <g class="ai-nodes">
+          <circle cx="200" cy="150" r="6" class="ai-node">
+            <animate attributeName="r" values="6;9;6" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="250" r="8" class="ai-node">
+            <animate attributeName="r" values="8;11;8" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="600" cy="180" r="6" class="ai-node">
+            <animate attributeName="r" values="6;9;6" dur="4s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      </svg>
+    </view>
+
+    <!-- 简洁顶部导航栏 -->
     <view class="chat-navbar">
       <view class="navbar-content">
-        <view class="navbar-left">
-          <view class="back-button" @click="handleBack">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </view>
-          <view class="navbar-info">
-            <text class="navbar-title">AI 智能助手</text>
-            <view class="navbar-status">
-              <view class="status-dot"></view>
-              <text class="status-text">在线</text>
-            </view>
+        <view class="navbar-left" @click="handleBack">
+          <svg viewBox="0 0 24 24" fill="none" class="back-icon">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <text class="navbar-title">AI 智能助手</text>
+          <view class="online-badge">
+            <view class="online-dot"></view>
+            <text>在线</text>
           </view>
         </view>
-        <view class="navbar-right">
-          <view class="action-button" @click="handleClearChat">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </view>
+        <view class="clear-btn" @click="handleClearChat">
+          <svg viewBox="0 0 20 20" fill="none">
+            <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
         </view>
       </view>
     </view>
@@ -36,95 +54,100 @@
     >
       <!-- 欢迎屏幕 -->
       <view v-if="messages.length === 0" class="welcome-screen">
-        <view class="welcome-content">
-          <view class="ai-icon">
-            <svg viewBox="0 0 48 48" fill="none">
-              <circle cx="24" cy="24" r="20" fill="#EFF6FF"/>
-              <circle cx="24" cy="24" r="16" stroke="#2563EB" stroke-width="2.5"/>
-              <circle cx="19" cy="20" r="2.5" fill="#2563EB"/>
-              <circle cx="29" cy="20" r="2.5" fill="#2563EB"/>
-              <path d="M18 28C18 28 20 31 24 31C28 31 30 28 30 28" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
+        <view class="welcome-card">
+          <view class="welcome-icon">
+            <svg viewBox="0 0 80 80" fill="none">
+              <defs>
+                <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#2563EB"/>
+                  <stop offset="100%" style="stop-color:#60A5FA"/>
+                </linearGradient>
+              </defs>
+              <circle cx="40" cy="40" r="32" fill="url(#aiGrad)" opacity="0.1"/>
+              <circle cx="40" cy="40" r="26" stroke="url(#aiGrad)" stroke-width="2.5"/>
+              <circle cx="33" cy="35" r="2.5" fill="url(#aiGrad)"/>
+              <circle cx="47" cy="35" r="2.5" fill="url(#aiGrad)"/>
+              <path d="M32 45C32 45 35 49 40 49C45 49 48 45 48 45" stroke="url(#aiGrad)" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </view>
-          <text class="welcome-title">AI 智能助手</text>
-          <text class="welcome-subtitle">解答问题 · 推荐资源 · 学习建议</text>
+          <text class="welcome-title">你好！我是 AI 学习助手</text>
+          <text class="welcome-desc">我可以帮你解答学习问题、推荐资源、提供学习建议</text>
+        </view>
 
-          <view class="quick-prompts">
-            <view
-              v-for="item in suggestions"
-              :key="item.id"
-              class="prompt-item"
-              @click="handleSuggestion(item)"
-            >
-              <text class="prompt-icon">{{ item.icon }}</text>
-              <text class="prompt-text">{{ item.text }}</text>
-            </view>
+        <view class="suggestions-list">
+          <view
+            v-for="item in suggestions"
+            :key="item.id"
+            class="suggestion-item"
+            @click="handleSuggestion(item)"
+          >
+            <view class="suggestion-icon-wrap">{{ item.icon }}</view>
+            <text class="suggestion-label">{{ item.text }}</text>
           </view>
         </view>
       </view>
 
-      <!-- 消息列表 -->
-      <view v-else class="messages-container">
-        <view class="messages-list">
-          <view
-            v-for="msg in messages"
-            :key="msg.id"
-            class="message-item"
-            :class="{ 'is-user': msg.role === 'user' }"
-          >
-            <!-- AI 消息 -->
-            <template v-if="msg.role === 'assistant'">
-              <view class="message-wrapper">
-                <view class="message-header">
-                  <view class="ai-badge">
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
-                      <circle cx="6" cy="6.5" r="1" fill="currentColor"/>
-                      <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
-                      <path d="M6 10C6 10 6.8 11 8 11C9.2 11 10 10 10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
-                    <text>AI 助手</text>
-                  </view>
-                  <text class="message-time">{{ formatTime(msg.timestamp) }}</text>
-                </view>
-                <view class="message-content">
-                  <text class="content-text">{{ msg.content }}</text>
-                  <view v-if="msg.isStreaming" class="typing-cursor"></view>
-                </view>
-                <view v-if="!msg.isStreaming" class="message-footer">
-                  <view class="action-btn" @click="handleCopy(msg.content)">
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                      <path d="M3 11V3C3 2.44772 3.44772 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
-                    </svg>
-                    <text>复制</text>
-                  </view>
-                </view>
+      <!-- 对话列表 -->
+      <view v-else class="conversation-container">
+        <view
+          v-for="msg in messages"
+          :key="msg.id"
+          class="message-wrapper"
+          :class="msg.role"
+        >
+          <!-- 用户问题 -->
+          <template v-if="msg.role === 'user'">
+            <view class="user-message-card">
+              <view class="user-content">
+                <text class="user-text">{{ msg.content }}</text>
               </view>
-            </template>
+              <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
+            </view>
+          </template>
 
-            <!-- 用户消息 -->
-            <template v-else>
-              <view class="user-message-wrapper">
-                <view class="user-bubble">
-                  <text class="user-text">{{ msg.content }}</text>
+          <!-- AI 回复 -->
+          <template v-else>
+            <view class="ai-message-card">
+              <view class="ai-header">
+                <view class="ai-avatar">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
+                    <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
+                    <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
+                    <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
+                    <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
                 </view>
-                <text class="user-time">{{ formatTime(msg.timestamp) }}</text>
+                <text class="ai-label">AI 助手</text>
               </view>
-            </template>
-          </view>
-          <view id="messages-end" class="anchor"></view>
+              <view class="ai-content">
+                <text class="ai-text">{{ msg.content }}</text>
+                <view v-if="msg.isStreaming" class="typing-cursor"></view>
+              </view>
+              <view v-if="!msg.isStreaming" class="ai-footer">
+                <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
+                <view class="action-copy" @click="handleCopy(msg.content)">
+                  <svg viewBox="0 0 16 16" fill="none">
+                    <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M3 11V3C3 2.4 3.4 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <text>复制</text>
+                </view>
+              </view>
+            </view>
+          </template>
         </view>
+        <view id="messages-end" class="scroll-anchor"></view>
       </view>
     </scroll-view>
 
-    <!-- 输入区域 -->
-    <view class="input-area">
-      <view class="input-wrapper">
+    <!-- 底部输入栏 -->
+    <view class="input-section">
+      <view class="input-inner">
         <view class="input-field">
           <textarea
             v-model="inputText"
-            class="input-box"
+            class="input-textarea"
             placeholder="输入你的问题..."
             :auto-height="true"
             :maxlength="500"
@@ -137,35 +160,33 @@
           :class="{ active: canSend, loading: isLoading }"
           @click="handleSend"
         >
-          <svg v-if="!isLoading" viewBox="0 0 20 20" fill="none">
-            <path d="M18 2L9 11M18 2L12 18L9 11M18 2L2 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
+            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <view v-else class="spinner">
-            <svg viewBox="0 0 20 20" fill="none">
-              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" opacity="0.25"/>
-              <path d="M10 2C5.58172 2 2 5.58172 2 10" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-                <animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="1s" repeatCount="indefinite"/>
-              </path>
-            </svg>
-          </view>
+          <svg v-else viewBox="0 0 24 24" fill="none" class="loading-spinner">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" opacity="0.25"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+            </path>
+          </svg>
         </view>
       </view>
     </view>
 
     <!-- 清空对话确认弹窗 -->
-    <view v-if="showClearModal" class="modal-mask" @click="showClearModal = false">
-      <view class="modal-dialog" @click.stop>
-        <view class="modal-icon">
+    <view v-if="showClearModal" class="modal-overlay" @click="showClearModal = false">
+      <view class="modal-box" @click.stop>
+        <view class="modal-icon-wrap">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
           </svg>
         </view>
         <text class="modal-title">确认清空对话？</text>
-        <text class="modal-message">清空后将无法恢复历史消息</text>
-        <view class="modal-buttons">
-          <view class="modal-button cancel" @click="showClearModal = false">取消</view>
-          <view class="modal-button confirm" @click="confirmClear">清空</view>
+        <text class="modal-desc">清空后将无法恢复历史消息</text>
+        <view class="modal-actions">
+          <view class="modal-btn cancel-btn" @click="showClearModal = false">取消</view>
+          <view class="modal-btn confirm-btn" @click="confirmClear">清空</view>
         </view>
       </view>
     </view>
@@ -310,53 +331,126 @@ const scrollToBottom = () => {
 <style lang="scss" scoped>
 @import '@/styles/variables.scss';
 
-// ==================== 页面整体布局 ====================
+// ==================== 页面布局 ====================
 .ai-chat-page {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 50%, #FFFFFF 100%);
   position: relative;
+  background: linear-gradient(180deg, #F6FAFF 0%, #F9FBFE 50%, #F3F6FA 100%);
 }
 
-// ==================== 导航栏 ====================
+// ==================== 背景星座网络（继承首页） ====================
+.constellation-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.constellation-canvas {
+  width: 100%;
+  height: 100%;
+  opacity: 0.5;
+}
+
+.ai-line {
+  stroke: rgba($primary, 0.15);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  animation: dash 20s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -100;
+  }
+}
+
+.ai-node {
+  fill: rgba($primary, 0.4);
+  filter: blur(1px);
+}
+
+// ==================== 顶部导航栏 ====================
 .chat-navbar {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
   background: rgba($white, 0.95);
-  backdrop-filter: blur(20px);
-  border-bottom: 1px solid $gray-100;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba($gray-200, 0.8);
   padding-top: env(safe-area-inset-top, 0);
 }
 
 .navbar-content {
+  height: 100px;
+  padding: 0 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 24px;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+
+  &:active {
+    opacity: 0.7;
+  }
 }
 
-.back-button {
+.back-icon {
+  width: 24px;
+  height: 24px;
+  color: $gray-700;
+}
+
+.navbar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.online-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba($success, 0.1);
+  border-radius: 12px;
+  font-size: 13px;
+  color: $success;
+  font-weight: 500;
+}
+
+.online-dot {
+  width: 6px;
+  height: 6px;
+  background: $success;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.clear-btn {
   width: 40px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border-radius: $radius-base;
+  background: $gray-50;
+  border-radius: 10px;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
 
   svg {
     width: 20px;
@@ -365,156 +459,90 @@ const scrollToBottom = () => {
   }
 
   &:hover {
-    background: $gray-50;
+    background: $error-50;
+    svg {
+      color: $error;
+    }
   }
 
   &:active {
-    transform: scale(0.96);
-  }
-}
-
-.navbar-info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.navbar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: $gray-900;
-  line-height: 1.3;
-}
-
-.navbar-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  background: $success;
-  border-radius: 50%;
-  animation: statusPulse 2s ease-in-out infinite;
-}
-
-@keyframes statusPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
-}
-
-.status-text {
-  font-size: 12px;
-  color: $gray-500;
-  font-weight: 500;
-}
-
-.navbar-right {
-  display: flex;
-  gap: 8px;
-}
-
-.action-button {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  border-radius: $radius-base;
-  cursor: pointer;
-  transition: $transition-base;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    color: $gray-500;
-  }
-
-  &:hover {
-    background: $gray-50;
-    svg { color: $error; }
-  }
-
-  &:active {
-    transform: scale(0.96);
+    transform: scale(0.95);
   }
 }
 
 // ==================== 消息区域 ====================
 .messages-area {
   flex: 1;
-  overflow-y: auto;
   position: relative;
+  z-index: 1;
+  overflow-y: auto;
 }
 
-// 欢迎屏幕
+// ==================== 欢迎屏幕 ====================
 .welcome-screen {
-  min-height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 24px;
+  max-width: 720px;
+  margin: 60px auto 0;
+  padding: 0 32px;
 }
 
-.welcome-content {
-  max-width: 600px;
-  width: 100%;
+.welcome-card {
+  background: $white;
+  border-radius: 16px;
+  padding: 48px 32px;
   text-align: center;
+  box-shadow: 0 2px 12px rgba($black, 0.05);
+  margin-bottom: 32px;
 }
 
-.ai-icon {
-  width: 96px;
-  height: 96px;
+.welcome-icon {
+  width: 100px;
+  height: 100px;
   margin: 0 auto 24px;
 
   svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 4px 16px rgba($primary, 0.15));
+    filter: drop-shadow(0 4px 12px rgba($primary, 0.15));
   }
 }
 
 .welcome-title {
-  font-size: 28px;
-  font-weight: 700;
+  display: block;
+  font-size: 24px;
+  font-weight: 600;
   color: $gray-900;
-  margin-bottom: 8px;
-  line-height: 1.3;
+  margin-bottom: 12px;
 }
 
-.welcome-subtitle {
-  font-size: 14px;
-  color: $gray-500;
-  margin-bottom: 48px;
-  line-height: 1.5;
+.welcome-desc {
+  display: block;
+  font-size: 15px;
+  color: $gray-600;
+  line-height: 1.6;
 }
 
-.quick-prompts {
+.suggestions-list {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
-.prompt-item {
+.suggestion-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 16px 20px;
+  padding: 16px;
   background: $white;
-  border: 1px solid $gray-100;
-  border-radius: $campus-radius;
+  border: 1px solid $gray-200;
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s $ease-out;
-  box-shadow: $shadow-xs;
+  transition: all 0.2s;
 
   &:hover {
-    border-color: $primary-200;
+    border-color: $primary;
     background: $primary-50;
     transform: translateY(-2px);
-    box-shadow: $shadow-card-hover;
+    box-shadow: 0 4px 16px rgba($primary, 0.12);
   }
 
   &:active {
@@ -522,43 +550,35 @@ const scrollToBottom = () => {
   }
 }
 
-.prompt-icon {
-  font-size: 24px;
+.suggestion-icon-wrap {
+  font-size: 28px;
   line-height: 1;
-  flex-shrink: 0;
 }
 
-.prompt-text {
+.suggestion-label {
+  flex: 1;
   font-size: 14px;
   color: $gray-700;
   font-weight: 500;
-  line-height: 1.4;
-  text-align: left;
 }
 
-// 消息容器
-.messages-container {
-  padding: 24px 24px 32px;
-}
-
-.messages-list {
+// ==================== 对话容器 ====================
+.conversation-container {
   max-width: 780px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  padding: 32px 24px 120px;
 }
 
-.message-item {
-  animation: messageSlideIn 0.3s $ease-out;
+.message-wrapper {
+  margin-bottom: 24px;
+  animation: fadeIn 0.3s ease-out;
 
-  &.is-user {
-    display: flex;
-    justify-content: flex-end;
+  &:last-of-type {
+    margin-bottom: 0;
   }
 }
 
-@keyframes messageSlideIn {
+@keyframes fadeIn {
   from {
     opacity: 0;
     transform: translateY(12px);
@@ -569,66 +589,84 @@ const scrollToBottom = () => {
   }
 }
 
-// AI 消息样式
-.message-wrapper {
-  max-width: 100%;
+// ==================== 用户消息卡片 ====================
+.user-message-card {
+  background: linear-gradient(135deg, $primary, $primary-light);
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba($primary, 0.2);
+  margin-left: 80px;
+}
+
+.user-content {
+  margin-bottom: 8px;
+}
+
+.user-text {
+  display: block;
+  font-size: 16px;
+  line-height: 1.6;
+  color: $white;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.msg-timestamp {
+  font-size: 12px;
+  color: rgba($white, 0.8);
+}
+
+// ==================== AI 消息卡片 ====================
+.ai-message-card {
   background: $white;
   border: 1px solid $gray-100;
-  border-radius: $campus-radius;
+  border-radius: 16px;
   padding: 20px;
-  box-shadow: $shadow-card;
-  transition: $transition-base;
-
-  &:hover {
-    box-shadow: $shadow-card-hover;
-  }
+  box-shadow: 0 2px 12px rgba($black, 0.04);
+  margin-right: 80px;
 }
 
-.message-header {
+.ai-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   margin-bottom: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid $gray-100;
 }
 
-.ai-badge {
+.ai-avatar {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 12px;
-  background: $primary-50;
-  border-radius: 100px;
+  justify-content: center;
+  flex-shrink: 0;
 
   svg {
-    width: 14px;
-    height: 14px;
-    color: $primary;
-  }
-
-  text {
-    font-size: 12px;
-    font-weight: 600;
-    color: $primary;
+    width: 100%;
+    height: 100%;
   }
 }
 
-.message-time {
-  font-size: 12px;
-  color: $gray-400;
+.ai-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-700;
 }
 
-.message-content {
+.ai-content {
   margin-bottom: 12px;
   position: relative;
 }
 
-.content-text {
+.ai-text {
+  display: block;
   font-size: 16px;
   line-height: 1.7;
   color: $gray-900;
   word-wrap: break-word;
   white-space: pre-wrap;
-  display: block;
 }
 
 .typing-cursor {
@@ -637,108 +675,79 @@ const scrollToBottom = () => {
   height: 18px;
   background: $primary;
   margin-left: 4px;
-  vertical-align: text-bottom;
-  animation: cursorBlink 1s step-end infinite;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
 }
 
-@keyframes cursorBlink {
-  50% { opacity: 0; }
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
-.message-footer {
+.ai-footer {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
   padding-top: 8px;
   border-top: 1px solid $gray-100;
+
+  .msg-timestamp {
+    color: $gray-400;
+  }
 }
 
-.action-btn {
+.action-copy {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: transparent;
-  border-radius: $radius-base;
+  background: $gray-50;
+  border-radius: 8px;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.2s;
 
   svg {
     width: 14px;
     height: 14px;
-    color: $gray-500;
+    color: $gray-600;
   }
 
   text {
     font-size: 13px;
     color: $gray-600;
-    font-weight: 500;
   }
 
   &:hover {
-    background: $gray-50;
-    svg { color: $primary; }
-    text { color: $primary; }
+    background: $primary-50;
+
+    svg,
+    text {
+      color: $primary;
+    }
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
   }
 }
 
-// 用户消息样式
-.user-message-wrapper {
-  max-width: 80%;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 6px;
-}
-
-.user-bubble {
-  background: linear-gradient(135deg, $primary, $primary-light);
-  border-radius: $campus-radius;
-  padding: 16px 20px;
-  box-shadow: 0 2px 8px rgba($primary, 0.2);
-  transition: $transition-base;
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba($primary, 0.25);
-  }
-}
-
-.user-text {
-  font-size: 16px;
-  line-height: 1.6;
-  color: $white;
-  font-weight: 500;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  display: block;
-}
-
-.user-time {
-  font-size: 12px;
-  color: $gray-400;
-  padding: 0 4px;
-}
-
-.anchor {
+.scroll-anchor {
   height: 1px;
 }
 
-// ==================== 输入区域 ====================
-.input-area {
-  position: sticky;
-  bottom: 0;
+// ==================== 底部输入栏 ====================
+.input-section {
+  position: relative;
   z-index: 100;
-  background: rgba($white, 0.95);
-  backdrop-filter: blur(20px);
-  border-top: 1px solid $gray-100;
-  padding: 16px 24px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
+  background: rgba($white, 0.98);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba($gray-200, 0.8);
+  padding: 20px 24px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
 }
 
-.input-wrapper {
+.input-inner {
   max-width: 780px;
   margin: 0 auto;
   display: flex;
@@ -748,60 +757,56 @@ const scrollToBottom = () => {
 
 .input-field {
   flex: 1;
-}
-
-.input-box {
-  width: 100%;
-  min-height: 48px;
-  max-height: 120px;
-  padding: 12px 16px;
-  background: $white;
+  background: $gray-50;
   border: 2px solid $gray-200;
-  border-radius: $radius-lg;
-  font-size: 15px;
-  line-height: 1.5;
-  color: $gray-900;
-  transition: $transition-base;
-  resize: none;
+  border-radius: 16px;
+  padding: 14px 18px;
+  transition: all 0.2s;
 
-  &::placeholder {
-    color: $gray-400;
-  }
-
-  &:focus {
-    outline: none;
+  &:focus-within {
+    background: $white;
     border-color: $primary;
     box-shadow: 0 0 0 4px rgba($primary, 0.1);
   }
+}
 
-  &:disabled {
-    background: $gray-50;
+.input-textarea {
+  width: 100%;
+  min-height: 48px;
+  max-height: 120px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: $gray-900;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  &::placeholder {
     color: $gray-400;
-    cursor: not-allowed;
   }
 }
 
 .send-btn {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-200;
-  border-radius: $radius-full;
+  border-radius: 50%;
   cursor: pointer;
-  transition: $transition-base;
+  transition: all 0.25s;
 
   svg {
-    width: 20px;
-    height: 20px;
-    color: $gray-400;
+    width: 24px;
+    height: 24px;
+    color: $gray-500;
   }
 
   &.active {
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    box-shadow: 0 4px 16px rgba($primary, 0.3);
 
     svg {
       color: $white;
@@ -809,7 +814,7 @@ const scrollToBottom = () => {
 
     &:hover {
       transform: scale(1.05);
-      box-shadow: 0 6px 16px rgba($primary, 0.4);
+      box-shadow: 0 6px 20px rgba($primary, 0.4);
     }
 
     &:active {
@@ -819,7 +824,7 @@ const scrollToBottom = () => {
 
   &.loading {
     background: linear-gradient(135deg, $primary, $primary-light);
-    cursor: not-allowed;
+    pointer-events: none;
 
     svg {
       color: $white;
@@ -827,18 +832,8 @@ const scrollToBottom = () => {
   }
 }
 
-.spinner {
-  width: 20px;
-  height: 20px;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-// ==================== 弹窗 ====================
-.modal-mask {
+// ==================== 清空确认弹窗 ====================
+.modal-overlay {
   position: fixed;
   inset: 0;
   z-index: 1000;
@@ -850,22 +845,14 @@ const scrollToBottom = () => {
   animation: fadeIn 0.2s;
 }
 
-.modal-dialog {
+.modal-box {
   width: 90%;
   max-width: 400px;
   background: $white;
-  border-radius: $radius-xl;
-  padding: 32px 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  animation: scaleIn 0.3s $ease-bounce;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  border-radius: 20px;
+  padding: 32px;
+  text-align: center;
+  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes scaleIn {
@@ -879,120 +866,176 @@ const scrollToBottom = () => {
   }
 }
 
-.modal-icon {
+.modal-icon-wrap {
   width: 64px;
   height: 64px;
+  margin: 0 auto 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $warning-50;
-  border-radius: $radius-full;
+  border-radius: 50%;
 
   svg {
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     color: $warning;
   }
 }
 
 .modal-title {
+  display: block;
   font-size: 20px;
   font-weight: 600;
   color: $gray-900;
+  margin-bottom: 8px;
 }
 
-.modal-message {
+.modal-desc {
+  display: block;
   font-size: 14px;
   color: $gray-600;
-  text-align: center;
   line-height: 1.5;
+  margin-bottom: 24px;
 }
 
-.modal-buttons {
+.modal-actions {
   display: flex;
   gap: 12px;
-  width: 100%;
-  margin-top: 8px;
 }
 
-.modal-button {
+.modal-btn {
   flex: 1;
-  height: 44px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: $radius-lg;
-  font-size: 15px;
+  border-radius: 12px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: $transition-base;
-
-  &.cancel {
-    background: $gray-100;
-    color: $gray-700;
-
-    &:hover {
-      background: $gray-200;
-    }
-  }
-
-  &.confirm {
-    background: linear-gradient(135deg, $error, $error-light);
-    color: $white;
-    box-shadow: 0 2px 8px rgba($error, 0.3);
-
-    &:hover {
-      box-shadow: 0 4px 12px rgba($error, 0.4);
-    }
-  }
+  transition: all 0.2s;
 
   &:active {
     transform: scale(0.98);
   }
 }
 
+.cancel-btn {
+  background: $gray-100;
+  color: $gray-700;
+
+  &:hover {
+    background: $gray-200;
+  }
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, $error, $error-light);
+  color: $white;
+  box-shadow: 0 2px 8px rgba($error, 0.3);
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba($error, 0.4);
+  }
+}
+
 // ==================== 移动端适配 ====================
-@media (max-width: 768px) {
+@media (max-width: 750px) {
   .navbar-content {
+    height: 88px;
     padding: 0 16px;
   }
 
+  .navbar-title {
+    font-size: 16px;
+  }
+
+  .online-badge {
+    padding: 3px 8px;
+    font-size: 12px;
+  }
+
+  .clear-btn {
+    width: 36px;
+    height: 36px;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
   .welcome-screen {
-    padding: 32px 16px;
+    margin-top: 40px;
+    padding: 0 20px;
   }
 
-  .quick-prompts {
+  .welcome-card {
+    padding: 36px 24px;
+  }
+
+  .welcome-icon {
+    width: 80px;
+    height: 80px;
+  }
+
+  .welcome-title {
+    font-size: 20px;
+  }
+
+  .welcome-desc {
+    font-size: 14px;
+  }
+
+  .suggestions-list {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
-  .messages-container {
-    padding: 16px;
+  .conversation-container {
+    padding: 24px 16px 100px;
   }
 
-  .messages-list {
-    gap: 16px;
+  .user-message-card {
+    margin-left: 40px;
+    padding: 14px 16px;
   }
 
-  .message-wrapper {
-    padding: 16px;
-  }
-
-  .content-text,
   .user-text {
     font-size: 15px;
   }
 
-  .input-area {
+  .ai-message-card {
+    margin-right: 40px;
+    padding: 16px;
+  }
+
+  .ai-text {
+    font-size: 15px;
+  }
+
+  .input-section {
+    padding: 16px;
+  }
+
+  .input-field {
     padding: 12px 16px;
   }
 
-  .input-box {
-    font-size: 14px;
+  .input-textarea {
+    font-size: 15px;
+    min-height: 44px;
   }
 
   .send-btn {
-    width: 44px;
-    height: 44px;
+    width: 52px;
+    height: 52px;
+
+    svg {
+      width: 22px;
+      height: 22px;
+    }
   }
 }
 </style>

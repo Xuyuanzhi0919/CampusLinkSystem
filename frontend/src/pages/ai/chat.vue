@@ -129,8 +129,10 @@
                 :content="pair.assistant.content"
               />
               <!-- 打字机效果时显示纯文本 -->
-              <text v-else class="ai-text">{{ pair.assistant.content }}</text>
-              <view v-if="pair.assistant.isStreaming" class="typing-cursor"></view>
+              <view v-else class="streaming-container">
+                <view class="ai-text">{{ pair.assistant.content }}</view>
+                <view class="typing-cursor"></view>
+              </view>
             </view>
             <view v-if="!pair.assistant.isStreaming" class="ai-footer">
               <text class="msg-timestamp">{{ formatTime(pair.assistant.timestamp) }}</text>
@@ -310,17 +312,41 @@ const handleSend = async () => {
     messages.value.push(aiMsg)
     scrollToBottom()
 
-    // 打字机效果
+    // 打字机效果 - 使用响应式更新确保 Vue 能检测到变化
     const fullText = response.content
     let index = 0
+
     const interval = setInterval(() => {
       if (index < fullText.length) {
-        aiMsg.content += fullText[index]
-        index++
-        if (index % 15 === 0) scrollToBottom()
+        // 找到当前 AI 消息在数组中的索引
+        const aiMsgIndex = messages.value.findIndex(m => m.id === aiMsg.id)
+
+        if (aiMsgIndex !== -1) {
+          // 创建新对象触发响应式更新
+          const updatedMsg = {
+            ...messages.value[aiMsgIndex],
+            content: messages.value[aiMsgIndex].content + fullText[index]
+          }
+
+          // 使用 splice 确保 Vue 能检测到数组变化
+          messages.value.splice(aiMsgIndex, 1, updatedMsg)
+
+          index++
+          if (index % 15 === 0) scrollToBottom()
+        }
       } else {
+        // 打字完成,设置 isStreaming = false
         clearInterval(interval)
-        aiMsg.isStreaming = false
+
+        const aiMsgIndex = messages.value.findIndex(m => m.id === aiMsg.id)
+        if (aiMsgIndex !== -1) {
+          const completedMsg = {
+            ...messages.value[aiMsgIndex],
+            isStreaming: false
+          }
+          messages.value.splice(aiMsgIndex, 1, completedMsg)
+        }
+
         saveChatHistory(messages.value)
         isLoading.value = false
         scrollToBottom()
@@ -807,9 +833,16 @@ const scrollToBottom = () => {
   max-width: 680px; // 控制最大行宽
 }
 
+// 打字机效果容器
+.streaming-container {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
 // 打字机效果时的纯文本样式
 .ai-text {
-  display: block;
+  display: inline;
   font-size: 15px;
   line-height: 1.75;
   color: $gray-900;

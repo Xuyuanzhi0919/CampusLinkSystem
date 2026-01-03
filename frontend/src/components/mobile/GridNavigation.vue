@@ -1,11 +1,5 @@
 ﻿<template>
   <view class="grid-nav-wrapper">
-    <!-- 区域标题 -->
-    <view class="nav-header">
-      <text class="nav-title">快捷入口</text>
-      <text class="nav-subtitle">高效互助，一键直达</text>
-    </view>
-
     <!-- 金刚区按钮 -->
     <view class="grid-nav">
       <view
@@ -106,34 +100,11 @@ const handleClick = (item: any) => {
   );
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  padding: 20px 16px 24px;
+  padding: 16px;
   position: relative;
   z-index: 10;
   box-sizing: border-box;
   border-bottom: 1px solid rgba(37, 99, 235, 0.08);
-}
-
-// 标题区
-.nav-header {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 16px;
-  padding: 0 4px;
-}
-
-.nav-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #111827;
-  line-height: 1.2;
-}
-
-.nav-subtitle {
-  font-size: 12px;
-  font-weight: 500;
-  color: #6B7280;
-  line-height: 1.2;
 }
 
 // 金刚区容器

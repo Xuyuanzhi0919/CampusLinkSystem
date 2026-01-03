@@ -1,11 +1,5 @@
 <template>
   <view class="ai-chat-page">
-    <!-- 背景装饰 -->
-    <view class="bg-decoration">
-      <view class="bg-gradient"></view>
-      <view class="bg-grid"></view>
-    </view>
-
     <!-- 顶部导航栏 -->
     <view class="chat-navbar">
       <view class="navbar-content">
@@ -15,21 +9,11 @@
               <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </view>
-          <view class="navbar-title-group">
-            <view class="navbar-avatar">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
-                <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
-                <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
-                <path d="M9 14C9 14 10 16 12 16C14 16 15 14 15 14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </view>
-            <view class="navbar-info">
-              <text class="navbar-title">AI 智能助手</text>
-              <view class="navbar-status">
-                <view class="status-dot"></view>
-                <text class="status-text">在线</text>
-              </view>
+          <view class="navbar-info">
+            <text class="navbar-title">AI 智能助手</text>
+            <view class="navbar-status">
+              <view class="status-dot"></view>
+              <text class="status-text">在线</text>
             </view>
           </view>
         </view>
@@ -43,83 +27,77 @@
       </view>
     </view>
 
-    <!-- 消息区域容器 -->
+    <!-- 消息区域 -->
     <scroll-view
       class="messages-area"
       scroll-y
       :scroll-into-view="scrollIntoView"
       :scroll-with-animation="true"
     >
-      <view class="messages-wrapper">
-        <!-- 欢迎屏幕 -->
-        <view v-if="messages.length === 0" class="welcome-screen">
-          <view class="welcome-icon">
-            <svg viewBox="0 0 120 120" fill="none">
-              <defs>
-                <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#2563EB"/>
-                  <stop offset="100%" style="stop-color:#60A5FA"/>
-                </linearGradient>
-              </defs>
-              <circle cx="60" cy="60" r="50" fill="url(#grad1)" opacity="0.1"/>
-              <circle cx="60" cy="60" r="40" stroke="url(#grad1)" stroke-width="3"/>
-              <circle cx="50" cy="52" r="4" fill="url(#grad1)"/>
-              <circle cx="70" cy="52" r="4" fill="url(#grad1)"/>
-              <path d="M46 68C46 68 50 74 60 74C70 74 74 68 74 68" stroke="url(#grad1)" stroke-width="3" stroke-linecap="round"/>
-              <line x1="60" y1="20" x2="60" y2="36" stroke="url(#grad1)" stroke-width="3"/>
-              <circle cx="60" cy="16" r="4" fill="url(#grad1)">
-                <animate attributeName="opacity" values="1;0.5;1" dur="2s" repeatCount="indefinite"/>
-              </circle>
+      <!-- 欢迎屏幕 -->
+      <view v-if="messages.length === 0" class="welcome-screen">
+        <view class="welcome-content">
+          <view class="ai-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="24" r="20" fill="#EFF6FF"/>
+              <circle cx="24" cy="24" r="16" stroke="#2563EB" stroke-width="2.5"/>
+              <circle cx="19" cy="20" r="2.5" fill="#2563EB"/>
+              <circle cx="29" cy="20" r="2.5" fill="#2563EB"/>
+              <path d="M18 28C18 28 20 31 24 31C28 31 30 28 30 28" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </view>
-          <text class="welcome-title">你好！我是 AI 学习助手</text>
-          <text class="welcome-desc">我可以帮你解答学习问题、推荐资源、提供学习建议</text>
+          <text class="welcome-title">AI 智能助手</text>
+          <text class="welcome-subtitle">解答问题 · 推荐资源 · 学习建议</text>
 
-          <view class="suggestions-grid">
+          <view class="quick-prompts">
             <view
               v-for="item in suggestions"
               :key="item.id"
-              class="suggestion-card"
+              class="prompt-item"
               @click="handleSuggestion(item)"
             >
-              <view class="suggestion-icon">{{ item.icon }}</view>
-              <text class="suggestion-text">{{ item.text }}</text>
+              <text class="prompt-icon">{{ item.icon }}</text>
+              <text class="prompt-text">{{ item.text }}</text>
             </view>
           </view>
         </view>
+      </view>
 
-        <!-- 消息列表 -->
-        <view v-else class="messages-list">
+      <!-- 消息列表 -->
+      <view v-else class="messages-container">
+        <view class="messages-list">
           <view
             v-for="msg in messages"
             :key="msg.id"
-            class="message-group"
-            :class="msg.role"
+            class="message-item"
+            :class="{ 'is-user': msg.role === 'user' }"
           >
             <!-- AI 消息 -->
             <template v-if="msg.role === 'assistant'">
-              <view class="message-avatar ai-avatar">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
-                  <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
-                  <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
-                  <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
-                  <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
-              </view>
-              <view class="message-bubble ai-bubble">
-                <text class="bubble-text">{{ msg.content }}</text>
-                <view v-if="msg.isStreaming" class="typing-indicator"></view>
-                <view v-if="!msg.isStreaming" class="message-meta">
+              <view class="message-wrapper">
+                <view class="message-header">
+                  <view class="ai-badge">
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/>
+                      <circle cx="6" cy="6.5" r="1" fill="currentColor"/>
+                      <circle cx="10" cy="6.5" r="1" fill="currentColor"/>
+                      <path d="M6 10C6 10 6.8 11 8 11C9.2 11 10 10 10 10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+                    </svg>
+                    <text>AI 助手</text>
+                  </view>
                   <text class="message-time">{{ formatTime(msg.timestamp) }}</text>
-                  <view class="message-actions">
-                    <view class="meta-action" @click="handleCopy(msg.content)">
-                      <svg viewBox="0 0 16 16" fill="none">
-                        <rect x="5" y="5" width="8" height="9" rx="1" stroke="currentColor" stroke-width="1.5"/>
-                        <path d="M3 11V3C3 2.44772 3.44772 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
-                      </svg>
-                      <text>复制</text>
-                    </view>
+                </view>
+                <view class="message-content">
+                  <text class="content-text">{{ msg.content }}</text>
+                  <view v-if="msg.isStreaming" class="typing-cursor"></view>
+                </view>
+                <view v-if="!msg.isStreaming" class="message-footer">
+                  <view class="action-btn" @click="handleCopy(msg.content)">
+                    <svg viewBox="0 0 16 16" fill="none">
+                      <rect x="5" y="5" width="8" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                      <path d="M3 11V3C3 2.44772 3.44772 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
+                    </svg>
+                    <text>复制</text>
                   </view>
                 </view>
               </view>
@@ -127,30 +105,27 @@
 
             <!-- 用户消息 -->
             <template v-else>
-              <view class="message-bubble user-bubble">
-                <text class="bubble-text">{{ msg.content }}</text>
-                <view class="message-meta">
-                  <text class="message-time">{{ formatTime(msg.timestamp) }}</text>
+              <view class="user-message-wrapper">
+                <view class="user-bubble">
+                  <text class="user-text">{{ msg.content }}</text>
                 </view>
-              </view>
-              <view class="message-avatar user-avatar">
-                <text>我</text>
+                <text class="user-time">{{ formatTime(msg.timestamp) }}</text>
               </view>
             </template>
           </view>
-          <view id="messages-end" class="messages-anchor"></view>
+          <view id="messages-end" class="anchor"></view>
         </view>
       </view>
     </scroll-view>
 
-    <!-- 底部输入栏 -->
-    <view class="input-bar">
-      <view class="input-container">
-        <view class="input-box">
+    <!-- 输入区域 -->
+    <view class="input-area">
+      <view class="input-wrapper">
+        <view class="input-field">
           <textarea
             v-model="inputText"
-            class="input-textarea"
-            placeholder="有什么可以帮你的？"
+            class="input-box"
+            placeholder="输入你的问题..."
             :auto-height="true"
             :maxlength="500"
             :disabled="isLoading"
@@ -158,18 +133,18 @@
           />
         </view>
         <view
-          class="send-button"
+          class="send-btn"
           :class="{ active: canSend, loading: isLoading }"
           @click="handleSend"
         >
-          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
-            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg v-if="!isLoading" viewBox="0 0 20 20" fill="none">
+            <path d="M18 2L9 11M18 2L12 18L9 11M18 2L2 8L9 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <view v-else class="loading-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" opacity="0.25"/>
-              <path d="M12 2C6.47715 2 2 6.47715 2 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+          <view v-else class="spinner">
+            <svg viewBox="0 0 20 20" fill="none">
+              <circle cx="10" cy="10" r="8" stroke="currentColor" stroke-width="2" opacity="0.25"/>
+              <path d="M10 2C5.58172 2 2 5.58172 2 10" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 10 10" to="360 10 10" dur="1s" repeatCount="indefinite"/>
               </path>
             </svg>
           </view>
@@ -180,7 +155,7 @@
     <!-- 清空对话确认弹窗 -->
     <view v-if="showClearModal" class="modal-mask" @click="showClearModal = false">
       <view class="modal-dialog" @click.stop>
-        <view class="modal-icon warning">
+        <view class="modal-icon">
           <svg viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
             <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -335,48 +310,24 @@ const scrollToBottom = () => {
 <style lang="scss" scoped>
 @import '@/styles/variables.scss';
 
+// ==================== 页面整体布局 ====================
 .ai-chat-page {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 50%, #FFFFFF 100%);
   position: relative;
-  background: #FAFBFC;
 }
 
-// ========== 背景装饰 ==========
-.bg-decoration {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bg-gradient {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 400rpx;
-  background: linear-gradient(180deg, rgba(37, 99, 235, 0.03) 0%, transparent 100%);
-}
-
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(rgba(37, 99, 235, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(37, 99, 235, 0.02) 1px, transparent 1px);
-  background-size: 40rpx 40rpx;
-  opacity: 0.5;
-}
-
-// ========== 顶部导航栏 ==========
+// ==================== 导航栏 ====================
 .chat-navbar {
-  position: relative;
-  z-index: 10;
-  background: $white;
-  border-bottom: 1px solid #E5E7EB;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba($white, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid $gray-100;
   padding-top: env(safe-area-inset-top, 0);
 }
 
@@ -384,260 +335,233 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 112rpx;
-  padding: 0 32rpx;
+  height: 56px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  flex: 1;
+  gap: 16px;
 }
 
 .back-button {
-  width: 64rpx;
-  height: 64rpx;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $gray-50;
-  border-radius: 12rpx;
+  background: transparent;
+  border-radius: $radius-base;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   svg {
-    width: 36rpx;
-    height: 36rpx;
-    color: $gray-700;
+    width: 20px;
+    height: 20px;
+    color: $gray-600;
   }
 
   &:hover {
-    background: $primary-50;
-    svg { color: $primary; }
+    background: $gray-50;
   }
 
   &:active {
-    transform: scale(0.95);
-  }
-}
-
-.navbar-title-group {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
-}
-
-.navbar-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, $primary-50, $primary-100);
-  border-radius: 16rpx;
-  border: 2px solid $white;
-  box-shadow: 0 2rpx 8rpx rgba($primary, 0.1);
-
-  svg {
-    width: 40rpx;
-    height: 40rpx;
-    color: $primary;
+    transform: scale(0.96);
   }
 }
 
 .navbar-info {
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 2px;
 }
 
 .navbar-title {
-  font-size: 32rpx;
+  font-size: 16px;
   font-weight: 600;
   color: $gray-900;
-  line-height: 1.2;
+  line-height: 1.3;
 }
 
 .navbar-status {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 6px;
 }
 
 .status-dot {
-  width: 12rpx;
-  height: 12rpx;
+  width: 6px;
+  height: 6px;
   background: $success;
   border-radius: 50%;
-  animation: pulse 2s infinite;
+  animation: statusPulse 2s ease-in-out infinite;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.9); }
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .status-text {
-  font-size: 24rpx;
-  color: $success;
+  font-size: 12px;
+  color: $gray-500;
   font-weight: 500;
 }
 
 .navbar-right {
   display: flex;
-  gap: 16rpx;
+  gap: 8px;
 }
 
 .action-button {
-  width: 64rpx;
-  height: 64rpx;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $gray-50;
-  border-radius: 12rpx;
+  background: transparent;
+  border-radius: $radius-base;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   svg {
-    width: 36rpx;
-    height: 36rpx;
-    color: $gray-600;
+    width: 18px;
+    height: 18px;
+    color: $gray-500;
   }
 
   &:hover {
-    background: $error-50;
+    background: $gray-50;
     svg { color: $error; }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
   }
 }
 
-// ========== 消息区域 ==========
+// ==================== 消息区域 ====================
 .messages-area {
   flex: 1;
-  position: relative;
-  z-index: 1;
   overflow-y: auto;
+  position: relative;
 }
 
-.messages-wrapper {
+// 欢迎屏幕
+.welcome-screen {
   min-height: 100%;
   display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding: 32rpx 0;
-}
-
-// ========== 欢迎屏幕 ==========
-.welcome-screen {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 80rpx 48rpx;
-  max-width: 800rpx;
-  margin: 0 auto;
+  justify-content: center;
+  padding: 48px 24px;
 }
 
-.welcome-icon {
-  width: 200rpx;
-  height: 200rpx;
-  margin-bottom: 48rpx;
+.welcome-content {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.ai-icon {
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 24px;
 
   svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 8rpx 24rpx rgba($primary, 0.15));
+    filter: drop-shadow(0 4px 16px rgba($primary, 0.15));
   }
 }
 
 .welcome-title {
-  font-size: 48rpx;
-  font-weight: 600;
+  font-size: 28px;
+  font-weight: 700;
   color: $gray-900;
-  margin-bottom: 16rpx;
-  text-align: center;
+  margin-bottom: 8px;
+  line-height: 1.3;
 }
 
-.welcome-desc {
-  font-size: 28rpx;
-  color: $gray-600;
-  line-height: 1.6;
-  text-align: center;
-  margin-bottom: 64rpx;
+.welcome-subtitle {
+  font-size: 14px;
+  color: $gray-500;
+  margin-bottom: 48px;
+  line-height: 1.5;
 }
 
-.suggestions-grid {
+.quick-prompts {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 24rpx;
-  width: 100%;
+  gap: 12px;
 }
 
-.suggestion-card {
+.prompt-item {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 20rpx;
-  padding: 40rpx 32rpx;
+  gap: 12px;
+  padding: 16px 20px;
   background: $white;
-  border: 2px solid $gray-100;
-  border-radius: 20rpx;
+  border: 1px solid $gray-100;
+  border-radius: $campus-radius;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: all 0.2s $ease-out;
+  box-shadow: $shadow-xs;
 
   &:hover {
-    border-color: $primary;
+    border-color: $primary-200;
     background: $primary-50;
-    transform: translateY(-4rpx);
-    box-shadow: 0 12rpx 32rpx rgba($primary, 0.12);
+    transform: translateY(-2px);
+    box-shadow: $shadow-card-hover;
   }
 
   &:active {
-    transform: translateY(-2rpx);
+    transform: translateY(0);
   }
 }
 
-.suggestion-icon {
-  font-size: 64rpx;
+.prompt-icon {
+  font-size: 24px;
   line-height: 1;
+  flex-shrink: 0;
 }
 
-.suggestion-text {
-  font-size: 28rpx;
+.prompt-text {
+  font-size: 14px;
   color: $gray-700;
-  text-align: center;
-  line-height: 1.4;
   font-weight: 500;
+  line-height: 1.4;
+  text-align: left;
 }
 
-// ========== 消息列表 ==========
+// 消息容器
+.messages-container {
+  padding: 24px 24px 32px;
+}
+
 .messages-list {
+  max-width: 780px;
+  margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 40rpx;
-  max-width: 900rpx;
-  margin: 0 auto;
-  padding: 0 48rpx;
+  gap: 24px;
 }
 
-.message-group {
-  display: flex;
-  gap: 20rpx;
-  animation: slideIn 0.3s ease-out;
+.message-item {
+  animation: messageSlideIn 0.3s $ease-out;
 
-  &.user {
-    flex-direction: row-reverse;
+  &.is-user {
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
-@keyframes slideIn {
+@keyframes messageSlideIn {
   from {
     opacity: 0;
-    transform: translateY(16rpx);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -645,230 +569,257 @@ const scrollToBottom = () => {
   }
 }
 
-.message-avatar {
-  flex-shrink: 0;
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4rpx;
-}
-
-.ai-avatar {
+// AI 消息样式
+.message-wrapper {
+  max-width: 100%;
   background: $white;
-  border: 2px solid $gray-100;
+  border: 1px solid $gray-100;
+  border-radius: $campus-radius;
+  padding: 20px;
+  box-shadow: $shadow-card;
+  transition: $transition-base;
 
-  svg {
-    width: 48rpx;
-    height: 48rpx;
+  &:hover {
+    box-shadow: $shadow-card-hover;
   }
 }
 
-.user-avatar {
-  background: linear-gradient(135deg, $primary, $primary-light);
-  color: $white;
-  font-size: 28rpx;
-  font-weight: 600;
-}
-
-.message-bubble {
-  flex: 1;
-  max-width: 75%;
-  display: flex;
-  flex-direction: column;
-  gap: 12rpx;
-}
-
-.ai-bubble {
-  align-items: flex-start;
-
-  .bubble-text {
-    background: $white;
-    border: 2px solid $gray-100;
-    color: $gray-900;
-    border-radius: 4rpx 20rpx 20rpx 20rpx;
-  }
-}
-
-.user-bubble {
-  align-items: flex-end;
-
-  .bubble-text {
-    background: linear-gradient(135deg, $primary, $primary-light);
-    color: $white;
-    border-radius: 20rpx 4rpx 20rpx 20rpx;
-    font-weight: 500;
-  }
-
-  .message-time {
-    color: $gray-500;
-  }
-}
-
-.bubble-text {
-  padding: 28rpx 32rpx;
-  font-size: 30rpx;
-  line-height: 1.7;
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  box-shadow: 0 2rpx 12rpx rgba($black, 0.05);
-}
-
-.typing-indicator {
-  display: inline-block;
-  width: 6rpx;
-  height: 36rpx;
-  background: $primary;
-  margin-left: 6rpx;
-  vertical-align: middle;
-  animation: blink 1s step-end infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
-
-.message-meta {
+.message-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 8rpx;
+  margin-bottom: 12px;
 }
 
-.message-time {
-  font-size: 24rpx;
-  color: $gray-400;
-}
-
-.message-actions {
-  display: flex;
-  gap: 16rpx;
-}
-
-.meta-action {
+.ai-badge {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  padding: 8rpx 16rpx;
-  background: $gray-50;
-  border-radius: 8rpx;
-  cursor: pointer;
-  transition: all 0.2s;
+  gap: 8px;
+  padding: 6px 12px;
+  background: $primary-50;
+  border-radius: 100px;
 
   svg {
-    width: 24rpx;
-    height: 24rpx;
-    color: $gray-600;
+    width: 14px;
+    height: 14px;
+    color: $primary;
   }
 
   text {
-    font-size: 24rpx;
+    font-size: 12px;
+    font-weight: 600;
+    color: $primary;
+  }
+}
+
+.message-time {
+  font-size: 12px;
+  color: $gray-400;
+}
+
+.message-content {
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.content-text {
+  font-size: 16px;
+  line-height: 1.7;
+  color: $gray-900;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  display: block;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  background: $primary;
+  margin-left: 4px;
+  vertical-align: text-bottom;
+  animation: cursorBlink 1s step-end infinite;
+}
+
+@keyframes cursorBlink {
+  50% { opacity: 0; }
+}
+
+.message-footer {
+  display: flex;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px solid $gray-100;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: transparent;
+  border-radius: $radius-base;
+  cursor: pointer;
+  transition: $transition-base;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    color: $gray-500;
+  }
+
+  text {
+    font-size: 13px;
     color: $gray-600;
+    font-weight: 500;
   }
 
   &:hover {
-    background: $primary-50;
-    svg, text { color: $primary; }
+    background: $gray-50;
+    svg { color: $primary; }
+    text { color: $primary; }
   }
 
   &:active {
-    transform: scale(0.95);
+    transform: scale(0.98);
   }
 }
 
-.messages-anchor {
-  height: 1rpx;
+// 用户消息样式
+.user-message-wrapper {
+  max-width: 80%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
 }
 
-// ========== 底部输入栏 ==========
-.input-bar {
-  position: relative;
-  z-index: 10;
-  background: $white;
+.user-bubble {
+  background: linear-gradient(135deg, $primary, $primary-light);
+  border-radius: $campus-radius;
+  padding: 16px 20px;
+  box-shadow: 0 2px 8px rgba($primary, 0.2);
+  transition: $transition-base;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba($primary, 0.25);
+  }
+}
+
+.user-text {
+  font-size: 16px;
+  line-height: 1.6;
+  color: $white;
+  font-weight: 500;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  display: block;
+}
+
+.user-time {
+  font-size: 12px;
+  color: $gray-400;
+  padding: 0 4px;
+}
+
+.anchor {
+  height: 1px;
+}
+
+// ==================== 输入区域 ====================
+.input-area {
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+  background: rgba($white, 0.95);
+  backdrop-filter: blur(20px);
   border-top: 1px solid $gray-100;
-  padding: 24rpx 32rpx;
-  padding-bottom: calc(24rpx + env(safe-area-inset-bottom, 0));
+  padding: 16px 24px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
 }
 
-.input-container {
-  max-width: 900rpx;
+.input-wrapper {
+  max-width: 780px;
   margin: 0 auto;
   display: flex;
   align-items: flex-end;
-  gap: 20rpx;
+  gap: 12px;
+}
+
+.input-field {
+  flex: 1;
 }
 
 .input-box {
-  flex: 1;
-  background: $gray-50;
-  border: 2px solid $gray-100;
-  border-radius: 20rpx;
-  padding: 20rpx 28rpx;
-  transition: all 0.2s;
-
-  &:focus-within {
-    background: $white;
-    border-color: $primary;
-    box-shadow: 0 0 0 4rpx rgba($primary, 0.08);
-  }
-}
-
-.input-textarea {
   width: 100%;
-  min-height: 72rpx;
-  max-height: 200rpx;
-  font-size: 30rpx;
-  line-height: 1.6;
+  min-height: 48px;
+  max-height: 120px;
+  padding: 12px 16px;
+  background: $white;
+  border: 2px solid $gray-200;
+  border-radius: $radius-lg;
+  font-size: 15px;
+  line-height: 1.5;
   color: $gray-900;
-  background: transparent;
-  border: none;
-  outline: none;
+  transition: $transition-base;
+  resize: none;
 
   &::placeholder {
     color: $gray-400;
   }
+
+  &:focus {
+    outline: none;
+    border-color: $primary;
+    box-shadow: 0 0 0 4px rgba($primary, 0.1);
+  }
+
+  &:disabled {
+    background: $gray-50;
+    color: $gray-400;
+    cursor: not-allowed;
+  }
 }
 
-.send-button {
+.send-btn {
   flex-shrink: 0;
-  width: 88rpx;
-  height: 88rpx;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-200;
-  border-radius: 50%;
+  border-radius: $radius-full;
   cursor: pointer;
-  transition: all 0.25s;
+  transition: $transition-base;
 
   svg {
-    width: 44rpx;
-    height: 44rpx;
+    width: 20px;
+    height: 20px;
     color: $gray-400;
   }
 
   &.active {
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 8rpx 20rpx rgba($primary, 0.3);
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
 
     svg {
       color: $white;
     }
 
     &:hover {
-      transform: scale(1.08);
-      box-shadow: 0 12rpx 28rpx rgba($primary, 0.4);
+      transform: scale(1.05);
+      box-shadow: 0 6px 16px rgba($primary, 0.4);
     }
 
     &:active {
-      transform: scale(0.95);
+      transform: scale(0.98);
     }
   }
 
   &.loading {
     background: linear-gradient(135deg, $primary, $primary-light);
+    cursor: not-allowed;
 
     svg {
       color: $white;
@@ -876,9 +827,9 @@ const scrollToBottom = () => {
   }
 }
 
-.loading-icon {
-  width: 44rpx;
-  height: 44rpx;
+.spinner {
+  width: 20px;
+  height: 20px;
 
   svg {
     width: 100%;
@@ -886,13 +837,13 @@ const scrollToBottom = () => {
   }
 }
 
-// ========== 清空确认弹窗 ==========
+// ==================== 弹窗 ====================
 .modal-mask {
   position: fixed;
   inset: 0;
   z-index: 1000;
   background: rgba($black, 0.5);
-  backdrop-filter: blur(4rpx);
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -901,15 +852,15 @@ const scrollToBottom = () => {
 
 .modal-dialog {
   width: 90%;
-  max-width: 560rpx;
+  max-width: 400px;
   background: $white;
-  border-radius: 24rpx;
-  padding: 56rpx 48rpx;
+  border-radius: $radius-xl;
+  padding: 32px 24px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24rpx;
-  animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 16px;
+  animation: scaleIn 0.3s $ease-bounce;
 }
 
 @keyframes fadeIn {
@@ -929,32 +880,29 @@ const scrollToBottom = () => {
 }
 
 .modal-icon {
-  width: 96rpx;
-  height: 96rpx;
+  width: 64px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  background: $warning-50;
+  border-radius: $radius-full;
 
-  &.warning {
-    background: $warning-50;
-
-    svg {
-      width: 64rpx;
-      height: 64rpx;
-      color: $warning;
-    }
+  svg {
+    width: 32px;
+    height: 32px;
+    color: $warning;
   }
 }
 
 .modal-title {
-  font-size: 36rpx;
+  font-size: 20px;
   font-weight: 600;
   color: $gray-900;
 }
 
 .modal-message {
-  font-size: 28rpx;
+  font-size: 14px;
   color: $gray-600;
   text-align: center;
   line-height: 1.5;
@@ -962,22 +910,22 @@ const scrollToBottom = () => {
 
 .modal-buttons {
   display: flex;
-  gap: 20rpx;
+  gap: 12px;
   width: 100%;
-  margin-top: 16rpx;
+  margin-top: 8px;
 }
 
 .modal-button {
   flex: 1;
-  height: 88rpx;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 16rpx;
-  font-size: 30rpx;
+  border-radius: $radius-lg;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: $transition-base;
 
   &.cancel {
     background: $gray-100;
@@ -991,10 +939,10 @@ const scrollToBottom = () => {
   &.confirm {
     background: linear-gradient(135deg, $error, $error-light);
     color: $white;
-    box-shadow: 0 4rpx 12rpx rgba($error, 0.3);
+    box-shadow: 0 2px 8px rgba($error, 0.3);
 
     &:hover {
-      box-shadow: 0 6rpx 16rpx rgba($error, 0.4);
+      box-shadow: 0 4px 12px rgba($error, 0.4);
     }
   }
 
@@ -1003,105 +951,48 @@ const scrollToBottom = () => {
   }
 }
 
-// ========== 移动端适配 ==========
-@media (max-width: 750px) {
+// ==================== 移动端适配 ====================
+@media (max-width: 768px) {
   .navbar-content {
-    height: 104rpx;
-    padding: 0 24rpx;
-  }
-
-  .back-button,
-  .action-button {
-    width: 56rpx;
-    height: 56rpx;
-
-    svg {
-      width: 32rpx;
-      height: 32rpx;
-    }
-  }
-
-  .navbar-avatar {
-    width: 64rpx;
-    height: 64rpx;
-
-    svg {
-      width: 36rpx;
-      height: 36rpx;
-    }
-  }
-
-  .navbar-title {
-    font-size: 28rpx;
+    padding: 0 16px;
   }
 
   .welcome-screen {
-    padding: 60rpx 32rpx;
+    padding: 32px 16px;
   }
 
-  .welcome-icon {
-    width: 160rpx;
-    height: 160rpx;
-    margin-bottom: 40rpx;
-  }
-
-  .welcome-title {
-    font-size: 40rpx;
-  }
-
-  .welcome-desc {
-    font-size: 26rpx;
-  }
-
-  .suggestions-grid {
+  .quick-prompts {
     grid-template-columns: 1fr;
-    gap: 20rpx;
+  }
+
+  .messages-container {
+    padding: 16px;
   }
 
   .messages-list {
-    padding: 0 32rpx;
-    gap: 32rpx;
+    gap: 16px;
   }
 
-  .message-avatar {
-    width: 64rpx;
-    height: 64rpx;
+  .message-wrapper {
+    padding: 16px;
   }
 
-  .ai-avatar svg {
-    width: 42rpx;
-    height: 42rpx;
+  .content-text,
+  .user-text {
+    font-size: 15px;
   }
 
-  .message-bubble {
-    max-width: 80%;
-  }
-
-  .bubble-text {
-    padding: 24rpx 28rpx;
-    font-size: 28rpx;
-  }
-
-  .input-bar {
-    padding: 20rpx 24rpx;
+  .input-area {
+    padding: 12px 16px;
   }
 
   .input-box {
-    padding: 18rpx 24rpx;
+    font-size: 14px;
   }
 
-  .input-textarea {
-    font-size: 28rpx;
-  }
-
-  .send-button {
-    width: 80rpx;
-    height: 80rpx;
-
-    svg {
-      width: 40rpx;
-      height: 40rpx;
-    }
+  .send-btn {
+    width: 44px;
+    height: 44px;
   }
 }
 </style>

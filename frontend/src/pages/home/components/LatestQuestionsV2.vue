@@ -15,15 +15,28 @@
     </view>
 
     <!-- Error State -->
-    <view v-else-if="hasError" class="error-container">
-      <text>加载失败</text>
-      <button @click="loadData">重试</button>
-    </view>
+    <EmptyState
+      v-else-if="hasError"
+      type="network"
+      size="medium"
+      title="连接不上服务"
+      description="请检查网络或稍后再试"
+      action-text="重试"
+      action-type="secondary"
+      @action="loadData"
+    />
 
     <!-- Empty State -->
-    <view v-else-if="questionList.length === 0" class="empty-container">
-      <text>暂无问答</text>
-    </view>
+    <EmptyState
+      v-else-if="questionList.length === 0"
+      type="empty"
+      size="medium"
+      title="还没人提问"
+      description="成为第一个提问的同学吧"
+      action-text="去提问"
+      action-type="primary"
+      @action="handleGoAsk"
+    />
 
     <!-- Questions List -->
     <view v-else class="questions-list">
@@ -47,6 +60,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+// 空状态组件
+import { EmptyState } from '@/components/empty-state'
+
 // H5 端导入企业级组件
 // #ifdef H5
 import { ClFeedQAItem } from '@/components/cl'
@@ -54,11 +70,14 @@ import { ClFeedQAItem } from '@/components/cl'
 
 import { getQuestionList } from '@/services/question'
 import { requireLogin } from '@/utils/auth'
+import { useNavigation } from '@/composables/useNavigation'
 
 const emit = defineEmits<{
   'question-click': [question: any]
   'view-more': []
 }>()
+
+const nav = useNavigation()
 
 const loading = ref(true)
 const hasError = ref(false)

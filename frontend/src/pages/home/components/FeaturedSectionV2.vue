@@ -14,15 +14,28 @@
     </view>
 
     <!-- Error State -->
-    <view v-else-if="hasError" class="error-container">
-      <text>推荐内容加载失败</text>
-      <button @click="loadData">刷新试试</button>
-    </view>
+    <EmptyState
+      v-else-if="hasError"
+      type="error"
+      size="medium"
+      title="推荐内容加载失败"
+      description="服务连接异常，请稍后再试"
+      action-text="重试"
+      action-type="secondary"
+      @action="loadData"
+    />
 
     <!-- Empty State -->
-    <view v-else-if="featuredList.length === 0" class="empty-container">
-      <text>暂无推荐内容</text>
-    </view>
+    <EmptyState
+      v-else-if="featuredList.length === 0"
+      type="empty"
+      size="medium"
+      title="今天还没有精选内容"
+      description="先看看最新问答和热门资源吧"
+      action-text="去提问"
+      action-type="primary"
+      @action="handleGoAsk"
+    />
 
     <!-- Featured Grid -->
     <view v-else class="featured-grid">
@@ -65,6 +78,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+// 空状态组件
+import { EmptyState } from '@/components/empty-state'
+
 // H5 端导入企业级组件
 // #ifdef H5
 import { ClFeaturedQAItem, ClResourceCard, ClEventCard } from '@/components/cl'
@@ -73,10 +89,13 @@ import { getQuestionList } from '@/services/question'
 import { getResourceList } from '@/services/resource'
 import { getActivityList } from '@/services/activity'
 import { requireLogin } from '@/utils/auth'
+import { useNavigation } from '@/composables/useNavigation'
 
 const emit = defineEmits<{
   'item-click': [item: any]
 }>()
+
+const nav = useNavigation()
 
 const loading = ref(true)
 const hasError = ref(false)
@@ -300,6 +319,10 @@ const handleActivityClick = (event: any) => {
 }
 
 // 报名活动（需要登录）
+const handleGoAsk = () => {
+  nav.toPublish()
+}
+
 const handleRegister = (event: any) => {
   if (!event?.id) {
     console.warn('活动 ID 无效:', event)

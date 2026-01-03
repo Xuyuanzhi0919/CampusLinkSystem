@@ -1,65 +1,150 @@
 <template>
   <view class="ai-chat-page">
-    <!-- 宇宙背景 -->
-    <view class="cosmic-bg">
-      <view class="nebula nebula-1"></view>
-      <view class="nebula nebula-2"></view>
-      <view class="nebula nebula-3"></view>
+    <!-- 背景装饰 - 与首页一致的星座网络 -->
+    <view class="constellation-bg">
+      <svg class="constellation-canvas" viewBox="0 0 1400 800" preserveAspectRatio="xMidYMid slice">
+        <g class="ai-connections">
+          <line x1="200" y1="150" x2="400" y2="250" class="ai-line" />
+          <line x1="400" y1="250" x2="600" y2="180" class="ai-line" />
+          <line x1="600" y1="180" x2="850" y2="320" class="ai-line" />
+        </g>
+        <g class="ai-nodes">
+          <circle cx="200" cy="150" r="6" class="ai-node">
+            <animate attributeName="r" values="6;10;6" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="400" cy="250" r="8" class="ai-node">
+            <animate attributeName="r" values="8;12;8" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="600" cy="180" r="6" class="ai-node">
+            <animate attributeName="r" values="6;10;6" dur="4s" repeatCount="indefinite"/>
+          </circle>
+        </g>
+      </svg>
     </view>
 
     <!-- 顶部导航栏 -->
     <view class="chat-header">
-      <button class="back-btn" @click="handleBack">
-        <svg viewBox="0 0 24 24" fill="none">
-          <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <text class="header-title">AI 智能助手</text>
-      <view class="header-actions">
-        <button class="icon-btn" @click="handleClearChat">
+      <view class="header-left">
+        <view class="back-btn" @click="handleBack">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </view>
+        <view class="header-title-group">
+          <text class="header-title">AI 智能助手</text>
+          <view class="status-badge">
+            <view class="status-dot"></view>
+            <text class="status-text">在线</text>
+          </view>
+        </view>
+      </view>
+      <view class="header-right">
+        <view class="icon-btn" @click="handleClearChat">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-        </button>
+        </view>
       </view>
     </view>
 
-    <!-- 消息列表 -->
+    <!-- 消息列表容器 -->
     <scroll-view
       class="messages-container"
       scroll-y
       :scroll-into-view="scrollIntoView"
       :scroll-with-animation="true"
     >
-      <!-- 欢迎屏幕（无消息时显示） -->
-      <WelcomeScreen v-if="messages.length === 0" @prompt-click="handleQuickPrompt" />
+      <!-- 空状态 - 欢迎界面 -->
+      <view v-if="messages.length === 0" class="welcome-state">
+        <view class="ai-avatar-large">
+          <svg viewBox="0 0 64 64" fill="none">
+            <defs>
+              <linearGradient id="ai-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#2563EB"/>
+                <stop offset="100%" style="stop-color:#3B82F6"/>
+              </linearGradient>
+            </defs>
+            <circle cx="32" cy="32" r="28" fill="url(#ai-grad)" opacity="0.1"/>
+            <circle cx="32" cy="32" r="24" stroke="url(#ai-grad)" stroke-width="2" fill="none"/>
+            <circle cx="26" cy="28" r="3" fill="url(#ai-grad)"/>
+            <circle cx="38" cy="28" r="3" fill="url(#ai-grad)"/>
+            <path d="M24 38C24 38 27 42 32 42C37 42 40 38 40 38" stroke="url(#ai-grad)" stroke-width="2" stroke-linecap="round"/>
+            <line x1="32" y1="12" x2="32" y2="20" stroke="url(#ai-grad)" stroke-width="2"/>
+            <circle cx="32" cy="10" r="2" fill="url(#ai-grad)"/>
+          </svg>
+          <view class="avatar-pulse"></view>
+        </view>
+
+        <text class="welcome-title">你好！我是 CampusLink AI 助手</text>
+        <text class="welcome-desc">我可以帮你解答学习问题、推荐资源、解决技术难题</text>
+
+        <!-- 快捷问题卡片 -->
+        <view class="quick-questions">
+          <view
+            v-for="question in quickQuestions"
+            :key="question.id"
+            class="quick-question-card"
+            @click="handleQuickQuestion(question)"
+          >
+            <view class="question-icon">{{ question.icon }}</view>
+            <text class="question-text">{{ question.text }}</text>
+          </view>
+        </view>
+      </view>
 
       <!-- 消息列表 -->
       <view v-else class="messages-list">
-        <MessageBubble
+        <view
           v-for="msg in messages"
           :key="msg.id"
-          :message="msg"
-          @feedback="handleMessageFeedback"
-        />
+          class="message-item"
+          :class="`message-${msg.role}`"
+        >
+          <!-- AI 消息 -->
+          <template v-if="msg.role === 'assistant'">
+            <view class="message-avatar">
+              <svg viewBox="0 0 32 32" fill="none">
+                <circle cx="16" cy="16" r="14" fill="#EFF6FF"/>
+                <circle cx="16" cy="16" r="10" stroke="#2563EB" stroke-width="2" fill="none"/>
+                <circle cx="13" cy="14" r="2" fill="#2563EB"/>
+                <circle cx="19" cy="14" r="2" fill="#2563EB"/>
+                <path d="M12 20C12 20 14 22 16 22C18 22 20 20 20 20" stroke="#2563EB" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </view>
+            <view class="message-content ai-message">
+              <view class="message-bubble">
+                <text class="message-text">{{ msg.content }}</text>
+                <view v-if="msg.isStreaming" class="typing-cursor"></view>
+              </view>
+              <view v-if="!msg.isStreaming" class="message-actions">
+                <view class="action-btn" @click="handleCopy(msg.content)">
+                  <svg viewBox="0 0 16 16" fill="none">
+                    <path d="M10.5 2.5h-7a1 1 0 00-1 1v7a1 1 0 001 1h7a1 1 0 001-1v-7a1 1 0 00-1-1z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M13 5v7.5a1 1 0 01-1 1H5" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <text>复制</text>
+                </view>
+              </view>
+            </view>
+          </template>
+
+          <!-- 用户消息 -->
+          <template v-else>
+            <view class="message-content user-message">
+              <view class="message-bubble">
+                <text class="message-text">{{ msg.content }}</text>
+              </view>
+            </view>
+            <view class="message-avatar user-avatar">
+              <text>{{ userInitial }}</text>
+            </view>
+          </template>
+        </view>
         <view id="message-anchor" class="message-anchor"></view>
       </view>
     </scroll-view>
 
-    <!-- 分类选择标签（底部固定） -->
-    <view class="category-tabs">
-      <button
-        v-for="cat in categories"
-        :key="cat.value"
-        class="category-tab"
-        :class="{ active: selectedCategory === cat.value }"
-        @click="selectedCategory = cat.value"
-      >
-        {{ cat.icon }} {{ cat.label }}
-      </button>
-    </view>
-
-    <!-- 输入区域 -->
+    <!-- 底部输入区域 -->
     <view class="input-area">
       <view class="input-wrapper">
         <textarea
@@ -70,31 +155,37 @@
           :maxlength="500"
           :disabled="isLoading"
           @focus="handleInputFocus"
-          @blur="handleInputBlur"
         />
-        <button
-          class="send-btn"
-          :class="{ disabled: !canSend }"
-          :disabled="!canSend"
-          @click="handleSend"
-        >
-          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
-            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <view v-else class="loading-spinner"></view>
-        </button>
+        <view class="input-actions">
+          <view class="char-count">{{ inputText.length }}/500</view>
+          <view
+            class="send-btn"
+            :class="{ disabled: !canSend, loading: isLoading }"
+            @click="handleSend"
+          >
+            <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <view v-else class="loading-spinner"></view>
+          </view>
+        </view>
       </view>
-      <text class="input-hint">{{ inputText.length }}/500 • 选择分类以获得更精准的回答</text>
     </view>
 
     <!-- 清空确认弹窗 -->
     <view v-if="showClearModal" class="modal-overlay" @click="showClearModal = false">
       <view class="modal-content" @click.stop>
-        <text class="modal-title">清空聊天记录？</text>
+        <view class="modal-header">
+          <svg class="modal-icon" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" stroke="#F59E0B" stroke-width="2"/>
+            <path d="M12 8v4M12 16h.01" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <text class="modal-title">清空聊天记录？</text>
+        </view>
         <text class="modal-text">此操作将删除所有消息，且无法恢复</text>
         <view class="modal-actions">
-          <button class="modal-btn modal-btn-cancel" @click="showClearModal = false">取消</button>
-          <button class="modal-btn modal-btn-confirm" @click="confirmClearChat">确认清空</button>
+          <view class="modal-btn modal-btn-cancel" @click="showClearModal = false">取消</view>
+          <view class="modal-btn modal-btn-confirm" @click="confirmClearChat">确认清空</view>
         </view>
       </view>
     </view>
@@ -103,35 +194,30 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
-import type { Message, MessageCategory, QuickPrompt } from '@/types/ai'
+import type { Message, QuickPrompt } from '@/types/ai'
 import { sendMessage, saveChatHistory, loadChatHistory, clearChatHistory } from '@/services/ai'
-import WelcomeScreen from '@/components/ai/WelcomeScreen.vue'
-import MessageBubble from '@/components/ai/MessageBubble.vue'
 
 // ========== 状态管理 ==========
 const messages = ref<Message[]>([])
 const inputText = ref('')
-const selectedCategory = ref<MessageCategory>('study')
 const isLoading = ref(false)
 const showClearModal = ref(false)
 const scrollIntoView = ref('')
 
-// 分类配置
-const categories = [
-  { value: 'study' as MessageCategory, label: '学习', icon: '📚' },
-  { value: 'resource' as MessageCategory, label: '资源', icon: '🔍' },
-  { value: 'tech' as MessageCategory, label: '技术', icon: '💻' },
-  { value: 'other' as MessageCategory, label: '其他', icon: '🎯' }
+// 快捷问题
+const quickQuestions: QuickPrompt[] = [
+  { id: '1', text: '如何高效学习这门课程？', category: 'study', icon: '📚' },
+  { id: '2', text: '推荐相关学习资源', category: 'resource', icon: '🔍' },
+  { id: '3', text: '遇到技术问题需要帮助', category: 'tech', icon: '💻' },
+  { id: '4', text: '其他问题咨询', category: 'other', icon: '💬' }
 ]
 
 // ========== 计算属性 ==========
-const canSend = computed(() => {
-  return inputText.value.trim().length > 0 && !isLoading.value
-})
+const canSend = computed(() => inputText.value.trim().length > 0 && !isLoading.value)
+const userInitial = computed(() => '我')
 
 // ========== 生命周期 ==========
 onMounted(() => {
-  // 加载历史记录
   const history = loadChatHistory()
   if (history.length > 0) {
     messages.value = history
@@ -140,7 +226,6 @@ onMounted(() => {
 })
 
 // ========== 核心方法 ==========
-// 发送消息
 const handleSend = async () => {
   if (!canSend.value) return
 
@@ -148,32 +233,23 @@ const handleSend = async () => {
     id: generateMessageId(),
     role: 'user',
     content: inputText.value.trim(),
-    timestamp: Date.now(),
-    category: selectedCategory.value
+    timestamp: Date.now()
   }
 
   messages.value.push(userMessage)
   inputText.value = ''
   isLoading.value = true
-
   scrollToBottom()
 
   try {
-    // 调用 AI 服务
-    const response = await sendMessage(
-      userMessage.content,
-      messages.value,
-      selectedCategory.value
-    )
+    const response = await sendMessage(userMessage.content, messages.value)
 
-    // 创建 AI 消息（流式输出）
     const aiMessage: Message = {
       id: generateMessageId(),
       role: 'assistant',
       content: '',
       timestamp: Date.now(),
-      isStreaming: true,
-      feedback: null
+      isStreaming: true
     }
 
     messages.value.push(aiMessage)
@@ -187,11 +263,7 @@ const handleSend = async () => {
       if (currentIndex < fullContent.length) {
         aiMessage.content += fullContent[currentIndex]
         currentIndex++
-
-        // 定期滚动到底部
-        if (currentIndex % 10 === 0) {
-          scrollToBottom()
-        }
+        if (currentIndex % 10 === 0) scrollToBottom()
       } else {
         clearInterval(typeInterval)
         aiMessage.isStreaming = false
@@ -199,39 +271,26 @@ const handleSend = async () => {
         isLoading.value = false
         scrollToBottom()
       }
-    }, 30) // 30ms 每个字符
-
+    }, 30)
   } catch (error) {
     console.error('发送消息失败:', error)
-    uni.showToast({
-      title: '发送失败，请重试',
-      icon: 'none'
-    })
+    uni.showToast({ title: '发送失败，请重试', icon: 'none' })
     isLoading.value = false
   }
 }
 
-// 快捷提示点击
-const handleQuickPrompt = (prompt: QuickPrompt) => {
-  inputText.value = prompt.text
-  selectedCategory.value = prompt.category
-
-  // 延迟发送以显示选中效果
-  setTimeout(() => {
-    handleSend()
-  }, 100)
+const handleQuickQuestion = (question: QuickPrompt) => {
+  inputText.value = question.text
+  setTimeout(() => handleSend(), 100)
 }
 
-// 消息反馈
-const handleMessageFeedback = (messageId: string, type: 'like' | 'dislike') => {
-  const message = messages.value.find(m => m.id === messageId)
-  if (message) {
-    message.feedback = message.feedback === type ? null : type
-    saveChatHistory(messages.value)
-  }
+const handleCopy = (text: string) => {
+  uni.setClipboardData({
+    data: text,
+    success: () => uni.showToast({ title: '已复制', icon: 'success' })
+  })
 }
 
-// 清空聊天
 const handleClearChat = () => {
   if (messages.value.length === 0) {
     uni.showToast({ title: '暂无聊天记录', icon: 'none' })
@@ -244,40 +303,21 @@ const confirmClearChat = () => {
   messages.value = []
   clearChatHistory()
   showClearModal.value = false
-  uni.showToast({
-    title: '已清空聊天记录',
-    icon: 'success'
-  })
+  uni.showToast({ title: '已清空', icon: 'success' })
 }
 
-// 返回
 const handleBack = () => {
   uni.navigateBack({
-    fail: () => {
-      uni.switchTab({ url: '/pages/home/index' })
-    }
+    fail: () => uni.switchTab({ url: '/pages/home/index' })
   })
 }
 
-// 输入框事件
-const handleInputFocus = () => {
-  scrollToBottom()
-}
+const handleInputFocus = () => scrollToBottom()
 
-const handleInputBlur = () => {
-  // 移动端键盘收起后调整滚动
-  setTimeout(() => {
-    scrollToBottom()
-  }, 300)
-}
-
-// ========== 工具方法 ==========
-// 生成消息 ID
 const generateMessageId = (): string => {
   return `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 }
 
-// 滚动到底部
 const scrollToBottom = () => {
   nextTick(() => {
     scrollIntoView.value = 'message-anchor'
@@ -286,7 +326,7 @@ const scrollToBottom = () => {
 </script>
 
 <style lang="scss" scoped>
-@import '@/styles/design-tokens.scss';
+@import '@/styles/variables.scss';
 
 .ai-chat-page {
   position: relative;
@@ -294,57 +334,40 @@ const scrollToBottom = () => {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #0B1120;
+  background: linear-gradient(180deg, #F6FAFF 0%, #F9FBFE 50%, #F3F6FA 100%);
   overflow: hidden;
 }
 
-// ========== 宇宙背景 ==========
-.cosmic-bg {
+// ========== 背景星座网络（与首页一致）==========
+.constellation-bg {
   position: fixed;
   inset: 0;
   pointer-events: none;
+  opacity: 0.5;
   z-index: 0;
 }
 
-.nebula {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(120rpx);
-  opacity: 0.3;
-  animation: nebulaPulse 8s ease-in-out infinite;
-
-  &-1 {
-    top: -20%;
-    left: -10%;
-    width: 60%;
-    height: 60%;
-    background: radial-gradient(circle, rgba(55, 125, 255, 0.4), transparent);
-    animation-delay: 0s;
-  }
-
-  &-2 {
-    bottom: -20%;
-    right: -10%;
-    width: 70%;
-    height: 70%;
-    background: radial-gradient(circle, rgba(96, 165, 250, 0.3), transparent);
-    animation-delay: 2s;
-  }
-
-  &-3 {
-    top: 40%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 50%;
-    height: 50%;
-    background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent);
-    animation-delay: 4s;
-  }
+.constellation-canvas {
+  width: 100%;
+  height: 100%;
 }
 
-@keyframes nebulaPulse {
-  0%, 100% { opacity: 0.3; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.1); }
+.ai-line {
+  stroke: $primary;
+  stroke-width: 1;
+  opacity: 0.2;
+  animation: ai-flow 6s linear infinite;
+}
+
+.ai-node {
+  fill: $primary;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 4px rgba($primary, 0.4));
+}
+
+@keyframes ai-flow {
+  0%, 100% { opacity: 0.1; }
+  50% { opacity: 0.3; }
 }
 
 // ========== 顶部导航栏 ==========
@@ -354,37 +377,46 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 32rpx 48rpx;
-  padding-top: calc(32rpx + env(safe-area-inset-top, 0));
-  background: rgba($white, 0.03);
+  padding: 24rpx 32rpx;
+  padding-top: calc(24rpx + env(safe-area-inset-top, 0));
+  background: rgba($white, 0.9);
   backdrop-filter: blur(20px);
-  border-bottom: 2px solid rgba($white, 0.08);
+  border-bottom: 1px solid rgba($primary, 0.1);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
 }
 
 .back-btn,
 .icon-btn {
+  width: 64rpx;
+  height: 64rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 72rpx;
-  height: 72rpx;
-  padding: 0;
-  background: rgba($white, 0.05);
-  border: 2px solid rgba($white, 0.1);
-  border-radius: $radius-lg;
-  color: $white;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 16rpx;
   cursor: pointer;
-  transition: all $transition-fast;
+  transition: all 0.2s;
 
   svg {
-    width: 40rpx;
-    height: 40rpx;
+    width: 36rpx;
+    height: 36rpx;
+    color: $gray-700;
   }
 
   &:hover {
-    background: rgba($white, 0.1);
-    border-color: rgba(55, 125, 255, 0.4);
+    background: $primary-50;
+    border-color: $primary;
     transform: scale(1.05);
+
+    svg {
+      color: $primary;
+    }
   }
 
   &:active {
@@ -392,15 +424,48 @@ const scrollToBottom = () => {
   }
 }
 
-.header-title {
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 36rpx;
-  font-weight: $font-weight-bold;
-  color: $white;
-  letter-spacing: -0.5px;
+.header-title-group {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
 }
 
-.header-actions {
+.header-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 6rpx 16rpx;
+  background: $success-50;
+  border-radius: 20rpx;
+  border: 1px solid $success-200;
+}
+
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background: $success;
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.status-text {
+  font-size: 22rpx;
+  color: $success;
+  font-weight: 500;
+}
+
+.header-right {
   display: flex;
   gap: 16rpx;
 }
@@ -410,14 +475,240 @@ const scrollToBottom = () => {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 48rpx;
+  padding: 32rpx;
   overflow-y: auto;
 }
 
+// ========== 欢迎状态 ==========
+.welcome-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 70vh;
+  gap: 32rpx;
+}
+
+.ai-avatar-large {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+  margin-bottom: 16rpx;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.avatar-pulse {
+  position: absolute;
+  inset: -12rpx;
+  border-radius: 50%;
+  border: 2px solid rgba($primary, 0.3);
+  animation: pulse-ring 2s infinite;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+
+.welcome-title {
+  font-size: 40rpx;
+  font-weight: 600;
+  color: $gray-900;
+  text-align: center;
+}
+
+.welcome-desc {
+  font-size: 28rpx;
+  color: $gray-600;
+  text-align: center;
+  max-width: 600rpx;
+  line-height: 1.6;
+}
+
+.quick-questions {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20rpx;
+  width: 100%;
+  max-width: 680rpx;
+  margin-top: 32rpx;
+}
+
+.quick-question-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+  padding: 32rpx 24rpx;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $primary-50;
+    border-color: $primary;
+    transform: translateY(-4rpx);
+    box-shadow: 0 8rpx 24rpx rgba($primary, 0.15);
+  }
+
+  &:active {
+    transform: translateY(-2rpx);
+  }
+}
+
+.question-icon {
+  font-size: 56rpx;
+}
+
+.question-text {
+  font-size: 26rpx;
+  color: $gray-700;
+  text-align: center;
+  line-height: 1.5;
+}
+
+// ========== 消息列表 ==========
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: 32rpx;
+}
+
+.message-item {
+  display: flex;
+  gap: 16rpx;
+  animation: fadeIn 0.3s;
+
+  &.message-user {
+    flex-direction: row-reverse;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-avatar {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 50%;
+  overflow: hidden;
+  background: $white;
+  border: 1px solid $gray-200;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.user-avatar {
+  background: linear-gradient(135deg, $primary, $primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28rpx;
+  font-weight: 600;
+  color: $white;
+}
+
+.message-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+  max-width: 75%;
+}
+
+.message-bubble {
+  position: relative;
+  padding: 24rpx 28rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  line-height: 1.6;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.ai-message .message-bubble {
+  background: $white;
+  border: 1px solid $gray-200;
+  color: $gray-900;
+}
+
+.user-message .message-bubble {
+  background: linear-gradient(135deg, $primary, $primary-light);
+  color: $white;
+  margin-left: auto;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 4rpx;
+  height: 32rpx;
+  background: $primary;
+  margin-left: 4rpx;
+  vertical-align: middle;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.message-actions {
+  display: flex;
+  gap: 16rpx;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 8rpx 16rpx;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  color: $gray-600;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  svg {
+    width: 24rpx;
+    height: 24rpx;
+  }
+
+  &:hover {
+    background: $primary-50;
+    border-color: $primary;
+    color: $primary;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
 .message-anchor {
@@ -425,152 +716,111 @@ const scrollToBottom = () => {
   width: 100%;
 }
 
-// ========== 分类标签 ==========
-.category-tabs {
-  position: relative;
-  z-index: 5;
-  display: flex;
-  gap: 16rpx;
-  padding: 24rpx 48rpx;
-  background: rgba($white, 0.03);
-  backdrop-filter: blur(20px);
-  border-top: 2px solid rgba($white, 0.08);
-  overflow-x: auto;
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-}
-
-.category-tab {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 16rpx 32rpx;
-  background: rgba($white, 0.05);
-  border: 2px solid rgba($white, 0.1);
-  border-radius: $radius-full;
-  font-size: 26rpx;
-  color: rgba($white, 0.7);
-  font-weight: $font-weight-medium;
-  cursor: pointer;
-  transition: all $transition-fast;
-  white-space: nowrap;
-
-  &:hover {
-    background: rgba($white, 0.08);
-    border-color: rgba(55, 125, 255, 0.3);
-    color: $white;
-  }
-
-  &.active {
-    background: linear-gradient(135deg, rgba(55, 125, 255, 0.2), rgba(96, 165, 250, 0.2));
-    border-color: rgba(55, 125, 255, 0.5);
-    color: #60A5FA;
-    box-shadow: 0 8rpx 24rpx rgba(55, 125, 255, 0.2);
-  }
-}
-
 // ========== 输入区域 ==========
 .input-area {
   position: relative;
-  z-index: 5;
-  display: flex;
-  flex-direction: column;
-  gap: 16rpx;
-  padding: 32rpx 48rpx;
-  padding-bottom: calc(32rpx + env(safe-area-inset-bottom, 0));
-  background: rgba($white, 0.03);
+  z-index: 10;
+  padding: 24rpx 32rpx;
+  padding-bottom: calc(24rpx + env(safe-area-inset-bottom, 0));
+  background: rgba($white, 0.95);
   backdrop-filter: blur(20px);
-  border-top: 2px solid rgba($white, 0.08);
+  border-top: 1px solid rgba($primary, 0.1);
 }
 
 .input-wrapper {
   display: flex;
-  gap: 16rpx;
-  align-items: flex-end;
+  flex-direction: column;
+  gap: 12rpx;
+  background: $white;
+  border: 2px solid $gray-200;
+  border-radius: 16rpx;
+  padding: 20rpx;
+  transition: border-color 0.2s;
+
+  &:focus-within {
+    border-color: $primary;
+  }
 }
 
 .input-field {
-  flex: 1;
-  min-height: 88rpx;
+  min-height: 72rpx;
   max-height: 200rpx;
-  padding: 24rpx 28rpx;
-  background: rgba($white, 0.05);
-  border: 2px solid rgba($white, 0.1);
-  border-radius: $radius-2xl;
   font-size: 28rpx;
   line-height: 1.6;
-  color: $white;
+  color: $gray-900;
   resize: none;
+  border: none;
+  outline: none;
 
   &::placeholder {
-    color: rgba($white, 0.4);
-  }
-
-  &:focus {
-    outline: none;
-    border-color: rgba(55, 125, 255, 0.5);
-    background: rgba($white, 0.08);
+    color: $gray-400;
   }
 }
 
+.input-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.char-count {
+  font-size: 24rpx;
+  color: $gray-400;
+}
+
 .send-btn {
-  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 88rpx;
-  height: 88rpx;
-  padding: 0;
-  background: linear-gradient(135deg, #377DFF, #60A5FA);
-  border: none;
+  background: linear-gradient(135deg, $primary, $primary-light);
   border-radius: 50%;
-  color: $white;
   cursor: pointer;
-  transition: all $transition-fast;
-  box-shadow: 0 8rpx 24rpx rgba(55, 125, 255, 0.4);
+  transition: all 0.2s;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
 
   svg {
-    width: 40rpx;
-    height: 40rpx;
+    width: 36rpx;
+    height: 36rpx;
+    color: $white;
   }
 
-  &:hover:not(.disabled) {
+  &:hover {
     transform: scale(1.05);
-    box-shadow: 0 12rpx 32rpx rgba(55, 125, 255, 0.5);
+    box-shadow: 0 6rpx 16rpx rgba($primary, 0.4);
   }
 
-  &:active:not(.disabled) {
+  &:active {
     transform: scale(0.95);
   }
 
   &.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+    background: $gray-200;
     box-shadow: none;
+    cursor: not-allowed;
+
+    svg {
+      color: $gray-400;
+    }
+
+    &:hover {
+      transform: none;
+    }
   }
 }
 
 .loading-spinner {
-  width: 40rpx;
-  height: 40rpx;
-  border: 4rpx solid rgba($white, 0.3);
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid rgba($white, 0.3);
   border-top-color: $white;
   border-radius: 50%;
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
-}
-
-.input-hint {
-  font-size: 24rpx;
-  line-height: 1.5;
-  color: rgba($white, 0.4);
-  text-align: center;
 }
 
 // ========== 清空确认弹窗 ==========
@@ -581,168 +831,139 @@ const scrollToBottom = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8rpx);
-  animation: fadeIn 0.2s ease-out;
+  background: rgba($black, 0.5);
+  backdrop-filter: blur(4rpx);
+  animation: fadeIn 0.2s;
 }
 
 .modal-content {
   display: flex;
   flex-direction: column;
-  gap: 32rpx;
+  gap: 24rpx;
   width: 85%;
-  max-width: 640rpx;
-  padding: 64rpx 48rpx;
-  background: rgba($white, 0.08);
-  backdrop-filter: blur(40px);
-  border: 2px solid rgba($white, 0.15);
-  border-radius: $radius-3xl;
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  max-width: 560rpx;
+  padding: 48rpx 40rpx;
+  background: $white;
+  border-radius: 24rpx;
+  box-shadow: 0 24rpx 64rpx rgba($black, 0.15);
+  animation: slideUp 0.3s;
 }
 
 @keyframes slideUp {
-  from { transform: translateY(40rpx); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translateY(40rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.modal-icon {
+  width: 96rpx;
+  height: 96rpx;
 }
 
 .modal-title {
-  font-size: 40rpx;
-  font-weight: $font-weight-bold;
-  color: $white;
+  font-size: 36rpx;
+  font-weight: 600;
+  color: $gray-900;
   text-align: center;
 }
 
 .modal-text {
   font-size: 28rpx;
   line-height: 1.6;
-  color: rgba($white, 0.7);
+  color: $gray-600;
   text-align: center;
 }
 
 .modal-actions {
   display: flex;
-  gap: 24rpx;
-  margin-top: 16rpx;
+  gap: 16rpx;
+  margin-top: 8rpx;
 }
 
 .modal-btn {
   flex: 1;
-  padding: 28rpx;
-  border-radius: $radius-2xl;
-  font-size: 30rpx;
-  font-weight: $font-weight-medium;
+  padding: 24rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 500;
+  text-align: center;
   cursor: pointer;
-  transition: all $transition-fast;
-
-  &-cancel {
-    background: rgba($white, 0.05);
-    border: 2px solid rgba($white, 0.15);
-    color: rgba($white, 0.8);
-
-    &:hover {
-      background: rgba($white, 0.08);
-      border-color: rgba($white, 0.25);
-      color: $white;
-    }
-  }
-
-  &-confirm {
-    background: linear-gradient(135deg, #EF4444, #DC2626);
-    border: none;
-    color: $white;
-
-    &:hover {
-      box-shadow: 0 8rpx 24rpx rgba(239, 68, 68, 0.4);
-      transform: translateY(-2rpx);
-    }
-  }
+  transition: all 0.2s;
 
   &:active {
     transform: scale(0.98);
   }
 }
 
+.modal-btn-cancel {
+  background: $white;
+  border: 2px solid $gray-200;
+  color: $gray-700;
+
+  &:hover {
+    background: $gray-50;
+    border-color: $gray-300;
+  }
+}
+
+.modal-btn-confirm {
+  background: linear-gradient(135deg, $error, $error-light);
+  border: none;
+  color: $white;
+  box-shadow: 0 4rpx 12rpx rgba($error, 0.3);
+
+  &:hover {
+    box-shadow: 0 6rpx 16rpx rgba($error, 0.4);
+  }
+}
+
 // ========== 移动端适配 ==========
-@include mobile {
+@media (max-width: 750px) {
   .chat-header {
-    padding: 24rpx 32rpx;
+    padding: 20rpx 24rpx;
   }
 
   .header-title {
-    font-size: 32rpx;
+    font-size: 28rpx;
   }
 
   .back-btn,
   .icon-btn {
-    width: 64rpx;
-    height: 64rpx;
+    width: 56rpx;
+    height: 56rpx;
 
     svg {
-      width: 36rpx;
-      height: 36rpx;
+      width: 32rpx;
+      height: 32rpx;
     }
   }
 
   .messages-container {
-    padding: 32rpx;
+    padding: 24rpx;
   }
 
-  .category-tabs {
-    padding: 20rpx 32rpx;
-    gap: 12rpx;
+  .quick-questions {
+    grid-template-columns: 1fr;
   }
 
-  .category-tab {
-    padding: 14rpx 28rpx;
-    font-size: 24rpx;
+  .message-content {
+    max-width: 85%;
   }
 
   .input-area {
-    padding: 24rpx 32rpx;
-    gap: 12rpx;
-  }
-
-  .input-field {
-    min-height: 80rpx;
     padding: 20rpx 24rpx;
-    font-size: 26rpx;
-  }
-
-  .send-btn {
-    width: 80rpx;
-    height: 80rpx;
-
-    svg {
-      width: 36rpx;
-      height: 36rpx;
-    }
-  }
-
-  .input-hint {
-    font-size: 22rpx;
-  }
-
-  .modal-content {
-    width: 90%;
-    padding: 56rpx 40rpx;
-  }
-
-  .modal-title {
-    font-size: 36rpx;
-  }
-
-  .modal-text {
-    font-size: 26rpx;
-  }
-
-  .modal-btn {
-    padding: 24rpx;
-    font-size: 28rpx;
   }
 }
 </style>

@@ -433,6 +433,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
+  // 🔧 修复: 设置最小高度,防止数据加载后容器高度突变导致错位
+  min-height: 280rpx; // 约等于 5 个列表项的高度 (5 × 56rpx)
 }
 
 .skeleton-item {
@@ -504,6 +506,19 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-4; // 16rpx 增加行距
+  // 🔧 平滑过渡:避免从骨架屏到真实内容的跳跃感
+  animation: fadeInUp 0.3s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(8rpx);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .hot-item {
@@ -572,6 +587,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: $spacing-3;
+  // 🔧 平滑过渡:避免从骨架屏到真实内容的跳跃感
+  animation: fadeInUp 0.3s ease-out;
 }
 
 .topic-item {

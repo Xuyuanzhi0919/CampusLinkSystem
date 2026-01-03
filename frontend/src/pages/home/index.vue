@@ -493,6 +493,9 @@ onUnmounted(() => {
   position: sticky;
   top: 100px;
 
+  // 🔧 修复: 平滑过渡高度变化,防止数据加载后突然跳跃
+  transition: height 0.3s ease-out;
+
   // 左侧分割线（使用伪元素）
   &::before {
     content: '';

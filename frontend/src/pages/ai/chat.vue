@@ -312,6 +312,16 @@ const currentSessionTitle = computed(() => {
 })
 
 // 将消息配对成问答组（修复：支持连续用户消息、未回复消息）
+// 去重辅助函数：根据 session.id 去重
+const deduplicateSessions = (sessions: ChatSession[]): ChatSession[] => {
+  return sessions.reduce((acc, session) => {
+    if (!acc.find(s => s.id === session.id)) {
+      acc.push(session)
+    }
+    return acc
+  }, [] as ChatSession[])
+}
+
 const messagePairs = computed(() => {
   const pairs: Array<{ user: Message; assistant?: Message }> = []
   const processedIndices = new Set<number>()
@@ -354,8 +364,8 @@ const messagePairs = computed(() => {
 })
 
 onMounted(() => {
-  // 加载所有会话
-  sessions.value = getAllSessions()
+  // 加载所有会话并去重
+  sessions.value = deduplicateSessions(getAllSessions())
 
   // 如果有会话,加载最新的一个
   if (sessions.value.length > 0) {
@@ -439,7 +449,10 @@ const handleSend = async () => {
         }
 
         saveChatHistory(messages.value, currentSessionId.value)
-        sessions.value = getAllSessions() // 刷新会话列表
+
+        // 刷新会话列表并去重
+        sessions.value = deduplicateSessions(getAllSessions())
+
         isLoading.value = false
         scrollToBottom()
       }
@@ -508,7 +521,9 @@ const confirmClear = () => {
   // 更新当前会话为空
   if (currentSessionId.value) {
     updateSession(currentSessionId.value, [])
-    sessions.value = getAllSessions()
+
+    // 刷新会话列表并去重
+    sessions.value = deduplicateSessions(getAllSessions())
   }
   showClearModal.value = false
   uni.showToast({ title: '已清空当前对话', icon: 'success' })
@@ -519,7 +534,10 @@ const handleNewSession = () => {
   const newSession = createSession()
   currentSessionId.value = newSession.id
   messages.value = []
-  sessions.value = getAllSessions()
+
+  // 刷新会话列表并去重
+  sessions.value = deduplicateSessions(getAllSessions())
+
   showSessionDrawer.value = false
   uni.showToast({ title: '已创建新对话', icon: 'success', duration: 1500 })
 }
@@ -548,7 +566,9 @@ const handleDeleteSession = (sessionId: string) => {
     success: (res) => {
       if (res.confirm) {
         deleteSession(sessionId)
-        sessions.value = getAllSessions()
+
+        // 刷新会话列表并去重
+        sessions.value = deduplicateSessions(getAllSessions())
 
         // 如果删除的是当前会话,切换到其他会话或创建新会话
         if (sessionId === currentSessionId.value) {
@@ -560,7 +580,9 @@ const handleDeleteSession = (sessionId: string) => {
             const newSession = createSession()
             currentSessionId.value = newSession.id
             messages.value = []
-            sessions.value = getAllSessions()
+
+            // 再次刷新并去重
+            sessions.value = deduplicateSessions(getAllSessions())
           }
         }
 
@@ -873,7 +895,8 @@ const scrollToBottom = () => {
 .session-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 16px 16px 16px 12px; // 右侧增加内边距，防止阴影被裁切
+  overflow-x: visible; // 允许阴影溢出
 }
 
 .session-item {
@@ -881,23 +904,28 @@ const scrollToBottom = () => {
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  margin-bottom: 8px;
+  margin-bottom: 10px; // 增加间距，防止阴影重叠
+  margin-right: 2px; // 右侧留出空间给阴影
   background: $white;
   border: 1.5px solid $gray-200;
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba($black, 0.05); // 默认轻微阴影
 
   &:hover {
     border-color: $primary;
     background: $primary-50;
     transform: translateX(4px);
+    box-shadow: 0 2px 6px rgba($primary, 0.1); // hover 时阴影不被裁切
   }
 
   &.active {
     border-color: $primary;
     background: linear-gradient(135deg, rgba($primary, 0.1), rgba($primary, 0.05));
-    box-shadow: 0 2px 8px rgba($primary, 0.15);
+    box-shadow: 0 3px 10px rgba($primary, 0.2); // 增强阴影，同时留出足够空间
+    margin-top: 2px; // 顶部留出间距
+    margin-bottom: 12px; // 底部增加间距
   }
 
   &:last-child {
@@ -934,21 +962,25 @@ const scrollToBottom = () => {
 .session-actions {
   display: flex;
   gap: 4px;
+  align-items: center; // 确保操作按钮垂直居中
+  flex-shrink: 0; // 防止被压缩
 }
 
 .delete-session {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 6px;
   transition: all 0.2s;
+  flex-shrink: 0; // 防止图标被压缩
 
   svg {
     width: 16px;
     height: 16px;
     color: $gray-500;
+    display: block; // 移除 inline 导致的基线对齐问题
   }
 
   &:hover {
@@ -956,6 +988,10 @@ const scrollToBottom = () => {
     svg {
       color: $error;
     }
+  }
+
+  &:active {
+    transform: scale(0.9);
   }
 }
 

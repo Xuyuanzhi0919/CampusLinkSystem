@@ -793,10 +793,9 @@ const scrollToBottom = () => {
 }
 
 // ==================== 底部输入栏（方案B：卡片一体式） ====================
-.input-section {
+.input-container-outer {
   position: relative;
   z-index: 100;
-  background: transparent;
   padding: 20px 24px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
 }
@@ -1159,7 +1158,7 @@ const scrollToBottom = () => {
     }
   }
 
-  .input-section {
+  .input-container-outer {
     padding: 16px 20px;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
   }

@@ -749,8 +749,7 @@ const scrollToBottom = () => {
 .input-section {
   position: relative;
   z-index: 100;
-  background: linear-gradient(180deg, rgba($white, 0) 0%, rgba($gray-50, 0.8) 100%);
-  backdrop-filter: blur(8px);
+  background: transparent;
   padding: 20px 24px;
   padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
 }

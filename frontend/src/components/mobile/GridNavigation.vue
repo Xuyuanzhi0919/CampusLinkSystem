@@ -8,9 +8,9 @@
         @click="handleNavigate(item.url)"
       >
         <view class="icon-wrapper" :style="{ backgroundColor: item.bgColor }">
-          <view class="icon-inner">{{ item.icon }}</view>
+          <text class="icon-inner">{{ item.icon }}</text>
         </view>
-        <view class="item-text">{{ item.text }}</view>
+        <text class="item-text">{{ item.text }}</text>
       </view>
     </view>
   </view>
@@ -76,6 +76,8 @@ const handleNavigate = (url: string) => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   overflow-x: auto;
   overflow-y: hidden;
+  min-height: 100px; // 确保容器有高度
+  display: block; // 明确指定为块级元素
 
   &::-webkit-scrollbar {
     display: none;
@@ -88,10 +90,12 @@ const handleNavigate = (url: string) => {
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-start;
   gap: 12px;
   padding: 16px;
   width: max-content;
   min-width: 100%;
+  box-sizing: border-box;
 }
 
 .grid-item {
@@ -119,10 +123,12 @@ const handleNavigate = (url: string) => {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   transition: all 0.2s ease;
+  flex-shrink: 0;
 
   .icon-inner {
     font-size: 28px;
     line-height: 1;
+    display: block;
   }
 }
 
@@ -138,5 +144,7 @@ const handleNavigate = (url: string) => {
   line-height: 1.2;
   text-align: center;
   white-space: nowrap;
+  display: block;
+  width: 100%;
 }
 </style>

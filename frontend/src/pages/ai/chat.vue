@@ -156,18 +156,15 @@
           :disabled="isLoading"
           @focus="handleInputFocus"
         />
-        <view class="input-actions">
-          <view class="char-count">{{ inputText.length }}/500</view>
-          <view
-            class="send-btn"
-            :class="{ disabled: !canSend, loading: isLoading }"
-            @click="handleSend"
-          >
-            <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
-              <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <view v-else class="loading-spinner"></view>
-          </view>
+        <view
+          class="send-btn"
+          :class="{ disabled: !canSend, loading: isLoading }"
+          @click="handleSend"
+        >
+          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
+            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <view v-else class="loading-spinner"></view>
         </view>
       </view>
     </view>
@@ -475,8 +472,10 @@ const scrollToBottom = () => {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 32rpx;
+  padding: 32rpx 0;
   overflow-y: auto;
+  display: flex;
+  justify-content: center;
 }
 
 // ========== 欢迎状态 ==========
@@ -485,8 +484,11 @@ const scrollToBottom = () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 70vh;
+  min-height: 60vh;
   gap: 32rpx;
+  width: 100%;
+  max-width: 860rpx;
+  padding: 0 32rpx;
 }
 
 .ai-avatar-large {
@@ -538,10 +540,10 @@ const scrollToBottom = () => {
 .quick-questions {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 20rpx;
+  gap: 24rpx;
   width: 100%;
   max-width: 680rpx;
-  margin-top: 32rpx;
+  margin-top: 40rpx;
 }
 
 .quick-question-card {
@@ -584,6 +586,9 @@ const scrollToBottom = () => {
   display: flex;
   flex-direction: column;
   gap: 32rpx;
+  width: 100%;
+  max-width: 860rpx;
+  padding: 0 32rpx;
 }
 
 .message-item {
@@ -637,7 +642,7 @@ const scrollToBottom = () => {
   display: flex;
   flex-direction: column;
   gap: 12rpx;
-  max-width: 75%;
+  max-width: 70%;
 }
 
 .message-bubble {
@@ -651,15 +656,18 @@ const scrollToBottom = () => {
 }
 
 .ai-message .message-bubble {
-  background: $white;
+  background: $gray-50;
   border: 1px solid $gray-200;
   color: $gray-900;
+  box-shadow: 0 2rpx 8rpx rgba($black, 0.04);
 }
 
 .user-message .message-bubble {
   background: linear-gradient(135deg, $primary, $primary-light);
   color: $white;
   margin-left: auto;
+  font-weight: 500;
+  box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
 }
 
 .typing-cursor {
@@ -725,24 +733,31 @@ const scrollToBottom = () => {
   background: rgba($white, 0.95);
   backdrop-filter: blur(20px);
   border-top: 1px solid rgba($primary, 0.1);
+  display: flex;
+  justify-content: center;
 }
 
 .input-wrapper {
   display: flex;
-  flex-direction: column;
-  gap: 12rpx;
+  align-items: flex-end;
+  gap: 16rpx;
+  width: 100%;
+  max-width: 860rpx;
   background: $white;
   border: 2px solid $gray-200;
-  border-radius: 16rpx;
-  padding: 20rpx;
-  transition: border-color 0.2s;
+  border-radius: 20rpx;
+  padding: 20rpx 24rpx;
+  transition: all 0.2s;
+  box-shadow: 0 4rpx 16rpx rgba($black, 0.06);
 
   &:focus-within {
     border-color: $primary;
+    box-shadow: 0 4rpx 20rpx rgba($primary, 0.15);
   }
 }
 
 .input-field {
+  flex: 1;
   min-height: 72rpx;
   max-height: 200rpx;
   font-size: 28rpx;
@@ -757,20 +772,10 @@ const scrollToBottom = () => {
   }
 }
 
-.input-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.char-count {
-  font-size: 24rpx;
-  color: $gray-400;
-}
-
 .send-btn {
-  width: 72rpx;
-  height: 72rpx;
+  flex-shrink: 0;
+  width: 80rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -778,17 +783,17 @@ const scrollToBottom = () => {
   border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
+  box-shadow: 0 6rpx 16rpx rgba($primary, 0.35);
 
   svg {
-    width: 36rpx;
-    height: 36rpx;
+    width: 40rpx;
+    height: 40rpx;
     color: $white;
   }
 
   &:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6rpx 16rpx rgba($primary, 0.4);
+    transform: scale(1.08);
+    box-shadow: 0 8rpx 20rpx rgba($primary, 0.45);
   }
 
   &:active {
@@ -951,7 +956,12 @@ const scrollToBottom = () => {
   }
 
   .messages-container {
-    padding: 24rpx;
+    padding: 24rpx 0;
+  }
+
+  .welcome-state,
+  .messages-list {
+    padding: 0 24rpx;
   }
 
   .quick-questions {
@@ -959,11 +969,25 @@ const scrollToBottom = () => {
   }
 
   .message-content {
-    max-width: 85%;
+    max-width: 80%;
   }
 
   .input-area {
     padding: 20rpx 24rpx;
+  }
+
+  .input-wrapper {
+    max-width: none;
+  }
+
+  .send-btn {
+    width: 72rpx;
+    height: 72rpx;
+
+    svg {
+      width: 36rpx;
+      height: 36rpx;
+    }
   }
 }
 </style>

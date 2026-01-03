@@ -496,6 +496,8 @@ defineExpose({
   z-index: $z-sticky;
   background: $gray-50;
   border-bottom: 1px solid $border-light;
+  // 增加导航栏上下内边距，避免"悬空感"
+  padding: 8px 0;  // 上下各 8px，总高度 76px (60 + 16)
 }
 
 .header-container {
@@ -527,11 +529,11 @@ defineExpose({
 .header-left {
   display: flex;
   align-items: center;
-  gap: 48px;
+  gap: 64px;  // 增大 Logo 与导航间距：48px → 64px
 }
 
 .logo {
-  font-size: 20px;
+  font-size: 22px;  // 增大 Logo 字号：20px → 22px，提升品牌感
   font-weight: $font-weight-bold;
   color: $primary;
   cursor: pointer;
@@ -552,7 +554,7 @@ defineExpose({
 .main-nav {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;  // 减小导航项间距：8px → 4px，避免过于松散
 }
 
 .nav-item {
@@ -606,7 +608,7 @@ defineExpose({
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;  // 统一右侧图标间距：16px → 12px
 }
 
 // 搜索框
@@ -710,7 +712,7 @@ defineExpose({
 .action-group {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;  // 统一操作按钮间距：10px → 12px，与 header-right 一致
 }
 
 .notification-wrapper,
@@ -768,6 +770,8 @@ defineExpose({
 }
 
 .header-avatar {
+  width: 36px !important;  // 强制覆盖头像尺寸，与图标按钮对齐
+  height: 36px !important;
   border: 1px solid rgba($gray-400, 0.3);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   border-radius: $radius-full;

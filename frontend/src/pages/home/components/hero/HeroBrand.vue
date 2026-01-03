@@ -28,56 +28,17 @@
         </p>
       </view>
     </view>
-
-    <!-- 三角形统计卡片组（左下） -->
-    <view class="triangle-stats">
-      <view
-        v-for="(stat, index) in stats"
-        :key="stat.label"
-        class="stat-card"
-        :class="`card-${index + 1}`"
-      >
-        <view class="stat-content">
-          <view class="stat-number">{{ stat.displayValue }}</view>
-          <view class="stat-label">{{ stat.label }}</view>
-        </view>
-        <svg class="stat-icon" viewBox="0 0 24 24" fill="none">
-          <circle v-if="index === 0" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-          <path v-else-if="index === 1" d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2"/>
-          <path v-else d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor"/>
-        </svg>
-      </view>
-    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-interface Stat {
-  value: number
-  displayValue: string
-  label: string
-}
-
-const stats = ref<Stat[]>([
-  { value: 4280, displayValue: '4,280', label: '问题已解决' },
-  { value: 9520, displayValue: '9,520', label: '活跃同学' },
-  { value: 95, displayValue: '95%', label: '快速响应' }
-])
-
 // AI 打字机效果
 const fullText = "秒找资料 · 快速提问 · 任务匹配 · 积分奖励"
 const displayedText = ref("")
 
 onMounted(() => {
-  // 数字动画
-  stats.value.forEach((stat, index) => {
-    if (index < 2) {
-      animateNumber(index)
-    }
-  })
-
   // 打字机效果
   let index = 0
   const typingInterval = setInterval(() => {
@@ -89,23 +50,6 @@ onMounted(() => {
     }
   }, 60)
 })
-
-const animateNumber = (index: number) => {
-  const target = stats.value[index].value
-  const duration = 2000
-  const steps = 60
-  const increment = target / steps
-  let current = 0
-
-  const timer = setInterval(() => {
-    current += increment
-    if (current >= target) {
-      current = target
-      clearInterval(timer)
-    }
-    stats.value[index].displayValue = Math.floor(current).toLocaleString()
-  }, duration / steps)
-}
 </script>
 
 <style scoped lang="scss">
@@ -122,9 +66,7 @@ $charcoal: $gray-900;
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  gap: 64px;
+  gap: 0;
   z-index: 2;
 }
 
@@ -364,199 +306,5 @@ $charcoal: $gray-900;
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-// ==================== 三角形统计卡片组（左下） ====================
-.triangle-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  position: relative;
-
-  // 错位三角形排列
-  .stat-card:nth-child(1) {
-    transform: translateY(0);
-  }
-  .stat-card:nth-child(2) {
-    transform: translateY(12px);
-  }
-  .stat-card:nth-child(3) {
-    transform: translateY(24px);
-  }
-
-  // 🔧 移动端调整布局
-  @media (max-width: 768px) {
-    gap: 12px;
-
-    // 移动端取消错位,平铺排列
-    .stat-card:nth-child(1),
-    .stat-card:nth-child(2),
-    .stat-card:nth-child(3) {
-      transform: translateY(0);
-    }
-  }
-
-  @media (max-width: 480px) {
-    gap: 10px;
-  }
-}
-
-.stat-card {
-  position: relative;
-  padding: 20px 16px;
-  background: linear-gradient(135deg,
-    rgba(255, 255, 255, 0.9) 0%,
-    rgba(255, 255, 255, 0.7) 100%);
-  backdrop-filter: blur(20px) saturate(180%);
-  border-radius: 16px;
-  overflow: hidden;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: cardSlideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) backwards;
-  box-shadow:
-    0 8px 32px rgba($primary, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.8);
-
-  // 🔧 移动端缩小卡片
-  @media (max-width: 768px) {
-    padding: 16px 12px;
-    border-radius: 14px;
-    box-shadow:
-      0 6px 24px rgba($primary, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  }
-
-  @media (max-width: 480px) {
-    padding: 14px 10px;
-    border-radius: 12px;
-  }
-
-  &.card-1 { animation-delay: 0.6s; }
-  &.card-2 { animation-delay: 0.75s; }
-  &.card-3 { animation-delay: 0.9s; }
-
-  // 渐变边框（使用 ::before）
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 1.5px;
-    border-radius: 16px;
-    background: linear-gradient(135deg,
-      rgba($primary, 0.4) 0%,
-      rgba($campus-teal, 0.4) 50%,
-      rgba($campus-amber, 0.3) 100%);
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.6;
-    transition: opacity 0.5s ease;
-  }
-
-  // 内部光晕（使用 ::after）
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80%;
-    height: 30%;
-    background: radial-gradient(ellipse at center,
-      rgba(255, 255, 255, 0.6) 0%,
-      transparent 70%);
-    opacity: 0.5;
-    pointer-events: none;
-  }
-
-  &:hover {
-    transform: translateY(-8px) scale(1.03);
-    background: linear-gradient(135deg,
-      rgba(255, 255, 255, 0.95) 0%,
-      rgba(255, 255, 255, 0.85) 100%);
-    box-shadow:
-      0 12px 40px rgba($primary, 0.15),
-      inset 0 1px 0 rgba(255, 255, 255, 1);
-
-    &::before {
-      opacity: 1;
-    }
-
-    .stat-icon {
-      transform: scale(1.2) rotate(5deg);
-    }
-  }
-}
-
-@keyframes cardSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-// 移除旧的 card-glow，改用 ::before 和 ::after 伪元素实现渐变边框和内部光晕
-
-.stat-content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  z-index: 1;
-}
-
-.stat-number {
-  font-size: 32px;
-  font-weight: 900;
-  color: $charcoal;
-  line-height: 1;
-  letter-spacing: -0.03em;
-  font-variant-numeric: tabular-nums;
-
-  // 🔧 移动端字号调整
-  @media (max-width: 768px) {
-    font-size: 26px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 22px;
-  }
-}
-
-.stat-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: #777;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-
-  // 🔧 移动端字号调整
-  @media (max-width: 768px) {
-    font-size: 11px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 10px;
-  }
-}
-
-.stat-icon {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 32px;
-  height: 32px;
-  opacity: 0.15;
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 0;
-
-  .card-1 & { color: $campus-amber; }
-  .card-2 & { color: $campus-teal; }
-  .card-3 & { color: $primary; }
 }
 </style>

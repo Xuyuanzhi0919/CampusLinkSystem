@@ -1,28 +1,26 @@
 <template>
   <view class="hero-cta">
-    <!-- 按钮组 - 横向排列 -->
+    <!-- 按钮组 - 垂直排列 -->
     <view class="cta-buttons">
-      <!-- 主指令按钮 -->
+      <!-- 唯一主按钮:视觉焦点 -->
       <view class="cta-primary" @click="handleAsk">
         <view class="scan-line"></view>
         <view class="matrix-bg"></view>
         <text class="terminal-prompt">&gt;</text>
         <text class="cta-text">发布需求</text>
-        <text class="cta-subtitle">提问/发任务/上传资料</text>
+        <text class="cta-subtitle">提问·发任务·上传资料</text>
         <view class="cursor-blink">_</view>
         <svg class="ai-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
           <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
         </svg>
       </view>
 
-      <!-- 次指令按钮 -->
-      <view class="cta-secondary" @click="$emit('browse')">
-        <text class="command-prefix">/explore</text>
-        <text class="cta-text">探索互助</text>
-        <svg class="arrow-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
-          <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- 次动作:改为轻量文本链接 -->
+      <view class="cta-link" @click="$emit('browse')">
+        <text class="link-text">或者先逛逛看看有什么</text>
+        <svg class="link-arrow" width="14" height="14" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12H19M19 12L15 8M19 12L15 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-        <view class="hover-underline"></view>
       </view>
     </view>
 
@@ -85,13 +83,15 @@ $charcoal: $gray-900;
   gap: 20px;
 }
 
-// ==================== 按钮组 - 横向排列 ====================
+// ==================== 按钮组 - 垂直排列，主按钮突出 ====================
 .cta-buttons {
   display: flex;
+  flex-direction: column;
   gap: 12px;
+  align-items: flex-start;
 
   @media (max-width: 768px) {
-    flex-direction: column;  // 🔧 移动端垂直排列
+    align-items: stretch;  // 移动端全宽
     gap: 10px;
   }
 
@@ -100,14 +100,15 @@ $charcoal: $gray-900;
   }
 }
 
-// ==================== 主指令按钮 ====================
+// ==================== 唯一主按钮：视觉焦点 ====================
 .cta-primary {
   position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 24px;
-  flex: 1;
+  padding: 18px 28px;
+  width: fit-content;
+  min-width: 280px;
   background: linear-gradient(135deg,
     rgba($primary, 0.12) 0%,
     rgba($campus-teal, 0.1) 100%);
@@ -119,19 +120,19 @@ $charcoal: $gray-900;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: 'Courier New', 'JetBrains Mono', monospace;
   box-shadow:
-    0 4px 16px rgba($primary, 0.15),
-    0 2px 8px rgba($campus-teal, 0.1),
+    0 6px 20px rgba($primary, 0.2),
+    0 3px 10px rgba($campus-teal, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
 
-  // 🔧 移动端全宽按钮
   @media (max-width: 768px) {
     width: 100%;
-    padding: 14px 20px;
-    justify-content: center;  // 居中内容
+    min-width: auto;
+    padding: 16px 22px;
+    justify-content: center;
   }
 
   @media (max-width: 480px) {
-    padding: 12px 18px;
+    padding: 14px 20px;
     gap: 6px;
   }
 
@@ -322,101 +323,50 @@ $charcoal: $gray-900;
   100% { transform: rotate(0deg); }
 }
 
-// ==================== 次指令按钮 ====================
-.cta-secondary {
-  position: relative;
-  display: flex;
+// ==================== 轻量文本链接：弱化次动作 ====================
+.cta-link {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 16px 20px;
-  background: transparent;
-  border-radius: 12px;
+  gap: 6px;
+  padding: 8px 4px;
   cursor: pointer;
   transition: all 0.3s ease;
-  font-family: 'Courier New', monospace;
-  white-space: nowrap;
 
-  // 🔧 移动端全宽按钮
   @media (max-width: 768px) {
+    justify-content: center;
     width: 100%;
-    padding: 14px 18px;
-    justify-content: center;  // 居中内容
-  }
-
-  @media (max-width: 480px) {
-    padding: 12px 16px;
-    gap: 6px;
-  }
-
-  // 渐变描边（使用 ::before）
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    padding: 1px;
-    border-radius: 12px;
-    background: linear-gradient(135deg,
-      rgba($primary, 0.3) 0%,
-      rgba($campus-teal, 0.2) 50%,
-      rgba($campus-amber, 0.15) 100%);
-    -webkit-mask:
-      linear-gradient(#fff 0 0) content-box,
-      linear-gradient(#fff 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    opacity: 0.5;
-    transition: opacity 0.3s ease;
   }
 
   &:hover {
-    background: rgba($primary, 0.03);
-
-    &::before {
-      opacity: 1;
-      background: linear-gradient(135deg,
-        rgba($primary, 0.5) 0%,
-        rgba($campus-teal, 0.4) 50%,
-        rgba($campus-amber, 0.3) 100%);
+    .link-text {
+      color: $primary;
     }
 
-    .hover-underline {
-      width: 100%;
-    }
-
-    .arrow-icon {
+    .link-arrow {
       transform: translateX(4px);
       color: $primary;
     }
   }
 }
 
-.command-prefix {
-  font-size: 14px;
-  font-weight: 600;
-  color: $campus-amber;
-}
-
-.cta-secondary .cta-text {
+.link-text {
   font-size: 14px;
   font-weight: 500;
-  color: $charcoal;
+  color: $gray-600;
+  transition: color 0.3s ease;
+
+  @media (max-width: 768px) {
+    font-size: 13px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
 }
 
-.arrow-icon {
-  margin-left: auto;
+.link-arrow {
   color: $gray-400;
   transition: all 0.3s ease;
-}
-
-.hover-underline {
-  position: absolute;
-  bottom: 8px;
-  left: 20px;
-  width: 0;
-  height: 1px;
-  background: linear-gradient(90deg, $primary, $campus-teal);
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transform: skewX(-15deg);
 }
 
 // ==================== 状态输出栏 ====================

@@ -62,15 +62,10 @@
     <view class="diagonal-divider"></view>
 
     <view class="hero-container">
-      <!-- Left: Brand with Color Blocks -->
-      <view class="hero-left">
+      <!-- 单列布局:聚焦核心信息 -->
+      <view class="hero-content">
         <HeroBrand />
         <HeroCTA @ask="handleAsk" @browse="handleBrowse" />
-      </view>
-
-      <!-- Right: 3D Cards -->
-      <view class="hero-right">
-        <HeroCards3D />
       </view>
     </view>
   </view>
@@ -79,7 +74,6 @@
 <script setup lang="ts">
 import HeroBrand from './hero/HeroBrand.vue'
 import HeroCTA from './hero/HeroCTA.vue'
-import HeroCards3D from './hero/HeroCards3D.vue'
 
 const emit = defineEmits<{
   (e: 'ask'): void
@@ -125,30 +119,29 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
-// ==================== 对角斜切分割线 ====================
+// ==================== 对角斜切分割线（弱化装饰） ====================
 .diagonal-divider {
   position: absolute;
   top: -10%;
   left: 35%;
-  width: 8px;
+  width: 6px;
   height: 120%;
   transform: rotate(-15deg);
   transform-origin: top center;
   background: linear-gradient(180deg,
     transparent 0%,
-    $primary 10%,
-    $campus-teal 50%,
-    $campus-amber 90%,
+    rgba($primary, 0.15) 10%,
+    rgba($campus-teal, 0.12) 50%,
+    rgba($campus-amber, 0.1) 90%,
     transparent 100%);
   box-shadow:
-    0 0 40px rgba($primary, 0.6),
-    0 0 80px rgba($campus-teal, 0.4),
-    0 0 120px rgba($campus-amber, 0.3);
+    0 0 20px rgba($primary, 0.15),
+    0 0 40px rgba($campus-teal, 0.1);
   z-index: 1;
   animation: dividerPulse 3s ease-in-out infinite;
-  filter: blur(1px);
+  filter: blur(2px);
+  opacity: 0.4;
 
-  // 🔧 移动端隐藏分割线
   @media (max-width: 1024px) {
     display: none;
   }
@@ -287,23 +280,24 @@ $cream: $gray-50;            // 系统背景色
   &.node-8 { fill: $campus-teal; }
 }
 
-// 智能粒子流
+// 智能粒子流（弱化装饰）
 .smart-particles {
   position: absolute;
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+  opacity: 0.3;
 }
 
 .smart-particle {
   position: absolute;
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   background: linear-gradient(135deg, $primary, $campus-teal);
   border-radius: 50%;
-  box-shadow: 0 0 12px rgba($primary, 0.7);
+  box-shadow: 0 0 8px rgba($primary, 0.4);
   animation: smartFloat 12s ease-in-out infinite;
-  opacity: 0.6;
+  opacity: 0.4;
 
   &.particle-1 {
     top: 15%;
@@ -371,64 +365,62 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
-// ==================== Content Container ====================
+// ==================== Content Container：单列聚焦布局 ====================
 .hero-container {
-  max-width: 1400px;
+  max-width: 900px;
   margin: 0 auto;
-  // 🎯 压缩顶部留白：从 90px 减至 48px，视觉重心上移
   padding: 48px 64px 70px;
   position: relative;
   z-index: 1;
-  display: grid;
-  grid-template-columns: 50% 50%;
-  gap: 72px;
-  align-items: start;
+  display: flex;
+  justify-content: center;
 
   @media (max-width: 1600px) {
     padding: 45px 56px 65px;
-    gap: 64px;
   }
 
   @media (max-width: 1440px) {
     padding: 40px 48px 55px;
-    grid-template-columns: 1fr 460px;
-    gap: 56px;
   }
 
   @media (max-width: 1200px) {
     padding: 36px 40px 45px;
-    grid-template-columns: 1fr 420px;
-    gap: 48px;
   }
 
   @media (max-width: 1024px) {
-    grid-template-columns: 1fr;  // 🔧 单列布局
     padding: 32px 24px;
-    gap: 40px;
   }
 
   @media (max-width: 768px) {
-    padding: 28px 20px;  // 🔧 减小内边距
-    gap: 32px;
+    padding: 28px 20px;
   }
 
   @media (max-width: 480px) {
-    padding: 24px 16px;  // 🔧 小屏幕进一步减小
-    gap: 24px;
+    padding: 24px 16px;
   }
 }
 
-// ==================== Left Section ====================
-.hero-left {
+// ==================== Hero Content：统一焦点区域 ====================
+.hero-content {
   display: flex;
   flex-direction: column;
   gap: 48px;
+  width: 100%;
+  max-width: 680px;
   animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 1024px) {
     align-items: center;
     text-align: center;
     gap: 40px;
+  }
+
+  @media (max-width: 768px) {
+    gap: 36px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 32px;
   }
 }
 
@@ -440,16 +432,6 @@ $cream: $gray-50;            // 系统背景色
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-// ==================== Right Section ====================
-.hero-right {
-  position: relative;
-  animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-
-  @media (max-width: 1024px) {
-    display: none;
   }
 }
 </style>

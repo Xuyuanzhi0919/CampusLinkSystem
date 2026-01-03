@@ -99,12 +99,18 @@ const handleClick = (item: any) => {
 // 整体容器
 .grid-nav-wrapper {
   width: 100%;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F9FAFB 100%);
+  // 🎨 融入全页背景体系：半透明白色 + 毛玻璃
+  background: linear-gradient(180deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   padding: 20px 16px 24px;
   position: relative;
   z-index: 10;
   box-sizing: border-box;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  border-bottom: 1px solid rgba(37, 99, 235, 0.08);
 }
 
 // 标题区

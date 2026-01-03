@@ -107,7 +107,12 @@ $cream: $gray-50;            // 系统背景色
   overflow: hidden;
   margin-top: 64px;
   min-height: 650px;
-  background: linear-gradient(165deg, $cream 0%, #FFF 60%);
+  // 🎨 透明背景，继承全页渐变 + 局部强调
+  background: linear-gradient(165deg,
+    rgba(255, 255, 255, 0.4) 0%,
+    rgba(255, 255, 255, 0.2) 60%,
+    transparent 100%
+  );
 
   @media (max-width: 1024px) {
     min-height: auto;

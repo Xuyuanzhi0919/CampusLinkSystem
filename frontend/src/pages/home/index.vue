@@ -334,55 +334,58 @@ onUnmounted(() => {
 <style lang="scss" scoped>
 .home-page {
   min-height: 100vh;
-  // 页面基础背景色：底部使用深色与 Footer 融合，避免白色空白
-  background: #0F172A; // Footer 深色
   position: relative;
 
-  // 主背景层：全宽铺满，渐变光斑
-  // 背景 100% 宽度，内容区居中 - 避免左右空白断层
+  // 🎨 方案 B：分区背景体系 - 统一蓝绿色系，亮度递进
+  // 顶部（Hero+金刚区）→ 内容区 → 底部：#F6FAFF → #F9FBFE → #F3F6FA
+  background: linear-gradient(180deg,
+    #F6FAFF 0%,           // 顶部最亮（Hero 区域）
+    #F8FBFE 35%,          // 过渡
+    #F9FBFE 50%,          // 内容区（中等亮度）
+    #F7F9FC 75%,          // 过渡
+    #F3F6FA 100%          // 底部（略深，与 Footer 衔接）
+  );
+
+  // 全页统一纹理层：微噪点 + 网格
   &::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 1200px;
-    background:
-      // 页面顶部浅色基底
-      linear-gradient(180deg, #FAFBFC 0%, #FAFBFC 100%),
-      // 左上角主光斑（蓝色系）
-      radial-gradient(ellipse 80% 60% at 8% 10%, rgba(37, 99, 235, 0.06) 0%, transparent 50%),
-      // 右上角辅助光斑（青绿色系）
-      radial-gradient(ellipse 70% 50% at 92% 15%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
-      // 中部过渡光斑（柔和蓝）
-      radial-gradient(ellipse 60% 40% at 50% 30%, rgba(59, 130, 246, 0.03) 0%, transparent 50%),
-      // 底部渐隐到页面背景色
-      linear-gradient(180deg, transparent 0%, rgba(250, 251, 252, 0.85) 60%, #FAFBFC 100%);
+    height: 100%;
+    background-image:
+      // 微网格纹理（统一品牌感）
+      linear-gradient(rgba(37, 99, 235, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 99, 235, 0.02) 1px, transparent 1px),
+      // 噪点纹理（增加质感）
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 40px 40px, 40px 40px, auto;
+    background-position: -1px -1px, -1px -1px, 0 0;
     pointer-events: none;
     z-index: 0;
+    opacity: 0.8;
   }
 
-  // 顶部柔光装饰层 - 全宽覆盖
+  // 顶部区域强化光斑（Hero + 金刚区）
   &::after {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
-    height: 600px;
+    height: 800px;
     background:
-      // 横跨全屏的统一雾化带
-      linear-gradient(135deg,
-        rgba(239, 246, 255, 0.6) 0%,
-        rgba(240, 253, 244, 0.35) 25%,
-        rgba(239, 246, 255, 0.4) 50%,
-        rgba(240, 253, 244, 0.3) 75%,
-        rgba(250, 251, 252, 0.2) 100%
-      );
+      // 左上角主光斑（蓝色系）
+      radial-gradient(ellipse 60% 50% at 10% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 55%),
+      // 右上角辅助光斑（青绿色系）
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+      // 中部柔和光斑
+      radial-gradient(ellipse 70% 30% at 50% 40%, rgba(59, 130, 246, 0.04) 0%, transparent 60%);
     pointer-events: none;
     z-index: 0;
-    mask-image: linear-gradient(180deg, black 0%, transparent 100%);
-    -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 100%);
+    mask-image: linear-gradient(180deg, black 0%, transparent 90%);
+    -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 90%);
   }
 }
 
@@ -390,8 +393,8 @@ onUnmounted(() => {
 .main-content {
   position: relative;
   z-index: 1;
-  // 浅色背景覆盖深色底色
-  background: #FAFBFC;
+  // 🎨 透明背景，继承全页渐变体系
+  background: transparent;
   // 顶部间距
   padding-top: 48px;
   // 左右安全边距 80px - 专业级呼吸感

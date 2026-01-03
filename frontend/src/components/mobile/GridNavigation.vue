@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <view class="grid-nav">
     <view
       v-for="item in items"
@@ -41,7 +41,7 @@ const items = ref([
   },
   {
     id: 4,
-    icon: '✨',
+    icon: '✍️',
     label: '快捷发布',
     color: 'linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 100%)',
     url: '/pages/publish/index'

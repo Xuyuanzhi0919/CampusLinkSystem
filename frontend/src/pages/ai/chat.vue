@@ -745,42 +745,47 @@ const scrollToBottom = () => {
   height: 1px;
 }
 
-// ==================== 底部输入栏（层级3：主动作区） ====================
+// ==================== 底部输入栏（方案B：卡片一体式） ====================
 .input-section {
   position: relative;
   z-index: 100;
-  background: $white;
-  border-top: 1px solid $gray-200;
-  padding: 16px 24px;
-  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
-  box-shadow: 0 -1px 8px rgba($black, 0.03);
+  background: linear-gradient(180deg, rgba($white, 0) 0%, rgba($gray-50, 0.8) 100%);
+  backdrop-filter: blur(8px);
+  padding: 20px 24px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
 }
 
 .input-inner {
   max-width: 800px;
   margin: 0 auto;
+  position: relative;
+  background: $white;
+  border: 2px solid $gray-200;
+  border-radius: 24px;
+  padding: 8px 8px 8px 18px;
   display: flex;
   align-items: flex-end;
   gap: 12px;
+  box-shadow: 0 4px 20px rgba($black, 0.08), 0 1px 3px rgba($black, 0.04);
+  transition: all 0.3s;
+
+  &:focus-within {
+    border-color: $primary;
+    box-shadow: 0 6px 28px rgba($primary, 0.15), 0 2px 8px rgba($primary, 0.08);
+    transform: translateY(-2px);
+  }
 }
 
 .input-field {
   flex: 1;
-  background: $white;
-  border: 2px solid $gray-300;
-  border-radius: 16px;
-  padding: 12px 16px;
-  transition: all 0.2s;
-
-  &:focus-within {
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.1);
-  }
+  display: flex;
+  align-items: center;
+  min-height: 48px;
 }
 
 .input-textarea {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   max-height: 120px;
   font-size: 15px;
   line-height: 1.5;
@@ -789,6 +794,8 @@ const scrollToBottom = () => {
   border: none;
   outline: none;
   font-weight: 400;
+  resize: none;
+  padding: 12px 0;
 
   &::placeholder {
     color: $gray-400;
@@ -798,43 +805,61 @@ const scrollToBottom = () => {
 
 .send-btn {
   flex-shrink: 0;
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: $gray-200;
   border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  cursor: not-allowed;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  overflow: hidden;
 
   svg {
-    width: 22px;
-    height: 22px;
+    width: 20px;
+    height: 20px;
     color: $gray-400;
+    transition: all 0.2s;
   }
 
   &.active {
+    cursor: pointer;
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
 
     svg {
       color: $white;
     }
 
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba($white, 0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
     &:hover {
-      transform: scale(1.06);
-      box-shadow: 0 6px 16px rgba($primary, 0.4);
+      transform: scale(1.08);
+      box-shadow: 0 6px 20px rgba($primary, 0.45);
+
+      &::before {
+        opacity: 1;
+      }
     }
 
     &:active {
-      transform: scale(0.96);
+      transform: scale(0.95);
     }
   }
 
   &.loading {
+    cursor: wait;
     background: linear-gradient(135deg, $primary, $primary-light);
-    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
     pointer-events: none;
 
     svg {
@@ -1079,31 +1104,33 @@ const scrollToBottom = () => {
   }
 
   .input-section {
-    padding: 20px;
-    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+    padding: 16px 20px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0));
   }
 
   .input-inner {
-    gap: 14px;
+    padding: 6px 6px 6px 16px;
+    border-radius: 22px;
+    gap: 10px;
   }
 
   .input-field {
-    padding: 14px 18px;
-    border-radius: 18px;
+    min-height: 44px;
   }
 
   .input-textarea {
     font-size: 16px;
-    min-height: 48px;
+    min-height: 44px;
+    padding: 10px 0;
   }
 
   .send-btn {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
 
     svg {
-      width: 24px;
-      height: 24px;
+      width: 22px;
+      height: 22px;
     }
   }
 

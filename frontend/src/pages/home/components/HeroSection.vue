@@ -112,11 +112,11 @@ $cream: $gray-50;            // 系统背景色
   @media (max-width: 1024px) {
     min-height: auto;
     margin-top: 0;
-    padding-top: 80px;  // 🔧 移动端顶部留白
+    padding-top: 120px;  // 🔧 移动端顶部留白（状态栏 + 导航栏约 100px）
   }
 
   @media (max-width: 768px) {
-    padding-top: 60px;  // 🔧 小屏幕减小留白
+    padding-top: 110px;  // 🔧 小屏幕留白
   }
 }
 

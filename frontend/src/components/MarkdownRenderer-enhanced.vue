@@ -34,7 +34,7 @@ import json from 'highlight.js/lib/languages/json'
 // @ts-ignore
 import markdownItKatex from 'markdown-it-katex'        // 数学公式
 // @ts-ignore
-import markdownItEmoji from 'markdown-it-emoji'        // Emoji
+import { full as markdownItEmoji } from 'markdown-it-emoji'        // Emoji (使用 full 版本)
 // @ts-ignore
 import markdownItTaskLists from 'markdown-it-task-lists' // 任务列表
 // @ts-ignore

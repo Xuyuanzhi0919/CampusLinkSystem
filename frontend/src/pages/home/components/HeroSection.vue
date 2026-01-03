@@ -365,51 +365,53 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
-// ==================== Content Container：单列聚焦布局 ====================
+// ==================== Content Container：左对齐布局 ====================
 .hero-container {
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 48px 64px 70px;
+  padding: 48px 80px 70px;
   position: relative;
   z-index: 1;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
 
   @media (max-width: 1600px) {
-    padding: 45px 56px 65px;
+    padding: 45px 64px 65px;
   }
 
   @media (max-width: 1440px) {
-    padding: 40px 48px 55px;
+    padding: 40px 56px 55px;
   }
 
   @media (max-width: 1200px) {
-    padding: 36px 40px 45px;
+    padding: 36px 48px 45px;
   }
 
   @media (max-width: 1024px) {
-    padding: 32px 24px;
+    padding: 32px 32px;
+    justify-content: center;
   }
 
   @media (max-width: 768px) {
-    padding: 28px 20px;
+    padding: 28px 24px;
   }
 
   @media (max-width: 480px) {
-    padding: 24px 16px;
+    padding: 24px 20px;
   }
 }
 
-// ==================== Hero Content：统一焦点区域 ====================
+// ==================== Hero Content：左对齐焦点区域 ====================
 .hero-content {
   display: flex;
   flex-direction: column;
   gap: 48px;
   width: 100%;
   max-width: 680px;
-  animation: slideInUp 1s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideInLeft 1s cubic-bezier(0.16, 1, 0.3, 1);
 
   @media (max-width: 1024px) {
+    max-width: 100%;
     align-items: center;
     text-align: center;
     gap: 40px;
@@ -424,14 +426,14 @@ $cream: $gray-50;            // 系统背景色
   }
 }
 
-@keyframes slideInUp {
+@keyframes slideInLeft {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateX(-40px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateX(0);
   }
 }
 </style>

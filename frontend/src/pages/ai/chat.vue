@@ -897,6 +897,34 @@ const scrollToBottom = () => {
   overflow-y: auto;
   padding: 16px 16px 16px 12px; // 右侧增加内边距，防止阴影被裁切
   overflow-x: visible; // 允许阴影溢出
+
+  // 自定义滚动条样式（仅在支持的浏览器中生效）
+  &::-webkit-scrollbar {
+    width: 6px; // 滚动条宽度
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent; // 轨道透明
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gray-400, 0.3); // 滑块颜色（半透明灰色）
+    border-radius: 3px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba($gray-400, 0.5); // hover 时加深
+    }
+
+    &:active {
+      background: rgba($gray-500, 0.6); // 拖动时更深
+    }
+  }
+
+  // Firefox 滚动条样式
+  scrollbar-width: thin; // 细滚动条
+  scrollbar-color: rgba($gray-400, 0.3) transparent; // 滑块颜色 轨道颜色
 }
 
 .session-item {
@@ -1019,6 +1047,34 @@ const scrollToBottom = () => {
   position: relative;
   z-index: 1;
   overflow-y: auto;
+
+  // 自定义滚动条样式（与会话列表保持一致）
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba($gray-400, 0.3);
+    border-radius: 3px;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba($gray-400, 0.5);
+    }
+
+    &:active {
+      background: rgba($gray-500, 0.6);
+    }
+  }
+
+  // Firefox 滚动条样式
+  scrollbar-width: thin;
+  scrollbar-color: rgba($gray-400, 0.3) transparent;
 }
 
 // ==================== 欢迎屏幕 ====================

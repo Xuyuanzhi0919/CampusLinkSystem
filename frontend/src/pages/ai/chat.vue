@@ -90,58 +90,53 @@
       <!-- 对话列表 -->
       <view v-else class="conversation-container">
         <view
-          v-for="msg in messages"
-          :key="msg.id"
-          class="message-wrapper"
-          :class="msg.role"
+          v-for="(pair, index) in messagePairs"
+          :key="`pair-${index}`"
+          class="qa-group"
         >
           <!-- 用户问题 -->
-          <template v-if="msg.role === 'user'">
-            <view class="user-message-group">
-              <view class="user-avatar">
-                <image v-if="userAvatar" :src="userAvatar" class="avatar-img" mode="aspectFill" />
-                <text v-else class="avatar-text">{{ userInitial }}</text>
-              </view>
-              <view class="user-message-card">
-                <view class="user-content">
-                  <text class="user-text">{{ msg.content }}</text>
-                </view>
-                <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
+          <view class="user-message-group">
+            <view class="user-avatar">
+              <image v-if="userAvatar" :src="userAvatar" class="avatar-img" mode="aspectFill" />
+              <text v-else class="avatar-text">{{ userInitial }}</text>
+            </view>
+            <view class="user-message-card">
+              <view class="user-content">
+                <text class="user-text">{{ pair.user.content }}</text>
               </view>
             </view>
-          </template>
+          </view>
+          <view class="user-timestamp">{{ formatTime(pair.user.timestamp) }}</view>
 
           <!-- AI 回复 -->
-          <template v-else>
-            <view class="ai-message-card">
-              <view class="ai-header">
-                <view class="ai-avatar">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
-                    <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
-                    <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
-                    <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
-                    <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
-                </view>
-                <text class="ai-label">AI 助手</text>
+          <view v-if="pair.assistant" class="ai-message-card">
+            <view class="ai-header">
+              <view class="ai-avatar">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
+                  <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
+                  <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
+                  <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
+                  <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
               </view>
-              <view class="ai-content">
-                <text class="ai-text">{{ msg.content }}</text>
-                <view v-if="msg.isStreaming" class="typing-cursor"></view>
-              </view>
-              <view v-if="!msg.isStreaming" class="ai-footer">
-                <text class="msg-timestamp">{{ formatTime(msg.timestamp) }}</text>
-                <view class="action-copy" @click="handleCopy(msg.content)">
-                  <svg viewBox="0 0 16 16" fill="none">
-                    <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                    <path d="M3 11V3C3 2.4 3.4 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
-                  </svg>
-                  <text>复制</text>
-                </view>
+              <text class="ai-label">AI 助手</text>
+            </view>
+            <view class="ai-content">
+              <text class="ai-text">{{ pair.assistant.content }}</text>
+              <view v-if="pair.assistant.isStreaming" class="typing-cursor"></view>
+            </view>
+            <view v-if="!pair.assistant.isStreaming" class="ai-footer">
+              <text class="msg-timestamp">{{ formatTime(pair.assistant.timestamp) }}</text>
+              <view class="action-copy" @click="handleCopy(pair.assistant.content)">
+                <svg viewBox="0 0 16 16" fill="none">
+                  <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
+                  <path d="M3 11V3C3 2.4 3.4 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <text>复制</text>
               </view>
             </view>
-          </template>
+          </view>
         </view>
         <view id="messages-end" class="scroll-anchor"></view>
       </view>
@@ -224,6 +219,23 @@ const userAvatar = computed(() => userStore.userInfo?.avatar || userStore.userIn
 const userInitial = computed(() => {
   const nickname = userStore.userInfo?.nickname || userStore.userInfo?.username || '我'
   return nickname.charAt(0).toUpperCase()
+})
+
+// 将消息配对成问答组
+const messagePairs = computed(() => {
+  const pairs: Array<{ user: Message; assistant?: Message }> = []
+  for (let i = 0; i < messages.value.length; i++) {
+    const msg = messages.value[i]
+    if (msg.role === 'user') {
+      const nextMsg = messages.value[i + 1]
+      pairs.push({
+        user: msg,
+        assistant: nextMsg?.role === 'assistant' ? nextMsg : undefined
+      })
+      if (nextMsg?.role === 'assistant') i++ // 跳过已配对的 AI 消息
+    }
+  }
+  return pairs
 })
 
 onMounted(() => {
@@ -582,13 +594,19 @@ const scrollToBottom = () => {
 
 // ==================== 对话容器 ====================
 .conversation-container {
-  max-width: 800px;
+  max-width: 760px;
   margin: 0 auto;
-  padding: 20px 24px 100px;
+  padding: 16px 24px 100px;
+  background: rgba($gray-50, 0.4); // 轻微加深背景，让气泡"落地"
 }
 
-.message-wrapper {
-  margin-bottom: 12px;
+// ==================== 问答成组结构 ====================
+.qa-group {
+  background: rgba($white, 0.5);
+  border: 1px solid rgba($gray-200, 0.6);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
   animation: fadeIn 0.3s ease-out;
 
   &:last-of-type {
@@ -607,25 +625,26 @@ const scrollToBottom = () => {
   }
 }
 
-// ==================== 用户问题卡片（层级1：最高） ====================
+// ==================== 用户问题卡片（层级1：最高，视觉权重强） ====================
 .user-message-group {
   display: flex;
   align-items: flex-start;
   gap: 12px;
   flex-direction: row-reverse;
+  margin-bottom: 6px; // 与时间戳的间距
 }
 
 .user-avatar {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   overflow: hidden;
   background: linear-gradient(135deg, $primary, $primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba($primary, 0.25);
+  box-shadow: 0 3px 10px rgba($primary, 0.3);
 }
 
 .avatar-img {
@@ -635,7 +654,7 @@ const scrollToBottom = () => {
 }
 
 .avatar-text {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: $white;
   line-height: 1;
@@ -643,52 +662,58 @@ const scrollToBottom = () => {
 
 .user-message-card {
   flex: 1;
-  max-width: calc(100% - 48px);
-  background: linear-gradient(135deg, $primary, $primary-light);
-  border-radius: 14px;
-  padding: 14px 18px;
-  box-shadow: 0 2px 8px rgba($primary, 0.2);
+  max-width: 75%; // 用户气泡宽度略窄（70-80%）
+  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+  border-radius: 18px 18px 4px 18px; // 右下角小圆角，增强对话感
+  padding: 16px 20px;
+  box-shadow: 0 3px 12px rgba($primary, 0.25), 0 1px 4px rgba($primary, 0.15);
 }
 
 .user-content {
-  margin-bottom: 6px;
+  // 移除内部间距，让文本更紧凑
 }
 
 .user-text {
   display: block;
-  font-size: 15px;
+  font-size: 16px; // 略大字号
   font-weight: 500;
-  line-height: 1.6;
+  line-height: 1.65;
   color: $white;
   word-wrap: break-word;
   white-space: pre-wrap;
+  max-width: 620px; // 控制最大行宽
 }
 
-.msg-timestamp {
-  font-size: 11px;
-  color: rgba($white, 0.7);
+// 用户时间戳：右对齐，放在气泡下方
+.user-timestamp {
+  text-align: right;
+  padding-right: 50px; // 对齐用户头像右侧
+  font-size: 12px;
+  color: $gray-400;
   font-weight: 400;
+  margin-bottom: 12px; // 与 AI 回复的间距
 }
 
-// ==================== AI 回复卡片（层级2：次高） ====================
+// ==================== AI 回复卡片（层级2：次高，宽度更宽） ====================
 .ai-message-card {
+  max-width: 85%; // AI 卡片宽度更宽（80-90%）
   background: $white;
-  border: 1px solid $gray-200;
-  border-radius: 14px;
-  padding: 16px;
-  box-shadow: 0 1px 6px rgba($black, 0.04);
+  border: 1.5px solid $gray-200;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba($black, 0.06), 0 1px 3px rgba($black, 0.03);
 }
 
 .ai-header {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px; // 增加头部与内容间距
 }
 
 .ai-avatar {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -706,21 +731,27 @@ const scrollToBottom = () => {
 .ai-label {
   font-size: 13px;
   font-weight: 600;
-  color: $gray-800;
+  color: $gray-700;
 }
 
 .ai-content {
-  margin-bottom: 12px;
+  margin-bottom: 14px;
   position: relative;
 }
 
 .ai-text {
   display: block;
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.75; // 更舒适的行高
   color: $gray-900;
   word-wrap: break-word;
   white-space: pre-wrap;
+  max-width: 680px; // 控制最大行宽
+
+  // 段落间距（如果有换行）
+  p + p, & + & {
+    margin-top: 8px;
+  }
 }
 
 .typing-cursor {
@@ -739,16 +770,18 @@ const scrollToBottom = () => {
   }
 }
 
+// AI footer：时间和复制按钮统一在一行
 .ai-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid $gray-100;
+  padding-top: 12px;
+  border-top: 1px solid rgba($gray-200, 0.6);
 
   .msg-timestamp {
     color: $gray-400;
-    font-size: 11px;
+    font-size: 12px;
+    font-weight: 400;
   }
 }
 
@@ -1100,11 +1133,18 @@ const scrollToBottom = () => {
   }
 
   .conversation-container {
-    padding: 20px 20px 120px;
+    padding: 16px 16px 120px;
+    background: rgba($gray-50, 0.5);
   }
 
-  .message-wrapper {
-    margin-bottom: 14px;
+  .qa-group {
+    padding: 14px;
+    margin-bottom: 16px;
+    border-radius: 14px;
+  }
+
+  .user-message-group {
+    margin-bottom: 6px;
   }
 
   .user-avatar {
@@ -1117,17 +1157,25 @@ const scrollToBottom = () => {
   }
 
   .user-message-card {
-    max-width: calc(100% - 52px);
+    max-width: 78%;
     padding: 16px 18px;
-    border-radius: 14px;
+    border-radius: 16px 16px 4px 16px;
   }
 
   .user-text {
     font-size: 16px;
+    line-height: 1.7;
+    max-width: 100%;
+  }
+
+  .user-timestamp {
+    padding-right: 52px;
+    margin-bottom: 10px;
   }
 
   .ai-message-card {
-    padding: 20px;
+    max-width: 88%;
+    padding: 16px 18px;
     border-radius: 14px;
   }
 
@@ -1142,7 +1190,8 @@ const scrollToBottom = () => {
 
   .ai-text {
     font-size: 15px;
-    line-height: 1.7;
+    line-height: 1.75;
+    max-width: 100%;
   }
 
   .action-copy {

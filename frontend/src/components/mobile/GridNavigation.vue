@@ -76,8 +76,6 @@ const handleNavigate = (url: string) => {
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   overflow-x: auto;
   overflow-y: hidden;
-  // 为固定定位的 MobileHeader 留出空间（状态栏 + 导航栏约 100px）
-  padding-top: 100px;
 
   &::-webkit-scrollbar {
     display: none;

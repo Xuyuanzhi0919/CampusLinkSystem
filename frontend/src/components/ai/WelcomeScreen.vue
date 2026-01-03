@@ -212,7 +212,7 @@ const handlePromptClick = (prompt: QuickPrompt) => {
   border: 2px solid rgba($white, 0.1);
   border-radius: $radius-2xl;
   cursor: pointer;
-  transition: all $transition-normal;
+  transition: all $transition-base;
 
   &::before {
     content: '';
@@ -221,7 +221,7 @@ const handlePromptClick = (prompt: QuickPrompt) => {
     border-radius: inherit;
     background: linear-gradient(135deg, rgba(55, 125, 255, 0.1), transparent);
     opacity: 0;
-    transition: opacity $transition-normal;
+    transition: opacity $transition-base;
   }
 
   &:hover {

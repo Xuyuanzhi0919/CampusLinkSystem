@@ -50,6 +50,10 @@ $color-bg-card: #FFFFFF;         // 卡片背景
 $color-bg-hover: #F8FAFC;        // 悬浮背景
 $color-bg-overlay: rgba(0, 0, 0, 0.5); // 遮罩层
 
+/* 基础颜色 - Base Colors */
+$white: #FFFFFF;                 // 白色
+$black: #000000;                 // 黑色
+
 /* ========================================
    2. 字体体系 - Typography Tokens
    ======================================== */
@@ -112,6 +116,7 @@ $radius-md: 16rpx;               // 8px - 输入框
 $radius-lg: 24rpx;               // 12px - 操作区域
 $radius-xl: 32rpx;               // 16px - 卡片
 $radius-2xl: 40rpx;              // 20px - 大卡片
+$radius-3xl: 48rpx;              // 24px - 超大卡片/弹窗
 $radius-full: 9999rpx;           // 圆形（头像）
 
 /* 语义化圆角 - Semantic Radius */
@@ -395,5 +400,24 @@ $meta-item-gap: $spacing-8;                      // 16px（项目之间间距）
     -webkit-line-clamp: $lines;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+}
+
+/* 响应式断点工具 */
+@mixin mobile {
+  @media (max-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-md) and (max-width: $breakpoint-lg) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-lg) {
+    @content;
   }
 }

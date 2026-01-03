@@ -15,15 +15,28 @@
     </view>
 
     <!-- Error State -->
-    <view v-else-if="hasError" class="error-container">
-      <text>加载失败</text>
-      <button @click="loadData">重试</button>
-    </view>
+    <EmptyState
+      v-else-if="hasError"
+      type="network"
+      size="medium"
+      title="活动加载失败"
+      description="网络连接异常，请检查后重试"
+      action-text="重试"
+      action-type="secondary"
+      @action="loadData"
+    />
 
     <!-- Empty State -->
-    <view v-else-if="activityList.length === 0" class="empty-container">
-      <text>暂无活动</text>
-    </view>
+    <EmptyState
+      v-else-if="activityList.length === 0"
+      type="empty"
+      size="medium"
+      title="近期还没有活动"
+      description="查看更多社团动态或发起新活动"
+      action-text="浏览社团"
+      action-type="primary"
+      @action="handleGoClub"
+    />
 
     <!-- Activities List -->
     <view v-else class="activities-list">
@@ -45,6 +58,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+// 空状态组件
+import { EmptyState } from '@/components/empty-state'
+
 // H5 端导入企业级组件
 // #ifdef H5
 import { ClEventCard } from '@/components/cl'
@@ -52,11 +68,14 @@ import { ClEventCard } from '@/components/cl'
 
 import { getActivityList } from '@/services/activity'
 import { requireLogin } from '@/utils/auth'
+import { useNavigation } from '@/composables/useNavigation'
 
 const emit = defineEmits<{
   'activity-click': [activity: any]
   'view-more': []
 }>()
+
+const nav = useNavigation()
 
 const loading = ref(true)
 const hasError = ref(false)
@@ -140,6 +159,10 @@ const handleRegister = (activity: any) => {
 
 const handleMetaClick = (item: any, activity: any) => {
   console.log('点击元数据:', item, activity)
+}
+
+const handleGoClub = () => {
+  nav.toActivityList()
 }
 
 const handleViewMore = () => {

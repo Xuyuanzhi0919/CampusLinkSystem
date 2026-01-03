@@ -15,15 +15,28 @@
     </view>
 
     <!-- Error State -->
-    <view v-else-if="hasError" class="error-container">
-      <text>加载失败</text>
-      <button @click="loadData">重试</button>
-    </view>
+    <EmptyState
+      v-else-if="hasError"
+      type="error"
+      size="medium"
+      title="资料加载失败"
+      description="服务暂时不可用，请稍后重试"
+      action-text="重试"
+      action-type="secondary"
+      @action="loadData"
+    />
 
     <!-- Empty State -->
-    <view v-else-if="resourceList.length === 0" class="empty-container">
-      <text>暂无资料</text>
-    </view>
+    <EmptyState
+      v-else-if="resourceList.length === 0"
+      type="empty"
+      size="medium"
+      title="还没人上传资料"
+      description="成为第一个分享者，帮助同学"
+      action-text="上传资料"
+      action-type="primary"
+      @action="handleGoUpload"
+    />
 
     <!-- Resources Grid -->
     <view v-else class="resources-grid">
@@ -45,6 +58,9 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
+// 空状态组件
+import { EmptyState } from '@/components/empty-state'
+
 // H5 端导入企业级组件
 // #ifdef H5
 import { ClResourceCard } from '@/components/cl'
@@ -52,11 +68,14 @@ import { ClResourceCard } from '@/components/cl'
 
 import { getResourceList } from '@/services/resource'
 import { requireLogin } from '@/utils/auth'
+import { useNavigation } from '@/composables/useNavigation'
 
 const emit = defineEmits<{
   'resource-click': [resource: any]
   'view-more': []
 }>()
+
+const nav = useNavigation()
 
 const loading = ref(true)
 const hasError = ref(false)
@@ -131,6 +150,10 @@ const handleDownload = (resource: any) => {
 
 const handleMetaClick = (item: any, resource: any) => {
   console.log('点击元数据:', item, resource)
+}
+
+const handleGoUpload = () => {
+  nav.toPublish()
 }
 
 const handleViewMore = () => {

@@ -177,6 +177,10 @@ const handleCommentClick = (question: any) => {
   })
 }
 
+const handleGoAsk = () => {
+  nav.toPublish()
+}
+
 const handleViewMore = () => {
   emit('view-more')
   uni.navigateTo({

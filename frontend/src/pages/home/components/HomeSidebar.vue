@@ -1,41 +1,53 @@
 <template>
   <view class="home-sidebar">
-    <!-- 模块1: AI 智能推荐入口（置顶） -->
-    <view class="sidebar-card card-ai">
-      <view class="card-header">
-        <view class="ai-header-icon">✨</view>
-        <text class="header-title">AI 智能助手</text>
-      </view>
+    <!-- 模块1: AI 智能助手（创意重构版） -->
+    <view class="sidebar-card card-ai" @click="handleAIClick">
+      <!-- 动态渐变背景装饰 -->
+      <view class="ai-gradient-orb ai-orb-1"></view>
+      <view class="ai-gradient-orb ai-orb-2"></view>
+      <view class="ai-gradient-orb ai-orb-3"></view>
 
-      <view class="ai-content">
-        <view class="ai-feature">
-          <view class="feature-icon">🎯</view>
-          <view class="feature-text">
-            <text class="feature-title">智能推荐</text>
-            <text class="feature-desc">个性化学习路径</text>
+      <!-- AI 机器人头像区 -->
+      <view class="ai-avatar-section">
+        <view class="ai-avatar">
+          <view class="avatar-circle">
+            <text class="avatar-emoji">🤖</text>
+            <view class="avatar-pulse"></view>
           </view>
-        </view>
-
-        <view class="ai-feature">
-          <view class="feature-icon">💡</view>
-          <view class="feature-text">
-            <text class="feature-title">即时解答</text>
-            <text class="feature-desc">24/7 在线问答</text>
-          </view>
-        </view>
-
-        <view class="ai-feature">
-          <view class="feature-icon">📚</view>
-          <view class="feature-text">
-            <text class="feature-title">知识检索</text>
-            <text class="feature-desc">海量资源查找</text>
+          <view class="status-indicator">
+            <view class="status-dot"></view>
+            <text class="status-text">在线</text>
           </view>
         </view>
       </view>
 
-      <view class="ai-cta" @click="handleAIClick">
+      <!-- AI 问候语 + 动态打字效果 -->
+      <view class="ai-greeting">
+        <text class="greeting-text">嗨！我是你的 AI 学习助手</text>
+        <text class="greeting-subtext">随时为你答疑解惑 ✨</text>
+      </view>
+
+      <!-- 快速功能入口（3个气泡按钮） -->
+      <view class="ai-quick-actions">
+        <view class="quick-action-bubble bubble-1" @click.stop="handleQuickAction('recommend')">
+          <text class="bubble-emoji">🎯</text>
+          <text class="bubble-text">智能推荐</text>
+        </view>
+        <view class="quick-action-bubble bubble-2" @click.stop="handleQuickAction('qa')">
+          <text class="bubble-emoji">💬</text>
+          <text class="bubble-text">即问即答</text>
+        </view>
+        <view class="quick-action-bubble bubble-3" @click.stop="handleQuickAction('search')">
+          <text class="bubble-emoji">🔍</text>
+          <text class="bubble-text">资源查找</text>
+        </view>
+      </view>
+
+      <!-- 主 CTA 按钮（呼吸光效） -->
+      <view class="ai-main-cta">
+        <view class="cta-glow"></view>
         <text class="cta-text">开始对话</text>
-        <text class="cta-arrow">→</text>
+        <view class="cta-sparkle">✨</view>
       </view>
     </view>
 
@@ -248,6 +260,12 @@ const handleTagClick = (tag: HotTag) => {
 }
 
 const handleAIClick = () => {
+  emit('ai-click')
+}
+
+const handleQuickAction = (action: string) => {
+  // 快速功能点击处理
+  console.log('[AI Quick Action]:', action)
   emit('ai-click')
 }
 
@@ -825,109 +843,289 @@ onMounted(() => {
   animation: skeleton-pulse 1.5s infinite;
 }
 
-/* ========== 模块1: AI 智能推荐入口（重构版） ========== */
+/* ========== 模块1: AI 智能助手（创意重构版） ========== */
 .card-ai {
-  // 去除旧的渐变背景，使用统一卡片样式
   position: relative;
-  overflow: visible;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-  // AI 卡片特殊装饰：左上角渐变光斑
-  &::before {
-    content: '';
-    position: absolute;
-    top: -20rpx;
-    right: -20rpx;
-    width: 120rpx;
-    height: 120rpx;
-    background: radial-gradient(circle, rgba($campus-blue, 0.12) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
+  // 整体卡片 Hover 效果
+  &:hover {
+    transform: translateY(-4rpx) scale(1.01);
+    box-shadow:
+      0 16px 48px rgba($campus-blue, 0.15),
+      0 8px 24px rgba(0, 0, 0, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 1);
+
+    .ai-gradient-orb {
+      transform: scale(1.2);
+      opacity: 0.8;
+    }
+
+    .avatar-pulse {
+      animation-duration: 1.5s;
+    }
+
+    .cta-glow {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+
+    .quick-action-bubble {
+      transform: translateY(-2rpx) scale(1.05);
+    }
   }
 }
 
-.ai-header-icon {
-  font-size: 32rpx;
-  line-height: 1;
-  animation: sparkle 2s infinite ease-in-out;
+/* 动态渐变背景装饰球 */
+.ai-gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.5;
+  transition: all 0.6s ease-out;
+  pointer-events: none;
 }
 
-@keyframes sparkle {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.1); opacity: 0.8; }
+.ai-orb-1 {
+  width: 200rpx;
+  height: 200rpx;
+  background: radial-gradient(circle, rgba($campus-blue, 0.3) 0%, transparent 70%);
+  top: -80rpx;
+  left: -40rpx;
+  animation: float-1 8s infinite ease-in-out;
 }
 
-.ai-content {
+.ai-orb-2 {
+  width: 160rpx;
+  height: 160rpx;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+  bottom: -60rpx;
+  right: -30rpx;
+  animation: float-2 10s infinite ease-in-out;
+}
+
+.ai-orb-3 {
+  width: 120rpx;
+  height: 120rpx;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%);
+  top: 50%;
+  right: 10rpx;
+  animation: float-3 12s infinite ease-in-out;
+}
+
+@keyframes float-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(20rpx, -20rpx) scale(1.1); }
+}
+
+@keyframes float-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-15rpx, 15rpx) scale(1.15); }
+}
+
+@keyframes float-3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(10rpx, 20rpx) scale(1.08); }
+}
+
+/* AI 头像区 */
+.ai-avatar-section {
   display: flex;
-  flex-direction: column;
-  gap: $spacing-4;
+  justify-content: center;
   margin-bottom: $spacing-5;
   position: relative;
   z-index: 1;
 }
 
-.ai-feature {
+.ai-avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+.avatar-circle {
+  position: relative;
+  width: 120rpx;
+  height: 120rpx;
+  background: linear-gradient(135deg, rgba($campus-blue, 0.15) 0%, rgba(139, 92, 246, 0.15) 100%);
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: $spacing-4;
-  padding: $spacing-3 $spacing-4;
-  background: rgba($campus-blue, 0.03);
-  border-radius: $radius-md;
-  border-left: 3px solid rgba($campus-blue, 0.3);
-  transition: all $transition-fast;
+  justify-content: center;
+  border: 4rpx solid rgba(255, 255, 255, 0.9);
+  box-shadow:
+    0 8rpx 24rpx rgba($campus-blue, 0.25),
+    inset 0 2rpx 4rpx rgba(255, 255, 255, 0.8);
+}
 
-  &:hover {
-    background: rgba($campus-blue, 0.06);
-    border-left-color: $campus-blue;
-    transform: translateX(4rpx);
+.avatar-emoji {
+  font-size: 64rpx;
+  line-height: 1;
+  animation: robot-bounce 3s infinite ease-in-out;
+}
+
+@keyframes robot-bounce {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-4rpx) rotate(-5deg); }
+  75% { transform: translateY(-2rpx) rotate(5deg); }
+}
+
+.avatar-pulse {
+  position: absolute;
+  inset: -8rpx;
+  border-radius: 50%;
+  border: 3rpx solid rgba($campus-blue, 0.4);
+  animation: pulse-ring 2s infinite ease-out;
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 0;
   }
 }
 
-.feature-icon {
-  font-size: 36rpx;
-  line-height: 1;
-  flex-shrink: 0;
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+  padding: 6rpx 16rpx;
+  background: rgba(16, 185, 129, 0.15);
+  border-radius: 20rpx;
+  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-.feature-text {
+.status-dot {
+  width: 12rpx;
+  height: 12rpx;
+  background: #10B981;
+  border-radius: 50%;
+  animation: blink 2s infinite ease-in-out;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.status-text {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: #059669;
+}
+
+/* AI 问候语 */
+.ai-greeting {
+  text-align: center;
+  margin-bottom: $spacing-6;
+  position: relative;
+  z-index: 1;
+}
+
+.greeting-text {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.5;
+  margin-bottom: $spacing-2;
+}
+
+.greeting-subtext {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+/* 快速功能气泡 */
+.ai-quick-actions {
+  display: flex;
+  gap: $spacing-3;
+  margin-bottom: $spacing-6;
+  position: relative;
+  z-index: 1;
+}
+
+.quick-action-bubble {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2rpx;
+  align-items: center;
+  gap: $spacing-2;
+  padding: $spacing-4 $spacing-3;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: $radius-lg;
+  border: 1px solid rgba($campus-blue, 0.15);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+
+  // 渐变光效背景
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba($campus-blue, 0.05) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+
+  &:hover {
+    border-color: rgba($campus-blue, 0.4);
+    box-shadow: 0 4rpx 16rpx rgba($campus-blue, 0.2);
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
 }
 
-.feature-title {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  line-height: 1.2;
+.bubble-emoji {
+  font-size: 32rpx;
+  line-height: 1;
 }
 
-.feature-desc {
-  font-size: $font-size-xs;
-  color: $color-text-tertiary;
-  line-height: 1.3;
+.bubble-text {
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  color: $color-text-secondary;
+  white-space: nowrap;
 }
 
-.ai-cta {
+/* 主 CTA 按钮（呼吸光效） */
+.ai-main-cta {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: $spacing-2;
-  padding: $spacing-4 $spacing-6;
-  background: transparent;
-  border: 1px solid rgba($campus-blue, 0.3);
-  border-radius: $radius-md;
+  padding: $spacing-5 $spacing-6;
+  background: linear-gradient(135deg, $campus-blue 0%, #5A8BFF 100%);
+  border-radius: $radius-lg;
   cursor: pointer;
-  transition: all $transition-fast;
-  position: relative;
+  overflow: hidden;
   z-index: 1;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
   &:hover {
-    background: rgba($campus-blue, 0.06);
-    border-color: $campus-blue;
     transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 12rpx rgba($campus-blue, 0.15);
+    box-shadow:
+      0 8rpx 24rpx rgba($campus-blue, 0.4),
+      0 4rpx 12rpx rgba($campus-blue, 0.2);
   }
 
   &:active {
@@ -935,20 +1133,42 @@ onMounted(() => {
   }
 }
 
+.cta-glow {
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: all 0.6s ease;
+  animation: glow-pulse 3s infinite ease-in-out;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { transform: scale(0.8); opacity: 0.3; }
+  50% { transform: scale(1.2); opacity: 0.6; }
+}
+
 .cta-text {
-  font-size: $font-size-sm;
-  color: $campus-blue;
+  font-size: $font-size-base;
   font-weight: $font-weight-semibold;
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
+  position: relative;
+  z-index: 1;
 }
 
-.cta-arrow {
-  font-size: $font-size-md;
-  color: $campus-blue;
-  transition: transform $transition-fast;
+.cta-sparkle {
+  font-size: $font-size-lg;
+  line-height: 1;
+  position: relative;
+  z-index: 1;
+  animation: sparkle-rotate 4s infinite linear;
 }
 
-.ai-cta:hover .cta-arrow {
-  transform: translateX(4rpx);
+@keyframes sparkle-rotate {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(90deg) scale(1.1); }
+  50% { transform: rotate(180deg) scale(0.9); }
+  75% { transform: rotate(270deg) scale(1.1); }
 }
 
 </style>

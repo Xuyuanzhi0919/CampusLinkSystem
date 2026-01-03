@@ -221,20 +221,45 @@ const userInitial = computed(() => {
   return nickname.charAt(0).toUpperCase()
 })
 
-// 将消息配对成问答组
+// 将消息配对成问答组（修复：支持连续用户消息、未回复消息）
 const messagePairs = computed(() => {
   const pairs: Array<{ user: Message; assistant?: Message }> = []
+  const processedIndices = new Set<number>()
+
   for (let i = 0; i < messages.value.length; i++) {
+    // 跳过已处理的消息
+    if (processedIndices.has(i)) continue
+
     const msg = messages.value[i]
+
     if (msg.role === 'user') {
-      const nextMsg = messages.value[i + 1]
+      // 查找下一个未配对的 assistant 消息（跳过中间的 user 消息）
+      let assistantMsg: Message | undefined
+      let assistantIndex = -1
+
+      for (let j = i + 1; j < messages.value.length; j++) {
+        if (processedIndices.has(j)) continue
+
+        if (messages.value[j].role === 'assistant') {
+          assistantMsg = messages.value[j]
+          assistantIndex = j
+          break
+        }
+      }
+
       pairs.push({
         user: msg,
-        assistant: nextMsg?.role === 'assistant' ? nextMsg : undefined
+        assistant: assistantMsg
       })
-      if (nextMsg?.role === 'assistant') i++ // 跳过已配对的 AI 消息
+
+      // 标记已处理的消息索引
+      processedIndices.add(i)
+      if (assistantIndex !== -1) {
+        processedIndices.add(assistantIndex)
+      }
     }
   }
+
   return pairs
 })
 
@@ -249,10 +274,13 @@ onMounted(() => {
 const handleSend = async () => {
   if (!canSend.value) return
 
+  // 保存用户输入内容，用于错误恢复
+  const userInputContent = inputText.value.trim()
+
   const userMsg: Message = {
     id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
     role: 'user',
-    content: inputText.value.trim(),
+    content: userInputContent,
     timestamp: Date.now()
   }
 
@@ -291,9 +319,41 @@ const handleSend = async () => {
         scrollToBottom()
       }
     }, 30)
-  } catch (error) {
-    console.error('发送失败:', error)
-    uni.showToast({ title: '发送失败', icon: 'none' })
+  } catch (error: any) {
+    console.error('AI 回复失败:', error)
+
+    // 移除已添加的用户消息，保持数据一致性
+    const lastMessage = messages.value[messages.value.length - 1]
+    if (lastMessage?.id === userMsg.id) {
+      messages.value.pop()
+    }
+
+    // 恢复用户输入内容
+    inputText.value = userInputContent
+
+    // 详细的错误提示
+    let errorMsg = '发送失败，请重试'
+
+    if (error.statusCode === 401 || error.errMsg?.includes('401')) {
+      errorMsg = '未登录，请先登录后再使用'
+    } else if (error.statusCode === 429 || error.errMsg?.includes('429')) {
+      errorMsg = 'AI 服务繁忙，请稍后再试'
+    } else if (error.statusCode === 500 || error.errMsg?.includes('500')) {
+      errorMsg = '服务器错误，请稍后再试'
+    } else if (error.errMsg?.includes('timeout') || error.errMsg?.includes('网络')) {
+      errorMsg = '网络连接超时，请检查网络'
+    } else if (error.errMsg?.includes('fail') || error.errno) {
+      errorMsg = '网络请求失败，请检查网络连接'
+    } else if (error.message) {
+      errorMsg = `发送失败: ${error.message}`
+    }
+
+    uni.showToast({
+      title: errorMsg,
+      icon: 'error',
+      duration: 3000
+    })
+
     isLoading.value = false
   }
 }

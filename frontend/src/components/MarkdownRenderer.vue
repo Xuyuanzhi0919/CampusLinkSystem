@@ -38,7 +38,7 @@ const md = new MarkdownIt({
   breaks: true,       // 换行符转换为 <br>
   linkify: true,      // 自动识别 URL 并转换为链接
   typographer: true,  // 启用智能引号、破折号等排版优化
-  quotes: '""\'\'',   // 中文引号
+  quotes: '""''',     // 中文引号
 })
   // 代码高亮（highlight.js）
   .use(markdownItHighlightjs, {

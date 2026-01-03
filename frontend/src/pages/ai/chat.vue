@@ -679,36 +679,42 @@ const handleSelectSession = (sessionId: string) => {
 
 // 删除会话
 const handleDeleteSession = (sessionId: string) => {
-  uni.showModal({
-    title: '删除对话',
-    content: '确定要删除这个对话吗？删除后无法恢复',
-    success: (res) => {
-      if (res.confirm) {
-        deleteSession(sessionId)
+  // 先关闭抽屉，避免弹窗被遮挡
+  showSessionDrawer.value = false
 
-        // 刷新会话列表并去重
-        sessions.value = deduplicateSessions(getAllSessions())
+  // 延迟显示确认弹窗，确保抽屉关闭动画完成
+  setTimeout(() => {
+    uni.showModal({
+      title: '删除对话',
+      content: '确定要删除这个对话吗？删除后无法恢复',
+      success: (res) => {
+        if (res.confirm) {
+          deleteSession(sessionId)
 
-        // 如果删除的是当前会话,切换到其他会话或创建新会话
-        if (sessionId === currentSessionId.value) {
-          if (sessions.value.length > 0) {
-            const newSession = sessions.value[0]
-            currentSessionId.value = newSession.id
-            messages.value = newSession.messages
-          } else {
-            const newSession = createSession()
-            currentSessionId.value = newSession.id
-            messages.value = []
+          // 刷新会话列表并去重
+          sessions.value = deduplicateSessions(getAllSessions())
 
-            // 再次刷新并去重
-            sessions.value = deduplicateSessions(getAllSessions())
+          // 如果删除的是当前会话,切换到其他会话或创建新会话
+          if (sessionId === currentSessionId.value) {
+            if (sessions.value.length > 0) {
+              const newSession = sessions.value[0]
+              currentSessionId.value = newSession.id
+              messages.value = newSession.messages
+            } else {
+              const newSession = createSession()
+              currentSessionId.value = newSession.id
+              messages.value = []
+
+              // 再次刷新并去重
+              sessions.value = deduplicateSessions(getAllSessions())
+            }
           }
-        }
 
-        uni.showToast({ title: '已删除', icon: 'success' })
+          uni.showToast({ title: '已删除', icon: 'success' })
+        }
       }
-    }
-  })
+    })
+  }, 350) // 等待抽屉关闭动画（300ms）+ 缓冲
 }
 
 // 搜索处理
@@ -721,19 +727,25 @@ const handleRenameSession = (sessionId: string) => {
   const session = sessions.value.find(s => s.id === sessionId)
   if (!session) return
 
-  uni.showModal({
-    title: '重命名对话',
-    editable: true,
-    placeholderText: session.title,
-    content: session.title,
-    success: (res) => {
-      if (res.confirm && res.content && res.content.trim()) {
-        renameSession(sessionId, res.content.trim())
-        sessions.value = deduplicateSessions(getAllSessions())
-        uni.showToast({ title: '已重命名', icon: 'success', duration: 1500 })
+  // 先关闭抽屉，避免弹窗被遮挡
+  showSessionDrawer.value = false
+
+  // 延迟显示弹窗，确保抽屉关闭动画完成
+  setTimeout(() => {
+    uni.showModal({
+      title: '重命名对话',
+      editable: true,
+      placeholderText: session.title,
+      content: session.title,
+      success: (res) => {
+        if (res.confirm && res.content && res.content.trim()) {
+          renameSession(sessionId, res.content.trim())
+          sessions.value = deduplicateSessions(getAllSessions())
+          uni.showToast({ title: '已重命名', icon: 'success', duration: 1500 })
+        }
       }
-    }
-  })
+    })
+  }, 350) // 等待抽屉关闭动画（300ms）+ 缓冲
 }
 
 // 格式化会话时间

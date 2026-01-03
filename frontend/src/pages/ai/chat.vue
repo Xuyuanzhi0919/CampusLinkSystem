@@ -1153,7 +1153,8 @@ const scrollToBottom = () => {
 .session-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px 12px 16px;
+  overflow-x: hidden; // 防止水平滚动
+  padding: 8px 8px 16px; // 减少左右内边距：12px → 8px
 
   // 自定义滚动条样式
   &::-webkit-scrollbar {
@@ -1194,7 +1195,7 @@ const scrollToBottom = () => {
 
 .group-label {
   display: block;
-  padding: 8px 12px 6px;
+  padding: 8px 8px 6px; // 与容器内边距对齐：12px → 8px
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -1202,16 +1203,17 @@ const scrollToBottom = () => {
   color: $gray-500;
 }
 
-// 会话卡片 - 极简扁平设计（修复布局超出问题）
+// 会话卡片 - 极简扁平设计（修复宽度超出问题）
 .session-item {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px; // 减少间距：12px → 10px
+  padding: 10px 12px; // 减少垂直内边距
   margin-bottom: 4px;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
+  min-width: 0; // 允许 flex 子项收缩
 
   // 默认无背景
   background: transparent;
@@ -1241,10 +1243,10 @@ const scrollToBottom = () => {
   }
 }
 
-// 会话图标
+// 会话图标（稍微缩小）
 .session-icon {
-  width: 36px;
-  height: 36px;
+  width: 34px; // 36px → 34px
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1254,8 +1256,8 @@ const scrollToBottom = () => {
   transition: all 0.2s;
 
   svg {
-    width: 18px;
-    height: 18px;
+    width: 17px; // 18px → 17px
+    height: 17px;
     color: $gray-600;
   }
 }
@@ -1267,7 +1269,7 @@ const scrollToBottom = () => {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-right: 8px; // 为操作按钮留出空间
+  overflow: hidden; // 防止内容溢出
 }
 
 .session-header {
@@ -1307,12 +1309,13 @@ const scrollToBottom = () => {
   padding-right: 4px; // 防止文字贴边
 }
 
-// 操作按钮组（改为内联布局）
+// 操作按钮组（优化宽度）
 .session-actions {
   display: flex;
-  gap: 2px;
+  gap: 2px; // 最小间距
   align-items: center;
   flex-shrink: 0; // 防止被压缩
+  margin-left: 4px; // 与内容区域保持间距
   opacity: 0; // 默认隐藏
   visibility: hidden; // 完全隐藏，不占空间
   transition: opacity 0.2s, visibility 0.2s;
@@ -1329,19 +1332,19 @@ const scrollToBottom = () => {
 }
 
 .action-btn {
-  width: 28px;
-  height: 28px;
+  width: 26px; // 28px → 26px（减小尺寸）
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 5px;
   transition: all 0.15s;
   background: transparent; // 默认透明
   flex-shrink: 0;
 
   svg {
-    width: 14px;
-    height: 14px;
+    width: 13px; // 14px → 13px
+    height: 13px;
     display: block;
   }
 

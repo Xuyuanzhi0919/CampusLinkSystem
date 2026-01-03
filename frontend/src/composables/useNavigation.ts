@@ -224,7 +224,7 @@ export function useNavigation() {
 
   /** 跳转到 AI 助手 */
   const toAIChat = () => {
-    navigateTo('/pages/ai/chat', { failMessage: 'AI 助手开发中' })
+    navigateTo('/pages/ai/chat')
   }
 
   /** 根据类型和 ID 跳转到详情页 */

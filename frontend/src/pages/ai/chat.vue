@@ -332,7 +332,6 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import type { Message, QuickPrompt, ChatSession } from '@/types/ai'
 import {
   sendMessage,
-  sendMessageStream,
   saveChatHistory,
   getAllSessions,
   createSession,
@@ -519,47 +518,46 @@ const handleSend = async () => {
   isLoading.value = true
   scrollToBottom()
 
-  // 创建 AI 消息
-  const aiMsg: Message = {
-    id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    role: 'assistant',
-    content: '',
-    timestamp: Date.now(),
-    isStreaming: true
-  }
-
-  messages.value.push(aiMsg)
-  scrollToBottom()
-
   try {
-    // 使用流式 API
-    let cancelStream: (() => void) | null = null
+    const response = await sendMessage(userMsg.content, messages.value)
 
-    cancelStream = sendMessageStream(
-      userMsg.content,
-      messages.value.filter(m => m.id !== aiMsg.id), // 排除当前AI消息
-      undefined, // category
-      // onChunk: 接收每个数据块
-      (chunk: string) => {
+    const aiMsg: Message = {
+      id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      role: 'assistant',
+      content: '',
+      timestamp: Date.now(),
+      isStreaming: true
+    }
+
+    messages.value.push(aiMsg)
+    scrollToBottom()
+
+    // 打字机效果 - 使用响应式更新确保 Vue 能检测到变化
+    const fullText = response.content
+    let index = 0
+
+    const interval = setInterval(() => {
+      if (index < fullText.length) {
+        // 找到当前 AI 消息在数组中的索引
         const aiMsgIndex = messages.value.findIndex(m => m.id === aiMsg.id)
 
         if (aiMsgIndex !== -1) {
-          // 实时追加内容（无需打字机效果延迟）
+          // 创建新对象触发响应式更新
           const updatedMsg = {
             ...messages.value[aiMsgIndex],
-            content: messages.value[aiMsgIndex].content + chunk
+            content: messages.value[aiMsgIndex].content + fullText[index]
           }
 
+          // 使用 splice 确保 Vue 能检测到数组变化
           messages.value.splice(aiMsgIndex, 1, updatedMsg)
 
-          // 定期滚动到底部
-          if (updatedMsg.content.length % 20 === 0) {
-            scrollToBottom()
-          }
+          index++
+          if (index % 15 === 0) scrollToBottom()
         }
-      },
-      // onComplete: 流式输出完成
-      () => {
+      } else {
+        // 打字完成,设置 isStreaming = false
+        clearInterval(interval)
+
         const aiMsgIndex = messages.value.findIndex(m => m.id === aiMsg.id)
         if (aiMsgIndex !== -1) {
           const completedMsg = {
@@ -576,48 +574,8 @@ const handleSend = async () => {
 
         isLoading.value = false
         scrollToBottom()
-      },
-      // onError: 错误处理
-      (error: any) => {
-        console.error('AI 流式回复失败:', error)
-
-        // 移除 AI 消息
-        const aiMsgIndex = messages.value.findIndex(m => m.id === aiMsg.id)
-        if (aiMsgIndex !== -1) {
-          messages.value.splice(aiMsgIndex, 1)
-        }
-
-        // 移除用户消息，保持数据一致性
-        const userMsgIndex = messages.value.findIndex(m => m.id === userMsg.id)
-        if (userMsgIndex !== -1) {
-          messages.value.splice(userMsgIndex, 1)
-        }
-
-        // 恢复用户输入内容
-        inputText.value = userInputContent
-
-        // 错误提示
-        let errorMsg = '发送失败，请重试'
-
-        if (error.message?.includes('401') || error.statusCode === 401) {
-          errorMsg = '未登录，请先登录后再使用'
-        } else if (error.message?.includes('429') || error.statusCode === 429) {
-          errorMsg = 'AI 服务繁忙，请稍后再试'
-        } else if (error.message?.includes('500') || error.statusCode === 500) {
-          errorMsg = '服务器错误，请稍后再试'
-        } else if (error.message?.includes('timeout') || error.message?.includes('网络')) {
-          errorMsg = '网络连接超时，请检查网络'
-        }
-
-        uni.showToast({
-          title: errorMsg,
-          icon: 'none',
-          duration: 2500
-        })
-
-        isLoading.value = false
       }
-    )
+    }, 30)
   } catch (error: any) {
     console.error('AI 回复失败:', error)
 

@@ -41,20 +41,12 @@ export function sendMessageStream(
   let aborted = false
   const abortController = new AbortController()
 
-  // 获取Token(如果已登录)
-  const token = uni.getStorageSync('campuslink_token')
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'Accept': 'text/event-stream'
-  }
-
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`
-  }
-
   fetch('/api/v1/ai/chat/stream', {
     method: 'POST',
-    headers,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'text/event-stream'
+    },
     body: JSON.stringify(requestBody),
     signal: abortController.signal
   })

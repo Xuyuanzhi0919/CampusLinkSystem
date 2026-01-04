@@ -25,6 +25,16 @@ for (char c : mockContent.toCharArray()) {
 }
 ```
 
+### 3. 按空格分割导致中文断句错误
+**现象**: 修复逐字符后仍有乱码,中文句子被拆分
+**原因**: 使用`split("(?<=\\s)|(?<=\n)")`按空格分割,中文词语间无空格导致单字分离
+**示例**:
+```java
+// ❌ 错误: 按空格分割(中文无空格)
+String[] parts = mockContent.split("(?<=\\s)|(?<=\n)");
+// "感谢您的提问" → ["感", "谢", "您", "的", "提", "问"]
+```
+
 ---
 
 ## ✅ 修复方案
@@ -58,45 +68,56 @@ fetch('/api/v1/ai/chat/stream', {
 - ✅ 未登录用户也能使用(后端允许)
 - ✅ 避免被拦截器误拦截
 
-### 2. 后端改为逐词发送
+### 2. 后端改为按块发送(固定字符数)
 
 **文件**: `backend/src/main/java/com/campuslink/service/impl/AiAssistantServiceImpl.java`
 
 ```java
-// ✅ 正确: 逐词发送(按空格、换行分割)
-String[] parts = mockContent.split("(?<=\\s)|(?<=\n)");
-for (String part : parts) {
-    if (!part.isEmpty()) {
-        emitter.send(SseEmitter.event()
-                .name("message")
-                .data(part)); // 完整的词或标点
-        Thread.sleep(50); // 模拟网络延迟
-    }
+// ✅ 正确: 按固定字符数分块发送
+int chunkSize = 5; // 每次发送5个字符
+for (int i = 0; i < mockContent.length(); i += chunkSize) {
+    int end = Math.min(i + chunkSize, mockContent.length());
+    String chunk = mockContent.substring(i, end);
+
+    emitter.send(SseEmitter.event()
+            .name("message")
+            .data(chunk));
+    Thread.sleep(50); // 模拟网络延迟
 }
 ```
 
 **改进**:
-- ✅ 中文字符不会被拆分
-- ✅ 保持完整的词语单位
+- ✅ 中文字符不会被拆分(使用`substring`保证字符完整性)
+- ✅ 每次发送固定长度(5个字符),流畅自然
 - ✅ 更接近真实AI流式输出的体验
 - ✅ 50ms延迟更符合真实网络延迟
+- ✅ 避免了按空格分割导致的中文断句问题
 
 ---
 
 ## 📊 效果对比
 
-### 修复前
+### 修复前(逐字符发送)
 ```
 输入: "请介绍一下Java"
 输出: J📚a****v**a是**一****种****编**程**语**言****...
      (乱码,不可读)
 ```
 
-### 修复后
+### 第一次修复(按空格分割)
 ```
 输入: "请介绍一下Java"
-输出: Java 是 一种 面向对象 的 编程 语言 ...
-     (流畅,可读)
+输出: 感谢您的提问��当前状态��AI
+     (中文仍被拆分,不可读)
+```
+
+### 最终修复(按固定字符数分块)
+```
+输入: "请介绍一下Java"
+输出: 感谢您的提问！
+
+**当前状态**：AI 服务处于演示模式...
+     (流畅,完全可读)
 ```
 
 ---

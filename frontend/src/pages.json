@@ -262,6 +262,14 @@
 				"navigationBarTitleText": "页面不存在",
 				"navigationStyle": "custom"
 			}
+		},
+		{
+			"path": "pages/about/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
 		}
 	],
 	"usingComponents": {},

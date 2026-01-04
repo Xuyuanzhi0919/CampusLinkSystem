@@ -332,12 +332,15 @@ public class AiAssistantServiceImpl implements AiAssistantService {
                         如需获取 API Key，请访问：https://platform.deepseek.com/
                         """;
 
-                // 模拟逐字输出
-                for (char c : mockContent.toCharArray()) {
-                    emitter.send(SseEmitter.event()
-                            .name("message")
-                            .data(String.valueOf(c)));
-                    Thread.sleep(20); // 模拟打字延迟
+                // 模拟逐词输出(按空格、换行分割)
+                String[] parts = mockContent.split("(?<=\\s)|(?<=\n)");
+                for (String part : parts) {
+                    if (!part.isEmpty()) {
+                        emitter.send(SseEmitter.event()
+                                .name("message")
+                                .data(part));
+                        Thread.sleep(50); // 模拟网络延迟
+                    }
                 }
 
                 // 发送完成事件

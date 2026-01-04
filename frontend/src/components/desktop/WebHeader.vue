@@ -162,10 +162,21 @@ const {
   navigateTo
 } = useNavigation()
 
-// 导航配置 - 与移动端TabBar保持一致
+// 导航跳转函数
+const toQuestions = () => {
+  navigateTo('/pages/question/index')
+}
+
+const toTasks = () => {
+  navigateTo('/pages/task/index')
+}
+
+// 导航配置 - 新增问答和任务
 const navItems = [
   { label: '首页', path: '/pages/home/index', isTab: true, handler: toHome },
   { label: '资源', path: '/pages/resource/index', isTab: true, handler: toResourceList },
+  { label: '问答', path: '/pages/question/index', isTab: false, handler: toQuestions },
+  { label: '任务', path: '/pages/task/index', isTab: false, handler: toTasks },
   { label: '社区', path: '/pages/community/index', isTab: true, handler: toCommunity },
 ]
 

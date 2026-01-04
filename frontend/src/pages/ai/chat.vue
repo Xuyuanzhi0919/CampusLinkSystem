@@ -28,6 +28,12 @@
     <view class="chat-navbar">
       <view class="navbar-content">
         <view class="navbar-left">
+          <!-- 返回首页按钮 -->
+          <view class="back-btn" @click="handleBackToHome">
+            <svg viewBox="0 0 24 24" fill="none" class="back-icon">
+              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </view>
           <!-- 会话列表按钮 -->
           <view class="sessions-btn" @click="showSessionDrawer = true">
             <svg viewBox="0 0 24 24" fill="none" class="menu-icon">
@@ -649,6 +655,18 @@ const confirmClear = () => {
 }
 
 // 新建会话
+// 返回首页
+const handleBackToHome = () => {
+  uni.navigateBack({
+    fail: () => {
+      // 如果无法返回(例如直接访问此页面),则跳转到首页
+      uni.switchTab({
+        url: '/pages/home/home'
+      })
+    }
+  })
+}
+
 const handleNewSession = () => {
   const newSession = createSession()
   currentSessionId.value = newSession.id
@@ -919,6 +937,7 @@ const scrollToBottom = () => {
   gap: 8px;
 }
 
+.back-btn,
 .sessions-btn,
 .new-session-btn,
 .clear-btn {
@@ -940,6 +959,24 @@ const scrollToBottom = () => {
 
   &:hover {
     background: $gray-100;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.back-btn {
+  svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    background: $gray-100;
+    svg {
+      color: $gray-900;
+    }
   }
 
   &:active {

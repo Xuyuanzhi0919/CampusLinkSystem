@@ -657,14 +657,20 @@ const confirmClear = () => {
 // 新建会话
 // 返回首页
 const handleBackToHome = () => {
-  uni.navigateBack({
-    fail: () => {
-      // 如果无法返回(例如直接访问此页面),则跳转到首页
-      uni.switchTab({
-        url: '/pages/home/home'
-      })
-    }
-  })
+  // 检查页面栈,如果有历史记录就返回,否则跳转到首页
+  const pages = getCurrentPages()
+
+  if (pages.length > 1) {
+    // 有历史记录,返回上一页
+    uni.navigateBack({
+      delta: 1
+    })
+  } else {
+    // 没有历史记录(例如直接访问此页面),跳转到首页
+    uni.switchTab({
+      url: '/pages/home/index'
+    })
+  }
 }
 
 const handleNewSession = () => {

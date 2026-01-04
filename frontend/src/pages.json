@@ -270,6 +270,14 @@
 				"navigationStyle": "custom",
 				"enablePullDownRefresh": false
 			}
+		},
+		{
+			"path": "pages/about/terms",
+			"style": {
+				"navigationBarTitleText": "用户协议",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
 		}
 	],
 	"usingComponents": {},

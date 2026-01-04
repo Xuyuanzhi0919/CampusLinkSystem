@@ -1043,7 +1043,7 @@ const scrollToSection = (sectionId: string) => {
 
   &--warning {
     background: rgba($warning, 0.06);
-    border: 2px solid $warning-200;
+    border: 2px solid $warning-100;
   }
 }
 

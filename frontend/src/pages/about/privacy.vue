@@ -1081,7 +1081,7 @@ const scrollToSection = (sectionId: string) => {
   }
 
   .note-box--action & {
-    color: $success-dark;
+    color: $success;
   }
 
   .note-box--warning & {

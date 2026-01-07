@@ -278,6 +278,30 @@
 				"navigationStyle": "custom",
 				"enablePullDownRefresh": false
 			}
+		},
+		{
+			"path": "pages/publish/question",
+			"style": {
+				"navigationBarTitleText": "提出问题",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/publish/resource",
+			"style": {
+				"navigationBarTitleText": "发布资源",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/publish/task",
+			"style": {
+				"navigationBarTitleText": "发布任务",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
 		}
 	],
 	"usingComponents": {},

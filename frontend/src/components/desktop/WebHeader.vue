@@ -48,6 +48,9 @@
 
         <!-- 操作区域 -->
         <div class="action-group">
+          <!-- 发布按钮 -->
+          <PublishButton v-if="isLoggedIn" />
+
           <!-- 用户头像 -->
           <div class="user-wrapper" ref="avatarContainer">
             <template v-if="isLoggedIn && userInfo">
@@ -141,6 +144,7 @@ import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from './UserDropdownMenu.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
 import LogoutConfirmModal from '@/components/LogoutConfirmModal.vue'
+import PublishButton from '@/components/PublishButton.vue'
 import config from '@/config'
 import { checkIn, getCheckInStatus, getUserStats } from '@/services/user'
 import { logout } from '@/services/auth'

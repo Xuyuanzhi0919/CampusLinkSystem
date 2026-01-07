@@ -138,7 +138,7 @@ const publishTypes = [
     type: 'question',
     title: '提出问题',
     desc: '向同学求助，快速解答',
-    route: '/pages/publish/question',
+    route: '/pages/question/ask',
     icon: 'M8.228 9C8.228 7.89543 9.12343 7 10.228 7H13.772C14.8766 7 15.772 7.89543 15.772 9C15.772 9.99001 15.0851 10.8186 14.1556 10.9724L13 11.1644V13M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM12 17H12.01V17.01H12V17Z',
     color: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)'
   },
@@ -146,7 +146,7 @@ const publishTypes = [
     type: 'resource',
     title: '发布资源',
     desc: '上传资料、课件、笔记',
-    route: '/pages/publish/resource',
+    route: '/pages/resource/upload',
     icon: 'M7 16C7 13.2386 9.23858 11 12 11C14.7614 11 17 13.2386 17 16M15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5.34315 10.3431 4 12 4C13.6569 4 15 5.34315 15 7ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z',
     color: 'linear-gradient(135deg, #14B8A6 0%, #22D3EE 100%)'
   },
@@ -154,7 +154,7 @@ const publishTypes = [
     type: 'task',
     title: '发布任务',
     desc: '互助跑腿、组队协作',
-    route: '/pages/publish/task',
+    route: '/pages/task/publish',
     icon: 'M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 3.89543M9 12L11 14L15 10',
     color: 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)'
   }

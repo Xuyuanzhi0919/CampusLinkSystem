@@ -1,12 +1,11 @@
 <template>
   <view class="publish-button-wrapper">
     <!-- 发布按钮 -->
-    <view class="publish-btn" @click="togglePublish">
-      <svg class="publish-icon" viewBox="0 0 24 24" fill="none">
+    <button class="publish-btn icon-btn" @click="togglePublish" aria-label="发布内容">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
         <path d="M12 4V20M20 12H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
       </svg>
-      <text class="publish-text">发布</text>
-    </view>
+    </button>
 
     <!-- PC端：Popover 下拉菜单 -->
     <view v-if="isDesktop && showPopover" class="popover-overlay" @click="closePublish">
@@ -200,34 +199,34 @@ onUnmounted(() => {
 .publish-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-  border-radius: 24px;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba($primary, 0.25);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+
+  svg {
+    color: $text-secondary;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba($primary, 0.35);
+    background: $bg-hover;
+
+    svg {
+      color: $primary;
+      transform: rotate(90deg);
+    }
   }
 
   &:active {
-    transform: translateY(0);
+    background: $bg-active;
+    transform: scale(0.95);
   }
-}
-
-.publish-icon {
-  width: 20px;
-  height: 20px;
-  color: $white;
-}
-
-.publish-text {
-  font-size: 15px;
-  font-weight: $font-weight-semibold;
-  color: $white;
 }
 
 // ==================== PC端 Popover ====================

@@ -51,34 +51,6 @@
           <!-- 发布按钮 -->
           <PublishButton v-if="isLoggedIn" />
 
-          <!-- 用户头像 -->
-          <div class="user-wrapper" ref="avatarContainer">
-            <template v-if="isLoggedIn && userInfo">
-              <UserAvatar
-                class="header-avatar"
-                :avatar-url="userInfo.avatar"
-                :nickname="userInfo.nickname"
-                :is-active="showUserMenu"
-                size="36px"
-                @click="handleAvatarClick"
-              />
-              <UserDropdownMenu
-                :visible="showUserMenu"
-                :position="dropdownPosition"
-                :user-info="userInfo"
-                :user-stats="userStats"
-                :is-checked-in="isCheckedIn"
-                @update:visible="showUserMenu = $event"
-                @menu-click="handleMenuClick"
-                @check-in="handleCheckIn"
-                @stat-click="handleStatClick"
-              />
-            </template>
-            <template v-else>
-              <button class="login-btn" @click="handleLogin">登录</button>
-            </template>
-          </div>
-
           <!-- 通知按钮 -->
           <div class="notification-wrapper" ref="notificationContainer">
             <button
@@ -113,6 +85,34 @@
               <path d="M12 1.5V3.5M12 20.5V22.5M3.5 12H1.5M22.5 12H20.5M5.05 5.05L3.64 3.64M20.36 20.36L18.95 18.95M5.05 18.95L3.64 20.36M20.36 3.64L18.95 5.05" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
+
+          <!-- 用户头像 -->
+          <div class="user-wrapper" ref="avatarContainer">
+            <template v-if="isLoggedIn && userInfo">
+              <UserAvatar
+                class="header-avatar"
+                :avatar-url="userInfo.avatar"
+                :nickname="userInfo.nickname"
+                :is-active="showUserMenu"
+                size="36px"
+                @click="handleAvatarClick"
+              />
+              <UserDropdownMenu
+                :visible="showUserMenu"
+                :position="dropdownPosition"
+                :user-info="userInfo"
+                :user-stats="userStats"
+                :is-checked-in="isCheckedIn"
+                @update:visible="showUserMenu = $event"
+                @menu-click="handleMenuClick"
+                @check-in="handleCheckIn"
+                @stat-click="handleStatClick"
+              />
+            </template>
+            <template v-else>
+              <button class="login-btn" @click="handleLogin">登录</button>
+            </template>
+          </div>
         </div>
       </div>
     </div>

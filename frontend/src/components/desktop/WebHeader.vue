@@ -113,6 +113,14 @@
               <path d="M12 1.5V3.5M12 20.5V22.5M3.5 12H1.5M22.5 12H20.5M5.05 5.05L3.64 3.64M20.36 20.36L18.95 18.95M5.05 18.95L3.64 20.36M20.36 3.64L18.95 5.05" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </button>
+
+          <!-- 发布按钮 -->
+          <button class="publish-btn" @click="handlePublish">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <span>发布</span>
+          </button>
         </div>
       </div>
     </div>
@@ -188,6 +196,7 @@ interface DisplayNotification {
 
 const emit = defineEmits<{
   search: [keyword: string]
+  upload: []
   login: []
 }>()
 
@@ -326,6 +335,10 @@ const handleStatClick = (type: string) => {
 // 搜索（使用共享逻辑）
 const handleSearch = () => {
   searchHandler()
+}
+
+const handlePublish = () => {
+  emit('upload')
 }
 
 const handleLogin = () => {
@@ -804,6 +817,44 @@ defineExpose({
   &:hover {
     border-color: $primary;
     color: $primary;
+  }
+}
+
+// 发布按钮
+.publish-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  background: $primary;
+  border: none;
+  border-radius: $radius-sm;
+  color: $white;
+  font-size: 13px;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba($primary, 0.2);
+
+  &:hover {
+    background: $primary-dark;
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.98);
+    box-shadow: 0 2px 4px rgba($primary, 0.2);
+  }
+
+  svg {
+    flex-shrink: 0;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &:hover svg {
+    transform: rotate(90deg);
   }
 }
 

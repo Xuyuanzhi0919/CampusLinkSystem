@@ -35,4 +35,9 @@ public class UpdateProfileRequest {
      * 年级
      */
     private Integer grade;
+
+    /**
+     * 手机号
+     */
+    private String phone;
 }

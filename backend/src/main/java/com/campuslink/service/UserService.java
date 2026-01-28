@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.*;
+import com.campuslink.dto.user.UpdateProfileRequest;
 import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.School;
 import com.campuslink.entity.User;

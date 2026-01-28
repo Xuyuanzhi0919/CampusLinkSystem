@@ -1091,6 +1091,10 @@ defineExpose({
 
 // ========== 深色模式样式 ==========
 // 全局深色模式（通过 dark-mode 类控制）
+// 使用 :global() 确保选择器能正确匹配
+// 同时支持 html 和 body 上的 dark-mode 类
+:global(html.dark-mode) .web-header,
+:global(body.dark-mode) .web-header,
 :global(.dark-mode) .web-header {
   background: #1E293B;
   border-bottom-color: #334155;

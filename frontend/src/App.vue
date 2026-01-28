@@ -165,7 +165,17 @@ onHide(() => {
 }
 
 /* ========== 深色模式 Dark Mode ========== */
+/* 当 html 或 body 元素有 dark-mode 类时应用深色样式 */
+html.dark-mode,
+body.dark-mode,
 .dark-mode {
+  /* 品牌主色 - 深色模式下保持一致或微调 */
+  --cl-primary: #60A5FA;        /* 亮一点的蓝色用于深色背景 */
+  --cl-primary-50: #1E3A8A;     /* 深蓝背景 */
+  --cl-primary-100: #1E40AF;
+  --cl-primary-200: #2563EB;
+  --cl-primary-600: #3B82F6;
+  --cl-primary-700: #60A5FA;
   /* 品牌主色 - 深色模式下保持一致或微调 */
   --cl-primary: #60A5FA;        /* 亮一点的蓝色用于深色背景 */
   --cl-primary-50: #1E3A8A;     /* 深蓝背景 */
@@ -219,6 +229,31 @@ onHide(() => {
   --shadow-2: var(--shadow-elev-2);
   --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
+
+/* uni-app page 节点深色模式适配 */
+/* #ifdef H5 */
+html.dark-mode uni-page-wrapper,
+html.dark-mode uni-page-body,
+body.dark-mode uni-page-wrapper,
+body.dark-mode uni-page-body {
+  background: #0F172A !important;
+}
+
+/* 直接设置 body 背景（备用方案） */
+body.dark-mode {
+  background: #0F172A !important;
+}
+/* #endif */
+
+/* 非 H5 端通过 body 类判断 */
+/* #ifndef H5 */
+page.dark-mode {
+  --cl-bg: #0F172A;
+  --cl-surface: #1E293B;
+  --cl-text: #F1F5F9;
+  --cl-text-sub: #94A3B8;
+}
+/* #endif */
 
 /* ========== 全局字体与排版（方案 A）========== */
 html, body {

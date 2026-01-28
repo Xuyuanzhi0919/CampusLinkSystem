@@ -97,18 +97,33 @@ export const useThemeStore = defineStore('theme', () => {
 
   // 监听主题变化，同步到 document
   watch(isDark, (dark) => {
-    // #ifdef H5
-    if (document.documentElement) {
-      if (dark) {
-        document.documentElement.classList.add('dark-mode')
-      } else {
-        document.documentElement.classList.remove('dark-mode')
-      }
-    }
-    // #endif
-
     // 触发全局事件，通知组件更新
     uni.$emit('theme-change', { isDark: dark })
+
+    // H5 端同步到 document.documentElement 和 body
+    // #ifdef H5
+    if (typeof document !== 'undefined') {
+      // 应用到 html 元素
+      if (document.documentElement) {
+        if (dark) {
+          document.documentElement.classList.add('dark-mode')
+        } else {
+          document.documentElement.classList.remove('dark-mode')
+        }
+      }
+      // 同时应用到 body（确保样式生效）
+      if (document.body) {
+        if (dark) {
+          document.body.classList.add('dark-mode')
+        } else {
+          document.body.classList.remove('dark-mode')
+        }
+      }
+      console.log('[Theme] dark-mode 类已', dark ? '添加' : '移除', 'html 和 body')
+      console.log('[Theme] document.documentElement.className:', document.documentElement.className)
+      console.log('[Theme] document.body.className:', document.body.className)
+    }
+    // #endif
   }, { immediate: true })
 
   return {

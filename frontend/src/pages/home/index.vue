@@ -536,6 +536,9 @@ onUnmounted(() => {
 }
 
 // ========== 深色模式样式 ==========
+// 支持 html 和 body 上的 dark-mode 类
+:global(html.dark-mode) .home-page,
+:global(body.dark-mode) .home-page,
 :global(.dark-mode) .home-page {
   // 深色模式背景：深蓝灰渐变
   background: linear-gradient(180deg,
@@ -564,6 +567,8 @@ onUnmounted(() => {
   }
 }
 
+:global(html.dark-mode) .sidebar-area,
+:global(body.dark-mode) .sidebar-area,
 :global(.dark-mode) .sidebar-area {
   // 深色模式毛玻璃背景
   background: rgba(30, 41, 59, 0.8);

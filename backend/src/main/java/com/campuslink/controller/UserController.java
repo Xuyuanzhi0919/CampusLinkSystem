@@ -5,7 +5,7 @@ import com.campuslink.common.Result;
 import com.campuslink.dto.ChangePasswordRequest;
 import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.PointsLogVO;
-import com.campuslink.dto.UpdateProfileRequest;
+import com.campuslink.dto.user.UpdateProfileRequest;
 import com.campuslink.dto.UserStatsVO;
 import com.campuslink.dto.UserVO;
 import com.campuslink.service.UserService;

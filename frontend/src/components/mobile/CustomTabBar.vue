@@ -123,8 +123,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
+import { useNavigationStore } from '@/stores/navigation'
+
+// 使用导航状态管理
+const navigationStore = useNavigationStore()
 
 // 使用统一导航 composable
 const { toHome, toResourceList, toPublish, toCommunity, toUserCenter } = useNavigation()
@@ -169,17 +173,14 @@ const tabList = [
   { text: '我的', path: '/pages/user/index', handler: toUserCenter }
 ]
 
-// 当前选中索引
-const currentIndex = ref(0)
+// 当前选中索引 - 使用 store
+const currentIndex = computed(() => navigationStore.activeTabIndex)
 
-// 是否隐藏（滚动时）
-const isHidden = ref(false)
+// 是否隐藏（滚动时）- 使用 store
+const isHidden = computed(() => !navigationStore.isNavVisible)
 
 // 深色模式
 const isDarkMode = ref(false)
-
-// 上次滚动位置
-let lastScrollTop = 0
 
 /**
  * 切换 Tab - 使用 useNavigation 统一导航
@@ -193,7 +194,8 @@ const switchTab = (index: number) => {
 
   if (index === currentIndex.value) return
 
-  currentIndex.value = index
+  // 使用 store 设置激活路径
+  navigationStore.setActivePath(tabList[index].path)
 
   // 使用 useNavigation 的语义化方法
   tabList[index].handler()
@@ -220,36 +222,6 @@ const handlePublishSelect = (item: any) => {
 }
 
 /**
- * 获取当前页面索引
- */
-const getCurrentPageIndex = () => {
-  const pages = getCurrentPages()
-  if (pages.length === 0) return 0
-  
-  const currentPage = pages[pages.length - 1]
-  const route = '/' + currentPage.route
-  
-  const index = tabList.findIndex(item => item.path === route)
-  return index >= 0 ? index : 0
-}
-
-/**
- * 监听页面滚动（自动隐藏）
- */
-const handleScroll = (e: any) => {
-  const scrollTop = e.detail.scrollTop || 0
-  
-  // 向下滚动超过 100px 时隐藏
-  if (scrollTop > lastScrollTop && scrollTop > 100) {
-    isHidden.value = true
-  } else {
-    isHidden.value = false
-  }
-  
-  lastScrollTop = scrollTop
-}
-
-/**
  * 检测深色模式
  */
 const checkDarkMode = () => {
@@ -261,19 +233,11 @@ const checkDarkMode = () => {
 
 // 组件挂载
 onMounted(() => {
-  // 获取当前页面索引
-  currentIndex.value = getCurrentPageIndex()
-  
+  // 同步导航状态
+  navigationStore.syncActivePath()
+
   // 检测深色模式
   checkDarkMode()
-  
-  // 监听页面滚动（需要在页面中触发）
-  // uni.$on('pageScroll', handleScroll)
-})
-
-// 组件卸载
-onUnmounted(() => {
-  // uni.$off('pageScroll', handleScroll)
 })
 </script>
 

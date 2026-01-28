@@ -178,6 +178,10 @@ import type { NotificationResponse } from '@/services/notification'
 import type { UserStatsData } from '@/types/user'
 import { useHeaderLogic } from '@/composables/useHeaderLogic'
 import { useNavigation } from '@/composables/useNavigation'
+import { useNavigationStore } from '@/stores/navigation'
+
+// 使用导航状态管理
+const navigationStore = useNavigationStore()
 
 // 使用统一导航 composable
 const {
@@ -276,10 +280,9 @@ const displayNotifications = computed<DisplayNotification[]>(() => {
 
 const unreadNotificationCount = computed(() => unreadCount.value)
 
-// 判断当前路由是否激活
+// 判断当前路由是否激活 - 使用导航 store
 const isActive = (path: string) => {
-  // 简单判断，实际项目中可以使用路由
-  return false
+  return navigationStore.isActive(path)
 }
 
 /**
@@ -562,6 +565,9 @@ const handleThemeToggle = () => {
 }
 
 onMounted(() => {
+  // 同步导航状态
+  navigationStore.syncActivePath()
+
   checkLoginStatus()
   if (isLoggedIn.value) {
     loadUnreadCount()

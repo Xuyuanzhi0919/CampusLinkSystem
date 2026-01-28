@@ -534,4 +534,52 @@ onUnmounted(() => {
     display: none;
   }
 }
+
+// ========== 深色模式样式 ==========
+:global(.dark-mode) .home-page {
+  // 深色模式背景：深蓝灰渐变
+  background: linear-gradient(180deg,
+    #0F172A 0%,           // 顶部最深
+    #1E293B 35%,          // 过渡
+    #1E293B 50%,          // 内容区
+    #0F172A 75%,          // 过渡
+    #020617 100%          // 底部
+  );
+
+  // 深色模式纹理层 - 降低透明度
+  &::before {
+    background-image:
+      linear-gradient(rgba(96, 165, 250, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(96, 165, 250, 0.03) 1px, transparent 1px),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  // 深色模式光斑 - 蓝色系
+  &::after {
+    background:
+      radial-gradient(ellipse 60% 50% at 10% 15%, rgba(59, 130, 246, 0.15) 0%, transparent 55%),
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 30% at 50% 40%, rgba(96, 165, 250, 0.08) 0%, transparent 60%);
+  }
+}
+
+:global(.dark-mode) .sidebar-area {
+  // 深色模式毛玻璃背景
+  background: rgba(30, 41, 59, 0.8);
+  border-color: #334155;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+
+  // 深色模式分割线
+  &::before {
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(51, 65, 85, 0.6) 10%,
+      rgba(51, 65, 85, 0.8) 50%,
+      rgba(51, 65, 85, 0.6) 90%,
+      transparent 100%
+    );
+  }
+}
 </style>

@@ -32,9 +32,6 @@ export const config = {
   refreshTokenKey: 'campuslink_refresh_token',
   userInfoKey: 'campuslink_user_info',
 
-  // 主题存储 key
-  themeKey: 'campuslink_theme',
-
   // 请求超时时间
   timeout: 10000,
 

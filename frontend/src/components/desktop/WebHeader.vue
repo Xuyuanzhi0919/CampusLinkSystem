@@ -103,24 +103,6 @@
             />
           </div>
 
-          <!-- 主题切换 -->
-          <button
-            class="icon-btn theme-toggle"
-            :class="{ 'is-active': isDark }"
-            @click="handleThemeToggle"
-            :aria-label="`当前主题：${themeModeLabel}，点击切换`"
-          >
-            <!-- 太阳图标（浅色模式显示） -->
-            <svg v-if="themeMode === 'dark' || (themeMode === 'auto' && isDark)" class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M12 2V4M12 20V22M4.93 4.93L6.34 6.34M17.66 17.66L19.07 19.07M2 12H4M20 12H22M4.93 19.07L6.34 17.66M17.66 6.34L19.07 4.93" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <!-- 月亮图标（深色模式显示） -->
-            <svg v-else class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </button>
-
           <!-- 发布按钮 -->
           <div class="publish-wrapper" ref="publishContainer">
             <button class="publish-btn" @click="handlePublish">
@@ -189,25 +171,8 @@ import type { UserStatsData } from '@/types/user'
 import { useHeaderLogic } from '@/composables/useHeaderLogic'
 import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
-import { useThemeStore } from '@/stores/theme'
-
 // 使用导航状态管理
 const navigationStore = useNavigationStore()
-
-// 使用主题状态管理
-const themeStore = useThemeStore()
-const isDark = computed(() => themeStore.isDark)
-const themeMode = computed(() => themeStore.themeMode)
-
-// 主题模式标签（用于 aria-label）
-const themeModeLabel = computed(() => {
-  switch (themeMode.value) {
-    case 'light': return '浅色'
-    case 'dark': return '深色'
-    case 'auto': return '跟随系统'
-    default: return '未知'
-  }
-})
 
 // 使用统一导航 composable
 const {
@@ -583,13 +548,6 @@ const handleLogoutConfirm = async () => {
   uni.$emit('user-logout')
   showLogoutModal.value = false
   uni.showToast({ title: '已安全退出', icon: 'none' })
-}
-
-// 主题切换
-const handleThemeToggle = () => {
-  themeStore.toggleTheme()
-  const mode = themeStore.isDark ? '深色' : '浅色'
-  uni.showToast({ title: `已切换到${mode}模式`, icon: 'none', duration: 1500 })
 }
 
 onMounted(() => {
@@ -1089,108 +1047,4 @@ defineExpose({
   opacity: 0.6;
 }
 
-// ========== 深色模式样式 ==========
-// 全局深色模式（通过 dark-mode 类控制）
-// 使用 :global() 确保选择器能正确匹配
-// 同时支持 html 和 body 上的 dark-mode 类
-:global(html.dark-mode) .web-header,
-:global(body.dark-mode) .web-header,
-:global(.dark-mode) .web-header {
-  background: #1E293B;
-  border-bottom-color: #334155;
-
-  .logo {
-    color: #60A5FA;
-
-    &:hover {
-      color: #3B82F6;
-    }
-  }
-
-  .search-box {
-    background: #0F172A;
-    border-color: #334155;
-
-    &:hover {
-      border-color: rgba(96, 165, 250, 0.5);
-      box-shadow: 0 2px 8px rgba(96, 165, 250, 0.15);
-    }
-
-    &:focus-within {
-      border-color: #3B82F6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-    }
-  }
-
-  .search-input {
-    color: #F1F5F9;
-
-    &::placeholder {
-      color: #64748B;
-    }
-  }
-
-  .search-icon {
-    color: #64748B;
-  }
-
-  .search-clear {
-    background: #334155;
-    color: #94A3B8;
-
-    &:hover {
-      background: #475569;
-      color: #CBD5E1;
-    }
-  }
-
-  .nav-item {
-    color: #94A3B8;
-
-    &:hover {
-      color: #60A5FA;
-      background: rgba(96, 165, 250, 0.1);
-    }
-
-    &.active {
-      color: #60A5FA;
-    }
-  }
-
-  .login-btn {
-    background: transparent;
-    border-color: #334155;
-    color: #94A3B8;
-
-    &:hover {
-      border-color: #3B82F6;
-      color: #60A5FA;
-    }
-  }
-
-  .icon-btn {
-    color: #94A3B8;
-
-    &:hover:not(.disabled) {
-      background: rgba(96, 165, 250, 0.1);
-      color: #60A5FA;
-      box-shadow: 0 2px 6px rgba(96, 165, 250, 0.15);
-    }
-  }
-
-  .badge {
-    background: #EF4444;
-    border-color: #1E293B;
-    box-shadow: 0 0 0 2px #1E293B;
-  }
-
-  .theme-toggle {
-    color: #94A3B8;
-
-    &:hover {
-      background: rgba(96, 165, 250, 0.1);
-      color: #60A5FA;
-    }
-  }
-}
 </style>

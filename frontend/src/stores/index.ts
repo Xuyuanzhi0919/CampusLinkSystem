@@ -4,5 +4,4 @@
 
 export { useUserStore } from './user'
 export { useQuestionStore } from './question'
-export { useThemeStore } from './theme'
 

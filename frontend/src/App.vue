@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { onLaunch, onShow, onHide } from "@dcloudio/uni-app";
 import { useUserStore } from '@/stores/user';
-import { useThemeStore } from '@/stores/theme';
 
 // #ifdef H5
 import { setupRouter } from './router/index'
@@ -9,8 +8,6 @@ import { setupRouter } from './router/index'
 
 // 初始化用户状态
 const userStore = useUserStore();
-// 初始化主题状态
-const themeStore = useThemeStore();
 
 onLaunch(() => {
   console.log("App Launch");
@@ -18,10 +15,6 @@ onLaunch(() => {
   // 从本地存储恢复用户信息
   userStore.init();
   console.log('用户登录状态:', userStore.isLoggedIn);
-
-  // 初始化主题
-  themeStore.init();
-  console.log('主题模式:', themeStore.themeMode, '深色模式:', themeStore.isDark);
 
   // H5 端路由守卫初始化
   // #ifdef H5
@@ -163,97 +156,6 @@ onHide(() => {
   /* 可访问性（文档规范：焦点环 2px 主色 35% 透明）*/
   --focus-ring: 2px solid rgba(37, 99, 235, 0.35);
 }
-
-/* ========== 深色模式 Dark Mode ========== */
-/* 当 html 或 body 元素有 dark-mode 类时应用深色样式 */
-html.dark-mode,
-body.dark-mode,
-.dark-mode {
-  /* 品牌主色 - 深色模式下保持一致或微调 */
-  --cl-primary: #60A5FA;        /* 亮一点的蓝色用于深色背景 */
-  --cl-primary-50: #1E3A8A;     /* 深蓝背景 */
-  --cl-primary-100: #1E40AF;
-  --cl-primary-200: #2563EB;
-  --cl-primary-600: #3B82F6;
-  --cl-primary-700: #60A5FA;
-  /* 品牌主色 - 深色模式下保持一致或微调 */
-  --cl-primary: #60A5FA;        /* 亮一点的蓝色用于深色背景 */
-  --cl-primary-50: #1E3A8A;     /* 深蓝背景 */
-  --cl-primary-100: #1E40AF;
-  --cl-primary-200: #2563EB;
-  --cl-primary-600: #3B82F6;
-  --cl-primary-700: #60A5FA;
-
-  /* 辅助紫 - 深色模式调亮 */
-  --cl-accent-purple: #8B5CF6;
-
-  /* 点缀橙 - 保持不变 */
-  --cl-accent-orange: #FBBF24;
-
-  /* 其他辅色 - 深色模式调亮 */
-  --cl-accent: #FB923C;
-  --cl-info: #3B82F6;
-  --cl-success: #22C55E;
-  --cl-success-100: #14532D;    /* 深绿背景 */
-  --cl-warning: #FBBF24;
-  --cl-warning-100: #78350F;    /* 深黄背景 */
-  --cl-error: #F87171;
-
-  /* 中性色 - 深色模式反转 */
-  --cl-gray-900: #F1F5F9;       /* 主文本（浅色）*/
-  --cl-gray-800: #E2E8F0;
-  --cl-gray-700: #CBD5E1;
-  --cl-gray-600: #94A3B8;       /* 副文本 */
-  --cl-gray-500: #64748B;
-  --cl-gray-400: #475569;
-  --cl-gray-300: #334155;
-  --cl-gray-200: #1E293B;       /* 分隔线 */
-  --cl-gray-100: #0F172A;
-  --cl-gray-50: #020617;        /* 最深背景 */
-
-  /* 背景与表面 - 深色模式 */
-  --cl-bg: #0F172A;             /* 页面背景 */
-  --cl-surface: #1E293B;        /* 卡片/容器 */
-  --cl-surface-2: #1E293B;      /* 次级容器 */
-
-  /* 文字 - 自动继承上面的灰色 */
-  --cl-text: var(--cl-gray-900);
-  --cl-text-sub: var(--cl-gray-600);
-  --cl-divider: var(--cl-gray-200);
-
-  /* 阴影 - 深色模式使用更浅的阴影 */
-  --shadow-elev-1: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-elev-2: 0 6px 20px rgba(0, 0, 0, 0.4);
-  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-1: var(--shadow-elev-1);
-  --shadow-2: var(--shadow-elev-2);
-  --shadow-3: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-/* uni-app page 节点深色模式适配 */
-/* #ifdef H5 */
-html.dark-mode uni-page-wrapper,
-html.dark-mode uni-page-body,
-body.dark-mode uni-page-wrapper,
-body.dark-mode uni-page-body {
-  background: #0F172A !important;
-}
-
-/* 直接设置 body 背景（备用方案） */
-body.dark-mode {
-  background: #0F172A !important;
-}
-/* #endif */
-
-/* 非 H5 端通过 body 类判断 */
-/* #ifndef H5 */
-page.dark-mode {
-  --cl-bg: #0F172A;
-  --cl-surface: #1E293B;
-  --cl-text: #F1F5F9;
-  --cl-text-sub: #94A3B8;
-}
-/* #endif */
 
 /* ========== 全局字体与排版（方案 A）========== */
 html, body {

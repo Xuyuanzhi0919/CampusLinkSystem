@@ -1,5 +1,5 @@
 <template>
-  <view class="custom-tabbar" :class="{ 'dark-mode': isDarkMode, 'hidden': isHidden }">
+  <view class="custom-tabbar" :class="{ 'hidden': isHidden }">
     <!-- 毛玻璃背景 -->
     <view class="tabbar-backdrop"></view>
     
@@ -179,9 +179,6 @@ const currentIndex = computed(() => navigationStore.activeTabIndex)
 // 是否隐藏（滚动时）- 使用 store
 const isHidden = computed(() => !navigationStore.isNavVisible)
 
-// 深色模式
-const isDarkMode = ref(false)
-
 /**
  * 切换 Tab - 使用 useNavigation 统一导航
  */
@@ -221,23 +218,10 @@ const handlePublishSelect = (item: any) => {
   })
 }
 
-/**
- * 检测深色模式
- */
-const checkDarkMode = () => {
-  // 可以从系统设置或用户偏好中获取
-  // 这里简化处理
-  const theme = uni.getStorageSync('theme') || 'light'
-  isDarkMode.value = theme === 'dark'
-}
-
 // 组件挂载
 onMounted(() => {
   // 同步导航状态
   navigationStore.syncActivePath()
-
-  // 检测深色模式
-  checkDarkMode()
 })
 </script>
 
@@ -272,17 +256,6 @@ onMounted(() => {
   /* 更柔和的阴影 */
   box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.04);
   border-radius: 16px 16px 0 0;
-}
-
-/* 深色模式背景 */
-.dark-mode .tabbar-backdrop {
-  background: linear-gradient(
-    180deg,
-    rgba(19, 26, 42, 0.85) 0%,
-    rgba(15, 20, 35, 0.85) 100%
-  );
-  border-top-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 -1px 6px rgba(0, 0, 0, 0.25);
 }
 
 /* Tab 内容区 */
@@ -366,34 +339,6 @@ onMounted(() => {
   }
 }
 
-/* 优化:深色模式光晕 - 增加边框和阴影 */
-.dark-mode .tab-glow {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(108, 92, 231, 0.12));
-  border: 1px solid rgba(59, 130, 246, 0.25);
-  box-shadow:
-    0 0 10px rgba(59, 130, 246, 0.3),
-    0 2px 10px rgba(59, 130, 246, 0.2);
-}
-
-/* 优化:深色模式脉动动画 - 增强阴影 */
-.dark-mode .tab-glow {
-  @keyframes glowPulseDark {
-    0%, 100% {
-      opacity: 0.8;
-      box-shadow:
-        0 0 10px rgba(59, 130, 246, 0.3),
-        0 2px 10px rgba(59, 130, 246, 0.2);
-    }
-    50% {
-      opacity: 1;
-      box-shadow:
-        0 0 14px rgba(59, 130, 246, 0.4),
-        0 4px 14px rgba(59, 130, 246, 0.25);
-    }
-  }
-  animation: glowPulseDark 2s ease-in-out infinite;
-}
-
 /* 图标容器 */
 .tab-icon {
   width: 24px;
@@ -428,16 +373,6 @@ onMounted(() => {
   }
   100% {
     transform: scale(1);
-  }
-}
-
-/* 深色模式图标 - 优化配色 */
-.dark-mode .icon-svg {
-  color: #9CA3AF;
-
-  &.icon-active {
-    color: #60A5FA; /* 更亮的蓝色 */
-    filter: drop-shadow(0 2px 6px rgba(96, 165, 250, 0.5));
   }
 }
 
@@ -479,15 +414,6 @@ onMounted(() => {
   &.text-active {
     color: #2563EB;
     font-weight: 600;
-  }
-}
-
-/* 深色模式文字 - 优化配色 */
-.dark-mode .tab-text {
-  color: #9CA3AF;
-
-  &.text-active {
-    color: #60A5FA; /* 与图标颜色一致 */
   }
 }
 

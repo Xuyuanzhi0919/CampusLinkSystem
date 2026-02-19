@@ -396,7 +396,7 @@ defineExpose({
 .view-more {
   display: flex;
   align-items: center;
-  gap: $spacing-1;
+  gap: $spacing-2;
   cursor: pointer;
   color: $campus-blue;
   font-size: $font-size-sm;
@@ -408,7 +408,7 @@ defineExpose({
 }
 
 .more-text {
-  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
 }
 
 .more-arrow {

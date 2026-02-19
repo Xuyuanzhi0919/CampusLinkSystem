@@ -25,34 +25,59 @@
     <!-- ========== 正式内容 ========== -->
     <template v-else-if="list.length > 0">
 
-      <!-- ── Banner 区 ── -->
-      <view class="club-banner" @click="handleClubClick(featuredClub.clubId)">
-        <view class="banner-bg" :style="{ background: bannerGradient }">
-          <!-- 装饰圆圈 -->
-          <view class="banner-deco deco-1"></view>
-          <view class="banner-deco deco-2"></view>
-          <view class="banner-deco deco-3"></view>
-        </view>
-        <view class="banner-content">
-          <view class="banner-badge">
-            <text class="badge-dot"></text>
-            <text class="badge-text">社区精选</text>
-          </view>
-          <text class="banner-title">{{ featuredClub.clubName }}</text>
-          <text class="banner-desc">{{ featuredClub.description || '加入我们，一起创造校园精彩' }}</text>
-          <view class="banner-meta">
-            <view class="banner-meta-item">
-              <Icon name="users" :size="13" class="banner-meta-icon" />
-              <text>{{ featuredClub.memberCount || 0 }} 名成员</text>
+      <!-- ── Banner 轮播区 ── -->
+      <view class="banner-wrap">
+        <swiper
+          class="club-swiper"
+          :autoplay="true"
+          :interval="4000"
+          :duration="500"
+          :circular="true"
+          @change="onSwiperChange"
+        >
+          <swiper-item
+            v-for="(club, idx) in bannerClubs"
+            :key="club.clubId"
+            @click="handleClubClick(club.clubId)"
+          >
+            <view class="club-banner" :style="{ background: bannerGradients[idx % bannerGradients.length] }">
+              <!-- 装饰圆圈 -->
+              <view class="banner-deco deco-1"></view>
+              <view class="banner-deco deco-2"></view>
+              <view class="banner-deco deco-3"></view>
+              <view class="banner-content">
+                <view class="banner-badge">
+                  <text class="badge-dot"></text>
+                  <text class="badge-text">社区精选</text>
+                </view>
+                <text class="banner-title">{{ club.clubName }}</text>
+                <text class="banner-desc">{{ club.description || '加入我们，一起创造校园精彩' }}</text>
+                <view class="banner-meta">
+                  <view class="banner-meta-item">
+                    <Icon name="users" :size="13" class="banner-meta-icon" />
+                    <text>{{ club.memberCount || 0 }} 名成员</text>
+                  </view>
+                  <view class="banner-meta-item">
+                    <Icon name="target" :size="13" class="banner-meta-icon" />
+                    <text>{{ club.activityCount || 0 }} 场活动</text>
+                  </view>
+                </view>
+                <view class="banner-btn" @click.stop="handleJoinClub(club)">
+                  <text>{{ club.isMember ? '已加入' : '立即加入' }}</text>
+                </view>
+              </view>
             </view>
-            <view class="banner-meta-item">
-              <Icon name="target" :size="13" class="banner-meta-icon" />
-              <text>{{ featuredClub.activityCount || 0 }} 场活动</text>
-            </view>
-          </view>
-          <view class="banner-btn" @click.stop="handleJoinClub(featuredClub)">
-            <text>{{ featuredClub.isMember ? '已加入' : '立即加入' }}</text>
-          </view>
+          </swiper-item>
+        </swiper>
+
+        <!-- 指示点 -->
+        <view class="swiper-dots">
+          <view
+            v-for="(_, idx) in bannerClubs"
+            :key="idx"
+            class="swiper-dot"
+            :class="{ 'swiper-dot--active': idx === swiperCurrent }"
+          ></view>
         </view>
       </view>
 
@@ -196,6 +221,11 @@ const emit = defineEmits<{ (e: 'refresh'): void }>()
 
 const { toClubDetail } = useNavigation()
 const joiningIds = ref<Set<number>>(new Set())
+const swiperCurrent = ref(0)
+
+const onSwiperChange = (e: any) => {
+  swiperCurrent.value = e.detail.current
+}
 
 // 热门色彩方案（每张卡片不同主色）
 const hotCardColors = [
@@ -206,13 +236,17 @@ const hotCardColors = [
   '#FDCB6E',
 ]
 
-// Banner 渐变：取第一个社团的色调
-const bannerGradient = computed(() => {
-  return 'linear-gradient(135deg, #1A1A2E 0%, #16213E 40%, #0F3460 70%, #377DFF 100%)'
-})
+// Banner 轮播渐变配色（每张不同）
+const bannerGradients = [
+  'linear-gradient(135deg, #1A1A2E 0%, #16213E 40%, #0F3460 70%, #377DFF 100%)',
+  'linear-gradient(135deg, #1A0E2E 0%, #2D1657 40%, #6C3FBA 70%, #9B59B6 100%)',
+  'linear-gradient(135deg, #0A1F1A 0%, #0D3B2E 40%, #0E7460 70%, #00B894 100%)',
+  'linear-gradient(135deg, #1F0E0A 0%, #3B1A0D 40%, #A04010 70%, #E17055 100%)',
+  'linear-gradient(135deg, #1A150A 0%, #3B2F0D 40%, #7A6010 70%, #FDCB6E 100%)',
+]
 
-// 精选社团（Banner 展示第一个）
-const featuredClub = computed(() => props.list[0] || {})
+// 精选社团（轮播展示前 5 个）
+const bannerClubs = computed(() => props.list.slice(0, 5))
 
 // 热门社团（前 6 个，横滑展示）
 const hotClubs = computed(() => props.list.slice(0, 6))
@@ -324,20 +358,25 @@ const handleJoinClub = async (club: any) => {
 .sk-desc  { height: 13px; width: 90%; }
 .sk-meta  { height: 13px; width: 40%; }
 
-/* ========== Banner 区 ========== */
-.club-banner {
+/* ========== Banner 轮播区 ========== */
+.banner-wrap {
   position: relative;
   margin: 12px 16px 0;
-  border-radius: 18px;
-  overflow: hidden;
-  height: 172px;
-  cursor: pointer;
-  box-shadow: 0 8px 32px rgba(55, 125, 255, 0.25);
 }
 
-.banner-bg {
-  position: absolute;
-  inset: 0;
+.club-swiper {
+  width: 100%;
+  height: 172px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(55, 125, 255, 0.2);
+}
+
+.club-banner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
 }
 
 /* 装饰圆圈 */
@@ -458,6 +497,29 @@ const handleJoinClub = async (club: any) => {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
   &:active { transform: scale(0.95); }
+}
+
+/* ========== 轮播指示点 ========== */
+.swiper-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.swiper-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(55, 125, 255, 0.25);
+  transition: all 0.3s ease;
+
+  &--active {
+    width: 16px;
+    border-radius: 3px;
+    background: $campus-blue;
+  }
 }
 
 /* ========== Section Header ========== */
@@ -836,9 +898,12 @@ const handleJoinClub = async (club: any) => {
 
 /* ========== PC 端双列布局 ========== */
 @media (min-width: 1024px) {
-  .club-banner {
-    height: 200px;
+  .banner-wrap {
     margin: 16px 80px 0;
+  }
+
+  .club-swiper {
+    height: 200px;
   }
 
   .section-header {

@@ -96,42 +96,38 @@
             v-for="(item, idx) in hotClubs"
             :key="item.clubId"
             class="hot-card"
-            :class="`hot-card--rank-${idx < 3 ? idx + 1 : 'normal'}`"
             :style="{
               '--card-color': hotCardColors[idx % hotCardColors.length],
-              '--shine-delay': `${idx * 1.4}s`
+              '--card-color-dim': hotCardColorsDim[idx % hotCardColorsDim.length]
             }"
             @click="handleClubClick(item.clubId)"
           >
-            <!-- 封面区 -->
-            <view class="hot-card__cover">
-              <image v-if="item.logoUrl" :src="item.logoUrl" class="hot-card__img" mode="aspectFill" />
-              <view v-else class="hot-card__cover-placeholder">
-                <view class="hot-card__deco-circle hot-card__deco-circle--lg"></view>
-                <view class="hot-card__deco-circle hot-card__deco-circle--sm"></view>
-                <text class="hot-card__initial">{{ item.clubName?.slice(0, 1) || '社' }}</text>
-              </view>
-              <!-- 底部过渡遮罩 -->
-              <view class="hot-card__cover-overlay"></view>
-              <!-- 排名徽章 -->
-              <view class="hot-card__rank-badge" :class="`hot-card__rank-badge--${idx < 3 ? idx + 1 : 'normal'}`">
-                <text v-if="idx < 3" class="hot-card__rank-medal">{{ ['🥇','🥈','🥉'][idx] }}</text>
-                <text v-else class="hot-card__rank-num">{{ idx + 1 }}</text>
-              </view>
-              <!-- 右上角成员数 -->
-              <view class="hot-card__member-badge">
-                <Icon name="users" :size="10" class="hot-card__member-icon" />
-                <text class="hot-card__member-num">{{ formatMemberCount(item.memberCount) }}</text>
-              </view>
+            <!-- 封面全图 -->
+            <image v-if="item.logoUrl" :src="item.logoUrl" class="hot-card__img" mode="aspectFill" />
+            <!-- 无图占位 -->
+            <view v-else class="hot-card__placeholder">
+              <text class="hot-card__initial">{{ item.clubName?.slice(0, 1) || '社' }}</text>
+              <view class="hot-card__pl-ring hot-card__pl-ring--1"></view>
+              <view class="hot-card__pl-ring hot-card__pl-ring--2"></view>
             </view>
-            <!-- 信息区（磨砂玻璃） -->
-            <view class="hot-card__info">
+            <!-- 全卡渐变遮罩 -->
+            <view class="hot-card__overlay"></view>
+            <!-- 左上排名角标 -->
+            <view class="hot-card__rank" :class="idx < 3 ? 'hot-card__rank--hot' : ''">
+              <text class="hot-card__rank-text">{{ idx < 3 ? ['TOP1','TOP2','TOP3'][idx] : `NO.${idx+1}` }}</text>
+            </view>
+            <!-- 底部信息 -->
+            <view class="hot-card__bottom">
               <text class="hot-card__name">{{ item.clubName }}</text>
-              <text class="hot-card__desc">{{ item.description || '加入我们一起精彩' }}</text>
-              <view class="hot-card__accent-line"></view>
+              <view class="hot-card__meta">
+                <Icon name="users" :size="10" class="hot-card__meta-icon" />
+                <text class="hot-card__count">{{ formatMemberCount(item.memberCount) }}人</text>
+              </view>
+              <!-- 主题色光条 -->
+              <view class="hot-card__glow-bar"></view>
             </view>
-            <!-- 前3名扫光动画 -->
-            <view v-if="idx < 3" class="hot-card__shine"></view>
+            <!-- 前3名脉冲光晕 -->
+            <view v-if="idx < 3" class="hot-card__pulse"></view>
           </view>
           <view class="hot-list-pad"></view>
         </view>
@@ -258,6 +254,15 @@ const hotCardColors = [
   '#00B894',
   '#E17055',
   '#FDCB6E',
+]
+
+// 各主色对应的深色版（用于渐变底部遮罩）
+const hotCardColorsDim = [
+  '#0A2A6E',
+  '#2A1870',
+  '#004D3A',
+  '#6B2A18',
+  '#7A5A00',
 ]
 
 // Banner 轮播渐变配色（每张不同）
@@ -593,8 +598,8 @@ const handleJoinClub = async (club: any) => {
 
 .hot-list {
   display: flex;
-  gap: 14px;
-  padding: 8px 0 16px;
+  gap: 12px;
+  padding: 8px 0 20px;
   width: max-content;
 }
 
@@ -603,289 +608,207 @@ const handleJoinClub = async (club: any) => {
   flex-shrink: 0;
 }
 
-/* ── 卡片主体 ── */
+/* ── 卡片主体：全图式深色卡 ── */
 .hot-card {
   position: relative;
-  width: 140px;
-  height: 200px;
-  border-radius: 18px;
-  background: #FFFFFF;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
+  width: 130px;
+  height: 185px;
+  border-radius: 20px;
   overflow: hidden;
   flex-shrink: 0;
-  // 多层阴影：扩散投影 + 标准投影 + 顶部内高光
+  cursor: pointer;
+  background: #111;
+  // 主题色外发光
   box-shadow:
-    0 8px 28px rgba(0, 0, 0, 0.13),
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
-
-  // 玻璃折射边框（伪元素覆盖）
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 18px;
-    border: 1px solid rgba(255, 255, 255, 0.55);
-    background: linear-gradient(
-      150deg,
-      rgba(255, 255, 255, 0.18) 0%,
-      transparent 45%,
-      rgba(0, 0, 0, 0.04) 100%
-    );
-    z-index: 10;
-    pointer-events: none;
-  }
+    0 4px 20px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 
   &:active {
-    transform: scale(0.95);
-    box-shadow:
-      0 4px 14px rgba(0, 0, 0, 0.1),
-      0 1px 4px rgba(0, 0, 0, 0.06),
-      inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  }
-
-  // 前3名：主题色光晕
-  &--rank-1, &--rank-2, &--rank-3 {
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.5) inset,
-      0 8px 32px rgba(0, 0, 0, 0.18),
-      0 0 24px rgba(0, 0, 0, 0.06);
+    transform: scale(0.94);
   }
 }
 
-/* ── 封面区（上 60%） ── */
-.hot-card__cover {
-  position: relative;
-  width: 100%;
-  height: 120px;
-  background: var(--card-color);
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
+/* 封面图：铺满整张卡 */
 .hot-card__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  z-index: 0;
 }
 
-/* 无图时渐变占位 */
-.hot-card__cover-placeholder {
-  width: 100%;
-  height: 100%;
-  position: relative;
+/* 无图占位：主题色渐变 + 大字 */
+.hot-card__placeholder {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(
-    135deg,
+    145deg,
     var(--card-color) 0%,
-    rgba(0, 0, 0, 0.3) 100%
+    var(--card-color-dim, #111) 100%
   );
   overflow: hidden;
-}
-
-.hot-card__deco-circle {
-  position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  border: 1.5px solid rgba(255, 255, 255, 0.12);
-
-  &--lg {
-    width: 110px;
-    height: 110px;
-    bottom: -35px;
-    right: -35px;
-  }
-
-  &--sm {
-    width: 64px;
-    height: 64px;
-    top: -18px;
-    left: -18px;
-    background: rgba(255, 255, 255, 0.05);
-  }
+  z-index: 0;
 }
 
 .hot-card__initial {
   position: relative;
   z-index: 2;
-  font-size: 44px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
+  font-size: 52px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.88);
   line-height: 1;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
+  letter-spacing: -2px;
+  text-shadow:
+    0 0 24px rgba(255, 255, 255, 0.3),
+    0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
-/* 封面底部遮罩过渡 */
-.hot-card__cover-overlay {
+/* 装饰圆环（占位时） */
+.hot-card__pl-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+
+  &--1 {
+    width: 130px;
+    height: 130px;
+    bottom: -40px;
+    right: -40px;
+  }
+
+  &--2 {
+    width: 80px;
+    height: 80px;
+    top: -24px;
+    left: -24px;
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+}
+
+/* 全卡渐变遮罩：底部深色渐变，让文字清晰 */
+.hot-card__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.72) 75%,
+    rgba(0, 0, 0, 0.88) 100%
+  );
+  pointer-events: none;
+}
+
+/* ── 排名角标（左上，斜切设计） ── */
+.hot-card__rank {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  height: 26px;
+  padding: 0 9px 0 10px;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  border-bottom-right-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  border-left: none;
+
+  // 前3名高亮
+  &--hot {
+    background: var(--card-color);
+    border-color: transparent;
+
+    .hot-card__rank-text {
+      color: #fff;
+      text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+    }
+  }
+}
+
+.hot-card__rank-text {
+  font-size: 10px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+/* ── 底部信息区 ── */
+.hot-card__bottom {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 44px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.38) 0%, transparent 100%);
   z-index: 2;
-  pointer-events: none;
-}
-
-/* ── 排名徽章（左上角） ── */
-.hot-card__rank-badge {
-  position: absolute;
-  top: 9px;
-  left: 9px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  &--1, &--2, &--3 {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.22);
-    backdrop-filter: blur(6px);
-    border: 1.5px solid rgba(255, 255, 255, 0.45);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  }
-
-  &--normal {
-    height: 20px;
-    padding: 0 7px;
-    border-radius: 10px;
-    background: rgba(0, 0, 0, 0.38);
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255, 255, 255, 0.18);
-  }
-}
-
-.hot-card__rank-medal {
-  font-size: 15px;
-  line-height: 1;
-}
-
-.hot-card__rank-num {
-  font-size: 11px;
-  font-weight: 800;
-  color: rgba(255, 255, 255, 0.92);
-  line-height: 1;
-}
-
-/* ── 成员数（右上角） ── */
-.hot-card__member-badge {
-  position: absolute;
-  top: 9px;
-  right: 9px;
-  z-index: 5;
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  height: 20px;
-  padding: 0 7px;
-  border-radius: 10px;
-  background: rgba(0, 0, 0, 0.38);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-}
-
-.hot-card__member-icon {
-  color: rgba(255, 255, 255, 0.85);
-}
-
-.hot-card__member-num {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.92);
-  line-height: 1;
-}
-
-/* ── 信息区（磨砂玻璃底托） ── */
-.hot-card__info {
-  flex: 1;
-  padding: 10px 12px 11px;
+  padding: 0 12px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(12px);
-  position: relative;
-
-  // 顶部分隔细线
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 12px;
-    right: 12px;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(0, 0, 0, 0.05) 30%,
-      rgba(0, 0, 0, 0.05) 70%,
-      transparent
-    );
-  }
+  gap: 4px;
 }
 
 .hot-card__name {
-  font-size: 13px;
-  font-weight: 700;
-  color: $color-text-primary;
+  font-size: 14px;
+  font-weight: 800;
+  color: #FFFFFF;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
 }
 
-.hot-card__desc {
+.hot-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hot-card__meta-icon {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.hot-card__count {
   font-size: 11px;
-  color: $color-text-tertiary;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  line-height: 1.4;
-  margin-top: 2px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1;
 }
 
-/* 主题色装饰线 */
-.hot-card__accent-line {
-  width: 22px;
+/* 主题色发光横条 */
+.hot-card__glow-bar {
+  width: 28px;
   height: 3px;
   border-radius: 2px;
   background: var(--card-color);
-  margin-top: 6px;
-  opacity: 0.8;
+  margin-top: 2px;
+  box-shadow: 0 0 8px var(--card-color);
 }
 
-/* ── 前3名扫光动画 ── */
-.hot-card__shine {
+/* ── 前3名脉冲光晕 ── */
+.hot-card__pulse {
   position: absolute;
-  top: -60%;
-  left: -80%;
-  width: 45%;
-  height: 220%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.14) 50%,
-    transparent 100%
-  );
-  transform: skewX(-18deg);
-  z-index: 6;
+  inset: 0;
+  z-index: 1;
+  border-radius: 20px;
+  border: 1.5px solid var(--card-color);
+  opacity: 0;
+  animation: pulse-border 3s ease-in-out infinite;
   pointer-events: none;
-  animation: card-shine 5s infinite ease-in-out;
-  animation-delay: var(--shine-delay, 0s);
 }
 
-@keyframes card-shine {
-  0%   { left: -80%; opacity: 0; }
-  8%   { opacity: 1; }
-  32%  { left: 160%; opacity: 0; }
-  100% { left: 160%; opacity: 0; }
+@keyframes pulse-border {
+  0%   { opacity: 0; transform: scale(1); }
+  40%  { opacity: 0.55; }
+  100% { opacity: 0; transform: scale(1.04); }
 }
 
 /* ========== 全部社团列表（横向信息流） ========== */

@@ -169,15 +169,7 @@ const handleUserClick = (user: any) => {
 // 回答问题（需要登录）
 const handleAnswerClick = (question: any) => {
   if (!question?.id) return
-  // 已解决的问题可以直接查看，不需要登录
-  if (question.isSolved) {
-    uni.navigateTo({
-      url: `/pages/question/detail?id=${question.id}`
-    })
-    return
-  }
-  // 回答需要登录
-  if (!requireLogin('answer')) return
+  if (!question.isSolved && !requireLogin('answer')) return
   uni.navigateTo({
     url: `/pages/question/detail?id=${question.id}&action=answer`
   })
@@ -206,9 +198,6 @@ const handleGoAsk = () => {
 
 const handleViewMore = () => {
   emit('view-more')
-  uni.navigateTo({
-    url: '/pages/question/index'
-  })
 }
 
 // 初始化

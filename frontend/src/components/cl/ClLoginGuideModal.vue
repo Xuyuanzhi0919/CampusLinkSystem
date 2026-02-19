@@ -8,7 +8,60 @@
       <!-- 顶部装饰图标 -->
       <view class="modal-icon">
         <view class="icon-circle">
-          <text class="icon-emoji">{{ iconEmoji }}</text>
+          <svg
+            :width="iconSize"
+            :height="iconSize"
+            viewBox="0 0 24 24"
+            fill="none"
+            :stroke="iconColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="action-icon"
+          >
+            <!-- answer: message-circle -->
+            <template v-if="actionType === 'answer'">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </template>
+            <!-- like: heart -->
+            <template v-else-if="actionType === 'like'">
+              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+            </template>
+            <!-- collect: bookmark -->
+            <template v-else-if="actionType === 'collect'">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+            </template>
+            <!-- comment: message-square -->
+            <template v-else-if="actionType === 'comment'">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </template>
+            <!-- download -->
+            <template v-else-if="actionType === 'download'">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </template>
+            <!-- publish: edit-3 -->
+            <template v-else-if="actionType === 'publish'">
+              <path d="M12 20h9"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+            </template>
+            <!-- message: mail -->
+            <template v-else-if="actionType === 'message'">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+              <polyline points="22,6 12,13 2,6"/>
+            </template>
+            <!-- register: award -->
+            <template v-else-if="actionType === 'register'">
+              <circle cx="12" cy="8" r="6"/>
+              <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+            </template>
+            <!-- default: user / lock -->
+            <template v-else>
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </template>
+          </svg>
         </view>
       </view>
 
@@ -32,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, computed } from 'vue'
+import { ref, watch } from 'vue'
 
 /**
  * ClLoginGuideModal - 登录引导弹窗
@@ -79,22 +132,9 @@ const emit = defineEmits<{
 // 动画状态
 const showAnimation = ref(false)
 
-// 根据操作类型显示不同图标
-const iconEmoji = computed(() => {
-  const iconMap: Record<string, string> = {
-    answer: '💬',
-    like: '❤️',
-    collect: '⭐',
-    comment: '💭',
-    download: '📥',
-    register: '🎫',
-    publish: '✏️',
-    message: '📨',
-    follow: '👋',
-    default: '👋'
-  }
-  return iconMap[props.actionType] || iconMap.default
-})
+// 图标尺寸（rpx → px 转换在 template 中用 style 处理）
+const iconSize = 28
+const iconColor = '#4A6CF7'
 
 // 监听显示状态
 watch(() => props.visible, (newVal) => {
@@ -186,18 +226,19 @@ const handleConfirm = () => {
 }
 
 .icon-circle {
-  width: 96rpx;
-  height: 96rpx;
+  width: 112rpx;
+  height: 112rpx;
   border-radius: 50%;
-  background: linear-gradient(135deg, $campus-blue-lighter 0%, rgba($campus-blue, 0.1) 100%);
+  background: linear-gradient(135deg, $campus-blue-lighter 0%, rgba($campus-blue, 0.12) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 8rpx 24rpx rgba($campus-blue, 0.15);
 }
 
-.icon-emoji {
-  font-size: 44rpx;
-  line-height: 1;
+.action-icon {
+  display: block;
+  color: $campus-blue;
 }
 
 /* ========== 内容区域 ========== */

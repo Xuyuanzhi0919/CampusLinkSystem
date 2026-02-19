@@ -148,6 +148,29 @@
 			}
 		},
 		{
+			"path": "pages/club/create",
+			"style": {
+				"navigationBarTitleText": "创建社团",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/publish-activity",
+			"style": {
+				"navigationBarTitleText": "发布活动",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/my-activities",
+			"style": {
+				"navigationBarTitleText": "我的活动",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"enablePullDownRefresh": true,
+				"backgroundTextStyle": "dark"
+			}
+		},
+		{
 			"path": "pages/user/index",
 			"style": {
 				"navigationBarTitleText": "我的",

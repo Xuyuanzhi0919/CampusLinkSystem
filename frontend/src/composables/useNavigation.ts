@@ -106,8 +106,21 @@ export function useNavigation() {
   }
 
   /** 跳转到发布活动 */
-  const toPublishActivity = () => {
-    navigateTo('/pages/club/publish-activity', { failMessage: '活动发布功能开发中' })
+  const toPublishActivity = (clubId?: number | string) => {
+    const url = clubId
+      ? `/pages/club/publish-activity?clubId=${clubId}`
+      : '/pages/club/publish-activity'
+    navigateTo(url)
+  }
+
+  /** 跳转到创建社团 */
+  const toCreateClub = () => {
+    navigateTo('/pages/club/create')
+  }
+
+  /** 跳转到我的活动 */
+  const toMyActivities = () => {
+    navigateTo('/pages/club/my-activities')
   }
 
   // ================== 列表页跳转 ==================
@@ -276,6 +289,8 @@ export function useNavigation() {
     toAskQuestion,
     toPublishTask,
     toPublishActivity,
+    toCreateClub,
+    toMyActivities,
 
     // 列表页
     toActivityList,

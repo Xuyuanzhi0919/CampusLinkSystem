@@ -98,6 +98,14 @@
                   v-if="isAdmin"
                   type="text"
                   size="sm"
+                  @click="handlePublishActivity"
+                >
+                  发布活动
+                </CButton>
+                <CButton
+                  v-if="isAdmin"
+                  type="text"
+                  size="sm"
                   @click="handleManage"
                 >
                   管理社团
@@ -615,6 +623,11 @@ const handleEnter = () => {
   })
 }
 
+// 发布活动（管理员）
+const handlePublishActivity = () => {
+  uni.navigateTo({ url: `/pages/club/publish-activity?clubId=${clubId.value}` })
+}
+
 // 管理社团（管理员）
 const handleManage = () => {
   uni.navigateTo({
@@ -644,13 +657,7 @@ const handleContact = (userId: number) => {
 // 跳转到活动详情
 const goToActivityDetail = (activityId: number) => {
   uni.navigateTo({
-    url: `/pages/activity/detail?id=${activityId}`,
-    fail: () => {
-      uni.showToast({
-        title: '功能开发中',
-        icon: 'none'
-      })
-    }
+    url: `/pages/club/activity-detail?id=${activityId}`,
   })
 }
 

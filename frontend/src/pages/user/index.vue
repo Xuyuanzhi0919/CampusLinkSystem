@@ -345,10 +345,7 @@ const handlePublishTask = () => {
 }
 
 const handleJoinActivity = () => {
-  uni.navigateTo({
-    url: '/pages/club/activity-list',
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-  })
+  uni.navigateTo({ url: '/pages/club/my-activities' })
 }
 
 const handleGoToMall = () => {

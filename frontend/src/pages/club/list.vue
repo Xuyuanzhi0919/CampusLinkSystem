@@ -730,16 +730,9 @@ const handleBrowseRecommend = () => {
   // uni.navigateTo({ url: '/pages/club/recommend' })
 }
 
-// 创建社团(暂时提示功能开发中)
+// 跳转到创建社团页面
 const handleCreateClub = () => {
-  uni.showToast({
-    title: '创建社团功能开发中',
-    icon: 'none',
-    duration: 2000
-  })
-
-  // TODO: 后续实现创建社团逻辑
-  // uni.navigateTo({ url: '/pages/club/create' })
+  uni.navigateTo({ url: '/pages/club/create' })
 }
 
 // MVP-1: 更新分类计数(优化:一次遍历统计所有分类)

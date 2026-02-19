@@ -123,29 +123,32 @@
           v-for="item in list"
           :key="item.activityId"
           class="activity-card"
+          :style="{ '--type-accent': getTypeConfig(item.type).accent }"
           @click="handleActivityClick(item.activityId)"
         >
-          <!-- 左侧类型图标 -->
-          <view class="activity-card__icon" :style="{ background: getTypeConfig(item.type).bgGradient }">
-            <Icon :name="getTypeConfig(item.type).icon" :size="22" color="rgba(255,255,255,0.95)" />
+          <!-- 左侧图标封面 -->
+          <view class="activity-card__cover" :style="{ background: getTypeConfig(item.type).bgGradient }">
+            <Icon :name="getTypeConfig(item.type).icon" :size="24" color="rgba(255,255,255,0.95)" />
           </view>
 
-          <!-- 右侧信息 -->
-          <view class="activity-card__right">
+          <!-- 右侧信息区 -->
+          <view class="activity-card__body">
+            <!-- 类型色条 -->
+            <view class="activity-card__accent-bar"></view>
             <view class="activity-card__top">
               <text class="activity-card__title">{{ item.title }}</text>
-              <view class="activity-card__capsule" :class="`capsule--status-${item.status || 1}`">
+              <view class="activity-card__status" :class="`status--${item.status || 1}`">
                 <text>{{ getStatusText(item.status) }}</text>
               </view>
             </view>
             <view class="activity-card__meta-row">
-              <Icon name="clock" :size="12" class="meta-icon" />
+              <Icon name="clock" :size="11" class="meta-icon" />
               <text class="meta-text">{{ formatDate(item.startTime) }}</text>
             </view>
             <view class="activity-card__bottom">
-              <view class="meta-loc">
-                <Icon name="map-pin" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ item.location || '待定' }}</text>
+              <view class="activity-card__loc">
+                <Icon name="map-pin" :size="11" class="meta-icon" />
+                <text class="meta-text meta-text--loc">{{ item.location || '待定' }}</text>
               </view>
               <view class="activity-type-tag" :class="`type-tag--${item.type || 1}`">
                 <text>{{ getActivityType(item.type) }}</text>
@@ -532,72 +535,99 @@ const upcomingActivities = computed(() =>
 }
 
 .upcoming-card {
-  width: 150px;
-  border-radius: 14px;
+  width: 140px;
+  border-radius: 18px;
   overflow: hidden;
   background: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
   cursor: pointer;
-  transition: transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  flex-shrink: 0;
 
-  &:active { transform: scale(0.96); }
+  &:active {
+    transform: scale(0.94);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  }
 }
 
+/* 顶部渐变色图标区（对齐热门社团 placeholder 高度） */
 .upcoming-card__header {
-  padding: 14px 12px 12px;
+  height: 88px;
+  padding: 12px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
 .upcoming-icon {
-  width: 40px;
-  height: 40px;
+  width: 38px;
+  height: 38px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
+/* 状态标签（对齐热门社团 rank 角标） */
 .upcoming-status {
   display: inline-flex;
   align-items: center;
-  padding: 3px 8px;
-  border-radius: 10px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 7px;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
 
-  &.status--1 { background: rgba(255,255,255,0.25); color: rgba(255,255,255,0.95); }
-  &.status--2 { background: rgba(39,174,96,0.3); color: #A9EFC5; }
-  &.status--3 { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.5); }
-  &.status--4 { background: rgba(255,92,92,0.3); color: #FFAEAE; }
+  &.status--1 { background: rgba(255,255,255,0.22); color: rgba(255,255,255,0.95); }
+  &.status--2 { background: rgba(39,174,96,0.35);  color: #A9EFC5; }
+  &.status--3 { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.5); }
+  &.status--4 { background: rgba(255,92,92,0.3);    color: #FFAEAE; }
 }
 
+/* 白色信息区 */
 .upcoming-card__body {
-  padding: 10px 12px 14px;
+  flex: 1;
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
+}
+
+/* 底部类型色条（对齐热门社团 glow-bar） */
+.upcoming-card__body::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--accent, #27AE60);
+  border-radius: 0 0 18px 18px;
+  opacity: 0.6;
 }
 
 .upcoming-title {
   font-size: 13px;
   font-weight: 700;
-  color: $color-text-primary;
+  color: #1A1A2E;
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  letter-spacing: -0.1px;
 }
 
 .upcoming-date {
   font-size: 11px;
   color: var(--accent);
   font-weight: 600;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .upcoming-loc {
@@ -605,49 +635,69 @@ const upcomingActivities = computed(() =>
   align-items: center;
   gap: 3px;
   font-size: 11px;
-  color: $color-text-quaternary;
+  color: #9CA3AF;
   overflow: hidden;
 }
 
 .upcoming-loc-icon {
-  color: $color-text-quaternary;
+  color: #9CA3AF;
   flex-shrink: 0;
 }
 
-/* ========== 全部活动列表（横向信息流） ========== */
+/* ========== 全部活动列表 ========== */
 .activity-items {
-  padding: 0 16px;
-}
-
-.activity-card {
+  padding: 0 16px 4px;
   display: flex;
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid $color-divider;
-  cursor: pointer;
-
-  &:last-child { border-bottom: none; }
-  &:active { background: rgba(0, 0, 0, 0.02); }
+  flex-direction: column;
+  gap: 12px;
 }
 
-.activity-card__icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
+/* 卡片：与社团页 club-card 同规格，白色圆角卡片 */
+.activity-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: row;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* 左侧图标封面（渐变色方块） */
+.activity-card__cover {
+  width: 80px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  align-self: stretch;
 }
 
-.activity-card__right {
+/* 右侧信息区 */
+.activity-card__body {
   flex: 1;
+  min-width: 0;
+  padding: 12px 12px 12px 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
   justify-content: center;
+  gap: 4px;
+}
+
+/* 类型主色细线（对齐社团卡片的 glow-bar） */
+.activity-card__accent-bar {
+  width: 18px;
+  height: 2.5px;
+  border-radius: 2px;
+  background: var(--type-accent, #27AE60);
+  margin-bottom: 2px;
 }
 
 .activity-card__top {
@@ -660,44 +710,35 @@ const upcomingActivities = computed(() =>
 .activity-card__title {
   font-size: 14px;
   font-weight: 700;
-  color: $color-text-primary;
+  color: #1A1A2E;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  letter-spacing: -0.2px;
 }
 
-.activity-card__capsule {
+/* 状态标签（对齐社团页分类标签风格） */
+.activity-card__status {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   height: 20px;
   padding: 0 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
 
-  &.capsule--status-1 { color: $campus-blue; background: rgba($campus-blue, 0.1); }
-  &.capsule--status-2 { color: $color-success; background: rgba($color-success, 0.1); }
-  &.capsule--status-3 { color: $color-text-tertiary; background: rgba($color-text-tertiary, 0.08); }
-  &.capsule--status-4 { color: $color-danger; background: rgba($color-danger, 0.1); }
-}
-
-.meta-icon {
-  color: $color-text-tertiary;
-  flex-shrink: 0;
-  margin-right: 4px;
-}
-
-.meta-loc {
-  display: flex;
-  align-items: center;
-  overflow: hidden;
+  &.status--1 { color: $campus-blue;      background: rgba(55, 125, 255, 0.1); }
+  &.status--2 { color: $color-success;    background: rgba(39, 174, 96, 0.1); }
+  &.status--3 { color: $color-text-tertiary; background: rgba(0,0,0,0.05); }
+  &.status--4 { color: $color-danger;     background: rgba(255, 92, 92, 0.1); }
 }
 
 .activity-card__meta-row {
   display: flex;
   align-items: center;
+  gap: 4px;
 }
 
 .activity-card__bottom {
@@ -706,24 +747,40 @@ const upcomingActivities = computed(() =>
   justify-content: space-between;
 }
 
+.activity-card__loc {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow: hidden;
+  flex: 1;
+}
+
+.meta-icon {
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
 .meta-text {
-  font-size: 12px;
-  color: $color-text-tertiary;
+  font-size: 11px;
+  color: #9CA3AF;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 55%;
+
+  &--loc { max-width: 100%; }
 }
 
+/* 类型标签（底部右侧） */
 .activity-type-tag {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   height: 20px;
   padding: 0 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 8px;
 
   &.type-tag--1 { color: #764BA2; background: rgba(118, 75, 162, 0.1); }
   &.type-tag--2 { color: #F5576C; background: rgba(245, 87, 108, 0.1); }
@@ -835,11 +892,7 @@ const upcomingActivities = computed(() =>
     padding: 0 80px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0 40px;
-  }
-
-  .activity-card {
-    border-bottom: 1px solid $color-divider;
+    gap: 12px;
   }
 }
 </style>

@@ -323,6 +323,10 @@ const loadQuestionDetail = async () => {
     await questionStore.loadQuestionDetail(questionId.value)
   } catch (err: any) {
     console.error('加载问题详情失败:', err)
+    // 401 由 request.ts 统一处理（引导登录），此处不渲染错误页以避免闪烁
+    if (err.message?.includes('未授权') || err.message?.includes('请先登录') || err.message?.includes('Token')) {
+      return
+    }
     if (err.statusCode === 404 || err.message?.includes('不存在') || err.message?.includes('已删除')) {
       error.value = { type: 'not-found', message: '问题不存在或已被删除' }
     } else if (!navigator.onLine || err.message?.includes('网络') || err.message?.includes('timeout')) {

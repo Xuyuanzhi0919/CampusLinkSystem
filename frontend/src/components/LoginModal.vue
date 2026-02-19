@@ -3,7 +3,7 @@
     <view class="login-modal-container" :class="{ 'modal-show': showAnimation }" @tap.stop>
       <!-- 关闭按钮 -->
       <view class="close-btn" @tap.stop="handleClose">
-        <text class="close-icon">✕</text>
+        <Icon name="x" :size="16" class="close-icon" />
       </view>
 
       <!-- 品牌头部 -->
@@ -59,7 +59,7 @@
         <view class="form-options">
           <view class="remember-me" @tap="formData.rememberMe = !formData.rememberMe">
             <view class="checkbox" :class="{ 'checkbox-checked': formData.rememberMe }">
-              <text v-if="formData.rememberMe" class="checkbox-icon">✓</text>
+              <Icon v-if="formData.rememberMe" name="check" :size="12" class="checkbox-icon" />
             </view>
             <text class="option-text">记住账号</text>
           </view>
@@ -67,10 +67,10 @@
         </view>
 
         <!-- 登录按钮 -->
-        <button class="login-btn" :class="{ 'btn-loading': loading }" @tap="handleLogin">
-          <text v-if="!loading">登录</text>
-          <text v-else class="loading-text">登录中...</text>
-        </button>
+        <view class="login-btn" :class="{ 'btn-loading': loading }" @tap="handleLogin">
+          <view v-if="loading" class="btn-spinner" />
+          <text class="btn-text">{{ loading ? '登录中...' : '登录' }}</text>
+        </view>
 
         <!-- 分隔线 -->
         <view class="divider">
@@ -511,16 +511,13 @@ const handleRegister = () => {
   }
 
   .close-icon {
-    font-size: 36rpx; /* 18px */
     color: #64748B;
-    font-weight: 300;
-    transition: color 0.2s ease;
-    /* 优化：禁用指针事件，让点击穿透到父元素 */
     pointer-events: none;
+    transition: color 0.2s ease;
   }
 
   &:hover .close-icon {
-    color: #2563EB; /* 优化：hover 时图标变蓝 */
+    color: #2563EB;
   }
 }
 
@@ -718,8 +715,6 @@ const handleRegister = () => {
 
   .checkbox-icon {
     color: #fff;
-    font-size: 20rpx;
-    font-weight: 600;
   }
 }
 
@@ -752,93 +747,52 @@ const handleRegister = () => {
 .login-btn {
   width: 100%;
   height: 84rpx;
-  /* 优化：清新校园感渐变（蓝 → 青） */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
   background: linear-gradient(135deg, #2563EB 0%, #38BDF8 100%);
-  border: none;
   border-radius: 22rpx;
-  color: #fff;
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，按钮应是视觉焦点 */
-  font-weight: 600; /* 优化：保持 600 字重，让主操作更有力量 */
-  /* 优化：文字添加轻微阴影，增强可点击感 */
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-  /* 优化：增强阴影，营造"亮区"感 */
-  box-shadow: 0 8rpx 28rpx rgba(37, 99, 235, 0.35),
-              0 4rpx 12rpx rgba(37, 99, 235, 0.2);
+  box-shadow: 0 8rpx 28rpx rgba(37, 99, 235, 0.35), 0 4rpx 12rpx rgba(37, 99, 235, 0.2);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 40rpx; /* 优化：从 28rpx 增加到 40rpx (20px)，与社交登录拉开距离 */
-
-  /* 优化：中心光晕效果（呼吸感）*/
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200rpx;
-    height: 200rpx;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  /* 优化：涟漪扩散效果 */
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-  }
+  transition: all 0.25s ease;
+  margin-bottom: 40rpx;
 
   &:hover {
-    /* 优化：hover 时渐变更亮 + 中心光晕显现 */
-    background: linear-gradient(135deg, #1D4ED8 0%, #38BDF8 100%);
-    filter: brightness(1.1);
-    box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.5),
-                0 4rpx 16rpx rgba(37, 99, 235, 0.3),
-                0 0 0 8rpx rgba(56, 189, 248, 0.2); /* 优化：青色发光边 */
-    transform: translateY(-4rpx) scale(1.02);
-
-    &::before {
-      opacity: 1; /* 显示中心光晕 */
-    }
+    filter: brightness(1.08);
+    transform: translateY(-2rpx);
+    box-shadow: 0 12rpx 36rpx rgba(37, 99, 235, 0.45);
   }
 
   &:active {
-    /* 优化：点击时变深 */
-    background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
-    filter: brightness(0.95);
-    transform: translateY(-2rpx) scale(0.98);
-
-    /* 优化：点击时触发涟漪扩散 */
-    &::after {
-      width: 600rpx;
-      height: 600rpx;
-      opacity: 0;
-    }
+    filter: brightness(0.96);
+    transform: translateY(0) scale(0.99);
   }
 
   &.btn-loading {
-    opacity: 0.7;
+    opacity: 0.75;
     cursor: not-allowed;
   }
 
-  .loading-text {
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .btn-text {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #fff;
   }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+.btn-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* 分隔线 */

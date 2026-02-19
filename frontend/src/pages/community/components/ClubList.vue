@@ -743,41 +743,40 @@ const handleJoinClub = async (club: any) => {
   flex-shrink: 0;
 }
 
-/* ── 卡片主体：全图式深色卡 ── */
+/* ── 卡片主体：浅色卡片式 ── */
 .hot-card {
   position: relative;
-  width: 130px;
-  height: 185px;
-  border-radius: 20px;
+  width: 120px;
+  border-radius: 18px;
   overflow: hidden;
   flex-shrink: 0;
   cursor: pointer;
-  background: #111;
-  // 主题色外发光
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(255, 255, 255, 0.08) inset;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
 
   &:active {
     transform: scale(0.94);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
   }
 }
 
-/* 封面图：铺满整张卡 */
+/* 封面图：卡片上半部分 */
 .hot-card__img {
-  position: absolute;
-  inset: 0;
   width: 100%;
-  height: 100%;
+  height: 100px;
   object-fit: cover;
-  z-index: 0;
+  display: block;
+  flex-shrink: 0;
 }
 
-/* 无图占位：主题色渐变 + 大字 */
+/* 无图占位：主题色渐变 */
 .hot-card__placeholder {
-  position: absolute;
-  inset: 0;
+  width: 100%;
+  height: 100px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -787,84 +786,65 @@ const handleJoinClub = async (club: any) => {
     var(--card-color-dim, #111) 100%
   );
   overflow: hidden;
-  z-index: 0;
+  position: relative;
 }
 
 .hot-card__initial {
   position: relative;
   z-index: 2;
-  font-size: 52px;
+  font-size: 42px;
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.9);
   line-height: 1;
   letter-spacing: -2px;
-  text-shadow:
-    0 0 24px rgba(255, 255, 255, 0.3),
-    0 4px 16px rgba(0, 0, 0, 0.4);
 }
 
 /* 装饰圆环（占位时） */
 .hot-card__pl-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 
   &--1 {
-    width: 130px;
-    height: 130px;
+    width: 120px;
+    height: 120px;
     bottom: -40px;
-    right: -40px;
+    right: -30px;
   }
 
   &--2 {
-    width: 80px;
-    height: 80px;
-    top: -24px;
-    left: -24px;
-    border-color: rgba(255, 255, 255, 0.06);
+    width: 70px;
+    height: 70px;
+    top: -20px;
+    left: -20px;
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
-/* 全卡渐变遮罩：底部深色渐变，让文字清晰 */
+/* 全卡渐变遮罩：不需要，改浅色后移除覆盖层 */
 .hot-card__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.05) 0%,
-    rgba(0, 0, 0, 0.1) 40%,
-    rgba(0, 0, 0, 0.72) 75%,
-    rgba(0, 0, 0, 0.88) 100%
-  );
-  pointer-events: none;
+  display: none;
 }
 
-/* ── 排名角标（左上，斜切设计） ── */
+/* ── 排名角标：卡片封面左上 ── */
 .hot-card__rank {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 8px;
+  left: 8px;
   z-index: 3;
-  height: 26px;
-  padding: 0 9px 0 10px;
+  height: 22px;
+  padding: 0 8px;
   display: flex;
   align-items: center;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(8px);
-  border-bottom-right-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-top: none;
-  border-left: none;
+  background: rgba(0, 0, 0, 0.38);
+  backdrop-filter: blur(6px);
+  border-radius: 7px;
 
-  // 前3名高亮
   &--hot {
     background: var(--card-color);
-    border-color: transparent;
 
     .hot-card__rank-text {
       color: #fff;
-      text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
     }
   }
 }
@@ -872,78 +852,70 @@ const handleJoinClub = async (club: any) => {
 .hot-card__rank-text {
   font-size: 10px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.85);
-  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.3px;
   line-height: 1;
 }
 
-/* ── 底部信息区 ── */
+/* ── 卡片信息区（图片下方白色区域） ── */
 .hot-card__bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  padding: 0 12px 12px;
+  flex: 1;
+  padding: 10px 10px 12px;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
 .hot-card__name {
-  font-size: 14px;
-  font-weight: 800;
-  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1A1A2E;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  letter-spacing: -0.3px;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+  letter-spacing: -0.2px;
 }
 
 .hot-card__meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .hot-card__meta-icon {
-  color: rgba(255, 255, 255, 0.7);
+  color: #9CA3AF;
 }
 
 .hot-card__count {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+  color: #9CA3AF;
   line-height: 1;
 }
 
-/* 主题色发光横条 */
+/* 主题色底部色条（替代发光效果） */
 .hot-card__glow-bar {
-  width: 28px;
+  width: 100%;
   height: 3px;
-  border-radius: 2px;
+  border-radius: 0 0 18px 18px;
   background: var(--card-color);
-  margin-top: 2px;
-  box-shadow: 0 0 8px var(--card-color);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0.7;
 }
 
-/* ── 前3名脉冲光晕 ── */
+/* 前3名：主题色顶部细边线替代脉冲动画 */
 .hot-card__pulse {
   position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: 20px;
-  border: 1.5px solid var(--card-color);
-  opacity: 0;
-  animation: pulse-border 3s ease-in-out infinite;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--card-color);
+  border-radius: 18px 18px 0 0;
   pointer-events: none;
-}
-
-@keyframes pulse-border {
-  0%   { opacity: 0; transform: scale(1); }
-  40%  { opacity: 0.55; }
-  100% { opacity: 0; transform: scale(1.04); }
 }
 
 /* ========== 全部社团列表 ========== */
@@ -954,38 +926,46 @@ const handleJoinClub = async (club: any) => {
   gap: 12px;
 }
 
-/* ── 卡片主体：横向全图式深色卡，对齐热门卡片语言 ── */
+/* ── 全部社团卡片：浅色横向卡，与热门卡片语言统一 ── */
 .club-card {
   position: relative;
-  height: 100px;
   border-radius: 18px;
   overflow: hidden;
   cursor: pointer;
-  background: #111;
-  box-shadow:
-    0 4px 16px rgba(0, 0, 0, 0.18),
-    0 0 0 1px rgba(255, 255, 255, 0.07) inset;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: #FFFFFF;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: row;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
 
-  &:active { transform: scale(0.97); }
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  }
 }
 
-/* 封面图：铺满整张卡 */
+/* 左侧封面图 */
 .club-card__bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
-  z-index: 0;
+  flex-shrink: 0;
+  display: block;
+  align-self: center;
+  margin: 10px 0 10px 10px;
+  border-radius: 12px;
 }
 
-/* 无图占位：主题色深色渐变 */
+/* 无图占位 */
 .club-card__bg-placeholder {
-  position: absolute;
-  inset: 0;
+  width: 90px;
+  height: 90px;
+  flex-shrink: 0;
+  align-self: center;
+  margin: 10px 0 10px 10px;
+  border-radius: 12px;
   background: linear-gradient(
-    135deg,
+    145deg,
     var(--cat-color, #377DFF) 0%,
     var(--cat-color-dim, #0A2A6E) 100%
   );
@@ -993,54 +973,42 @@ const handleJoinClub = async (club: any) => {
   align-items: center;
   justify-content: center;
   overflow: hidden;
-  z-index: 0;
+  position: relative;
 }
 
 .club-card__bg-initial {
+  font-size: 36px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: -1.5px;
+  line-height: 1;
   position: relative;
   z-index: 2;
-  font-size: 48px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.15);
-  letter-spacing: -2px;
-  line-height: 1;
 }
 
-/* 装饰圆环（占位时） */
 .club-card__bg-ring {
   position: absolute;
   border-radius: 50%;
-  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 
   &--1 {
-    width: 160px;
-    height: 160px;
-    bottom: -60px;
-    right: -40px;
+    width: 110px;
+    height: 110px;
+    bottom: -35px;
+    right: -30px;
   }
 
   &--2 {
-    width: 90px;
-    height: 90px;
-    top: -30px;
-    left: -20px;
-    border-color: rgba(255, 255, 255, 0.05);
+    width: 65px;
+    height: 65px;
+    top: -20px;
+    left: -15px;
+    border-color: rgba(255, 255, 255, 0.08);
   }
 }
 
-/* 全卡遮罩：左侧深色渐变，让文字区清晰 */
-.club-card__overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  background: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0.82) 0%,
-    rgba(0, 0, 0, 0.55) 50%,
-    rgba(0, 0, 0, 0.15) 100%
-  );
-  pointer-events: none;
-}
+/* 遮罩层不需要 */
+.club-card__overlay { display: none; }
 
 /* 右上角分类标签 */
 .club-card__cat {
@@ -1054,7 +1022,6 @@ const handleJoinClub = async (club: any) => {
   padding: 0 8px;
   border-radius: 6px;
   background: var(--cat-color, #377DFF);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .club-card__cat-text {
@@ -1064,55 +1031,53 @@ const handleJoinClub = async (club: any) => {
   letter-spacing: 0.5px;
 }
 
-/* 底部内容区（左侧文字 + 按钮） */
+/* 右侧内容区 */
 .club-card__bottom {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  padding: 0 14px 12px;
+  flex: 1;
+  min-width: 0;
+  padding: 14px 12px 12px 12px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  justify-content: center;
+  gap: 4px;
 }
 
-/* 主题色光条，与热门卡片保持一致 */
+/* 分类色顶部细线 */
 .club-card__glow-bar {
-  width: 24px;
+  width: 20px;
   height: 2.5px;
   border-radius: 2px;
   background: var(--cat-color, #377DFF);
-  box-shadow: 0 0 8px var(--cat-color, #377DFF);
   margin-bottom: 2px;
 }
 
 .club-card__title {
-  font-size: 16px;
-  font-weight: 800;
-  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 700;
+  color: #1A1A2E;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  letter-spacing: -0.3px;
-  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
+  letter-spacing: -0.2px;
+  // 为右上角分类标签留出空间
+  padding-right: 56px;
 }
 
 .club-card__desc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
+  color: #9CA3AF;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   line-height: 1.4;
 }
 
-/* 最底行：统计 + 按钮 */
+/* 底行：统计 + 按钮 */
 .club-card__footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 
 .club-card__meta {
@@ -1122,14 +1087,14 @@ const handleJoinClub = async (club: any) => {
 }
 
 .club-meta-icon {
-  color: rgba(255, 255, 255, 0.6);
+  color: #9CA3AF;
   flex-shrink: 0;
 }
 
 .club-meta-val {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.65);
+  font-weight: 500;
+  color: #9CA3AF;
   line-height: 1;
 }
 
@@ -1137,11 +1102,11 @@ const handleJoinClub = async (club: any) => {
   width: 2.5px;
   height: 2.5px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
+  background: #D1D5DB;
   margin: 0 2px;
 }
 
-/* 加入按钮：与热门卡片 rank 角标同层级感 */
+/* 加入按钮：与热门卡片底部色条同系，分类色实心 */
 .club-card__btn {
   flex-shrink: 0;
   display: inline-flex;
@@ -1149,8 +1114,7 @@ const handleJoinClub = async (club: any) => {
   height: 26px;
   padding: 0 13px;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: var(--cat-color, #377DFF);
   transition: opacity 0.15s ease, transform 0.12s ease;
 
   &:active {
@@ -1159,9 +1123,8 @@ const handleJoinClub = async (club: any) => {
   }
 
   &--joined {
-    background: rgba(255, 255, 255, 0.12);
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    box-shadow: none;
+    background: transparent;
+    border: 1.5px solid #E5E7EB;
   }
 
   &--loading {
@@ -1172,13 +1135,13 @@ const handleJoinClub = async (club: any) => {
 
 .club-card__btn-text {
   font-size: 12px;
-  font-weight: 800;
-  color: #111;
+  font-weight: 700;
+  color: #FFFFFF;
   letter-spacing: 0.2px;
 
   .club-card__btn--joined & {
-    color: rgba(255, 255, 255, 0.75);
-    font-weight: 600;
+    color: #9CA3AF;
+    font-weight: 500;
   }
 }
 

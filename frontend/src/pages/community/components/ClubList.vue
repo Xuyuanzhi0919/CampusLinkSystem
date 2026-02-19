@@ -653,22 +653,24 @@ const handleJoinClub = async (club: any) => {
 /* ========== 全部社团列表（横向信息流） ========== */
 .club-items {
   padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .club-card {
   display: flex;
   gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid $color-divider;
+  padding: 14px;
+  background: #FFFFFF;
+  border-radius: 14px;
   cursor: pointer;
-  transition: background 0.15s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 
   &:active {
-    background: rgba(0, 0, 0, 0.02);
+    transform: scale(0.985);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -918,11 +920,7 @@ const handleJoinClub = async (club: any) => {
     padding: 0 80px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 0 40px;
-  }
-
-  .club-card {
-    border-bottom: 1px solid $color-divider;
+    gap: 10px;
   }
 }
 </style>

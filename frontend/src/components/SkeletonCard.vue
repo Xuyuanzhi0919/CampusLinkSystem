@@ -251,38 +251,5 @@ withDefaults(defineProps<Props>(), {
 }
 
 /* 深色模式 */
-@media (prefers-color-scheme: dark) {
-  .skeleton-card {
-    background: rgba(31, 41, 55, 0.7);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-
-  .skeleton-tag,
-  .skeleton-title,
-  .skeleton-text,
-  .skeleton-line,
-  .skeleton-avatar,
-  .skeleton-rank,
-  .skeleton-btn {
-    background: linear-gradient(
-      110deg,
-      #2A2A2A 0%,
-      #2A2A2A 30%,
-      #404040 50%,
-      #2A2A2A 70%,
-      #2A2A2A 100%
-    );
-    background-size: 300% 100%;
-
-    &::after {
-      background: linear-gradient(
-        110deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.1) 50%,
-        transparent 100%
-      );
-    }
-  }
-}
 </style>
 

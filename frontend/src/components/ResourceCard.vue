@@ -891,27 +891,4 @@ const handleFavorite = () => {
   }
 }
 
-//  深色模式适配
-@media (prefers-color-scheme: dark) {
-  .resource-card {
-    background: rgba(31, 41, 55, 0.7);
-
-    &.is-active,
-    &:hover {
-      background: rgba(31, 41, 55, 0.9);
-    }
-  }
-
-  .title {
-    color: #F9FAFB;
-  }
-
-  .description {
-    color: #D1D5DB;
-  }
-
-  .card-footer {
-    border-top-color: rgba(75, 85, 99, 0.5);
-  }
-}
 </style>

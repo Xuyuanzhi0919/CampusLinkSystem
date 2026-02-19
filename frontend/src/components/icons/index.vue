@@ -453,8 +453,9 @@
 
     <!-- Graduation Cap 图标（学位帽/教育） -->
     <template v-else-if="name === 'graduation-cap'">
-      <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" fill="none"/>
-      <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" fill="none"/>
+      <path d="M22 10v6" stroke="currentColor" stroke-linecap="round"/>
+      <path d="M2 10l10-5 10 5-10 5-10-5z" stroke="currentColor" fill="none" stroke-linejoin="round"/>
+      <path d="M6 12v5c0 0 2.5 3 6 3s6-3 6-3v-5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
     </template>
 
     <!-- Log Out 图标（退出登录） -->

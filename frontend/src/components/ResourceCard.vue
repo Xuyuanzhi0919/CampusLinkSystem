@@ -10,7 +10,7 @@
   >
     <!-- P1-3: 高价值资源角标 -->
     <view v-if="isHotResource" class="hot-badge">
-      <text class="hot-badge-icon">🔥</text>
+      <ClIcon name="icon-fire" size="sm" color="#FFFFFF" />
       <text class="hot-badge-text">HOT</text>
     </view>
 
@@ -19,7 +19,7 @@
       <view class="title-row">
         <!-- 资源类型图标 -->
         <view class="type-icon" :class="`type-${getCategoryClass(resource.category)}`">
-          {{ getTypeIcon(resource.category) }}
+          <ClIcon :name="getTypeIconName(resource.category)" size="base" color="#FFFFFF" />
         </view>
 
         <!-- 标题 -->
@@ -28,7 +28,7 @@
 
         <!--  点赞数 (弱提示) -->
         <view class="likes-hint">
-          <text class="like-icon-hint">♥</text>
+          <ClIcon name="icon-heart" size="sm" color="#F87171" />
           <text class="like-count">{{ formatNumber(resource.likes) }}</text>
         </view>
       </view>
@@ -52,7 +52,8 @@
 
       <!-- 文件类型标签紧贴描述 -->
       <view class="file-type-badge" :class="`filetype-${resource.fileType}`">
-        {{ getFileTypeIcon(resource.fileType) }} {{ getFileTypeText(resource.fileType) }}
+        <ClIcon :name="getFileTypeIconName(resource.fileType)" size="sm" />
+        <text>{{ getFileTypeText(resource.fileType) }}</text>
       </view>
     </view>
 
@@ -60,7 +61,8 @@
     <view class="meta-section">
       <!-- 课程标签 -->
       <view v-if="resource.courseName" class="tag course-tag">
-        📖 {{ resource.courseName }}
+        <ClIcon name="icon-book" size="xs" color="#2563EB" />
+        <text>{{ resource.courseName }}</text>
       </view>
 
       <!-- 文件大小 -->
@@ -85,19 +87,19 @@
       <view class="stats-group">
         <!-- 积分价格 (弱化显示) -->
         <view class="stat-item stat-points">
-          <text class="stat-icon">💰</text>
+          <ClIcon name="icon-coin" size="sm" color="#9CA3AF" />
           <text class="stat-value">{{ resource.score }}</text>
         </view>
 
         <!-- 下载量 -->
         <view class="stat-item stat-downloads">
-          <text class="stat-icon">↓</text>
+          <ClIcon name="icon-download" size="sm" color="#6B7280" />
           <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
         </view>
 
         <!-- 收藏数 (新增) -->
         <view v-if="resource.favorites && resource.favorites > 0" class="stat-item stat-favorites">
-          <text class="stat-icon">★</text>
+          <ClIcon name="icon-star" size="sm" color="#F59E0B" />
           <text class="stat-value">{{ formatNumber(resource.favorites) }}</text>
         </view>
       </view>
@@ -111,7 +113,11 @@
           @click.stop="handleFavorite"
           :title="resource.isFavorited ? '取消收藏' : '收藏'"
         >
-          <text class="icon-btn-icon">{{ resource.isFavorited ? '★' : '☆' }}</text>
+          <ClIcon
+            :name="resource.isFavorited ? 'icon-star' : 'icon-bookmark'"
+            size="sm"
+            :color="resource.isFavorited ? '#FFFFFF' : '#F59E0B'"
+          />
         </view>
 
         <!-- 下载按钮 (hover显示) -->
@@ -121,7 +127,11 @@
           @click.stop="handleDownload"
           :title="resource.isDownloaded ? '重新下载' : `下载 (${resource.score}积分)`"
         >
-          <text class="icon-btn-icon">↓</text>
+          <ClIcon
+            name="icon-download"
+            size="sm"
+            :color="resource.isDownloaded ? '#FFFFFF' : '#2563EB'"
+          />
         </view>
       </view>
     </view>
@@ -133,6 +143,7 @@ import { ref, computed, onMounted } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 import { ResourceCategory, ResourceStatus } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
+import ClIcon from '@/components/cl/ClIcon.vue'
 
 // Props
 interface Props {
@@ -188,29 +199,26 @@ const getCategoryClass = (category: number | string | undefined): string => {
 }
 
 /**
- * 获取资源类型图标 - 支持统一颜色体系
+ * 获取资源类型图标名称（ClIcon 使用）
  */
-const getTypeIcon = (category: number | string | undefined): string => {
-  // 如果是字符串类型，直接映射
+const getTypeIconName = (category: number | string | undefined): string => {
   if (typeof category === 'string') {
     const stringIconMap: Record<string, string> = {
-      '课件': '📚',
-      '试卷': '📝',
-      '笔记': '✍️',
-      '教材': '📖',
-      '实验报告': '🔬'
+      '课件': 'icon-file-ppt',
+      '试卷': 'icon-file-text',
+      '笔记': 'icon-edit',
+      '教材': 'icon-book',
+      '实验报告': 'icon-file-text'
     }
-    return stringIconMap[category] || '📦'
+    return stringIconMap[category] || 'icon-file'
   }
-
-  // 如果是数字类型，使用枚举映射
   const categoryNum = category || 0
   const iconMap: Record<number, string> = {
-    [ResourceCategory.COURSEWARE]: '📚',
-    [ResourceCategory.PAPER]: '📝',
-    [ResourceCategory.NOTE]: '✍️'
+    [ResourceCategory.COURSEWARE]: 'icon-file-ppt',
+    [ResourceCategory.PAPER]: 'icon-file-text',
+    [ResourceCategory.NOTE]: 'icon-edit'
   }
-  return iconMap[categoryNum] || '📦'
+  return iconMap[categoryNum] || 'icon-file'
 }
 
 /**
@@ -226,20 +234,22 @@ const getStatusText = (status: number): string => {
 }
 
 /**
- *  获取文件类型图标
+ * 获取文件类型图标名称（ClIcon 使用）
  */
-const getFileTypeIcon = (fileType: string): string => {
+const getFileTypeIconName = (fileType: string): string => {
   const iconMap: Record<string, string> = {
-    pdf: '📄',
-    docx: '📃',
-    doc: '📃',
-    pptx: '📊',
-    ppt: '📊',
-    zip: '🗜️',
-    rar: '🗜️',
-    other: '📎'
+    pdf: 'icon-file-pdf',
+    docx: 'icon-file-word',
+    doc: 'icon-file-word',
+    pptx: 'icon-file-ppt',
+    ppt: 'icon-file-ppt',
+    xls: 'icon-file-excel',
+    xlsx: 'icon-file-excel',
+    zip: 'icon-file-zip',
+    rar: 'icon-file-zip',
+    txt: 'icon-file-text'
   }
-  return iconMap[fileType] || '📎'
+  return iconMap[fileType?.toLowerCase()] || 'icon-file'
 }
 
 /**
@@ -483,13 +493,12 @@ const handleFavorite = () => {
 
 .type-icon {
   flex-shrink: 0;
-  width: 52rpx; // 48rpx→52rpx,增加图标容器尺寸
+  width: 52rpx;
   height: 52rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12rpx;
-  font-size: 26rpx; // 24rpx→26rpx,增加emoji图标尺寸
 
   // 不同类型的渐变背景 - 统一颜色体系
   // 课件 - 蓝色系
@@ -611,9 +620,12 @@ const handleFavorite = () => {
 
 .file-type-badge {
   flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
   padding: 4rpx 10rpx;
   border-radius: 10rpx;
-  font-size: 22rpx; // 20rpx→22rpx,增强可读性
+  font-size: 22rpx;
   font-weight: 500;
   white-space: nowrap;
   background: rgba(59, 130, 246, 0.1);
@@ -671,7 +683,10 @@ const handleFavorite = () => {
   white-space: nowrap;
 
   &.course-tag {
-    background: rgba(37, 99, 235, 0.08); // 🎯 优化:使用品牌色系
+    display: inline-flex;
+    align-items: center;
+    gap: 6rpx;
+    background: rgba(37, 99, 235, 0.08);
     color: #2563EB;
   }
 
@@ -719,50 +734,35 @@ const handleFavorite = () => {
   display: flex;
   align-items: center;
   gap: 4rpx;
-  font-size: 22rpx; // 从 24rpx → 22rpx,弱化
-  font-weight: 400; // 从 500 → 400,弱化
-  padding: 4rpx 10rpx; // 从 6rpx 12rpx → 4rpx 10rpx,缩小
+  font-size: 22rpx;
+  font-weight: 400;
+  padding: 4rpx 10rpx;
   border-radius: 8rpx;
   transition: all 0.2s ease;
 
-  .stat-icon {
-    font-size: 18rpx;
-  }
-
   .stat-value {
-    color: #6B7280; // 统一为灰色
+    color: #6B7280;
     font-weight: 500;
   }
 
-  // 积分价格 - P1优化:大幅弱化
   &.stat-points {
-    background: rgba(107, 114, 128, 0.06); // 从橙色渐变 → 灰色背景
-    color: #9CA3AF; // 从橙色 → 灰色
-
-    .stat-icon {
-      opacity: 0.6; // 金币图标半透明
-    }
+    background: rgba(107, 114, 128, 0.06);
+    color: #9CA3AF;
 
     .stat-value {
-      color: #6B7280; // 从橙色 → 灰色
-      font-weight: 500; // 从 700 → 500
+      color: #6B7280;
+      font-weight: 500;
     }
   }
 
-  // 下载量 - 保持原样
   &.stat-downloads {
     background: rgba(107, 114, 128, 0.06);
     color: #6B7280;
   }
 
-  // 收藏数 - 新增
   &.stat-favorites {
     background: rgba(251, 191, 36, 0.1);
     color: #F59E0B;
-
-    .stat-icon {
-      color: #F59E0B;
-    }
   }
 }
 
@@ -818,19 +818,8 @@ const handleFavorite = () => {
     box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.06);
   }
 
-  .icon-btn-icon {
-    font-size: 26rpx; // 从 28rpx → 26rpx,缩小
-    color: #9CA3AF; // 从 #6B7280 → #9CA3AF,更浅
-    line-height: 1;
-    transition: all 0.2s;
-  }
-
-  // 收藏按钮 - 新增
+  // 收藏按钮
   &.favorite-btn {
-    .icon-btn-icon {
-      color: #F59E0B;
-    }
-
     &:hover:not(.is-favorited) {
       background: rgba(251, 191, 36, 0.08);
       border-color: #FCD34D;
@@ -841,10 +830,6 @@ const handleFavorite = () => {
       border-color: #F59E0B;
       box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.25);
 
-      .icon-btn-icon {
-        color: #FFFFFF;
-      }
-
       &:hover {
         background: #D97706;
         border-color: #D97706;
@@ -853,12 +838,8 @@ const handleFavorite = () => {
     }
   }
 
-  // 下载按钮 - P1优化:弱化处理
+  // 下载按钮
   &.download-btn {
-    .icon-btn-icon {
-      color: #2563EB;
-    }
-
     &:hover:not(.is-downloaded) {
       background: rgba(37, 99, 235, 0.08);
       border-color: #93C5FD;
@@ -868,10 +849,6 @@ const handleFavorite = () => {
       background: #10B981;
       border-color: #10B981;
       box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25);
-
-      .icon-btn-icon {
-        color: #FFFFFF;
-      }
 
       &:hover {
         background: #059669;

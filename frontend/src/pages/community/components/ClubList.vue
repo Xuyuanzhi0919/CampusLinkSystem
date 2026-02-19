@@ -42,11 +42,11 @@
           <text class="banner-desc">{{ featuredClub.description || '加入我们，一起创造校园精彩' }}</text>
           <view class="banner-meta">
             <view class="banner-meta-item">
-              <text class="banner-meta-icon">👥</text>
+              <Icon name="users" :size="13" class="banner-meta-icon" />
               <text>{{ featuredClub.memberCount || 0 }} 名成员</text>
             </view>
             <view class="banner-meta-item">
-              <text class="banner-meta-icon">🎯</text>
+              <Icon name="target" :size="13" class="banner-meta-icon" />
               <text>{{ featuredClub.activityCount || 0 }} 场活动</text>
             </view>
           </view>
@@ -125,9 +125,11 @@
             <text v-if="item.description" class="club-card__desc">{{ item.description }}</text>
             <view class="club-card__bottom">
               <view class="club-card__meta">
-                <text class="meta-text">👥 {{ item.memberCount || 0 }}人</text>
+                <Icon name="users" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ item.memberCount || 0 }}人</text>
                 <text class="meta-dot">·</text>
-                <text class="meta-text">🎯 {{ item.activityCount || 0 }}场</text>
+                <Icon name="target" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ item.activityCount || 0 }}场</text>
               </view>
               <view
                 class="club-card__btn"
@@ -149,7 +151,7 @@
     <!-- ========== 空状态 ========== -->
     <view v-else class="empty-container">
       <view class="empty-icon-wrap">
-        <text class="empty-emoji">🏫</text>
+        <Icon name="users" :size="40" color="#D1D5DB" />
       </view>
       <text class="empty-title">暂无社团</text>
       <text class="empty-hint">快来创建第一个社团吧</text>
@@ -179,6 +181,7 @@ import { ref, computed } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 import { joinClub, quitClub } from '@/services/club'
 import { requireLogin } from '@/utils/auth'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   list: any[]
@@ -438,7 +441,8 @@ const handleJoinClub = async (club: any) => {
 }
 
 .banner-meta-icon {
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
 }
 
 .banner-btn {
@@ -704,6 +708,11 @@ const handleJoinClub = async (club: any) => {
   gap: 6px;
 }
 
+.meta-icon {
+  color: $color-text-quaternary;
+  flex-shrink: 0;
+}
+
 .meta-text {
   font-size: 11px;
   color: $color-text-quaternary;
@@ -759,10 +768,6 @@ const handleJoinClub = async (club: any) => {
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-}
-
-.empty-emoji {
-  font-size: 36px;
 }
 
 .empty-title {

@@ -49,18 +49,18 @@
 
           <view class="banner-info">
             <view class="banner-info-item">
-              <text class="info-emoji">🕐</text>
+              <Icon name="clock" :size="13" class="info-icon" />
               <text>{{ formatDate(featuredActivity.startTime) }}</text>
             </view>
             <view class="banner-info-item">
-              <text class="info-emoji">📍</text>
+              <Icon name="map-pin" :size="13" class="info-icon" />
               <text>{{ featuredActivity.location || '待定' }}</text>
             </view>
           </view>
 
           <view class="banner-footer">
             <view class="banner-participants">
-              <text class="info-emoji">👥</text>
+              <Icon name="users" :size="13" class="info-icon" />
               <text>{{ featuredActivity.registeredCount || 0 }}/{{ featuredActivity.maxParticipants || '不限' }} 人报名</text>
             </view>
             <view class="banner-action">
@@ -91,7 +91,7 @@
             <!-- 顶部色块 -->
             <view class="upcoming-card__header" :style="{ background: getTypeConfig(item.type).bgGradient }">
               <view class="upcoming-icon">
-                <text class="upcoming-icon-text">{{ getTypeConfig(item.type).emoji }}</text>
+                <Icon :name="getTypeConfig(item.type).icon" :size="20" color="rgba(255,255,255,0.95)" />
               </view>
               <view class="upcoming-status" :class="`status--${item.status || 1}`">
                 <text>{{ getStatusText(item.status) }}</text>
@@ -100,7 +100,10 @@
             <view class="upcoming-card__body">
               <text class="upcoming-title">{{ item.title }}</text>
               <text class="upcoming-date">{{ formatDate(item.startTime) }}</text>
-              <text class="upcoming-loc">📍 {{ item.location || '待定' }}</text>
+              <view class="upcoming-loc">
+                <Icon name="map-pin" :size="11" class="upcoming-loc-icon" />
+                <text>{{ item.location || '待定' }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -124,7 +127,7 @@
         >
           <!-- 左侧类型图标 -->
           <view class="activity-card__icon" :style="{ background: getTypeConfig(item.type).bgGradient }">
-            <text class="activity-icon-emoji">{{ getTypeConfig(item.type).emoji }}</text>
+            <Icon :name="getTypeConfig(item.type).icon" :size="22" color="rgba(255,255,255,0.95)" />
           </view>
 
           <!-- 右侧信息 -->
@@ -136,10 +139,14 @@
               </view>
             </view>
             <view class="activity-card__meta-row">
-              <text class="meta-text">🕐 {{ formatDate(item.startTime) }}</text>
+              <Icon name="clock" :size="12" class="meta-icon" />
+              <text class="meta-text">{{ formatDate(item.startTime) }}</text>
             </view>
             <view class="activity-card__bottom">
-              <text class="meta-text">📍 {{ item.location || '待定' }}</text>
+              <view class="meta-loc">
+                <Icon name="map-pin" :size="12" class="meta-icon" />
+                <text class="meta-text">{{ item.location || '待定' }}</text>
+              </view>
               <view class="activity-type-tag" :class="`type-tag--${item.type || 1}`">
                 <text>{{ getActivityType(item.type) }}</text>
               </view>
@@ -153,7 +160,7 @@
     <!-- ========== 空状态 ========== -->
     <view v-else class="empty-container">
       <view class="empty-icon-wrap">
-        <text class="empty-emoji">🎪</text>
+        <Icon name="calendar" :size="40" color="#D1D5DB" />
       </view>
       <text class="empty-title">暂无活动</text>
       <text class="empty-hint">敬请期待更多精彩活动</text>
@@ -181,6 +188,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   list: any[]
@@ -198,14 +206,14 @@ const handleActivityClick = (activityId: number) => {
   toActivityDetail(activityId)
 }
 
-// 活动类型配置（图标 + 渐变色 + emoji）
+// 活动类型配置（lucide 图标名 + 渐变色）
 const getTypeConfig = (type: number) => {
-  const configs: Record<number, { emoji: string; bgGradient: string; accent: string; dotColor: string }> = {
-    1: { emoji: '📚', bgGradient: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)', accent: '#667EEA', dotColor: '#9B59B6' },
-    2: { emoji: '🏆', bgGradient: 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)', accent: '#F5576C', dotColor: '#E74C3C' },
-    3: { emoji: '🤝', bgGradient: 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)', accent: '#4FACFE', dotColor: '#3498DB' },
-    4: { emoji: '💚', bgGradient: 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)', accent: '#FA709A', dotColor: '#E91E63' },
-    5: { emoji: '🎉', bgGradient: 'linear-gradient(135deg, #27AE60 0%, #2ECC71 100%)', accent: '#27AE60', dotColor: '#27AE60' },
+  const configs: Record<number, { icon: string; bgGradient: string; accent: string; dotColor: string }> = {
+    1: { icon: 'book-open', bgGradient: 'linear-gradient(135deg, #667EEA 0%, #764BA2 100%)', accent: '#667EEA', dotColor: '#9B59B6' },
+    2: { icon: 'trophy',    bgGradient: 'linear-gradient(135deg, #F093FB 0%, #F5576C 100%)', accent: '#F5576C', dotColor: '#E74C3C' },
+    3: { icon: 'smile',     bgGradient: 'linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%)', accent: '#4FACFE', dotColor: '#3498DB' },
+    4: { icon: 'heart',     bgGradient: 'linear-gradient(135deg, #FA709A 0%, #FEE140 100%)', accent: '#FA709A', dotColor: '#E91E63' },
+    5: { icon: 'calendar',  bgGradient: 'linear-gradient(135deg, #27AE60 0%, #2ECC71 100%)', accent: '#27AE60', dotColor: '#27AE60' },
   }
   return configs[type] || configs[5]
 }
@@ -442,8 +450,9 @@ const upcomingActivities = computed(() =>
   color: rgba(255, 255, 255, 0.75);
 }
 
-.info-emoji {
-  font-size: 13px;
+.info-icon {
+  color: rgba(255, 255, 255, 0.75);
+  flex-shrink: 0;
 }
 
 .banner-footer {
@@ -552,10 +561,6 @@ const upcomingActivities = computed(() =>
   justify-content: center;
 }
 
-.upcoming-icon-text {
-  font-size: 20px;
-}
-
 .upcoming-status {
   display: inline-flex;
   align-items: center;
@@ -596,11 +601,17 @@ const upcomingActivities = computed(() =>
 }
 
 .upcoming-loc {
+  display: flex;
+  align-items: center;
+  gap: 3px;
   font-size: 11px;
   color: $color-text-quaternary;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+}
+
+.upcoming-loc-icon {
+  color: $color-text-quaternary;
+  flex-shrink: 0;
 }
 
 /* ========== 全部活动列表（横向信息流） ========== */
@@ -628,10 +639,6 @@ const upcomingActivities = computed(() =>
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-}
-
-.activity-icon-emoji {
-  font-size: 22px;
 }
 
 .activity-card__right {
@@ -674,6 +681,18 @@ const upcomingActivities = computed(() =>
   &.capsule--status-2 { color: $color-success; background: rgba($color-success, 0.1); }
   &.capsule--status-3 { color: $color-text-tertiary; background: rgba($color-text-tertiary, 0.08); }
   &.capsule--status-4 { color: $color-danger; background: rgba($color-danger, 0.1); }
+}
+
+.meta-icon {
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.meta-loc {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
 }
 
 .activity-card__meta-row {
@@ -732,10 +751,6 @@ const upcomingActivities = computed(() =>
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
-}
-
-.empty-emoji {
-  font-size: 36px;
 }
 
 .empty-title {

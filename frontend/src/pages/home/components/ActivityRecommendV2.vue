@@ -165,9 +165,6 @@ const handleActivityClick = (activity: any) => {
     return
   }
   emit('activity-click', activity)
-  uni.navigateTo({
-    url: `/pages/club/activity-detail?id=${activity.id}`
-  })
 }
 
 // 报名活动（需要登录）

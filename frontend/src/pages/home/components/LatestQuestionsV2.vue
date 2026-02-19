@@ -156,9 +156,6 @@ const handleQuestionClick = (question: any) => {
     return
   }
   emit('question-click', question)
-  uni.navigateTo({
-    url: `/pages/question/detail?id=${question.id}`
-  })
 }
 
 const handleUserClick = (user: any) => {

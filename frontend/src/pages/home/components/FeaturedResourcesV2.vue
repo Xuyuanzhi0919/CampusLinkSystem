@@ -161,9 +161,6 @@ const handleResourceClick = (resource: any) => {
     return
   }
   emit('resource-click', resource)
-  uni.navigateTo({
-    url: `/pages/resource/detail?id=${resource.id}`
-  })
 }
 
 // 下载资源（需要登录）

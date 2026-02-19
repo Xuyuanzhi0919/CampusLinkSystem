@@ -70,7 +70,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
 import { getClubList, getActivityList } from '@/services/club'
@@ -84,15 +84,10 @@ import { CustomTabBar } from '@/components/mobile'
 import { PCFloatingNav } from '@/components/desktop'
 // #endif
 
-// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
-const isDesktop = computed(() => {
-  // #ifdef H5
-  return window.innerWidth >= 1024
-  // #endif
-  // #ifndef H5
-  return false
-  // #endif
-})
+// 🎯 平台判断 - 响应式窗口宽度，避免条件编译双重声明 bug
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+const handleWindowResize = () => { windowWidth.value = window.innerWidth }
 
 // Tab 配置
 const tabs = [
@@ -205,17 +200,6 @@ const loadActivities = async (isRefresh = false) => {
 }
 
 /**
- * 下拉刷新
- */
-const handleRefresh = (tabIndex: number) => {
-  if (tabIndex === 0) {
-    loadClubs(true)
-  } else if (tabIndex === 1) {
-    loadActivities(true)
-  }
-}
-
-/**
  * 上拉加载更多
  */
 const handleLoadMore = (tabIndex: number) => {
@@ -229,6 +213,11 @@ const handleLoadMore = (tabIndex: number) => {
 // 页面加载时初始化社团列表（第一个 Tab）
 onMounted(() => {
   loadClubs()
+  window.addEventListener('resize', handleWindowResize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleWindowResize)
 })
 </script>
 

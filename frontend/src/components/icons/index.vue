@@ -516,6 +516,36 @@
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" stroke="currentColor" fill="none" stroke-linejoin="round"/>
     </template>
 
+    <!-- Trophy 图标（奖杯/比赛） -->
+    <template v-else-if="name === 'trophy'">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" stroke="currentColor" fill="none"/>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" stroke="currentColor" fill="none"/>
+      <path d="M4 22h16" stroke="currentColor" fill="none"/>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" stroke="currentColor" fill="none"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" stroke="currentColor" fill="none"/>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2z" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Smile 图标（社交/开心） -->
+    <template v-else-if="name === 'smile'">
+      <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none"/>
+      <path d="M8 13s1.5 2 4 2 4-2 4-2" stroke="currentColor" fill="none" stroke-linecap="round"/>
+      <line x1="9" y1="9" x2="9.01" y2="9" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+      <line x1="15" y1="9" x2="15.01" y2="9" stroke="currentColor" stroke-linecap="round" stroke-width="2"/>
+    </template>
+
+    <!-- Loader 图标（加载中/处理中） -->
+    <template v-else-if="name === 'loader'">
+      <line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" stroke="currentColor" stroke-linecap="round"/>
+      <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" stroke="currentColor" stroke-linecap="round"/>
+    </template>
+
     <!-- External Link 图标（外链/新窗口） -->
     <template v-else-if="name === 'external-link'">
       <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" stroke="currentColor" fill="none"/>

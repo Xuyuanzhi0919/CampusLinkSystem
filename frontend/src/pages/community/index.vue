@@ -1,7 +1,19 @@
 <template>
   <view class="community-page">
-    <!-- 顶部 Tab 切换栏 -->
-    <view class="sticky-tabs" :class="{ 'tabs-sticky': isTabsSticky }">
+
+    <!-- ========== 顶部品牌导航 ========== -->
+    <view class="top-nav">
+      <view class="top-nav-container">
+        <view class="brand-area">
+          <Icon name="users" :size="20" class="brand-icon" />
+          <text class="brand-title">社区</text>
+        </view>
+        <text class="brand-subtitle">发现精彩社团，参与校园活动</text>
+      </view>
+    </view>
+
+    <!-- ========== Tab 切换栏（吸顶） ========== -->
+    <view class="sticky-tabs">
       <view class="tabs-container">
         <view
           v-for="(tab, index) in tabs"
@@ -10,13 +22,14 @@
           :class="{ active: currentTab === index }"
           @click="switchTab(index)"
         >
+          <Icon :name="tab.icon" :size="15" class="tab-icon" />
           <text class="tab-text">{{ tab.label }}</text>
           <view v-if="currentTab === index" class="tab-indicator"></view>
         </view>
       </view>
     </view>
 
-    <!-- 内容区 (支持左右滑动切换) -->
+    <!-- ========== 内容区（左右滑动切换） ========== -->
     <swiper
       class="content-swiper"
       :current="currentTab"
@@ -28,7 +41,6 @@
         <scroll-view
           class="scroll-content"
           scroll-y
-          @scrolltoupper="handleRefresh(0)"
           @scrolltolower="handleLoadMore(0)"
         >
           <ClubList :list="clubList" :loading="clubLoading" @refresh="loadClubs(true)" />
@@ -40,7 +52,6 @@
         <scroll-view
           class="scroll-content"
           scroll-y
-          @scrolltoupper="handleRefresh(1)"
           @scrolltolower="handleLoadMore(1)"
         >
           <ActivityList :list="activityList" :loading="activityLoading" />
@@ -63,6 +74,7 @@ import { ref, computed, onMounted } from 'vue'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
 import { getClubList, getActivityList } from '@/services/club'
+import Icon from '@/components/icons/index.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -84,15 +96,12 @@ const isDesktop = computed(() => {
 
 // Tab 配置
 const tabs = [
-  { key: 'club', label: '社团' },
-  { key: 'activity', label: '活动' }
+  { key: 'club', label: '社团', icon: 'users' },
+  { key: 'activity', label: '活动', icon: 'calendar' }
 ]
 
 // 当前激活的 Tab
 const currentTab = ref(0)
-
-// Tab 吸顶状态
-const isTabsSticky = ref(false)
 
 // 社团数据
 const clubList = ref<any[]>([])
@@ -224,64 +233,109 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@import '@/styles/design-tokens.scss';
+
 .community-page {
   width: 100%;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #F9FAFB;
+  background: $color-bg-page;
 }
 
-/* ========== 顶部 Tab 切换栏 ========== */
-.sticky-tabs {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: #FFFFFF;
-  border-bottom: 1px solid #E5E7EB;
-  transition: box-shadow 0.3s ease;
-
-  &.tabs-sticky {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
+/* ========== 顶部品牌导航 ========== */
+.top-nav {
+  background: $color-bg-card;
+  border-bottom: 1px solid $color-border;
+  flex-shrink: 0;
 }
 
-.tabs-container {
+.top-nav-container {
   display: flex;
   align-items: center;
-  justify-content: center;
-  height: 48px;
+  justify-content: space-between;
+  height: 56px;
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 16px;
 }
 
-.tab-item {
-  position: relative;
-  flex: 1;
+.brand-area {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  height: 100%;
-  cursor: pointer;
-  transition: all 0.3s ease;
+  gap: 8px;
 
-  &:active {
-    transform: scale(0.95);
+  .brand-icon {
+    color: $campus-blue;
   }
 }
 
+.brand-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: $color-text-primary;
+}
+
+.brand-subtitle {
+  font-size: 13px;
+  color: $color-text-tertiary;
+}
+
+/* ========== Tab 切换栏 ========== */
+.sticky-tabs {
+  position: sticky;
+  top: 0;
+  z-index: $z-sticky;
+  background: $color-bg-card;
+  border-bottom: 1px solid $color-border;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+}
+
+.tabs-container {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+  gap: 4px;
+}
+
+.tab-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 20px;
+  height: 100%;
+  cursor: pointer;
+  transition: $transition-all;
+  border-radius: 8px 8px 0 0;
+
+  .tab-icon {
+    color: $color-text-tertiary;
+    transition: $transition-color;
+  }
+
+  &.active {
+    .tab-icon { color: $campus-blue; }
+  }
+
+  &:active { transform: scale(0.96); }
+}
+
 .tab-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  color: #6B7280;
-  transition: all 0.3s ease;
+  color: $color-text-tertiary;
+  transition: $transition-all;
 
   .tab-item.active & {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 600;
-    color: #2563EB;
+    color: $campus-blue;
   }
 }
 
@@ -290,22 +344,16 @@ onMounted(() => {
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 24px;
+  width: 28px;
   height: 3px;
-  background: linear-gradient(90deg, #2563EB 0%, #3B82F6 100%);
+  background: linear-gradient(90deg, $campus-blue 0%, $campus-blue-light 100%);
   border-radius: 3px 3px 0 0;
-  animation: slideIn 0.3s ease;
+  animation: tabSlideIn 0.25s $transition-ease-out;
 }
 
-@keyframes slideIn {
-  from {
-    width: 0;
-    opacity: 0;
-  }
-  to {
-    width: 24px;
-    opacity: 1;
-  }
+@keyframes tabSlideIn {
+  from { width: 0; opacity: 0; }
+  to { width: 28px; opacity: 1; }
 }
 
 /* ========== 内容区 ========== */
@@ -323,14 +371,29 @@ onMounted(() => {
   width: 100%;
 }
 
-/* ========== 响应式适配 ========== */
+/* ========== PC 端适配 ========== */
 @media (min-width: 1024px) {
+  .top-nav-container {
+    padding: 0 80px;
+  }
+
   .tabs-container {
     padding: 0 80px;
   }
 
   .tab-item {
-    max-width: 120px;
+    padding: 0 24px;
+  }
+
+  .brand-subtitle {
+    display: block;
+  }
+}
+
+/* ========== 移动端隐藏副标题 ========== */
+@media (max-width: 1023px) {
+  .brand-subtitle {
+    display: none;
   }
 }
 </style>

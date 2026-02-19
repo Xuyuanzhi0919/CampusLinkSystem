@@ -82,11 +82,15 @@
         <!-- 第三方登录 -->
         <view class="social-login">
           <view class="social-btn wechat-btn" @tap="handleWechatLogin">
-            <text class="social-icon">💬</text>
+            <view class="social-badge wechat-badge">
+              <text class="social-badge-text">微</text>
+            </view>
             <text class="social-text">微信登录</text>
           </view>
           <view class="social-btn qq-btn" @tap="handleQQLogin">
-            <text class="social-icon">🐧</text>
+            <view class="social-badge qq-badge">
+              <text class="social-badge-text">Q</text>
+            </view>
             <text class="social-text">QQ登录</text>
           </view>
         </view>
@@ -881,57 +885,35 @@ const handleRegister = () => {
 
   &.wechat-btn {
     &:hover {
-      /* 优化：hover 时淡彩渐变 + 轻微上浮 */
       background: linear-gradient(135deg, rgba(7, 193, 96, 0.08), rgba(7, 193, 96, 0.12));
-      transform: translateY(-3rpx) scale(1.02); /* 优化：添加轻微放大 */
+      transform: translateY(-3rpx) scale(1.02);
       box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.25);
 
-      /* 优化：hover 时文字和图标亮度上升 */
       .social-text {
         color: #05A850;
-      }
-
-      .social-icon {
-        /* 优化：添加呼吸动画 */
-        animation: breathe 1.5s ease-in-out infinite;
       }
     }
 
     .social-text {
       color: #07C160;
       transition: color 0.2s ease;
-    }
-
-    .social-icon {
-      color: #07C160;
     }
   }
 
   &.qq-btn {
     &:hover {
-      /* 优化：hover 时淡彩渐变 + 轻微上浮 */
       background: linear-gradient(135deg, rgba(18, 183, 245, 0.08), rgba(18, 183, 245, 0.12));
-      transform: translateY(-3rpx) scale(1.02); /* 优化：添加轻微放大 */
+      transform: translateY(-3rpx) scale(1.02);
       box-shadow: 0 8rpx 24rpx rgba(18, 183, 245, 0.25);
 
-      /* 优化：hover 时文字和图标亮度上升 */
       .social-text {
         color: #0E9DD8;
-      }
-
-      .social-icon {
-        /* 优化：添加呼吸动画 */
-        animation: breathe 1.5s ease-in-out infinite;
       }
     }
 
     .social-text {
       color: #12B7F5;
       transition: color 0.2s ease;
-    }
-
-    .social-icon {
-      color: #12B7F5;
     }
   }
 }
@@ -948,9 +930,29 @@ const handleRegister = () => {
   }
 }
 
-.social-icon {
-  font-size: 28rpx; /* 14px */
-  transition: transform 0.2s ease, opacity 0.2s ease;
+.social-badge {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.wechat-badge {
+    background: #07C160;
+  }
+
+  &.qq-badge {
+    background: #12B7F5;
+  }
+
+  .social-badge-text {
+    font-size: 20rpx;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
 }
 
 .social-text {

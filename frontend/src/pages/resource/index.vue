@@ -1144,8 +1144,9 @@ const loadCommunityData = () => {
   const tagMap = new Map<string, number>()
 
   allResources.value.forEach(resource => {
-    // resource.category 是枚举类型，需要转换为字符串
-    const categoryName = String(resource.category)
+    const categoryName = resource.category
+    // 过滤掉空值，避免出现 "null"/"undefined" 标签
+    if (!categoryName || categoryName === 'null' || categoryName === 'undefined') return
     tagMap.set(categoryName, (tagMap.get(categoryName) || 0) + 1)
   })
 
@@ -1188,9 +1189,10 @@ const formatNumber = (num: number): string => {
  * 🎯 标签点击处理 (TagCloud组件回调)
  */
 const handleTagCloudClick = (tag: TagItem) => {
-  // 清空分类筛选，避免 category + keyword 双重过滤导致结果为空
-  currentCategory.value = null
-  searchKeyword.value = tag.name
+  // 标签名即分类名（课件/试卷/笔记等），走分类筛选而非关键词搜索
+  // 关键词搜索会对比 title/description，分类筛选精确匹配 category 字段
+  searchKeyword.value = ''
+  currentCategory.value = tag.name
   loadResourceList(true)
 }
 

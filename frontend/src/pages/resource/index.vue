@@ -354,6 +354,22 @@
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar v-if="!isDesktop" />
+
+    <!-- 登录引导弹窗 -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuide"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+    />
+
+    <!-- 登录弹窗 -->
+    <LoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
   </view>
 </template>
 
@@ -371,12 +387,15 @@ import {
   restoreScrollPosition,
   getCurrentScrollTop
 } from '@/utils/pageContext'
+import { requireLogin } from '@/utils/auth'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import DownloadConfirmDialog from '@/components/DownloadConfirmDialog.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
+import { ClLoginGuideModal } from '@/components/cl'
+import LoginModal from '@/components/LoginModal.vue'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -501,6 +520,13 @@ const likedResourceIds = ref<Set<number>>(new Set())
 // 🎯 本地已收藏资源ID集合 - P1新增
 const FAVORITED_RESOURCES_KEY = 'favorited_resources'
 const favoritedResourceIds = ref<Set<number>>(new Set())
+
+// 🎯 登录引导弹窗状态
+const showLoginGuide = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+const showLoginModal = ref(false)
 
 // 🎯 空状态文案
 const emptyTitle = computed(() => {
@@ -703,11 +729,15 @@ const loadResourceList = async (isRefresh = false) => {
 
     total.value = res.total
     hasMore.value = resources.value.length < res.total
-  } catch (error) {
-    uni.showToast({
-      title: '加载失败',
-      icon: 'none'
-    })
+  } catch (error: any) {
+    // 401 表示游客访问，后端可选认证接口，不展示错误提示
+    const msg = error?.message || ''
+    if (!msg.includes('未授权') && !msg.includes('请先登录') && !msg.includes('401')) {
+      uni.showToast({
+        title: '加载失败，请稍后重试',
+        icon: 'none'
+      })
+    }
   } finally {
     loading.value = false
     refreshing.value = false
@@ -919,7 +949,7 @@ const handleResourceClick = (resource: ResourceItem) => {
  * 🎯 点击上传按钮
  */
 const handleUploadClick = () => {
-  // 跳转到上传页面
+  if (!requireLogin('publish')) return
   uni.navigateTo({
     url: '/pages/resource/upload'
   })
@@ -1234,22 +1264,8 @@ const mergeFavoritedStatus = (resourceList: ResourceItem[]) => {
  * 🎯 点击资源点赞按钮
  */
 const handleResourceLike = async (resource: ResourceItem) => {
-
   // 检查登录状态
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({
-      title: '请先登录',
-      icon: 'none',
-      duration: 2000
-    })
-    setTimeout(() => {
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
-    }, 2000)
-    return
-  }
+  if (!requireLogin('like')) return
 
   try {
     const isLiked = resource.isLiked
@@ -1311,20 +1327,7 @@ const handleResourceLike = async (resource: ResourceItem) => {
  */
 const handleResourceFavorite = async (resource: ResourceItem) => {
   // 检查登录状态
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({
-      title: '请先登录',
-      icon: 'none',
-      duration: 2000
-    })
-    setTimeout(() => {
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
-    }, 2000)
-    return
-  }
+  if (!requireLogin('collect')) return
 
   try {
     const isFavorited = resource.isFavorited
@@ -1385,22 +1388,8 @@ const handleResourceFavorite = async (resource: ResourceItem) => {
  * 🎯 点击资源下载按钮
  */
 const handleResourceDownload = (resource: ResourceItem) => {
-
   // 检查登录状态
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({
-      title: '请先登录',
-      icon: 'none',
-      duration: 2000
-    })
-    setTimeout(() => {
-      uni.reLaunch({
-        url: '/pages/home/index'
-      })
-    }, 2000)
-    return
-  }
+  if (!requireLogin('download')) return
 
   // 如果已下载，直接下载（免费）
   if (resource.isDownloaded) {
@@ -1587,8 +1576,30 @@ const handleDownloadCancel = () => {
   selectedResource.value = null
 }
 
+// 🎯 登录引导弹窗处理
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+  showLoginModal.value = true
+}
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+}
+
 // 🎯 页面加载
 onMounted(() => {
+  // 监听登录引导弹窗事件
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+    showLoginGuide.value = true
+  })
+
+  // 监听直接打开登录弹窗事件
+  uni.$on('show-login-modal', () => {
+    showLoginModal.value = true
+  })
 
   // 加载用户学校ID（从本地存储）
   try {
@@ -1678,6 +1689,8 @@ onUnmounted(() => {
 
   // 移除事件监听
   uni.$off('filterByCategory')
+  uni.$off('show-login-guide')
+  uni.$off('show-login-modal')
 })
 </script>
 

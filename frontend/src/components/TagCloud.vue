@@ -21,8 +21,8 @@
         :style="dynamicSize ? { fontSize: getTagSize(tag.count) } : {}"
         @click="handleTagClick(tag)"
       >
-        <text class="tag-icon" v-if="index === 0 && highlightTop">🔥</text>
-        <text class="tag-icon" v-if="index === 1 && highlightTop">⚡</text>
+        <Icon v-if="index === 0 && highlightTop" name="flame" :size="12" class="tag-icon tag-icon--flame" />
+        <Icon v-if="index === 1 && highlightTop" name="zap" :size="12" class="tag-icon tag-icon--zap" />
         <text class="tag-name">{{ tag.name }}</text>
         <text v-if="showCount" class="tag-count">({{ formatCount(tag.count) }})</text>
       </view>

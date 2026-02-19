@@ -86,6 +86,8 @@ public class ResourceService {
             Integer pageSize,
             String sortBy,
             String sortOrder,
+            Integer scoreMin,
+            Integer scoreMax,
             Long currentUserId
     ) {
         // 构建分页对象
@@ -107,6 +109,12 @@ public class ResourceService {
                     .or()
                     .like(Resource::getDescription, keyword)
             );
+        }
+        if (scoreMin != null) {
+            queryWrapper.ge(Resource::getScore, scoreMin);
+        }
+        if (scoreMax != null) {
+            queryWrapper.le(Resource::getScore, scoreMax);
         }
 
         // 排序

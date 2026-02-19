@@ -69,13 +69,15 @@ export interface ResourceDetail extends ResourceItem {
 
 // 资源列表查询参数
 export interface ResourceListParams {
-  category?: number  // 资源分类: 0=课件, 1=试题, 2=笔记
+  category?: string  // 资源分类（字符串枚举：课件/试卷/笔记/教材/实验报告）
   schoolId?: number
   keyword?: string
   page?: number
   pageSize?: number
-  sortBy?: 'download_count' | 'created_at' | 'score'
+  sortBy?: 'downloads' | 'created_at' | 'score' | 'likes'
   sortOrder?: 'asc' | 'desc'
+  scoreMin?: number  // 最低积分（含），对应高级筛选积分范围
+  scoreMax?: number  // 最高积分（含），不传表示无上限
 }
 
 // 资源上传参数

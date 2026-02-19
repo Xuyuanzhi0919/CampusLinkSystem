@@ -30,6 +30,12 @@
       <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
     </template>
 
+    <!-- Eye Off 图标（隐藏密码） -->
+    <template v-else-if="name === 'eye-off'">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" stroke="currentColor" fill="none"/>
+      <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor"/>
+    </template>
+
     <!-- Message Circle 图标 -->
     <template v-else-if="name === 'message-circle'">
       <path d="M21 11.5C21 16.75 16.97 21 12 21C10.39 21 8.87 20.59 7.54 19.88L3 21L4.12 16.46C3.41 15.13 3 13.61 3 12C3 6.75 7.03 2.5 12 2.5C16.97 2.5 21 6.75 21 11.5Z" stroke="currentColor" fill="none"/>
@@ -443,6 +449,12 @@
     <template v-else-if="name === 'lock'">
       <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" fill="none"/>
       <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" fill="none"/>
+    </template>
+
+    <!-- Graduation Cap 图标（学位帽/教育） -->
+    <template v-else-if="name === 'graduation-cap'">
+      <path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" fill="none"/>
+      <path d="M6 12v5c3 3 9 3 12 0v-5" stroke="currentColor" fill="none"/>
     </template>
 
     <!-- Log Out 图标（退出登录） -->

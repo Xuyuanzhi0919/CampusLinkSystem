@@ -4,7 +4,7 @@
       <!-- Logo 和标题 -->
       <view class="header">
         <view class="logo-container">
-          <text class="logo-emoji">🎓</text>
+          <Icon name="graduation-cap" :size="80" color="#FFFFFF" />
         </view>
         <text class="title">欢迎来到 CampusLink</text>
         <text class="subtitle">高校资源互助与问答平台</text>
@@ -12,38 +12,58 @@
 
       <!-- 登录表单 -->
       <view class="form-container">
+        <!-- 账号输入框 -->
         <view class="form-item">
-          <text class="label">用户名 / 邮箱 / 手机号</text>
-          <input
-            v-model="form.account"
-            class="input"
-            type="text"
-            placeholder="请输入用户名、邮箱或手机号"
-            :disabled="loginLoading"
-          />
+          <text class="label">账号</text>
+          <view class="input-wrap" :class="{ focused: accountFocused }">
+            <view class="input-icon">
+              <Icon name="user" :size="36" />
+            </view>
+            <input
+              v-model="form.account"
+              class="input"
+              type="text"
+              placeholder="用户名 / 邮箱 / 手机号"
+              :disabled="loginLoading"
+              @focus="accountFocused = true"
+              @blur="accountFocused = false"
+            />
+          </view>
         </view>
 
+        <!-- 密码输入框 -->
         <view class="form-item">
           <text class="label">密码</text>
-          <input
-            v-model="form.password"
-            class="input"
-            type="password"
-            placeholder="请输入密码"
-            :disabled="loginLoading"
-            @confirm="handleLogin"
-          />
+          <view class="input-wrap" :class="{ focused: passwordFocused }">
+            <view class="input-icon">
+              <Icon name="lock" :size="36" />
+            </view>
+            <input
+              v-model="form.password"
+              class="input"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="请输入密码"
+              :disabled="loginLoading"
+              @focus="passwordFocused = true"
+              @blur="passwordFocused = false"
+              @confirm="handleLogin"
+            />
+            <view class="eye-toggle" @click="showPassword = !showPassword">
+              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="36" />
+            </view>
+          </view>
         </view>
 
+        <!-- 登录按钮 -->
         <view class="form-actions">
-          <button
+          <view
             class="login-btn"
-            :loading="loginLoading"
-            :disabled="!canSubmit"
+            :class="{ disabled: !canSubmit || loginLoading, loading: loginLoading }"
             @click="handleLogin"
           >
-            {{ loginLoading ? '登录中...' : '登录' }}
-          </button>
+            <view v-if="loginLoading" class="loading-spinner" />
+            <text class="btn-text">{{ loginLoading ? '登录中...' : '登录' }}</text>
+          </view>
 
           <view class="links">
             <text class="link" @click="handleGoToRegister">注册账号</text>
@@ -53,9 +73,12 @@
         </view>
       </view>
 
-      <!-- 测试账号提示 -->
+      <!-- 测试账号提示（低调化） -->
       <view class="test-accounts">
-        <text class="test-title">测试账号：</text>
+        <view class="test-header">
+          <Icon name="info" :size="28" class="test-icon" />
+          <text class="test-title">测试账号</text>
+        </view>
         <view class="test-item" @click="fillTestAccount('admin')">
           <text class="test-username">admin</text>
           <text class="test-password">admin123</text>
@@ -73,91 +96,65 @@
 import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/services/auth'
+import Icon from '@/components/icons/index.vue'
 
 const userStore = useUserStore()
 
-// 表单数据
 const form = ref({
   account: '',
   password: ''
 })
 
-// 加载状态
 const loginLoading = ref(false)
+const showPassword = ref(false)
+const accountFocused = ref(false)
+const passwordFocused = ref(false)
 
-// 是否可以提交
 const canSubmit = computed(() => {
   return form.value.account.trim() && form.value.password.trim()
 })
 
-/**
- * 处理登录
- */
 const handleLogin = async () => {
-  if (!canSubmit.value) {
-    uni.showToast({ title: '请填写完整信息', icon: 'none' })
-    return
-  }
+  if (!canSubmit.value || loginLoading.value) return
 
   try {
     loginLoading.value = true
 
-    console.log('[H5登录] 开始登录...', {
-      account: form.value.account,
-      password: '******'
-    })
-
-    // 调用登录 API
     const response = await login({
       account: form.value.account,
       password: form.value.password
     })
 
-    console.log('[H5登录] 登录成功，用户信息:', response.user)
-
-    // 保存登录信息
     userStore.login(response)
 
-    // 提示成功
     uni.showToast({
       title: '登录成功',
       icon: 'success',
       duration: 1500
     })
 
-    // 跳转到首页
     setTimeout(() => {
       // #ifdef H5
       uni.switchTab({ url: '/pages/home/index' })
       // #endif
     }, 1500)
   } catch (error: any) {
-    console.error('[H5登录] 登录失败:', error)
-
-    let errorMessage = '登录失败，请检查用户名和密码'
+    let errorMessage = '登录失败，请检查账号和密码'
     if (error.message) {
       if (error.message.includes('用户名或密码错误')) {
-        errorMessage = '用户名或密码错误'
+        errorMessage = '账号或密码错误'
       } else if (error.message.includes('网络')) {
-        errorMessage = '网络连接失败，请检查网络'
+        errorMessage = '网络连接失败，请稍后重试'
       } else if (error.message.includes('账号')) {
         errorMessage = '账号不存在或已被禁用'
       }
     }
-
-    uni.showToast({
-      title: errorMessage,
-      icon: 'none',
-      duration: 2500
-    })
+    uni.showToast({ title: errorMessage, icon: 'none', duration: 2500 })
   } finally {
     loginLoading.value = false
   }
 }
 
-/**
- * 填充测试账号
- */
 const fillTestAccount = (username: string) => {
   if (username === 'admin') {
     form.value.account = 'admin'
@@ -166,63 +163,37 @@ const fillTestAccount = (username: string) => {
     form.value.account = 'testuser001'
     form.value.password = 'password123'
   }
-
-  uni.showToast({
-    title: '已填充测试账号',
-    icon: 'success',
-    duration: 1000
-  })
+  uni.showToast({ title: '已填充', icon: 'success', duration: 800 })
 }
 
-/**
- * 前往注册
- */
 const handleGoToRegister = () => {
-  uni.showToast({
-    title: '注册功能开发中...',
-    icon: 'none'
-  })
-  // TODO: 创建注册页面
-  // uni.navigateTo({ url: '/pages/auth/register' })
+  uni.showToast({ title: '注册功能开发中...', icon: 'none' })
 }
 
-/**
- * 忘记密码
- */
 const handleForgotPassword = () => {
-  uni.showToast({
-    title: '找回密码功能开发中...',
-    icon: 'none'
-  })
-  // TODO: 创建找回密码页面
-  // uni.navigateTo({ url: '/pages/auth/forgot-password' })
-}
-
-/**
- * 微信登录（仅小程序）
- */
-const handleWechatLogin = () => {
-  uni.navigateTo({ url: '/pages/auth/mp-login' })
+  uni.showToast({ title: '找回密码功能开发中...', icon: 'none' })
 }
 </script>
 
 <style scoped lang="scss">
+@import '@/styles/variables.scss';
+
 .login-page {
   min-height: 100vh;
-  background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 50%);
+  background: linear-gradient(160deg, $primary-50 0%, $bg-surface 55%);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40rpx;
+  padding: $sp-10;
 }
 
 .login-container {
   width: 100%;
   max-width: 600rpx;
-  background: #FFFFFF;
-  border-radius: 32rpx;
-  padding: 80rpx 60rpx;
-  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.08);
+  background: $bg-surface;
+  border-radius: $radius-xl;
+  padding: $sp-20 $sp-12;
+  box-shadow: 0 8rpx 40rpx rgba($primary, 0.08), 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 }
 
 // ========================================
@@ -231,36 +202,33 @@ const handleWechatLogin = () => {
 
 .header {
   text-align: center;
-  margin-bottom: 64rpx;
+  margin-bottom: $sp-16;
 
   .logo-container {
     width: 160rpx;
     height: 160rpx;
-    margin: 0 auto 32rpx;
-    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-    border-radius: 40rpx;
+    margin: 0 auto $sp-8;
+    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+    border-radius: $radius-2xl;
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 16rpx 48rpx rgba(37, 99, 235, 0.2);
-  }
-
-  .logo-emoji {
-    font-size: 80rpx;
+    box-shadow: 0 16rpx 48rpx rgba($primary, 0.25);
   }
 
   .title {
     display: block;
-    font-size: 44rpx;
-    font-weight: 700;
-    color: #0F172A;
-    margin-bottom: 16rpx;
+    font-size: $font-size-2xl;
+    font-weight: $font-weight-bold;
+    color: $gray-900;
+    margin-bottom: $sp-3;
+    letter-spacing: -0.5rpx;
   }
 
   .subtitle {
     display: block;
-    font-size: 26rpx;
-    color: #64748B;
+    font-size: $font-size-sm;
+    color: $gray-500;
   }
 }
 
@@ -269,72 +237,101 @@ const handleWechatLogin = () => {
 // ========================================
 
 .form-container {
-  margin-bottom: 48rpx;
+  margin-bottom: $sp-12;
 }
 
 .form-item {
-  margin-bottom: 32rpx;
+  margin-bottom: $sp-8;
 
   .label {
     display: block;
-    font-size: 28rpx;
-    font-weight: 600;
-    color: #334155;
-    margin-bottom: 12rpx;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $gray-700;
+    margin-bottom: $sp-3;
+  }
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  height: 88rpx;
+  padding: 0 $sp-7;
+  background: $gray-100;
+  border: 2rpx solid transparent;
+  border-radius: $radius-md;
+  transition: all 0.2s;
+  gap: $sp-4;
+
+  &.focused {
+    background: $bg-surface;
+    border-color: $primary;
+    box-shadow: 0 0 0 6rpx rgba($primary, 0.1);
+  }
+
+  .input-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    color: $gray-400;
   }
 
   .input {
-    width: 100%;
-    height: 88rpx;
-    padding: 0 28rpx;
-    background: #F8FAFC;
-    border: 2rpx solid #E2E8F0;
-    border-radius: 16rpx;
-    font-size: 28rpx;
-    color: #0F172A;
-    transition: all 0.2s;
+    flex: 1;
+    height: 100%;
+    font-size: $font-size-base;
+    color: $gray-900;
+    background: transparent;
+    border: none;
+    outline: none;
+  }
 
-    &:focus {
-      background: #FFFFFF;
-      border-color: #2563EB;
-      box-shadow: 0 0 0 6rpx rgba(37, 99, 235, 0.1);
-    }
+  .eye-toggle {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    padding: $sp-2;
+    color: $gray-400;
+    cursor: pointer;
+    transition: color 0.15s;
 
-    &:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
+    &:active {
+      color: $gray-600;
     }
   }
 }
 
 .form-actions {
-  margin-top: 48rpx;
+  margin-top: $sp-12;
 
   .login-btn {
     width: 100%;
     height: 96rpx;
-    background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
-    border-radius: 48rpx;
-    color: #FFFFFF;
-    font-size: 32rpx;
-    font-weight: 600;
+    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+    border-radius: $radius-full;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: none;
-    box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.3);
-    margin-bottom: 32rpx;
+    gap: $sp-3;
+    box-shadow: 0 8rpx 24rpx rgba($primary, 0.3);
+    margin-bottom: $sp-8;
+    transition: all 0.2s;
+    cursor: pointer;
 
-    &::after {
-      border: none;
-    }
-
-    &:active:not([disabled]) {
+    &:active:not(.disabled) {
       transform: scale(0.98);
+      box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
     }
 
-    &[disabled] {
-      opacity: 0.6;
+    &.disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-text {
+      font-size: $font-size-lg;
+      font-weight: $font-weight-semibold;
+      color: $white;
     }
   }
 
@@ -342,11 +339,11 @@ const handleWechatLogin = () => {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16rpx;
+    gap: $sp-4;
 
     .link {
-      font-size: 26rpx;
-      color: #2563EB;
+      font-size: $font-size-sm;
+      color: $primary;
       cursor: pointer;
 
       &:active {
@@ -355,61 +352,84 @@ const handleWechatLogin = () => {
     }
 
     .separator {
-      font-size: 26rpx;
-      color: #CBD5E1;
+      font-size: $font-size-sm;
+      color: $gray-300;
     }
   }
 }
 
+// Loading spinner
+.loading-spinner {
+  width: 36rpx;
+  height: 36rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  border-top-color: $white;
+  border-radius: $radius-full;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 // ========================================
-// Test Accounts
+// Test Accounts（低调化）
 // ========================================
 
 .test-accounts {
-  background: #FEF3C7;
-  border: 2rpx solid #FCD34D;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 32rpx;
+  background: $gray-50;
+  border: 1.5rpx solid $gray-200;
+  border-radius: $radius-md;
+  padding: $sp-6;
 
-  .test-title {
-    display: block;
-    font-size: 24rpx;
-    color: #92400E;
-    font-weight: 600;
-    margin-bottom: 16rpx;
+  .test-header {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-4;
+    color: $gray-500;
+
+    .test-icon {
+      color: $gray-400;
+    }
+
+    .test-title {
+      font-size: $font-size-xs;
+      color: $gray-500;
+      font-weight: $font-weight-medium;
+    }
   }
 
   .test-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16rpx;
-    background: #FFFBEB;
-    border-radius: 12rpx;
-    margin-bottom: 12rpx;
+    padding: $sp-3 $sp-4;
+    border-radius: $radius-sm;
+    margin-bottom: $sp-2;
     cursor: pointer;
+    transition: background 0.15s;
 
     &:last-child {
       margin-bottom: 0;
     }
 
     &:active {
-      background: #FEF3C7;
+      background: $gray-100;
     }
 
     .test-username {
-      font-size: 26rpx;
-      font-weight: 600;
-      color: #78350F;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-medium;
+      color: $gray-700;
+      font-family: monospace;
     }
 
     .test-password {
-      font-size: 24rpx;
-      color: #92400E;
+      font-size: $font-size-xs;
+      color: $gray-400;
       font-family: monospace;
     }
   }
 }
-
 </style>

@@ -247,8 +247,8 @@ const bannerGradients = [
 // 精选社团（轮播展示前 5 个）
 const bannerClubs = computed(() => props.list.slice(0, 5))
 
-// 热门社团（前 6 个，横滑展示）
-const hotClubs = computed(() => props.list.slice(0, 6))
+// 热门社团（前 10 个，横滑展示）
+const hotClubs = computed(() => props.list.slice(0, 10))
 
 const handleClubClick = (clubId: number) => {
   if (!clubId) return

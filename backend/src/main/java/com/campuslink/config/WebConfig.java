@@ -35,6 +35,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/resource/list",      // 资源列表
                         "/resource/search",    // 搜索资源
                         "/question/list",      // 问题列表
+                        "/question/*",         // 问题详情（游客可浏览，已登录用户看到点赞/收藏状态）
                         "/question/*/answers", // 问题答案列表
                         "/task/list"           // 任务列表
                 );
@@ -52,6 +53,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/resource/list",      // 资源列表（使用可选认证）
                         "/resource/search",    // 搜索资源（使用可选认证）
                         "/question/list",       // 问题列表（使用可选认证）
+                        "/question/*",          // 问题详情（使用可选认证）
                         "/question/*/answers",  // 问题答案列表（使用可选认证）
                         "/question/hot-tags",   // 热门标签（游客可浏览）
                         "/question/active-users", // 活跃答主（游客可浏览）

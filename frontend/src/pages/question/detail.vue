@@ -410,6 +410,7 @@ const handleSubmitAnswer = async (data: { content: string; images: string[] }) =
 
 // 采纳回答
 const handleAcceptAnswer = (answerId: number) => {
+  if (!requireLogin('default')) return
   uni.showModal({
     title: '确认采纳',
     content: '采纳后将无法修改，确定要采纳这个回答吗？',

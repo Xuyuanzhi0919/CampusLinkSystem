@@ -401,6 +401,22 @@
         </view>
       </view>
     </view>
+
+    <!-- 登录引导弹窗 -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuide"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+    />
+
+    <!-- 登录弹窗 -->
+    <LoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
   </view>
 </template>
 
@@ -422,6 +438,9 @@ import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/res
 import { PLACEHOLDER_IMAGES } from '@/config/images'
 import config from '@/config'
 import { downloadFile as downloadFileUtil } from '@/utils/file'
+import { requireLogin } from '@/utils/auth'
+import { ClLoginGuideModal } from '@/components/cl'
+import LoginModal from '@/components/LoginModal.vue'
 
 // 页面参数
 const resourceId = ref<number>(0)
@@ -437,6 +456,13 @@ const showPreviewDialog = ref(false)
 const showRatingDialog = ref(false) // P0新增: 评分弹窗状态
 const commentCount = ref(0)
 const userPoints = ref(0)
+
+// 登录引导弹窗状态
+const showLoginGuide = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+const showLoginModal = ref(false)
 // 用户评分直接使用 resource.value.userRating，无需独立变量
 
 // 默认头像
@@ -554,6 +580,19 @@ const handleRatingChangeFromDialog = async (rating: number) => {
   }, 500)
 }
 
+// 登录引导弹窗处理
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+  showLoginModal.value = true
+}
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+  // 登录成功后重新加载详情
+  loadResourceDetail()
+  loadUserInfo()
+}
+
 // 页面加载
 onLoad((options) => {
   if (options?.id) {
@@ -566,11 +605,25 @@ onLoad((options) => {
   }
 })
 
+onMounted(() => {
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+    showLoginGuide.value = true
+  })
+  uni.$on('show-login-modal', () => {
+    showLoginModal.value = true
+  })
+})
+
 // 页面卸载时清理事件监听器
 onUnload(() => {
   // #ifdef H5
   document.removeEventListener('click', handleClickOutside)
   // #endif
+  uni.$off('show-login-guide')
+  uni.$off('show-login-modal')
 })
 
 // 加载资源详情
@@ -589,13 +642,24 @@ const loadResourceDetail = async () => {
       loadRelatedResources()
     }, 500)
   } catch (err: any) {
+    const msg = err?.message || ''
+    // 401 = 游客访问需登录接口，弹引导弹窗而非显示错误页
+    if (msg.includes('未授权') || msg.includes('请先登录') || err?.statusCode === 401) {
+      loading.value = false
+      uni.$emit('show-login-guide', {
+        actionType: 'default',
+        title: '需要登录',
+        content: '登录后即可查看资源详情'
+      })
+      return
+    }
     error.value = true
     if (err.statusCode === 404) {
       errorMessage.value = '资源不存在或已下架'
     } else if (err.statusCode === 403) {
       errorMessage.value = '该资源需要权限访问，请联系管理员'
     } else {
-      errorMessage.value = err.message || '加载失败，请稍后重试'
+      errorMessage.value = msg || '加载失败，请稍后重试'
     }
   } finally {
     loading.value = false
@@ -776,12 +840,7 @@ const updateCommentCount = (count: number) => {
 
 // 处理下载
 const handleDownload = () => {
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('download')) return
 
   // 如果已下载，直接免费下载，不弹确认框
   if (resource.value.isDownloaded) {
@@ -849,12 +908,7 @@ const confirmDownload = async () => {
 
 // 处理点赞
 const handleLike = async () => {
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('like')) return
 
   // 乐观更新UI
   const wasLiked = resource.value.isLiked
@@ -882,12 +936,7 @@ const handleLike = async () => {
 
 // 处理收藏
 const handleFavorite = async () => {
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('collect')) return
 
   // 乐观更新UI
   const wasFavorited = resource.value.isFavorited
@@ -925,12 +974,7 @@ const handleRatingChange = async (rating: number) => {
     return
   }
 
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('like')) return
 
   // 保存旧值，用于回滚
   const oldRating = resource.value.userRating || 0

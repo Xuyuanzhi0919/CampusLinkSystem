@@ -68,7 +68,17 @@
               <view class="rating-stats-row">
                 <!-- 评分（点击弹窗） -->
                 <view class="rating-compact" @click="showRatingDialog = true">
-                  <text class="stars-display">{{ getStarsDisplay(resource.averageRating || 0) }}</text>
+                  <view class="stars-display">
+                    <Icon
+                      v-for="i in 5"
+                      :key="i"
+                      :name="getStarIconName(resource.averageRating || 0, i)"
+                      :size="14"
+                      :stroke-width="1.5"
+                      class="star-icon-item"
+                      :class="i <= Math.round(resource.averageRating || 0) ? 'star-filled' : 'star-empty'"
+                    />
+                  </view>
                   <text class="rating-number">{{ (resource.averageRating || 0).toFixed(1) }}</text>
                   <text class="rating-count">({{ resource.totalRatings || 0 }}人评价)</text>
                 </view>
@@ -387,7 +397,17 @@
           <!-- 平均评分展示 -->
           <view class="avg-rating-section">
             <text class="avg-rating-number">{{ (resource.averageRating || 0).toFixed(1) }}</text>
-            <text class="stars-large">{{ getStarsDisplay(resource.averageRating || 0) }}</text>
+            <view class="stars-large">
+              <Icon
+                v-for="i in 5"
+                :key="i"
+                :name="getStarIconName(resource.averageRating || 0, i)"
+                :size="28"
+                :stroke-width="1.5"
+                class="star-icon-item"
+                :class="i <= Math.round(resource.averageRating || 0) ? 'star-filled' : 'star-empty'"
+              />
+            </view>
             <text class="avg-rating-desc">基于 {{ resource.totalRatings || 0 }} 人评价</text>
           </view>
 
@@ -568,15 +588,11 @@ const hasAnyPreviousStat = (statKeys: string[]) => {
   })
 }
 
-// P0新增: 获取星星显示（⭐⭐⭐⭐☆格式）
-const getStarsDisplay = (rating: number): string => {
-  const fullStars = Math.floor(rating)
-  const hasHalfStar = rating - fullStars >= 0.5
-  const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0)
-
-  return '⭐'.repeat(fullStars) +
-         (hasHalfStar ? '⭐' : '') +
-         '☆'.repeat(emptyStars)
+// 获取每颗星对应的 lucide 图标名（支持半星）
+const getStarIconName = (rating: number, position: number): string => {
+  if (rating >= position) return 'star'           // 实心星
+  if (rating >= position - 0.5) return 'star'    // 半星（暂用实心替代，后续可用 star-half）
+  return 'star'                                   // 空心星（通过 CSS 颜色区分）
 }
 
 // P0新增: 从评分弹窗提交评分
@@ -1809,9 +1825,21 @@ const closePreview = () => {
 }
 
 .stars-display {
-  font-size: 20rpx;
-  line-height: 1;
-  color: $warning;
+  display: inline-flex;
+  align-items: center;
+  gap: 2rpx;
+}
+
+// 星星图标颜色（星级显示和弹窗共用）
+.star-icon-item {
+  &.star-filled {
+    color: $warning;
+    fill: $warning; // 实心填充
+  }
+
+  &.star-empty {
+    color: $gray-300;
+  }
 }
 
 .rating-number {
@@ -2042,8 +2070,9 @@ const closePreview = () => {
 }
 
 .stars-large {
-  font-size: 32rpx;
-  color: $warning;
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
 }
 
 .avg-rating-desc {

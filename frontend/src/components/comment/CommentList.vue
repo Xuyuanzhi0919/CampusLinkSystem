@@ -139,6 +139,7 @@ import type { ResourceComment } from '@/types/comment'
 import { getResourceComments, addComment, deleteComment } from '@/services/comment'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
 import config from '@/config'
+import { requireLogin } from '@/utils/auth'
 import Icon from '@/components/icons/index.vue'
 
 interface Props {
@@ -202,22 +203,18 @@ const loadComments = async (page = 1) => {
     // 触发评论数更新事件
     emit('update:count', res.total || 0)
   } catch (error: any) {
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+    const msg = error?.message || ''
+    // 401 为游客访问，静默处理，不弹错误提示
+    if (!msg.includes('未授权') && !msg.includes('请先登录')) {
+      uni.showToast({ title: msg || '加载评论失败', icon: 'none' })
+    }
   } finally {
     loading.value = false
   }
 }
 
 const handleSubmitComment = async () => {
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('comment')) return
 
   if (!newComment.value.trim()) return
 
@@ -240,12 +237,7 @@ const handleSubmitComment = async () => {
 }
 
 const handleReply = (comment: ResourceComment) => {
-  const token = uni.getStorageSync(config.tokenKey)
-  if (!token) {
-    uni.showToast({ title: '请先登录', icon: 'none' })
-    setTimeout(() => uni.reLaunch({ url: '/pages/home/index' }), 2000)
-    return
-  }
+  if (!requireLogin('comment')) return
 
   replyingTo.value = comment.commentId
   replyContent.value = ''

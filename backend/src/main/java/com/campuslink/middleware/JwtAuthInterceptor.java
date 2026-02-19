@@ -36,6 +36,10 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
         if ("GET".equals(method) && uri.matches(".*/resource/\\d+$")) {
             return true;
         }
+        // 匹配 GET /api/v1/resource/{id}/comments，游客可查看评论列表
+        if ("GET".equals(method) && uri.matches(".*/resource/\\d+/comments$")) {
+            return true;
+        }
 
         // 获取 Token
         String token = getTokenFromRequest(request);

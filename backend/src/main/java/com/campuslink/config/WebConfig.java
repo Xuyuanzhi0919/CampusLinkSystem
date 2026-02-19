@@ -31,7 +31,9 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(optionalJwtAuthInterceptor)
                 .addPathPatterns(
                         "/activity/list",      // 活动列表（游客可浏览，已登录用户看到报名状态）
+                        "/activity/*",         // 活动详情（游客可浏览，已登录用户看到报名/签到状态）
                         "/club/list",          // 社团列表（游客可浏览，已登录用户看到加入状态）
+                        "/club/*",             // 社团详情（游客可浏览，已登录用户看到加入状态）
                         "/notification/list",  // 校园公告列表
                         "/resource/list",      // 资源列表
                         "/resource/search",    // 搜索资源

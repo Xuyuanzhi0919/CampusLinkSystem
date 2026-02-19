@@ -48,6 +48,10 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
         if ("GET".equals(method) && uri.matches(".*/club/\\d+/members$")) {
             return true;
         }
+        // 匹配 GET /api/v1/activity/{id}，游客可浏览活动详情；报名/签到等 POST 操作仍需认证
+        if ("GET".equals(method) && uri.matches(".*/activity/\\d+$")) {
+            return true;
+        }
 
         // 获取 Token
         String token = getTokenFromRequest(request);

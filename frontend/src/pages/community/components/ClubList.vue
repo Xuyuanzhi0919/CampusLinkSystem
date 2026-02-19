@@ -109,6 +109,7 @@
             <text class="hot-card__name">{{ item.clubName }}</text>
             <text class="hot-card__count">{{ item.memberCount || 0 }}人</text>
           </view>
+          <view class="hot-list-end"></view>
         </view>
       </scroll-view>
 
@@ -562,8 +563,13 @@ const handleJoinClub = async (club: any) => {
 .hot-list {
   display: flex;
   gap: 12px;
-  padding: 4px 16px 8px;
+  padding: 4px 0 8px 16px;
   width: max-content;
+}
+
+.hot-list-end {
+  width: 16px;
+  flex-shrink: 0;
 }
 
 .hot-card {

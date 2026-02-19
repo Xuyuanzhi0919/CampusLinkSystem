@@ -1313,7 +1313,7 @@ const closePreview = () => {
   @include desktop {
     display: flex;
     gap: $sp-10;
-    padding: $sp-5 $sp-10;
+    padding: $sp-6 $sp-10;
     max-width: 2400rpx;
     margin: 0 auto;
     align-items: flex-start;
@@ -1345,7 +1345,7 @@ const closePreview = () => {
   // #ifdef H5
   @include desktop {
     display: block;
-    padding: $sp-5 $sp-10 0;
+    padding: $sp-6 $sp-10 0;
     max-width: 2400rpx;
     margin: 0 auto;
   }

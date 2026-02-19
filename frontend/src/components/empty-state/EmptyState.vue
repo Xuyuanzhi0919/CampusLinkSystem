@@ -60,7 +60,7 @@
           <!-- 信号点 -->
           <circle cx="24" cy="39" r="2.5" fill="currentColor" opacity="0.5"/>
           <!-- 右上角感叹号圆圈 -->
-          <circle cx="36" cy="14" r="7" fill="currentColor" opacity="0.1" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+          <circle cx="36" cy="14" r="7" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5"/>
           <path d="M36 10.5V14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
           <circle cx="36" cy="17" r="1" fill="currentColor"/>
         </svg>

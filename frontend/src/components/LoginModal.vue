@@ -25,7 +25,7 @@
         <!-- 邮箱输入 -->
         <view class="input-group" :class="{ 'input-focus': emailFocused, 'input-error': emailError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">✉</text>
+            <Icon name="user" :size="32" class="input-icon gradient-icon" />
           </view>
           <input
             class="form-input"
@@ -40,7 +40,7 @@
         <!-- 密码输入 -->
         <view class="input-group" :class="{ 'input-focus': passwordFocused, 'input-error': passwordError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon lock-icon">🔒</text>
+            <Icon name="lock" :size="32" class="input-icon gradient-icon lock-icon" />
           </view>
           <input
             class="form-input"
@@ -50,9 +50,9 @@
             @focus="passwordFocused = true"
             @blur="passwordFocused = false"
           />
-          <text class="password-toggle" @tap="showPassword = !showPassword">
-            {{ showPassword ? '👁' : '👁‍🗨' }}
-          </text>
+          <view class="password-toggle" @tap="showPassword = !showPassword">
+            <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" />
+          </view>
         </view>
 
         <!-- 记住账号和忘记密码 -->
@@ -106,6 +106,7 @@ import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { login, type LoginRequest, type AuthResponse } from '@/services/auth'
 import { useUserStore } from '@/stores/user'
 import config from '@/config'
+import Icon from '@/components/icons/index.vue'
 
 const props = defineProps({
   visible: {
@@ -641,25 +642,16 @@ const handleRegister = () => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 优化：渐变图标效果 */
+/* 图标默认色 */
 .gradient-icon {
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加轻微发光效果 */
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0));
+  color: #94A3B8;
+  transition: color 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
 }
 
-/* 优化：聚焦时图标渐变变蓝 + 发光 */
+/* 聚焦时图标变蓝 + 发光 */
 .input-group.input-focus .gradient-icon {
-  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加蓝色发光 */
-  filter: drop-shadow(0 0 8rpx rgba(59, 130, 246, 0.4));
-  /* 优化：轻微放大 */
+  color: #2563EB;
+  filter: drop-shadow(0 0 4rpx rgba(59, 130, 246, 0.4));
   transform: scale(1.08);
 }
 
@@ -697,30 +689,20 @@ const handleRegister = () => {
 }
 
 .password-toggle {
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，与图标一致 */
+  display: flex;
+  align-items: center;
   cursor: pointer;
-  /* 优化：改为渐变文字 */
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加旋转过渡效果 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0)) brightness(1);
+  color: #94A3B8;
+  transition: color 0.2s ease, transform 0.2s ease;
+  padding: 4rpx;
 
   &:hover {
-    /* 优化：hover 时变蓝色渐变 */
-    background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    /* 优化：hover 时旋转 10° + 发光 + 亮度提升 */
-    transform: rotate(10deg) scale(1.08);
-    filter: drop-shadow(0 0 6rpx rgba(59, 130, 246, 0.4)) brightness(1.2);
+    color: #2563EB;
+    transform: scale(1.1);
   }
 
   &:active {
-    transform: rotate(-5deg) scale(0.95);
+    transform: scale(0.95);
   }
 }
 

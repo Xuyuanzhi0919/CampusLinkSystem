@@ -557,18 +557,19 @@ const handleJoinClub = async (club: any) => {
 
 /* ========== 热门横滑 ========== */
 .hot-scroll {
-  width: 100%;
+  width: calc(100% - 32px);
+  margin: 0 16px;
 }
 
 .hot-list {
   display: flex;
   gap: 12px;
-  padding: 4px 0 8px 16px;
+  padding: 4px 0 8px;
   width: max-content;
 }
 
 .hot-list-end {
-  width: 16px;
+  width: 1px;
   flex-shrink: 0;
 }
 
@@ -913,8 +914,13 @@ const handleJoinClub = async (club: any) => {
     padding: 20px 80px 12px;
   }
 
+  .hot-scroll {
+    width: calc(100% - 160px);
+    margin: 0 80px;
+  }
+
   .hot-list {
-    padding: 4px 80px 8px;
+    padding: 4px 0 8px;
   }
 
   .club-items {

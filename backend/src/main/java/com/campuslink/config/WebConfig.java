@@ -31,6 +31,7 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(optionalJwtAuthInterceptor)
                 .addPathPatterns(
                         "/activity/list",      // 活动列表（游客可浏览，已登录用户看到报名状态）
+                        "/club/list",          // 社团列表（游客可浏览，已登录用户看到加入状态）
                         "/notification/list",  // 校园公告列表
                         "/resource/list",      // 资源列表
                         "/resource/search",    // 搜索资源
@@ -62,6 +63,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/tag/search",         // 搜索标签（游客可浏览）
                         "/stats/today",        // 今日活跃统计（游客可浏览）
                         "/activity/list",      // 活动列表（使用可选认证）
+                        "/club/list",          // 社团列表（使用可选认证）
                         "/notification/list",  // 校园公告列表（使用可选认证）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",

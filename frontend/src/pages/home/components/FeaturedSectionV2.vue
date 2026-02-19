@@ -43,37 +43,31 @@
 
     <!-- Featured Grid -->
     <view v-else class="featured-grid">
-      <!-- H5 端：使用企业级卡片 -->
+      <!-- H5 端：按顺序逐项渲染，保证类型交替可控 -->
       <!-- #ifdef H5 -->
-      <!-- 问答类型：使用 ClFeaturedQAItem -->
-      <ClFeaturedQAItem
-        v-for="item in featuredList.filter(i => i.type === 'question')"
-        :key="`question-${item.id}`"
-        :question="transformToQuestion(item)"
-        @click="handleQuestionClick"
-        @answer="handleAnswer"
-        @user-click="handleUserClick"
-        @like="handleLike"
-        @comment="handleComment"
-      />
-
-      <!-- 资源类型：使用 ClResourceCard -->
-      <ClResourceCard
-        v-for="item in featuredList.filter(i => i.type === 'resource')"
-        :key="`resource-${item.id}`"
-        :resource="transformToResource(item)"
-        @click="handleResourceClick"
-        @download="handleDownload"
-      />
-
-      <!-- 活动类型：使用 ClEventCard -->
-      <ClEventCard
-        v-for="item in featuredList.filter(i => i.type === 'activity')"
-        :key="`activity-${item.id}`"
-        :event="transformToEvent(item)"
-        @click="handleActivityClick"
-        @register="handleRegister"
-      />
+      <template v-for="item in featuredList" :key="`${item.type}-${item.id}`">
+        <ClFeaturedQAItem
+          v-if="item.type === 'question'"
+          :question="transformToQuestion(item)"
+          @click="handleQuestionClick"
+          @answer="handleAnswer"
+          @user-click="handleUserClick"
+          @like="handleLike"
+          @comment="handleComment"
+        />
+        <ClResourceCard
+          v-else-if="item.type === 'resource'"
+          :resource="transformToResource(item)"
+          @click="handleResourceClick"
+          @download="handleDownload"
+        />
+        <ClEventCard
+          v-else-if="item.type === 'activity'"
+          :event="transformToEvent(item)"
+          @click="handleActivityClick"
+          @register="handleRegister"
+        />
+      </template>
       <!-- #endif -->
     </view>
   </view>
@@ -112,8 +106,6 @@ const loadData = async () => {
     loading.value = true
     hasError.value = false
 
-    console.log('[FeaturedSection] 开始加载推荐内容...')
-
     // 并行加载问答、资源、活动数据（使用正确的 API 参数）
     const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
       getQuestionList({ page: 1, pageSize: 2 }).catch((err) => {
@@ -130,25 +122,20 @@ const loadData = async () => {
       })
     ])
 
-    console.log('[FeaturedSection] 数据加载完成:', {
-      questions: questionsRes.list?.length || 0,
-      resources: resourcesRes.list?.length || 0,
-      activities: activitiesRes.list?.length || 0
-    })
+    // 按类型分组，固定交替顺序：问答 → 资源 → 活动 → 问答
+    const questions = (questionsRes.list || []).map((item: any) => ({ ...item, type: 'question' }))
+    const resources = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
+    const activities = (activitiesRes.list || []).map((item: any) => ({ ...item, type: 'activity' }))
 
-    // 合并数据并添加类型标识
-    const allItems = [
-      ...(questionsRes.list || []).map((item: any) => ({ ...item, type: 'question' })),
-      ...(resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' })),
-      ...(activitiesRes.list || []).map((item: any) => ({ ...item, type: 'activity' }))
-    ]
-
-    console.log('[FeaturedSection] 合并后数据总数:', allItems.length)
-
-    // 打乱顺序（模拟 AI 推荐）
-    featuredList.value = allItems.sort(() => Math.random() - 0.5).slice(0, 4)
-
-    console.log('[FeaturedSection] 最终推荐列表:', featuredList.value.length)
+    // 交替插入，保证同类型卡片不连续，最多取 4 条
+    const interleaved: any[] = []
+    const maxLen = Math.max(questions.length, resources.length, activities.length)
+    for (let i = 0; i < maxLen && interleaved.length < 4; i++) {
+      if (questions[i]) interleaved.push(questions[i])
+      if (interleaved.length < 4 && resources[i]) interleaved.push(resources[i])
+      if (interleaved.length < 4 && activities[i]) interleaved.push(activities[i])
+    }
+    featuredList.value = interleaved
 
   } catch (error) {
     console.error('[FeaturedSection] 加载推荐内容失败:', error)

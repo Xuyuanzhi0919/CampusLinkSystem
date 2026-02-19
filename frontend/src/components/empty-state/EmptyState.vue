@@ -3,29 +3,66 @@
     <!-- 图标区：彩色背景圆 + SVG -->
     <view class="empty-icon">
       <view class="icon-bg">
+        <!-- empty：空盒子，表示暂无内容 -->
         <svg v-if="type === 'empty'" class="icon" viewBox="0 0 48 48" fill="none">
-          <path d="M24 8C15.163 8 8 15.163 8 24s7.163 16 16 16 16-7.163 16-16S32.837 8 24 8z" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.4"/>
-          <path d="M16 24h16M24 16v16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <!-- 盒子底部 -->
+          <path d="M8 28L8 38C8 39.105 8.895 40 10 40L38 40C39.105 40 40 39.105 40 38L40 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 盒子左右侧 -->
+          <path d="M8 28L14 18H34L40 28" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 盒盖折叠线 -->
+          <path d="M8 28H20L24 33L28 28H40" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- 盒子顶部内容（星星点缀） -->
+          <circle cx="24" cy="12" r="2" fill="currentColor" opacity="0.3"/>
+          <circle cx="18" cy="9" r="1.5" fill="currentColor" opacity="0.2"/>
+          <circle cx="30" cy="10" r="1.5" fill="currentColor" opacity="0.2"/>
         </svg>
 
+        <!-- error：断开的链接，表示加载/服务失败 -->
         <svg v-else-if="type === 'error'" class="icon" viewBox="0 0 48 48" fill="none">
-          <circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="1.5" opacity="0.3"/>
-          <path d="M24 16v10" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <circle cx="24" cy="32" r="1.5" fill="currentColor"/>
+          <!-- 左半段链节 -->
+          <path d="M18 22L14 26C11.791 28.209 11.791 31.791 14 34C16.209 36.209 19.791 36.209 22 34L26 30" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- 右半段链节 -->
+          <path d="M30 26L34 22C36.209 19.791 36.209 16.209 34 14C31.791 11.791 28.209 11.791 26 14L22 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- 断开缝隙处的叉 -->
+          <path d="M21 27L27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
+          <!-- 右上角警示点 -->
+          <circle cx="38" cy="10" r="5" fill="currentColor" opacity="0.15"/>
+          <path d="M38 7.5V11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="38" cy="13" r="0.8" fill="currentColor"/>
         </svg>
 
+        <!-- offline：断开的插头，表示离线 -->
         <svg v-else-if="type === 'offline'" class="icon" viewBox="0 0 48 48" fill="none">
-          <path d="M14 22c0-5.523 4.477-10 10-10s10 4.477 10 10" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
-          <path d="M19 28c0-2.761 2.239-5 5-5s5 2.239 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.6"/>
-          <circle cx="24" cy="34" r="2" fill="currentColor"/>
-          <path d="M10 38L38 10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <!-- 插头主体 -->
+          <rect x="18" y="22" width="12" height="10" rx="2" stroke="currentColor" stroke-width="2"/>
+          <!-- 插脚 -->
+          <path d="M21 32V36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M27 32V36" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- 插头顶部连线 -->
+          <path d="M24 18V22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <!-- 插座（右侧，断开状态） -->
+          <path d="M34 24H38C39.105 24 40 24.895 40 26V30C40 31.105 39.105 32 38 32H34" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <!-- 断开斜线 -->
+          <path d="M30 20L34 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+          <!-- 左侧断开的线头 -->
+          <path d="M10 24H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
+          <path d="M10 28H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.2"/>
         </svg>
 
+        <!-- network：WiFi + 感叹号，表示网络异常 -->
         <svg v-else-if="type === 'network'" class="icon" viewBox="0 0 48 48" fill="none">
-          <path d="M10 22c7.732-7.732 20.268-7.732 28 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.3"/>
-          <path d="M15 28c5.077-5.077 12.923-5.077 18 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.55"/>
-          <path d="M20 34c2.21-2.21 5.79-2.21 8 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-          <circle cx="24" cy="40" r="2.5" fill="currentColor"/>
+          <!-- WiFi 最外圈（弱） -->
+          <path d="M9 21C15.075 14.925 23.075 12 31 14" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.25"/>
+          <!-- WiFi 中圈 -->
+          <path d="M14 27C18.477 22.523 24.954 20.477 31 21.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+          <!-- WiFi 内圈 -->
+          <path d="M19 33C21.761 30.239 25.544 28.9 29 29.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.75"/>
+          <!-- 信号点 -->
+          <circle cx="24" cy="39" r="2.5" fill="currentColor" opacity="0.5"/>
+          <!-- 右上角感叹号圆圈 -->
+          <circle cx="36" cy="14" r="7" fill="currentColor" opacity="0.1" stroke="currentColor" stroke-width="1.5" opacity="0.6"/>
+          <path d="M36 10.5V14.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="36" cy="17" r="1" fill="currentColor"/>
         </svg>
       </view>
     </view>
@@ -186,10 +223,10 @@ const handleAction = () => {
 // ========== 类型配色（背景圆 + 图标颜色）==========
 .type-empty {
   .icon-bg {
-    background: linear-gradient(135deg, #F1F5FF 0%, #E8F0FF 100%);
-    box-shadow: 0 0 0 6px rgba(99, 120, 255, 0.06);
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.06);
   }
-  .icon { color: #6378FF; }
+  .icon { color: #2563EB; }
 }
 
 .type-error {

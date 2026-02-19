@@ -210,7 +210,7 @@ const handleGoAsk = () => {
 const handleViewMore = () => {
   emit('view-more')
   uni.navigateTo({
-    url: '/pages/question/list'
+    url: '/pages/question/index'
   })
 }
 

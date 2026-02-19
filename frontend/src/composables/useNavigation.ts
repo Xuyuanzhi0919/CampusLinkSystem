@@ -112,9 +112,9 @@ export function useNavigation() {
 
   // ================== 列表页跳转 ==================
 
-  /** 跳转到问答列表 (TabBar) */
+  /** 跳转到问答列表 */
   const toQuestionList = () => {
-    switchTab('/pages/question/index')
+    navigateTo('/pages/question/index')
   }
 
   /** 跳转到资源列表 (TabBar) */

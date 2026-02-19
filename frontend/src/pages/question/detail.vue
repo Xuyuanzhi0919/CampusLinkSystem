@@ -549,18 +549,10 @@ const handleDeleteQuestion = () => {
           uni.showToast({ title: '删除成功', icon: 'success' })
           setTimeout(() => {
             const pages = getCurrentPages()
-            if (pages.length === 1) {
-              uni.switchTab({ url: '/pages/question/index' })
-            } else if (pages.length >= 2) {
-              const prevPage = pages[pages.length - 2]
-              const prevRoute = prevPage.route || ''
-              if (prevRoute === 'pages/question/index') {
-                uni.switchTab({ url: '/pages/question/index' })
-              } else {
-                uni.navigateBack()
-              }
+            if (pages.length > 1) {
+              uni.navigateBack()
             } else {
-              uni.switchTab({ url: '/pages/question/index' })
+              uni.switchTab({ url: '/pages/home/index' })
             }
           }, 1500)
         } catch (error: any) {
@@ -608,9 +600,9 @@ const handleBreadcrumbClick = (type: 'home' | 'question' | 'category') => {
   if (type === 'home') {
     uni.switchTab({ url: '/pages/home/index' })
   } else if (type === 'question') {
-    uni.switchTab({ url: '/pages/question/index' })
+    uni.navigateTo({ url: '/pages/question/index' })
   } else if (type === 'category') {
-    uni.switchTab({ url: '/pages/question/index' })
+    uni.navigateTo({ url: '/pages/question/index' })
   }
 }
 
@@ -619,8 +611,12 @@ const handleTagClick = (tag: string) => {
 }
 
 const goBack = () => {
-  // 直接返回问答首页,避免页面栈判断导致的多次点击问题
-  uni.switchTab({ url: '/pages/question/index' })
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack()
+  } else {
+    uni.switchTab({ url: '/pages/home/index' })
+  }
 }
 
 const handleGoBack = goBack

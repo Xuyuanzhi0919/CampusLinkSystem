@@ -205,11 +205,27 @@
       <Icon name="check-circle" :size="20" class="solved-icon" />
       <text class="solved-text">该问题已解决</text>
     </view>
+
+    <!-- 登录引导弹窗（在当前页展示，不跳回首页） -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuide"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+    />
+
+    <!-- 登录弹窗 -->
+    <LoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
   </PageContainer>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { useQuestionStore } from '@/stores/question'
 import { useUserStore } from '@/stores/user'
@@ -232,6 +248,8 @@ import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 import { requireLogin } from '@/utils/auth'
+import { ClLoginGuideModal } from '@/components/cl'
+import LoginModal from '@/components/LoginModal.vue'
 
 // Stores
 const questionStore = useQuestionStore()
@@ -265,6 +283,39 @@ const questionId = ref(0)
 
 // 更多菜单状态
 const showMorePopup = ref(false)
+
+// 登录引导弹窗状态
+const showLoginGuide = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+const showLoginModal = ref(false)
+
+onMounted(() => {
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+    showLoginGuide.value = true
+  })
+  uni.$on('show-login-modal', () => {
+    showLoginModal.value = true
+  })
+})
+
+onUnmounted(() => {
+  uni.$off('show-login-guide')
+  uni.$off('show-login-modal')
+})
+
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+  showLoginModal.value = true
+}
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+}
 
 // 是否是我的问题
 const isMyQuestion = computed(() => {

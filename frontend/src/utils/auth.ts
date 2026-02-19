@@ -81,31 +81,13 @@ export const requireLogin = (
   const currentPage = pages[pages.length - 1]
   const currentRoute = currentPage?.route || ''
 
-  // 如果当前在首页，直接触发登录引导弹窗
-  if (currentRoute === 'pages/home/index') {
-    uni.$emit('show-login-guide', {
-      actionType,
-      title,
-      content,
-      onSuccess
-    })
-  } else {
-    // 否则跳转到首页并打开登录引导弹窗
-    uni.switchTab({
-      url: '/pages/home/index',
-      success: () => {
-        // 延迟触发事件，确保首页已经挂载
-        setTimeout(() => {
-          uni.$emit('show-login-guide', {
-            actionType,
-            title,
-            content,
-            onSuccess
-          })
-        }, 350)
-      }
-    })
-  }
+  // 直接在当前页触发登录引导弹窗，各页面自行监听 show-login-guide 事件
+  uni.$emit('show-login-guide', {
+    actionType,
+    title,
+    content,
+    onSuccess
+  })
 
   return false
 }
@@ -126,22 +108,7 @@ export const isLoggedIn = (): boolean => {
  * @param onSuccess 登录成功后的回调
  */
 export const showLoginModal = (onSuccess?: () => void): void => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1]
-  const currentRoute = currentPage?.route || ''
-
-  if (currentRoute === 'pages/home/index') {
-    uni.$emit('show-login-modal', { onSuccess })
-  } else {
-    uni.switchTab({
-      url: '/pages/home/index',
-      success: () => {
-        setTimeout(() => {
-          uni.$emit('show-login-modal', { onSuccess })
-        }, 350)
-      }
-    })
-  }
+  uni.$emit('show-login-modal', { onSuccess })
 }
 
 export default {

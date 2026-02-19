@@ -41,43 +41,54 @@
             @click="handleClubClick(club.clubId)"
           >
             <view class="club-banner" :style="{ background: bannerGradients[idx % bannerGradients.length] }">
-              <!-- 装饰圆圈 -->
-              <view class="banner-deco deco-1"></view>
-              <view class="banner-deco deco-2"></view>
-              <view class="banner-deco deco-3"></view>
+              <!-- 大号序号水印 -->
+              <text class="banner-watermark">{{ String(idx + 1).padStart(2, '0') }}</text>
+              <!-- 斜切色条装饰 -->
+              <view class="banner-slash"></view>
+              <!-- 内容区 -->
               <view class="banner-content">
-                <view class="banner-badge">
-                  <text class="badge-dot"></text>
-                  <text class="badge-text">社区精选</text>
-                </view>
-                <text class="banner-title">{{ club.clubName }}</text>
-                <text class="banner-desc">{{ club.description || '加入我们，一起创造校园精彩' }}</text>
-                <view class="banner-meta">
-                  <view class="banner-meta-item">
-                    <Icon name="users" :size="13" class="banner-meta-icon" />
-                    <text>{{ club.memberCount || 0 }} 名成员</text>
+                <view class="banner-top-row">
+                  <view class="banner-badge">
+                    <text class="badge-dot"></text>
+                    <text class="badge-text">社区精选</text>
                   </view>
-                  <view class="banner-meta-item">
-                    <Icon name="target" :size="13" class="banner-meta-icon" />
-                    <text>{{ club.activityCount || 0 }} 场活动</text>
+                  <view class="banner-btn" @click.stop="handleJoinClub(club)">
+                    <text class="banner-btn-text">{{ club.isMember ? '✓ 已加入' : '+ 加入' }}</text>
                   </view>
                 </view>
-                <view class="banner-btn" @click.stop="handleJoinClub(club)">
-                  <text>{{ club.isMember ? '已加入' : '立即加入' }}</text>
+                <view class="banner-main">
+                  <text class="banner-title">{{ club.clubName }}</text>
+                  <text class="banner-desc">{{ club.description || '加入我们，一起创造校园精彩' }}</text>
+                </view>
+                <view class="banner-stats">
+                  <view class="banner-stat">
+                    <text class="banner-stat-num">{{ club.memberCount || 0 }}</text>
+                    <text class="banner-stat-label">成员</text>
+                  </view>
+                  <view class="banner-stat-divider"></view>
+                  <view class="banner-stat">
+                    <text class="banner-stat-num">{{ club.activityCount || 0 }}</text>
+                    <text class="banner-stat-label">活动</text>
+                  </view>
                 </view>
               </view>
             </view>
           </swiper-item>
         </swiper>
 
-        <!-- 指示点 -->
-        <view class="swiper-dots">
-          <view
-            v-for="(_, idx) in bannerClubs"
-            :key="idx"
-            class="swiper-dot"
-            :class="{ 'swiper-dot--active': idx === swiperCurrent }"
-          ></view>
+        <!-- 指示器：进度条 + 数字 -->
+        <view class="swiper-indicator">
+          <view class="swiper-track">
+            <view
+              class="swiper-progress"
+              :style="{ width: `${((swiperCurrent + 1) / bannerClubs.length) * 100}%` }"
+            ></view>
+          </view>
+          <text class="swiper-counter">
+            <text class="swiper-counter-cur">{{ String(swiperCurrent + 1).padStart(2, '0') }}</text>
+            <text class="swiper-counter-sep"> / </text>
+            <text class="swiper-counter-total">{{ String(bannerClubs.length).padStart(2, '0') }}</text>
+          </text>
         </view>
       </view>
 
@@ -147,33 +158,35 @@
           v-for="item in list"
           :key="item.clubId"
           class="club-card"
+          :style="{ '--cat-color': getCategoryColor(item.category) }"
           @click="handleClubClick(item.clubId)"
         >
-          <!-- 左侧图标 -->
-          <view class="club-card__left">
-            <view class="club-card__icon">
-              <image v-if="item.logoUrl" :src="item.logoUrl" class="club-cover-img" mode="aspectFill" />
-              <view v-else class="club-icon-placeholder">
-                <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
-              </view>
+          <!-- 左侧分类色条 -->
+          <view class="club-card__stripe"></view>
+
+          <!-- 图标 -->
+          <view class="club-card__icon">
+            <image v-if="item.logoUrl" :src="item.logoUrl" class="club-cover-img" mode="aspectFill" />
+            <view v-else class="club-icon-placeholder">
+              <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
             </view>
           </view>
 
-          <!-- 右侧信息 -->
-          <view class="club-card__right">
+          <!-- 信息区 -->
+          <view class="club-card__body">
             <view class="club-card__top">
               <text class="club-card__title">{{ item.clubName }}</text>
-              <view class="club-card__capsule">
-                <text>{{ item.category || '综合' }}</text>
+              <view class="club-card__tag">
+                <text class="club-card__tag-text">{{ item.category || '综合' }}</text>
               </view>
             </view>
             <text v-if="item.description" class="club-card__desc">{{ item.description }}</text>
             <view class="club-card__bottom">
               <view class="club-card__meta">
-                <Icon name="users" :size="12" class="meta-icon" />
-                <text class="meta-text">{{ item.memberCount || 0 }}人</text>
-                <text class="meta-dot">·</text>
-                <Icon name="target" :size="12" class="meta-icon" />
+                <Icon name="users" :size="11" class="meta-icon" />
+                <text class="meta-text">{{ item.memberCount || 0 }}</text>
+                <view class="meta-sep"></view>
+                <Icon name="target" :size="11" class="meta-icon" />
                 <text class="meta-text">{{ item.activityCount || 0 }}场</text>
               </view>
               <view
@@ -184,7 +197,7 @@
                 }"
                 @click.stop="handleJoinClub(item)"
               >
-                <text>{{ joiningIds.has(item.clubId) ? '...' : (item.isMember ? '已加入' : '加入') }}</text>
+                <text>{{ joiningIds.has(item.clubId) ? '···' : (item.isMember ? '已加入' : '加入') }}</text>
               </view>
             </view>
           </view>
@@ -279,6 +292,17 @@ const bannerClubs = computed(() => props.list.slice(0, 5))
 
 // 热门社团（前 8 个，横滑展示）
 const hotClubs = computed(() => props.list.slice(0, 8))
+
+const categoryColorMap: Record<string, string> = {
+  '文艺': '#E91E8C',
+  '体育': '#00B894',
+  '学术': '#377DFF',
+  '志愿': '#FF6B35',
+  '科技': '#6C5CE7',
+  '综合': '#FDCB6E',
+}
+const getCategoryColor = (cat?: string) =>
+  categoryColorMap[cat || ''] || '#FDCB6E'
 
 const formatMemberCount = (count: number) => {
   if (!count) return '0'
@@ -402,49 +426,51 @@ const handleJoinClub = async (club: any) => {
 
 .club-swiper {
   width: 100%;
-  height: 172px;
-  border-radius: 18px;
+  height: 190px;
+  border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 32px rgba(55, 125, 255, 0.2);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.22);
 }
 
 .club-banner {
   position: relative;
   width: 100%;
   height: 100%;
+  overflow: hidden;
   cursor: pointer;
 }
 
-/* 装饰圆圈 */
-.banner-deco {
+/* 大号序号水印 */
+.banner-watermark {
   position: absolute;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-}
-.deco-1 {
-  width: 160px;
-  height: 160px;
-  right: -40px;
-  top: -40px;
-}
-.deco-2 {
-  width: 100px;
-  height: 100px;
-  right: 40px;
-  bottom: -30px;
-  background: rgba(255, 255, 255, 0.04);
-}
-.deco-3 {
-  width: 60px;
-  height: 60px;
-  left: 30%;
-  top: -20px;
-  background: rgba(255, 255, 255, 0.08);
+  right: -8px;
+  top: -16px;
+  font-size: 96px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.06);
+  line-height: 1;
+  letter-spacing: -4px;
+  pointer-events: none;
+  user-select: none;
 }
 
+/* 斜切光条装饰 */
+.banner-slash {
+  position: absolute;
+  bottom: -10px;
+  left: -20px;
+  width: 120px;
+  height: 120px;
+  background: rgba(255, 255, 255, 0.06);
+  transform: rotate(35deg);
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+/* 内容 */
 .banner-content {
   position: relative;
-  padding: 18px 20px;
+  padding: 16px 18px 14px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -452,110 +478,173 @@ const handleJoinClub = async (club: any) => {
   box-sizing: border-box;
 }
 
+.banner-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .banner-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 20px;
-  padding: 3px 10px;
-  width: fit-content;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 6px;
+  padding: 4px 10px;
 }
 
 .badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
   background: #FFD700;
   display: inline-block;
-  animation: dotBlink 1.5s ease-in-out infinite;
+  animation: dotBlink 1.8s ease-in-out infinite;
 }
 
 @keyframes dotBlink {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.7); }
 }
 
 .badge-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* 加入按钮：实心小方块风格 */
+.banner-btn {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 8px;
+  padding: 5px 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.15s ease;
+
+  &:active { transform: scale(0.93); }
+}
+
+.banner-btn-text {
   font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: 0.5px;
+  font-weight: 800;
+  color: #111;
+  letter-spacing: -0.2px;
+}
+
+/* 中部大字区 */
+.banner-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 4px;
 }
 
 .banner-title {
-  font-size: 20px;
-  font-weight: 800;
+  font-size: 22px;
+  font-weight: 900;
   color: #FFFFFF;
-  line-height: 1.3;
-  margin-top: 4px;
-  letter-spacing: -0.3px;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .banner-desc {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.5;
-  margin-top: 2px;
-  flex: 1;
-}
-
-.banner-meta {
-  display: flex;
-  gap: 16px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.4;
   margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.banner-meta-item {
+/* 底部数据统计 */
+.banner-stats {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
 
-.banner-meta-icon {
-  color: rgba(255, 255, 255, 0.8);
+.banner-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.banner-stat-num {
+  font-size: 18px;
+  font-weight: 900;
+  color: #FFFFFF;
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.banner-stat-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 500;
+}
+
+.banner-stat-divider {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+/* ========== 轮播指示器（进度条 + 计数） ========== */
+.swiper-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+  padding: 0 2px;
+}
+
+.swiper-track {
+  flex: 1;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.swiper-progress {
+  height: 100%;
+  background: $campus-blue;
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.swiper-counter {
   flex-shrink: 0;
 }
 
-.banner-btn {
-  position: absolute;
-  right: 20px;
-  bottom: 18px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1A1A2E;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 6px 16px;
-  border-radius: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-
-  &:active { transform: scale(0.95); }
+.swiper-counter-cur {
+  font-size: 13px;
+  font-weight: 800;
+  color: $campus-blue;
 }
 
-/* ========== 轮播指示点 ========== */
-.swiper-dots {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
-  margin-top: 10px;
+.swiper-counter-sep {
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.2);
 }
 
-.swiper-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: rgba(55, 125, 255, 0.25);
-  transition: all 0.3s ease;
-
-  &--active {
-    width: 16px;
-    border-radius: 3px;
-    background: $campus-blue;
-  }
+.swiper-counter-total {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.3);
 }
 
 /* ========== Section Header ========== */
@@ -811,7 +900,7 @@ const handleJoinClub = async (club: any) => {
   100% { opacity: 0; transform: scale(1.04); }
 }
 
-/* ========== 全部社团列表（横向信息流） ========== */
+/* ========== 全部社团列表 ========== */
 .club-items {
   padding: 0 16px;
   display: flex;
@@ -819,36 +908,49 @@ const handleJoinClub = async (club: any) => {
   gap: 10px;
 }
 
+/* 卡片主体：左色条 + 图标 + 信息 */
 .club-card {
+  position: relative;
   display: flex;
-  gap: 14px;
-  padding: 14px;
+  align-items: center;
+  gap: 0;
   background: #FFFFFF;
-  border-radius: 14px;
+  border-radius: 16px;
+  overflow: hidden;
   cursor: pointer;
   transition: box-shadow 0.15s ease, transform 0.15s ease;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(0, 0, 0, 0.04);
 
   &:active {
-    transform: scale(0.985);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    transform: scale(0.983);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   }
 }
 
-.club-card__left {
+/* 左侧分类色条 */
+.club-card__stripe {
   flex-shrink: 0;
+  width: 4px;
+  align-self: stretch;
+  background: var(--cat-color, #377DFF);
+  border-radius: 0;
 }
 
+/* 图标区域 */
 .club-card__icon {
-  width: 56px;
-  height: 56px;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  margin: 14px 0 14px 14px;
   border-radius: 14px;
   overflow: hidden;
-  background: $campus-blue-lighter;
+  background: rgba(0, 0, 0, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(55, 125, 255, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .club-cover-img {
@@ -860,25 +962,31 @@ const handleJoinClub = async (club: any) => {
 .club-icon-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, $campus-blue 0%, $campus-blue-light 100%);
+  background: linear-gradient(
+    135deg,
+    var(--cat-color, #377DFF) 0%,
+    rgba(0, 0, 0, 0.25) 140%
+  );
   display: flex;
   align-items: center;
   justify-content: center;
-
-  .placeholder-text {
-    font-size: 22px;
-    font-weight: 800;
-    color: #FFFFFF;
-  }
 }
 
-.club-card__right {
+.placeholder-text {
+  font-size: 24px;
+  font-weight: 900;
+  color: rgba(255, 255, 255, 0.92);
+  letter-spacing: -1px;
+}
+
+/* 信息主体 */
+.club-card__body {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  justify-content: center;
+  gap: 5px;
+  padding: 14px 14px 14px 12px;
 }
 
 .club-card__top {
@@ -896,19 +1004,25 @@ const handleJoinClub = async (club: any) => {
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
+  letter-spacing: -0.2px;
 }
 
-.club-card__capsule {
+/* 分类标签：使用分类色 */
+.club-card__tag {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   height: 20px;
-  padding: 0 8px;
-  border-radius: 10px;
-  font-size: 11px;
-  font-weight: 600;
-  color: $campus-blue;
-  background: rgba($campus-blue, 0.1);
+  padding: 0 7px;
+  border-radius: 6px;
+  background: var(--cat-color, #377DFF);
+}
+
+.club-card__tag-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.5px;
 }
 
 .club-card__desc {
@@ -924,13 +1038,13 @@ const handleJoinClub = async (club: any) => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .club-card__meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .meta-icon {
@@ -943,33 +1057,47 @@ const handleJoinClub = async (club: any) => {
   color: $color-text-quaternary;
 }
 
-.meta-dot {
-  font-size: 11px;
-  color: $color-text-quaternary;
+/* 成员数和活动数之间的圆点分隔 */
+.meta-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: $color-text-quaternary;
+  opacity: 0.4;
+  margin: 0 2px;
 }
 
+/* 加入按钮：实心小方块，与 Banner 按钮呼应 */
 .club-card__btn {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  padding: 5px 14px;
-  border-radius: 16px;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
-  background: $campus-blue;
+  font-weight: 700;
+  background: var(--cat-color, #377DFF);
   color: #FFFFFF;
-  transition: opacity 0.15s ease;
+  letter-spacing: 0.2px;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 
-  &:active { opacity: 0.8; }
+  &:active {
+    opacity: 0.85;
+    transform: scale(0.94);
+  }
 
   &--joined {
     background: transparent;
-    color: $color-text-tertiary;
+    color: $color-text-quaternary;
     border: 1px solid $color-border;
+    box-shadow: none;
+    font-weight: 600;
   }
 
   &--loading {
-    opacity: 0.55;
+    opacity: 0.5;
     pointer-events: none;
   }
 }

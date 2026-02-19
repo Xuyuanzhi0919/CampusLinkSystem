@@ -35,6 +35,7 @@
           <FeaturedSectionV2
             ref="featuredRef"
             @item-click="handleFeaturedClick"
+            @view-more="handleViewMoreFeatured"
           />
 
           <!-- 最新问答（企业级卡片） -->
@@ -204,6 +205,7 @@ const handleQuickLink = (type: string) => nav.toQuickLink(type)
 
 // ===================== 查看更多 =====================
 
+const handleViewMoreFeatured = () => nav.toQuestionList()
 const handleViewMoreQuestions = () => nav.toQuestionList()
 const handleViewMoreResources = () => nav.toResourceList()
 const handleViewMoreActivities = () => nav.toActivityList()

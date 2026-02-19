@@ -6,6 +6,10 @@
         <text class="section-title">精选推荐</text>
         <text class="section-subtitle">AI 推荐 + 精选内容</text>
       </view>
+      <view class="view-more" @click="handleViewMore">
+        <text class="more-text">查看更多</text>
+        <text class="more-arrow">→</text>
+      </view>
     </view>
 
     <!-- Loading State -->
@@ -93,6 +97,7 @@ import { useNavigation } from '@/composables/useNavigation'
 
 const emit = defineEmits<{
   'item-click': [item: any]
+  'view-more': []
 }>()
 
 const nav = useNavigation()
@@ -341,6 +346,10 @@ const handleRegister = (event: any) => {
   })
 }
 
+const handleViewMore = () => {
+  emit('view-more')
+}
+
 // 初始化
 onMounted(() => {
   loadData()
@@ -382,6 +391,28 @@ defineExpose({
 .section-subtitle {
   font-size: $font-size-sm;
   color: $color-text-tertiary;
+}
+
+.view-more {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  cursor: pointer;
+  color: $campus-blue;
+  font-size: $font-size-sm;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+
+.more-text {
+  font-size: $font-size-sm;
+}
+
+.more-arrow {
+  font-size: $font-size-lg;
 }
 
 .featured-grid {

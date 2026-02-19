@@ -23,25 +23,13 @@
       :duration="300"
       @change="handleSwiperChange"
     >
-      <!-- 问答 Tab -->
+      <!-- 社团 Tab -->
       <swiper-item class="swiper-item">
         <scroll-view
           class="scroll-content"
           scroll-y
           @scrolltoupper="handleRefresh(0)"
           @scrolltolower="handleLoadMore(0)"
-        >
-          <QuestionList :list="questionList" :loading="questionLoading" />
-        </scroll-view>
-      </swiper-item>
-
-      <!-- 社团 Tab -->
-      <swiper-item class="swiper-item">
-        <scroll-view
-          class="scroll-content"
-          scroll-y
-          @scrolltoupper="handleRefresh(1)"
-          @scrolltolower="handleLoadMore(1)"
         >
           <ClubList :list="clubList" :loading="clubLoading" @refresh="loadClubs(true)" />
         </scroll-view>
@@ -52,8 +40,8 @@
         <scroll-view
           class="scroll-content"
           scroll-y
-          @scrolltoupper="handleRefresh(2)"
-          @scrolltolower="handleLoadMore(2)"
+          @scrolltoupper="handleRefresh(1)"
+          @scrolltolower="handleLoadMore(1)"
         >
           <ActivityList :list="activityList" :loading="activityLoading" />
         </scroll-view>
@@ -72,10 +60,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import QuestionList from './components/QuestionList.vue'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
-import { getQuestionList } from '@/services/question'
 import { getClubList, getActivityList } from '@/services/club'
 
 // 移动端组件
@@ -98,7 +84,6 @@ const isDesktop = computed(() => {
 
 // Tab 配置
 const tabs = [
-  { key: 'question', label: '问答' },
   { key: 'club', label: '社团' },
   { key: 'activity', label: '活动' }
 ]
@@ -108,12 +93,6 @@ const currentTab = ref(0)
 
 // Tab 吸顶状态
 const isTabsSticky = ref(false)
-
-// 问答数据
-const questionList = ref<any[]>([])
-const questionLoading = ref(false)
-const questionPage = ref(1)
-const questionHasMore = ref(true)
 
 // 社团数据
 const clubList = ref<any[]>([])
@@ -135,11 +114,9 @@ const switchTab = (index: number) => {
   currentTab.value = index
 
   // 首次切换时加载数据
-  if (index === 0 && questionList.value.length === 0) {
-    loadQuestions()
-  } else if (index === 1 && clubList.value.length === 0) {
+  if (index === 0 && clubList.value.length === 0) {
     loadClubs()
-  } else if (index === 2 && activityList.value.length === 0) {
+  } else if (index === 1 && activityList.value.length === 0) {
     loadActivities()
   }
 }
@@ -150,40 +127,6 @@ const switchTab = (index: number) => {
 const handleSwiperChange = (e: any) => {
   const { current } = e.detail
   switchTab(current)
-}
-
-/**
- * 加载问答列表
- */
-const loadQuestions = async (isRefresh = false) => {
-  if (questionLoading.value) return
-  if (!isRefresh && !questionHasMore.value) return
-
-  try {
-    questionLoading.value = true
-    const page = isRefresh ? 1 : questionPage.value
-
-    const res = await getQuestionList({
-      page,
-      pageSize: 20,
-      sortBy: 'created_at'
-    })
-
-    if (isRefresh) {
-      questionList.value = res.list
-      questionPage.value = 1
-    } else {
-      questionList.value.push(...res.list)
-    }
-
-    questionPage.value = page + 1
-    questionHasMore.value = res.list.length >= 20
-  } catch (error) {
-    console.error('加载问答列表失败:', error)
-    uni.showToast({ title: '加载失败', icon: 'none' })
-  } finally {
-    questionLoading.value = false
-  }
 }
 
 /**
@@ -257,10 +200,8 @@ const loadActivities = async (isRefresh = false) => {
  */
 const handleRefresh = (tabIndex: number) => {
   if (tabIndex === 0) {
-    loadQuestions(true)
-  } else if (tabIndex === 1) {
     loadClubs(true)
-  } else if (tabIndex === 2) {
+  } else if (tabIndex === 1) {
     loadActivities(true)
   }
 }
@@ -270,17 +211,15 @@ const handleRefresh = (tabIndex: number) => {
  */
 const handleLoadMore = (tabIndex: number) => {
   if (tabIndex === 0) {
-    loadQuestions(false)
-  } else if (tabIndex === 1) {
     loadClubs(false)
-  } else if (tabIndex === 2) {
+  } else if (tabIndex === 1) {
     loadActivities(false)
   }
 }
 
-// 页面加载时初始化问答列表
+// 页面加载时初始化社团列表（第一个 Tab）
 onMounted(() => {
-  loadQuestions()
+  loadClubs()
 })
 </script>
 

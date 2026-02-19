@@ -139,6 +139,7 @@ const loadData = async () => {
     hasError.value = false
 
     // 并行加载问答、资源、活动数据（使用正确的 API 参数）
+    const now = new Date()
     const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
       getQuestionList({ page: 1, pageSize: 2 }).catch((err) => {
         console.error('[FeaturedSection] 问答列表加载失败:', err)
@@ -148,7 +149,8 @@ const loadData = async () => {
         console.error('[FeaturedSection] 资源列表加载失败:', err)
         return { list: [] }
       }),
-      getActivityList({ page: 1, pageSize: 2 }).catch((err) => {
+      // 多请求一些，过滤后保证有足够数量
+      getActivityList({ page: 1, pageSize: 6 }).catch((err) => {
         console.error('[FeaturedSection] 活动列表加载失败:', err)
         return { list: [] }
       })
@@ -157,7 +159,15 @@ const loadData = async () => {
     // 按类型分组，固定交替顺序：问答 → 资源 → 活动 → 问答
     const questions = (questionsRes.list || []).map((item: any) => ({ ...item, type: 'question' }))
     const resources = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
-    const activities = (activitiesRes.list || []).map((item: any) => ({ ...item, type: 'activity' }))
+    // 过滤掉已结束（status=2/3）和 endTime 已过期的活动
+    const activities = (activitiesRes.list || [])
+      .filter((item: any) => {
+        if (item.status === 2 || item.status === 3) return false
+        if (item.endTime && new Date(item.endTime) < now) return false
+        return true
+      })
+      .slice(0, 2)
+      .map((item: any) => ({ ...item, type: 'activity' }))
 
     // 交替插入，保证同类型卡片不连续，最多取 4 条
     const interleaved: any[] = []
@@ -227,12 +237,9 @@ const transformToResource = (item: any) => {
  * 后端实际返回字段：activityId, clubId, clubName, title, description, location, startTime, endTime, maxParticipants, currentParticipants, remainingSlots, rewardPoints, coverImage, status, isJoined, isSignedIn, isFavorited, createdAt
  */
 const transformToEvent = (item: any) => {
-  const now = new Date()
-  const endTime = item.endTime ? new Date(item.endTime) : null
   const startTime = item.startTime ? new Date(item.startTime) : null
-  // status: 0-未开始，1-进行中，2-已结束，3-已取消
-  const isEnded = item.status === 2 || item.status === 3 || (endTime ? endTime < now : false)
-  const isRegistering = item.status === 0 || (startTime ? startTime > now : false)
+  // 到这里的活动已经过滤掉已结束和已取消，isEnded 固定为 false
+  const isRegistering = item.status === 0 || (startTime ? startTime > new Date() : false)
 
   return {
     id: item.activityId || item.id,
@@ -244,8 +251,8 @@ const transformToEvent = (item: any) => {
     location: item.location || '待定',
     participants: item.currentParticipants || 0,
     views: item.viewCount || 0,
-    isEnded: isEnded,
-    isRegistering: isRegistering && !isEnded
+    isEnded: false,
+    isRegistering: isRegistering
   }
 }
 

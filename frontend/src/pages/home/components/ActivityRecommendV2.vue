@@ -125,27 +125,32 @@ const loadData = async () => {
      * 后端实际返回字段：activityId, clubId, clubName, title, description, location, startTime, endTime, maxParticipants, currentParticipants, remainingSlots, rewardPoints, coverImage, status, isJoined, isSignedIn, isFavorited, createdAt
      */
     const now = new Date()
-    activityList.value = response.list.map((item: any) => {
-      const endTime = item.endTime ? new Date(item.endTime) : null
-      const startTime = item.startTime ? new Date(item.startTime) : null
-      // status: 0-未开始，1-进行中，2-已结束，3-已取消
-      const isEnded = item.status === 2 || item.status === 3 || (endTime ? endTime < now : false)
-      const isRegistering = item.status === 0 || (startTime ? startTime > now : false)
+    activityList.value = response.list
+      .filter((item: any) => {
+        // 过滤掉已结束（status=2）和已取消（status=3）的活动
+        if (item.status === 2 || item.status === 3) return false
+        // 过滤掉 endTime 已过期的活动
+        if (item.endTime && new Date(item.endTime) < now) return false
+        return true
+      })
+      .map((item: any) => {
+        const startTime = item.startTime ? new Date(item.startTime) : null
+        const isRegistering = item.status === 0 || (startTime ? startTime > now : false)
 
-      return {
-        id: item.activityId || item.id,
-        title: item.title || '',
-        organizer: item.clubName || item.organizerName || '社团',
-        type: item.activityType || item.type || 'other',
-        startTime: item.startTime || '',
-        endTime: item.endTime || '',
-        location: item.location || '待定',
-        participants: item.currentParticipants || 0,
-        views: item.viewCount || 0,
-        isEnded: isEnded,
-        isRegistering: isRegistering && !isEnded
-      }
-    })
+        return {
+          id: item.activityId || item.id,
+          title: item.title || '',
+          organizer: item.clubName || item.organizerName || '社团',
+          type: item.activityType || item.type || 'other',
+          startTime: item.startTime || '',
+          endTime: item.endTime || '',
+          location: item.location || '待定',
+          participants: item.currentParticipants || 0,
+          views: item.viewCount || 0,
+          isEnded: false,
+          isRegistering: isRegistering
+        }
+      })
   } catch (error) {
     console.error('加载活动失败:', error)
     hasError.value = true

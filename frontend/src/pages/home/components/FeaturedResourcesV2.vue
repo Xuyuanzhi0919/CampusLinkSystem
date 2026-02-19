@@ -89,7 +89,7 @@ const loadData = async () => {
 
     const response = await getResourceList({
       page: 1,
-      pageSize: 6,
+      pageSize: 4,
       sortBy: 'created_at',
       sortOrder: 'desc'
     })
@@ -219,7 +219,7 @@ defineExpose({
 
 .resources-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: $spacing-6;
 
   /* 移动端单列 */

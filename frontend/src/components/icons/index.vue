@@ -10,8 +10,8 @@
   >
     <!-- User 图标 -->
     <template v-if="name === 'user'">
-      <circle cx="12" cy="8" r="4" stroke="currentColor" fill="none"/>
-      <path d="M6 21V19C6 16.7909 7.79086 15 10 15H14C16.2091 15 18 16.7909 18 19V21" stroke="currentColor" fill="none"/>
+      <circle cx="12" cy="7" r="4" stroke="currentColor" fill="none"/>
+      <path d="M4 21v-1a8 8 0 0 1 16 0v1" stroke="currentColor" fill="none"/>
     </template>
 
     <!-- Heart 图标 -->

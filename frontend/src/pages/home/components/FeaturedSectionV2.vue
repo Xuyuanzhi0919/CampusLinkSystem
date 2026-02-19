@@ -12,9 +12,41 @@
       </view>
     </view>
 
-    <!-- Loading State -->
-    <view v-if="loading" class="loading-container">
-      <text>加载中...</text>
+    <!-- Loading State：骨架屏，2×2 网格匹配精选卡片结构 -->
+    <view v-if="loading" class="skeleton-grid">
+      <view v-for="i in 4" :key="i" class="skeleton-card">
+        <!-- 顶部色条 -->
+        <view class="skeleton-type-bar"></view>
+        <!-- Header：头像 + 用户名 + 胶囊 -->
+        <view class="skeleton-header">
+          <view class="skeleton-avatar"></view>
+          <view class="skeleton-user-info">
+            <view class="skeleton-line skeleton-line--name"></view>
+            <view class="skeleton-line skeleton-line--role"></view>
+          </view>
+          <view class="skeleton-capsule"></view>
+        </view>
+        <!-- Body：标题 + 描述 + 标签 -->
+        <view class="skeleton-body">
+          <view class="skeleton-line skeleton-line--title"></view>
+          <view class="skeleton-line skeleton-line--title-short"></view>
+          <view class="skeleton-line skeleton-line--desc"></view>
+          <view class="skeleton-line skeleton-line--desc-short"></view>
+          <view class="skeleton-tags">
+            <view class="skeleton-tag"></view>
+            <view class="skeleton-tag"></view>
+          </view>
+        </view>
+        <!-- Meta + Actions -->
+        <view class="skeleton-footer">
+          <view class="skeleton-meta">
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+          </view>
+          <view class="skeleton-btn"></view>
+        </view>
+      </view>
     </view>
 
     <!-- Error State -->
@@ -416,7 +448,132 @@ defineExpose({
 
 }
 
-.loading-container,
+// ========== 骨架屏 ==========
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@mixin skeleton-block {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: $radius-sm;
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-6;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeleton-card {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: $shadow-base;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+  padding: $spacing-5;
+  padding-top: 0;
+}
+
+.skeleton-type-bar {
+  height: 4px;
+  margin: 0 (-$spacing-5);
+  @include skeleton-block;
+  border-radius: 0;
+  animation: none;
+  background: #F0F0F0;
+  margin-bottom: $spacing-4;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
+.skeleton-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  @include skeleton-block;
+}
+
+.skeleton-user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-1;
+}
+
+.skeleton-capsule {
+  width: 52px;
+  height: 20px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  @include skeleton-block;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  flex: 1;
+}
+
+.skeleton-tags {
+  display: flex;
+  gap: $spacing-2;
+  margin-top: $spacing-1;
+}
+
+.skeleton-tag {
+  width: 48px;
+  height: 20px;
+  border-radius: $radius-base;
+  @include skeleton-block;
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-2;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: $spacing-4;
+}
+
+.skeleton-btn {
+  width: 64px;
+  height: 28px;
+  border-radius: $radius-lg;
+  @include skeleton-block;
+}
+
+.skeleton-line {
+  @include skeleton-block;
+
+  &--name   { width: 60%; height: 13px; }
+  &--role   { width: 35%; height: 11px; }
+  &--title  { width: 90%; height: 16px; }
+  &--title-short { width: 65%; height: 16px; }
+  &--desc   { width: 100%; height: 13px; }
+  &--desc-short { width: 75%; height: 13px; }
+  &--meta   { width: 36px; height: 13px; }
+}
+
 .error-container,
 .empty-container {
   padding: $spacing-16;

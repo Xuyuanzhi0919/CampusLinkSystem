@@ -9,9 +9,33 @@
       </view>
     </view>
 
-    <!-- Loading State -->
-    <view v-if="loading" class="loading-container">
-      <text>加载中...</text>
+    <!-- Loading State：骨架屏，4条列表匹配 ClEventCard 结构 -->
+    <view v-if="loading" class="skeleton-list">
+      <view v-for="i in 4" :key="i" class="skeleton-card">
+        <!-- 顶部色条 -->
+        <view class="skeleton-type-bar"></view>
+        <!-- Header：活动图标 + 状态胶囊 -->
+        <view class="skeleton-header">
+          <view class="skeleton-event-icon"></view>
+          <view class="skeleton-capsule"></view>
+        </view>
+        <!-- Body：标题 + 组织者 + 时间 + 地点 -->
+        <view class="skeleton-body">
+          <view class="skeleton-line skeleton-line--title"></view>
+          <view class="skeleton-line skeleton-line--title-short"></view>
+          <view class="skeleton-line skeleton-line--info"></view>
+          <view class="skeleton-line skeleton-line--info"></view>
+          <view class="skeleton-line skeleton-line--info-short"></view>
+        </view>
+        <!-- Meta + 报名按钮 -->
+        <view class="skeleton-footer">
+          <view class="skeleton-meta">
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+          </view>
+          <view class="skeleton-btn"></view>
+        </view>
+      </view>
     </view>
 
     <!-- Error State -->
@@ -237,7 +261,102 @@ defineExpose({
   }
 }
 
-.loading-container,
+// ========== 骨架屏 ==========
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@mixin skeleton-block {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: $radius-sm;
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+}
+
+.skeleton-card {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: $shadow-base;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+  padding: $spacing-5;
+  padding-top: 0;
+}
+
+.skeleton-type-bar {
+  height: 4px;
+  margin: 0 (-$spacing-5);
+  background: #F0F0F0;
+  border-radius: 0;
+  margin-bottom: $spacing-3;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skeleton-event-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: $radius-base;
+  @include skeleton-block;
+}
+
+.skeleton-capsule {
+  width: 56px;
+  height: 20px;
+  border-radius: 10px;
+  @include skeleton-block;
+}
+
+.skeleton-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+  flex: 1;
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-1;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: $spacing-4;
+}
+
+.skeleton-btn {
+  width: 72px;
+  height: 28px;
+  border-radius: $radius-lg;
+  @include skeleton-block;
+}
+
+.skeleton-line {
+  @include skeleton-block;
+
+  &--title       { width: 80%; height: 16px; }
+  &--title-short { width: 55%; height: 16px; }
+  &--info        { width: 70%; height: 13px; }
+  &--info-short  { width: 50%; height: 13px; }
+  &--meta        { width: 48px; height: 13px; }
+}
+
 .error-container,
 .empty-container {
   padding: $spacing-16;

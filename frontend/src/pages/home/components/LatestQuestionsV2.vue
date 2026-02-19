@@ -9,9 +9,32 @@
       </view>
     </view>
 
-    <!-- Loading State -->
-    <view v-if="loading" class="loading-container">
-      <text>加载中...</text>
+    <!-- Loading State：骨架屏，5条列表匹配 ClFeedQAItem 结构 -->
+    <view v-if="loading" class="skeleton-list">
+      <view v-for="i in 5" :key="i" class="skeleton-item">
+        <!-- Header：头像 + 用户名 + 时间 + 状态标签 -->
+        <view class="skeleton-header">
+          <view class="skeleton-avatar"></view>
+          <view class="skeleton-line skeleton-line--name"></view>
+          <view class="skeleton-line skeleton-line--dot"></view>
+          <view class="skeleton-line skeleton-line--time"></view>
+          <view class="skeleton-status"></view>
+        </view>
+        <!-- 标题 -->
+        <view class="skeleton-line skeleton-line--title"></view>
+        <view class="skeleton-line skeleton-line--title-short"></view>
+        <!-- 摘要 -->
+        <view class="skeleton-line skeleton-line--summary"></view>
+        <!-- Footer：元数据 + 按钮 -->
+        <view class="skeleton-footer">
+          <view class="skeleton-meta">
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+          </view>
+          <view class="skeleton-btn"></view>
+        </view>
+      </view>
     </view>
 
     <!-- Error State -->
@@ -252,7 +275,89 @@ defineExpose({
   gap: $spacing-4;  // 紧凑的卡片间距
 }
 
-.loading-container,
+// ========== 骨架屏 ==========
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+@mixin skeleton-block {
+  background: linear-gradient(90deg, #F0F0F0 25%, #E8E8E8 50%, #F0F0F0 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.5s infinite linear;
+  border-radius: $radius-sm;
+}
+
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
+}
+
+.skeleton-item {
+  background: $color-bg-card;
+  border-radius: $radius-xl;
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  box-shadow: $shadow-base;
+  padding: $spacing-5;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-3;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: $spacing-2;
+}
+
+.skeleton-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  @include skeleton-block;
+}
+
+.skeleton-status {
+  margin-left: auto;
+  width: 48px;
+  height: 20px;
+  border-radius: $radius-base;
+  @include skeleton-block;
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-1;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: $spacing-4;
+}
+
+.skeleton-btn {
+  width: 60px;
+  height: 26px;
+  border-radius: $radius-lg;
+  @include skeleton-block;
+}
+
+.skeleton-line {
+  @include skeleton-block;
+
+  &--name    { width: 64px;  height: 13px; }
+  &--dot     { width: 8px;   height: 13px; border-radius: 50%; }
+  &--time    { width: 48px;  height: 13px; }
+  &--title   { width: 88%;   height: 16px; }
+  &--title-short { width: 60%; height: 16px; }
+  &--summary { width: 75%;   height: 13px; }
+  &--meta    { width: 36px;  height: 13px; }
+}
+
 .error-container,
 .empty-container {
   padding: $spacing-16;

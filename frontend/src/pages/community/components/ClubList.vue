@@ -87,7 +87,6 @@
           <view class="section-title-bar"></view>
           <text class="section-title">热门社团</text>
         </view>
-        <text class="section-more">全部 →</text>
       </view>
 
       <scroll-view class="hot-scroll" scroll-x :show-scrollbar="false">
@@ -549,10 +548,6 @@ const handleJoinClub = async (club: any) => {
   color: $color-text-primary;
 }
 
-.section-more {
-  font-size: 13px;
-  color: $campus-blue;
-}
 
 .section-count {
   font-size: 13px;

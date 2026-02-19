@@ -95,61 +95,12 @@
             </view>
           </view>
 
-          <!-- 筛选按钮 + PC端 Popover 容器 -->
-          <view class="filter-btn-wrapper">
+          <!-- 筛选按钮（ref 用于计算 Popover 位置） -->
+          <view id="filter-btn-anchor" class="filter-btn-wrapper">
             <view class="filter-btn" :class="{ 'filter-btn--active': hasActiveFilters }" @click="toggleAdvancedFilter">
               <Icon name="sliders" :size="14" class="filter-icon" />
               <text class="filter-label">筛选</text>
               <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
-            </view>
-
-            <!-- PC端 Popover（>=1024px 时显示，直接定位在按钮下方） -->
-            <view v-if="showAdvancedFilter && isDesktop" class="filter-popover" @click.stop>
-              <!-- Popover 头部 -->
-              <view class="popover-header">
-                <text class="popover-title">筛选</text>
-                <text v-if="hasActiveFilters" class="popover-reset" @click="handleResetFilters">重置</text>
-              </view>
-              <!-- 筛选内容（复用 filter-group 类） -->
-              <view class="popover-content">
-                <view class="filter-group">
-                  <view class="filter-group-title">积分范围</view>
-                  <view class="filter-options">
-                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === null }" @click="handleScoreRangeChange(null)">
-                      <text class="option-label">全部</text>
-                    </view>
-                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'free' }" @click="handleScoreRangeChange('free')">
-                      <text class="option-label">免费</text>
-                      <text class="option-desc">(0分)</text>
-                    </view>
-                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'low' }" @click="handleScoreRangeChange('low')">
-                      <text class="option-label">低积分</text>
-                      <text class="option-desc">(1-5分)</text>
-                    </view>
-                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'medium' }" @click="handleScoreRangeChange('medium')">
-                      <text class="option-label">中积分</text>
-                      <text class="option-desc">(6-10分)</text>
-                    </view>
-                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'high' }" @click="handleScoreRangeChange('high')">
-                      <text class="option-label">高积分</text>
-                      <text class="option-desc">(10分以上)</text>
-                    </view>
-                  </view>
-                </view>
-                <view class="filter-group">
-                  <view class="filter-group-title">学校资源</view>
-                  <view class="filter-switch-row">
-                    <text class="switch-label">只看本校资源</text>
-                    <switch :checked="advancedFilters.onlyMySchool" @change="handleMySchoolChange" color="#FF6B35" />
-                  </view>
-                  <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
-                </view>
-              </view>
-              <!-- Popover 底部：仅显示结果数，无需确认按钮 -->
-              <view class="popover-footer">
-                <text class="popover-result">找到 {{ filteredResultHint }}</text>
-                <view class="popover-apply-btn" @click="handleApplyFilters">应用筛选</view>
-              </view>
             </view>
           </view>
         </view>
@@ -172,6 +123,52 @@
 
     <!-- 遮罩层（点击关闭菜单） -->
     <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
+
+    <!-- PC端高级筛选 Popover（fixed定位，不受 sticky-nav overflow:hidden 影响） -->
+    <view v-if="showAdvancedFilter && isDesktop" class="filter-popover" :style="filterPopoverStyle" @click.stop>
+      <view class="popover-header">
+        <text class="popover-title">筛选</text>
+        <text v-if="hasActiveFilters" class="popover-reset" @click="handleResetFilters">重置</text>
+      </view>
+      <view class="popover-content">
+        <view class="filter-group">
+          <view class="filter-group-title">积分范围</view>
+          <view class="filter-options">
+            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === null }" @click="handleScoreRangeChange(null)">
+              <text class="option-label">全部</text>
+            </view>
+            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'free' }" @click="handleScoreRangeChange('free')">
+              <text class="option-label">免费</text>
+              <text class="option-desc">(0分)</text>
+            </view>
+            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'low' }" @click="handleScoreRangeChange('low')">
+              <text class="option-label">低积分</text>
+              <text class="option-desc">(1-5分)</text>
+            </view>
+            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'medium' }" @click="handleScoreRangeChange('medium')">
+              <text class="option-label">中积分</text>
+              <text class="option-desc">(6-10分)</text>
+            </view>
+            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'high' }" @click="handleScoreRangeChange('high')">
+              <text class="option-label">高积分</text>
+              <text class="option-desc">(10分以上)</text>
+            </view>
+          </view>
+        </view>
+        <view class="filter-group">
+          <view class="filter-group-title">学校资源</view>
+          <view class="filter-switch-row">
+            <text class="switch-label">只看本校资源</text>
+            <switch :checked="advancedFilters.onlyMySchool" @change="handleMySchoolChange" color="#FF6B35" />
+          </view>
+          <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
+        </view>
+      </view>
+      <view class="popover-footer">
+        <text class="popover-result">找到 {{ filteredResultHint }}</text>
+        <view class="popover-apply-btn" @click="handleApplyFilters">应用筛选</view>
+      </view>
+    </view>
 
     <!-- ========== 主内容区(三栏布局) ========== -->
     <view class="main-content">
@@ -988,11 +985,31 @@ const toggleSortMenu = () => {
  * PC 端：toggle Popover，同时关闭排序菜单
  * 移动端：打开底部抽屉
  */
+// 🎯 Popover 位置（fixed 坐标，基于筛选按钮的 getBoundingClientRect）
+const filterPopoverStyle = ref<Record<string, string>>({})
+
+const updatePopoverPosition = () => {
+  // #ifdef H5
+  const anchor = document.getElementById('filter-btn-anchor')
+  if (!anchor) return
+  const rect = anchor.getBoundingClientRect()
+  // Popover 宽度 320px，右对齐到按钮右边缘，向下 8px
+  const right = window.innerWidth - rect.right
+  const top = rect.bottom + 8
+  filterPopoverStyle.value = {
+    position: 'fixed',
+    top: `${top}px`,
+    right: `${right}px`,
+  }
+  // #endif
+}
+
 const toggleAdvancedFilter = () => {
-  console.log('[Filter] click - isDesktop:', isDesktop.value, 'windowWidth:', windowWidth.value, 'showAdvancedFilter before:', showAdvancedFilter.value)
   showSortMenu.value = false
   showAdvancedFilter.value = !showAdvancedFilter.value
-  console.log('[Filter] showAdvancedFilter after:', showAdvancedFilter.value)
+  if (showAdvancedFilter.value && isDesktop.value) {
+    nextTick(updatePopoverPosition)
+  }
 }
 
 /**
@@ -3350,11 +3367,9 @@ onUnmounted(() => {
   z-index: calc(#{$z-modal} - 1);
 }
 
-// 🎯 PC端 Popover（>=1024px）
+// 🎯 PC端 Popover（fixed 定位，位置由 JS 动态计算）
 .filter-popover {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
+  position: fixed;
   width: 320px;
   background: $white;
   border-radius: 12px;

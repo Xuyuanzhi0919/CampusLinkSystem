@@ -64,7 +64,7 @@
       title="还没人上传资料"
       description="成为第一个分享者，帮助同学"
       action-text="上传资料"
-      action-type="primary"
+      action-type="secondary"
       @action="handleGoUpload"
     />
 

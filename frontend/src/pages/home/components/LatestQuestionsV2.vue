@@ -43,7 +43,7 @@
     <!-- Error State -->
     <EmptyState
       v-else-if="hasError"
-      type="network"
+      type="error"
       size="medium"
       title="连接不上服务"
       description="请检查网络或稍后再试"
@@ -60,7 +60,7 @@
       title="还没人提问"
       description="成为第一个提问的同学吧"
       action-text="去提问"
-      action-type="primary"
+      action-type="secondary"
       @action="handleGoAsk"
     />
 

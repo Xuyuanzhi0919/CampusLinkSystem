@@ -44,7 +44,7 @@
     <!-- Error State -->
     <EmptyState
       v-else-if="hasError"
-      type="network"
+      type="error"
       size="medium"
       title="活动加载失败"
       description="网络连接异常，请检查后重试"
@@ -61,7 +61,7 @@
       title="近期还没有活动"
       description="查看更多社团动态或发起新活动"
       action-text="浏览社团"
-      action-type="primary"
+      action-type="secondary"
       @action="handleGoClub"
     />
 

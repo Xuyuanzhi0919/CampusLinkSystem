@@ -2234,9 +2234,9 @@ const closePreview = () => {
 }
 
 .info-label {
-  font-size: $font-size-xs;
+  font-size: $font-size-sm;
   color: $gray-500;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-normal;
 }
 
 .info-value {
@@ -2258,7 +2258,7 @@ const closePreview = () => {
 }
 
 .badge-text {
-  font-size: 20rpx;
+  font-size: $font-size-sm;
   color: $gray-700;
   font-weight: $font-weight-bold;
   letter-spacing: 0.5rpx;

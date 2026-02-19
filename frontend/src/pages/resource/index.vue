@@ -234,9 +234,8 @@
                 <view class="hot-content">
                   <text class="hot-title">{{ item.title }}</text>
                   <view class="hot-meta">
+                    <Icon name="download" :size="11" class="meta-icon" />
                     <text class="hot-downloads">{{ formatNumber(item.downloads) }} 下载</text>
-                    <text class="hot-separator">·</text>
-                    <text class="hot-score">{{ item.score }} 积分</text>
                   </view>
                 </view>
               </view>
@@ -2708,49 +2707,51 @@ onUnmounted(() => {
 
 .hot-resource-item {
   display: flex;
-  align-items: flex-start;
-  gap: 12rpx;
-  padding: 12rpx;
-  border-radius: 12rpx;
+  align-items: center;
+  gap: 14rpx;
+  padding: 14rpx 10rpx;
+  border-radius: 10rpx;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.18s, box-shadow 0.18s;
+  position: relative;
+
+  // hover 左侧竖线 + 背景，比 gray-50 更有感知
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 20%;
+    height: 60%;
+    width: 3rpx;
+    border-radius: 2rpx;
+    background: $primary;
+    opacity: 0;
+    transition: opacity 0.18s;
+  }
 
   &:hover {
-    background: $gray-50;
+    background: rgba($primary, 0.04);
+    &::before { opacity: 1; }
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.985);
   }
 }
 
 .hot-rank {
   flex-shrink: 0;
-  width: 36rpx;
-  height: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 20rpx;
-  font-weight: 700;
-  border-radius: 8rpx;
-  background: $gray-200;
-  color: $gray-700;
+  width: 40rpx;
+  text-align: center;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 1;
+  color: $gray-300;
 
-  &.rank-1 {
-    background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
-    color: $white;
-  }
-
-  &.rank-2 {
-    background: linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%);
-    color: $white;
-  }
-
-  &.rank-3 {
-    background: linear-gradient(135deg, #CD7F32 0%, #B87333 100%);
-    color: $white;
-  }
+  // Top3 用颜色区分，数字直接显示，更简洁
+  &.rank-1 { color: #F59E0B; }
+  &.rank-2 { color: #9CA3AF; }
+  &.rank-3 { color: #CD7F32; }
 }
 
 .hot-content {
@@ -2762,34 +2763,29 @@ onUnmounted(() => {
   display: block;
   font-size: 24rpx;
   font-weight: 500;
-  color: $gray-900;
-  line-height: 1.5;
+  color: $gray-800;
+  line-height: 1.45;
+  // 改为单行截断，保持每条紧凑
   overflow: hidden;
   text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;
   margin-bottom: 6rpx;
 }
 
 .hot-meta {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
   font-size: 20rpx;
-  color: $gray-500;
+  color: $gray-400;
+
+  .meta-icon {
+    color: $gray-400;
+    flex-shrink: 0;
+  }
 
   .hot-downloads {
-    color: $accent;
-    font-weight: 500;
-  }
-
-  .hot-separator {
-    color: $gray-300;
-  }
-
-  .hot-score {
-    color: $warning;
+    color: $gray-500;
     font-weight: 500;
   }
 }

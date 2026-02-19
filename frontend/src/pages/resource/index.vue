@@ -989,8 +989,10 @@ const toggleSortMenu = () => {
  * 移动端：打开底部抽屉
  */
 const toggleAdvancedFilter = () => {
+  console.log('[Filter] click - isDesktop:', isDesktop.value, 'windowWidth:', windowWidth.value, 'showAdvancedFilter before:', showAdvancedFilter.value)
   showSortMenu.value = false
   showAdvancedFilter.value = !showAdvancedFilter.value
+  console.log('[Filter] showAdvancedFilter after:', showAdvancedFilter.value)
 }
 
 /**

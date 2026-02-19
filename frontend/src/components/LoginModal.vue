@@ -25,7 +25,7 @@
         <!-- 邮箱输入 -->
         <view class="input-group" :class="{ 'input-focus': emailFocused, 'input-error': emailError }">
           <view class="input-icon-wrapper">
-            <Icon name="user" :size="32" class="input-icon gradient-icon" />
+            <Icon name="user" :size="16" class="field-icon gradient-icon" />
           </view>
           <input
             class="form-input"
@@ -40,7 +40,7 @@
         <!-- 密码输入 -->
         <view class="input-group" :class="{ 'input-focus': passwordFocused, 'input-error': passwordError }">
           <view class="input-icon-wrapper">
-            <Icon name="lock" :size="32" class="input-icon gradient-icon lock-icon" />
+            <Icon name="lock" :size="16" class="field-icon gradient-icon lock-icon" />
           </view>
           <input
             class="form-input"
@@ -51,7 +51,7 @@
             @blur="passwordFocused = false"
           />
           <view class="password-toggle" @tap="showPassword = !showPassword">
-            <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" />
+            <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="16" />
           </view>
         </view>
 
@@ -626,50 +626,26 @@ const handleRegister = () => {
   75% { transform: translateX(6rpx); } /* 优化：从 8rpx 减少到 6rpx */
 }
 
-/* 优化：图标容器 - 支持渐变和动效 */
 .input-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16rpx; /* 图标和文字间距 8px */
-  position: relative;
+  margin-right: 16rpx;
+  flex-shrink: 0;
 }
 
-.input-icon {
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，提升视觉权重 */
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.field-icon {
+  color: #94A3B8;
+  transition: color 0.25s ease, transform 0.25s ease;
 }
 
-/* 图标默认色 */
 .gradient-icon {
   color: #94A3B8;
-  transition: color 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s ease;
 }
 
-/* 聚焦时图标变蓝 + 发光 */
 .input-group.input-focus .gradient-icon {
   color: #2563EB;
-  filter: drop-shadow(0 0 4rpx rgba(59, 130, 246, 0.4));
-  transform: scale(1.08);
-}
-
-/* 优化：锁图标特殊动效 - 聚焦时轻微上弹 */
-.input-group.input-focus .lock-icon {
-  animation: lockBounce 0.4s cubic-bezier(0.36, 0, 0.66, -0.56);
-}
-
-@keyframes lockBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-4rpx) scale(1.08);
-  }
-  100% {
-    transform: translateY(0) scale(1.08);
-  }
+  transform: scale(1.1);
 }
 
 .form-input {

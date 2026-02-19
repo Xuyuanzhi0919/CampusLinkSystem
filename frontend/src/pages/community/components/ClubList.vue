@@ -91,6 +91,7 @@
 
       <scroll-view class="hot-scroll" scroll-x :show-scrollbar="false">
         <view class="hot-list">
+          <view class="hot-list-pad"></view>
           <view
             v-for="(item, idx) in hotClubs"
             :key="item.clubId"
@@ -109,6 +110,7 @@
             <text class="hot-card__name">{{ item.clubName }}</text>
             <text class="hot-card__count">{{ item.memberCount || 0 }}人</text>
           </view>
+          <view class="hot-list-pad"></view>
         </view>
       </scroll-view>
 
@@ -562,8 +564,13 @@ const handleJoinClub = async (club: any) => {
 .hot-list {
   display: flex;
   gap: 12px;
-  padding: 4px 16px 8px;
+  padding: 4px 0 8px;
   width: max-content;
+}
+
+.hot-list-pad {
+  width: 4px;
+  flex-shrink: 0;
 }
 
 .hot-card {
@@ -907,8 +914,8 @@ const handleJoinClub = async (club: any) => {
     padding: 20px 80px 12px;
   }
 
-  .hot-list {
-    padding: 4px 80px 8px;
+  .hot-list-pad {
+    width: 68px;
   }
 
   .club-items {

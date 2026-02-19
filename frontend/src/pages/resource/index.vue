@@ -95,11 +95,62 @@
             </view>
           </view>
 
-          <!-- 筛选按钮 -->
-          <view class="filter-btn" @click="showAdvancedFilter = true">
-            <Icon name="sliders" :size="14" class="filter-icon" />
-            <text class="filter-label">筛选</text>
-            <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
+          <!-- 筛选按钮 + PC端 Popover 容器 -->
+          <view class="filter-btn-wrapper">
+            <view class="filter-btn" :class="{ 'filter-btn--active': hasActiveFilters }" @click="toggleAdvancedFilter">
+              <Icon name="sliders" :size="14" class="filter-icon" />
+              <text class="filter-label">筛选</text>
+              <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
+            </view>
+
+            <!-- PC端 Popover（>=1024px 时显示，直接定位在按钮下方） -->
+            <view v-if="showAdvancedFilter && isDesktop" class="filter-popover" @click.stop>
+              <!-- Popover 头部 -->
+              <view class="popover-header">
+                <text class="popover-title">筛选</text>
+                <text v-if="hasActiveFilters" class="popover-reset" @click="handleResetFilters">重置</text>
+              </view>
+              <!-- 筛选内容（复用 filter-group 类） -->
+              <view class="popover-content">
+                <view class="filter-group">
+                  <view class="filter-group-title">积分范围</view>
+                  <view class="filter-options">
+                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === null }" @click="handleScoreRangeChange(null)">
+                      <text class="option-label">全部</text>
+                    </view>
+                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'free' }" @click="handleScoreRangeChange('free')">
+                      <text class="option-label">免费</text>
+                      <text class="option-desc">(0分)</text>
+                    </view>
+                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'low' }" @click="handleScoreRangeChange('low')">
+                      <text class="option-label">低积分</text>
+                      <text class="option-desc">(1-5分)</text>
+                    </view>
+                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'medium' }" @click="handleScoreRangeChange('medium')">
+                      <text class="option-label">中积分</text>
+                      <text class="option-desc">(6-10分)</text>
+                    </view>
+                    <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'high' }" @click="handleScoreRangeChange('high')">
+                      <text class="option-label">高积分</text>
+                      <text class="option-desc">(10分以上)</text>
+                    </view>
+                  </view>
+                </view>
+                <view class="filter-group">
+                  <view class="filter-group-title">学校资源</view>
+                  <view class="filter-switch-row">
+                    <text class="switch-label">只看本校资源</text>
+                    <switch :checked="advancedFilters.onlyMySchool" @change="handleMySchoolChange" color="#FF6B35" />
+                  </view>
+                  <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
+                </view>
+              </view>
+              <!-- Popover 底部：仅显示结果数，无需确认按钮 -->
+              <view class="popover-footer">
+                <text class="popover-result">找到 {{ filteredResultHint }}</text>
+                <view class="popover-apply-btn" @click="handleApplyFilters">应用筛选</view>
+              </view>
+            </view>
           </view>
         </view>
       </view>
@@ -263,9 +314,10 @@
       @cancel="handleDownloadCancel"
     />
 
-    <!-- 🎯 高级筛选抽屉 -->
-    <view v-if="showAdvancedFilter" class="filter-drawer-mask" @click="showAdvancedFilter = false" />
-    <view class="filter-drawer" :class="{ 'drawer-show': showAdvancedFilter }">
+    <!-- 🎯 高级筛选抽屉（移动端） / Popover遮罩（PC端点击空白关闭） -->
+    <view v-if="showAdvancedFilter && !isDesktop" class="filter-drawer-mask" @click="showAdvancedFilter = false" />
+    <view v-if="showAdvancedFilter && isDesktop" class="filter-popover-mask" @click="showAdvancedFilter = false" />
+    <view class="filter-drawer" :class="{ 'drawer-show': showAdvancedFilter && !isDesktop }">
       <!-- 抽屉头部 -->
       <view class="drawer-header">
         <text class="drawer-title">高级筛选</text>
@@ -845,6 +897,10 @@ const handleSortChange = (sortBy: string) => {
  */
 const handleScoreRangeChange = (range: 'free' | 'low' | 'medium' | 'high' | null) => {
   advancedFilters.value.scoreRange = range
+  // PC端 Popover 实时触发搜索
+  if (isDesktop.value) {
+    loadResourceList(true)
+  }
 }
 
 /**
@@ -852,6 +908,10 @@ const handleScoreRangeChange = (range: 'free' | 'low' | 'medium' | 'high' | null
  */
 const handleMySchoolChange = (e: any) => {
   advancedFilters.value.onlyMySchool = e.detail.value
+  // PC端 Popover 实时触发搜索
+  if (isDesktop.value) {
+    loadResourceList(true)
+  }
 }
 
 /**
@@ -859,7 +919,10 @@ const handleMySchoolChange = (e: any) => {
  */
 const handleApplyFilters = () => {
   showAdvancedFilter.value = false
-  loadResourceList(true)
+  // PC端实时搜索已经触发过，移动端需要在此重新加载
+  if (!isDesktop.value) {
+    loadResourceList(true)
+  }
 }
 
 /**
@@ -922,6 +985,16 @@ const clearSearch = () => {
  */
 const toggleSortMenu = () => {
   showSortMenu.value = !showSortMenu.value
+}
+
+/**
+ * 🎯 切换高级筛选（统一入口）
+ * PC 端：toggle Popover，同时关闭排序菜单
+ * 移动端：打开底部抽屉
+ */
+const toggleAdvancedFilter = () => {
+  showSortMenu.value = false
+  showAdvancedFilter.value = !showAdvancedFilter.value
 }
 
 /**
@@ -3254,7 +3327,124 @@ onUnmounted(() => {
   }
 }
 
-// 🎯 高级筛选抽屉
+// 🎯 筛选按钮容器（Popover 定位基准）
+.filter-btn-wrapper {
+  position: relative;
+}
+
+// 🎯 PC端筛选按钮激活态
+.filter-btn--active {
+  background: rgba($accent, 0.08);
+  color: $accent;
+
+  .filter-label {
+    color: $accent;
+  }
+}
+
+// 🎯 PC端 Popover 轻量遮罩（透明，仅用于点击关闭）
+.filter-popover-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: calc(#{$z-modal} - 1);
+}
+
+// 🎯 PC端 Popover（>=1024px）
+.filter-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 320px;
+  background: $white;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid $gray-100;
+  z-index: $z-modal;
+  animation: popoverIn 0.15s ease-out;
+
+  // 小三角
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: 20px;
+    width: 12px;
+    height: 12px;
+    background: $white;
+    border-top: 1px solid $gray-100;
+    border-left: 1px solid $gray-100;
+    transform: rotate(45deg);
+  }
+
+  .popover-header {
+    @include flex-between;
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid $gray-100;
+
+    .popover-title {
+      font-size: 14px;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+    }
+
+    .popover-reset {
+      font-size: 12px;
+      color: $accent;
+      cursor: pointer;
+      transition: opacity $duration-base;
+
+      &:hover {
+        opacity: 0.75;
+      }
+    }
+  }
+
+  .popover-content {
+    padding: 14px 16px;
+  }
+
+  .popover-footer {
+    @include flex-between;
+    padding: 10px 16px 14px;
+    border-top: 1px solid $gray-100;
+
+    .popover-result {
+      font-size: 12px;
+      color: $text-secondary;
+    }
+
+    .popover-apply-btn {
+      padding: 6px 14px;
+      background: $accent;
+      color: $white;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: $font-weight-semibold;
+      cursor: pointer;
+      transition: opacity $duration-base;
+
+      &:hover {
+        opacity: 0.88;
+      }
+    }
+  }
+}
+
+@keyframes popoverIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// 🎯 高级筛选底部抽屉（移动端，< 1024px）
 .filter-drawer-mask {
   position: fixed;
   top: 0;
@@ -3279,6 +3469,10 @@ onUnmounted(() => {
   transition: transform $duration-slow $ease-smooth;
   display: flex;
   flex-direction: column;
+  // PC 端隐藏底部抽屉
+  @media (min-width: 1024px) {
+    display: none;
+  }
 
   &.drawer-show {
     transform: translateY(0);
@@ -3382,12 +3576,23 @@ onUnmounted(() => {
     font-weight: $font-weight-bold;
     color: $gray-900;
     margin-bottom: $sp-5;
+
+    .filter-popover & {
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
   }
 
   .filter-options {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: $sp-4;
+
+    // Popover 内宽度充足，5个积分选项排一行
+    .filter-popover & {
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+    }
   }
 
   .filter-option {

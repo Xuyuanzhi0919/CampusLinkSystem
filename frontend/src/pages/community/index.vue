@@ -402,6 +402,7 @@ onUnmounted(() => {
 .scroll-content {
   height: 100%;
   width: 100%;
+  background: $color-bg-page;
 }
 
 /* ========== 自定义下拉刷新指示器 ========== */

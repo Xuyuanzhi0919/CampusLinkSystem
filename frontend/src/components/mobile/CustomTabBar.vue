@@ -245,11 +245,11 @@ onMounted(() => {
 .tabbar-backdrop {
   position: absolute;
   inset: 0;
-  /* 降低白度，增加冷色调 */
+  /* 与页面背景色 #F8FAFC 保持一致的冷色调 */
   background: linear-gradient(
     180deg,
-    rgba(248, 250, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.7) 100%
+    rgba(248, 250, 255, 0.85) 0%,
+    rgba(248, 250, 255, 0.95) 100%
   );
   backdrop-filter: saturate(180%) blur(10px);
   border-top: 1px solid rgba(0, 0, 0, 0.06);

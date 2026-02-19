@@ -2,7 +2,10 @@
   <view class="latest-questions-v2">
     <!-- Section Header -->
     <view class="section-header">
-      <text class="section-title">最新问答</text>
+      <view class="header-left">
+        <text class="section-title">最新问答</text>
+        <text class="section-subtitle">来自同学的最新提问</text>
+      </view>
       <view class="view-more" @click="handleViewMore">
         <text class="more-text">查看更多</text>
         <text class="more-arrow">→</text>
@@ -238,10 +241,21 @@ defineExpose({
 
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
 .section-title {
   font-size: $font-size-2xl;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
+}
+
+.section-subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
 }
 
 .view-more {

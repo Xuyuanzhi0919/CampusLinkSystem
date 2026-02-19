@@ -2,7 +2,10 @@
   <view class="activity-recommend-v2">
     <!-- Section Header -->
     <view class="section-header">
-      <text class="section-title">社团活动推荐</text>
+      <view class="header-left">
+        <text class="section-title">社团活动推荐</text>
+        <text class="section-subtitle">校园近期活动一览</text>
+      </view>
       <view class="view-more" @click="handleViewMore">
         <text class="more-text">查看更多</text>
         <text class="more-arrow">→</text>
@@ -219,10 +222,21 @@ defineExpose({
   padding: 0 $spacing-2;
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
 .section-title {
   font-size: $font-size-2xl;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
+}
+
+.section-subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
 }
 
 .view-more {

@@ -2,7 +2,10 @@
   <view class="featured-resources-v2">
     <!-- Section Header -->
     <view class="section-header">
-      <text class="section-title">精选资料</text>
+      <view class="header-left">
+        <text class="section-title">精选资料</text>
+        <text class="section-subtitle">优质学习资源分享</text>
+      </view>
       <view class="view-more" @click="handleViewMore">
         <text class="more-text">查看更多</text>
         <text class="more-arrow">→</text>
@@ -213,10 +216,21 @@ defineExpose({
   padding: 0 $spacing-2;
 }
 
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
 .section-title {
   font-size: $font-size-2xl;
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
+}
+
+.section-subtitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
 }
 
 .view-more {

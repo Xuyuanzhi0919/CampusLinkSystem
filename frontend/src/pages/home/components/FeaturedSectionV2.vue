@@ -141,7 +141,7 @@ const loadData = async () => {
     console.log('[FeaturedSection] 合并后数据总数:', allItems.length)
 
     // 打乱顺序（模拟 AI 推荐）
-    featuredList.value = allItems.sort(() => Math.random() - 0.5).slice(0, 6)
+    featuredList.value = allItems.sort(() => Math.random() - 0.5).slice(0, 4)
 
     console.log('[FeaturedSection] 最终推荐列表:', featuredList.value.length)
 
@@ -386,7 +386,7 @@ defineExpose({
 
 .featured-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: $spacing-6;
 
   /* H5 移动端单列 */

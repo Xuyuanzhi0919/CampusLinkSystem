@@ -99,16 +99,27 @@
             :style="{ '--card-color': hotCardColors[idx % hotCardColors.length] }"
             @click="handleClubClick(item.clubId)"
           >
-            <view class="hot-card__bg"></view>
-            <view class="hot-card__rank">{{ idx + 1 }}</view>
-            <view class="hot-card__icon">
+            <!-- 封面背景 -->
+            <view class="hot-card__cover">
               <image v-if="item.logoUrl" :src="item.logoUrl" class="hot-card__img" mode="aspectFill" />
-              <view v-else class="hot-card__icon-placeholder">
-                <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
+              <view v-else class="hot-card__cover-placeholder">
+                <text class="hot-card__placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
+              </view>
+              <!-- 底部渐变遮罩 -->
+              <view class="hot-card__mask"></view>
+              <!-- 排名角标 -->
+              <view class="hot-card__rank" :class="idx < 3 ? 'hot-card__rank--top' : ''">
+                <text>{{ idx + 1 }}</text>
               </view>
             </view>
-            <text class="hot-card__name">{{ item.clubName }}</text>
-            <text class="hot-card__count">{{ item.memberCount || 0 }}人</text>
+            <!-- 信息区 -->
+            <view class="hot-card__info">
+              <text class="hot-card__name">{{ item.clubName }}</text>
+              <view class="hot-card__meta">
+                <Icon name="users" :size="11" class="hot-card__meta-icon" />
+                <text class="hot-card__count">{{ item.memberCount || 0 }}</text>
+              </view>
+            </view>
           </view>
           <view class="hot-list-pad"></view>
         </view>
@@ -575,53 +586,28 @@ const handleJoinClub = async (club: any) => {
 
 .hot-card {
   position: relative;
-  width: 100px;
-  padding: 14px 12px;
-  border-radius: 14px;
+  width: 120px;
+  border-radius: 16px;
   background: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 6px;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  border: 1px solid rgba(0, 0, 0, 0.04);
   overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
 
   &:active {
     transform: scale(0.96);
   }
 }
 
-.hot-card__bg {
-  position: absolute;
-  inset: 0;
-  opacity: 0.06;
+.hot-card__cover {
+  position: relative;
+  width: 100%;
+  height: 90px;
   background: var(--card-color);
-}
-
-.hot-card__rank {
-  position: absolute;
-  top: 8px;
-  left: 8px;
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--card-color);
-  line-height: 1;
-}
-
-.hot-card__icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  margin-top: 4px;
-  background: var(--card-color);
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .hot-card__img {
@@ -630,21 +616,79 @@ const handleJoinClub = async (club: any) => {
   object-fit: cover;
 }
 
-.placeholder-text {
-  font-size: 22px;
+.hot-card__cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--card-color) 0%, color-mix(in srgb, var(--card-color) 70%, #000) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hot-card__placeholder-text {
+  font-size: 32px;
   font-weight: 800;
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hot-card__mask {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.45) 0%, transparent 100%);
+}
+
+.hot-card__rank {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 5px;
+
+  text {
+    font-size: 11px;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  &--top {
+    background: var(--card-color);
+  }
+}
+
+.hot-card__info {
+  padding: 10px 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .hot-card__name {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: $color-text-primary;
-  text-align: center;
-  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hot-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.hot-card__meta-icon {
+  color: $color-text-quaternary;
 }
 
 .hot-card__count {

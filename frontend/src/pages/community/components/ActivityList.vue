@@ -1,7 +1,7 @@
 <template>
   <view class="activity-list">
 
-    <!-- 骨架屏 -->
+    <!-- 骨架屏：首次加载时显示 -->
     <view v-if="loading && list.length === 0" class="skeleton-container">
       <view class="activity-skeleton" v-for="i in 3" :key="i">
         <view class="sk-cover"></view>
@@ -77,12 +77,22 @@
       <text class="empty-hint">敬请期待更多精彩活动</text>
     </view>
 
-    <!-- 加载更多 -->
-    <view v-if="loading && list.length > 0" class="loading-more">
-      <view class="loading-dots">
-        <view class="dot"></view>
-        <view class="dot"></view>
-        <view class="dot"></view>
+    <!-- 底部状态区 -->
+    <view class="list-footer">
+      <!-- 加载中 -->
+      <view v-if="loading && list.length > 0" class="loading-more">
+        <view class="loading-dots">
+          <view class="dot"></view>
+          <view class="dot"></view>
+          <view class="dot"></view>
+        </view>
+        <text class="footer-text">加载中...</text>
+      </view>
+      <!-- 已到底部 -->
+      <view v-else-if="!hasMore && list.length > 0" class="no-more">
+        <view class="no-more-line"></view>
+        <text class="no-more-text">已加载全部活动</text>
+        <view class="no-more-line"></view>
       </view>
     </view>
 
@@ -96,9 +106,12 @@ import Icon from '@/components/icons/index.vue'
 interface Props {
   list: any[]
   loading: boolean
+  hasMore?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  hasMore: true
+})
 
 const { toActivityDetail } = useNavigation()
 
@@ -384,11 +397,18 @@ const formatDate = (dateStr: string) => {
   color: $color-text-quaternary;
 }
 
-/* ========== 加载更多 ========== */
+/* ========== 底部状态区 ========== */
+.list-footer {
+  padding: 8px 0 16px;
+}
+
+/* 加载中 */
 .loading-more {
-  padding: 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
 }
 
 .loading-dots {
@@ -412,6 +432,31 @@ const formatDate = (dateStr: string) => {
 @keyframes dotPulse {
   0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
   40% { transform: scale(1.1); opacity: 1; }
+}
+
+.footer-text {
+  font-size: 12px;
+  color: $color-text-quaternary;
+}
+
+/* 已到底部 */
+.no-more {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.no-more-line {
+  flex: 1;
+  height: 1px;
+  background: $color-divider;
+}
+
+.no-more-text {
+  font-size: 12px;
+  color: $color-text-quaternary;
+  white-space: nowrap;
 }
 
 /* ========== PC 端双列布局 ========== */

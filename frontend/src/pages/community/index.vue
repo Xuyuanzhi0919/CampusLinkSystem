@@ -41,9 +41,21 @@
         <scroll-view
           class="scroll-content"
           scroll-y
+          refresher-enabled
+          :refresher-triggered="clubRefreshing"
+          refresher-default-style="none"
+          @refresherrefresh="handleClubRefresh"
           @scrolltolower="handleLoadMore(0)"
         >
-          <ClubList :list="clubList" :loading="clubLoading" @refresh="loadClubs(true)" />
+          <!-- 自定义下拉刷新指示器 -->
+          <view class="custom-refresher" :class="{ active: clubRefreshing }">
+            <view class="refresher-dots">
+              <view class="r-dot"></view>
+              <view class="r-dot"></view>
+              <view class="r-dot"></view>
+            </view>
+          </view>
+          <ClubList :list="clubList" :loading="clubLoading" :has-more="clubHasMore" @refresh="loadClubs(true)" />
         </scroll-view>
       </swiper-item>
 
@@ -52,9 +64,21 @@
         <scroll-view
           class="scroll-content"
           scroll-y
+          refresher-enabled
+          :refresher-triggered="activityRefreshing"
+          refresher-default-style="none"
+          @refresherrefresh="handleActivityRefresh"
           @scrolltolower="handleLoadMore(1)"
         >
-          <ActivityList :list="activityList" :loading="activityLoading" />
+          <!-- 自定义下拉刷新指示器 -->
+          <view class="custom-refresher" :class="{ active: activityRefreshing }">
+            <view class="refresher-dots">
+              <view class="r-dot"></view>
+              <view class="r-dot"></view>
+              <view class="r-dot"></view>
+            </view>
+          </view>
+          <ActivityList :list="activityList" :loading="activityLoading" :has-more="activityHasMore" />
         </scroll-view>
       </swiper-item>
     </swiper>
@@ -101,12 +125,14 @@ const currentTab = ref(0)
 // 社团数据
 const clubList = ref<any[]>([])
 const clubLoading = ref(false)
+const clubRefreshing = ref(false)
 const clubPage = ref(1)
 const clubHasMore = ref(true)
 
 // 活动数据
 const activityList = ref<any[]>([])
 const activityLoading = ref(false)
+const activityRefreshing = ref(false)
 const activityPage = ref(1)
 const activityHasMore = ref(true)
 
@@ -208,6 +234,24 @@ const handleLoadMore = (tabIndex: number) => {
   } else if (tabIndex === 1) {
     loadActivities(false)
   }
+}
+
+/**
+ * 社团 - 下拉刷新
+ */
+const handleClubRefresh = async () => {
+  clubRefreshing.value = true
+  await loadClubs(true)
+  clubRefreshing.value = false
+}
+
+/**
+ * 活动 - 下拉刷新
+ */
+const handleActivityRefresh = async () => {
+  activityRefreshing.value = true
+  await loadActivities(true)
+  activityRefreshing.value = false
 }
 
 // 页面加载时初始化社团列表（第一个 Tab）
@@ -358,6 +402,43 @@ onUnmounted(() => {
 .scroll-content {
   height: 100%;
   width: 100%;
+}
+
+/* ========== 自定义下拉刷新指示器 ========== */
+.custom-refresher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48px;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  &.active {
+    opacity: 1;
+  }
+}
+
+.refresher-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.r-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $campus-blue;
+  opacity: 0.4;
+  animation: rDotPulse 1.2s ease-in-out infinite;
+
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+@keyframes rDotPulse {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+  40% { transform: scale(1.1); opacity: 1; }
 }
 
 /* ========== PC 端适配 ========== */

@@ -1,7 +1,7 @@
 <template>
   <view class="club-list">
 
-    <!-- 骨架屏 -->
+    <!-- 骨架屏：首次加载时显示 -->
     <view v-if="loading && list.length === 0" class="skeleton-container">
       <view class="club-skeleton" v-for="i in 4" :key="i">
         <view class="sk-icon"></view>
@@ -92,12 +92,22 @@
       <text class="empty-hint">快来创建第一个社团吧</text>
     </view>
 
-    <!-- 加载更多 -->
-    <view v-if="loading && list.length > 0" class="loading-more">
-      <view class="loading-dots">
-        <view class="dot"></view>
-        <view class="dot"></view>
-        <view class="dot"></view>
+    <!-- 底部状态区 -->
+    <view class="list-footer">
+      <!-- 加载更多 loading -->
+      <view v-if="loading && list.length > 0" class="loading-more">
+        <view class="loading-dots">
+          <view class="dot"></view>
+          <view class="dot"></view>
+          <view class="dot"></view>
+        </view>
+        <text class="footer-text">加载中...</text>
+      </view>
+      <!-- 已到底部 -->
+      <view v-else-if="!hasMore && list.length > 0" class="no-more">
+        <view class="no-more-line"></view>
+        <text class="no-more-text">已加载全部社团</text>
+        <view class="no-more-line"></view>
       </view>
     </view>
 
@@ -114,9 +124,12 @@ import { requireLogin } from '@/utils/auth'
 interface Props {
   list: any[]
   loading: boolean
+  hasMore?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  hasMore: true
+})
 const emit = defineEmits<{ (e: 'refresh'): void }>()
 
 const { toClubDetail } = useNavigation()
@@ -396,11 +409,18 @@ const handleJoinClub = async (club: any) => {
   color: $color-text-quaternary;
 }
 
-/* ========== 加载更多 ========== */
+/* ========== 底部状态区 ========== */
+.list-footer {
+  padding: 8px 0 16px;
+}
+
+/* 加载中 */
 .loading-more {
-  padding: 20px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
 }
 
 .loading-dots {
@@ -424,6 +444,31 @@ const handleJoinClub = async (club: any) => {
 @keyframes dotPulse {
   0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
   40% { transform: scale(1.1); opacity: 1; }
+}
+
+.footer-text {
+  font-size: 12px;
+  color: $color-text-quaternary;
+}
+
+/* 已到底部 */
+.no-more {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+}
+
+.no-more-line {
+  flex: 1;
+  height: 1px;
+  background: $color-divider;
+}
+
+.no-more-text {
+  font-size: 12px;
+  color: $color-text-quaternary;
+  white-space: nowrap;
 }
 
 /* ========== PC 端双列布局 ========== */

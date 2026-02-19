@@ -28,21 +28,23 @@
 
     <!-- 主内容区 -->
     <scroll-view v-else scroll-y class="content-scroll">
+      <!-- 面包屑导航（全宽，在双栏布局之上） -->
+      <view class="breadcrumb-wrapper">
+        <view class="breadcrumb">
+          <text class="breadcrumb-item" @click="navigateToHome">首页</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item" @click="navigateToResourceIndex">资源广场</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item" @click="navigateToCategory">{{ getCategoryText(resource.category) }}</text>
+          <text class="breadcrumb-divider">/</text>
+          <text class="breadcrumb-item breadcrumb-item--current">资源详情</text>
+        </view>
+      </view>
+
       <!-- Web端双栏布局容器 -->
       <view class="desktop-layout">
         <!-- 左侧：主内容区 -->
         <view class="main-content">
-          <!-- 面包屑导航 -->
-          <view class="breadcrumb">
-            <text class="breadcrumb-item" @click="navigateToHome">首页</text>
-            <text class="breadcrumb-divider">/</text>
-            <text class="breadcrumb-item" @click="navigateToResourceIndex">资源广场</text>
-            <text class="breadcrumb-divider">/</text>
-            <text class="breadcrumb-item" @click="navigateToCategory">{{ getCategoryText(resource.category) }}</text>
-            <text class="breadcrumb-divider">/</text>
-            <text class="breadcrumb-item breadcrumb-item--current">资源详情</text>
-          </view>
-
           <!-- P0优化：资源封面信息卡片（信息密集型） -->
           <view class="resource-cover-card">
             <!-- 左侧：文件类型图标 -->
@@ -107,62 +109,62 @@
             </view>
           </view>
 
-      <!-- P1优化: 资源详情卡片（两段式） -->
-      <view class="detail-card-new">
-        <!-- 第一段: 快速认知区 -->
-        <view class="quick-info-section">
-          <view class="info-item">
-            <text class="info-label">课程</text>
-            <text class="info-value">{{ resource.courseName || '未分类' }}</text>
-          </view>
-          <text class="info-divider">·</text>
-          <view class="info-item">
-            <text class="info-label">类型</text>
-            <view class="file-type-badge-inline">
-              <text class="badge-text">{{ resource.fileType?.toUpperCase() || 'UNKNOWN' }}</text>
+          <!-- P1优化: 资源详情卡片（两段式） -->
+          <view class="detail-card-new">
+            <!-- 第一段: 快速认知区 -->
+            <view class="quick-info-section">
+              <view class="info-item">
+                <text class="info-label">课程</text>
+                <text class="info-value">{{ resource.courseName || '未分类' }}</text>
+              </view>
+              <text class="info-divider">·</text>
+              <view class="info-item">
+                <text class="info-label">类型</text>
+                <view class="file-type-badge-inline">
+                  <text class="badge-text">{{ resource.fileType?.toUpperCase() || 'UNKNOWN' }}</text>
+                </view>
+              </view>
+              <text class="info-divider">·</text>
+              <view class="info-item">
+                <text class="info-label">大小</text>
+                <text class="info-value">{{ formatFileSize(resource.fileSize) }}</text>
+              </view>
+            </view>
+
+            <!-- 第二段: 资源描述（可展开） -->
+            <view v-if="resource.description" class="description-section">
+              <text class="section-title">资源描述</text>
+              <text
+                class="description-content"
+                :class="{ 'is-expanded': descriptionExpanded }"
+              >
+                {{ resource.description }}
+              </text>
+              <view
+                v-if="resource.description.length > 100"
+                class="expand-toggle"
+                @click="toggleDescription"
+              >
+                <text class="toggle-text">{{ descriptionExpanded ? '收起' : '展开全部' }}</text>
+                <text class="toggle-icon">{{ descriptionExpanded ? '▲' : '▼' }}</text>
+              </view>
             </view>
           </view>
-          <text class="info-divider">·</text>
-          <view class="info-item">
-            <text class="info-label">大小</text>
-            <text class="info-value">{{ formatFileSize(resource.fileSize) }}</text>
+
+          <!-- 评论区 -->
+          <view id="comment-section" class="comment-section">
+            <view class="section-header">
+              <text class="section-title">评论区</text>
+              <text class="comment-count-text">({{ commentCount }})</text>
+            </view>
+            <CommentList :resourceId="resourceId" @update:count="updateCommentCount" />
           </view>
+
+          <!-- 底部占位 -->
+          <view class="bottom-placeholder"></view>
         </view>
 
-        <!-- 第二段: 资源描述（可展开） -->
-        <view v-if="resource.description" class="description-section">
-          <text class="section-title">资源描述</text>
-          <text
-            class="description-content"
-            :class="{ 'is-expanded': descriptionExpanded }"
-          >
-            {{ resource.description }}
-          </text>
-          <view
-            v-if="resource.description.length > 100"
-            class="expand-toggle"
-            @click="toggleDescription"
-          >
-            <text class="toggle-text">{{ descriptionExpanded ? '收起' : '展开全部' }}</text>
-            <text class="toggle-icon">{{ descriptionExpanded ? '▲' : '▼' }}</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 评论区 -->
-      <view id="comment-section" class="comment-section">
-        <view class="section-header">
-          <text class="section-title">评论区</text>
-          <text class="comment-count-text">({{ commentCount }})</text>
-        </view>
-        <CommentList :resourceId="resourceId" @update:count="updateCommentCount" />
-      </view>
-
-      <!-- 底部占位 -->
-      <view class="bottom-placeholder"></view>
-    </view>
-
-    <!-- 右侧：侧边栏（仅PC端显示） -->
+        <!-- 右侧：侧边栏（仅PC端显示） -->
     <view class="sidebar">
       <!-- P0优化：操作卡片（主次分明） -->
       <view class="operation-card-new">
@@ -1327,6 +1329,22 @@ const closePreview = () => {
 }
 
 // ============ 面包屑导航 ============
+// 全宽包裹容器，与 desktop-layout 同级
+.breadcrumb-wrapper {
+  // 移动端：隐藏
+  display: none;
+
+  // PC端：显示，与 desktop-layout 同步的宽度约束
+  // #ifdef H5
+  @include desktop {
+    display: block;
+    padding: $sp-5 $sp-10 0;
+    max-width: 2400rpx;
+    margin: 0 auto;
+  }
+  // #endif
+}
+
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -1334,11 +1352,6 @@ const closePreview = () => {
   margin-bottom: $sp-6;
   padding-bottom: $sp-4;
   border-bottom: 1rpx solid $gray-100;
-
-  // 移动端：隐藏
-  @include mobile {
-    display: none;
-  }
 }
 
 .breadcrumb-item {

@@ -163,39 +163,43 @@
 
       <view class="club-items">
         <view
-          v-for="item in list"
+          v-for="(item, idx) in list"
           :key="item.clubId"
           class="club-card"
           :style="{ '--cat-color': getCategoryColor(item.category) }"
           @click="handleClubClick(item.clubId)"
         >
-          <!-- 左侧分类色条 -->
-          <view class="club-card__stripe"></view>
+          <!-- 序号 -->
+          <view class="club-card__index">
+            <text class="club-card__index-num">{{ String(idx + 1).padStart(2, '0') }}</text>
+          </view>
 
-          <!-- 图标 -->
-          <view class="club-card__icon">
+          <!-- 社团图标 -->
+          <view class="club-card__avatar">
             <image v-if="item.logoUrl" :src="item.logoUrl" class="club-cover-img" mode="aspectFill" />
             <view v-else class="club-icon-placeholder">
               <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
             </view>
+            <!-- 分类色圆环 -->
+            <view class="club-card__avatar-ring"></view>
           </view>
 
-          <!-- 信息区 -->
+          <!-- 信息主体 -->
           <view class="club-card__body">
-            <view class="club-card__top">
+            <view class="club-card__row1">
               <text class="club-card__title">{{ item.clubName }}</text>
-              <view class="club-card__tag">
-                <text class="club-card__tag-text">{{ item.category || '综合' }}</text>
+              <view class="club-card__cat">
+                <text class="club-card__cat-text">{{ item.category || '综合' }}</text>
               </view>
             </view>
             <text v-if="item.description" class="club-card__desc">{{ item.description }}</text>
-            <view class="club-card__bottom">
-              <view class="club-card__meta">
-                <Icon name="users" :size="11" class="meta-icon" />
-                <text class="meta-text">{{ item.memberCount || 0 }}</text>
-                <view class="meta-sep"></view>
-                <Icon name="target" :size="11" class="meta-icon" />
-                <text class="meta-text">{{ item.activityCount || 0 }}场</text>
+            <view class="club-card__row3">
+              <view class="club-card__stats">
+                <Icon name="users" :size="10" class="stat-icon" />
+                <text class="stat-val">{{ formatMemberCount(item.memberCount) }}</text>
+                <text class="stat-sep">·</text>
+                <Icon name="zap" :size="10" class="stat-icon" />
+                <text class="stat-val">{{ item.activityCount || 0 }}场</text>
               </view>
               <view
                 class="club-card__btn"
@@ -205,7 +209,7 @@
                 }"
                 @click.stop="handleJoinClub(item)"
               >
-                <text>{{ joiningIds.has(item.clubId) ? '···' : (item.isMember ? '已加入' : '加入') }}</text>
+                <text class="club-card__btn-text">{{ joiningIds.has(item.clubId) ? '···' : (item.isMember ? '已加入' : '加入') }}</text>
               </view>
             </view>
           </view>
@@ -933,70 +937,74 @@ const handleJoinClub = async (club: any) => {
 
 /* ========== 全部社团列表 ========== */
 .club-items {
-  padding: 0 16px;
+  padding: 0 16px 4px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
 }
 
-/* 卡片主体：左色条 + 图标 + 信息 */
+/* 卡片：行分隔式，无白色卡片圆角，更像杂志列表 */
 .club-card {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0;
-  background: #FFFFFF;
-  border-radius: 16px;
-  overflow: hidden;
+  gap: 12px;
+  padding: 14px 0;
   cursor: pointer;
-  transition: box-shadow 0.15s ease, transform 0.15s ease;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.06),
-    0 0 0 1px rgba(0, 0, 0, 0.04);
+  // 底部细线分隔
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: background 0.15s ease;
+
+  &:last-child { border-bottom: none; }
 
   &:active {
-    transform: scale(0.983);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background: rgba(0, 0, 0, 0.025);
+    border-radius: 12px;
   }
 }
 
-/* 左侧分类色条 */
-.club-card__stripe {
+/* 左侧序号 */
+.club-card__index {
   flex-shrink: 0;
-  width: 4px;
-  align-self: stretch;
-  background: var(--cat-color, #377DFF);
-  border-radius: 0;
+  width: 28px;
+  display: flex;
+  justify-content: center;
 }
 
-/* 图标区域 */
-.club-card__icon {
+.club-card__index-num {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--cat-color, #377DFF);
+  letter-spacing: -0.5px;
+  line-height: 1;
+  // 数字用分类色，低透明度
+  opacity: 0.7;
+}
+
+/* 头像区域 */
+.club-card__avatar {
+  position: relative;
   flex-shrink: 0;
-  width: 60px;
-  height: 60px;
-  margin: 14px 0 14px 14px;
-  border-radius: 14px;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.04);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 52px;
+  height: 52px;
 }
 
 .club-cover-img {
   width: 100%;
   height: 100%;
+  border-radius: 14px;
   object-fit: cover;
+  display: block;
 }
 
 .club-icon-placeholder {
   width: 100%;
   height: 100%;
+  border-radius: 14px;
   background: linear-gradient(
-    135deg,
+    145deg,
     var(--cat-color, #377DFF) 0%,
-    rgba(0, 0, 0, 0.25) 140%
+    rgba(0, 0, 0, 0.2) 140%
   );
   display: flex;
   align-items: center;
@@ -1004,10 +1012,20 @@ const handleJoinClub = async (club: any) => {
 }
 
 .placeholder-text {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 900;
-  color: rgba(255, 255, 255, 0.92);
+  color: rgba(255, 255, 255, 0.9);
   letter-spacing: -1px;
+}
+
+/* 头像分类色圆环 */
+.club-card__avatar-ring {
+  position: absolute;
+  inset: -2px;
+  border-radius: 16px;
+  border: 2px solid var(--cat-color, #377DFF);
+  opacity: 0.35;
+  pointer-events: none;
 }
 
 /* 信息主体 */
@@ -1016,14 +1034,12 @@ const handleJoinClub = async (club: any) => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 5px;
-  padding: 14px 14px 14px 12px;
+  gap: 4px;
 }
 
-.club-card__top {
+.club-card__row1 {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
 }
 
@@ -1035,101 +1051,104 @@ const handleJoinClub = async (club: any) => {
   text-overflow: ellipsis;
   white-space: nowrap;
   flex: 1;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 
-/* 分类标签：使用分类色 */
-.club-card__tag {
+/* 分类标签：细描边风格，不抢眼 */
+.club-card__cat {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  height: 20px;
+  height: 18px;
   padding: 0 7px;
-  border-radius: 6px;
-  background: var(--cat-color, #377DFF);
+  border-radius: 5px;
+  border: 1.5px solid var(--cat-color, #377DFF);
+  background: transparent;
 }
 
-.club-card__tag-text {
+.club-card__cat-text {
   font-size: 10px;
   font-weight: 700;
-  color: #FFFFFF;
-  letter-spacing: 0.5px;
+  color: var(--cat-color, #377DFF);
+  letter-spacing: 0.3px;
 }
 
 .club-card__desc {
   font-size: 12px;
   color: $color-text-tertiary;
-  line-height: 1.5;
+  line-height: 1.45;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.club-card__bottom {
+.club-card__row3 {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-top: 1px;
 }
 
-.club-card__meta {
+/* 统计数据 */
+.club-card__stats {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
-.meta-icon {
+.stat-icon {
   color: $color-text-quaternary;
   flex-shrink: 0;
 }
 
-.meta-text {
+.stat-val {
   font-size: 11px;
   color: $color-text-quaternary;
 }
 
-/* 成员数和活动数之间的圆点分隔 */
-.meta-sep {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: $color-text-quaternary;
+.stat-sep {
+  font-size: 11px;
+  color: $color-text-quaternary;
   opacity: 0.4;
-  margin: 0 2px;
+  margin: 0 1px;
 }
 
-/* 加入按钮：实心小方块，与 Banner 按钮呼应 */
+/* 加入按钮：小巧圆角，与分类色呼应 */
 .club-card__btn {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  height: 28px;
-  padding: 0 14px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 700;
+  height: 26px;
+  padding: 0 13px;
+  border-radius: 7px;
   background: var(--cat-color, #377DFF);
-  color: #FFFFFF;
-  letter-spacing: 0.2px;
-  transition: opacity 0.15s ease, transform 0.15s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: opacity 0.15s ease, transform 0.12s ease;
 
   &:active {
-    opacity: 0.85;
-    transform: scale(0.94);
+    opacity: 0.8;
+    transform: scale(0.93);
   }
 
   &--joined {
     background: transparent;
-    color: $color-text-quaternary;
-    border: 1px solid $color-border;
-    box-shadow: none;
-    font-weight: 600;
+    border: 1.5px solid rgba(0, 0, 0, 0.12);
   }
 
   &--loading {
-    opacity: 0.5;
+    opacity: 0.45;
     pointer-events: none;
+  }
+}
+
+.club-card__btn-text {
+  font-size: 12px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 0.2px;
+
+  .club-card__btn--joined & {
+    color: $color-text-quaternary;
+    font-weight: 500;
   }
 }
 
@@ -1240,7 +1259,16 @@ const handleJoinClub = async (club: any) => {
     padding: 0 80px;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
+    column-gap: 40px;
+    row-gap: 0;
+  }
+
+  .club-card {
+    // PC 端分隔线仅跨列内宽度
+    &:nth-last-child(2):nth-child(odd),
+    &:last-child {
+      border-bottom: none;
+    }
   }
 }
 </style>

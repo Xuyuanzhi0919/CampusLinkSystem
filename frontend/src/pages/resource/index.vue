@@ -486,13 +486,9 @@ const quickFilterTabs = [
 ]
 
 // 🎯 平台判断 - 统一使用 1024px 作为桌面端断点（响应式，监听 resize）
-// #ifdef H5
-const windowWidth = ref(window.innerWidth)
+// H5 端始终有 window，APP/小程序端 window 不存在故 fallback 为 false
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
 const isDesktop = computed(() => windowWidth.value >= 1024)
-// #endif
-// #ifndef H5
-const isDesktop = ref(false)
-// #endif
 
 // 🎯 状态管理
 const resources = ref<ResourceItem[]>([])

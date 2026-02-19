@@ -187,33 +187,39 @@ class Request {
 
         return this.request<T>(originalOptions)
       } else {
-        // Token刷新失败，清除登录信息
-        const hadToken = !!this.getToken()
+        // 判断是「已登录 token 真正过期」还是「游客请求了需登录的接口」
+        const hadRefreshToken = !!this.getRefreshToken()
         this.clearToken()
 
-        // 区分「Token过期」和「完全未登录」，显示不同文案
-        const actionType = hadToken ? 'default' : 'default'
-        const title = hadToken ? '登录已过期' : '需要登录'
-        const content = hadToken ? '登录信息已过期，请重新登录后继续操作' : '登录后即可继续操作'
+        if (hadRefreshToken) {
+          // 已登录用户 token 过期且刷新失败，提示重新登录
+          // 使用引导弹窗，不强制跳转页面
+          const pages = getCurrentPages()
+          const currentPage = pages[pages.length - 1]
+          const currentRoute = currentPage?.route || ''
 
-        // 统一使用引导弹窗，不强制跳转首页
-        const pages = getCurrentPages()
-        const currentPage = pages[pages.length - 1]
-        const currentRoute = currentPage?.route || ''
-
-        if (currentRoute === 'pages/home/index') {
-          uni.$emit('show-login-guide', { actionType, title, content })
-        } else {
-          // 非首页：先切回首页 Tab，再弹出引导
-          uni.switchTab({
-            url: '/pages/home/index',
-            success: () => {
-              setTimeout(() => {
-                uni.$emit('show-login-guide', { actionType, title, content })
-              }, 350)
-            }
-          })
+          if (currentRoute === 'pages/home/index') {
+            uni.$emit('show-login-guide', {
+              actionType: 'default',
+              title: '登录已过期',
+              content: '登录信息已过期，请重新登录后继续操作'
+            })
+          } else {
+            uni.switchTab({
+              url: '/pages/home/index',
+              success: () => {
+                setTimeout(() => {
+                  uni.$emit('show-login-guide', {
+                    actionType: 'default',
+                    title: '登录已过期',
+                    content: '登录信息已过期，请重新登录后继续操作'
+                  })
+                }, 350)
+              }
+            })
+          }
         }
+        // 游客访问需登录接口：静默 reject，由操作层的 requireLogin() 负责弹引导
 
         return Promise.reject(new Error(res.message))
       }

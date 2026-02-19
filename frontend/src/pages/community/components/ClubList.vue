@@ -30,18 +30,22 @@
           <!-- 统计信息 -->
           <view class="stats">
             <view class="stat-item">
-              <text class="icon">👥</text>
-              <text class="count">{{ item.memberCount || 0 }}人</text>
+              <Icon name="users" :size="13" class="stat-icon" />
+              <text class="stat-label">{{ item.memberCount || 0 }} 人</text>
             </view>
             <view class="stat-item">
-              <text class="icon">📅</text>
-              <text class="count">{{ item.activityCount || 0 }}场活动</text>
+              <Icon name="calendar" :size="13" class="stat-icon" />
+              <text class="stat-label">{{ item.activityCount || 0 }} 场活动</text>
             </view>
           </view>
 
-          <!-- 加入按钮 -->
-          <view class="action-btn" @click.stop="handleJoinClub(item)">
-            <text class="btn-text">{{ item.isJoined ? '已加入' : '加入社团' }}</text>
+          <!-- 加入/退出按钮 -->
+          <view
+            class="action-btn"
+            :class="{ 'action-btn--joined': item.isJoined, 'action-btn--loading': joiningIds.has(item.clubId) }"
+            @click.stop="handleJoinClub(item)"
+          >
+            <text class="btn-text">{{ joiningIds.has(item.clubId) ? '处理中...' : (item.isJoined ? '已加入' : '加入社团') }}</text>
           </view>
         </view>
       </view>
@@ -59,27 +63,49 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
+import Icon from '@/components/icons/index.vue'
+import { joinClub, quitClub } from '@/services/club'
+import { requireLogin } from '@/utils/auth'
 
 interface Props {
   list: any[]
   loading: boolean
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const emit = defineEmits<{ (e: 'refresh'): void }>()
 
 const { toClubDetail } = useNavigation()
+
+// 防止重复点击
+const joiningIds = ref<Set<number>>(new Set())
 
 const handleClubClick = (clubId: number) => {
   toClubDetail(clubId)
 }
 
-const handleJoinClub = (club: any) => {
-  // TODO: 实现加入社团逻辑
-  uni.showToast({
-    title: club.isJoined ? '已加入该社团' : '加入成功',
-    icon: 'none'
-  })
+const handleJoinClub = async (club: any) => {
+  if (!requireLogin('join')) return
+  if (joiningIds.value.has(club.clubId)) return
+
+  joiningIds.value.add(club.clubId)
+  try {
+    if (club.isJoined) {
+      await quitClub(club.clubId)
+      uni.showToast({ title: '已退出社团', icon: 'success', duration: 1500 })
+    } else {
+      await joinClub(club.clubId)
+      uni.showToast({ title: '加入成功', icon: 'success', duration: 1500 })
+    }
+    // 通知父组件刷新列表以更新 isJoined 状态
+    emit('refresh')
+  } catch (error: any) {
+    uni.showToast({ title: error?.message || '操作失败，请重试', icon: 'none', duration: 2000 })
+  } finally {
+    joiningIds.value.delete(club.clubId)
+  }
 }
 </script>
 
@@ -218,10 +244,20 @@ const handleJoinClub = (club: any) => {
   padding: 6px 16px;
   background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
   border-radius: 6px;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 
   &:active {
     transform: scale(0.95);
+  }
+
+  &--joined {
+    background: #F3F4F6;
+    .btn-text { color: #6B7280; }
+  }
+
+  &--loading {
+    opacity: 0.7;
+    pointer-events: none;
   }
 
   .btn-text {
@@ -229,6 +265,16 @@ const handleJoinClub = (club: any) => {
     font-weight: 600;
     color: #FFFFFF;
   }
+}
+
+.stat-icon {
+  color: #9CA3AF;
+  flex-shrink: 0;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: #9CA3AF;
 }
 
 /* ========== 空状态 ========== */

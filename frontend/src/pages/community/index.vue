@@ -43,7 +43,7 @@
           @scrolltoupper="handleRefresh(1)"
           @scrolltolower="handleLoadMore(1)"
         >
-          <ClubList :list="clubList" :loading="clubLoading" />
+          <ClubList :list="clubList" :loading="clubLoading" @refresh="loadClubs(true)" />
         </scroll-view>
       </swiper-item>
 
@@ -75,9 +75,8 @@ import { ref, computed, onMounted } from 'vue'
 import QuestionList from './components/QuestionList.vue'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
-import { getQuestions } from '@/services/question'
-import { getClubs } from '@/services/club'
-import { getActivities } from '@/services/activity'
+import { getQuestionList } from '@/services/question'
+import { getClubList, getActivityList } from '@/services/club'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -164,7 +163,7 @@ const loadQuestions = async (isRefresh = false) => {
     questionLoading.value = true
     const page = isRefresh ? 1 : questionPage.value
 
-    const res = await getQuestions({
+    const res = await getQuestionList({
       page,
       pageSize: 20,
       sortBy: 'created_at'
@@ -198,7 +197,7 @@ const loadClubs = async (isRefresh = false) => {
     clubLoading.value = true
     const page = isRefresh ? 1 : clubPage.value
 
-    const res = await getClubs({
+    const res = await getClubList({
       page,
       pageSize: 20
     })
@@ -231,7 +230,7 @@ const loadActivities = async (isRefresh = false) => {
     activityLoading.value = true
     const page = isRefresh ? 1 : activityPage.value
 
-    const res = await getActivities({
+    const res = await getActivityList({
       page,
       pageSize: 20
     })

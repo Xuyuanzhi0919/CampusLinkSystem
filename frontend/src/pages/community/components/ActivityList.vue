@@ -29,18 +29,18 @@
 
           <view class="meta-info">
             <view class="meta-item">
-              <text class="icon">📍</text>
+              <Icon name="map-pin" :size="13" class="meta-icon" />
               <text class="text">{{ item.location || '待定' }}</text>
             </view>
             <view class="meta-item">
-              <text class="icon">🕒</text>
+              <Icon name="clock" :size="13" class="meta-icon" />
               <text class="text">{{ formatDate(item.startTime) }}</text>
             </view>
           </view>
 
           <view class="footer">
             <view class="participants">
-              <text class="icon">👥</text>
+              <Icon name="users" :size="13" class="meta-icon" />
               <text class="count">{{ item.registeredCount || 0 }}/{{ item.maxParticipants || '不限' }}</text>
             </view>
             <view class="status-badge" :class="`status-${item.status || 1}`">
@@ -64,6 +64,7 @@
 
 <script setup lang="ts">
 import { useNavigation } from '@/composables/useNavigation'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   list: any[]
@@ -245,8 +246,9 @@ const formatDate = (dateStr: string) => {
   align-items: center;
   gap: 6px;
 
-  .icon {
-    font-size: 14px;
+  .meta-icon {
+    color: #9CA3AF;
+    flex-shrink: 0;
   }
 
   .text {
@@ -266,8 +268,9 @@ const formatDate = (dateStr: string) => {
   align-items: center;
   gap: 4px;
 
-  .icon {
-    font-size: 14px;
+  .meta-icon {
+    color: #9CA3AF;
+    flex-shrink: 0;
   }
 
   .count {

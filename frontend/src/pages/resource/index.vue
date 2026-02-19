@@ -433,15 +433,14 @@ const quickFilterTabs = [
   { label: '高赞', value: 'likes', iconName: 'heart' }
 ]
 
-// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
-const isDesktop = computed(() => {
-  // #ifdef H5
-  return window.innerWidth >= 1024
-  // #endif
-  // #ifndef H5
-  return false
-  // #endif
-})
+// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点（响应式，监听 resize）
+// #ifdef H5
+const windowWidth = ref(window.innerWidth)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+// #endif
+// #ifndef H5
+const isDesktop = ref(false)
+// #endif
 
 // 🎯 状态管理
 const resources = ref<ResourceItem[]>([])
@@ -689,6 +688,27 @@ const loadResourceList = async (isRefresh = false) => {
       params.schoolId = userSchoolId.value
     }
 
+    // 应用高级筛选：积分范围（传给后端过滤，保证分页数量准确）
+    if (advancedFilters.value.scoreRange) {
+      switch (advancedFilters.value.scoreRange) {
+        case 'free':
+          params.scoreMin = 0
+          params.scoreMax = 0
+          break
+        case 'low':
+          params.scoreMin = 1
+          params.scoreMax = 5
+          break
+        case 'medium':
+          params.scoreMin = 6
+          params.scoreMax = 10
+          break
+        case 'high':
+          params.scoreMin = 11
+          break
+      }
+    }
+
     const res = await getResourceList(params)
 
     // 检查响应数据是否有效
@@ -699,32 +719,12 @@ const loadResourceList = async (isRefresh = false) => {
     // 合并本地下载状态、点赞状态和收藏状态
     mergeDownloadedStatus(res.list)
     mergeLikedStatus(res.list)
-    mergeFavoritedStatus(res.list) // P1新增
-
-    // 应用客户端筛选：积分范围（前端筛选）
-    let filteredList = res.list
-    if (advancedFilters.value.scoreRange) {
-      filteredList = filteredList.filter((item: ResourceItem) => {
-        const score = item.score || 0
-        switch (advancedFilters.value.scoreRange) {
-          case 'free':
-            return score === 0
-          case 'low':
-            return score > 0 && score <= 5
-          case 'medium':
-            return score > 5 && score <= 10
-          case 'high':
-            return score > 10
-          default:
-            return true
-        }
-      })
-    }
+    mergeFavoritedStatus(res.list)
 
     if (isRefresh) {
-      resources.value = filteredList
+      resources.value = res.list
     } else {
-      resources.value.push(...filteredList)
+      resources.value.push(...res.list)
     }
 
     total.value = res.total
@@ -770,6 +770,15 @@ const handleScroll = (e: any) => {
   // 滚动超过一屏（800rpx ≈ 400px）时显示返回顶部按钮
   showBackToTop.value = e.detail.scrollTop > 400
 }
+
+/**
+ * 🎯 处理窗口尺寸变化（H5端）
+ */
+// #ifdef H5
+const handleWindowResize = () => {
+  windowWidth.value = window.innerWidth
+}
+// #endif
 
 /**
  * 🎯 处理页面滚动（H5端）
@@ -859,6 +868,7 @@ const handleApplyFilters = () => {
 const handleResetFilters = () => {
   advancedFilters.value.scoreRange = null
   advancedFilters.value.onlyMySchool = false
+  showAdvancedFilter.value = false
   loadResourceList(true)
 }
 
@@ -871,9 +881,12 @@ const handleSearchInput = () => {
   }
 
   searchDebounceTimer.value = setTimeout(() => {
-    // 修复：清空搜索框时也应该重新加载列表
+    // 有搜索词时保存历史（防抖触发时也记录，与 confirm 行为一致）
+    if (searchKeyword.value && searchKeyword.value.trim()) {
+      saveSearchHistory(searchKeyword.value)
+    }
     loadResourceList(true)
-  }, 300) as unknown as number
+  }, 500) as unknown as number
 }
 
 /**
@@ -1087,6 +1100,8 @@ const formatNumber = (num: number): string => {
  * 🎯 标签点击处理 (TagCloud组件回调)
  */
 const handleTagCloudClick = (tag: TagItem) => {
+  // 清空分类筛选，避免 category + keyword 双重过滤导致结果为空
+  currentCategory.value = null
   searchKeyword.value = tag.name
   loadResourceList(true)
 }
@@ -1601,6 +1616,12 @@ onMounted(() => {
     showLoginModal.value = true
   })
 
+  // 监听面包屑导航传来的分类筛选事件（移入 onMounted 防止重复注册）
+  uni.$on('filterByCategory', (category: string) => {
+    currentCategory.value = category
+    loadResourceList(true)
+  })
+
   // 加载用户学校ID（从本地存储）
   try {
     const userInfo = uni.getStorageSync('userInfo')
@@ -1622,6 +1643,8 @@ onMounted(() => {
   // #ifdef H5
   // H5端监听页面滚动，实现顶部导航折叠效果
   window.addEventListener('scroll', handlePageScroll)
+  // H5端监听窗口尺寸变化，更新 isDesktop 响应式状态
+  window.addEventListener('resize', handleWindowResize)
   // #endif
 })
 
@@ -1673,18 +1696,12 @@ onShow(() => {
   }
 })
 
-// 监听面包屑导航传来的分类筛选事件
-uni.$on('filterByCategory', (category: string) => {
-  // 应用分类筛选
-  currentCategory.value = category
-  loadResourceList(true)
-})
-
 // 🎯 页面卸载
 onUnmounted(() => {
   // #ifdef H5
-  // 移除滚动监听
+  // 移除滚动和 resize 监听
   window.removeEventListener('scroll', handlePageScroll)
+  window.removeEventListener('resize', handleWindowResize)
   // #endif
 
   // 移除事件监听

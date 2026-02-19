@@ -174,7 +174,9 @@ const isHotResource = computed(() => {
 // 检测设备类型
 onMounted(() => {
   checkDevice()
+  // #ifdef H5
   window.addEventListener('resize', checkDevice)
+  // #endif
 })
 
 const checkDevice = () => {
@@ -597,18 +599,14 @@ const handleFavorite = () => {
 
 // 📌 第二层:描述 + 文件类型
 .description-section {
-  display: flex;
-  align-items: flex-start;
-  gap: 12rpx; // 10rpx→12rpx,增加间距
-  margin-bottom: 16rpx; // 12rpx→16rpx,增加层级间距
+  margin-bottom: 16rpx;
 }
 
 .description {
-  flex: 1;
-  font-size: 26rpx; // 24rpx→26rpx,增加可读性
-  font-weight: 400; // 明确字重
+  font-size: 26rpx;
+  font-weight: 400;
   color: #6B7280;
-  line-height: 1.7; // 1.6→1.7,增强可读性
+  line-height: 1.7;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -616,10 +614,10 @@ const handleFavorite = () => {
   -webkit-box-orient: vertical;
   word-break: break-word;
   letter-spacing: 0.1rpx;
+  margin-bottom: 10rpx;
 }
 
 .file-type-badge {
-  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
@@ -766,26 +764,29 @@ const handleFavorite = () => {
   }
 }
 
-// P1-2优化:操作按钮容器 - hover才显示
+// 操作按钮容器 - PC hover 显示，移动端始终显示
 .action-buttons {
   display: flex;
   align-items: center;
   gap: 8rpx;
   flex-shrink: 0;
-  opacity: 0; // 默认隐藏
-  transform: translateX(8rpx); // 默认右移
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none; // 隐藏时不可点击
 
-  // 卡片hover时显示
-  .resource-card:hover &,
-  .resource-card.is-active & {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
+  // PC 端：默认隐藏，hover 时显示
+  &--hover {
+    opacity: 0;
+    transform: translateX(8rpx);
+    pointer-events: none;
+
+    .resource-card:hover &,
+    .resource-card.is-active & {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
   }
 
-  // 移动端:始终显示(因为没有hover)
+  // 移动端：始终显示
   .resource-card.is-mobile & {
     opacity: 1;
     transform: translateX(0);
@@ -867,16 +868,16 @@ const handleFavorite = () => {
 //  响应式适配
 @media (max-width: 768px) {
   .resource-card {
-    padding: 20rpx; // 移动端稍微减少内边距
+    padding: 20rpx;
   }
 
   .title {
-    font-size: 30rpx; // 28rpx→30rpx,移动端保持可读性
+    font-size: 30rpx;
     line-height: 1.55;
   }
 
   .description {
-    font-size: 24rpx; // 22rpx→24rpx,移动端保持可读性
+    font-size: 24rpx;
     line-height: 1.6;
   }
 
@@ -884,57 +885,9 @@ const handleFavorite = () => {
     margin-bottom: 10rpx;
   }
 
-  .meta-row {
-    margin-bottom: 12rpx;
-    gap: 8rpx;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .tags-left {
-    width: 100%;
-  }
-
-  .file-info {
-    gap: 4rpx;
-    max-width: 100%;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
   .tag {
     font-size: 18rpx;
     padding: 4rpx 10rpx;
-  }
-
-  .card-footer {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10rpx;
-    padding-top: 10rpx;
-  }
-
-  .user-info {
-    width: 100%;
-  }
-
-  .right-section {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .stats-row {
-    flex: 1;
-    justify-content: flex-start;
-  }
-
-  .download-btn {
-    padding: 6rpx 12rpx;
-  }
-
-  .download-icon,
-  .download-text {
-    font-size: 20rpx;
   }
 }
 

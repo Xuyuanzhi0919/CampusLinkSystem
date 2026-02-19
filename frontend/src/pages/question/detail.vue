@@ -231,6 +231,7 @@ import DetailSidebar from './components/DetailSidebar.vue'
 import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
+import { requireLogin } from '@/utils/auth'
 
 // Stores
 const questionStore = useQuestionStore()
@@ -391,6 +392,7 @@ const handleLoadMoreAnswers = () => {
 
 // 提交回答
 const handleSubmitAnswer = async (data: { content: string; images: string[] }) => {
+  if (!requireLogin('answer')) return
   try {
     submittingAnswer.value = true
     await answerQuestion(questionId.value, { content: data.content, images: data.images })
@@ -434,6 +436,7 @@ const handleAcceptAnswer = (answerId: number) => {
 
 // 点赞回答
 const handleLikeAnswer = async (answerId: number) => {
+  if (!requireLogin('like')) return
   const answer = answers.value.find(a => a.answerId === answerId)
   if (!answer) return
   const wasLiked = answer.isLiked

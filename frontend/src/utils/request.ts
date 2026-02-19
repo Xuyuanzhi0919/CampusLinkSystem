@@ -187,18 +187,34 @@ class Request {
 
         return this.request<T>(originalOptions)
       } else {
-        // Token刷新失败，清除登录信息并跳转首页
+        // Token刷新失败，清除登录信息
+        const hadToken = !!this.getToken()
         this.clearToken()
-        const friendlyMessage = getFriendlyErrorMessage({ code: 401 })
-        uni.showToast({
-          title: friendlyMessage,
-          icon: 'none',
-        })
-        setTimeout(() => {
-          uni.reLaunch({
+
+        // 区分「Token过期」和「完全未登录」，显示不同文案
+        const actionType = hadToken ? 'default' : 'default'
+        const title = hadToken ? '登录已过期' : '需要登录'
+        const content = hadToken ? '登录信息已过期，请重新登录后继续操作' : '登录后即可继续操作'
+
+        // 统一使用引导弹窗，不强制跳转首页
+        const pages = getCurrentPages()
+        const currentPage = pages[pages.length - 1]
+        const currentRoute = currentPage?.route || ''
+
+        if (currentRoute === 'pages/home/index') {
+          uni.$emit('show-login-guide', { actionType, title, content })
+        } else {
+          // 非首页：先切回首页 Tab，再弹出引导
+          uni.switchTab({
             url: '/pages/home/index',
+            success: () => {
+              setTimeout(() => {
+                uni.$emit('show-login-guide', { actionType, title, content })
+              }, 350)
+            }
           })
-        }, 1500)
+        }
+
         return Promise.reject(new Error(res.message))
       }
     }

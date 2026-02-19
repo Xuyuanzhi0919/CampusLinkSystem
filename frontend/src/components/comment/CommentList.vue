@@ -638,7 +638,7 @@ const formatTime = (dateStr: string) => {
   padding: $sp-4 $sp-4 $sp-2;
   background: $gray-50;
   border-radius: $radius-md;
-  border-left: 3rpx solid $accent-200;
+  border: 1.5rpx solid $gray-200;
 }
 
 .reply-item {

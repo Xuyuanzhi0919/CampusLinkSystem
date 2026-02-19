@@ -47,19 +47,19 @@
               <view class="banner-slash"></view>
               <!-- 内容区 -->
               <view class="banner-content">
+                <!-- 顶部：仅保留精选 badge -->
                 <view class="banner-top-row">
                   <view class="banner-badge">
                     <text class="badge-dot"></text>
                     <text class="badge-text">社区精选</text>
                   </view>
-                  <view class="banner-btn" @click.stop="handleJoinClub(club)">
-                    <text class="banner-btn-text">{{ club.isMember ? '✓ 已加入' : '+ 加入' }}</text>
-                  </view>
                 </view>
+                <!-- 中部：社团名 + 简介 -->
                 <view class="banner-main">
                   <text class="banner-title">{{ club.clubName }}</text>
                   <text class="banner-desc">{{ club.description || '加入我们，一起创造校园精彩' }}</text>
                 </view>
+                <!-- 底部：统计数据 + 加入按钮 -->
                 <view class="banner-stats">
                   <view class="banner-stat">
                     <text class="banner-stat-num">{{ club.memberCount || 0 }}</text>
@@ -69,6 +69,14 @@
                   <view class="banner-stat">
                     <text class="banner-stat-num">{{ club.activityCount || 0 }}</text>
                     <text class="banner-stat-label">活动</text>
+                  </view>
+                  <view class="banner-stat-spacer"></view>
+                  <view
+                    class="banner-btn"
+                    :class="{ 'banner-btn--joined': club.isMember, 'banner-btn--loading': joiningIds.has(club.clubId) }"
+                    @click.stop="handleJoinClub(club)"
+                  >
+                    <text class="banner-btn-text">{{ joiningIds.has(club.clubId) ? '···' : (club.isMember ? '已加入' : '加入社团') }}</text>
                   </view>
                 </view>
               </view>
@@ -516,24 +524,42 @@ const handleJoinClub = async (club: any) => {
   text-transform: uppercase;
 }
 
-/* 加入按钮：实心小方块风格 */
+/* 加入按钮 */
 .banner-btn {
   display: inline-flex;
   align-items: center;
+  height: 30px;
+  padding: 0 14px;
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 8px;
-  padding: 5px 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.15s ease;
+  border-radius: 10px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.15s ease, opacity 0.15s ease;
+  flex-shrink: 0;
 
-  &:active { transform: scale(0.93); }
+  &:active { transform: scale(0.91); }
+
+  /* 已加入：镂空白色描边 */
+  &--joined {
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    box-shadow: none;
+
+    .banner-btn-text { color: rgba(255, 255, 255, 0.8); }
+  }
+
+  /* 加载中 */
+  &--loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .banner-btn-text {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 800;
   color: #111;
-  letter-spacing: -0.2px;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
 /* 中部大字区 */
@@ -567,11 +593,11 @@ const handleJoinClub = async (club: any) => {
   white-space: nowrap;
 }
 
-/* 底部数据统计 */
+/* 底部数据统计 + 按钮一行 */
 .banner-stats {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   padding-top: 10px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
 }
@@ -583,7 +609,7 @@ const handleJoinClub = async (club: any) => {
 }
 
 .banner-stat-num {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 900;
   color: #FFFFFF;
   line-height: 1;
@@ -592,14 +618,19 @@ const handleJoinClub = async (club: any) => {
 
 .banner-stat-label {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.55);
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
 
 .banner-stat-divider {
   width: 1px;
-  height: 20px;
+  height: 18px;
   background: rgba(255, 255, 255, 0.18);
+}
+
+/* 推开按钮到右侧 */
+.banner-stat-spacer {
+  flex: 1;
 }
 
 /* ========== 轮播指示器（进度条 + 计数） ========== */

@@ -204,9 +204,7 @@ onMounted(() => {
 })
 
 // 暴露刷新方法
-defineExpose({
-  refresh: loadData
-})
+defineExpose({ loadData })
 </script>
 
 <style lang="scss" scoped>

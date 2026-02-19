@@ -337,26 +337,10 @@ const getRankClass = (index: number) => {
 
 const handleQuestionClick = (item: HotQuestion) => {
   emit('question-click', item)
-  uni.navigateTo({
-    url: `/pages/question/detail?id=${item.id}`
-  })
 }
 
 const handleTagClick = (tag: HotTag) => {
   emit('tag-click', tag)
-  // 跳转到搜索结果页，显示该话题相关内容
-  const keyword = tag.name.replace('#', '') // 移除 # 号
-  // 构建完整的参数，传递话题详细信息
-  const params = new URLSearchParams({
-    keyword: keyword,
-    source: 'topic',
-    discussionCount: String(tag.discussionCount || 0),
-    trend: tag.trend || 'stable',
-    trendPercent: String(tag.trendPercent || 0)
-  })
-  uni.navigateTo({
-    url: `/pages/search/result?${params.toString()}`
-  })
 }
 
 const handleAIClick = () => {
@@ -370,7 +354,7 @@ const handleQuickAction = (action: string) => {
 }
 
 const handleViewMoreQuestions = () => {
-  uni.switchTab({
+  uni.navigateTo({
     url: '/pages/question/index'
   })
 }

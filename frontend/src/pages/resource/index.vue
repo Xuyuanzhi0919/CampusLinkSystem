@@ -251,7 +251,7 @@
               header-icon="tag"
               :show-header="true"
               :show-badge="false"
-              :show-count="true"
+              :show-count="false"
               :dynamic-size="false"
               :collapsible="true"
               :max-display="6"

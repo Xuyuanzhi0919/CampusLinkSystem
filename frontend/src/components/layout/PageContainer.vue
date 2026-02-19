@@ -140,6 +140,8 @@ interface Props {
   background?: string
   /** 内容区内边距 */
   padding?: string
+  /** 是否由页面自定义返回逻辑（传 true 时 PageContainer 不自动 navigateBack） */
+  customBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -157,7 +159,8 @@ const props = withDefaults(defineProps<Props>(), {
   refresherTriggered: false,
   safeBottom: true,
   background: '',
-  padding: ''
+  padding: '',
+  customBack: false
 })
 
 const emit = defineEmits<{
@@ -180,12 +183,13 @@ const contentStyle = computed<CSSProperties>(() => {
 
 const handleBack = () => {
   emit('back')
-  uni.navigateBack({
-    fail: () => {
-      // 如果无法返回，跳转到首页
-      uni.switchTab({ url: '/pages/home/index' })
-    }
-  })
+  if (!props.customBack) {
+    uni.navigateBack({
+      fail: () => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }
+    })
+  }
 }
 
 const handleScroll = (event: any) => {

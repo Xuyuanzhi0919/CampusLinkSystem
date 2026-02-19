@@ -6,6 +6,7 @@
     :show-tabbar="false"
     :refresher-enabled="true"
     :refresher-triggered="refreshing"
+    :custom-back="true"
     @back="goBack"
     @refresh="handleRefresh"
   >

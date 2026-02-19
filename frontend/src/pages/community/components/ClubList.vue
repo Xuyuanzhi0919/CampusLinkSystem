@@ -38,7 +38,7 @@
             <text class="badge-dot"></text>
             <text class="badge-text">社区精选</text>
           </view>
-          <text class="banner-title">{{ featuredClub.name }}</text>
+          <text class="banner-title">{{ featuredClub.clubName }}</text>
           <text class="banner-desc">{{ featuredClub.description || '加入我们，一起创造校园精彩' }}</text>
           <view class="banner-meta">
             <view class="banner-meta-item">
@@ -51,7 +51,7 @@
             </view>
           </view>
           <view class="banner-btn" @click.stop="handleJoinClub(featuredClub)">
-            <text>{{ featuredClub.isJoined ? '已加入' : '立即加入' }}</text>
+            <text>{{ featuredClub.isMember ? '已加入' : '立即加入' }}</text>
           </view>
         </view>
       </view>
@@ -77,12 +77,12 @@
             <view class="hot-card__bg"></view>
             <view class="hot-card__rank">{{ idx + 1 }}</view>
             <view class="hot-card__icon">
-              <image v-if="item.cover" :src="item.cover" class="hot-card__img" mode="aspectFill" />
+              <image v-if="item.logoUrl" :src="item.logoUrl" class="hot-card__img" mode="aspectFill" />
               <view v-else class="hot-card__icon-placeholder">
-                <text class="placeholder-text">{{ item.name?.slice(0, 1) }}</text>
+                <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
               </view>
             </view>
-            <text class="hot-card__name">{{ item.name }}</text>
+            <text class="hot-card__name">{{ item.clubName }}</text>
             <text class="hot-card__count">{{ item.memberCount || 0 }}人</text>
           </view>
         </view>
@@ -107,9 +107,9 @@
           <!-- 左侧图标 -->
           <view class="club-card__left">
             <view class="club-card__icon">
-              <image v-if="item.cover" :src="item.cover" class="club-cover-img" mode="aspectFill" />
+              <image v-if="item.logoUrl" :src="item.logoUrl" class="club-cover-img" mode="aspectFill" />
               <view v-else class="club-icon-placeholder">
-                <text class="placeholder-text">{{ item.name?.slice(0, 1) }}</text>
+                <text class="placeholder-text">{{ item.clubName?.slice(0, 1) }}</text>
               </view>
             </view>
           </view>
@@ -117,7 +117,7 @@
           <!-- 右侧信息 -->
           <view class="club-card__right">
             <view class="club-card__top">
-              <text class="club-card__title">{{ item.name }}</text>
+              <text class="club-card__title">{{ item.clubName }}</text>
               <view class="club-card__capsule">
                 <text>{{ item.category || '综合' }}</text>
               </view>
@@ -134,12 +134,12 @@
               <view
                 class="club-card__btn"
                 :class="{
-                  'club-card__btn--joined': item.isJoined,
+                  'club-card__btn--joined': item.isMember,
                   'club-card__btn--loading': joiningIds.has(item.clubId)
                 }"
                 @click.stop="handleJoinClub(item)"
               >
-                <text>{{ joiningIds.has(item.clubId) ? '...' : (item.isJoined ? '已加入' : '加入') }}</text>
+                <text>{{ joiningIds.has(item.clubId) ? '...' : (item.isMember ? '已加入' : '加入') }}</text>
               </view>
             </view>
           </view>
@@ -228,7 +228,7 @@ const handleJoinClub = async (club: any) => {
 
   joiningIds.value.add(club.clubId)
   try {
-    if (club.isJoined) {
+    if (club.isMember) {
       await quitClub(club.clubId)
       uni.showToast({ title: '已退出社团', icon: 'success', duration: 1500 })
     } else {

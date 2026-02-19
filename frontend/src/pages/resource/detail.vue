@@ -133,7 +133,7 @@
 
             <!-- 第二段: 资源描述（可展开） -->
             <view v-if="resource.description" class="description-section">
-              <text class="section-title">资源描述</text>
+              <text class="description-label">资源描述</text>
               <text
                 class="description-content"
                 :class="{ 'is-expanded': descriptionExpanded }"
@@ -165,101 +165,107 @@
         </view>
 
         <!-- 右侧：侧边栏（仅PC端显示） -->
-    <view class="sidebar">
-      <!-- P0优化：操作卡片（主次分明） -->
-      <view class="operation-card-new">
-        <!-- 主操作：立即下载 -->
-        <view
-          class="primary-action-btn"
-          :class="{ 'is-downloaded': resource.isDownloaded }"
-          @click="handleDownload"
-        >
-          <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
-          <text class="btn-text">
-            {{ resource.isDownloaded ? '重新下载（免费）' : '立即下载 -5积分' }}
-          </text>
-        </view>
-
-        <!-- 次操作：在线预览（仅PDF） -->
-        <view
-          v-if="resource.fileType === 'pdf'"
-          class="secondary-action-btn"
-          @click="handlePreview"
-        >
-          <Icon name="eye" :size="20" :stroke-width="1.5" class="btn-icon" />
-          <text class="btn-text">在线预览</text>
-        </view>
-
-        <!-- 分隔线 -->
-        <view class="action-divider"></view>
-
-        <!-- 辅助操作组 -->
-        <view class="auxiliary-actions">
-          <view class="aux-action-item" @click="handleFavorite">
-            <Icon :name="resource.isFavorited ? 'star' : 'star-off'" :size="20" :stroke-width="1.5" class="aux-icon" :class="{ 'is-active': resource.isFavorited }" />
-            <text class="aux-text" :class="{ 'is-active': resource.isFavorited }">收藏</text>
-          </view>
-
-          <!-- 更多操作（Web端带Popover） -->
-          <view class="operation-more-wrapper">
-            <view class="aux-action-item" @click="showMoreMenu">
-              <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="aux-icon" />
-              <text class="aux-text">更多</text>
+        <view class="sidebar">
+          <!-- 操作卡片（主次分明） -->
+          <view class="operation-card-new">
+            <!-- 主操作：立即下载 -->
+            <view
+              class="primary-action-btn"
+              :class="{ 'is-downloaded': resource.isDownloaded }"
+              @click="handleDownload"
+            >
+              <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
+              <text class="btn-text">
+                {{ resource.isDownloaded ? '重新下载（免费）' : '立即下载 -5积分' }}
+              </text>
             </view>
 
-            <!-- Web端Popover菜单（就地弹出） -->
-            <view v-if="showMorePopup" class="more-popover" @click.stop>
-              <view class="menu-item" @click="scrollToComment">
-                <Icon name="message-circle" :size="18" :stroke-width="1.5" class="menu-icon" />
-                <text class="menu-text">评论 ({{ commentCount }})</text>
+            <!-- 次操作：在线预览（仅PDF） -->
+            <view
+              v-if="resource.fileType === 'pdf'"
+              class="secondary-action-btn"
+              @click="handlePreview"
+            >
+              <Icon name="eye" :size="20" :stroke-width="1.5" class="btn-icon" />
+              <text class="btn-text">在线预览</text>
+            </view>
+
+            <!-- 分隔线 -->
+            <view class="action-divider"></view>
+
+            <!-- 辅助操作组 -->
+            <view class="auxiliary-actions">
+              <view class="aux-action-item" @click="handleFavorite">
+                <Icon :name="resource.isFavorited ? 'star' : 'star-off'" :size="20" :stroke-width="1.5" class="aux-icon" :class="{ 'is-active': resource.isFavorited }" />
+                <text class="aux-text" :class="{ 'is-active': resource.isFavorited }">收藏</text>
               </view>
-              <view class="menu-item" @click="handleShare">
-                <Icon name="share-2" :size="18" :stroke-width="1.5" class="menu-icon" />
-                <text class="menu-text">分享</text>
+
+              <!-- 更多操作（Web端带Popover） -->
+              <view class="operation-more-wrapper">
+                <view class="aux-action-item" @click="showMoreMenu">
+                  <Icon name="more-horizontal" :size="20" :stroke-width="1.5" class="aux-icon" />
+                  <text class="aux-text">更多</text>
+                </view>
+
+                <!-- Web端Popover菜单（就地弹出） -->
+                <view v-if="showMorePopup" class="more-popover" @click.stop>
+                  <view class="menu-item" @click="scrollToComment">
+                    <Icon name="message-circle" :size="18" :stroke-width="1.5" class="menu-icon" />
+                    <text class="menu-text">评论 ({{ commentCount }})</text>
+                  </view>
+                  <view class="menu-item" @click="handleShare">
+                    <Icon name="share-2" :size="18" :stroke-width="1.5" class="menu-icon" />
+                    <text class="menu-text">分享</text>
+                  </view>
+                  <view class="menu-item" @click="handleReport">
+                    <Icon name="flag" :size="18" :stroke-width="1.5" class="menu-icon" />
+                    <text class="menu-text">举报</text>
+                  </view>
+                </view>
               </view>
-              <view class="menu-item" @click="handleReport">
-                <Icon name="flag" :size="18" :stroke-width="1.5" class="menu-icon" />
-                <text class="menu-text">举报</text>
+            </view>
+          </view>
+
+          <!-- 上传者信息卡片 -->
+          <view class="uploader-card" @click="navigateToUserProfile">
+            <image
+              :src="resource.uploaderAvatar || defaultAvatar"
+              class="uploader-avatar"
+              mode="aspectFill"
+            />
+            <view class="uploader-info">
+              <text class="uploader-name">{{ resource.uploaderName }}</text>
+              <view class="uploader-points">
+                <Icon name="star" :size="12" :stroke-width="1.5" class="points-icon" />
+                <text class="points-text">积分 {{ resource.uploaderPoints || 0 }}</text>
               </view>
+            </view>
+            <view class="uploader-meta">
+              <text class="upload-time">{{ formatUploadTime(resource.createdAt) }}</text>
+            </view>
+            <Icon name="chevron-right" :size="18" :stroke-width="1.5" class="arrow-icon" />
+          </view>
+
+          <!-- 相关推荐区 -->
+          <view v-if="relatedResources.length > 0" class="recommend-section">
+            <view class="section-header">
+              <text class="section-title">相关推荐</text>
+              <view class="more-link" @click="viewMoreResources">
+                <text class="more-link-text">更多</text>
+                <Icon name="chevron-right" :size="14" :stroke-width="2" class="more-link-icon" />
+              </view>
+            </view>
+            <view class="recommend-list">
+              <ResourceCard
+                v-for="item in relatedResources"
+                :key="item.resourceId"
+                :resource="item"
+                @click="navigateToDetail(item.resourceId)"
+              />
             </view>
           </view>
         </view>
       </view>
-
-      <!-- 上传者信息卡片 -->
-      <view class="uploader-card" @click="navigateToUserProfile">
-        <image
-          :src="resource.uploaderAvatar || defaultAvatar"
-          class="uploader-avatar"
-          mode="aspectFill"
-        />
-        <view class="uploader-info">
-          <text class="uploader-name">{{ resource.uploaderName }}</text>
-          <text class="uploader-points">积分 {{ resource.uploaderPoints || 0 }}</text>
-        </view>
-        <view class="uploader-meta">
-          <text class="upload-time">{{ formatUploadTime(resource.createdAt) }}</text>
-        </view>
-        <Icon name="chevron-right" :size="18" :stroke-width="1.5" class="arrow-icon" />
-      </view>
-
-      <!-- 相关推荐区 -->
-      <view v-if="relatedResources.length > 0" class="recommend-section">
-        <view class="section-header">
-          <text class="section-title">相关推荐</text>
-          <text class="more-link" @click="viewMoreResources">更多 ›</text>
-        </view>
-        <view class="recommend-list">
-          <ResourceCard
-            v-for="item in relatedResources"
-            :key="item.resourceId"
-            :resource="item"
-            @click="navigateToDetail(item.resourceId)"
-          />
-        </view>
-      </view>
-    </view>
-  </view>
     </scroll-view>
 
     <!-- 固定底部操作栏 - 重构：左侧小功能 + 右侧主操作 -->
@@ -1286,13 +1292,13 @@ const closePreview = () => {
 
 // 内容滚动区
 .content-scroll {
-  // 移除固定高度，使用自然滚动（避免双滚动条）
+  // 移动端：减去 nav-bar(88rpx) + action-bar(100rpx)
   min-height: calc(100vh - 88rpx - 100rpx);
 
-  // PC端适配：优化滚动体验
+  // PC端：只减去 nav-bar，无底部操作栏
   // #ifdef H5
   @include desktop {
-    // 移除容器自身滚动条样式，改为在全局设置body滚动条样式
+    min-height: calc(100vh - 88rpx);
   }
   // #endif
 }
@@ -1320,11 +1326,11 @@ const closePreview = () => {
   // 移动端：全宽
   width: 100%;
 
-  // PC端：68%宽度
+  // PC端：68%基准宽度，允许收缩避免溢出
   // #ifdef H5
   @include desktop {
-    flex: 0 0 68%;
-    max-width: 68%;
+    flex: 1 1 68%;
+    min-width: 0; // 防止内容撑宽
   }
   // #endif
 }
@@ -1387,14 +1393,15 @@ const closePreview = () => {
   // 移动端：隐藏
   display: none;
 
-  // PC端：显示，30%宽度，粘性定位
+  // PC端：显示，30%基准宽度，粘性定位
   // #ifdef H5
   @include desktop {
     display: block;
     flex: 0 0 30%;
-    max-width: 30%;
+    width: 30%;
+    min-width: 0;
     position: sticky;
-    top: $sp-5;
+    top: calc(#{$btn-height-lg} + #{$sp-5}); // nav-bar(88rpx) + 间距
     align-self: flex-start;
   }
   // #endif
@@ -2125,17 +2132,19 @@ const closePreview = () => {
 }
 
 .uploader-points {
-  font-size: $font-size-sm;
-  color: $accent;
-  font-weight: $font-weight-medium;
   display: flex;
   align-items: center;
-  gap: 4rpx;
+  gap: $sp-1;
 
-  // 添加积分图标前缀（可选）
-  &::before {
-    content: '⭐';
-    font-size: 20rpx;
+  .points-icon {
+    color: $accent;
+    flex-shrink: 0;
+  }
+
+  .points-text {
+    font-size: $font-size-sm;
+    color: $accent;
+    font-weight: $font-weight-medium;
   }
 }
 
@@ -2231,7 +2240,8 @@ const closePreview = () => {
   padding-top: $sp-5;
 }
 
-.section-title {
+// 描述卡片内的小标签（区别于区块级 section-title）
+.description-label {
   display: block;
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
@@ -2343,9 +2353,20 @@ const closePreview = () => {
 }
 
 .more-link {
-  font-size: $font-size-sm;
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
   color: $accent;
   cursor: pointer;
+
+  .more-link-text {
+    font-size: $font-size-sm;
+  }
+
+  .more-link-icon {
+    display: flex;
+    align-items: center;
+  }
 }
 
 .recommend-list {

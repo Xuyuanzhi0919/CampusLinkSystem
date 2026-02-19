@@ -109,7 +109,6 @@
             <text class="hot-card__name">{{ item.clubName }}</text>
             <text class="hot-card__count">{{ item.memberCount || 0 }}人</text>
           </view>
-          <view class="hot-list-end"></view>
         </view>
       </scroll-view>
 
@@ -557,20 +556,14 @@ const handleJoinClub = async (club: any) => {
 
 /* ========== 热门横滑 ========== */
 .hot-scroll {
-  width: calc(100% - 32px);
-  margin: 0 16px;
+  width: 100%;
 }
 
 .hot-list {
   display: flex;
   gap: 12px;
-  padding: 4px 0 8px;
+  padding: 4px 16px 8px;
   width: max-content;
-}
-
-.hot-list-end {
-  width: 1px;
-  flex-shrink: 0;
 }
 
 .hot-card {
@@ -914,13 +907,8 @@ const handleJoinClub = async (club: any) => {
     padding: 20px 80px 12px;
   }
 
-  .hot-scroll {
-    width: calc(100% - 160px);
-    margin: 0 80px;
-  }
-
   .hot-list {
-    padding: 4px 0 8px;
+    padding: 4px 80px 8px;
   }
 
   .club-items {

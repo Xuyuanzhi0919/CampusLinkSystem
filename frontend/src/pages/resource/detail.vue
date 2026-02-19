@@ -3,14 +3,14 @@
     <!-- 顶部导航栏 -->
     <view class="nav-bar">
       <view class="nav-left" @click="goBack">
-        <text class="nav-icon">‹</text>
+        <Icon name="chevron-left" :size="22" :stroke-width="2" class="nav-icon" />
         <text class="nav-text">返回</text>
       </view>
       <view class="nav-center">
         <text class="nav-title">资源详情</text>
       </view>
       <view class="nav-right" @click="showMoreMenu">
-        <text class="nav-icon">•••</text>
+        <Icon name="more-horizontal" :size="22" :stroke-width="1.5" class="nav-icon" />
       </view>
     </view>
 
@@ -104,7 +104,7 @@
               <!-- 移动端：我的评分入口 -->
               <view v-if="!resource.userRating || resource.userRating === 0" class="my-rating-entry mobile-only" @click="showRatingDialog = true">
                 <text class="entry-text">点击评分</text>
-                <text class="entry-icon">›</text>
+                <Icon name="chevron-right" :size="16" :stroke-width="2" class="entry-icon" />
               </view>
             </view>
           </view>
@@ -146,7 +146,7 @@
                 @click="toggleDescription"
               >
                 <text class="toggle-text">{{ descriptionExpanded ? '收起' : '展开全部' }}</text>
-                <text class="toggle-icon">{{ descriptionExpanded ? '▲' : '▼' }}</text>
+                <Icon :name="descriptionExpanded ? 'chevron-up' : 'chevron-down'" :size="14" :stroke-width="2" class="toggle-icon" />
               </view>
             </view>
           </view>
@@ -240,7 +240,7 @@
         <view class="uploader-meta">
           <text class="upload-time">{{ formatUploadTime(resource.createdAt) }}</text>
         </view>
-        <text class="arrow-icon">›</text>
+        <Icon name="chevron-right" :size="18" :stroke-width="1.5" class="arrow-icon" />
       </view>
 
       <!-- 相关推荐区 -->
@@ -354,7 +354,7 @@
         <view class="preview-header">
           <text class="preview-title">{{ resource.title }}</text>
           <view class="preview-close" @click="closePreview">
-            <text class="close-icon">✕</text>
+            <Icon name="x" :size="18" :stroke-width="2" class="close-icon" />
           </view>
         </view>
         <view class="preview-content">
@@ -373,7 +373,7 @@
         <view class="dialog-header">
           <text class="dialog-title">资源评分</text>
           <view class="dialog-close" @click="showRatingDialog = false">
-            <text class="close-icon">✕</text>
+            <Icon name="x" :size="18" :stroke-width="2" class="close-icon" />
           </view>
         </view>
 
@@ -1227,8 +1227,9 @@ const closePreview = () => {
 }
 
 .nav-icon {
-  font-size: $font-size-2xl;
   color: $gray-800;
+  display: flex;
+  align-items: center;
 }
 
 .nav-text {
@@ -1864,8 +1865,9 @@ const closePreview = () => {
   }
 
   .entry-icon {
-    font-size: $font-size-lg;
     color: $accent;
+    display: flex;
+    align-items: center;
   }
 
   &:active {
@@ -2008,7 +2010,6 @@ const closePreview = () => {
   }
 
   .close-icon {
-    font-size: 32rpx;
     color: $gray-500;
   }
 }
@@ -2152,8 +2153,9 @@ const closePreview = () => {
 }
 
 .arrow-icon {
-  font-size: 36rpx; // 从 40rpx → 36rpx，箭头稍小
-  color: $gray-400; // 从 gray-300 → gray-400，更清晰
+  color: $gray-400;
+  display: flex;
+  align-items: center;
   transition: transform $duration-fast;
 
   .uploader-card:hover & {
@@ -2285,8 +2287,9 @@ const closePreview = () => {
   }
 
   .toggle-icon {
-    font-size: 18rpx;
     color: $gray-500;
+    display: flex;
+    align-items: center;
   }
 }
 
@@ -2618,9 +2621,7 @@ const closePreview = () => {
   }
 
   .close-icon {
-    font-size: 40rpx;
     color: $gray-600;
-    font-weight: $font-weight-light;
   }
 }
 

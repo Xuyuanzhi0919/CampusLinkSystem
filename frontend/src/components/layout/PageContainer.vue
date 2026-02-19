@@ -184,14 +184,6 @@ const contentStyle = computed<CSSProperties>(() => {
 const handleBack = () => {
   emit('back')
   if (!props.customBack) {
-    // #ifdef H5
-    // H5 里 navigateBack 底层是 router.go(-1)，无 fail 回调
-    // history.length <= 1 时 go(-1) 会跳到 "/" 触发 404
-    if (window.history.length <= 1) {
-      uni.switchTab({ url: '/pages/home/index' })
-      return
-    }
-    // #endif
     uni.navigateBack({
       fail: () => {
         uni.switchTab({ url: '/pages/home/index' })

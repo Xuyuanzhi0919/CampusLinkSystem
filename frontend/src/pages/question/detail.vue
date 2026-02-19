@@ -614,14 +614,6 @@ const handleTagClick = (tag: string) => {
 const goBack = () => {
   const pages = getCurrentPages()
   if (pages.length > 1) {
-    // H5 里 navigateBack 底层是 router.go(-1)，无 fail 回调
-    // 额外检查浏览器历史栈，避免 go(-1) 跳到 "/" 触发 404
-    // #ifdef H5
-    if (window.history.length <= 1) {
-      uni.switchTab({ url: '/pages/home/index' })
-      return
-    }
-    // #endif
     uni.navigateBack()
   } else {
     uni.switchTab({ url: '/pages/home/index' })

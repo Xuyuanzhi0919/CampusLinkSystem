@@ -1,8 +1,8 @@
 <template>
-  <!-- ========== 底部：危险操作单独隔离 ========== -->
-  <view class="logout-section">
-    <view class="logout-button" @click="handleLogout">
-      <Icon name="log-out" :size="20" class="logout-icon" />
+  <!-- ========== 退出登录 ========== -->
+  <view class="logout-wrap">
+    <view class="logout-btn" @click="handleLogout">
+      <Icon name="log-out" :size="17" class="logout-icon" />
       <text class="logout-text">退出登录</text>
     </view>
   </view>
@@ -11,13 +11,8 @@
 <script setup lang="ts">
 import Icon from '@/components/icons/index.vue'
 
-const emit = defineEmits<{
-  logout: []
-}>()
+const emit = defineEmits<{ logout: [] }>()
 
-/**
- * 处理退出登录（二次确认）
- */
 const handleLogout = () => {
   uni.showModal({
     title: '退出登录',
@@ -25,61 +20,63 @@ const handleLogout = () => {
     confirmText: '退出',
     confirmColor: '#EF4444',
     cancelText: '取消',
-    success: (res) => {
-      if (res.confirm) {
-        emit('logout')
-      }
-    }
+    success: (res) => { if (res.confirm) emit('logout') }
   })
 }
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
-.logout-section {
-  padding: 0 32rpx 32rpx; // 🎯 与内容区保持一致,增加底部边距
-  margin-top: 32rpx; // 增加与上方功能区的距离,强化隔离感
+.logout-wrap {
+  padding: 0;
 }
 
-.logout-button {
+.logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10rpx;
-  height: 80rpx; // 降低高度,降低视觉权重
-  background: transparent; // 透明背景,进一步降权
-  border-radius: 16rpx; // 稍小的圆角
-  border: 1rpx solid $gray-200; // 改为灰色边框,降低警示性
+  height: 88rpx;
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  border: 1rpx solid $color-border-light;
+  box-shadow: $shadow-sm;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: none; // 移除阴影,降低存在感
 
   &:active {
-    background: $gray-50; // 改为灰色激活态
-    border-color: $error-light; // 激活时才显示红色
+    background: #FEF2F2;
+    border-color: rgba($color-danger, 0.2);
     transform: scale(0.98);
+
+    .logout-icon, .logout-text {
+      color: $color-danger;
+    }
   }
+
+  // #ifdef H5
+  &:hover {
+    background: #FEF2F2;
+    border-color: rgba($color-danger, 0.15);
+
+    .logout-icon, .logout-text {
+      color: $color-danger;
+    }
+  }
+  // #endif
 }
 
 .logout-icon {
-  color: $gray-500; // 改为灰色图标
+  color: $color-text-tertiary;
   flex-shrink: 0;
   transition: color 0.2s ease;
-
-  .logout-button:active & {
-    color: $error; // 激活时才变红
-  }
 }
 
 .logout-text {
-  font-size: 28rpx; // 稍小字号
-  font-weight: 500; // 降低字重
-  color: $gray-600; // 改为灰色文字
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $color-text-tertiary;
   transition: color 0.2s ease;
-
-  .logout-button:active & {
-    color: $error; // 激活时才变红
-  }
 }
 </style>

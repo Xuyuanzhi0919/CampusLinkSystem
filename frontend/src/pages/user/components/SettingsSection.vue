@@ -1,15 +1,18 @@
 <template>
-  <!-- ========== 设置区域(弱化) ========== -->
+  <!-- ========== 设置区域 ========== -->
   <view class="settings-section">
     <view
-      v-for="item in settingsItems"
+      v-for="(item, i) in settingsItems"
       :key="item.id"
       class="settings-item"
+      :style="{ animationDelay: `${i * 0.06}s` }"
       @click="handleItemClick(item)"
     >
-      <Icon :name="item.icon" :size="20" class="item-icon" />
+      <view class="item-icon-wrap">
+        <Icon :name="item.icon" :size="18" class="item-icon" />
+      </view>
       <text class="item-label">{{ item.label }}</text>
-      <Icon name="chevron-right" :size="14" class="item-arrow" />
+      <Icon name="chevron-right" :size="15" class="item-arrow" />
     </view>
   </view>
 </template>
@@ -30,71 +33,90 @@ const emit = defineEmits<{
 }>()
 
 const settingsItems = computed<SettingsItem[]>(() => [
-  {
-    id: 'edit-profile',
-    label: '编辑资料',
-    icon: 'user',
-    path: '/pages/user/edit-profile'
-  },
-  {
-    id: 'system-settings',
-    label: '系统设置',
-    icon: 'settings',
-    path: '/pages/user/settings'
-  },
-  {
-    id: 'about',
-    label: '关于我们',
-    icon: 'info',
-    path: '/pages/user/about'
-  }
+  { id: 'edit-profile', label: '编辑资料', icon: 'user', path: '/pages/user/edit-profile' },
+  { id: 'system-settings', label: '系统设置', icon: 'settings', path: '/pages/user/settings' },
+  { id: 'about', label: '关于我们', icon: 'info', path: '/pages/user/about' }
 ])
 
-const handleItemClick = (item: SettingsItem) => {
-  emit('itemClick', item)
-}
+const handleItemClick = (item: SettingsItem) => emit('itemClick', item)
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
-/* ========== 设置区域(弱化) ========== */
 .settings-section {
-  padding: 0 32rpx; // 🎯 与内容区保持一致
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $color-border-light;
 }
 
 .settings-item {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 20rpx 0;
-  border-bottom: 1rpx solid #F3F4F6;
+  gap: 18rpx;
+  padding: 26rpx 24rpx;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background 0.18s ease;
+  position: relative;
+  animation: settingIn 0.4s ease-out both;
 
-  &:last-child {
-    border-bottom: none;
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 72rpx;
+    right: 24rpx;
+    height: 1rpx;
+    background: $color-divider;
   }
 
   &:active {
-    opacity: 0.6;
+    background: $color-bg-hover;
   }
+
+  // #ifdef H5
+  &:hover {
+    background: $color-bg-hover;
+  }
+  // #endif
+}
+
+@keyframes settingIn {
+  from { opacity: 0; transform: translateX(-8rpx); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.item-icon-wrap {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 12rpx;
+  background: $color-bg-hover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .item-icon {
-  color: #9CA3AF; // 🎯 浅灰
-  flex-shrink: 0;
+  color: $color-text-tertiary;
 }
 
 .item-label {
   flex: 1;
   font-size: 28rpx;
-  color: #6B7280; // 🎯 中性灰
-  font-weight: 400; // 🎯 轻字重
+  font-weight: 500;
+  color: $color-text-secondary;
 }
 
 .item-arrow {
-  color: #D1D5DB; // 🎯 极浅灰
+  color: $color-text-placeholder;
   flex-shrink: 0;
+  transition: transform 0.2s ease;
+
+  .settings-item:active & {
+    transform: translateX(3rpx);
+  }
 }
 </style>

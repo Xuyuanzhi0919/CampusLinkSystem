@@ -1,13 +1,49 @@
 <template>
   <view class="user-profile-page">
-    <!-- 加载状态 -->
-    <view v-if="loading" class="loading-container">
-      <text class="loading-text">加载中...</text>
+
+    <!-- ===== 骨架屏（加载中） ===== -->
+    <view v-if="loading" class="skeleton-wrap">
+      <view class="sk-hero">
+        <view class="sk-hero-bg" />
+        <view class="sk-hero-content">
+          <view class="sk-avatar" />
+          <view class="sk-info">
+            <view class="sk-line sk-line--name" />
+            <view class="sk-line sk-line--tag" />
+            <view class="sk-line sk-line--points" />
+          </view>
+        </view>
+        <view class="sk-wave" />
+      </view>
+      <view class="sk-body">
+        <view class="sk-card sk-card--actions" />
+        <view class="sk-card sk-card--stats" />
+        <view class="sk-card sk-card--level" />
+        <view class="sk-card sk-card--capability" />
+      </view>
     </view>
 
-    <!-- 主内容 -->
-    <view v-else-if="userStore.isLoggedIn" class="content-container">
-      <!-- 🎯 ① Hero Section - 个人门面区 -->
+    <!-- ===== 主内容区（登录态） ===== -->
+    <scroll-view
+      v-else-if="userStore.isLoggedIn"
+      class="main-scroll"
+      scroll-y
+      refresher-enabled
+      :refresher-triggered="refreshing"
+      refresher-default-style="none"
+      @refresherrefresh="handleRefresh"
+      @scroll="handleScroll"
+    >
+      <!-- 自定义下拉刷新指示器 -->
+      <view class="custom-refresher" :class="{ active: refreshing }">
+        <view class="refresher-dots">
+          <view class="r-dot" />
+          <view class="r-dot" />
+          <view class="r-dot" />
+        </view>
+      </view>
+
+      <!-- Hero -->
       <HeroSection
         v-if="userProfile"
         :profile="userProfile"
@@ -15,18 +51,18 @@
         @points-click="handlePointsClick"
       />
 
-      <!-- 🎯 ② Quick Actions - 快速操作区 -->
-      <QuickActions
-        @publish-resource="handlePublishResource"
-        @ask-question="handleAskQuestion"
-        @publish-task="handlePublishTask"
-        @join-activity="handleJoinActivity"
-        @go-to-mall="handleGoToMall"
-      />
+      <!-- 内容主体 -->
+      <view class="page-body">
+        <!-- 快速操作 -->
+        <QuickActions
+          @publish-resource="handlePublishResource"
+          @ask-question="handleAskQuestion"
+          @publish-task="handlePublishTask"
+          @join-activity="handleJoinActivity"
+          @go-to-mall="handleGoToMall"
+        />
 
-      <!-- 🎯 内容区(居中容器,max-width: 1200px) -->
-      <view class="main-content">
-        <!-- 🎯 ③ Achievement Section - 成就展示区 -->
+        <!-- 成就数据 + 等级 + 徽章 -->
         <AchievementSection
           v-if="userProfile"
           :level="userProfile.level || 1"
@@ -40,19 +76,11 @@
           @view-all-badges="handleViewAllBadges"
         />
 
-        <!-- 🎯 ④ Content Hub - 内容中心 -->
-        <ContentHub
-          :resource-list="mockResourceList"
-          :answer-list="mockAnswerList"
-          :interaction-list="mockInteractionList"
-          :growth-events="mockGrowthEvents"
-          @item-click="handleContentItemClick"
-        />
-
-        <!-- 🎯 ⑤ 我的能力 -->
-        <view class="capability-section">
-          <view class="section-title">
-            <text class="title-text">我的能力</text>
+        <!-- 功能入口 -->
+        <view class="section-block">
+          <view class="section-label">
+            <view class="section-label-dot" />
+            <text class="section-label-text">我的内容</text>
           </view>
           <CapabilityPanel
             :badges="capabilityBadges"
@@ -60,19 +88,22 @@
           />
         </view>
 
-        <!-- 🎯 ⑤ 账户与系统 -->
-        <view class="account-section">
-          <view class="section-title">
-            <text class="title-text">账号与系统</text>
+        <!-- 账号与系统 -->
+        <view class="section-block">
+          <view class="section-label">
+            <view class="section-label-dot section-label-dot--gray" />
+            <text class="section-label-text">账号与系统</text>
           </view>
           <SettingsSection @item-click="handleSettingsClick" />
-          <AccountActions @logout="handleLogout" />
         </view>
 
-        <!-- 底部安全距离 -->
-        <view class="safe-area-bottom" />
+        <!-- 退出登录 -->
+        <AccountActions @logout="handleLogout" />
+
+        <!-- 底部安全区 -->
+        <view class="safe-bottom" />
       </view>
-    </view>
+    </scroll-view>
 
     <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
@@ -81,6 +112,13 @@
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar v-if="!isDesktop" />
+
+    <!-- 回到顶部按钮（移动端） -->
+    <transition name="fab-pop">
+      <view v-if="!isDesktop && showScrollTop" class="back-top-fab" @click="scrollToTop">
+        <Icon name="arrow-up" :size="18" class="back-top-icon" />
+      </view>
+    </transition>
   </view>
 </template>
 
@@ -89,36 +127,29 @@ import { ref, onMounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/stores/user'
 import type { UserProfileData, UserStatsData } from '@/types/user'
-import {
-  getUserProfile,
-  getUserStats,
-  checkIn,
-  getCheckInStatus
-} from '@/services/user'
+import { getUserProfile, getUserStats, getCheckInStatus } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
+import Icon from '@/components/icons/index.vue'
+
 import HeroSection from './components/HeroSection.vue'
 import QuickActions from './components/QuickActions.vue'
 import AchievementSection from './components/AchievementSection.vue'
-import ContentHub from './components/ContentHub.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
 import AccountActions from './components/AccountActions.vue'
 
-// 移动端组件
 import { CustomTabBar } from '@/components/mobile'
 
-// PC 端组件（仅 H5）
 // #ifdef H5
 import { PCFloatingNav } from '@/components/desktop'
 // #endif
 
 const userStore = useUserStore()
 
-// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
 const isDesktop = computed(() => {
   // #ifdef H5
-  return window.innerWidth >= 1024
+  return typeof window !== 'undefined' && window.innerWidth >= 1024
   // #endif
   // #ifndef H5
   return false
@@ -127,13 +158,31 @@ const isDesktop = computed(() => {
 
 // 数据状态
 const loading = ref(true)
+const refreshing = ref(false)
 const userProfile = ref<UserProfileData | null>(null)
 const userStats = ref<UserStatsData | null>(null)
-const isCheckedInToday = ref(false)
 const unreadNotifications = ref(0)
 const unreadMessages = ref(0)
 
-// 🎯 等级计算
+// 滚动状态
+const showScrollTop = ref(false)
+const scrollTopVal = ref<number | undefined>(undefined)
+
+const handleScroll = (e: any) => {
+  const top = e.detail?.scrollTop ?? 0
+  showScrollTop.value = top > 400
+}
+
+const scrollToTop = () => {
+  scrollTopVal.value = 999
+  setTimeout(() => {
+    scrollTopVal.value = 0
+    setTimeout(() => { scrollTopVal.value = undefined }, 400)
+  }, 16)
+  showScrollTop.value = false
+}
+
+// 等级计算
 const levelName = computed(() => {
   const level = userProfile.value?.level || 1
   if (level < 5) return '校园新星'
@@ -143,388 +192,343 @@ const levelName = computed(() => {
   return '校园传奇'
 })
 
-const nextLevelExp = computed(() => {
-  const level = userProfile.value?.level || 1
-  return level * 100 // 简单计算: 每级需要 level * 100 经验
-})
+const nextLevelExp = computed(() => (userProfile.value?.level || 1) * 100)
 
-// 🎯 成就统计数据
 const achievementStats = computed(() => [
-  {
-    key: 'resources',
-    label: '资源',
-    value: userStats.value?.resourceCount || 0
-  },
-  {
-    key: 'answers',
-    label: '回答',
-    value: userStats.value?.answerCount || 0
-  },
-  {
-    key: 'likes',
-    label: '获赞',
-    value: userStats.value?.receivedLikes || 0
-  },
-  {
-    key: 'collections',
-    label: '收藏',
-    value: userStats.value?.collectionCount || 0
-  }
+  { key: 'resources', label: '资源', value: userStats.value?.resourceCount || 0 },
+  { key: 'answers',   label: '回答', value: userStats.value?.answerCount || 0 },
+  { key: 'likes',     label: '获赞', value: userStats.value?.receivedLikes || 0 },
+  { key: 'collections', label: '收藏', value: userStats.value?.collectionCount || 0 }
 ])
 
-// 🎯 用户徽章(示例数据,后续从API获取)
 const userBadges = computed(() => [
-  { id: 1, name: '新人报到', icon: 'star', unlocked: true, description: '完成首次登录' },
-  { id: 2, name: '资源贡献', icon: 'file-text', unlocked: (userStats.value?.resourceCount || 0) >= 5, description: '上传5个资源' },
-  { id: 3, name: '热心助人', icon: 'heart', unlocked: (userStats.value?.answerCount || 0) >= 10, description: '回答10个问题' },
-  { id: 4, name: '人气王', icon: 'users', unlocked: (userStats.value?.receivedLikes || 0) >= 50, description: '获得50个赞' },
-  { id: 5, name: '学习标兵', icon: 'book-open', unlocked: false, description: '连续签到30天' }
+  { id: 1, name: '新人报到',  icon: 'star',      unlocked: true,   description: '完成首次登录' },
+  { id: 2, name: '资源贡献',  icon: 'file-text', unlocked: (userStats.value?.resourceCount || 0) >= 5,  description: '上传5个资源' },
+  { id: 3, name: '热心助人',  icon: 'heart',     unlocked: (userStats.value?.answerCount || 0) >= 10,   description: '回答10个问题' },
+  { id: 4, name: '人气王',    icon: 'users',     unlocked: (userStats.value?.receivedLikes || 0) >= 50, description: '获得50个赞' },
+  { id: 5, name: '学习标兵',  icon: 'book-open', unlocked: false,  description: '连续签到30天' }
 ])
 
-// 能力面板角标
 const capabilityBadges = computed(() => ({
-  myResources: userStats.value?.resourceCount || 0,
-  myQuestions: userStats.value?.questionCount || 0,
+  myResources:   userStats.value?.resourceCount || 0,
+  myQuestions:   userStats.value?.questionCount || 0,
   notifications: unreadNotifications.value,
-  messages: unreadMessages.value
+  messages:      unreadMessages.value
 }))
 
-// 🎯 Content Hub Mock数据(后续从API获取)
-const mockResourceList = computed(() => [
-  {
-    id: 1,
-    title: '计算机网络复习资料整理',
-    category: '课件',
-    downloads: 128,
-    views: 456,
-    createdAt: '2天前'
-  },
-  {
-    id: 2,
-    title: '数据结构期末考试真题(2023)',
-    category: '试题',
-    downloads: 89,
-    views: 234,
-    createdAt: '5天前'
-  }
-])
-
-const mockAnswerList = computed(() => [
-  {
-    id: 1,
-    questionTitle: 'TCP和UDP的区别是什么?',
-    content: 'TCP是面向连接的协议,提供可靠的数据传输...',
-    likes: 12,
-    adopted: true,
-    createdAt: '3天前'
-  },
-  {
-    id: 2,
-    questionTitle: '如何理解Java中的多态性?',
-    content: '多态是面向对象编程的三大特性之一...',
-    likes: 8,
-    adopted: false,
-    createdAt: '1周前'
-  }
-])
-
-const mockInteractionList = computed(() => [
-  {
-    id: 1,
-    action: 'like' as const,
-    type: 'resource',
-    targetId: 123,
-    title: '操作系统实验报告模板',
-    createdAt: '1小时前'
-  },
-  {
-    id: 2,
-    action: 'collect' as const,
-    type: 'question',
-    targetId: 456,
-    title: 'Spring Boot项目如何集成Redis?',
-    createdAt: '昨天'
-  },
-  {
-    id: 3,
-    action: 'comment' as const,
-    type: 'answer',
-    targetId: 789,
-    title: '数据库索引优化的几个技巧',
-    createdAt: '2天前'
-  }
-])
-
-const mockGrowthEvents = computed(() => [
-  {
-    id: 1,
-    type: 'level' as const,
-    title: '等级提升',
-    description: '恭喜你升到Lv.2,继续努力!',
-    points: 100,
-    createdAt: '今天'
-  },
-  {
-    id: 2,
-    type: 'badge' as const,
-    title: '解锁徽章: 资源贡献',
-    description: '上传了5个资源,帮助了很多同学',
-    createdAt: '3天前'
-  },
-  {
-    id: 3,
-    type: 'achievement' as const,
-    title: '首次回答被采纳',
-    description: '你的回答帮助他人解决了问题',
-    points: 20,
-    createdAt: '1周前'
-  }
-])
-
+// 数据加载
 const loadUserData = async () => {
-
   try {
-    loading.value = true
-
-    const [profileRes, statsRes, checkInRes, notificationRes, messageRes] = await Promise.all([
+    const [profileRes, statsRes, , notifRes, msgRes] = await Promise.all([
       getUserProfile(),
       getUserStats(),
       getCheckInStatus(),
       getUnreadCount(),
       getMessageUnreadCount()
     ])
-
     userProfile.value = profileRes
     userStats.value = statsRes
-    isCheckedInToday.value = checkInRes
-    unreadNotifications.value = notificationRes
-    unreadMessages.value = messageRes
-
-    if (profileRes) {
-      userStore.setUserInfo(profileRes)
-    }
-  } catch (error: any) {
-    console.error('加载用户数据失败:', error)
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+    unreadNotifications.value = notifRes
+    unreadMessages.value = msgRes
+    if (profileRes) userStore.setUserInfo(profileRes)
+  } catch (err: any) {
+    console.error('加载用户数据失败:', err)
+    uni.showToast({ title: err.message || '加载失败', icon: 'none' })
   } finally {
     loading.value = false
+    refreshing.value = false
   }
 }
 
-const handleEditProfile = () => {
-  uni.navigateTo({ url: '/pages/user/edit-profile' })
+const handleRefresh = async () => {
+  refreshing.value = true
+  await loadUserData()
 }
 
-const handlePointsClick = () => {
-  uni.navigateTo({ url: '/pages/user/points-history' })
-}
+// 导航处理
+const handleEditProfile   = () => uni.navigateTo({ url: '/pages/user/edit-profile' })
+const handlePointsClick   = () => uni.navigateTo({ url: '/pages/user/points-history' })
 
-// 🎯 Quick Actions 处理函数
-const handlePublishResource = () => {
-  uni.navigateTo({
-    url: '/pages/resource/publish',
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-  })
-}
+const handlePublishResource = () =>
+  uni.navigateTo({ url: '/pages/resource/publish', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+const handleAskQuestion = () =>
+  uni.navigateTo({ url: '/pages/question/ask', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+const handlePublishTask = () =>
+  uni.navigateTo({ url: '/pages/task/publish', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+const handleJoinActivity = () => uni.navigateTo({ url: '/pages/club/my-activities' })
+const handleGoToMall = () => uni.showToast({ title: '积分商城即将上线', icon: 'none' })
 
-const handleAskQuestion = () => {
-  uni.navigateTo({
-    url: '/pages/question/ask',
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-  })
-}
-
-const handlePublishTask = () => {
-  uni.navigateTo({
-    url: '/pages/task/publish',
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-  })
-}
-
-const handleJoinActivity = () => {
-  uni.navigateTo({ url: '/pages/club/my-activities' })
-}
-
-const handleGoToMall = () => {
-  uni.showToast({ title: '积分商城即将上线', icon: 'none' })
-}
-
-// 🎯 Achievement Section 处理函数
 const handleStatClick = (key: string) => {
-  const routeMap: Record<string, string> = {
+  const map: Record<string, string> = {
     resources: '/pages/resource/my-list',
-    answers: '/pages/question/my-answers',
-    likes: '/pages/user/liked-list',
+    answers:   '/pages/question/my-answers',
+    likes:     '/pages/user/liked-list',
     collections: '/pages/user/collection-list'
   }
-
-  const url = routeMap[key]
-  if (url) {
-    uni.navigateTo({
-      url,
-      fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-    })
-  }
+  const url = map[key]
+  if (url) uni.navigateTo({ url, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 }
 
 const handleBadgeClick = (badge: any) => {
-  uni.showModal({
-    title: badge.name,
-    content: badge.description || '恭喜解锁此徽章!',
-    showCancel: false,
-    confirmText: '知道了'
-  })
+  uni.showModal({ title: badge.name, content: badge.description || '恭喜解锁此徽章！', showCancel: false, confirmText: '知道了' })
 }
 
-const handleViewAllBadges = () => {
-  uni.navigateTo({
-    url: '/pages/user/badges',
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-  })
-}
-
-// 🎯 Content Hub 处理函数
-const handleContentItemClick = (type: string, id: number) => {
-  const routeMap: Record<string, string> = {
-    resource: '/pages/resource/detail',
-    answer: '/pages/question/detail',
-    question: '/pages/question/detail'
-  }
-
-  const baseUrl = routeMap[type]
-  if (baseUrl) {
-    uni.navigateTo({
-      url: `${baseUrl}?id=${id}`,
-      fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' })
-    })
-  }
-}
+const handleViewAllBadges = () =>
+  uni.navigateTo({ url: '/pages/user/badges', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 
 const handleCapabilityClick = (item: any) => {
-  if (item.path) {
-    uni.navigateTo({
-      url: item.path,
-      fail: () => {
-        uni.showToast({
-          title: '页面开发中...',
-          icon: 'none'
-        })
-      }
-    })
-  }
+  if (item.path) uni.navigateTo({ url: item.path, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 }
 
 const handleSettingsClick = (item: any) => {
-  if (item.path) {
-    uni.navigateTo({
-      url: item.path,
-      fail: () => {
-        uni.showToast({
-          title: '页面开发中...',
-          icon: 'none'
-        })
-      }
-    })
-  }
+  if (item.path) uni.navigateTo({ url: item.path, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 }
 
 const handleLogout = () => {
-  uni.showToast({
-    title: '已退出登录',
-    icon: 'success',
-    duration: 1500
-  })
-
-  setTimeout(() => {
-    userStore.logout()
-  }, 300)
+  uni.showToast({ title: '已退出登录', icon: 'success', duration: 1500 })
+  setTimeout(() => userStore.logout(), 300)
 }
 
-const onPullDownRefresh = async () => {
-  await loadUserData()
-  uni.stopPullDownRefresh()
-}
+onMounted(() => loadUserData())
+onShow(() => loadUserData())
 
-onMounted(() => {
-  loadUserData()
-})
-
-onShow(() => {
-  loadUserData()
-})
-
-defineExpose({
-  onPullDownRefresh
-})
+defineExpose({ onPullDownRefresh: handleRefresh })
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
+/* ========== 页面容器 ========== */
 .user-profile-page {
-  min-height: 100vh;
-  background: #F8FAFC; // $bg-page
+  width: 100%;
+  height: 100vh;
+  background: $color-bg-page;
+  position: relative;
+  overflow: hidden;
 }
 
-.loading-container {
-  @include flex-center;
-  min-height: 100vh;
+/* ========== 主滚动区 ========== */
+.main-scroll {
+  width: 100%;
+  height: 100%;
+  background: $color-bg-page;
 }
 
-.loading-text {
-  font-size: $font-size-base;
-  color: $gray-400;
+/* ========== 下拉刷新 ========== */
+.custom-refresher {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60rpx;
+  opacity: 0;
+  transition: opacity 0.2s;
+
+  &.active { opacity: 1; }
 }
 
-.content-container {
+.refresher-dots {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+}
+
+.r-dot {
+  width: 8rpx;
+  height: 8rpx;
+  border-radius: 50%;
+  background: $campus-blue;
+  opacity: 0.4;
+  animation: rDotPulse 1.2s ease-in-out infinite;
+
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
+}
+
+@keyframes rDotPulse {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
+  40%           { transform: scale(1.1); opacity: 1; }
+}
+
+/* ========== 页面主体 ========== */
+.page-body {
   display: flex;
   flex-direction: column;
-}
-
-/* 🎯 内容区 - 居中容器 */
-.main-content {
+  gap: 16rpx;
+  padding: 0 20rpx;
   width: 100%;
+  box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 0 $sp-8 0;
 
   @media (min-width: 768px) {
-    padding-left: 32px;
-    padding-right: 32px;
+    padding: 0 32rpx;
+    gap: 20rpx;
   }
 
-  @media (min-width: 1280px) {
-    padding-left: 48px;
-    padding-right: 48px;
+  @media (min-width: 1024px) {
+    padding: 0 48rpx;
+    gap: 24rpx;
   }
 }
 
-/* 能力面板区域 */
-.capability-section {
-  margin-top: 32rpx;
+/* ========== 区块标签 ========== */
+.section-block {
+  display: flex;
+  flex-direction: column;
+  gap: 14rpx;
 }
 
-/* 账户区域 */
-.account-section {
-  margin-top: 48rpx;
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  padding-left: 4rpx;
 }
 
-/* 区块标题 */
-.section-title {
-  padding: 0 32rpx 20rpx; // 🎯 与内容区保持一致
+.section-label-dot {
+  width: 6rpx;
+  height: 22rpx;
+  background: linear-gradient(180deg, $campus-blue 0%, $campus-blue-light 100%);
+  border-radius: 3rpx;
+
+  &--gray {
+    background: $color-border;
+  }
 }
 
-.title-text {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #0F172A; // $text-primary
-  display: block;
+.section-label-text {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $color-text-tertiary;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-.safe-area-bottom {
-  height: $sp-8;
+/* ========== 底部安全区 ========== */
+.safe-bottom {
+  height: 120rpx; // TabBar 高度 + 额外留白
+}
+
+/* ========== 回到顶部浮钮（移动端） ========== */
+.back-top-fab {
+  position: fixed;
+  right: 28rpx;
+  bottom: 120rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  background: $campus-blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6rpx 20rpx rgba($campus-blue, 0.4);
+  cursor: pointer;
+  z-index: $z-fixed;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  &:active { transform: scale(0.88); }
+
+  @media (min-width: 1024px) { display: none; }
+}
+
+.back-top-icon { color: #fff; }
+
+.fab-pop-enter-active { transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.fab-pop-leave-active { transition: all 0.2s ease-in; }
+.fab-pop-enter-from,
+.fab-pop-leave-to { opacity: 0; transform: scale(0.5) translateY(20rpx); }
+
+/* ========== 骨架屏 ========== */
+@keyframes skShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+%sk-shimmer-base {
+  background: linear-gradient(
+    90deg,
+    rgba(0,0,0,0.04) 25%,
+    rgba(0,0,0,0.08) 50%,
+    rgba(0,0,0,0.04) 75%
+  );
+  background-size: 200% 100%;
+  animation: skShimmer 1.6s ease-in-out infinite;
+}
+
+.skeleton-wrap {
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.sk-hero {
+  position: relative;
+  height: 360rpx;
+}
+
+.sk-hero-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, #1a2744 0%, #1e3a52 100%);
+}
+
+.sk-hero-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 100rpx 36rpx 40rpx;
+}
+
+.sk-avatar {
+  @extend %sk-shimmer-base;
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sk-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.sk-line {
+  @extend %sk-shimmer-base;
+  border-radius: 6rpx;
+
+  &--name   { height: 36rpx; width: 60%; }
+  &--tag    { height: 24rpx; width: 40%; }
+  &--points { height: 48rpx; width: 45%; border-radius: 12rpx; }
+}
+
+.sk-wave {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40rpx;
+  background: $color-bg-page;
+  border-radius: 40rpx 40rpx 0 0;
+}
+
+.sk-body {
+  padding: 20rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+}
+
+.sk-card {
+  @extend %sk-shimmer-base;
+  border-radius: 24rpx;
+
+  &--actions     { height: 140rpx; }
+  &--stats       { height: 160rpx; }
+  &--level       { height: 100rpx; }
+  &--capability  { height: 280rpx; }
 }
 </style>

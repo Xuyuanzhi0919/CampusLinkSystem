@@ -1,143 +1,228 @@
 <template>
-  <!-- ========== 快速操作区(Quick Actions) ========== -->
+  <!-- ========== 快速操作区 ========== -->
   <view class="quick-actions">
-    <scroll-view scroll-x class="actions-scroll" show-scrollbar="{{false}}">
-      <view class="action-item" @click="$emit('publishResource')">
-        <view class="action-icon">
-          <Icon name="file-plus" :size="20" :stroke-width="1.5" />
+    <view class="actions-grid">
+      <view
+        v-for="(action, i) in actions"
+        :key="action.key"
+        class="action-item"
+        :class="action.highlight ? 'action-item--highlight' : ''"
+        :style="{ animationDelay: `${i * 0.07}s` }"
+        @click="action.handler"
+      >
+        <view class="action-icon-wrap" :class="`action-icon-wrap--${action.color}`">
+          <Icon :name="action.icon" :size="22" class="action-icon" :stroke-width="1.8" />
         </view>
-        <text class="action-label">发布资源</text>
+        <text class="action-label">{{ action.label }}</text>
+        <view v-if="action.highlight" class="action-highlight-dot" />
       </view>
-
-      <view class="action-item accent" @click="$emit('askQuestion')">
-        <view class="action-icon">
-          <Icon name="help-circle" :size="20" />
-        </view>
-        <text class="action-label">提个问题</text>
-      </view>
-
-      <view class="action-item" @click="$emit('publishTask')">
-        <view class="action-icon">
-          <Icon name="briefcase" :size="20" />
-        </view>
-        <text class="action-label">发布任务</text>
-      </view>
-
-      <view class="action-item" @click="$emit('joinActivity')">
-        <view class="action-icon">
-          <Icon name="calendar" :size="20" />
-        </view>
-        <text class="action-label">报名活动</text>
-      </view>
-
-      <view class="action-item" @click="$emit('goToMall')">
-        <view class="action-icon">
-          <Icon name="shopping-bag" :size="20" />
-        </view>
-        <text class="action-label">积分商城</text>
-      </view>
-    </scroll-view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
 import Icon from '@/components/icons/index.vue'
 
-defineEmits<{
+const emit = defineEmits<{
   publishResource: []
   askQuestion: []
   publishTask: []
   joinActivity: []
   goToMall: []
 }>()
+
+const actions = [
+  {
+    key: 'resource',
+    label: '发布资源',
+    icon: 'file-plus',
+    color: 'blue',
+    highlight: false,
+    handler: () => emit('publishResource')
+  },
+  {
+    key: 'question',
+    label: '提个问题',
+    icon: 'help-circle',
+    color: 'orange',
+    highlight: true,
+    handler: () => emit('askQuestion')
+  },
+  {
+    key: 'task',
+    label: '发布任务',
+    icon: 'briefcase',
+    color: 'green',
+    highlight: false,
+    handler: () => emit('publishTask')
+  },
+  {
+    key: 'activity',
+    label: '报名活动',
+    icon: 'calendar',
+    color: 'purple',
+    highlight: false,
+    handler: () => emit('joinActivity')
+  },
+  {
+    key: 'mall',
+    label: '积分商城',
+    icon: 'shopping-bag',
+    color: 'rose',
+    highlight: false,
+    handler: () => emit('goToMall')
+  }
+]
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
-/* ========== Quick Actions ========== */
 .quick-actions {
-  margin-top: -40rpx; // 🎯 向上覆盖 Hero 区域,制造层次感
-  padding: 0 32rpx; // 0 $sp-8
-  margin-bottom: 32rpx; // $sp-8
-  width: 100%;
-  max-width: 1200rpx; // 与内容区一致
-  margin-left: auto;
-  margin-right: auto;
-  box-sizing: border-box;
+  padding: 0 20rpx;
+  animation: fadeUp 0.4s ease-out 0.1s both;
 }
 
-.actions-scroll {
-  white-space: nowrap;
-  width: 100%;
-
-  // 隐藏滚动条（仅H5）
-  /* #ifdef H5 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  /* #endif */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12rpx); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-// 🎯 响应式适配 - 桌面端居中显示
-@media (min-width: 768px) {
-  .actions-scroll {
-    display: flex;
-    justify-content: center;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-  }
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12rpx;
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  padding: 24rpx 16rpx 20rpx;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $color-border-light;
 }
 
 .action-item {
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
   align-items: center;
-  margin-right: 24rpx; // $sp-6
+  gap: 10rpx;
+  cursor: pointer;
+  position: relative;
+  padding: 4rpx 0;
+  border-radius: 16rpx;
+  transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  animation: itemIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
 
-  &:first-child {
-    margin-left: 0;
+  &:active {
+    transform: scale(0.91);
   }
 
-  &:last-child {
-    margin-right: 0;
+  // #ifdef H5
+  &:hover {
+    .action-icon-wrap {
+      transform: translateY(-4rpx);
+    }
+  }
+  // #endif
+}
+
+@keyframes itemIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.action-icon-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 22rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  box-shadow: 0 4rpx 12rpx rgba(0,0,0,0.06);
+
+  &--blue {
+    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+    .action-icon { color: #2563EB; }
   }
 
-  .action-icon {
-    width: 112rpx;
-    height: 112rpx;
-    border-radius: 16rpx; // $radius-card
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2rpx 16rpx rgba(0, 0, 0, 0.06); // $shadow-card
-    color: #2563EB; // $primary
-    transition: all 0.3s ease;
+  &--orange {
+    background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+    .action-icon { color: #EA580C; }
+  }
 
-    &:active {
-      transform: scale(0.95);
+  &--green {
+    background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+    .action-icon { color: #16A34A; }
+  }
+
+  &--purple {
+    background: linear-gradient(135deg, #FAF5FF 0%, #EDE9FE 100%);
+    .action-icon { color: #7C3AED; }
+  }
+
+  &--rose {
+    background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
+    .action-icon { color: #E11D48; }
+  }
+}
+
+/* 强调项（提问）图标放大 */
+.action-item--highlight {
+  .action-icon-wrap {
+    background: linear-gradient(135deg, #F97316 0%, #FBBF24 100%) !important;
+    box-shadow: 0 6rpx 20rpx rgba(249,115,22,0.35);
+
+    .action-icon {
+      color: #fff !important;
     }
   }
 
   .action-label {
-    margin-top: 12rpx;
-    font-size: 22rpx;
-    color: #64748B; // $text-secondary
+    color: #EA580C;
+    font-weight: 600;
+  }
+}
+
+.action-highlight-dot {
+  position: absolute;
+  top: 0;
+  right: 8rpx;
+  width: 10rpx;
+  height: 10rpx;
+  background: #EF4444;
+  border-radius: 50%;
+  border: 2rpx solid $color-bg-card;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50%       { transform: scale(1.3); opacity: 0.7; }
+}
+
+.action-label {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.2;
+  transition: color 0.2s;
+}
+
+/* PC 端适配：5列保持，但间距更宽松 */
+@media (min-width: 1024px) {
+  .actions-grid {
+    padding: 32rpx 24rpx 28rpx;
+    gap: 16rpx;
   }
 
-  // 🎯 强调操作(提问)
-  &.accent {
-    .action-icon {
-      background: linear-gradient(135deg, #F97316 0%, #FF8A5B 100%); // accent gradient
-      color: #fff;
-      box-shadow: 0 8rpx 24rpx rgba(249, 115, 22, 0.3);
-    }
+  .action-icon-wrap {
+    width: 112rpx;
+    height: 112rpx;
+    border-radius: 26rpx;
+  }
 
-    .action-label {
-      color: #F97316; // accent
-      font-weight: 600;
-    }
+  .action-label {
+    font-size: 22rpx;
   }
 }
 </style>

@@ -1,22 +1,31 @@
 <template>
-  <!-- ========== 能力面板(2x2卡片) ========== -->
+  <!-- ========== 功能入口面板 ========== -->
   <view class="capability-panel">
     <view
-      v-for="item in capabilityItems"
+      v-for="(item, i) in capabilityItems"
       :key="item.id"
-      class="capability-card"
+      class="cap-card"
+      :style="{ animationDelay: `${i * 0.07}s` }"
       @click="handleCardClick(item)"
     >
-      <view class="card-icon-wrapper" :class="item.colorClass">
-        <Icon :name="item.icon" :size="28" class="card-icon" />
+      <!-- 图标 -->
+      <view class="cap-icon-wrap" :class="`cap-icon-wrap--${item.color}`">
+        <Icon :name="item.icon" :size="24" class="cap-icon" />
       </view>
-      <view class="card-content">
-        <text class="card-title">{{ item.title }}</text>
-        <text class="card-desc">{{ item.description }}</text>
+
+      <!-- 文字 -->
+      <view class="cap-text">
+        <text class="cap-title">{{ item.title }}</text>
+        <text class="cap-desc">{{ item.description }}</text>
       </view>
-      <view v-if="item.badge && item.badge > 0" class="card-badge">
-        <text class="badge-text">{{ badgeText(item.badge) }}</text>
+
+      <!-- 角标 -->
+      <view v-if="item.badge && item.badge > 0" class="cap-badge">
+        <text class="cap-badge-text">{{ item.badge > 99 ? '99+' : item.badge }}</text>
       </view>
+
+      <!-- 箭头 -->
+      <Icon name="chevron-right" :size="16" class="cap-arrow" />
     </view>
   </view>
 </template>
@@ -30,7 +39,7 @@ interface CapabilityItem {
   title: string
   description: string
   icon: string
-  colorClass: string
+  color: string
   path: string
   badge?: number
 }
@@ -50,94 +59,100 @@ const emit = defineEmits<{
   itemClick: [item: CapabilityItem]
 }>()
 
-// 🎯 能力面板(2x2卡片)
 const capabilityItems = computed<CapabilityItem[]>(() => [
   {
     id: 'my-resources',
     title: '我的资源',
-    description: '管理上传内容',
+    description: `已上传 ${props.badges?.myResources || 0} 个资源`,
     icon: 'file-text',
-    colorClass: 'blue',
+    color: 'blue',
     path: '/pages/resource/my',
     badge: props.badges?.myResources
   },
   {
     id: 'my-questions',
     title: '我的回答',
-    description: '管理回答',
+    description: `共回答 ${props.badges?.myQuestions || 0} 个问题`,
     icon: 'message-circle',
-    colorClass: 'green',
+    color: 'green',
     path: '/pages/question/my',
     badge: props.badges?.myQuestions
   },
   {
     id: 'my-interactions',
-    title: '我的互动',
-    description: '消息 / 点赞',
-    icon: 'heart',
-    colorClass: 'red',
+    title: '消息通知',
+    description: '点赞、评论、私信',
+    icon: 'bell',
+    color: 'rose',
     path: '/pages/user/favorites',
     badge: (props.badges?.notifications || 0) + (props.badges?.messages || 0)
   },
   {
     id: 'my-growth',
-    title: '我的成长',
-    description: '勋章 / 积分',
-    icon: 'award',
-    colorClass: 'orange',
+    title: '成长记录',
+    description: '勋章、积分、等级历史',
+    icon: 'trending-up',
+    color: 'amber',
     path: '/pages/user/points-history'
   }
 ])
 
-/**
- * 角标文本(>99显示99+)
- */
-const badgeText = (count: number) => {
-  return count > 99 ? '99+' : count.toString()
-}
-
-/**
- * 处理卡片点击
- */
-const handleCardClick = (item: CapabilityItem) => {
-  emit('itemClick', item)
-}
+const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
-/* ========== 能力面板(2x2卡片) ========== */
 .capability-panel {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
-  padding: 0 32rpx; // 🎯 与 Achievement Section 和 Content Hub 保持一致
-}
-
-.capability-card {
-  position: relative;
-  background: $white;
-  border-radius: 20rpx;
-  padding: 32rpx 24rpx;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
-  border: 1rpx solid #F3F4F6;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 16rpx;
-
-  &:active {
-    transform: translateY(-4rpx);
-    box-shadow: 0 8rpx 20rpx rgba(0, 0, 0, 0.08);
-    border-color: #E5E7EB;
-  }
+  gap: 0;
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  overflow: hidden;
+  box-shadow: $shadow-sm;
+  border: 1rpx solid $color-border-light;
 }
 
-/* 卡片图标容器 */
-.card-icon-wrapper {
+.cap-card {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 28rpx 24rpx;
+  cursor: pointer;
+  transition: background 0.18s ease;
+  position: relative;
+  animation: capIn 0.4s ease-out both;
+
+  // 分割线（最后一项不显示）
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 76rpx; // 与文字对齐
+    right: 24rpx;
+    height: 1rpx;
+    background: $color-divider;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+
+  // #ifdef H5
+  &:hover {
+    background: $color-bg-hover;
+  }
+  // #endif
+}
+
+@keyframes capIn {
+  from { opacity: 0; transform: translateX(-12rpx); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* 图标 */
+.cap-icon-wrap {
   width: 72rpx;
   height: 72rpx;
   border-radius: 18rpx;
@@ -145,88 +160,87 @@ const handleCardClick = (item: CapabilityItem) => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
 
-  &.blue {
-    background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  .cap-card:active & {
+    transform: scale(0.92);
   }
 
-  &.green {
-    background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%);
+  &--blue {
+    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+    .cap-icon { color: #2563EB; }
   }
 
-  &.red {
-    background: linear-gradient(135deg, #FEF2F2 0%, #FEE2E2 100%);
+  &--green {
+    background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
+    .cap-icon { color: #16A34A; }
   }
 
-  &.orange {
-    background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
-  }
-}
-
-.card-icon {
-  flex-shrink: 0;
-
-  .blue & {
-    color: #2563EB; // primary
+  &--rose {
+    background: linear-gradient(135deg, #FFF1F2, #FFE4E6);
+    .cap-icon { color: #E11D48; }
   }
 
-  .green & {
-    color: #16A34A; // success
-  }
-
-  .red & {
-    color: #EF4444; // error
-  }
-
-  .orange & {
-    color: #F97316; // accent
+  &--amber {
+    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
+    .cap-icon { color: #D97706; }
   }
 }
 
-/* 卡片内容 */
-.card-content {
+/* 文字 */
+.cap-text {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
-  min-width: 0;
+  gap: 4rpx;
 }
 
-.card-title {
-  font-size: 30rpx;
+.cap-title {
+  font-size: 28rpx;
   font-weight: 600;
-  color: #111827;
+  color: $color-text-primary;
   line-height: 1.2;
 }
 
-.card-desc {
-  font-size: 24rpx;
-  color: #9CA3AF;
+.cap-desc {
+  font-size: 22rpx;
+  color: $color-text-tertiary;
   font-weight: 400;
-  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 角标 */
-.card-badge {
-  position: absolute;
-  top: 16rpx;
-  right: 16rpx;
-  min-width: 32rpx;
-  height: 32rpx;
+.cap-badge {
+  min-width: 36rpx;
+  height: 36rpx;
   padding: 0 10rpx;
-  background: #EF4444;
-  color: $white;
-  border-radius: 16rpx;
+  background: $color-danger;
+  border-radius: 9999rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20rpx;
-  font-weight: 600;
-  box-shadow: 0 2rpx 8rpx rgba(239, 68, 68, 0.3);
+  flex-shrink: 0;
+  box-shadow: 0 2rpx 8rpx rgba($color-danger, 0.3);
 }
 
-.badge-text {
+.cap-badge-text {
+  font-size: 18rpx;
+  font-weight: 700;
+  color: #fff;
   line-height: 1;
+}
+
+/* 箭头 */
+.cap-arrow {
+  color: $color-text-placeholder;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+
+  .cap-card:active & {
+    transform: translateX(4rpx);
+  }
 }
 </style>

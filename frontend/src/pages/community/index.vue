@@ -112,10 +112,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { onShow } from '@dcloudio/uni-app'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
 import { getClubList, getActivityList } from '@/services/club'
 import Icon from '@/components/icons/index.vue'
+import { useNavigationStore } from '@/stores/navigation'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -129,6 +131,8 @@ import { PCFloatingNav } from '@/components/desktop'
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
 const isDesktop = computed(() => windowWidth.value >= 1024)
 const handleWindowResize = () => { windowWidth.value = window.innerWidth }
+
+const navigationStore = useNavigationStore()
 
 // Tab 配置
 const tabs = [
@@ -183,7 +187,7 @@ const handleSwiperChange = (e: any) => {
 }
 
 /**
- * scroll-view 滚动事件 —— 记录各 Tab 的 scrollTop，控制回顶按钮显示
+ * scroll-view 滚动事件 —— 记录各 Tab 的 scrollTop，控制回顶按钮显示，同步 TabBar 隐藏
  */
 const handleScroll = (e: any, tabIndex: number) => {
   const top = e.detail?.scrollTop ?? 0
@@ -191,6 +195,8 @@ const handleScroll = (e: any, tabIndex: number) => {
   // 当前 Tab 超过 300px 时显示回顶按钮
   if (tabIndex === currentTab.value) {
     showScrollTop.value = top > 300
+    // 同步 TabBar 滚动隐藏/显示
+    navigationStore.handleScroll(top)
     // 同步广播给 PCFloatingNav（PC 端通过此事件更新进度环）
     // #ifdef H5
     uni.$emit('inner-scroll', { scrollTop: top })
@@ -336,6 +342,12 @@ onMounted(() => {
   window.addEventListener('resize', handleWindowResize)
   // PC 端 FAB 点击"返回顶部"时，触发当前 Tab 的 scroll-view 回顶
   uni.$on('scroll-to-top', scrollToTop)
+})
+
+onShow(() => {
+  // 同步 TabBar 激活状态，确保从子页面返回时高亮正确
+  navigationStore.syncActivePath()
+  navigationStore.showNav()
 })
 
 onUnmounted(() => {

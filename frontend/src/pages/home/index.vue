@@ -115,7 +115,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { onPullDownRefresh } from '@dcloudio/uni-app'
+import { onPullDownRefresh, onShow } from '@dcloudio/uni-app'
+import { useNavigationStore } from '@/stores/navigation'
 
 // 移动端组件
 import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
@@ -150,6 +151,7 @@ import { useNavigation } from '@/composables/useNavigation'
 
 // 统一导航
 const nav = useNavigation()
+const navigationStore = useNavigationStore()
 
 // 平台判断 - 统一使用 1024px 作为桌面端断点
 const isDesktop = computed(() => {
@@ -325,6 +327,13 @@ onMounted(() => {
     loginGuideCallback = data?.onSuccess || null
     showLoginGuideModal.value = true
   })
+})
+
+onShow(() => {
+  // 每次页面显示时同步 TabBar 激活状态（从子页面返回时也会触发）
+  navigationStore.syncActivePath()
+  // 确保 TabBar 可见
+  navigationStore.showNav()
 })
 
 onUnmounted(() => {

@@ -424,6 +424,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import { useNavigationStore } from '@/stores/navigation'
 import { getResourceList, downloadResource, likeResource, unlikeResource } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceItem } from '@/types/resource'
@@ -810,9 +811,12 @@ const onLoadMore = () => {
  * 🎯 监听滚动事件
  */
 const handleScroll = (e: any) => {
-  currentScrollTop.value = e.detail.scrollTop
+  const top = e.detail.scrollTop
+  currentScrollTop.value = top
   // 滚动超过一屏（800rpx ≈ 400px）时显示返回顶部按钮
-  showBackToTop.value = e.detail.scrollTop > 400
+  showBackToTop.value = top > 400
+  // 同步 TabBar 滚动隐藏/显示
+  navigationStore.handleScroll(top)
 }
 
 /**
@@ -1737,8 +1741,13 @@ onMounted(() => {
   // #endif
 })
 
+const navigationStore = useNavigationStore()
+
 // 🎯 页面显示（从详情页返回时也会触发）
 onShow(() => {
+  // 同步 TabBar 激活状态
+  navigationStore.syncActivePath()
+  navigationStore.showNav()
 
   // 首次显示跳过（onMounted 已经加载了）
   if (isFirstShow.value) {

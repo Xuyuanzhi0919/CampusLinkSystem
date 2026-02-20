@@ -15,11 +15,6 @@ export const useNavigationStore = defineStore('navigation', () => {
   const activePath = ref<string>('/pages/home/index')
 
   /**
-   * 导航历史记录（用于返回功能）
-   */
-  const history = ref<string[]>(['/pages/home/index'])
-
-  /**
    * 导航栏是否可见（用于滚动隐藏功能）
    */
   const isNavVisible = ref(true)
@@ -33,13 +28,14 @@ export const useNavigationStore = defineStore('navigation', () => {
 
   /**
    * TabBar 配置（移动端）
+   * 发布按钮 path 设为 null，不参与 activeTabIndex 计算（点击时弹 Bottom Sheet）
    */
   const tabList = [
-    { text: '首页', path: '/pages/home/index', icon: 'home' },
-    { text: '资源', path: '/pages/resource/index', icon: 'resource' },
-    { text: '发布', path: '/pages/publish/index', icon: 'publish', action: true },
-    { text: '社区', path: '/pages/community/index', icon: 'community' },
-    { text: '我的', path: '/pages/user/index', icon: 'user' }
+    { text: '首页', path: '/pages/home/index', icon: 'home', action: false },
+    { text: '资源', path: '/pages/resource/index', icon: 'resource', action: false },
+    { text: '发布', path: null, icon: 'publish', action: true },
+    { text: '社区', path: '/pages/community/index', icon: 'community', action: false },
+    { text: '我的', path: '/pages/user/index', icon: 'user', action: false }
   ] as const
 
   /**
@@ -57,9 +53,10 @@ export const useNavigationStore = defineStore('navigation', () => {
 
   /**
    * 当前激活的 Tab 索引（移动端）
+   * 发布按钮（action: true）不参与匹配，默认返回 0（首页）
    */
   const activeTabIndex = computed(() => {
-    const index = tabList.findIndex(item => item.path === activePath.value)
+    const index = tabList.findIndex(item => !item.action && item.path === activePath.value)
     return index >= 0 ? index : 0
   })
 
@@ -80,15 +77,7 @@ export const useNavigationStore = defineStore('navigation', () => {
    * 设置当前激活路径
    */
   const setActivePath = (path: string) => {
-    if (path !== activePath.value) {
-      activePath.value = path
-      // 添加到历史记录
-      history.value.push(path)
-      // 限制历史记录长度
-      if (history.value.length > 50) {
-        history.value = history.value.slice(-50)
-      }
-    }
+    activePath.value = path
   }
 
   /**
@@ -107,8 +96,8 @@ export const useNavigationStore = defineStore('navigation', () => {
    * 处理页面滚动，自动隐藏/显示导航栏
    */
   const handleScroll = (scrollTop: number) => {
-    // 向下滚动超过 100px 时隐藏
-    if (scrollTop > lastScrollTop && scrollTop > 100) {
+    // 向下滚动超过 80px 时隐藏
+    if (scrollTop > lastScrollTop && scrollTop > 80) {
       isNavVisible.value = false
     } else {
       isNavVisible.value = true
@@ -133,7 +122,6 @@ export const useNavigationStore = defineStore('navigation', () => {
   return {
     // 状态
     activePath,
-    history,
     isNavVisible,
     // 配置
     tabList,

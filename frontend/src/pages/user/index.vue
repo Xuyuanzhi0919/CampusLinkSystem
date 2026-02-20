@@ -147,8 +147,8 @@
     <PCFloatingNav v-if="isDesktop" />
     <!-- #endif -->
 
-    <!-- 移动端自定义底部导航 -->
-    <CustomTabBar v-if="!isDesktop" />
+    <!-- 移动端自定义底部导航（传入未读通知数用于角标显示） -->
+    <CustomTabBar v-if="!isDesktop" :unread-count="unreadNotifications + unreadMessages" />
 
     <!-- 回到顶部按钮（移动端） -->
     <transition name="fab-pop">
@@ -162,6 +162,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
+import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
 import type { UserProfileData, UserStatsData } from '@/types/user'
 import { getUserProfile, getUserStats, getCheckInStatus } from '@/services/user'
@@ -183,6 +184,7 @@ import { PCFloatingNav } from '@/components/desktop'
 // #endif
 
 const userStore = useUserStore()
+const navigationStore = useNavigationStore()
 
 // 响应式窗口宽度，监听 resize
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 375)
@@ -207,6 +209,8 @@ const scrollTopVal = ref<number | undefined>(undefined)
 const handleScroll = (e: any) => {
   const top = e.detail?.scrollTop ?? 0
   showScrollTop.value = top > 400
+  // 同步 TabBar 滚动隐藏/显示
+  navigationStore.handleScroll(top)
 }
 
 const scrollToTop = () => {
@@ -350,7 +354,11 @@ onUnmounted(() => {
   // #endif
 })
 
-onShow(() => loadUserData())
+onShow(() => {
+  loadUserData()
+  navigationStore.syncActivePath()
+  navigationStore.showNav()
+})
 
 defineExpose({ onPullDownRefresh: handleRefresh })
 </script>

@@ -253,17 +253,15 @@ const handleInnerScroll = (data: { scrollTop: number }) => {
 }
 
 /**
- * 统一更新滚动状态（下滑隐藏 / 上滑显示 / 进度）
+ * 统一更新滚动状态（只更新进度，不隐藏 FAB）
  */
 const updateScrollState = (currentScrollTop: number) => {
   scrollTop.value = currentScrollTop
 
+  // 下滑时收起展开的菜单，但不隐藏 FAB 本身
   if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
-    isHidden.value = true
     isExpanded.value = false
     showTooltip.value = false
-  } else if (currentScrollTop < lastScrollTop) {
-    isHidden.value = false
   }
 
   lastScrollTop = currentScrollTop

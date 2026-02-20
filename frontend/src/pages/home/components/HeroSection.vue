@@ -449,11 +449,11 @@ $cream: $gray-50;            // 系统背景色
   }
 
   @media (max-width: 768px) {
-    padding: 16px 20px;
+    padding: 16px 20px 8px;
   }
 
   @media (max-width: 480px) {
-    padding: 14px 16px;
+    padding: 14px 16px 6px;
   }
 }
 

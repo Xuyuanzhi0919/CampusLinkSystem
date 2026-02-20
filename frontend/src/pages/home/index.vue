@@ -430,7 +430,7 @@ onUnmounted(() => {
 
   /* #ifdef H5 */
   @include mobile {
-    padding: 16px 12px 0;
+    padding: 6px 12px 0;
   }
   /* #endif */
 }

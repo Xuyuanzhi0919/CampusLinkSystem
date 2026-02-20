@@ -114,7 +114,7 @@ const handleClick = (item: typeof items[0]) => {
 
 .grid-nav-wrapper {
   width: 100%;
-  padding: 10px 14px 14px;
+  padding: 6px 14px 10px;
   box-sizing: border-box;
   background: transparent;
 }

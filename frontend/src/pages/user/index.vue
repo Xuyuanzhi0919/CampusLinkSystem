@@ -46,8 +46,10 @@
         <HeroSection
           v-if="userProfile"
           :profile="userProfile"
+          :stats="heroStats"
           @edit-profile="handleEditProfile"
           @points-click="handlePointsClick"
+          @stat-click="handleStatClick"
         />
         <view class="page-body">
           <QuickActions
@@ -94,8 +96,10 @@
         <HeroSection
           v-if="userProfile"
           :profile="userProfile"
+          :stats="heroStats"
           @edit-profile="handleEditProfile"
           @points-click="handlePointsClick"
+          @stat-click="handleStatClick"
         />
         <!-- PC 内容主体 — 居中窄列 -->
         <view class="pc-body">
@@ -230,6 +234,13 @@ const nextLevelExp = computed(() => {
   if (lv <= 10) return lv * 200
   return 2000 + (lv - 10) * 500
 })
+
+// Hero 区用的简化 stats（3 项）
+const heroStats = computed(() => ({
+  resourceCount: userStats.value?.resourceCount || 0,
+  answerCount:   userStats.value?.answerCount   || 0,
+  likeCount:     userStats.value?.likeCount     || 0,
+}))
 
 const achievementStats = computed(() => [
   { key: 'resources', label: '资源', value: userStats.value?.resourceCount || 0 },

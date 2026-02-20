@@ -754,13 +754,38 @@ const handleJoinClub = async (club: any) => {
   cursor: pointer;
   background: #FFFFFF;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              opacity 0.15s ease;
   display: flex;
   flex-direction: column;
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.13), 0 0 0 1px rgba(0,0,0,0.05);
+
+    .hot-card__img,
+    .hot-card__placeholder {
+      transform: scale(1.06);
+    }
+
+    .hot-card__glow-bar {
+      opacity: 1;
+      height: 4px;
+    }
+  }
+  /* #endif */
 
   &:active {
     transform: scale(0.94);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    opacity: 0.9;
+
+    .hot-card__img,
+    .hot-card__placeholder {
+      transform: scale(0.98);
+    }
   }
 }
 
@@ -771,6 +796,8 @@ const handleJoinClub = async (club: any) => {
   object-fit: cover;
   display: block;
   flex-shrink: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
 }
 
 /* 无图占位：主题色渐变 */
@@ -788,6 +815,8 @@ const handleJoinClub = async (club: any) => {
   );
   overflow: hidden;
   position: relative;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
 }
 
 
@@ -896,6 +925,7 @@ const handleJoinClub = async (club: any) => {
   left: 0;
   right: 0;
   opacity: 0.7;
+  transition: opacity 0.2s ease, height 0.2s ease;
 }
 
 /* 前3名：主题色顶部细边线替代脉冲动画 */
@@ -928,11 +958,41 @@ const handleJoinClub = async (club: any) => {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: row;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease,
+              opacity 0.15s ease;
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.11), 0 0 0 1px rgba(0,0,0,0.05);
+
+    .club-card__bg,
+    .club-card__bg-placeholder {
+      transform: scale(1.05);
+    }
+
+    .club-card__glow-bar {
+      width: 36px;
+      opacity: 1;
+    }
+
+    .club-card__btn {
+      transform: scale(1.04);
+      filter: brightness(1.08);
+    }
+  }
+  /* #endif */
 
   &:active {
     transform: scale(0.97);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    opacity: 0.92;
+
+    .club-card__bg,
+    .club-card__bg-placeholder {
+      transform: scale(0.97);
+    }
   }
 }
 
@@ -946,6 +1006,8 @@ const handleJoinClub = async (club: any) => {
   align-self: center;
   margin: 10px 0 10px 10px;
   border-radius: 12px;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
 }
 
 /* 无图占位 */
@@ -966,6 +1028,8 @@ const handleJoinClub = async (club: any) => {
   justify-content: center;
   overflow: hidden;
   position: relative;
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center center;
 }
 
 
@@ -1032,6 +1096,7 @@ const handleJoinClub = async (club: any) => {
   border-radius: 2px;
   background: var(--cat-color, #377DFF);
   margin-bottom: 2px;
+  transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
 }
 
 .club-card__title {
@@ -1098,7 +1163,7 @@ const handleJoinClub = async (club: any) => {
   padding: 0 13px;
   border-radius: 8px;
   background: var(--cat-color, #377DFF);
-  transition: opacity 0.15s ease, transform 0.12s ease;
+  transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
 
   &:active {
     opacity: 0.8;

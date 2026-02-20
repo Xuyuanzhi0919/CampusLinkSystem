@@ -542,12 +542,35 @@ const upcomingActivities = computed(() =>
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              opacity 0.15s ease;
   flex-shrink: 0;
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.13), 0 0 0 1px rgba(0,0,0,0.05);
+
+    .upcoming-card__header {
+      transform: scale(1.04);
+    }
+
+    .upcoming-card__body::after {
+      opacity: 1;
+      height: 4px;
+    }
+  }
+  /* #endif */
 
   &:active {
     transform: scale(0.94);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    opacity: 0.9;
+
+    .upcoming-card__header {
+      transform: scale(0.98);
+    }
   }
 }
 
@@ -560,6 +583,8 @@ const upcomingActivities = computed(() =>
   justify-content: center;
   flex-shrink: 0;
   overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-origin: center top;
 }
 
 
@@ -603,6 +628,7 @@ const upcomingActivities = computed(() =>
   background: var(--accent, #27AE60);
   border-radius: 0 0 18px 18px;
   opacity: 0.6;
+  transition: opacity 0.2s ease, height 0.2s ease;
 }
 
 .upcoming-title {
@@ -656,11 +682,33 @@ const upcomingActivities = computed(() =>
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(0,0,0,0.04);
   display: flex;
   flex-direction: row;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease,
+              opacity 0.15s ease;
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.11), 0 0 0 1px rgba(0,0,0,0.05);
+
+    .activity-card__cover {
+      filter: brightness(1.06);
+    }
+
+    .activity-card__accent-bar {
+      width: 32px;
+    }
+  }
+  /* #endif */
 
   &:active {
     transform: scale(0.97);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+    opacity: 0.92;
+
+    .activity-card__cover {
+      filter: brightness(0.95);
+    }
   }
 }
 
@@ -671,6 +719,7 @@ const upcomingActivities = computed(() =>
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: filter 0.2s ease;
   align-self: stretch;
 }
 
@@ -692,6 +741,7 @@ const upcomingActivities = computed(() =>
   border-radius: 2px;
   background: var(--type-accent, #27AE60);
   margin-bottom: 2px;
+  transition: width 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .activity-card__top {

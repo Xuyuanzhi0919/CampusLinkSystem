@@ -6,12 +6,12 @@
         v-for="(action, i) in actions"
         :key="action.key"
         class="action-item"
-        :class="{ 'action-item--featured': action.featured }"
         :style="{ animationDelay: `${i * 0.06}s` }"
         @click="action.handler"
       >
         <view class="action-icon-box" :class="`action-icon-box--${action.color}`">
-          <Icon :name="action.icon" :size="20" class="action-icon" :stroke-width="1.8" />
+          <!-- 统一使用线性图标，stroke-width 一致 -->
+          <Icon :name="action.icon" :size="20" class="action-icon" :stroke-width="1.6" />
         </view>
         <text class="action-label">{{ action.label }}</text>
       </view>
@@ -30,12 +30,13 @@ const emit = defineEmits<{
   goToMall: []
 }>()
 
+// 所有操作优先级平等，去掉 featured 差异化；图标统一线性风格
 const actions = [
-  { key: 'resource', label: '发资源', icon: 'file-plus',    color: 'blue',   featured: false, handler: () => emit('publishResource') },
-  { key: 'question', label: '提问题', icon: 'help-circle',  color: 'amber',  featured: true,  handler: () => emit('askQuestion') },
-  { key: 'task',     label: '发任务', icon: 'briefcase',    color: 'green',  featured: false, handler: () => emit('publishTask') },
-  { key: 'activity', label: '看活动', icon: 'calendar',     color: 'violet', featured: false, handler: () => emit('joinActivity') },
-  { key: 'mall',     label: '积分兑', icon: 'gift',         color: 'rose',   featured: false, handler: () => emit('goToMall') }
+  { key: 'resource', label: '发资源', icon: 'file-plus',    color: 'blue',   handler: () => emit('publishResource') },
+  { key: 'question', label: '提问题', icon: 'message-circle', color: 'indigo', handler: () => emit('askQuestion') },
+  { key: 'task',     label: '发任务', icon: 'clipboard',    color: 'teal',   handler: () => emit('publishTask') },
+  { key: 'activity', label: '看活动', icon: 'calendar',     color: 'violet', handler: () => emit('joinActivity') },
+  { key: 'mall',     label: '积分兑', icon: 'gift',         color: 'amber',  handler: () => emit('goToMall') }
 ]
 </script>
 
@@ -70,8 +71,8 @@ const actions = [
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10rpx;
-  padding: 28rpx 0 24rpx;
+  gap: 12rpx;
+  padding: 32rpx 0 26rpx;
   cursor: pointer;
   position: relative;
   transition: background 0.18s ease;
@@ -81,8 +82,8 @@ const actions = [
     content: '';
     position: absolute;
     right: 0;
-    top: 20%;
-    bottom: 20%;
+    top: 22%;
+    bottom: 22%;
     width: 1rpx;
     background: $color-divider;
   }
@@ -94,55 +95,46 @@ const actions = [
   // #endif
 
   @media (min-width: 1024px) {
-    padding: 22px 0 20px;
-    gap: 8px;
+    padding: 24px 0 20px;
+    gap: 9px;
   }
 }
 
-/* 图标盒子 */
+/* 图标盒子 — 全部使用浅色背景，权重一致 */
 .action-icon-box {
-  width: 88rpx;
-  height: 88rpx;
-  border-radius: 20rpx;
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 22rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1);
+  transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  .action-item:active & { transform: scale(0.9); }
+  .action-item:active & { transform: scale(0.88); }
 
   // #ifdef H5
-  .action-item:hover & { transform: translateY(-3rpx); }
+  .action-item:hover & { transform: translateY(-2px) scale(1.04); }
   // #endif
 
-  &--blue   { background: #EFF6FF; .action-icon { color: #2563EB; } }
-  &--amber  { background: #FFFBEB; .action-icon { color: #D97706; } }
-  &--green  { background: #F0FDF4; .action-icon { color: #16A34A; } }
+  /* 色彩系统：饱和度适中，不争夺视觉焦点 */
+  &--blue   { background: #EBF3FF; .action-icon { color: #3B82F6; } }
+  &--indigo { background: #EEF2FF; .action-icon { color: #4F46E5; } }
+  &--teal   { background: #ECFDF5; .action-icon { color: #0D9488; } }
   &--violet { background: #F5F3FF; .action-icon { color: #7C3AED; } }
-  &--rose   { background: #FFF1F2; .action-icon { color: #E11D48; } }
+  &--amber  { background: #FFFBEB; .action-icon { color: #B45309; } }
 
   @media (min-width: 1024px) {
-    width: 52px;
-    height: 52px;
-    border-radius: 13px;
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
   }
 }
 
-/* 高亮项（提问）—— 纯色背景 */
-.action-item--featured {
-  .action-icon-box {
-    background: linear-gradient(135deg, #f59e0b 0%, #f97316 100%) !important;
-    box-shadow: 0 4rpx 14rpx rgba(249,115,22,0.3);
-    .action-icon { color: #fff !important; }
-  }
-  .action-label { color: $color-text-secondary; font-weight: 500; }
-}
-
-/* 文字 */
+/* 文字 — 统一字重，与操作等级平等 */
 .action-label {
   font-size: 21rpx;
-  color: $color-text-tertiary;
-  font-weight: 400;
+  color: $color-text-secondary;
+  font-weight: 500;
   letter-spacing: 0.01em;
 
   @media (min-width: 1024px) {

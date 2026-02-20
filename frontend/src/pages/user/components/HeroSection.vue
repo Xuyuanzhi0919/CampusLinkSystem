@@ -268,12 +268,12 @@ const quickStats = computed(() => [
 .hero-identity {
   display: flex;
   align-items: flex-end;
-  gap: 20rpx;
-  padding-bottom: 22rpx;
+  gap: 22rpx;
+  padding-bottom: 26rpx;
 
   @media (min-width: 1024px) {
     gap: 18px;
-    padding-bottom: 16px;
+    padding-bottom: 20px;
   }
 }
 
@@ -357,11 +357,11 @@ const quickStats = computed(() => [
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 14rpx;
   padding-bottom: 8rpx;
 
   @media (min-width: 1024px) {
-    gap: 9px;
+    gap: 10px;
     padding-bottom: 4px;
   }
 }
@@ -520,16 +520,16 @@ const quickStats = computed(() => [
 /* ─── 积分进度条 ─── */
 .hero-bar-track {
   width: 100%;
-  height: 4rpx;
-  background: rgba(255,255,255,0.12);
+  height: 5rpx;
+  background: rgba(255,255,255,0.14);
   border-radius: 100rpx;
   overflow: hidden;
-  margin-bottom: 44rpx;
+  margin-bottom: 50rpx;
 
   @media (min-width: 1024px) {
-    height: 3px;
+    height: 4px;
     border-radius: 100px;
-    margin-bottom: 36px;
+    margin-bottom: 38px;
   }
 }
 
@@ -544,13 +544,16 @@ const quickStats = computed(() => [
 .hero-wave {
   position: relative;
   z-index: 3;
-  height: 44rpx;
+  height: 52rpx;
   background: $color-bg-page;
-  border-radius: 44rpx 44rpx 0 0;
+  border-radius: 52rpx 52rpx 0 0;
+  /* 用 margin-top 负值让波浪"嵌入"蓝色区，增强过渡感 */
+  margin-top: -16rpx;
 
   @media (min-width: 1024px) {
-    height: 32px;
-    border-radius: 32px 32px 0 0;
+    height: 36px;
+    border-radius: 36px 36px 0 0;
+    margin-top: -10px;
   }
 }
 </style>

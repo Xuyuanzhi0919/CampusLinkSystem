@@ -8,9 +8,9 @@
       :style="{ animationDelay: `${i * 0.07}s` }"
       @click="handleCardClick(item)"
     >
-      <!-- 图标 -->
+      <!-- 图标 — 与 SettingsSection 统一：size=20, stroke-width=1.6 -->
       <view class="cap-icon-wrap" :class="`cap-icon-wrap--${item.color}`">
-        <Icon :name="item.icon" :size="24" class="cap-icon" />
+        <Icon :name="item.icon" :size="20" class="cap-icon" :stroke-width="1.6" />
       </view>
 
       <!-- 文字 -->
@@ -129,7 +129,7 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
     content: '';
     position: absolute;
     bottom: 0;
-    left: 76rpx; // 与文字对齐
+    left: 80rpx; // 与文字对齐（64rpx 图标 + 16rpx 左padding + 20rpx gap）
     right: 24rpx;
     height: 1rpx;
     background: $color-divider;
@@ -161,11 +161,11 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   to   { opacity: 1; transform: translateX(0); }
 }
 
-/* 图标 */
+/* 图标 — 与 SettingsSection 统一：64rpx / 16rpx 圆角 */
 .cap-icon-wrap {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: 18rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,30 +177,16 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   }
 
   @media (min-width: 1024px) {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
   }
 
-  &--blue {
-    background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-    .cap-icon { color: #2563EB; }
-  }
-
-  &--green {
-    background: linear-gradient(135deg, #F0FDF4, #DCFCE7);
-    .cap-icon { color: #16A34A; }
-  }
-
-  &--rose {
-    background: linear-gradient(135deg, #FFF1F2, #FFE4E6);
-    .cap-icon { color: #E11D48; }
-  }
-
-  &--amber {
-    background: linear-gradient(135deg, #FFFBEB, #FEF3C7);
-    .cap-icon { color: #D97706; }
-  }
+  /* 与 QuickActions / AchievementSection / SettingsSection 共用同一色彩体系 */
+  &--blue   { background: #EBF3FF; .cap-icon { color: #3B82F6; } }
+  &--green  { background: #ECFDF5; .cap-icon { color: #0D9488; } }
+  &--rose   { background: #FFF1F2; .cap-icon { color: #E11D48; } }
+  &--amber  { background: #FFFBEB; .cap-icon { color: #B45309; } }
 }
 
 /* 文字 */

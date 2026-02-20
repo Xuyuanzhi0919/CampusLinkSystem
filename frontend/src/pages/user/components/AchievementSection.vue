@@ -21,15 +21,18 @@
       <view class="level-head">
         <view class="level-lhs">
           <view class="level-icon">
-            <text class="level-icon-text">Lv</text>
+            <text class="level-icon-label">Lv</text>
             <text class="level-icon-num">{{ level }}</text>
           </view>
           <view class="level-text">
             <text class="level-name">{{ levelName }}</text>
-            <text class="level-hint">{{ isMaxed ? '已达最高等级' : `还差 ${expToNextLevel} 积分升级` }}</text>
+            <text class="level-hint">{{ isMaxed ? '已达最高等级 🎉' : `还差 ${expToNextLevel.toLocaleString()} 积分升级` }}</text>
           </view>
         </view>
-        <text class="level-pct">{{ progressPercent }}%</text>
+        <view class="level-pct-wrap">
+          <text class="level-pct">{{ progressPercent }}</text>
+          <text class="level-pct-sign">%</text>
+        </view>
       </view>
       <view class="prog-track">
         <view class="prog-fill" :style="{ width: progressPercent + '%' }" />
@@ -40,7 +43,7 @@
       </view>
     </view>
 
-    <!-- ③ 徽章 -->
+    <!-- ③ 徽章 — 统一图标风格 -->
     <view class="badges-card">
       <view class="badges-head">
         <text class="badges-title">我的徽章</text>
@@ -58,11 +61,13 @@
           :style="{ animationDelay: `${i * 0.05}s` }"
           @click="$emit('badgeClick', badge)"
         >
-          <view class="badge-icon-wrap" :class="{ 'badge-icon-wrap--locked': !badge.unlocked }">
-            <Icon :name="badge.icon" :size="22" class="badge-icon" />
+          <!-- 统一圆形图标容器，与 CapabilityPanel 保持系统感 -->
+          <view class="badge-icon-wrap" :class="badge.unlocked ? `badge-icon-wrap--${badgeColors[i % badgeColors.length]}` : 'badge-icon-wrap--locked'">
+            <Icon :name="badge.icon" :size="20" class="badge-icon" :stroke-width="1.6" />
           </view>
           <text class="badge-name">{{ badge.name }}</text>
-          <view v-if="badge.unlocked" class="badge-dot" />
+          <!-- 已解锁角标 -->
+          <view v-if="badge.unlocked" class="badge-unlocked-dot" />
         </view>
       </view>
     </view>
@@ -112,6 +117,9 @@ defineEmits<{
   viewAllBadges: []
 }>()
 
+// 徽章颜色轮换 — 与 CapabilityPanel 色彩系统一致
+const badgeColors = ['blue', 'teal', 'violet', 'amber', 'rose']
+
 const progressPercent = computed(() =>
   Math.min(Math.round((props.currentExp / props.nextLevelExp) * 100), 100)
 )
@@ -159,7 +167,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24rpx 8rpx 22rpx;
+  padding: 28rpx 8rpx 24rpx;
   cursor: pointer;
   position: relative;
   transition: background 0.18s;
@@ -181,32 +189,31 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   // #endif
 
   @media (min-width: 1024px) {
-    padding: 20px 8px 16px;
+    padding: 22px 8px 18px;
   }
 }
 
-/* 数字与标签字号差距缩小，视觉比例更均衡 */
 .stat-num {
-  font-size: 30rpx;
+  font-size: 32rpx;
   font-weight: 700;
   color: $color-text-primary;
   line-height: 1;
   letter-spacing: -0.01em;
 
   @media (min-width: 1024px) {
-    font-size: 20px;
+    font-size: 21px;
   }
 }
 
 .stat-lbl {
   margin-top: 8rpx;
-  font-size: 22rpx;
+  font-size: 20rpx;
   color: $color-text-tertiary;
   font-weight: 400;
 
   @media (min-width: 1024px) {
     margin-top: 5px;
-    font-size: 13px;
+    font-size: 12px;
   }
 }
 
@@ -214,13 +221,13 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 .level-card {
   background: $color-bg-card;
   border-radius: 20rpx;
-  padding: 28rpx 28rpx 24rpx;
+  padding: 30rpx 28rpx 26rpx;
   box-shadow: $shadow-sm;
   border: 1rpx solid $color-border-light;
 
   @media (min-width: 1024px) {
     border-radius: 14px;
-    padding: 20px 24px 18px;
+    padding: 22px 24px 20px;
   }
 }
 
@@ -228,27 +235,27 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20rpx;
+  margin-bottom: 22rpx;
 
   @media (min-width: 1024px) {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 }
 
 .level-lhs {
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 18rpx;
 
   @media (min-width: 1024px) {
-    gap: 12px;
+    gap: 13px;
   }
 }
 
 .level-icon {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: 14rpx;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 16rpx;
   background: linear-gradient(135deg, $campus-blue 0%, $campus-blue-light 100%);
   display: flex;
   align-items: center;
@@ -256,49 +263,50 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   flex-direction: column;
   flex-shrink: 0;
   gap: 0;
+  box-shadow: 0 4rpx 12rpx rgba($campus-blue, 0.28);
 
   @media (min-width: 1024px) {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
   }
 }
 
-.level-icon-text {
-  font-size: 14rpx;
+.level-icon-label {
+  font-size: 13rpx;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 
   @media (min-width: 1024px) {
-    font-size: 9px;
+    font-size: 8px;
   }
 }
 
 .level-icon-num {
-  font-size: 26rpx;
+  font-size: 28rpx;
   font-weight: 800;
   color: #fff;
   line-height: 1;
 
   @media (min-width: 1024px) {
-    font-size: 16px;
+    font-size: 17px;
   }
 }
 
 .level-text {
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 5rpx;
 
   @media (min-width: 1024px) {
-    gap: 2px;
+    gap: 3px;
   }
 }
 
 .level-name {
-  font-size: 26rpx;
+  font-size: 28rpx;
   font-weight: 600;
   color: $color-text-primary;
   line-height: 1;
@@ -311,32 +319,51 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 .level-hint {
   font-size: 20rpx;
   color: $color-text-tertiary;
+  font-weight: 400;
 
   @media (min-width: 1024px) {
     font-size: 12px;
   }
 }
 
+/* 百分比 — baseline 对齐，数字大字号 */
+.level-pct-wrap {
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+}
+
 .level-pct {
-  font-size: 26rpx;
+  font-size: 30rpx;
   font-weight: 700;
   color: $campus-blue;
+  line-height: 1;
 
   @media (min-width: 1024px) {
-    font-size: 15px;
+    font-size: 18px;
+  }
+}
+
+.level-pct-sign {
+  font-size: 18rpx;
+  font-weight: 600;
+  color: rgba($campus-blue, 0.7);
+
+  @media (min-width: 1024px) {
+    font-size: 11px;
   }
 }
 
 /* 进度条 */
 .prog-track {
   width: 100%;
-  height: 8rpx;
+  height: 7rpx;
   background: $color-border-light;
   border-radius: 100rpx;
   overflow: hidden;
 
   @media (min-width: 1024px) {
-    height: 6px;
+    height: 5px;
     border-radius: 100px;
   }
 }
@@ -345,7 +372,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   height: 100%;
   background: linear-gradient(90deg, $campus-blue 0%, $campus-blue-light 100%);
   border-radius: 100rpx;
-  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+  transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .prog-labels {
@@ -359,22 +386,22 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 }
 
 .prog-cur {
-  font-size: 20rpx;
+  font-size: 19rpx;
   color: $color-text-tertiary;
   font-weight: 400;
 
   @media (min-width: 1024px) {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
 .prog-max {
-  font-size: 20rpx;
+  font-size: 19rpx;
   color: $campus-blue;
   font-weight: 500;
 
   @media (min-width: 1024px) {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
@@ -382,13 +409,13 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 .badges-card {
   background: $color-bg-card;
   border-radius: 20rpx;
-  padding: 24rpx 24rpx 20rpx;
+  padding: 26rpx 24rpx 22rpx;
   box-shadow: $shadow-sm;
   border: 1rpx solid $color-border-light;
 
   @media (min-width: 1024px) {
     border-radius: 14px;
-    padding: 18px 20px 16px;
+    padding: 20px 20px 16px;
   }
 }
 
@@ -396,15 +423,15 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20rpx;
+  margin-bottom: 22rpx;
 
   @media (min-width: 1024px) {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
   }
 }
 
 .badges-title {
-  font-size: 26rpx;
+  font-size: 28rpx;
   font-weight: 600;
   color: $color-text-primary;
 
@@ -445,10 +472,10 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 .badges-list {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 8rpx;
+  gap: 4rpx;
 
   @media (min-width: 1024px) {
-    gap: 6px;
+    gap: 4px;
   }
 }
 
@@ -456,8 +483,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8rpx;
-  padding: 14rpx 4rpx 12rpx;
+  gap: 10rpx;
+  padding: 16rpx 4rpx 14rpx;
   border-radius: 14rpx;
   cursor: pointer;
   transition: background 0.18s;
@@ -469,20 +496,20 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   &:hover { background: $color-bg-hover; }
   // #endif
 
-  &--locked { opacity: 0.35; }
+  &--locked { opacity: 0.32; }
 
   @media (min-width: 1024px) {
     padding: 12px 4px 10px;
     border-radius: 10px;
-    gap: 6px;
+    gap: 7px;
   }
 }
 
+/* 图标容器 — 统一圆角方形，与 CapabilityPanel 保持一致的系统感 */
 .badge-icon-wrap {
   width: 64rpx;
   height: 64rpx;
-  border-radius: 15rpx;
-  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  border-radius: 16rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -490,28 +517,32 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
   &--locked {
     background: $color-bg-hover;
+    .badge-icon { color: $color-text-placeholder; }
   }
 
+  /* 与 QuickActions / CapabilityPanel 保持同一色彩体系 */
+  &--blue   { background: #EBF3FF; .badge-icon { color: #3B82F6; } }
+  &--teal   { background: #ECFDF5; .badge-icon { color: #0D9488; } }
+  &--violet { background: #F5F3FF; .badge-icon { color: #7C3AED; } }
+  &--amber  { background: #FFFBEB; .badge-icon { color: #B45309; } }
+  &--rose   { background: #FFF1F2; .badge-icon { color: #E11D48; } }
+
   @media (min-width: 1024px) {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     border-radius: 11px;
   }
 }
 
 .badge-icon {
-  color: $campus-blue;
-
-  .badge-icon-wrap--locked & {
-    color: $color-text-placeholder;
-  }
+  // 颜色由 badge-icon-wrap 变体控制
 }
 
 .badge-name {
   font-size: 18rpx;
   color: $color-text-secondary;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.3;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
@@ -524,18 +555,21 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 }
 
-.badge-dot {
+/* 解锁绿点 — 位置微调，更精致 */
+.badge-unlocked-dot {
   position: absolute;
-  top: 10rpx;
-  right: 10rpx;
-  width: 8rpx;
-  height: 8rpx;
+  top: 12rpx;
+  right: 12rpx;
+  width: 10rpx;
+  height: 10rpx;
   background: #22c55e;
   border-radius: 50%;
+  border: 2px solid $color-bg-card;
+  box-shadow: 0 1px 4px rgba(34, 197, 94, 0.4);
 
   @media (min-width: 1024px) {
-    width: 6px;
-    height: 6px;
+    width: 7px;
+    height: 7px;
     top: 8px;
     right: 8px;
   }

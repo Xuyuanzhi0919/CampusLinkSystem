@@ -202,7 +202,8 @@ const quickStats = computed(() => [
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding-top: 60rpx;
+  /* 移动端：状态栏高度 + 额外内边距，兼容刘海屏 */
+  padding-top: calc(env(safe-area-inset-top, 20px) + 20px);
   padding-bottom: 22rpx;
 
   @media (min-width: 1024px) {

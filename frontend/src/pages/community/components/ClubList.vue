@@ -125,7 +125,7 @@
             <image v-if="item.logoUrl" :src="item.logoUrl" class="hot-card__img" mode="aspectFill" />
             <!-- 无图占位 -->
             <view v-else class="hot-card__placeholder">
-              <text class="hot-card__initial">{{ item.clubName?.slice(0, 1) || '社' }}</text>
+              <ClClubDefaultCover :size="72" color="rgba(255,255,255,0.9)" />
               <view class="hot-card__pl-ring hot-card__pl-ring--1"></view>
               <view class="hot-card__pl-ring hot-card__pl-ring--2"></view>
             </view>
@@ -175,7 +175,7 @@
           <!-- 封面图 / 占位 -->
           <image v-if="item.logoUrl" :src="item.logoUrl" class="club-card__bg" mode="aspectFill" />
           <view v-else class="club-card__bg-placeholder">
-            <text class="club-card__bg-initial">{{ item.clubName?.slice(0, 1) }}</text>
+            <ClClubDefaultCover :size="62" color="rgba(255,255,255,0.9)" />
             <view class="club-card__bg-ring club-card__bg-ring--1"></view>
             <view class="club-card__bg-ring club-card__bg-ring--2"></view>
           </view>
@@ -253,6 +253,7 @@ import { useNavigation } from '@/composables/useNavigation'
 import { joinClub, quitClub } from '@/services/club'
 import { requireLogin } from '@/utils/auth'
 import Icon from '@/components/icons/index.vue'
+import ClClubDefaultCover from '@/components/cl/ClClubDefaultCover.vue'
 
 interface Props {
   list: any[]
@@ -789,15 +790,6 @@ const handleJoinClub = async (club: any) => {
   position: relative;
 }
 
-.hot-card__initial {
-  position: relative;
-  z-index: 2;
-  font-size: 42px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.9);
-  line-height: 1;
-  letter-spacing: -2px;
-}
 
 /* 装饰圆环（占位时） */
 .hot-card__pl-ring {
@@ -976,15 +968,6 @@ const handleJoinClub = async (club: any) => {
   position: relative;
 }
 
-.club-card__bg-initial {
-  font-size: 36px;
-  font-weight: 900;
-  color: rgba(255, 255, 255, 0.9);
-  letter-spacing: -1.5px;
-  line-height: 1;
-  position: relative;
-  z-index: 2;
-}
 
 .club-card__bg-ring {
   position: absolute;

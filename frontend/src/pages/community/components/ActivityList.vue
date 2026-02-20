@@ -90,9 +90,7 @@
           >
             <!-- 顶部色块 -->
             <view class="upcoming-card__header" :style="{ background: getTypeConfig(item.type).bgGradient }">
-              <view class="upcoming-icon">
-                <Icon :name="getTypeConfig(item.type).icon" :size="20" color="rgba(255,255,255,0.95)" />
-              </view>
+              <ClActivityDefaultCover :type="item.type" :size="72" />
               <view class="upcoming-status" :class="`status--${item.status || 1}`">
                 <text>{{ getStatusText(item.status) }}</text>
               </view>
@@ -128,7 +126,7 @@
         >
           <!-- 左侧图标封面 -->
           <view class="activity-card__cover" :style="{ background: getTypeConfig(item.type).bgGradient }">
-            <Icon :name="getTypeConfig(item.type).icon" :size="24" color="rgba(255,255,255,0.95)" />
+            <ClActivityDefaultCover :type="item.type" :size="56" />
           </view>
 
           <!-- 右侧信息区 -->
@@ -192,6 +190,7 @@
 import { computed } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 import Icon from '@/components/icons/index.vue'
+import ClActivityDefaultCover from '@/components/cl/ClActivityDefaultCover.vue'
 
 interface Props {
   list: any[]
@@ -552,28 +551,23 @@ const upcomingActivities = computed(() =>
   }
 }
 
-/* 顶部渐变色图标区（对齐热门社团 placeholder 高度） */
+/* 顶部渐变色 SVG 区 */
 .upcoming-card__header {
   height: 88px;
-  padding: 12px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-shrink: 0;
-}
-
-.upcoming-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.22);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
 }
 
-/* 状态标签（对齐热门社团 rank 角标） */
+
+/* 状态标签：绝对定位到右上角 */
 .upcoming-status {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   display: inline-flex;
   align-items: center;
   height: 20px;

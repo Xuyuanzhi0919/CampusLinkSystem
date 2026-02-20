@@ -153,11 +153,11 @@ $cream: $gray-50;            // 系统背景色
   @media (max-width: 1024px) {
     min-height: auto;
     margin-top: 0;
-    padding-top: 44px;  // 🔧 移动端顶部留白
+    padding-top: 0;
   }
 
   @media (max-width: 768px) {
-    padding-top: 32px;  // 🔧 小屏幕减小留白
+    padding-top: 0;
   }
 }
 
@@ -444,16 +444,16 @@ $cream: $gray-50;            // 系统背景色
   }
 
   @media (max-width: 1024px) {
-    padding: 20px 28px;
+    padding: 16px 28px 12px;
     justify-content: center;
   }
 
   @media (max-width: 768px) {
-    padding: 16px 20px 8px;
+    padding: 12px 20px 8px;
   }
 
   @media (max-width: 480px) {
-    padding: 14px 16px 6px;
+    padding: 10px 16px 6px;
   }
 }
 

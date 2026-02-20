@@ -202,9 +202,13 @@ const quickStats = computed(() => [
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* 移动端：状态栏高度 + 额外内边距，兼容刘海屏 */
-  padding-top: calc(env(safe-area-inset-top, 20px) + 20px);
+  /* H5 custom 导航：页面从 y=0 开始，给固定顶部留白（与首页 HeroSection 一致） */
+  padding-top: 56px;
   padding-bottom: 22rpx;
+
+  @media (max-width: 375px) {
+    padding-top: 48px;
+  }
 
   @media (min-width: 1024px) {
     padding-top: 36px;

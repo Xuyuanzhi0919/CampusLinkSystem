@@ -39,12 +39,13 @@
       <!-- 社团 Tab -->
       <swiper-item class="swiper-item">
         <scroll-view
+          id="scroll-club"
           class="scroll-content"
           scroll-y
           refresher-enabled
           :refresher-triggered="clubRefreshing"
           refresher-default-style="none"
-          :scroll-top="currentTab === 0 ? scrollTopReset : undefined"
+          :scroll-top="scrollTopBindings[0]"
           @refresherrefresh="handleClubRefresh"
           @scrolltolower="handleLoadMore(0)"
           @scroll="handleScroll($event, 0)"
@@ -64,12 +65,13 @@
       <!-- 活动 Tab -->
       <swiper-item class="swiper-item">
         <scroll-view
+          id="scroll-activity"
           class="scroll-content"
           scroll-y
           refresher-enabled
           :refresher-triggered="activityRefreshing"
           refresher-default-style="none"
-          :scroll-top="currentTab === 1 ? scrollTopReset : undefined"
+          :scroll-top="scrollTopBindings[1]"
           @refresherrefresh="handleActivityRefresh"
           @scrolltolower="handleLoadMore(1)"
           @scroll="handleScroll($event, 1)"
@@ -140,8 +142,8 @@ const currentTab = ref(0)
 // 滚动状态（两个 Tab 各自独立记录）
 const tabScrollTops = ref([0, 0])
 const showScrollTop = ref(false)
-// scroll-top 绑定值，设为 0 触发 scroll-view 回顶，随后立即置回 undefined 避免干扰正常滚动
-const scrollTopReset = ref<number | undefined>(undefined)
+// scroll-top 绑定值：undefined 时不干预，数字时控制 scroll-view 位置
+const scrollTopBindings = ref<(number | undefined)[]>([undefined, undefined])
 
 // 社团数据
 const clubList = ref<any[]>([])
@@ -197,16 +199,40 @@ const handleScroll = (e: any, tabIndex: number) => {
 }
 
 /**
- * 回到顶部
+ * 回到顶部 —— H5 下直接操作 scroll-view 内部 DOM，兜底用 :scroll-top 绑定
  */
 const scrollToTop = () => {
-  scrollTopReset.value = 0
-  // 下一帧重置，防止 scroll-view 把 0 当作固定锁定值
-  setTimeout(() => {
-    scrollTopReset.value = undefined
-  }, 50)
+  const idx = currentTab.value
+
+  // #ifdef H5
+  // uni-app H5 编译 scroll-view 为 <uni-scroll-view id="..."> 内含 <div class="uni-scroll-view">
+  const scrollId = idx === 0 ? 'scroll-club' : 'scroll-activity'
+  const host = document.getElementById(scrollId)
+  if (host) {
+    // 找内部实际可滚动的 div
+    const inner = host.querySelector('.uni-scroll-view') as HTMLElement | null
+    const target = inner || host
+    target.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // 同步重置 :scroll-top 绑定值（从记录的当前位置 → 0），确保 Vue 层也感知
+  const currentTop = tabScrollTops.value[idx]
+  if (currentTop > 0) {
+    // 先置为一个非零值，再设 0，才能触发 uni-app scroll-view 响应
+    scrollTopBindings.value[idx] = currentTop + 1
+    setTimeout(() => {
+      scrollTopBindings.value[idx] = 0
+      setTimeout(() => { scrollTopBindings.value[idx] = undefined }, 500)
+    }, 16)
+  }
+  // #endif
+
+  // #ifndef H5
+  uni.pageScrollTo({ scrollTop: 0, duration: 300 })
+  // #endif
+
   showScrollTop.value = false
-  tabScrollTops.value[currentTab.value] = 0
+  tabScrollTops.value[idx] = 0
 }
 
 /**

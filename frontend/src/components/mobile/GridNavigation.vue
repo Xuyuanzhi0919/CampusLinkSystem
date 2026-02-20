@@ -114,7 +114,7 @@ const handleClick = (item: typeof items[0]) => {
 
 .grid-nav-wrapper {
   width: 100%;
-  padding: 12px 14px 14px;
+  padding: 10px 14px 14px;
   box-sizing: border-box;
   background: transparent;
 }
@@ -127,101 +127,78 @@ const handleClick = (item: typeof items[0]) => {
   gap: 10px;
 }
 
-// ─── 卡片基础 ─────────────────────────────────────────────────────────────────
+// ─── 卡片基础
+// 所有普通卡片：白底 + 极浅彩色边框，与页面 #F8FAFC 背景融合
+// AI 卡片：品牌主蓝深色，作为唯一视觉锚点
+// ─────────────────────────────────────────────────────────────────────────────
 
 .nav-card {
   position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 13px 12px 13px 13px;
-  border-radius: 16px;
+  padding: 13px 11px 13px 13px;
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
   box-sizing: border-box;
-  // 统一的细边框 + 柔和阴影
-  border: 1px solid transparent;
-  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
-              box-shadow 0.18s ease;
+  border: 1px solid #E9EDF5;
+  background: #FFFFFF;
+  // 与页面其他白卡片（FeaturedSection 等）一致的轻阴影
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: transform 0.16s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.16s ease;
 
   &:active {
-    transform: scale(0.955);
+    transform: scale(0.958);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
   }
 
-  // ── 主题：琥珀（热门活动）──────────────────────────────────────────────────
+  // ── 主题：琥珀（热门活动）
+  // 白底卡片，仅图标区和图标本身带琥珀色，文字走系统色
   &--amber {
-    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
-    border-color: rgba(251, 191, 36, 0.25);
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.10),
-                0 1px 2px rgba(0, 0, 0, 0.04);
-
-    .card-icon-wrap { background: rgba(245, 158, 11, 0.14); }
+    .card-icon-wrap { background: #FEF3C7; }
     .card-icon      { color: #D97706; }
-    .card-title     { color: #92400E; }
-    .card-desc      { color: #B45309; }
-    .card-arrow svg { color: rgba(180, 83, 9, 0.45); }
-
-    &:active {
-      box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15),
-                  0 1px 2px rgba(0, 0, 0, 0.05);
-    }
+    .card-title     { color: #1A1A1A; }
+    .card-desc      { color: #6B778C; }
+    .card-arrow svg { color: #D1D5DB; }
   }
 
-  // ── 主题：青绿（互助任务）─────────────────────────────────────────────────
+  // ── 主题：青绿（互助任务）
   &--teal {
-    background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
-    border-color: rgba(13, 148, 136, 0.2);
-    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.10),
-                0 1px 2px rgba(0, 0, 0, 0.04);
-
-    .card-icon-wrap { background: rgba(13, 148, 136, 0.12); }
+    .card-icon-wrap { background: #CCFBF1; }
     .card-icon      { color: #0F766E; }
-    .card-title     { color: #134E4A; }
-    .card-desc      { color: #0F766E; }
-    .card-arrow svg { color: rgba(15, 118, 110, 0.45); }
-
-    &:active {
-      box-shadow: 0 1px 4px rgba(13, 148, 136, 0.15),
-                  0 1px 2px rgba(0, 0, 0, 0.05);
-    }
+    .card-title     { color: #1A1A1A; }
+    .card-desc      { color: #6B778C; }
+    .card-arrow svg { color: #D1D5DB; }
   }
 
-  // ── 主题：玫红（积分排行）─────────────────────────────────────────────────
+  // ── 主题：玫红（积分排行）
   &--rose {
-    background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
-    border-color: rgba(225, 29, 72, 0.18);
-    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.09),
-                0 1px 2px rgba(0, 0, 0, 0.04);
-
-    .card-icon-wrap { background: rgba(225, 29, 72, 0.10); }
+    .card-icon-wrap { background: #FFE4E6; }
     .card-icon      { color: #BE123C; }
-    .card-title     { color: #881337; }
-    .card-desc      { color: #BE123C; }
-    .card-arrow svg { color: rgba(190, 18, 60, 0.45); }
-
-    &:active {
-      box-shadow: 0 1px 4px rgba(225, 29, 72, 0.12),
-                  0 1px 2px rgba(0, 0, 0, 0.05);
-    }
+    .card-title     { color: #1A1A1A; }
+    .card-desc      { color: #6B778C; }
+    .card-arrow svg { color: #D1D5DB; }
   }
 
-  // ── 主题：AI（AI 助手，高亮深色卡）────────────────────────────────────────
+  // ── 主题：AI（AI 助手）
+  // 全页唯一深色卡，用项目主色 #2563EB，与 Hero 区品牌色呼应
   &--ai {
-    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 55%, #4F46E5 100%);
-    border-color: rgba(99, 102, 241, 0.4);
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35),
-                0 2px 4px rgba(37, 99, 235, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    background: linear-gradient(140deg, #1D4ED8 0%, #2563EB 60%, #3B82F6 100%);
+    border-color: rgba(37, 99, 235, 0.3);
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.28),
+                0 1px 3px rgba(37, 99, 235, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
 
-    .card-icon-wrap { background: rgba(255, 255, 255, 0.15); }
+    .card-icon-wrap { background: rgba(255, 255, 255, 0.18); }
     .card-icon      { color: #fff; }
-    .card-title     { color: #fff; font-weight: 700; }
-    .card-desc      { color: rgba(255, 255, 255, 0.72); }
-    .card-arrow svg { color: rgba(255, 255, 255, 0.55); }
+    .card-title     { color: #fff; }
+    .card-desc      { color: rgba(255, 255, 255, 0.68); }
+    .card-arrow svg { color: rgba(255, 255, 255, 0.45); }
 
     &:active {
-      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25),
-                  0 1px 2px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
     }
   }
 }

@@ -400,11 +400,16 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 60rpx;
+  /* 默认高度为 0 + 不可见，只在下拉触发时展开，避免占位产生顶部空白 */
+  height: 0;
+  overflow: hidden;
   opacity: 0;
-  transition: opacity 0.2s;
+  transition: height 0.2s ease, opacity 0.2s;
 
-  &.active { opacity: 1; }
+  &.active {
+    height: 60rpx;
+    opacity: 1;
+  }
 }
 
 .refresher-dots {

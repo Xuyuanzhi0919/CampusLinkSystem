@@ -184,6 +184,12 @@ html, body {
 /* ========== 多端 TabBar 适配 ========== */
 
 /* #ifdef H5 */
+/* H5 端：确保 uni-view / uni-scroll-view 以块级渲染，防止行内默认值导致的顶部空白 */
+uni-view, uni-scroll-view {
+  display: block;
+  box-sizing: border-box;
+}
+
 /* H5 端：隐藏原生 uni-tabbar,使用自定义 TabBar */
 uni-tabbar {
   display: none !important;

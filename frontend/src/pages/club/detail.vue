@@ -448,6 +448,7 @@
       :visible="showLoginGuide"
       :action-type="loginGuideActionType"
       @update:visible="showLoginGuide = $event"
+      @confirm="handleLoginGuideConfirm"
     />
 
     <!-- 登录弹窗 -->
@@ -807,6 +808,12 @@ onLoad((options) => {
     loadClubDetail(clubId.value)
   }
 })
+
+// 引导弹窗点击"去登录"→ 打开登录弹窗
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+  showLoginModal.value = true
+}
 
 // 保存 handler 引用，确保 off 时精准移除，不影响其他页面的监听器
 const onShowLoginGuide = (data: any) => {

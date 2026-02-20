@@ -44,8 +44,10 @@
           refresher-enabled
           :refresher-triggered="clubRefreshing"
           refresher-default-style="none"
+          :scroll-top="currentTab === 0 ? scrollTopReset : undefined"
           @refresherrefresh="handleClubRefresh"
           @scrolltolower="handleLoadMore(0)"
+          @scroll="handleScroll($event, 0)"
         >
           <!-- 自定义下拉刷新指示器 -->
           <view class="custom-refresher" :class="{ active: clubRefreshing }">
@@ -67,8 +69,10 @@
           refresher-enabled
           :refresher-triggered="activityRefreshing"
           refresher-default-style="none"
+          :scroll-top="currentTab === 1 ? scrollTopReset : undefined"
           @refresherrefresh="handleActivityRefresh"
           @scrolltolower="handleLoadMore(1)"
+          @scroll="handleScroll($event, 1)"
         >
           <!-- 自定义下拉刷新指示器 -->
           <view class="custom-refresher" :class="{ active: activityRefreshing }">
@@ -87,6 +91,17 @@
     <!-- #ifdef H5 -->
     <PCFloatingNav v-if="isDesktop" />
     <!-- #endif -->
+
+    <!-- 移动端回到顶部浮钮 -->
+    <transition name="fab-pop">
+      <view
+        v-if="!isDesktop && showScrollTop"
+        class="mobile-fab"
+        @click="scrollToTop"
+      >
+        <Icon name="arrow-up" :size="20" class="mobile-fab-icon" />
+      </view>
+    </transition>
 
     <!-- 移动端自定义底部导航 -->
     <CustomTabBar v-if="!isDesktop" />
@@ -121,6 +136,12 @@ const tabs = [
 
 // 当前激活的 Tab
 const currentTab = ref(0)
+
+// 滚动状态（两个 Tab 各自独立记录）
+const tabScrollTops = ref([0, 0])
+const showScrollTop = ref(false)
+// scroll-top 绑定值，设为 0 触发 scroll-view 回顶，随后立即置回 undefined 避免干扰正常滚动
+const scrollTopReset = ref<number | undefined>(undefined)
 
 // 社团数据
 const clubList = ref<any[]>([])
@@ -157,6 +178,35 @@ const switchTab = (index: number) => {
 const handleSwiperChange = (e: any) => {
   const { current } = e.detail
   switchTab(current)
+}
+
+/**
+ * scroll-view 滚动事件 —— 记录各 Tab 的 scrollTop，控制回顶按钮显示
+ */
+const handleScroll = (e: any, tabIndex: number) => {
+  const top = e.detail?.scrollTop ?? 0
+  tabScrollTops.value[tabIndex] = top
+  // 当前 Tab 超过 300px 时显示回顶按钮
+  if (tabIndex === currentTab.value) {
+    showScrollTop.value = top > 300
+    // 同步广播给 PCFloatingNav（PC 端通过此事件更新进度环）
+    // #ifdef H5
+    uni.$emit('inner-scroll', { scrollTop: top })
+    // #endif
+  }
+}
+
+/**
+ * 回到顶部
+ */
+const scrollToTop = () => {
+  scrollTopReset.value = 0
+  // 下一帧重置，防止 scroll-view 把 0 当作固定锁定值
+  setTimeout(() => {
+    scrollTopReset.value = undefined
+  }, 50)
+  showScrollTop.value = false
+  tabScrollTops.value[currentTab.value] = 0
 }
 
 /**
@@ -258,10 +308,13 @@ const handleActivityRefresh = async () => {
 onMounted(() => {
   loadClubs()
   window.addEventListener('resize', handleWindowResize)
+  // PC 端 FAB 点击"返回顶部"时，触发当前 Tab 的 scroll-view 回顶
+  uni.$on('scroll-to-top', scrollToTop)
 })
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleWindowResize)
+  uni.$off('scroll-to-top', scrollToTop)
 })
 </script>
 
@@ -440,6 +493,54 @@ onUnmounted(() => {
 @keyframes rDotPulse {
   0%, 80%, 100% { transform: scale(0.8); opacity: 0.4; }
   40% { transform: scale(1.1); opacity: 1; }
+}
+
+/* ========== 移动端回到顶部浮钮 ========== */
+.mobile-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 80px; /* 避开底部 TabBar */
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: $campus-blue;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba($campus-blue, 0.35),
+              0 2px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  z-index: 999;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease;
+
+  &:active {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba($campus-blue, 0.25);
+  }
+
+  @media (min-width: 1024px) {
+    display: none; /* PC 端由 PCFloatingNav 处理 */
+  }
+}
+
+.mobile-fab-icon {
+  color: #ffffff;
+}
+
+/* 浮钮弹出动画 */
+.fab-pop-enter-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fab-pop-leave-active {
+  transition: all 0.2s ease-in;
+}
+
+.fab-pop-enter-from,
+.fab-pop-leave-to {
+  opacity: 0;
+  transform: scale(0.6) translateY(20px);
 }
 
 /* ========== PC 端适配 ========== */

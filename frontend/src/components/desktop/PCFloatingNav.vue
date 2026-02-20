@@ -182,11 +182,13 @@ const closeMenu = () => {
 }
 
 /**
- * 返回顶部
+ * 返回顶部：同时触发 window 级和内嵌 scroll-view 级回顶
  */
 const scrollToTop = () => {
   // #ifdef H5
   window.scrollTo({ top: 0, behavior: 'smooth' })
+  // 广播给内嵌 scroll-view（社区页等监听此事件执行回顶）
+  uni.$emit('scroll-to-top')
   // #endif
   // #ifndef H5
   uni.pageScrollTo({ scrollTop: 0, duration: 300 })
@@ -227,29 +229,49 @@ const getCurrentPage = () => {
 }
 
 /**
- * 处理滚动 - 下滑隐藏，上滑显示 + 进度计算
+ * 处理 window 级别的滚动
  */
 const handleScroll = () => {
   // #ifdef H5
   const currentScrollTop = window.pageYOffset || document.documentElement.scrollTop
-  scrollTop.value = currentScrollTop
+  updateScrollState(currentScrollTop)
   scrollHeight.value = document.documentElement.scrollHeight
   clientHeight.value = document.documentElement.clientHeight
+  // #endif
+}
 
-  // 下滑隐藏，上滑显示
+/**
+ * 处理内嵌 scroll-view 广播的滚动事件（如社区页）
+ */
+const handleInnerScroll = (data: { scrollTop: number }) => {
+  // 内嵌滚动时 window.scrollTop 几乎为 0，用广播值替代
+  updateScrollState(data.scrollTop)
+  // 内嵌滚动高度未知，给一个较大值保证进度环可显示
+  if (scrollHeight.value <= clientHeight.value) {
+    scrollHeight.value = clientHeight.value + 2000
+  }
+}
+
+/**
+ * 统一更新滚动状态（下滑隐藏 / 上滑显示 / 进度）
+ */
+const updateScrollState = (currentScrollTop: number) => {
+  scrollTop.value = currentScrollTop
+
   if (currentScrollTop > lastScrollTop && currentScrollTop > 100) {
-    // 向下滚动且超过 100px，隐藏 FAB
     isHidden.value = true
     isExpanded.value = false
     showTooltip.value = false
   } else if (currentScrollTop < lastScrollTop) {
-    // 向上滚动，显示 FAB
     isHidden.value = false
   }
 
   lastScrollTop = currentScrollTop
-  // #endif
 }
+
+/**
+ * FAB 返回顶部：优先尝试内嵌 scroll-view，再回退到 window
+ */
 
 /**
  * 键盘事件处理
@@ -271,16 +293,15 @@ onMounted(() => {
   getCurrentPage()
 
   // #ifdef H5
-  // 监听窗口大小变化
   window.addEventListener('resize', checkPCMode)
-  // 监听滚动事件
   window.addEventListener('scroll', handleScroll, { passive: true })
-  // 监听键盘事件
   window.addEventListener('keydown', handleKeydown)
 
-  // 初始化滚动数据
   scrollHeight.value = document.documentElement.scrollHeight
   clientHeight.value = document.documentElement.clientHeight
+
+  // 监听内嵌 scroll-view 广播（社区页等）
+  uni.$on('inner-scroll', handleInnerScroll)
   // #endif
 })
 
@@ -289,6 +310,7 @@ onUnmounted(() => {
   window.removeEventListener('resize', checkPCMode)
   window.removeEventListener('scroll', handleScroll)
   window.removeEventListener('keydown', handleKeydown)
+  uni.$off('inner-scroll', handleInnerScroll)
   // #endif
 })
 </script>

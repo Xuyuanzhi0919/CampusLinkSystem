@@ -23,87 +23,120 @@
       </view>
     </view>
 
-    <!-- ===== 主内容区（登录态） ===== -->
-    <scroll-view
-      v-else-if="userStore.isLoggedIn"
-      class="main-scroll"
-      scroll-y
-      refresher-enabled
-      :refresher-triggered="refreshing"
-      refresher-default-style="none"
-      @refresherrefresh="handleRefresh"
-      @scroll="handleScroll"
-    >
-      <!-- 自定义下拉刷新指示器 -->
-      <view class="custom-refresher" :class="{ active: refreshing }">
-        <view class="refresher-dots">
-          <view class="r-dot" />
-          <view class="r-dot" />
-          <view class="r-dot" />
+    <!-- ===== 主内容区（登录态）===== -->
+    <!-- 移动端：scroll-view 限高滚动；PC 端：普通文档流（window 滚动） -->
+    <template v-else-if="userStore.isLoggedIn">
+      <!-- 移动端 scroll-view 包裹 -->
+      <scroll-view
+        v-if="!isDesktop"
+        class="main-scroll"
+        scroll-y
+        :scroll-top="scrollTopVal"
+        refresher-enabled
+        :refresher-triggered="refreshing"
+        refresher-default-style="none"
+        @refresherrefresh="handleRefresh"
+        @scroll="handleScroll"
+      >
+        <view class="custom-refresher" :class="{ active: refreshing }">
+          <view class="refresher-dots">
+            <view class="r-dot" /><view class="r-dot" /><view class="r-dot" />
+          </view>
         </view>
-      </view>
-
-      <!-- Hero -->
-      <HeroSection
-        v-if="userProfile"
-        :profile="userProfile"
-        @edit-profile="handleEditProfile"
-        @points-click="handlePointsClick"
-      />
-
-      <!-- 内容主体 -->
-      <view class="page-body">
-        <!-- 快速操作 -->
-        <QuickActions
-          @publish-resource="handlePublishResource"
-          @ask-question="handleAskQuestion"
-          @publish-task="handlePublishTask"
-          @join-activity="handleJoinActivity"
-          @go-to-mall="handleGoToMall"
-        />
-
-        <!-- 成就数据 + 等级 + 徽章 -->
-        <AchievementSection
+        <HeroSection
           v-if="userProfile"
-          :level="userProfile.level || 1"
-          :level-name="levelName"
-          :current-exp="userProfile.experience || 0"
-          :next-level-exp="nextLevelExp"
-          :stats="achievementStats"
-          :badges="userBadges"
-          @stat-click="handleStatClick"
-          @badge-click="handleBadgeClick"
-          @view-all-badges="handleViewAllBadges"
+          :profile="userProfile"
+          @edit-profile="handleEditProfile"
+          @points-click="handlePointsClick"
         />
-
-        <!-- 功能入口 -->
-        <view class="section-block">
-          <view class="section-label">
-            <view class="section-label-dot" />
-            <text class="section-label-text">我的内容</text>
-          </view>
-          <CapabilityPanel
-            :badges="capabilityBadges"
-            @item-click="handleCapabilityClick"
+        <view class="page-body">
+          <QuickActions
+            @publish-resource="handlePublishResource"
+            @ask-question="handleAskQuestion"
+            @publish-task="handlePublishTask"
+            @join-activity="handleJoinActivity"
+            @go-to-mall="handleGoToMall"
           />
-        </view>
-
-        <!-- 账号与系统 -->
-        <view class="section-block">
-          <view class="section-label">
-            <view class="section-label-dot section-label-dot--gray" />
-            <text class="section-label-text">账号与系统</text>
+          <AchievementSection
+            v-if="userProfile"
+            :level="userProfile.level || 1"
+            :level-name="levelName"
+            :current-exp="userProfile.points || 0"
+            :next-level-exp="nextLevelExp"
+            :stats="achievementStats"
+            :badges="userBadges"
+            @stat-click="handleStatClick"
+            @badge-click="handleBadgeClick"
+            @view-all-badges="handleViewAllBadges"
+          />
+          <view class="section-block">
+            <view class="section-label">
+              <view class="section-label-dot" />
+              <text class="section-label-text">我的内容</text>
+            </view>
+            <CapabilityPanel :badges="capabilityBadges" @item-click="handleCapabilityClick" />
           </view>
-          <SettingsSection @item-click="handleSettingsClick" />
+          <view class="section-block">
+            <view class="section-label">
+              <view class="section-label-dot section-label-dot--gray" />
+              <text class="section-label-text">账号与系统</text>
+            </view>
+            <SettingsSection @item-click="handleSettingsClick" />
+          </view>
+          <AccountActions @logout="handleLogout" />
+          <view class="safe-bottom" />
         </view>
+      </scroll-view>
 
-        <!-- 退出登录 -->
-        <AccountActions @logout="handleLogout" />
-
-        <!-- 底部安全区 -->
-        <view class="safe-bottom" />
+      <!-- PC 端：普通文档流，window 级别滚动 -->
+      <view v-else class="pc-content">
+        <!-- PC Hero — 全宽显示 -->
+        <HeroSection
+          v-if="userProfile"
+          :profile="userProfile"
+          @edit-profile="handleEditProfile"
+          @points-click="handlePointsClick"
+        />
+        <!-- PC 内容主体 — 居中窄列 -->
+        <view class="pc-body">
+          <QuickActions
+            @publish-resource="handlePublishResource"
+            @ask-question="handleAskQuestion"
+            @publish-task="handlePublishTask"
+            @join-activity="handleJoinActivity"
+            @go-to-mall="handleGoToMall"
+          />
+          <AchievementSection
+            v-if="userProfile"
+            :level="userProfile.level || 1"
+            :level-name="levelName"
+            :current-exp="userProfile.points || 0"
+            :next-level-exp="nextLevelExp"
+            :stats="achievementStats"
+            :badges="userBadges"
+            @stat-click="handleStatClick"
+            @badge-click="handleBadgeClick"
+            @view-all-badges="handleViewAllBadges"
+          />
+          <view class="section-block">
+            <view class="section-label">
+              <view class="section-label-dot" />
+              <text class="section-label-text">我的内容</text>
+            </view>
+            <CapabilityPanel :badges="capabilityBadges" @item-click="handleCapabilityClick" />
+          </view>
+          <view class="section-block">
+            <view class="section-label">
+              <view class="section-label-dot section-label-dot--gray" />
+              <text class="section-label-text">账号与系统</text>
+            </view>
+            <SettingsSection @item-click="handleSettingsClick" />
+          </view>
+          <AccountActions @logout="handleLogout" />
+          <view class="safe-bottom safe-bottom--pc" />
+        </view>
       </view>
-    </scroll-view>
+    </template>
 
     <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
@@ -123,7 +156,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useUserStore } from '@/stores/user'
 import type { UserProfileData, UserStatsData } from '@/types/user'
@@ -147,14 +180,13 @@ import { PCFloatingNav } from '@/components/desktop'
 
 const userStore = useUserStore()
 
-const isDesktop = computed(() => {
-  // #ifdef H5
-  return typeof window !== 'undefined' && window.innerWidth >= 1024
-  // #endif
-  // #ifndef H5
-  return false
-  // #endif
-})
+// 响应式窗口宽度，监听 resize
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 375)
+const isDesktop = computed(() => windowWidth.value >= 1024)
+
+// #ifdef H5
+const handleWindowResize = () => { windowWidth.value = window.innerWidth }
+// #endif
 
 // 数据状态
 const loading = ref(true)
@@ -197,15 +229,15 @@ const nextLevelExp = computed(() => (userProfile.value?.level || 1) * 100)
 const achievementStats = computed(() => [
   { key: 'resources', label: '资源', value: userStats.value?.resourceCount || 0 },
   { key: 'answers',   label: '回答', value: userStats.value?.answerCount || 0 },
-  { key: 'likes',     label: '获赞', value: userStats.value?.receivedLikes || 0 },
-  { key: 'collections', label: '收藏', value: userStats.value?.collectionCount || 0 }
+  { key: 'likes',     label: '获赞', value: userStats.value?.likeCount || 0 },
+  { key: 'collections', label: '收藏', value: userStats.value?.favoriteCount || 0 }
 ])
 
 const userBadges = computed(() => [
   { id: 1, name: '新人报到',  icon: 'star',      unlocked: true,   description: '完成首次登录' },
   { id: 2, name: '资源贡献',  icon: 'file-text', unlocked: (userStats.value?.resourceCount || 0) >= 5,  description: '上传5个资源' },
   { id: 3, name: '热心助人',  icon: 'heart',     unlocked: (userStats.value?.answerCount || 0) >= 10,   description: '回答10个问题' },
-  { id: 4, name: '人气王',    icon: 'users',     unlocked: (userStats.value?.receivedLikes || 0) >= 50, description: '获得50个赞' },
+  { id: 4, name: '人气王',    icon: 'users',     unlocked: (userStats.value?.likeCount || 0) >= 50, description: '获得50个赞' },
   { id: 5, name: '学习标兵',  icon: 'book-open', unlocked: false,  description: '连续签到30天' }
 ])
 
@@ -289,7 +321,19 @@ const handleLogout = () => {
   setTimeout(() => userStore.logout(), 300)
 }
 
-onMounted(() => loadUserData())
+onMounted(() => {
+  loadUserData()
+  // #ifdef H5
+  window.addEventListener('resize', handleWindowResize)
+  // #endif
+})
+
+onUnmounted(() => {
+  // #ifdef H5
+  window.removeEventListener('resize', handleWindowResize)
+  // #endif
+})
+
 onShow(() => loadUserData())
 
 defineExpose({ onPullDownRefresh: handleRefresh })
@@ -301,20 +345,41 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 /* ========== 页面容器 ========== */
 .user-profile-page {
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   background: $color-bg-page;
   position: relative;
-  overflow: hidden;
 }
 
-/* ========== 主滚动区 ========== */
+/* ========== 移动端：scroll-view 限高 ========== */
 .main-scroll {
   width: 100%;
-  height: 100%;
+  height: 100vh;
   background: $color-bg-page;
 }
 
-/* ========== 下拉刷新 ========== */
+/* ========== PC 端：普通文档流 ========== */
+.pc-content {
+  width: 100%;
+  min-height: 100vh;
+  background: $color-bg-page;
+  // 预留 WebHeader 固定区域高度（fixed 76px = 60px 内容 + 16px padding）
+  padding-top: 76px;
+  box-sizing: border-box;
+}
+
+/* PC 端内容主体 — 居中单列 */
+.pc-body {
+  width: 100%;
+  max-width: 860px;         // 个人中心单列足够，不需要1280px宽
+  margin: 0 auto;
+  padding: 24px 0 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-sizing: border-box;
+}
+
+/* ========== 下拉刷新（移动端） ========== */
 .custom-refresher {
   display: flex;
   justify-content: center;
@@ -349,7 +414,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   40%           { transform: scale(1.1); opacity: 1; }
 }
 
-/* ========== 页面主体 ========== */
+/* ========== 移动端页面主体 ========== */
 .page-body {
   display: flex;
   flex-direction: column;
@@ -357,18 +422,6 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   padding: 0 20rpx;
   width: 100%;
   box-sizing: border-box;
-  max-width: 1200px;
-  margin: 0 auto;
-
-  @media (min-width: 768px) {
-    padding: 0 32rpx;
-    gap: 20rpx;
-  }
-
-  @media (min-width: 1024px) {
-    padding: 0 48rpx;
-    gap: 24rpx;
-  }
 }
 
 /* ========== 区块标签 ========== */
@@ -376,6 +429,10 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   display: flex;
   flex-direction: column;
   gap: 14rpx;
+
+  @media (min-width: 1024px) {
+    gap: 10px;
+  }
 }
 
 .section-label {
@@ -383,6 +440,11 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   align-items: center;
   gap: 10rpx;
   padding-left: 4rpx;
+
+  @media (min-width: 1024px) {
+    gap: 8px;
+    padding-left: 2px;
+  }
 }
 
 .section-label-dot {
@@ -394,6 +456,12 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   &--gray {
     background: $color-border;
   }
+
+  @media (min-width: 1024px) {
+    width: 4px;
+    height: 16px;
+    border-radius: 2px;
+  }
 }
 
 .section-label-text {
@@ -402,11 +470,19 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   color: $color-text-tertiary;
   letter-spacing: 0.03em;
   text-transform: uppercase;
+
+  @media (min-width: 1024px) {
+    font-size: 13px;
+  }
 }
 
 /* ========== 底部安全区 ========== */
 .safe-bottom {
-  height: 120rpx; // TabBar 高度 + 额外留白
+  height: 120rpx; // 移动端 TabBar + 留白
+
+  &--pc {
+    height: 0; // PC 端 pc-body 已有 padding-bottom:48px
+  }
 }
 
 /* ========== 回到顶部浮钮（移动端） ========== */

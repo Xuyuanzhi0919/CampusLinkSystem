@@ -154,6 +154,12 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toS
   flex-direction: column;
   gap: 20rpx;
   animation: sectionIn 0.5s ease-out both;
+
+  // PC 端由 pc-body 负责水平布局，子组件去掉自己的水平 padding
+  @media (min-width: 1024px) {
+    padding: 0;
+    gap: 16px;
+  }
 }
 
 @keyframes sectionIn {
@@ -524,20 +530,24 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : n.toS
 
 /* ========== 响应式 ========== */
 @media (min-width: 1024px) {
-  .achievement-section {
-    gap: 24rpx;
-  }
-
   .stats-row {
-    gap: 16rpx;
+    gap: 12px;
   }
 
   .stat-cell {
-    padding: 36rpx 20rpx 30rpx;
+    padding: 28px 16px 22px;
   }
 
   .stat-num {
-    font-size: 44rpx;
+    font-size: 36px;
+  }
+
+  .level-card {
+    padding: 24px 28px;
+  }
+
+  .badges-wrap {
+    padding: 24px 24px;
   }
 }
 </style>

@@ -81,6 +81,16 @@ const handleItemClick = (item: SettingsItem) => emit('itemClick', item)
     background: $color-bg-hover;
   }
   // #endif
+
+  @media (min-width: 1024px) {
+    padding: 16px 20px;
+    gap: 14px;
+
+    &:not(:last-child)::after {
+      left: 54px;
+      right: 20px;
+    }
+  }
 }
 
 @keyframes settingIn {
@@ -97,6 +107,12 @@ const handleItemClick = (item: SettingsItem) => emit('itemClick', item)
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  @media (min-width: 1024px) {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+  }
 }
 
 .item-icon {
@@ -108,6 +124,10 @@ const handleItemClick = (item: SettingsItem) => emit('itemClick', item)
   font-size: 28rpx;
   font-weight: 500;
   color: $color-text-secondary;
+
+  @media (min-width: 1024px) {
+    font-size: 15px;
+  }
 }
 
 .item-arrow {

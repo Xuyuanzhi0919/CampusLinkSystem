@@ -45,6 +45,12 @@ const handleLogout = () => {
   cursor: pointer;
   transition: all 0.2s ease;
 
+  @media (min-width: 1024px) {
+    height: 52px;
+    border-radius: 16px;
+    gap: 8px;
+  }
+
   &:active {
     background: #FEF2F2;
     border-color: rgba($color-danger, 0.2);
@@ -78,5 +84,9 @@ const handleLogout = () => {
   font-weight: 500;
   color: $color-text-tertiary;
   transition: color 0.2s ease;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 </style>

@@ -81,6 +81,10 @@ const actions = [
 .quick-actions {
   padding: 0 20rpx;
   animation: fadeUp 0.4s ease-out 0.1s both;
+
+  @media (min-width: 1024px) {
+    padding: 0;
+  }
 }
 
 @keyframes fadeUp {

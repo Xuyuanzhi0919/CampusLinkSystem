@@ -48,8 +48,8 @@
             <Icon name="map-pin" :size="11" />
             <text class="tag-text">{{ profile?.schoolName || '未设置学校' }}</text>
           </view>
-          <view v-if="profile?.slogan" class="tag tag--slogan">
-            <text class="tag-text">{{ profile.slogan }}</text>
+          <view v-if="profile?.major" class="tag tag--slogan">
+            <text class="tag-text">{{ profile.major }}</text>
           </view>
         </view>
 
@@ -423,26 +423,32 @@ const greeting = computed(() => {
 
 /* ========== PC 端适配 ========== */
 @media (min-width: 1024px) {
+  // PC 端 topbar：内容区居中对齐（860px 与 pc-body 宽度一致），去掉移动端顶部状态栏 padding
   .hero-topbar {
-    padding: 80rpx 64rpx 32rpx;
-    max-width: 1200px;
+    padding: 32px 0 20px;
+    max-width: 860px;
     margin: 0 auto;
   }
 
   .hero-body {
-    padding: 8rpx 64rpx 40rpx;
-    max-width: 1200px;
+    padding: 8px 0 40px;
+    max-width: 860px;
     margin: 0 auto;
-    gap: 40rpx;
+    gap: 32px;
   }
 
   .avatar-ring {
-    width: 180rpx;
-    height: 180rpx;
+    width: 140px;
+    height: 140px;
   }
 
   .user-name {
-    font-size: 48rpx;
+    font-size: 32px;
+  }
+
+  .hero-wave {
+    height: 32px;
+    border-radius: 32px 32px 0 0;
   }
 }
 </style>

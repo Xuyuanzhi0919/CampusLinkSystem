@@ -144,6 +144,16 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
     background: $color-bg-hover;
   }
   // #endif
+
+  @media (min-width: 1024px) {
+    padding: 18px 20px;
+    gap: 14px;
+
+    &:not(:last-child)::after {
+      left: 56px;
+      right: 20px;
+    }
+  }
 }
 
 @keyframes capIn {
@@ -164,6 +174,12 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
 
   .cap-card:active & {
     transform: scale(0.92);
+  }
+
+  @media (min-width: 1024px) {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
   }
 
   &--blue {
@@ -201,6 +217,10 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   font-weight: 600;
   color: $color-text-primary;
   line-height: 1.2;
+
+  @media (min-width: 1024px) {
+    font-size: 15px;
+  }
 }
 
 .cap-desc {
@@ -210,6 +230,10 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  @media (min-width: 1024px) {
+    font-size: 13px;
+  }
 }
 
 /* 角标 */

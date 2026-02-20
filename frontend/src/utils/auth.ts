@@ -23,6 +23,7 @@ const ACTION_MESSAGES: Record<string, { title: string; content: string }> = {
   collect: { title: '需要登录', content: '登录后即可收藏，方便下次查看' },
   comment: { title: '需要登录', content: '登录后即可参与讨论' },
   download: { title: '需要登录', content: '登录后即可下载资源' },
+  join: { title: '需要登录', content: '登录后即可加入社团，结交志同道合的朋友' },
   register: { title: '需要登录', content: '登录后即可报名参加活动' },
   publish: { title: '需要登录', content: '登录后即可发布内容' },
   message: { title: '需要登录', content: '登录后即可发送私信' },

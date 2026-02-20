@@ -1,8 +1,37 @@
 <template>
   <view class="club-detail-page">
-    <!-- 加载状态 -->
-    <view v-if="loading" class="loading-container">
-      <text class="loading-text">加载中...</text>
+    <!-- 骨架屏 -->
+    <view v-if="loading" class="skeleton-wrapper">
+      <!-- Hero 骨架 -->
+      <view class="skeleton-hero">
+        <view class="skeleton-avatar" />
+        <view class="skeleton-info">
+          <view class="skeleton-line skeleton-title" />
+          <view class="skeleton-line skeleton-desc" />
+          <view class="skeleton-metrics">
+            <view class="skeleton-badge" />
+            <view class="skeleton-badge" />
+            <view class="skeleton-badge" />
+          </view>
+          <view class="skeleton-btn" />
+        </view>
+      </view>
+      <!-- 内容骨架 -->
+      <view class="skeleton-content">
+        <view class="skeleton-tabs">
+          <view v-for="i in 5" :key="i" class="skeleton-tab" />
+        </view>
+        <view class="skeleton-card">
+          <view v-for="i in 3" :key="i" class="skeleton-feed-item">
+            <view class="skeleton-feed-avatar" />
+            <view class="skeleton-feed-body">
+              <view class="skeleton-line skeleton-feed-name" />
+              <view class="skeleton-line skeleton-feed-text" />
+              <view class="skeleton-line skeleton-feed-text-short" />
+            </view>
+          </view>
+        </view>
+      </view>
     </view>
 
     <!-- 社团详情 -->
@@ -13,9 +42,15 @@
           <!-- 社团头像 -->
           <view class="club-avatar-wrapper">
             <image
+              v-if="club.logoUrl"
               class="club-avatar"
-              :src="club.logoUrl || '/static/default-club.png'"
+              :src="club.logoUrl"
               mode="aspectFill"
+            />
+            <ClClubDefaultCover
+              v-else
+              class="club-avatar"
+              :name="club.clubName"
             />
           </view>
 
@@ -55,8 +90,8 @@
               </view>
             </view>
 
-            <!-- 已加入身份提示（仅已加入时显示，作为指标行的补充）-->
-            <view v-if="isMember" class="member-badge">
+            <!-- 已加入身份提示（已加入且有有效位置时才显示）-->
+            <view v-if="showMemberPosition" class="member-badge">
               <Icon name="check-circle" :size="14" class="member-badge-icon" />
               <text class="member-badge-text">你是第 {{ memberPosition }} 位加入的成员</text>
             </view>
@@ -433,6 +468,7 @@ import Icon from '@/components/icons/index.vue'
 import { requireLogin } from '@/utils/auth'
 import ClLoginGuideModal from '@/components/cl/ClLoginGuideModal.vue'
 import LoginModal from '@/components/LoginModal.vue'
+import ClClubDefaultCover from '@/components/cl/ClClubDefaultCover.vue'
 
 // ========== 状态 ==========
 const loading = ref(false)
@@ -453,6 +489,14 @@ const members = ref<ClubMember[]>([])
 const admins = ref<ClubMember[]>([]) // 管理员
 const relatedClubs = ref<any[]>([]) // 相关社团
 
+// Tab 已加载标记，避免重复请求
+const tabLoaded = ref<Record<string, boolean>>({
+  feed: false,
+  activity: false,
+  resource: false,
+  member: false
+})
+
 // ========== 计算属性 ==========
 // 用户状态
 const isMember = computed(() => club.value?.isMember || false)
@@ -462,38 +506,34 @@ const isAdmin = computed(() => {
   return club.value?.userRole === 'founder' || club.value?.userRole === 'admin'
 })
 
-// 成员位置（已加入时显示）
-const memberPosition = computed(() => {
-  if (!isMember.value) return 0
-  // 使用后端返回的 joinPosition 字段
-  return club.value?.joinPosition || 0
-})
+// 成员位置（已加入且有有效位置时显示）
+const memberPosition = computed(() => club.value?.joinPosition || 0)
+const showMemberPosition = computed(() => isMember.value && memberPosition.value > 0)
 
 // 社团属性
-const isOfficial = computed(() => {
-  // 根据创建者是否为管理员判断（实际应由后端返回 isOfficial 字段）
-  return club.value?.founderName === 'admin' || club.value?.clubId === 1
-})
+// 直接使用后端返回的 isOfficial 字段
+const isOfficial = computed(() => club.value?.isOfficial || false)
 
+// 使用 lastActivityAt 字段判断是否活跃（30天内有活动记录）
 const isActive = computed(() => {
-  // 判断社团是否活跃（最近30天内有活动）
-  const createdDate = new Date(club.value?.createdAt || Date.now())
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-  return diffDays < 30
+  const lastAt = club.value?.lastActivityAt
+  if (!lastAt) return false
+  const diffDays = Math.floor((Date.now() - new Date(lastAt).getTime()) / (1000 * 60 * 60 * 24))
+  return diffDays <= 30
 })
 
-const activityCount = computed(() => activities.value.length)
+// 优先用后端 activityCount 字段（历史总数），兜底用当前加载的列表长度
+const activityCount = computed(() => club.value?.activityCount ?? activities.value.length)
 
+// 使用 lastActivityAt 展示最近活跃时间
 const lastActiveTime = computed(() => {
-  if (!club.value?.createdAt) return '未知'
-  const createdDate = new Date(club.value.createdAt)
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24))
-
+  const lastAt = club.value?.lastActivityAt
+  if (!lastAt) return '暂无活动'
+  const diffDays = Math.floor((Date.now() - new Date(lastAt).getTime()) / (1000 * 60 * 60 * 24))
   if (diffDays < 7) return '本周活跃'
   if (diffDays < 30) return '本月活跃'
-  return '近期活跃'
+  if (diffDays < 90) return '近期活跃'
+  return '较久未活跃'
 })
 
 // Tabs 配置
@@ -512,18 +552,14 @@ const loadClubDetail = async (id: number) => {
     const res = await getClubDetail(id)
     club.value = res
 
-    // 并行加载各模块数据
-    await Promise.all([
-      loadFeeds(id),
-      loadActivities(id),
-      loadMembers(id),
-      loadRelatedClubs(id)
-    ])
+    // 只预加载侧栏所需数据（成员列表，用于展示管理员）
+    // Tab 内容采用懒加载策略，切换时才请求
+    await loadMembers(id)
 
-    // 如果已加入，加载资料
-    if (isMember.value) {
-      await loadResources(id)
-    }
+    // 默认 Tab（动态）也预加载
+    await loadFeeds(id)
+    tabLoaded.value.feed = true
+    tabLoaded.value.member = true
   } catch (error: any) {
     console.error('加载社团详情失败:', error)
     uni.showToast({
@@ -588,9 +624,22 @@ const loadRelatedClubs = async (id: number) => {
 }
 
 // ========== 交互逻辑 ==========
-// 切换 Tab
-const handleTabChange = (tab: typeof currentTab.value) => {
+// 切换 Tab（懒加载：首次切换到该 Tab 时才请求数据）
+const handleTabChange = async (tab: typeof currentTab.value) => {
   currentTab.value = tab
+  if (!clubId.value) return
+
+  const id = clubId.value
+  if (tab === 'activity' && !tabLoaded.value.activity) {
+    await loadActivities(id)
+    tabLoaded.value.activity = true
+  } else if (tab === 'resource' && !tabLoaded.value.resource && isMember.value) {
+    await loadResources(id)
+    tabLoaded.value.resource = true
+  } else if (tab === 'member' && !tabLoaded.value.member) {
+    await loadMembers(id)
+    tabLoaded.value.member = true
+  }
 }
 
 // 加入社团
@@ -759,20 +808,24 @@ onLoad((options) => {
   }
 })
 
+// 保存 handler 引用，确保 off 时精准移除，不影响其他页面的监听器
+const onShowLoginGuide = (data: any) => {
+  loginGuideActionType.value = data?.actionType || 'join'
+  showLoginGuide.value = true
+}
+const onShowLoginModal = () => {
+  showLoginGuide.value = false
+  showLoginModal.value = true
+}
+
 onMounted(() => {
-  uni.$on('show-login-guide', (data: any) => {
-    loginGuideActionType.value = data?.actionType || 'join'
-    showLoginGuide.value = true
-  })
-  uni.$on('show-login-modal', () => {
-    showLoginGuide.value = false
-    showLoginModal.value = true
-  })
+  uni.$on('show-login-guide', onShowLoginGuide)
+  uni.$on('show-login-modal', onShowLoginModal)
 })
 
 onUnmounted(() => {
-  uni.$off('show-login-guide')
-  uni.$off('show-login-modal')
+  uni.$off('show-login-guide', onShowLoginGuide)
+  uni.$off('show-login-modal', onShowLoginModal)
 })
 </script>
 
@@ -787,7 +840,161 @@ onUnmounted(() => {
 // =============================================
 // 加载 / 错误状态
 // =============================================
-.loading-container,
+// =============================================
+// 骨架屏
+// =============================================
+@keyframes skeleton-shimmer {
+  0% { background-position: -400rpx 0; }
+  100% { background-position: 400rpx 0; }
+}
+
+%skeleton-base {
+  background: linear-gradient(90deg, $gray-100 25%, $gray-200 50%, $gray-100 75%);
+  background-size: 800rpx 100%;
+  animation: skeleton-shimmer 1.4s ease infinite;
+  border-radius: $radius-sm;
+}
+
+.skeleton-wrapper {
+  padding: 64rpx 80rpx;
+  max-width: 1280px;
+  margin: 0 auto;
+
+  @include mobile {
+    padding: 40rpx $sp-8;
+  }
+}
+
+.skeleton-hero {
+  display: flex;
+  gap: 48rpx;
+  align-items: flex-start;
+  margin-bottom: 64rpx;
+}
+
+.skeleton-avatar {
+  @extend %skeleton-base;
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: $radius-lg;
+  flex-shrink: 0;
+
+  @include mobile {
+    width: 140rpx;
+    height: 140rpx;
+  }
+}
+
+.skeleton-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+}
+
+.skeleton-line {
+  @extend %skeleton-base;
+}
+
+.skeleton-title {
+  height: 52rpx;
+  width: 40%;
+  border-radius: $radius-md;
+}
+
+.skeleton-desc {
+  height: 28rpx;
+  width: 70%;
+}
+
+.skeleton-metrics {
+  display: flex;
+  gap: $sp-3;
+  margin-top: $sp-2;
+}
+
+.skeleton-badge {
+  @extend %skeleton-base;
+  height: 32rpx;
+  width: 100rpx;
+  border-radius: $radius-full;
+}
+
+.skeleton-btn {
+  @extend %skeleton-base;
+  height: 76rpx;
+  width: 200rpx;
+  border-radius: $radius-md;
+  margin-top: $sp-4;
+}
+
+.skeleton-content {
+  display: flex;
+  flex-direction: column;
+  gap: 32rpx;
+}
+
+.skeleton-tabs {
+  display: flex;
+  gap: 8rpx;
+  background: $gray-50;
+  padding: 12rpx;
+  border-radius: $radius-lg;
+}
+
+.skeleton-tab {
+  @extend %skeleton-base;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+}
+
+.skeleton-card {
+  background: $white;
+  border-radius: $radius-lg;
+  padding: 48rpx;
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: $sp-8;
+}
+
+.skeleton-feed-item {
+  display: flex;
+  gap: $sp-4;
+  align-items: flex-start;
+}
+
+.skeleton-feed-avatar {
+  @extend %skeleton-base;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-full;
+  flex-shrink: 0;
+}
+
+.skeleton-feed-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+.skeleton-feed-name {
+  height: 26rpx;
+  width: 25%;
+}
+
+.skeleton-feed-text {
+  height: 28rpx;
+  width: 100%;
+}
+
+.skeleton-feed-text-short {
+  height: 28rpx;
+  width: 60%;
+}
+
 .error-state {
   @include flex-center;
   flex-direction: column;
@@ -795,7 +1002,6 @@ onUnmounted(() => {
   gap: $sp-6;
 }
 
-.loading-text,
 .error-text {
   font-size: $font-size-base;
   color: $gray-400;

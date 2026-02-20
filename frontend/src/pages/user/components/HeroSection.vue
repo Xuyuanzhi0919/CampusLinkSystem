@@ -1,94 +1,86 @@
 <template>
   <view class="hero">
-    <!-- 背景 -->
-    <view class="hero__bg" />
-    <!-- 微妙的光晕，左上角一个 -->
-    <view class="hero__glow" />
+    <!-- 背景层 -->
+    <view class="hero-bg" />
+    <view class="hero-bg-shine" />
 
-    <!-- 主内容 -->
-    <view class="hero__inner">
+    <!-- 内容 -->
+    <view class="hero-inner">
 
-      <!-- ① 顶栏：问候 + 操作 -->
-      <view class="hero__topbar">
-        <view class="hero__greeting-wrap">
-          <text class="hero__time">{{ timeLabel }}</text>
-          <text class="hero__greeting">{{ greeting }}</text>
+      <!-- 顶栏 -->
+      <view class="hero-topbar">
+        <view class="hero-greeting">
+          <text class="hero-hi">{{ timeLabel }}</text>
+          <text class="hero-hello">{{ greeting }}</text>
         </view>
-        <view class="hero__actions">
-          <view class="hero__icon-btn" @click="$emit('editProfile')">
-            <Icon name="edit-2" :size="16" />
-          </view>
+        <view class="hero-edit-icon" @click="$emit('editProfile')">
+          <Icon name="edit-2" :size="15" />
         </view>
       </view>
 
-      <!-- ② 核心身份区 -->
-      <view class="hero__identity">
+      <!-- 身份区：头像左 + 信息右 -->
+      <view class="hero-identity">
         <!-- 头像 -->
-        <view class="hero__avatar-area" @click="$emit('editProfile')">
-          <view class="hero__avatar-ring">
-            <image
-              class="hero__avatar-img"
-              :src="profile?.avatarUrl || defaultAvatar"
-              mode="aspectFill"
-            />
-          </view>
-          <!-- 在线状态 -->
-          <view class="hero__online" />
-          <!-- 等级 -->
-          <view class="hero__lv">
-            <text class="hero__lv-text">Lv.{{ profile?.level || 1 }}</text>
+        <view class="hero-avatar-wrap" @click="$emit('editProfile')">
+          <image
+            class="hero-avatar"
+            :src="profile?.avatarUrl || defaultAvatar"
+            mode="aspectFill"
+          />
+          <view class="hero-online" />
+          <view class="hero-lv">
+            <text class="hero-lv-text">Lv.{{ profile?.level || 1 }}</text>
           </view>
         </view>
 
         <!-- 右侧信息 -->
-        <view class="hero__info">
-          <!-- 姓名 -->
-          <text class="hero__name">{{ profile?.nickname || '未设置昵称' }}</text>
+        <view class="hero-info">
+          <text class="hero-name">{{ profile?.nickname || '未设置昵称' }}</text>
 
-          <!-- 标签行 -->
-          <view class="hero__tags">
-            <view v-if="profile?.schoolName" class="hero__tag">
-              <Icon name="map-pin" :size="10" class="hero__tag-icon" />
-              <text class="hero__tag-text">{{ profile.schoolName }}</text>
+          <!-- 标签 -->
+          <view class="hero-tags">
+            <view v-if="profile?.schoolName" class="hero-tag">
+              <Icon name="map-pin" :size="9" class="hero-tag-icon" />
+              <text class="hero-tag-text">{{ profile.schoolName }}</text>
             </view>
-            <view v-if="profile?.major" class="hero__tag hero__tag--dim">
-              <text class="hero__tag-text">{{ profile.major }}</text>
+            <view v-if="profile?.major" class="hero-tag hero-tag--dim">
+              <text class="hero-tag-text">{{ profile.major }}</text>
             </view>
           </view>
 
-          <!-- 数据横排 -->
-          <view class="hero__stats">
+          <!-- inline 数据胶囊 -->
+          <view class="hero-stats">
             <view
               v-for="s in quickStats"
               :key="s.key"
-              class="hero__stat"
+              class="hero-stat"
               @click="$emit('statClick', s.key)"
             >
-              <text class="hero__stat-num">{{ s.val }}</text>
-              <text class="hero__stat-lbl">{{ s.label }}</text>
+              <text class="hero-stat-num">{{ s.val }}</text>
+              <text class="hero-stat-lbl">{{ s.label }}</text>
             </view>
           </view>
         </view>
       </view>
 
-      <!-- ③ 积分 + 编辑资料 行 -->
-      <view class="hero__footer-row">
-        <view class="hero__points" @click="$emit('pointsClick')">
-          <text class="hero__points-icon">✦</text>
-          <text class="hero__points-num">{{ profile?.points?.toLocaleString() || '0' }}</text>
-          <text class="hero__points-unit">积分</text>
-          <Icon name="chevron-right" :size="12" class="hero__points-chevron" />
+      <!-- 积分进度行 -->
+      <view class="hero-footer">
+        <view class="hero-pts" @click="$emit('pointsClick')">
+          <text class="hero-pts-star">✦</text>
+          <text class="hero-pts-num">{{ profile?.points?.toLocaleString() || '0' }}</text>
+          <text class="hero-pts-unit">积分</text>
         </view>
-        <view class="hero__edit-btn" @click="$emit('editProfile')">
-          <Icon name="edit-2" :size="13" />
-          <text class="hero__edit-text">编辑资料</text>
-        </view>
+        <text class="hero-pts-meta">{{ levelName }} · {{ progressPct }}%</text>
+      </view>
+      <!-- 积分条 -->
+      <view class="hero-bar-track">
+        <view class="hero-bar-fill" :style="{ width: progressPct + '%' }" />
       </view>
 
     </view>
 
     <!-- 底部白色圆弧过渡 -->
-    <view class="hero__wave" />
+    <view class="hero-wave" />
   </view>
 </template>
 
@@ -114,21 +106,39 @@ const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=campus'
 
 const timeLabel = computed(() => {
   const h = new Date().getHours()
-  if (h < 6)  return 'MIDNIGHT'
-  if (h < 12) return 'MORNING'
-  if (h < 14) return 'NOON'
-  if (h < 18) return 'AFTERNOON'
-  return 'EVENING'
+  if (h < 6)  return '深夜 · 注意休息'
+  if (h < 12) return '早上好'
+  if (h < 14) return '午安'
+  if (h < 18) return '下午好'
+  return '晚上好'
 })
 
 const greeting = computed(() => {
   const h = new Date().getHours()
-  if (h < 6)  return '夜深了，注意休息 👋'
-  if (h < 12) return '早上好，开始新的一天！'
-  if (h < 14) return '午安，记得吃饭哦~'
-  if (h < 18) return '下午好，继续加油！'
-  return '晚上好，今天辛苦了'
+  if (h < 6)  return '夜深了，早点休息 👋'
+  if (h < 12) return '元气满满，开始新的一天！'
+  if (h < 14) return '记得吃饭补充能量~'
+  if (h < 18) return '继续加油，你很棒！'
+  return '今天辛苦了，好好休息'
 })
+
+const levelName = computed(() => {
+  const lv = props.profile?.level || 1
+  if (lv < 5)  return '校园新星'
+  if (lv < 10) return '活跃学子'
+  if (lv < 20) return '知识达人'
+  if (lv < 30) return '互助先锋'
+  return '校园传奇'
+})
+
+const nextLevelExp = computed(() => {
+  const lv = props.profile?.level || 1
+  return lv <= 10 ? lv * 200 : 2000 + (lv - 10) * 500
+})
+
+const progressPct = computed(() =>
+  Math.min(Math.round(((props.profile?.points || 0) / nextLevelExp.value) * 100), 100)
+)
 
 const fmt = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
 
@@ -142,45 +152,43 @@ const quickStats = computed(() => [
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
-/* ════════════════════════════════
-   Hero 容器
-════════════════════════════════ */
+/* ─── 容器 ─── */
 .hero {
   position: relative;
   overflow: hidden;
 }
 
-/* ── 背景 ── */
-.hero__bg {
+/* ─── 背景 ─── */
+.hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(145deg, #152d5e 0%, #1e4a8a 50%, #2c6dbf 100%);
+  background: linear-gradient(135deg, #2d3fa0 0%, #3a5bbf 40%, #5579d4 75%, #7a9ae0 100%);
 }
 
-/* 左上角柔光 */
-.hero__glow {
+/* 右上角高光球 */
+.hero-bg-shine {
   position: absolute;
-  top: -60rpx;
-  left: -40rpx;
-  width: 400rpx;
-  height: 400rpx;
+  top: -80rpx;
+  right: -60rpx;
+  width: 340rpx;
+  height: 340rpx;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(100,160,255,0.18) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.13) 0%, transparent 65%);
   pointer-events: none;
 
   @media (min-width: 1024px) {
-    width: 300px;
-    height: 300px;
-    top: -40px;
-    left: -20px;
+    width: 240px;
+    height: 240px;
+    top: -60px;
+    right: -40px;
   }
 }
 
-/* ── 内容包裹 ── */
-.hero__inner {
+/* ─── 内容包裹 ─── */
+.hero-inner {
   position: relative;
   z-index: 2;
-  padding: 0 36rpx;
+  padding: 0 32rpx;
 
   @media (min-width: 1024px) {
     max-width: 860px;
@@ -189,250 +197,202 @@ const quickStats = computed(() => [
   }
 }
 
-/* ════════════════════════════════
-   ① 顶栏
-════════════════════════════════ */
-.hero__topbar {
+/* ─── 顶栏 ─── */
+.hero-topbar {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
+  align-items: flex-start;
   padding-top: 60rpx;
-  padding-bottom: 28rpx;
+  padding-bottom: 22rpx;
 
   @media (min-width: 1024px) {
     padding-top: 36px;
-    padding-bottom: 20px;
+    padding-bottom: 16px;
   }
 }
 
-.hero__greeting-wrap {
+.hero-greeting {
   display: flex;
   flex-direction: column;
   gap: 4rpx;
 
-  @media (min-width: 1024px) {
-    gap: 3px;
-  }
+  @media (min-width: 1024px) { gap: 3px; }
 }
 
-.hero__time {
-  font-size: 18rpx;
+.hero-hi {
+  font-size: 22rpx;
   font-weight: 600;
-  color: rgba(255,255,255,0.35);
-  letter-spacing: 0.12em;
+  color: rgba(255,255,255,0.9);
+  letter-spacing: 0.01em;
   line-height: 1;
 
-  @media (min-width: 1024px) {
-    font-size: 11px;
-  }
+  @media (min-width: 1024px) { font-size: 15px; }
 }
 
-.hero__greeting {
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.7);
+.hero-hello {
+  font-size: 20rpx;
+  color: rgba(255,255,255,0.5);
   font-weight: 400;
-  letter-spacing: 0.01em;
 
-  @media (min-width: 1024px) {
-    font-size: 14px;
-  }
+  @media (min-width: 1024px) { font-size: 13px; }
 }
 
-.hero__actions {
-  display: flex;
-  gap: 12rpx;
-  align-items: center;
-
-  @media (min-width: 1024px) {
-    gap: 8px;
-  }
-}
-
-.hero__icon-btn {
+.hero-edit-icon {
   width: 56rpx;
   height: 56rpx;
   border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   color: rgba(255,255,255,0.8);
   cursor: pointer;
   transition: background 0.18s;
+  flex-shrink: 0;
 
-  &:active { background: rgba(255,255,255,0.2); }
+  &:active { background: rgba(255,255,255,0.22); }
 
   // #ifdef H5
-  &:hover { background: rgba(255,255,255,0.18); }
+  &:hover { background: rgba(255,255,255,0.2); }
   // #endif
 
-  /* 在 PC 端隐藏，底部 footer-row 已有编辑按钮 */
   @media (min-width: 1024px) {
-    display: none;
+    width: 36px;
+    height: 36px;
   }
 }
 
-/* ════════════════════════════════
-   ② 身份区
-════════════════════════════════ */
-.hero__identity {
+/* ─── 身份区 ─── */
+.hero-identity {
   display: flex;
   align-items: flex-end;
-  gap: 28rpx;
-  padding-bottom: 28rpx;
+  gap: 20rpx;
+  padding-bottom: 22rpx;
 
   @media (min-width: 1024px) {
-    gap: 24px;
-    padding-bottom: 20px;
-    align-items: flex-end;
+    gap: 18px;
+    padding-bottom: 16px;
   }
 }
 
-/* 头像区域 */
-.hero__avatar-area {
+/* 头像 */
+.hero-avatar-wrap {
   position: relative;
   flex-shrink: 0;
   cursor: pointer;
 }
 
-.hero__avatar-ring {
-  width: 168rpx;
-  height: 168rpx;
+.hero-avatar {
+  width: 152rpx;
+  height: 152rpx;
   border-radius: 50%;
-  padding: 4rpx;
-  background: linear-gradient(
-    135deg,
-    rgba(255,255,255,0.5) 0%,
-    rgba(255,255,255,0.15) 50%,
-    rgba(255,255,255,0.05) 100%
-  );
-  box-shadow:
-    0 0 0 1px rgba(255,255,255,0.12),
-    0 8rpx 32rpx rgba(0,0,0,0.3);
-  transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1);
+  border: 3px solid rgba(255,255,255,0.38);
+  display: block;
+  background: rgba(255,255,255,0.15);
+  box-shadow: 0 6rpx 24rpx rgba(0,0,0,0.22);
+  transition: opacity 0.2s;
 
-  &:active { transform: scale(0.95); }
+  &:active { opacity: 0.85; }
 
   @media (min-width: 1024px) {
-    width: 112px;
-    height: 112px;
-    padding: 3px;
+    width: 96px;
+    height: 96px;
+    border-width: 2.5px;
   }
 }
 
-.hero__avatar-img {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  display: block;
-  background: #1e4a8a;
-}
-
 /* 在线绿点 */
-.hero__online {
+.hero-online {
   position: absolute;
-  top: 10rpx;
+  top: 8rpx;
   right: 4rpx;
-  width: 20rpx;
-  height: 20rpx;
+  width: 18rpx;
+  height: 18rpx;
   background: #4ade80;
   border-radius: 50%;
-  border: 3px solid #1e4a8a;
-  box-shadow: 0 0 0 2px rgba(74,222,128,0.3);
+  border: 2.5px solid #3a5bbf;
+  box-shadow: 0 0 0 2px rgba(74,222,128,0.28);
 
   @media (min-width: 1024px) {
-    width: 13px;
-    height: 13px;
-    top: 7px;
+    width: 12px;
+    height: 12px;
+    top: 5px;
     right: 3px;
   }
 }
 
-/* 等级标签 */
-.hero__lv {
+/* 等级 */
+.hero-lv {
   position: absolute;
-  bottom: -2rpx;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 38rpx;
-  padding: 0 16rpx;
-  background: linear-gradient(90deg, #f59e0b 0%, #f97316 100%);
+  bottom: -4rpx;
+  right: -4rpx;
+  padding: 4rpx 12rpx;
+  background: linear-gradient(90deg, #f59e0b, #f97316);
   border-radius: 100rpx;
-  border: 2.5px solid rgba(255,255,255,0.45);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  white-space: nowrap;
-  box-shadow: 0 3rpx 12rpx rgba(249,115,22,0.5);
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow: 0 2rpx 10rpx rgba(249,115,22,0.4);
 
   @media (min-width: 1024px) {
-    height: 24px;
-    padding: 0 10px;
+    padding: 2px 8px;
     bottom: -2px;
+    right: -2px;
   }
 }
 
-.hero__lv-text {
+.hero-lv-text {
   font-size: 18rpx;
   font-weight: 700;
   color: #fff;
   line-height: 1;
   letter-spacing: 0.02em;
 
-  @media (min-width: 1024px) {
-    font-size: 11px;
-  }
+  @media (min-width: 1024px) { font-size: 11px; }
 }
 
 /* 右侧信息 */
-.hero__info {
+.hero-info {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
-  // 与头像底部对齐
-  padding-bottom: 12rpx;
+  gap: 12rpx;
+  padding-bottom: 8rpx;
 
   @media (min-width: 1024px) {
-    gap: 10px;
-    padding-bottom: 8px;
+    gap: 9px;
+    padding-bottom: 4px;
   }
 }
 
-.hero__name {
-  font-size: 46rpx;
+.hero-name {
+  font-size: 44rpx;
   font-weight: 700;
   color: #fff;
-  line-height: 1.1;
   letter-spacing: -0.02em;
+  line-height: 1.1;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 
-  @media (min-width: 1024px) {
-    font-size: 30px;
-  }
+  @media (min-width: 1024px) { font-size: 28px; }
 }
 
-/* 标签 */
-.hero__tags {
+/* 标签行 */
+.hero-tags {
   display: flex;
   flex-wrap: wrap;
-  gap: 8rpx;
+  gap: 7rpx;
 
-  @media (min-width: 1024px) {
-    gap: 6px;
-  }
+  @media (min-width: 1024px) { gap: 5px; }
 }
 
-.hero__tag {
+.hero-tag {
   display: inline-flex;
   align-items: center;
-  gap: 5rpx;
-  padding: 5rpx 14rpx;
-  background: rgba(255,255,255,0.13);
+  gap: 4rpx;
+  padding: 5rpx 12rpx;
+  background: rgba(255,255,255,0.14);
   border: 1px solid rgba(255,255,255,0.2);
   border-radius: 100rpx;
 
@@ -442,177 +402,145 @@ const quickStats = computed(() => [
   }
 
   @media (min-width: 1024px) {
-    padding: 3px 10px;
-    gap: 4px;
+    padding: 3px 9px;
+    gap: 3px;
     border-radius: 100px;
   }
 }
 
-.hero__tag-icon {
-  color: rgba(255,255,255,0.6);
-  flex-shrink: 0;
-}
+.hero-tag-icon { color: rgba(255,255,255,0.6); flex-shrink: 0; }
 
-.hero__tag-text {
-  font-size: 20rpx;
+.hero-tag-text {
+  font-size: 19rpx;
   color: rgba(255,255,255,0.78);
   line-height: 1;
 
-  @media (min-width: 1024px) {
-    font-size: 12px;
-  }
+  @media (min-width: 1024px) { font-size: 11px; }
 }
 
-/* 快速数据横排 */
-.hero__stats {
+/* inline 数据 */
+.hero-stats {
   display: flex;
-  gap: 28rpx;
+  gap: 24rpx;
 
-  @media (min-width: 1024px) {
-    gap: 20px;
-  }
+  @media (min-width: 1024px) { gap: 18px; }
 }
 
-.hero__stat {
+.hero-stat {
   display: flex;
-  flex-direction: column;
-  gap: 2rpx;
+  align-items: baseline;
+  gap: 4rpx;
   cursor: pointer;
 
-  @media (min-width: 1024px) {
-    gap: 2px;
-  }
+  @media (min-width: 1024px) { gap: 3px; }
 }
 
-.hero__stat-num {
-  font-size: 32rpx;
+.hero-stat-num {
+  font-size: 30rpx;
   font-weight: 700;
   color: #fff;
+  letter-spacing: -0.02em;
   line-height: 1;
-  letter-spacing: -0.01em;
 
-  @media (min-width: 1024px) {
-    font-size: 20px;
-  }
+  @media (min-width: 1024px) { font-size: 19px; }
 }
 
-.hero__stat-lbl {
+.hero-stat-lbl {
   font-size: 19rpx;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.48);
   font-weight: 400;
 
-  @media (min-width: 1024px) {
-    font-size: 11px;
-  }
+  @media (min-width: 1024px) { font-size: 11px; }
 }
 
-/* ════════════════════════════════
-   ③ 底部信息行
-════════════════════════════════ */
-.hero__footer-row {
+/* ─── 积分 footer ─── */
+.hero-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18rpx 0 52rpx;
-  border-top: 1px solid rgba(255,255,255,0.1);
+  padding: 16rpx 0 10rpx;
+  border-top: 1px solid rgba(255,255,255,0.12);
 
   @media (min-width: 1024px) {
-    padding: 14px 0 44px;
+    padding: 12px 0 8px;
   }
 }
 
-/* 积分胶囊 */
-.hero__points {
-  display: inline-flex;
+.hero-pts {
+  display: flex;
   align-items: center;
-  gap: 7rpx;
+  gap: 6rpx;
   cursor: pointer;
   transition: opacity 0.18s;
 
   &:active { opacity: 0.75; }
 
   // #ifdef H5
-  &:hover { opacity: 0.85; }
+  &:hover { opacity: 0.82; }
   // #endif
 
-  @media (min-width: 1024px) {
-    gap: 5px;
-  }
+  @media (min-width: 1024px) { gap: 5px; }
 }
 
-.hero__points-icon {
-  font-size: 18rpx;
+.hero-pts-star {
+  font-size: 14rpx;
   color: #fbbf24;
   line-height: 1;
 
-  @media (min-width: 1024px) {
-    font-size: 12px;
-  }
+  @media (min-width: 1024px) { font-size: 11px; }
 }
 
-.hero__points-num {
-  font-size: 34rpx;
+.hero-pts-num {
+  font-size: 32rpx;
   font-weight: 700;
   color: #fbbf24;
-  line-height: 1;
   letter-spacing: -0.01em;
+  line-height: 1;
 
-  @media (min-width: 1024px) {
-    font-size: 22px;
-  }
+  @media (min-width: 1024px) { font-size: 20px; }
 }
 
-.hero__points-unit {
-  font-size: 20rpx;
-  color: rgba(255,255,255,0.45);
+.hero-pts-unit {
+  font-size: 19rpx;
+  color: rgba(255,255,255,0.38);
   font-weight: 400;
-  margin-left: 2rpx;
 
-  @media (min-width: 1024px) {
-    font-size: 12px;
-  }
+  @media (min-width: 1024px) { font-size: 12px; }
 }
 
-.hero__points-chevron {
-  color: rgba(255,255,255,0.25);
-  flex-shrink: 0;
+.hero-pts-meta {
+  font-size: 19rpx;
+  color: rgba(255,255,255,0.38);
+  font-weight: 400;
+
+  @media (min-width: 1024px) { font-size: 12px; }
 }
 
-/* 编辑资料按钮（仅 PC） */
-.hero__edit-btn {
-  display: none;
+/* ─── 积分进度条 ─── */
+.hero-bar-track {
+  width: 100%;
+  height: 4rpx;
+  background: rgba(255,255,255,0.12);
+  border-radius: 100rpx;
+  overflow: hidden;
+  margin-bottom: 44rpx;
 
   @media (min-width: 1024px) {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 18px;
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.18);
+    height: 3px;
     border-radius: 100px;
-    color: rgba(255,255,255,0.8);
-    cursor: pointer;
-    transition: background 0.18s;
-    font-size: 13px;
-
-    &:hover { background: rgba(255,255,255,0.18); }
+    margin-bottom: 36px;
   }
 }
 
-.hero__edit-text {
-  font-size: 22rpx;
-  font-weight: 500;
-  color: inherit;
-
-  @media (min-width: 1024px) {
-    font-size: 13px;
-  }
+.hero-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f97316);
+  border-radius: 100rpx;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
 }
 
-/* ════════════════════════════════
-   波浪过渡
-════════════════════════════════ */
-.hero__wave {
+/* ─── 底部白色圆弧过渡 ─── */
+.hero-wave {
   position: relative;
   z-index: 3;
   height: 44rpx;

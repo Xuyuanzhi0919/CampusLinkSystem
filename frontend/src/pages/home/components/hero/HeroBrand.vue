@@ -163,8 +163,8 @@ $charcoal: $gray-900;
   gap: 8px;
 
   @media (max-width: 768px) {
-    gap: 6px;
-    margin-bottom: 16px;
+    gap: 4px;
+    margin-bottom: 10px;
     align-items: center;
   }
 }
@@ -181,11 +181,11 @@ $charcoal: $gray-900;
   animation: titlePop 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
 
   @media (max-width: 768px) {
-    font-size: clamp(36px, 10vw, 56px);
+    font-size: clamp(28px, 8vw, 42px);
   }
 
   @media (max-width: 480px) {
-    font-size: clamp(32px, 12vw, 48px);
+    font-size: clamp(26px, 9vw, 36px);
   }
 }
 
@@ -202,11 +202,11 @@ $charcoal: $gray-900;
   letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
-    font-size: clamp(32px, 9vw, 52px);
+    font-size: clamp(24px, 7vw, 38px);
   }
 
   @media (max-width: 480px) {
-    font-size: clamp(28px, 11vw, 44px);
+    font-size: clamp(22px, 8.5vw, 32px);
   }
 }
 
@@ -239,7 +239,7 @@ $charcoal: $gray-900;
   @media (max-width: 768px) {
     align-items: center;
     text-align: center;
-    gap: 10px;
+    gap: 6px;
   }
 }
 
@@ -252,12 +252,9 @@ $charcoal: $gray-900;
   color: $charcoal;
   opacity: 0.85;
 
+  // 移动端隐藏，功能由 feature-line 承担，减少垂直占用
   @media (max-width: 768px) {
-    font-size: clamp(18px, 4.5vw, 24px);
-  }
-
-  @media (max-width: 480px) {
-    font-size: clamp(16px, 5vw, 22px);
+    display: none;
   }
 }
 
@@ -272,11 +269,12 @@ $charcoal: $gray-900;
   gap: 4px;
 
   @media (max-width: 768px) {
-    font-size: clamp(12px, 3vw, 15px);
+    font-size: 12px;
+    justify-content: center;
   }
 
   @media (max-width: 480px) {
-    font-size: clamp(11px, 3.5vw, 14px);
+    font-size: 11px;
   }
 }
 

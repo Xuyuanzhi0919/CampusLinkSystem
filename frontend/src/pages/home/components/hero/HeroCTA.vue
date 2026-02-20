@@ -81,6 +81,10 @@ $charcoal: $gray-900;
   display: flex;
   flex-direction: column;
   gap: 20px;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
 }
 
 // ==================== 按钮组 - 垂直排列，主按钮突出 ====================
@@ -127,12 +131,12 @@ $charcoal: $gray-900;
   @media (max-width: 768px) {
     width: 100%;
     min-width: auto;
-    padding: 16px 22px;
+    padding: 12px 18px;
     justify-content: center;
   }
 
   @media (max-width: 480px) {
-    padding: 14px 20px;
+    padding: 11px 16px;
     gap: 6px;
   }
 
@@ -335,6 +339,7 @@ $charcoal: $gray-900;
   @media (max-width: 768px) {
     justify-content: center;
     width: 100%;
+    padding: 4px 4px;
   }
 
   &:hover {
@@ -378,17 +383,17 @@ $charcoal: $gray-900;
   font-family: 'Courier New', monospace;
   font-size: 13px;
 
-  // 🔧 移动端调整布局
+  // 🔧 移动端保持单行水平排列
   @media (max-width: 768px) {
-    flex-direction: column;
+    flex-direction: row;
     gap: 8px;
-    align-items: center;  // 居中对齐
-    text-align: center;
+    justify-content: center;
+    font-size: 11px;
   }
 
   @media (max-width: 480px) {
     gap: 6px;
-    font-size: 12px;
+    font-size: 10px;
   }
 }
 

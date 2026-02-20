@@ -1,235 +1,343 @@
-﻿<template>
+<template>
   <view class="grid-nav-wrapper">
-    <!-- 金刚区按钮 -->
     <view class="grid-nav">
       <view
         v-for="item in items"
         :key="item.id"
-        class="nav-item"
-        :class="{ 'nav-item-primary': item.isPrimary }"
+        class="nav-card"
+        :class="[`nav-card--${item.theme}`, { 'nav-card--highlight': item.isHighlight }]"
         @click="handleClick(item)"
       >
-        <view class="nav-icon" :style="{ background: item.color }">
-          <svg v-if="item.icon === 'activity'" class="icon-svg" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" fill="currentColor"/>
+        <!-- 高亮卡片（AI 助手）内部噪点纹理层 -->
+        <view v-if="item.isHighlight" class="card-noise"></view>
+
+        <!-- 图标区 -->
+        <view class="card-icon-wrap">
+          <!-- 热门活动：彩票 / 烟花 -->
+          <svg v-if="item.id === 1" class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C8.5 2 5.5 4.5 5.5 8C5.5 10.5 7 12.7 9.2 13.7L8 22H16L14.8 13.7C17 12.7 18.5 10.5 18.5 8C18.5 4.5 15.5 2 12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 8.5C9 8.5 10 7 12 7C14 7 15 8.5 15 8.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M5 5L3 3M19 5L21 3M5 11L3 13M19 11L21 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
-          <svg v-else-if="item.icon === 'task'" class="icon-svg" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="currentColor"/>
+
+          <!-- 互助任务：握手 -->
+          <svg v-else-if="item.id === 2" class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 11L7 13L3 9L7 5L9 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M15 13L17 11L21 15L17 19L15 17" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 7L12 4L15 7L12 10L9 7Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 17L12 20L15 17L12 14L9 17Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 11L15 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
-          <svg v-else-if="item.icon === 'ranking'" class="icon-svg" viewBox="0 0 24 24" fill="none">
-            <path d="M16 11V3H8V9H2V21H22V11H16ZM10 5H14V19H10V5ZM4 11H8V19H4V11ZM20 19H16V13H20V19Z" fill="currentColor"/>
+
+          <!-- 积分排行：奖杯 -->
+          <svg v-else-if="item.id === 3" class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 3H18V13C18 16.31 15.31 19 12 19C8.69 19 6 16.31 6 13V3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6 5H3C3 5 2 11 6 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M18 5H21C21 5 22 11 18 13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M9 21H15M12 19V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
-          <svg v-else-if="item.icon === 'ai'" class="icon-svg" viewBox="0 0 24 24" fill="none">
-            <rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="2"/>
-            <circle cx="12" cy="12" r="3" fill="currentColor"/>
-            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="currentColor" stroke-width="2"/>
-            <circle cx="8" cy="8" r="1.5" fill="currentColor" opacity="0.6"/>
-            <circle cx="16" cy="8" r="1.5" fill="currentColor" opacity="0.6"/>
-            <circle cx="8" cy="16" r="1.5" fill="currentColor" opacity="0.6"/>
-            <circle cx="16" cy="16" r="1.5" fill="currentColor" opacity="0.6"/>
+
+          <!-- AI 助手：闪光星 -->
+          <svg v-else-if="item.id === 4" class="card-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 3L13.5 8.5H19L14.5 12L16 17.5L12 14.5L8 17.5L9.5 12L5 8.5H10.5L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M19 3L19.7 5.3L22 6L19.7 6.7L19 9L18.3 6.7L16 6L18.3 5.3L19 3Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M5 17L5.5 18.5L7 19L5.5 19.5L5 21L4.5 19.5L3 19L4.5 18.5L5 17Z" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
         </view>
-        <text class="nav-text">{{ item.label }}</text>
-        <text v-if="item.desc" class="nav-desc">{{ item.desc }}</text>
-        <view v-if="item.isPrimary" class="primary-badge">推荐</view>
+
+        <!-- 文字区 -->
+        <view class="card-body">
+          <text class="card-title">{{ item.label }}</text>
+          <text class="card-desc">{{ item.desc }}</text>
+        </view>
+
+        <!-- 右箭头 -->
+        <view class="card-arrow">
+          <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M6 12L10 8L6 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </view>
+
+        <!-- 高亮卡片的装饰光斑 -->
+        <view v-if="item.isHighlight" class="card-glow-orb"></view>
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-
-const items = ref([
+const items = [
   {
     id: 1,
-    icon: 'activity',
     label: '热门活动',
-    desc: '校园精彩',
-    color: 'linear-gradient(135deg, #FEF3C7 0%, #FBBF24 100%)',
-    url: '/pages/club/activity-list',
-    isPrimary: false
+    desc: '精彩校园正在进行',
+    theme: 'amber',
+    isHighlight: false,
+    url: '/pages/club/activity-list'
   },
   {
     id: 2,
-    icon: 'task',
     label: '互助任务',
-    desc: '快速匹配',
-    color: 'linear-gradient(135deg, #D1FAE5 0%, #10B981 100%)',
-    url: '/pages/task/index',
-    isPrimary: false
+    desc: '发布 & 接单赚积分',
+    theme: 'teal',
+    isHighlight: false,
+    url: '/pages/task/index'
   },
   {
     id: 3,
-    icon: 'ranking',
     label: '积分排行',
-    desc: '贡献榜单',
-    color: 'linear-gradient(135deg, #FEE2E2 0%, #EF4444 100%)',
-    url: '/pages/user/ranking',
-    isPrimary: false
+    desc: '看看谁最贡献',
+    theme: 'rose',
+    isHighlight: false,
+    url: '/pages/user/ranking'
   },
   {
     id: 4,
-    icon: 'ai',
     label: 'AI 助手',
-    desc: '智能答疑',
-    color: 'linear-gradient(135deg, #DBEAFE 0%, #2563EB 100%)',
-    url: '/pages/ai/chat',
-    isPrimary: true  // 标记为主要入口（差异化功能）
+    desc: '作业 · 考试 · 代码',
+    theme: 'ai',
+    isHighlight: true,
+    url: '/pages/ai/chat'
   }
-])
+]
 
-const handleClick = (item: any) => {
+const handleClick = (item: typeof items[0]) => {
   uni.navigateTo({
     url: item.url,
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    }
+    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
 </script>
 
 <style scoped lang="scss">
-// 整体容器
+// ─── 容器 ────────────────────────────────────────────────────────────────────
+
 .grid-nav-wrapper {
   width: 100%;
-  // 🎨 融入全页背景体系：半透明白色 + 毛玻璃
-  background: linear-gradient(180deg,
-    rgba(255, 255, 255, 0.7) 0%,
-    rgba(255, 255, 255, 0.5) 100%
-  );
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 16px;
-  position: relative;
-  z-index: 10;
+  padding: 12px 14px 14px;
   box-sizing: border-box;
-  border-bottom: 1px solid rgba(37, 99, 235, 0.08);
+  background: transparent;
 }
 
-// 金刚区容器
+// ─── 2×2 网格 ────────────────────────────────────────────────────────────────
+
 .grid-nav {
-  display: flex;
-  flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  overflow-x: auto;
-  overflow-y: hidden;
-
-  // 隐藏滚动条
-  &::-webkit-scrollbar {
-    display: none;
-  }
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
 }
 
-// 单个导航项
-.nav-item {
+// ─── 卡片基础 ─────────────────────────────────────────────────────────────────
+
+.nav-card {
   position: relative;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  gap: 6px;
-  flex: 1;
-  min-width: 72px;
-  max-width: 90px;
+  gap: 10px;
+  padding: 13px 12px 13px 13px;
+  border-radius: 16px;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  box-sizing: border-box;
+  // 统一的细边框 + 柔和阴影
+  border: 1px solid transparent;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.18s ease;
 
   &:active {
-    transform: translateY(2px);
+    transform: scale(0.955);
   }
 
-  // 主要入口（快捷发布）强化样式
-  &.nav-item-primary {
-    .nav-icon {
-      width: 64px;
-      height: 64px;
-      box-shadow:
-        0 4px 12px rgba(37, 99, 235, 0.25),
-        0 2px 6px rgba(37, 99, 235, 0.15);
-      border: 2px solid rgba(255, 255, 255, 0.9);
-    }
+  // ── 主题：琥珀（热门活动）──────────────────────────────────────────────────
+  &--amber {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border-color: rgba(251, 191, 36, 0.25);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.10),
+                0 1px 2px rgba(0, 0, 0, 0.04);
 
-    .nav-text {
-      font-weight: 700;
-      color: #2563EB;
+    .card-icon-wrap { background: rgba(245, 158, 11, 0.14); }
+    .card-icon      { color: #D97706; }
+    .card-title     { color: #92400E; }
+    .card-desc      { color: #B45309; }
+    .card-arrow svg { color: rgba(180, 83, 9, 0.45); }
+
+    &:active {
+      box-shadow: 0 1px 4px rgba(245, 158, 11, 0.15),
+                  0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // ── 主题：青绿（互助任务）─────────────────────────────────────────────────
+  &--teal {
+    background: linear-gradient(135deg, #F0FDFA 0%, #CCFBF1 100%);
+    border-color: rgba(13, 148, 136, 0.2);
+    box-shadow: 0 2px 8px rgba(13, 148, 136, 0.10),
+                0 1px 2px rgba(0, 0, 0, 0.04);
+
+    .card-icon-wrap { background: rgba(13, 148, 136, 0.12); }
+    .card-icon      { color: #0F766E; }
+    .card-title     { color: #134E4A; }
+    .card-desc      { color: #0F766E; }
+    .card-arrow svg { color: rgba(15, 118, 110, 0.45); }
+
+    &:active {
+      box-shadow: 0 1px 4px rgba(13, 148, 136, 0.15),
+                  0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // ── 主题：玫红（积分排行）─────────────────────────────────────────────────
+  &--rose {
+    background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
+    border-color: rgba(225, 29, 72, 0.18);
+    box-shadow: 0 2px 8px rgba(225, 29, 72, 0.09),
+                0 1px 2px rgba(0, 0, 0, 0.04);
+
+    .card-icon-wrap { background: rgba(225, 29, 72, 0.10); }
+    .card-icon      { color: #BE123C; }
+    .card-title     { color: #881337; }
+    .card-desc      { color: #BE123C; }
+    .card-arrow svg { color: rgba(190, 18, 60, 0.45); }
+
+    &:active {
+      box-shadow: 0 1px 4px rgba(225, 29, 72, 0.12),
+                  0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+  }
+
+  // ── 主题：AI（AI 助手，高亮深色卡）────────────────────────────────────────
+  &--ai {
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 55%, #4F46E5 100%);
+    border-color: rgba(99, 102, 241, 0.4);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35),
+                0 2px 4px rgba(37, 99, 235, 0.2),
+                inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    .card-icon-wrap { background: rgba(255, 255, 255, 0.15); }
+    .card-icon      { color: #fff; }
+    .card-title     { color: #fff; font-weight: 700; }
+    .card-desc      { color: rgba(255, 255, 255, 0.72); }
+    .card-arrow svg { color: rgba(255, 255, 255, 0.55); }
+
+    &:active {
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25),
+                  0 1px 2px rgba(0, 0, 0, 0.15);
     }
   }
 }
 
-// 图标容器
-.nav-icon {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
+// ─── 图标容器 ────────────────────────────────────────────────────────────────
+
+.card-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
-  position: relative;
+  transition: transform 0.15s ease;
 
-  .icon-svg {
-    width: 26px;
-    height: 26px;
-    color: rgba(0, 0, 0, 0.75);
-    transition: transform 0.2s ease;
+  .nav-card:active & {
+    transform: scale(0.92);
   }
 }
 
-.nav-item:active .nav-icon {
-  transform: scale(0.94);
-  box-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.1),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-
-  .icon-svg {
-    transform: scale(1.05);
-  }
+.card-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
 }
 
-// 主标签
-.nav-text {
-  font-size: 13px;
+// ─── 文字区 ──────────────────────────────────────────────────────────────────
+
+.card-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-title {
+  font-size: 14px;
   font-weight: 600;
-  color: #374151;
-  text-align: center;
+  line-height: 1.25;
+  letter-spacing: -0.1px;
   white-space: nowrap;
-  line-height: 1.2;
-  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-// 描述文字
-.nav-desc {
-  font-size: 11px;
-  font-weight: 500;
-  color: #9CA3AF;
-  text-align: center;
+.card-desc {
+  font-size: 11.5px;
+  font-weight: 400;
+  line-height: 1.35;
   white-space: nowrap;
-  line-height: 1;
-  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.85;
 }
 
-// 推荐角标
-.primary-badge {
+// ─── 右箭头 ──────────────────────────────────────────────────────────────────
+
+.card-arrow {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+
+  svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.15s ease;
+  }
+
+  .nav-card:active & svg {
+    transform: translateX(2px);
+  }
+}
+
+// ─── AI 卡专属装饰 ────────────────────────────────────────────────────────────
+
+// 噪点纹理（增加质感）
+.card-noise {
   position: absolute;
-  top: -4px;
-  right: 4px;
-  padding: 2px 6px;
-  background: linear-gradient(135deg, #EF4444, #DC2626);
-  border-radius: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: white;
-  line-height: 1;
-  box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
-  transform: scale(0.9);
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+// 右下角光斑（柔和光晕）
+.card-glow-orb {
+  position: absolute;
+  bottom: -20px;
+  right: -16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.55) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+  animation: orbFloat 4s ease-in-out infinite;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-4px, -6px) scale(1.08); }
+}
+
+// AI 卡内容层叠到噪点/光斑之上
+.nav-card--ai .card-icon-wrap,
+.nav-card--ai .card-body,
+.nav-card--ai .card-arrow {
+  position: relative;
+  z-index: 1;
 }
 </style>

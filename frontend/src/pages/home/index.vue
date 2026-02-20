@@ -11,11 +11,6 @@
     <MobileHeader v-else @search="handleSearch" />
     <!-- #endif -->
 
-    <!-- 移动端金刚区导航 -->
-    <!-- #ifdef H5 -->
-    <GridNavigation v-if="!isDesktop" />
-    <!-- #endif -->
-
     <!-- 2. Hero 主视觉区（桌面端和移动端自适应） -->
     <!-- #ifdef H5 -->
     <HeroSection
@@ -24,6 +19,11 @@
       @task="handleTask"
       @tag-click="handleTagClick"
     />
+    <!-- #endif -->
+
+    <!-- 移动端金刚区导航（Hero 之后，内容之前：吸引 → 引导 → 消费） -->
+    <!-- #ifdef H5 -->
+    <GridNavigation v-if="!isDesktop" />
     <!-- #endif -->
 
     <!-- 3. 页面主体（8:4 栅格布局） -->

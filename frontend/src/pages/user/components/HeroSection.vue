@@ -153,13 +153,17 @@ const quickStats = computed(() => [
 @import '@/styles/design-tokens.scss';
 
 /* ─── 容器 ─── */
+/* display: block 显式声明：防止 uni-app H5 将 uni-view 渲染为 inline 时容器高度塌陷 */
 .hero {
+  display: block;
   position: relative;
   overflow: hidden;
+  width: 100%;
 }
 
 /* ─── 背景 ─── */
 .hero-bg {
+  display: block;
   position: absolute;
   inset: 0;
   background: linear-gradient(135deg, #2d3fa0 0%, #3a5bbf 40%, #5579d4 75%, #7a9ae0 100%);
@@ -186,6 +190,7 @@ const quickStats = computed(() => [
 
 /* ─── 内容包裹 ─── */
 .hero-inner {
+  display: block;
   position: relative;
   z-index: 2;
   padding: 0 32rpx;
@@ -546,6 +551,7 @@ const quickStats = computed(() => [
 
 /* ─── 底部白色圆弧过渡 ─── */
 .hero-wave {
+  display: block;
   position: relative;
   z-index: 3;
   height: 52rpx;

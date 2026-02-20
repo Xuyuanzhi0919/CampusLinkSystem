@@ -359,7 +359,9 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 @import '@/styles/design-tokens.scss';
 
 /* ========== 页面容器 ========== */
+/* display: block 显式声明：防止 uni-view 被渲染为 inline 时布局异常 */
 .user-profile-page {
+  display: block;
   width: 100%;
   min-height: 100vh;
   background: $color-bg-page;
@@ -368,6 +370,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 
 /* ========== 移动端：scroll-view 限高 ========== */
 .main-scroll {
+  display: block;
   width: 100%;
   height: 100vh;
   background: $color-bg-page;

@@ -26,7 +26,7 @@
           </view>
           <view class="level-text">
             <text class="level-name">{{ levelName }}</text>
-            <text class="level-hint">还差 {{ expToNextLevel }} 升级</text>
+            <text class="level-hint">{{ isMaxed ? '已达最高等级' : `还差 ${expToNextLevel} 积分升级` }}</text>
           </view>
         </view>
         <text class="level-pct">{{ progressPercent }}%</text>
@@ -35,8 +35,8 @@
         <view class="prog-fill" :style="{ width: progressPercent + '%' }" />
       </view>
       <view class="prog-labels">
-        <text class="prog-cur">{{ currentExp }} 积分</text>
-        <text class="prog-max">目标 {{ nextLevelExp }}</text>
+        <text class="prog-cur">{{ currentExp.toLocaleString() }} / {{ nextLevelExp.toLocaleString() }}</text>
+        <text class="prog-max">下一级 Lv.{{ level + 1 }}</text>
       </view>
     </view>
 
@@ -118,6 +118,8 @@ const progressPercent = computed(() =>
 
 const expToNextLevel = computed(() => Math.max(props.nextLevelExp - props.currentExp, 0))
 
+const isMaxed = computed(() => props.currentExp >= props.nextLevelExp)
+
 const displayBadges = computed(() => props.badges.slice(0, 5))
 
 const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
@@ -157,7 +159,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28rpx 8rpx 24rpx;
+  padding: 24rpx 8rpx 22rpx;
   cursor: pointer;
   position: relative;
   transition: background 0.18s;
@@ -179,31 +181,32 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   // #endif
 
   @media (min-width: 1024px) {
-    padding: 22px 8px 18px;
+    padding: 20px 8px 16px;
   }
 }
 
+/* 数字与标签字号差距缩小，视觉比例更均衡 */
 .stat-num {
-  font-size: 34rpx;
+  font-size: 30rpx;
   font-weight: 700;
   color: $color-text-primary;
   line-height: 1;
   letter-spacing: -0.01em;
 
   @media (min-width: 1024px) {
-    font-size: 22px;
+    font-size: 20px;
   }
 }
 
 .stat-lbl {
-  margin-top: 7rpx;
-  font-size: 20rpx;
+  margin-top: 8rpx;
+  font-size: 22rpx;
   color: $color-text-tertiary;
   font-weight: 400;
 
   @media (min-width: 1024px) {
     margin-top: 5px;
-    font-size: 12px;
+    font-size: 13px;
   }
 }
 
@@ -357,8 +360,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
 .prog-cur {
   font-size: 20rpx;
-  color: $campus-blue;
-  font-weight: 500;
+  color: $color-text-tertiary;
+  font-weight: 400;
 
   @media (min-width: 1024px) {
     font-size: 12px;
@@ -367,7 +370,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
 .prog-max {
   font-size: 20rpx;
-  color: $color-text-placeholder;
+  color: $campus-blue;
+  font-weight: 500;
 
   @media (min-width: 1024px) {
     font-size: 12px;

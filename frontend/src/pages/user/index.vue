@@ -224,7 +224,12 @@ const levelName = computed(() => {
   return '校园传奇'
 })
 
-const nextLevelExp = computed(() => (userProfile.value?.level || 1) * 100)
+// 每级所需总积分阈值：level 1→200, 2→400 ... 每级递增 200，10级以上每级 500
+const nextLevelExp = computed(() => {
+  const lv = userProfile.value?.level || 1
+  if (lv <= 10) return lv * 200
+  return 2000 + (lv - 10) * 500
+})
 
 const achievementStats = computed(() => [
   { key: 'resources', label: '资源', value: userStats.value?.resourceCount || 0 },
@@ -370,12 +375,12 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 /* PC 端内容主体 — 居中单列 */
 .pc-body {
   width: 100%;
-  max-width: 860px;         // 个人中心单列足够，不需要1280px宽
+  max-width: 860px;
   margin: 0 auto;
-  padding: 24px 0 48px;
+  padding: 16px 0 48px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 14px;
   box-sizing: border-box;
 }
 
@@ -418,8 +423,8 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 .page-body {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
-  padding: 0 20rpx;
+  gap: 14rpx;
+  padding: 0 24rpx;
   width: 100%;
   box-sizing: border-box;
 }

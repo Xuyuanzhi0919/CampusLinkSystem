@@ -93,7 +93,7 @@ const greeting = computed(() => {
 .hero-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(150deg, #1d3a72 0%, #2e5fa3 55%, #3d82c4 100%);
+  background: linear-gradient(160deg, #1a3566 0%, #3474b8 100%);
 }
 
 /* ─── 顶部栏 ─── */
@@ -103,20 +103,20 @@ const greeting = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 56rpx 36rpx 20rpx;
+  padding: 64rpx 40rpx 16rpx;
 
   @media (min-width: 1024px) {
-    padding: 28px 0 16px;
+    padding: 32px 0 12px;
     max-width: 860px;
     margin: 0 auto;
   }
 }
 
 .greeting {
-  font-size: 24rpx;
-  color: rgba(255,255,255,0.6);
+  font-size: 26rpx;
+  color: rgba(255,255,255,0.55);
   font-weight: 400;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.02em;
 
   @media (min-width: 1024px) {
     font-size: 14px;
@@ -161,15 +161,16 @@ const greeting = computed(() => {
   position: relative;
   z-index: 2;
   display: flex;
-  align-items: center;
-  gap: 30rpx;
-  padding: 12rpx 36rpx 56rpx;
+  align-items: flex-end;
+  gap: 32rpx;
+  padding: 20rpx 40rpx 64rpx;
 
   @media (min-width: 1024px) {
-    padding: 8px 0 48px;
+    padding: 12px 0 56px;
     max-width: 860px;
     margin: 0 auto;
     gap: 28px;
+    align-items: flex-end;
   }
 }
 
@@ -181,51 +182,53 @@ const greeting = computed(() => {
 }
 
 .avatar-img {
-  width: 136rpx;
-  height: 136rpx;
+  width: 160rpx;
+  height: 160rpx;
   border-radius: 50%;
-  border: 3px solid rgba(255,255,255,0.3);
+  border: 3px solid rgba(255,255,255,0.35);
   display: block;
   background: rgba(255,255,255,0.1);
   transition: opacity 0.2s;
+  box-shadow: 0 4rpx 24rpx rgba(0,0,0,0.25);
 
   &:active { opacity: 0.85; }
 
   @media (min-width: 1024px) {
-    width: 96px;
-    height: 96px;
+    width: 108px;
+    height: 108px;
   }
 }
 
 .lv-badge {
   position: absolute;
-  bottom: -4rpx;
-  right: -4rpx;
-  min-width: 36rpx;
-  height: 36rpx;
-  padding: 0 10rpx;
+  bottom: 0;
+  right: -2rpx;
+  min-width: 40rpx;
+  height: 40rpx;
+  padding: 0 12rpx;
   background: linear-gradient(135deg, #f59e0b, #f97316);
   border-radius: 100rpx;
-  border: 2px solid rgba(255,255,255,0.35);
+  border: 2.5px solid rgba(255,255,255,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2rpx 10rpx rgba(249,115,22,0.45);
 
   @media (min-width: 1024px) {
-    min-width: 24px;
-    height: 24px;
-    padding: 0 6px;
+    min-width: 28px;
+    height: 28px;
+    padding: 0 8px;
   }
 }
 
 .lv-text {
-  font-size: 18rpx;
+  font-size: 20rpx;
   font-weight: 700;
   color: #fff;
   line-height: 1;
 
   @media (min-width: 1024px) {
-    font-size: 11px;
+    font-size: 12px;
   }
 }
 
@@ -235,15 +238,18 @@ const greeting = computed(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 14rpx;
+  // 底部与头像底部对齐（hero-body align-items: flex-end）
+  padding-bottom: 6rpx;
 
   @media (min-width: 1024px) {
-    gap: 8px;
+    gap: 10px;
+    padding-bottom: 4px;
   }
 }
 
 .user-name {
-  font-size: 40rpx;
+  font-size: 44rpx;
   font-weight: 700;
   color: #fff;
   line-height: 1.15;
@@ -253,7 +259,7 @@ const greeting = computed(() => {
   white-space: nowrap;
 
   @media (min-width: 1024px) {
-    font-size: 26px;
+    font-size: 28px;
   }
 }
 
@@ -370,13 +376,13 @@ const greeting = computed(() => {
 .hero-foot {
   position: relative;
   z-index: 3;
-  height: 36rpx;
+  height: 44rpx;
   background: $color-bg-page;
-  border-radius: 36rpx 36rpx 0 0;
+  border-radius: 44rpx 44rpx 0 0;
 
   @media (min-width: 1024px) {
-    height: 28px;
-    border-radius: 28px 28px 0 0;
+    height: 32px;
+    border-radius: 32px 32px 0 0;
   }
 }
 </style>

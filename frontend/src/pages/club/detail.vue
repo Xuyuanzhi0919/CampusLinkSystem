@@ -25,7 +25,7 @@
             <view class="club-title-row">
               <text class="club-title">{{ club.clubName }}</text>
               <view v-if="isActive" class="active-badge">
-                <text class="active-icon">🔥</text>
+                <Icon name="flame" :size="12" class="active-icon" />
                 <text class="active-text">活跃</text>
               </view>
               <view v-if="isOfficial" class="official-badge">
@@ -40,24 +40,25 @@
             <!-- 核心指标 -->
             <view class="club-metrics">
               <view class="metric-item">
-                <text class="metric-icon">👥</text>
+                <Icon name="users" :size="14" class="metric-icon" />
                 <text class="metric-text">{{ club.memberCount || 0 }} 成员</text>
               </view>
               <text class="metric-divider">·</text>
               <view class="metric-item">
-                <text class="metric-icon">📅</text>
+                <Icon name="calendar" :size="14" class="metric-icon" />
                 <text class="metric-text">{{ activityCount }} 活动</text>
               </view>
               <text class="metric-divider">·</text>
               <view class="metric-item">
-                <text class="metric-icon">🕒</text>
+                <Icon name="clock" :size="14" class="metric-icon" />
                 <text class="metric-text">{{ lastActiveTime }}</text>
               </view>
             </view>
 
             <!-- 已加入身份提示（仅已加入时显示，作为指标行的补充）-->
             <view v-if="isMember" class="member-badge">
-              <text class="member-badge-text">✓ 你是第 {{ memberPosition }} 位加入的成员</text>
+              <Icon name="check-circle" :size="14" class="member-badge-icon" />
+              <text class="member-badge-text">你是第 {{ memberPosition }} 位加入的成员</text>
             </view>
 
             <!-- CTA 按钮（核心决策点，布局始终保持一致）-->
@@ -79,7 +80,10 @@
                 size="lg"
                 disabled
               >
-                ⏱️ 申请审核中
+                <view class="btn-inner">
+                  <Icon name="clock" :size="16" class="btn-icon" />
+                  <text>申请审核中</text>
+                </view>
               </CButton>
 
               <!-- 已加入：主按钮变为"进入讨论" -->
@@ -175,7 +179,9 @@
               </view>
               <!-- 空状态 -->
               <view v-else class="empty-placeholder">
-                <text class="empty-icon">💬</text>
+                <view class="empty-icon-wrap">
+                  <Icon name="message-circle" :size="40" class="empty-icon" />
+                </view>
                 <text class="empty-text">暂无动态</text>
                 <text class="empty-hint">成员发布的动态将在这里展示</text>
               </view>
@@ -227,7 +233,9 @@
               </view>
               <!-- 空状态 -->
               <view v-else class="empty-placeholder">
-                <text class="empty-icon">📅</text>
+                <view class="empty-icon-wrap">
+                  <Icon name="calendar" :size="40" class="empty-icon" />
+                </view>
                 <text class="empty-text">暂无活动</text>
                 <text class="empty-hint">社团活动将在这里展示</text>
               </view>
@@ -247,7 +255,9 @@
                   </view>
                 </view>
                 <view v-else class="empty-placeholder">
-                  <text class="empty-icon">📁</text>
+                  <view class="empty-icon-wrap">
+                    <Icon name="folder" :size="40" class="empty-icon" />
+                  </view>
                   <text class="empty-text">暂无资料</text>
                   <text class="empty-hint">社团资料将在这里展示</text>
                 </view>
@@ -282,7 +292,9 @@
                 </view>
               </view>
               <view v-else class="empty-placeholder">
-                <text class="empty-icon">👥</text>
+                <view class="empty-icon-wrap">
+                  <Icon name="users" :size="40" class="empty-icon" />
+                </view>
                 <text class="empty-text">暂无成员</text>
               </view>
             </view>
@@ -389,26 +401,49 @@
 
     <!-- 错误状态 -->
     <view v-else class="error-state">
-      <text class="error-icon">⚠️</text>
+      <view class="error-icon-wrap">
+        <Icon name="alert-triangle" :size="48" class="error-icon" />
+      </view>
       <text class="error-text">加载失败</text>
       <CButton type="secondary" size="md" @click="retry">重新加载</CButton>
     </view>
+
+    <!-- 登录引导弹窗 -->
+    <ClLoginGuideModal
+      :visible="showLoginGuide"
+      :action-type="loginGuideActionType"
+      @update:visible="showLoginGuide = $event"
+    />
+
+    <!-- 登录弹窗 -->
+    <LoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
 import CButton from '@/components/ui/CButton.vue'
 import Icon from '@/components/icons/index.vue'
+import { requireLogin } from '@/utils/auth'
+import ClLoginGuideModal from '@/components/cl/ClLoginGuideModal.vue'
+import LoginModal from '@/components/LoginModal.vue'
 
 // ========== 状态 ==========
 const loading = ref(false)
 const club = ref<ClubDetail | null>(null)
 const clubId = ref<number>(0)
 const currentTab = ref<'feed' | 'activity' | 'resource' | 'member' | 'about'>('feed')
+
+// 登录引导弹窗
+const showLoginGuide = ref(false)
+const loginGuideActionType = ref('')
+const showLoginModal = ref(false)
 
 // 各模块数据
 const feeds = ref<any[]>([]) // 动态列表（暂用 any，实际应定义类型）
@@ -560,6 +595,7 @@ const handleTabChange = (tab: typeof currentTab.value) => {
 
 // 加入社团
 const handleJoin = async () => {
+  if (!requireLogin('join')) return
   if (!club.value) return
 
   uni.showModal({
@@ -722,6 +758,22 @@ onLoad((options) => {
     loadClubDetail(clubId.value)
   }
 })
+
+onMounted(() => {
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'join'
+    showLoginGuide.value = true
+  })
+  uni.$on('show-login-modal', () => {
+    showLoginGuide.value = false
+    showLoginModal.value = true
+  })
+})
+
+onUnmounted(() => {
+  uni.$off('show-login-guide')
+  uni.$off('show-login-modal')
+})
 </script>
 
 <style lang="scss" scoped>
@@ -749,8 +801,17 @@ onLoad((options) => {
   color: $gray-400;
 }
 
+.error-icon-wrap {
+  width: 120rpx;
+  height: 120rpx;
+  @include flex-center;
+  background: rgba($error, 0.08);
+  border-radius: $radius-full;
+}
+
 .error-icon {
-  font-size: 120rpx;
+  color: $error;
+  opacity: 0.7;
 }
 
 // =============================================
@@ -866,8 +927,8 @@ onLoad((options) => {
 }
 
 .active-icon {
-  font-size: 20rpx;
-  line-height: 1;
+  color: $accent;
+  flex-shrink: 0;
 }
 
 .active-text {
@@ -926,8 +987,18 @@ onLoad((options) => {
 }
 
 .metric-icon {
-  font-size: 24rpx;
-  line-height: 1;
+  color: $gray-500;
+  flex-shrink: 0;
+}
+
+.btn-inner {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.btn-icon {
+  flex-shrink: 0;
 }
 
 .metric-text {
@@ -948,6 +1019,11 @@ onLoad((options) => {
   border: 1rpx solid rgba($success, 0.15);
   display: inline-flex;
   align-items: center;
+}
+
+.member-badge-icon {
+  color: $success;
+  flex-shrink: 0;
 }
 
 .member-badge-text {
@@ -1510,9 +1586,16 @@ onLoad((options) => {
   gap: $sp-4;
 }
 
+.empty-icon-wrap {
+  width: 96rpx;
+  height: 96rpx;
+  @include flex-center;
+  background: rgba($gray-400, 0.1);
+  border-radius: $radius-full;
+}
+
 .empty-icon {
-  font-size: 96rpx;
-  opacity: 0.5;
+  color: $gray-400;
 }
 
 .empty-text {

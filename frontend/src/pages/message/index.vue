@@ -6,9 +6,7 @@
       <view class="header-inner">
         <view class="header-left">
           <view class="back-btn" @click="handleGoBack">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M19 12H5M5 12L11 18M5 12L11 6"/>
-            </svg>
+            <ClIcon name="icon-arrow-left" size="lg" />
           </view>
         </view>
         <view class="header-center">
@@ -17,10 +15,7 @@
         </view>
         <view class="header-right">
           <view class="compose-btn" @click="handleCompose">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
+            <ClIcon name="icon-pencil" size="lg" />
           </view>
         </view>
       </view>
@@ -78,9 +73,7 @@
 
           <!-- 右侧箭头 -->
           <view class="item-arrow">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9 18l6-6-6-6"/>
-            </svg>
+            <ClIcon name="icon-chevron-right" size="sm" />
           </view>
         </view>
       </view>
@@ -88,9 +81,7 @@
       <!-- 空状态 -->
       <view v-if="!loading && conversationList.length === 0" class="empty-state">
         <view class="empty-icon-wrap">
-          <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
+          <ClIcon name="icon-message" size="2xl" />
         </view>
         <text class="empty-title">暂无私信</text>
         <text class="empty-desc">快去和同学们聊聊吧~</text>
@@ -117,6 +108,7 @@ import { ref, computed, onMounted } from 'vue'
 import { getConversationList } from '@/services/message'
 import type { Conversation } from '@/types/message'
 import { MessageType } from '@/types/message'
+import { ClIcon } from '@/components/cl'
 
 const conversationList = ref<Conversation[]>([])
 const loading = ref(false)

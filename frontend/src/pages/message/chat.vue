@@ -940,35 +940,71 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+// ─── 色系（与整站一致）────────────────────────────────────────────────────────
+$primary:        #2563EB;
+$primary-dark:   #1D4ED8;
+$primary-light:  rgba(37, 99, 235, 0.1);
+$teal:           #14B8A6;
+$gray-50:        #F8FAFC;
+$gray-100:       #F1F5F9;
+$gray-200:       #E2E8F0;
+$gray-300:       #CBD5E1;
+$gray-400:       #94A3B8;
+$gray-500:       #64748B;
+$gray-600:       #475569;
+$gray-700:       #334155;
+$gray-800:       #1E293B;
+$gray-900:       #0F172A;
+$white:          #FFFFFF;
+$success:        #10B981;
+$accent:         #FF6B35;
+
+// ─── 页面容器 ─────────────────────────────────────────────────────────────────
 
 .chat-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: $gray-100;
+  background: $gray-50;
 }
+
+// ─── 顶部导航栏 ───────────────────────────────────────────────────────────────
 
 .nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $sp-5 $sp-8;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
+  height: 56px;
+  padding: 0 4px;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid $gray-200;
   flex-shrink: 0;
 }
 
 .nav-back {
-  width: 80rpx;
-  height: 60rpx;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  cursor: pointer;
+  color: $gray-700;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+
+  &:active {
+    background: $gray-100;
+    color: $primary;
+  }
 }
 
 .back-icon {
-  font-size: 40rpx;
+  font-size: 22px;
   color: $gray-700;
+  line-height: 1;
 }
 
 .nav-center {
@@ -976,105 +1012,98 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $sp-4;
+  gap: 10px;
 }
 
 .nav-avatar {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: $radius-full;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: $gray-200;
+  border: 2px solid $gray-100;
+  flex-shrink: 0;
 }
 
 .nav-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: $sp-1;
+  align-items: flex-start;
+  gap: 2px;
 }
 
 .nav-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
+  font-size: 16px;
+  font-weight: 700;
+  color: $gray-900;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
 }
+
+.nav-placeholder {
+  width: 48px;
+  flex-shrink: 0;
+}
+
+// ─── 连接状态 ─────────────────────────────────────────────────────────────────
 
 .ws-status {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 4px;
 }
 
 .status-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: $radius-full;
-  animation: pulse 2s infinite;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
 .ws-status.connected .status-dot {
   background: $success;
+  box-shadow: 0 0 0 2px rgba($success, 0.2);
+  animation: pulse 2s infinite;
 }
 
 .ws-status.disconnected .status-dot {
   background: $gray-400;
-  animation: none;
 }
 
-// 输入状态样式
 .ws-status.typing {
-  color: $accent;
+  .status-text { color: $accent; font-weight: 500; }
+}
+
+.status-text {
+  font-size: 11px;
+  color: $gray-400;
+  line-height: 1;
 }
 
 .typing-dots-mini {
   display: flex;
   align-items: center;
-  gap: $sp-1;
-  height: 12rpx;
+  gap: 2px;
+  height: 8px;
 }
 
 .dot-mini {
-  width: 6rpx;
-  height: 6rpx;
-  border-radius: $radius-full;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
   background: $accent;
   animation: typingBounce 1.4s infinite ease-in-out;
-}
 
-.dot-mini:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.dot-mini:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot-mini:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-.ws-status.typing .status-text {
-  color: $accent;
-  font-weight: $font-weight-medium;
-}
-
-.status-text {
-  font-size: $font-size-xs;
-  color: $gray-500;
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }
 
-.nav-placeholder {
-  width: 80rpx;
-}
+// ─── 消息滚动区 ───────────────────────────────────────────────────────────────
 
 .message-scroll {
   flex: 1;
@@ -1082,150 +1111,141 @@ onMounted(async () => {
 }
 
 .load-more-tip {
-  @include flex-center;
-  padding: $sp-6 $sp-8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
 }
 
 .tip-text {
-  font-size: $font-size-sm;
+  font-size: 12px;
   color: $gray-400;
+  background: $gray-100;
+  padding: 4px 12px;
+  border-radius: 10px;
 }
+
+// ─── 消息列表 ─────────────────────────────────────────────────────────────────
 
 .message-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-8;
-  padding: $sp-6 $sp-8;
+  gap: 16px;
+  padding: 16px 12px;
 }
 
 .message-item {
   display: flex;
-  align-items: flex-start;
-  gap: $sp-4;
+  align-items: flex-end;
+  gap: 8px;
   width: 100%;
 
-  // 对方的消息 - 左对齐
   &:not(.is-mine) {
     flex-direction: row;
     justify-content: flex-start;
-
-    .message-avatar {
-      order: 1;
-    }
-
-    .message-content {
-      order: 2;
-      align-items: flex-start;
-    }
+    .message-content { align-items: flex-start; }
   }
 
-  // 我的消息 - 右对齐
   &.is-mine {
     flex-direction: row-reverse;
     justify-content: flex-start;
-
-    .message-avatar {
-      order: 1;
-    }
-
-    .message-content {
-      order: 2;
-      align-items: flex-end;
-    }
+    .message-content { align-items: flex-end; }
   }
 }
 
+// ─── 消息头像 ─────────────────────────────────────────────────────────────────
+
 .message-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: $radius-full;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
+  border: 2px solid $white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
+
+// ─── 消息内容 ─────────────────────────────────────────────────────────────────
 
 .message-content {
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
-  max-width: 480rpx;
+  gap: 4px;
+  max-width: 72%;
   min-width: 0;
-  flex: 1;
 }
 
 .message-bubble {
-  padding: $sp-6 28rpx;
-  border-radius: $radius-card;
+  padding: 10px 14px;
+  border-radius: 18px;
   word-wrap: break-word;
   word-break: break-all;
   max-width: 100%;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
-  transition: $transition-base;
-}
-
-// 对方的消息气泡 - 白色背景
-.other-bubble {
-  background: $white;
-  border-top-left-radius: $radius-xs;
-  border: 1rpx solid $gray-200;
-
-  .message-text {
-    color: $gray-800;
-  }
-}
-
-// 我的消息气泡 - 蓝色渐变背景
-.mine-bubble {
-  @include gradient-primary;
-  border-top-right-radius: $radius-xs;
-
-  .message-text {
-    color: $white;
-  }
-}
-
-.message-text {
-  font-size: $font-size-base;
-  line-height: $line-height-relaxed;
-  white-space: pre-wrap;
-}
-
-// 图片消息
-.message-image {
-  max-width: 400rpx;
-  max-height: 400rpx;
-  min-width: 200rpx;
-  min-height: 200rpx;
-  border-radius: $radius-md;
-  display: block;
-  cursor: pointer;
-  transition: $transition-base;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s ease;
 
   &:active {
-    opacity: 0.8;
-  }
-}
-
-// 文件消息
-.message-file {
-  display: flex;
-  align-items: center;
-  gap: $sp-5;
-  padding: $sp-6;
-  background: rgba($white, 0.1);
-  border-radius: $radius-md;
-  min-width: 300rpx;
-  cursor: pointer;
-  transition: $transition-base;
-
-  &:active {
-    opacity: 0.8;
     transform: scale(0.98);
   }
 }
 
+// 对方消息：白色气泡，左上角尖角
+.other-bubble {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-bottom-left-radius: 4px;
+
+  .message-text { color: $gray-800; }
+}
+
+// 我的消息：主色渐变，右下角尖角
+.mine-bubble {
+  background: linear-gradient(135deg, $primary 0%, #1D4ED8 100%);
+  border-bottom-right-radius: 4px;
+
+  .message-text { color: $white; }
+}
+
+.message-text {
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+// ─── 图片消息 ─────────────────────────────────────────────────────────────────
+
+.message-image {
+  max-width: 200px;
+  max-height: 200px;
+  min-width: 100px;
+  min-height: 100px;
+  border-radius: 14px;
+  display: block;
+  cursor: pointer;
+
+  &:active { opacity: 0.85; }
+}
+
+// ─── 文件消息 ─────────────────────────────────────────────────────────────────
+
+.message-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  min-width: 160px;
+  cursor: pointer;
+
+  .mine-bubble & { background: rgba(255, 255, 255, 0.15); }
+  .other-bubble & { background: $gray-50; }
+
+  &:active { opacity: 0.8; transform: scale(0.98); }
+}
+
 .file-icon {
-  font-size: 48rpx;
+  font-size: 28px;
   flex-shrink: 0;
 }
 
@@ -1233,120 +1253,103 @@ onMounted(async () => {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
+  gap: 2px;
   min-width: 0;
 }
 
 .file-name {
-  font-size: 26rpx;
+  font-size: 13px;
   color: inherit;
-  font-weight: $font-weight-medium;
-  @include text-ellipsis(1);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-size {
-  font-size: $font-size-xs;
-  opacity: 0.7;
+  font-size: 11px;
+  opacity: 0.65;
 }
+
+// ─── 消息元数据（时间+已读）──────────────────────────────────────────────────
 
 .message-meta {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  padding: 0 $sp-2;
+  gap: 4px;
+  padding: 0 2px;
 }
 
 .message-time {
-  font-size: $font-size-xs;
+  font-size: 11px;
   color: $gray-400;
   white-space: nowrap;
 }
 
 .read-status {
-  font-size: 20rpx;
-  padding: $sp-1 $sp-2;
-  border-radius: $radius-xs;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 4px;
   white-space: nowrap;
-  transition: $transition-slow;
+
+  &.is-read {
+    color: $success;
+    background: rgba($success, 0.1);
+  }
+
+  &.is-unread {
+    color: $gray-400;
+    background: rgba($gray-400, 0.08);
+  }
 }
 
-.read-status.is-read {
-  color: $success;
-  background: rgba($success, 0.1);
-}
+// ─── 正在输入指示 ─────────────────────────────────────────────────────────────
 
-.read-status.is-unread {
-  color: $gray-400;
-  background: rgba($gray-400, 0.1);
-}
-
-// 输入状态提示
 .typing-indicator,
 .typing-indicator-fixed {
   display: flex;
-  align-items: flex-start;
-  gap: $sp-4;
-  width: 100%;
-  flex-direction: row;
-  justify-content: flex-start;
-  padding: $sp-4 $sp-8;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.typing-indicator-fixed {
-  position: relative;
-  background: $gray-50;
-  border-top: 1rpx solid $gray-200;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 4px 12px;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.typing-avatar-wrapper {
-  order: 1;
-}
+.typing-avatar-wrapper { order: 1; }
 
 .typing-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: $radius-full;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
 }
 
 .typing-content {
   order: 2;
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
-  max-width: 480rpx;
-  min-width: 0;
-  flex: 1;
+  gap: 4px;
 }
 
 .typing-bubble {
   display: flex;
   align-items: center;
-  gap: $sp-4;
-  padding: $sp-5 $sp-6;
-  border-radius: $radius-card;
-  border-top-left-radius: $radius-xs;
-  background: $gray-100;
-  border: 1rpx solid $gray-200;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.06);
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  background: $white;
+  border: 1px solid $gray-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .typing-text {
-  font-size: 26rpx;
+  font-size: 13px;
   color: $gray-500;
   flex-shrink: 0;
 }
@@ -1354,108 +1357,115 @@ onMounted(async () => {
 .typing-dots {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  height: 20rpx;
+  gap: 3px;
+  height: 10px;
 }
 
 .typing-dots .dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: $radius-full;
-  background: $gray-400;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $gray-300;
   animation: typingBounce 1.4s infinite ease-in-out;
-}
 
-.typing-dots .dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.typing-dots .dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-dots .dot:nth-child(3) {
-  animation-delay: 0.4s;
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
 }
 
 @keyframes typingBounce {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.6;
-  }
-  30% {
-    transform: translateY(-8rpx);
-    opacity: 1;
-  }
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30%           { transform: translateY(-5px); opacity: 1; }
 }
+
+// ─── 空状态 ───────────────────────────────────────────────────────────────────
 
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx $sp-8 $sp-8 $sp-8;
+  padding: 60px 24px;
+  gap: 10px;
 }
 
 .empty-icon {
-  font-size: 120rpx;
-  margin-bottom: $sp-8;
+  font-size: 56px;
+  margin-bottom: 6px;
+  opacity: 0.5;
 }
 
 .empty-text {
-  font-size: $font-size-lg;
-  color: $gray-500;
-  margin-bottom: $sp-4;
+  font-size: 16px;
+  font-weight: 600;
+  color: $gray-600;
 }
 
 .empty-tip {
-  font-size: 26rpx;
+  font-size: 13px;
   color: $gray-400;
+  text-align: center;
 }
+
+// ─── 输入栏 ───────────────────────────────────────────────────────────────────
 
 .input-bar {
   display: flex;
   align-items: flex-end;
-  gap: $sp-4;
-  padding: $sp-6 $sp-8;
-  background: $white;
-  border-top: 1rpx solid $gray-200;
+  gap: 8px;
+  padding: 10px 12px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid $gray-200;
   flex-shrink: 0;
 }
 
 .emoji-btn,
 .action-btn {
-  width: 72rpx;
-  height: 72rpx;
-  @include flex-center;
-  background: $gray-50;
-  border-radius: $radius-full;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 50%;
   flex-shrink: 0;
   cursor: pointer;
-  transition: $transition-base;
+  transition: background 0.15s ease, transform 0.1s ease;
 
   &:active {
-    opacity: 0.7;
-    transform: scale(0.95);
-    background: $gray-100;
+    background: $gray-200;
+    transform: scale(0.92);
   }
 }
 
 .emoji-icon,
 .action-icon {
-  font-size: 40rpx;
+  font-size: 20px;
+  line-height: 1;
 }
 
 .input-area {
   flex: 1;
-  min-height: 72rpx;
-  max-height: 200rpx;
-  padding: $sp-4 $sp-6;
-  background: $gray-50;
-  border-radius: $radius-button;
-  font-size: $font-size-base;
+  min-height: 38px;
+  max-height: 100px;
+  padding: 8px 14px;
+  background: $gray-100;
+  border-radius: 19px;
+  border: 1.5px solid transparent;
+  font-size: 15px;
   color: $gray-800;
-  line-height: $line-height-normal;
+  line-height: 1.45;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: rgba($primary, 0.4);
+    background: $white;
+    outline: none;
+  }
 }
 
 .send-btn {

@@ -6,9 +6,15 @@
         <text class="section-title">精选推荐</text>
         <text class="section-subtitle">AI 推荐 + 精选内容</text>
       </view>
-      <view class="view-more" @click="handleViewMore">
-        <text class="more-text">查看更多</text>
-        <text class="more-arrow">→</text>
+      <view class="header-right">
+        <view class="refresh-btn" :class="{ 'refresh-btn--loading': loading }" @click="!loading && refreshFeatured()">
+          <text class="refresh-icon">↻</text>
+          <text class="refresh-text">换一批</text>
+        </view>
+        <view class="view-more" @click="handleViewMore">
+          <text class="more-text">查看更多</text>
+          <text class="more-arrow">→</text>
+        </view>
       </view>
     </view>
 
@@ -132,6 +138,51 @@ const loading = ref(true)
 const hasError = ref(false)
 const featuredList = ref<any[]>([])
 
+// ===== 已展示 ID 缓存（TTL 24小时） =====
+const SEEN_CACHE_KEY = 'featured_seen_ids'
+const SEEN_CACHE_TTL = 24 * 60 * 60 * 1000 // 24小时
+
+interface SeenCache {
+  ids: string[]
+  expireAt: number
+}
+
+const getSeenIds = (): Set<string> => {
+  try {
+    const raw = uni.getStorageSync(SEEN_CACHE_KEY) as SeenCache | ''
+    if (raw && raw.expireAt > Date.now()) {
+      return new Set(raw.ids)
+    }
+  } catch {}
+  return new Set()
+}
+
+const saveSeenIds = (ids: Set<string>) => {
+  try {
+    const cache: SeenCache = {
+      ids: [...ids],
+      expireAt: Date.now() + SEEN_CACHE_TTL
+    }
+    uni.setStorageSync(SEEN_CACHE_KEY, cache)
+  } catch {}
+}
+
+const markAsSeen = (items: any[]) => {
+  const seen = getSeenIds()
+  for (const item of items) {
+    const key = `${item.type}-${item.qid || item.resourceId || item.activityId || item.id}`
+    seen.add(key)
+  }
+  // 最多保留 200 条，防止无限增长
+  if (seen.size > 200) {
+    const arr = [...seen]
+    const trimmed = arr.slice(arr.length - 200)
+    saveSeenIds(new Set(trimmed))
+  } else {
+    saveSeenIds(seen)
+  }
+}
+
 // Fisher-Yates 洗牌，从数组中随机取 n 条
 const randomPick = <T>(arr: T[], n: number): T[] => {
   const pool = [...arr]
@@ -142,11 +193,18 @@ const randomPick = <T>(arr: T[], n: number): T[] => {
   return pool.slice(0, n)
 }
 
+// 生成某个 item 的唯一缓存 key
+const getItemKey = (item: any): string => {
+  const id = item.qid || item.resourceId || item.activityId || item.id
+  return `${item.type}-${id}`
+}
+
 // 加载混合推荐内容
 // 策略：
-//   问答  — 按浏览量 取前20，再按悬赏量 取前20，合并去重后随机抽2条，保证热度+价值兼顾
-//   资源  — 按下载量 取前20，随机抽2条
-//   活动  — 取最近进行中的活动（最多6条过滤后随机抽最多2条）
+//   候选池扩大到50条，过滤已展示过的内容，保证每次换一批真的能换出新内容
+//   问答  — 按浏览量 取前50，再按悬赏量 取前50，合并去重后过滤已看，随机抽2条
+//   资源  — 按下载量 取前50，过滤已看，随机抽2条
+//   活动  — 取最近进行中的活动（最多20条过滤后随机抽最多2条）
 //   每次进入页面重新随机，刷新可见不同内容
 const loadData = async () => {
   try {
@@ -154,22 +212,19 @@ const loadData = async () => {
     hasError.value = false
 
     const now = new Date()
+    const seenIds = getSeenIds()
 
-    // 并行拉取候选池（取更多条用于随机）
+    // 并行拉取候选池（扩大到50条，增加可换出内容的概率）
     const [hotQuestionsRes, bountyQuestionsRes, resourcesRes, activitiesRes] = await Promise.all([
-      // 热门问答：按浏览量降序
-      getQuestionList({ page: 1, pageSize: 20, sortBy: 'views', sortOrder: 'desc' }).catch(() => ({ list: [] })),
-      // 高悬赏问答：按悬赏降序
-      getQuestionList({ page: 1, pageSize: 20, sortBy: 'bounty', sortOrder: 'desc' }).catch(() => ({ list: [] })),
-      // 高下载资源：按下载量降序
-      getResourceList({ page: 1, pageSize: 20, sortBy: 'downloads', sortOrder: 'desc' }).catch(() => ({ list: [] })),
-      // 活动：多取一些以便过滤
-      getActivityList({ page: 1, pageSize: 10 }).catch(() => ({ list: [] }))
+      getQuestionList({ page: 1, pageSize: 50, sortBy: 'views', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      getQuestionList({ page: 1, pageSize: 50, sortBy: 'bounty', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      getResourceList({ page: 1, pageSize: 50, sortBy: 'downloads', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      getActivityList({ page: 1, pageSize: 20 }).catch(() => ({ list: [] }))
     ])
 
-    // 问答候选池：合并热门+高悬赏，按 qid 去重，随机抽2条
+    // 问答候选池：合并热门+高悬赏，按 qid 去重，过滤已看，随机抽2条
     const seenQids = new Set<number>()
-    const questionPool: any[] = []
+    let questionPool: any[] = []
     for (const item of [...(hotQuestionsRes.list || []), ...(bountyQuestionsRes.list || [])]) {
       const id = item.qid || item.questionId || item.id
       if (!seenQids.has(id)) {
@@ -177,31 +232,41 @@ const loadData = async () => {
         questionPool.push({ ...item, type: 'question' })
       }
     }
-    const questions = randomPick(questionPool, 2)
+    // 优先从未看过的里面选，全看完了则重置 seen 后从全量里选
+    const freshQuestions = questionPool.filter(item => !seenIds.has(getItemKey(item)))
+    const questionSource = freshQuestions.length >= 2 ? freshQuestions : questionPool
+    const questions = randomPick(questionSource, 2)
 
-    // 资源候选池：随机抽2条
-    const resourcePool = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
-    const resources = randomPick(resourcePool, 2)
+    // 资源候选池：过滤已看，随机抽2条
+    let resourcePool = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
+    const freshResources = resourcePool.filter((item: any) => !seenIds.has(getItemKey(item)))
+    const resourceSource = freshResources.length >= 2 ? freshResources : resourcePool
+    const resources = randomPick(resourceSource, 2)
 
-    // 活动：过滤已结束，随机抽最多2条
-    const activityPool = (activitiesRes.list || [])
+    // 活动：过滤已结束，过滤已看，随机抽最多2条
+    let activityPool = (activitiesRes.list || [])
       .filter((item: any) => {
         if (item.status === 2 || item.status === 3) return false
         if (item.endTime && new Date(item.endTime) < now) return false
         return true
       })
       .map((item: any) => ({ ...item, type: 'activity' }))
-    const activities = randomPick(activityPool, 2)
+    const freshActivities = activityPool.filter((item: any) => !seenIds.has(getItemKey(item)))
+    const activitySource = freshActivities.length >= 1 ? freshActivities : activityPool
+    const activities = randomPick(activitySource, 2)
 
     // 交替合并：问答 → 资源 → 活动，保证类型不连续，最多4条
     const interleaved: any[] = []
     const maxLen = Math.max(questions.length, resources.length, activities.length)
     for (let i = 0; i < maxLen && interleaved.length < 4; i++) {
-      if (questions[i])                           interleaved.push(questions[i])
-      if (interleaved.length < 4 && resources[i]) interleaved.push(resources[i])
+      if (questions[i])                            interleaved.push(questions[i])
+      if (interleaved.length < 4 && resources[i])  interleaved.push(resources[i])
       if (interleaved.length < 4 && activities[i]) interleaved.push(activities[i])
     }
     featuredList.value = interleaved
+
+    // 将本次展示的内容记录到 seen 缓存
+    markAsSeen(interleaved)
 
   } catch (error) {
     console.error('[FeaturedSection] 加载推荐内容失败:', error)
@@ -209,6 +274,11 @@ const loadData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+// 换一批：把当前展示内容追加进 seen，再重新筛选
+const refreshFeatured = async () => {
+  await loadData()
 }
 
 /**
@@ -440,6 +510,50 @@ defineExpose({ loadData })
 .section-subtitle {
   font-size: $font-size-sm;
   color: $color-text-tertiary;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: $spacing-4;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  gap: $spacing-1;
+  cursor: pointer;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  padding: $spacing-1 $spacing-3;
+  border-radius: $radius-button;
+  border: 1px solid $color-border;
+  background: transparent;
+  transition: all 0.2s;
+
+  &:hover {
+    color: $campus-blue;
+    border-color: $campus-blue;
+  }
+
+  &--loading {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.refresh-icon {
+  font-size: $font-size-base;
+  display: inline-block;
+  transition: transform 0.4s ease;
+
+  .refresh-btn:not(.refresh-btn--loading):active & {
+    transform: rotate(360deg);
+  }
+}
+
+.refresh-text {
+  font-weight: $font-weight-medium;
 }
 
 .view-more {

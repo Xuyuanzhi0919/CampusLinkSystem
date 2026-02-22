@@ -73,7 +73,7 @@
           </view>
         </view>
 
-        <!-- 右侧：排序+筛选 -->
+        <!-- 右侧：排序+筛选（PC端） -->
         <view class="sort-controls">
           <!-- 排序下拉（相对定位容器） -->
           <view class="sort-dropdown-wrapper">
@@ -104,6 +104,12 @@
             <text class="filter-label">筛选</text>
             <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
           </view>
+        </view>
+
+        <!-- 移动端专用筛选图标按钮 -->
+        <view class="mobile-filter-btn" @click="showFilterModal = true">
+          <Icon name="sliders" :size="16" class="mobile-filter-icon" />
+          <view v-if="hasActiveFilters" class="mobile-filter-badge"></view>
         </view>
       </view>
 
@@ -187,20 +193,22 @@
 
           <!-- 问题卡片列表 -->
           <template v-else-if="questions.length > 0">
-            <template v-for="(item, index) in questions" :key="item.qid">
-              <QuestionCard
-                :question="item"
-                :keyword="searchKeyword"
-                @click="handleQuestionClick(item.qid)"
-              />
+            <view class="question-card-container">
+              <template v-for="(item, index) in questions" :key="item.qid">
+                <QuestionCard
+                  :question="item"
+                  :keyword="searchKeyword"
+                  @click="handleQuestionClick(item.qid)"
+                />
 
-              <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示) -->
-              <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
-                <view class="divider-line"></view>
-                <text class="divider-text">更多问题</text>
-                <view class="divider-line"></view>
-              </view>
-            </template>
+                <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示)，移动端不显示 -->
+                <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
+                  <view class="divider-line"></view>
+                  <text class="divider-text">更多问题</text>
+                  <view class="divider-line"></view>
+                </view>
+              </template>
+            </view>
 
             <!-- 加载更多按钮 -->
             <view v-if="hasMore && questions.length > 0" class="load-more-btn" @click="handleLoadMore">
@@ -1430,7 +1438,7 @@ defineExpose({
   }
 }
 
-// 排序控制
+// 排序控制（PC端）
 .sort-controls {
   display: flex;
   align-items: center;
@@ -1441,6 +1449,44 @@ defineExpose({
   @include mobile {
     display: none;
   }
+}
+
+// 移动端专用筛选图标按钮
+.mobile-filter-btn {
+  display: none;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &:active {
+    background: $gray-200;
+  }
+
+  @include mobile {
+    display: flex;
+  }
+}
+
+.mobile-filter-icon {
+  color: $gray-600;
+}
+
+.mobile-filter-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: $primary;
+  border-radius: 50%;
+  border: 1.5px solid $white;
 }
 
 .sort-dropdown {
@@ -1550,7 +1596,7 @@ defineExpose({
   }
 
   @include mobile {
-    padding-top: 100px;  // 移动端顶部导航56px + 二级导航40px + 小间距
+    padding-top: 100px;  // 移动端顶部导航56px + 二级导航44px
     padding-bottom: 24px;
   }
 }
@@ -1598,13 +1644,21 @@ defineExpose({
   }
 }
 
-// 快捷筛选卡片
+// 快捷筛选卡片（PC端保持卡片样式，移动端改为轻量Tab行）
 .quick-filter-card {
   background: $white;
   border-radius: 12px;
   padding: 16px;
   margin-bottom: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  @include mobile {
+    background: transparent;
+    border-radius: 0;
+    padding: 0 0 12px 0;
+    margin-bottom: 0;
+    box-shadow: none;
+  }
 }
 
 .quick-filter-header {
@@ -1622,6 +1676,10 @@ defineExpose({
     font-weight: 600;
     color: $gray-900;
   }
+
+  @include mobile {
+    display: none;
+  }
 }
 
 .quick-filter-tabs {
@@ -1630,6 +1688,14 @@ defineExpose({
 
   @include mobile {
     gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+
+    /* #ifdef H5 */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    /* #endif */
   }
 }
 
@@ -1688,11 +1754,47 @@ defineExpose({
   }
 
   @include mobile {
-    padding: 6px 8px;
-    gap: 3px;
+    padding: 5px 12px;
+    gap: 4px;
+    border-radius: 16px;
+    flex: none;
+    white-space: nowrap;
 
     .tab-label {
-      font-size: 12px;
+      font-size: 13px;
+    }
+
+    .tab-icon {
+      display: none;
+    }
+  }
+}
+
+// 问题卡片统一容器
+.question-card-container {
+  // PC端：无特殊样式，卡片各自独立展示
+  display: flex;
+  flex-direction: column;
+
+  @include mobile {
+    // 移动端：统一边框容器包裹，卡片之间用分割线
+    background: $white;
+    border-radius: 12px;
+    border: 1px solid $gray-200;
+    overflow: hidden;
+    margin-bottom: 8px;
+
+    // 深层选择：让 QuestionCard 在移动端无独立阴影
+    :deep(.question-card) {
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      margin-bottom: 0 !important;
+      border-bottom: 1px solid $gray-100;
+    }
+
+    // 分段分隔符在移动端隐藏（同时也是最后一个 child 时不影响末尾 border）
+    :deep(.section-divider) {
+      display: none;
     }
   }
 }

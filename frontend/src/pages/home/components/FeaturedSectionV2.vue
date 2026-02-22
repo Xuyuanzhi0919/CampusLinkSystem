@@ -452,6 +452,41 @@ defineExpose({ loadData })
   }
   /* #endif */
 
+  // 资源卡片在窄列（约200px）内的紧凑适配
+  :deep(.res-card) {
+    min-height: 0;
+    flex-direction: column;
+
+    // 左侧图标区改为顶部横条
+    .res-card__aside {
+      width: 100%;
+      flex-direction: row;
+      height: 48px;
+      padding: 0 $spacing-5;
+      gap: $spacing-3;
+      justify-content: flex-start;
+      border-bottom: 1px solid $color-divider;
+    }
+
+    // 主内容区正常纵向展示
+    .res-card__main {
+      border-left: none;
+      padding: $spacing-4 $spacing-5;
+    }
+
+    // 标题 2 行截断
+    .res-card__title {
+      font-size: $font-size-sm;
+      -webkit-line-clamp: 2;
+    }
+
+    // 隐藏描述和标签，节省空间
+    .res-card__desc { display: none; }
+    .res-card__tags { display: none; }
+
+    // meta 只保留前 2 个
+    .res-card__meta-item:nth-child(n+3) { display: none; }
+  }
 }
 
 // ========== 骨架屏 ==========

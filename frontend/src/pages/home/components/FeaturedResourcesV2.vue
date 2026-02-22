@@ -12,35 +12,34 @@
       </view>
     </view>
 
-    <!-- Loading State：骨架屏，纵向列表匹配 ClResourceCard 横向布局 -->
-    <view v-if="loading" class="skeleton-list">
-      <view v-for="i in 4" :key="i" class="skeleton-row">
-        <!-- 左侧色条 -->
-        <view class="skeleton-side-bar"></view>
-        <!-- 内容主区 -->
-        <view class="skeleton-inner">
-          <!-- 文件图标 -->
-          <view class="skeleton-file-icon"></view>
-          <!-- 中间 body -->
-          <view class="skeleton-body">
-            <!-- 标题行：标题 + 类型胶囊 -->
-            <view class="skeleton-title-row">
+    <!-- Loading State：骨架屏，2列网格匹配 ClResourceCard 纵向卡片结构 -->
+    <view v-if="loading" class="skeleton-grid">
+      <view v-for="i in 4" :key="i" class="skeleton-card">
+        <!-- 顶部色条 -->
+        <view class="skeleton-top-bar"></view>
+        <!-- 卡片 body -->
+        <view class="skeleton-body">
+          <!-- 头部：图标 + 标题+胶囊 -->
+          <view class="skeleton-header">
+            <view class="skeleton-file-icon"></view>
+            <view class="skeleton-title-wrap">
               <view class="skeleton-line skeleton-line--title"></view>
               <view class="skeleton-capsule"></view>
             </view>
-            <!-- 描述 -->
-            <view class="skeleton-line skeleton-line--desc"></view>
-            <!-- Meta 行 -->
+          </view>
+          <!-- 描述 -->
+          <view class="skeleton-line skeleton-line--desc"></view>
+          <view class="skeleton-line skeleton-line--desc-short"></view>
+          <!-- 底部 meta + 操作 -->
+          <view class="skeleton-footer">
             <view class="skeleton-meta">
               <view class="skeleton-line skeleton-line--meta"></view>
               <view class="skeleton-line skeleton-line--meta"></view>
-              <view class="skeleton-line skeleton-line--meta"></view>
             </view>
-          </view>
-          <!-- 右侧操作：积分 + 按钮 -->
-          <view class="skeleton-actions">
-            <view class="skeleton-points"></view>
-            <view class="skeleton-btn"></view>
+            <view class="skeleton-actions">
+              <view class="skeleton-points"></view>
+              <view class="skeleton-btn"></view>
+            </view>
           </view>
         </view>
       </view>
@@ -256,9 +255,13 @@ defineExpose({ loadData })
 }
 
 .resources-list {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-3;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-6;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
 }
 
 // ========== 骨架屏 ==========
@@ -274,109 +277,114 @@ defineExpose({ loadData })
   border-radius: $radius-sm;
 }
 
-/* 骨架屏：纵向列表，匹配横向 ClResourceCard 结构 */
-.skeleton-list {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-3;
+/* 骨架屏：2 列网格，匹配 ClResourceCard 纵向卡片结构 */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-6;
+
+  @media (max-width: 768px) {
+    gap: 10px;
+  }
 }
 
-.skeleton-row {
+.skeleton-card {
   background: $color-bg-card;
   border-radius: $card-radius;
   border: 1px solid rgba(0, 0, 0, 0.04);
   box-shadow: $shadow-base;
   overflow: hidden;
   display: flex;
-  flex-direction: row;
-  align-items: center;
+  flex-direction: column;
 }
 
-/* 左侧色条 */
-.skeleton-side-bar {
-  width: 4px;
-  height: 72px;
-  flex-shrink: 0;
+/* 顶部色条 */
+.skeleton-top-bar {
+  height: 4px;
+  width: 100%;
   background: #F0F0F0;
-  border-radius: $card-radius 0 0 $card-radius;
+  flex-shrink: 0;
 }
 
-/* 主体横向容器 */
-.skeleton-inner {
-  flex: 1;
+/* 卡片 body */
+.skeleton-body {
   display: flex;
-  align-items: center;
-  gap: $spacing-4;
+  flex-direction: column;
+  gap: $spacing-3;
   padding: $spacing-4 $spacing-5;
+  flex: 1;
 }
 
-/* 文件图标 */
+/* 头部：图标 + 标题区 */
+.skeleton-header {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+}
+
 .skeleton-file-icon {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: $radius-md;
+  width: 36px;
+  height: 36px;
+  border-radius: $radius-base;
   @include skeleton-block;
 }
 
-/* 中间 body */
-.skeleton-body {
+.skeleton-title-wrap {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: $spacing-2;
-}
-
-/* 标题行：标题 + 胶囊 */
-.skeleton-title-row {
-  display: flex;
-  align-items: center;
-  gap: $spacing-3;
+  gap: $spacing-1;
 }
 
 .skeleton-capsule {
-  flex-shrink: 0;
   width: 36px;
-  height: 18px;
-  border-radius: 8px;
+  height: 16px;
+  border-radius: 6px;
   @include skeleton-block;
 }
 
-/* 右侧操作区 */
-.skeleton-actions {
-  flex-shrink: 0;
+/* 底部：meta + 操作 */
+.skeleton-footer {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: $spacing-3;
+}
+
+.skeleton-actions {
+  display: flex;
   align-items: center;
   gap: $spacing-2;
 }
 
 .skeleton-points {
-  width: 52px;
-  height: 22px;
+  width: 40px;
+  height: 20px;
   border-radius: 20px;
   @include skeleton-block;
 }
 
 .skeleton-btn {
-  width: 52px;
-  height: 26px;
+  width: 44px;
+  height: 24px;
   border-radius: $radius-md;
   @include skeleton-block;
-}
-
-.skeleton-meta {
-  display: flex;
-  gap: $spacing-4;
 }
 
 .skeleton-line {
   @include skeleton-block;
 
-  &--title { flex: 1; height: 15px; }
-  &--desc  { width: 100%; height: 13px; }
-  &--meta  { width: 32px; height: 12px; }
+  &--title      { width: 90%; height: 14px; }
+  &--desc       { width: 100%; height: 12px; }
+  &--desc-short { width: 65%; height: 12px; }
+  &--meta       { width: 28px; height: 12px; }
 }
 
 .error-container,

@@ -452,10 +452,6 @@ defineExpose({ loadData })
   }
   /* #endif */
 
-  // ClResourceCard 横向列表布局，需独占整行
-  :deep(.featured-resource) {
-    grid-column: 1 / -1;
-  }
 }
 
 // ========== 骨架屏 ==========

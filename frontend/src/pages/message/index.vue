@@ -4,11 +4,7 @@
     <!-- 顶部导航 -->
     <view class="header">
       <view class="header-inner">
-        <view class="header-left">
-          <view class="back-btn" @click="handleGoBack">
-            <ClIcon name="icon-arrow-left" size="lg" />
-          </view>
-        </view>
+        <view class="header-left"></view>
         <view class="header-center">
           <text class="header-title">私信</text>
           <text v-if="totalUnread > 0" class="header-badge">{{ totalUnread > 99 ? '99+' : totalUnread }}</text>
@@ -151,7 +147,6 @@ const loadConversations = async (isRefresh = false) => {
 
 const handleRefresh = () => loadConversations(true)
 
-const handleGoBack = () => uni.navigateBack()
 
 const handleCompose = () => {
   uni.showToast({ title: '请在用户主页发起私信', icon: 'none' })
@@ -266,7 +261,6 @@ $error:        #EF4444;
   line-height: 1.4;
 }
 
-.back-btn,
 .compose-btn {
   width: 40px;
   height: 40px;

@@ -1,76 +1,79 @@
 <template>
   <view class="cl-feed-qa" @click="handleCardClick">
-    <!-- 顶部行：弱信息（作者 + 时间 + 状态标签） -->
-    <view class="cl-feed-qa__header">
-      <!-- 左侧：用户信息 -->
+
+    <!-- ① 顶部主区：标题 + 悬赏徽章 -->
+    <view class="cl-feed-qa__top">
+      <view class="cl-feed-qa__title-wrap">
+        <view class="cl-feed-qa__title">{{ question.title }}</view>
+      </view>
+      <!-- 悬赏积分徽章：仅有悬赏时显示，视觉强化 -->
+      <view v-if="question.rewardPoints" class="cl-feed-qa__reward-badge">
+        <ClIcon name="icon-coin" size="xs" />
+        <text>{{ question.rewardPoints }}</text>
+      </view>
+    </view>
+
+    <!-- ② 标签行：替代空洞摘要，帮助用户快速判断领域 -->
+    <view v-if="hasTags" class="cl-feed-qa__tags">
+      <text
+        v-for="tag in displayTags"
+        :key="tag"
+        class="cl-feed-qa__tag"
+      >{{ tag }}</text>
+      <text v-if="extraTagCount > 0" class="cl-feed-qa__tag cl-feed-qa__tag--more">
+        +{{ extraTagCount }}
+      </text>
+    </view>
+
+    <!-- ③ 已解决：采纳答案预览片段（最有价值的内容钩子） -->
+    <view v-if="question.isSolved && question.adoptedAnswer" class="cl-feed-qa__adopted">
+      <view class="cl-feed-qa__adopted-label">
+        <ClIcon name="icon-check-circle" size="xs" />
+        <text>最佳答案</text>
+      </view>
+      <text class="cl-feed-qa__adopted-preview">{{ question.adoptedAnswer }}</text>
+    </view>
+
+    <!-- ④ 底部行：用户信息（弱化）+ 数据统计 + CTA -->
+    <view class="cl-feed-qa__footer">
+      <!-- 左：用户信息 + 时间（弱化至底部） -->
       <view class="cl-feed-qa__user" @click.stop="handleUserClick">
         <ClAvatar
           :src="question.user?.avatar"
           :name="question.user?.username"
-          size="small"
+          size="tiny"
         />
-        <text class="cl-feed-qa__username">{{ question.user?.username || '匿名用户' }}</text>
+        <text class="cl-feed-qa__username">{{ question.user?.username || '匿名' }}</text>
         <text class="cl-feed-qa__dot">·</text>
         <text class="cl-feed-qa__time">{{ formatTime(question.createdAt) }}</text>
+        <!-- 热度标记：近1小时内有新回答 -->
+        <view v-if="isHot" class="cl-feed-qa__hot">
+          <text>热</text>
+        </view>
       </view>
 
-      <!-- 右侧：状态标签（弱化） -->
-      <view class="cl-feed-qa__status" :class="statusClass">
-        {{ question.isSolved ? '已解决' : '待回答' }}
+      <!-- 右：状态 + 数据统计 + CTA -->
+      <view class="cl-feed-qa__actions">
+        <view class="cl-feed-qa__status" :class="statusClass">
+          {{ question.isSolved ? '已解决' : '待回答' }}
+        </view>
+        <view class="cl-feed-qa__meta">
+          <view class="cl-feed-qa__meta-item cl-feed-qa__meta-item--clickable" @click.stop="handleCommentClick">
+            <ClIcon name="icon-message" size="sm" />
+            <text>{{ formatNumber(question.comments) }}</text>
+          </view>
+          <view class="cl-feed-qa__meta-item cl-feed-qa__meta-item--clickable" @click.stop="handleLikeClick">
+            <ClIcon name="icon-heart" size="sm" />
+            <text>{{ formatNumber(question.likes) }}</text>
+          </view>
+        </view>
+        <view class="cl-feed-qa__cta" @click.stop="handleAnswerClick">
+          <ClIcon :name="question.isSolved ? 'icon-eye' : 'icon-edit'" size="sm" />
+          <text>{{ question.isSolved ? '查看' : '回答' }}</text>
+        </view>
       </view>
     </view>
 
-    <!-- 标题区：强视觉主焦点 -->
-    <view class="cl-feed-qa__title">{{ question.title }}</view>
-
-    <!-- 摘要/提示区：增加内容丰满度 -->
-    <view class="cl-feed-qa__summary">
-      <template v-if="question.description">
-        {{ question.description }}
-      </template>
-      <template v-else-if="question.comments > 0">
-        <ClIcon name="icon-message" size="xs" />
-        <text>已有 {{ question.comments }} 位同学回答</text>
-      </template>
-      <template v-else-if="question.rewardPoints">
-        <ClIcon name="icon-coin" size="xs" />
-        <text>悬赏 {{ question.rewardPoints }} 积分，快来抢首答</text>
-      </template>
-      <template v-else>
-        <ClIcon name="icon-lightbulb" size="xs" />
-        <text>还没有同学回答，快来抢首答</text>
-      </template>
-    </view>
-
-    <!-- 底部行：左侧数据 + 右侧 CTA -->
-    <view class="cl-feed-qa__footer">
-      <!-- 左侧：元数据 -->
-      <view class="cl-feed-qa__meta">
-        <view class="cl-feed-qa__meta-item">
-          <ClIcon name="icon-eye" size="sm" />
-          <text>{{ formatNumber(question.views) }}</text>
-        </view>
-        <view class="cl-feed-qa__meta-item cl-feed-qa__meta-item--clickable" @click.stop="handleCommentClick">
-          <ClIcon name="icon-message" size="sm" />
-          <text>{{ formatNumber(question.comments) }}</text>
-        </view>
-        <view class="cl-feed-qa__meta-item cl-feed-qa__meta-item--clickable" @click.stop="handleLikeClick">
-          <ClIcon name="icon-heart" size="sm" />
-          <text>{{ formatNumber(question.likes) }}</text>
-        </view>
-        <!-- 悬赏积分高亮显示 -->
-        <view v-if="question.rewardPoints" class="cl-feed-qa__meta-item cl-feed-qa__meta-item--reward">
-          <ClIcon name="icon-coin" size="sm" />
-          <text>{{ question.rewardPoints }}</text>
-        </view>
-      </view>
-
-      <!-- 右侧：CTA 按钮（弱化） -->
-      <view class="cl-feed-qa__cta" @click.stop="handleAnswerClick">
-        <ClIcon name="icon-edit" size="sm" />
-        <text>{{ question.isSolved ? '查看' : '回答' }}</text>
-      </view>
-    </view>
   </view>
 </template>
 
@@ -80,14 +83,14 @@ import ClAvatar from './ClAvatar.vue'
 import ClIcon from './ClIcon.vue'
 
 /**
- * ClFeedQAItem - 最新问答流卡片（重构版 2.0）
+ * ClFeedQAItem - 最新问答流卡片（重构版 3.0）
  *
  * 设计原则：
- * 1. 顶部弱化（用户+时间+状态）
- * 2. 标题强化（18px/600-700）
- * 3. 摘要区增加内容丰满度
- * 4. 底部左数据右CTA，节奏分明
- * 5. 更具社交感的视觉风格
+ * 1. 标题 + 悬赏徽章 → 顶部视觉核心，第一眼抓注意力
+ * 2. Tags 行 → 替代空洞摘要，帮助用户快速判断领域相关性
+ * 3. 已解决时显示采纳答案预览 → 内容钩子，大幅提升点击意愿
+ * 4. 用户信息弱化至底部 → 社区信息流中用户不是主角，内容才是
+ * 5. 热度标记 → 近期活跃信号，营造社区氛围
  */
 
 interface User {
@@ -99,7 +102,8 @@ interface User {
 interface Question {
   id: number
   title: string
-  description?: string  // 新增：摘要/描述
+  description?: string
+  adoptedAnswer?: string  // 采纳答案摘要（已解决时显示）
   user?: User
   tags?: string[]
   views: number
@@ -108,6 +112,7 @@ interface Question {
   createdAt: string
   isSolved: boolean
   rewardPoints?: number
+  lastAnsweredAt?: string  // 最近回答时间（热度判断）
 }
 
 interface Props {
@@ -129,6 +134,19 @@ const statusClass = computed(() => ({
   'cl-feed-qa__status--solved': props.question.isSolved,
   'cl-feed-qa__status--pending': !props.question.isSolved
 }))
+
+// 标签：桌面最多3个，移动端最多2个（超出显示 +N）
+const MAX_TAGS_DESKTOP = 3
+const hasTags = computed(() => (props.question.tags?.length ?? 0) > 0)
+const displayTags = computed(() => props.question.tags?.slice(0, MAX_TAGS_DESKTOP) ?? [])
+const extraTagCount = computed(() => Math.max(0, (props.question.tags?.length ?? 0) - MAX_TAGS_DESKTOP))
+
+// 热度：近1小时内有新回答
+const isHot = computed(() => {
+  const ref = props.question.lastAnsweredAt || props.question.createdAt
+  if (!ref) return false
+  return Date.now() - new Date(ref).getTime() < 60 * 60 * 1000
+})
 
 // 格式化数字
 const formatNumber = (num: number): string => {
@@ -166,22 +184,130 @@ const handleCommentClick = () => emit('comment', props.question)
 @import '@/styles/design-tokens.scss';
 
 .cl-feed-qa {
-  @include card-base;  // 🔧 统一使用玻璃态卡片基础样式
+  @include card-base;
+  display: flex;
+  flex-direction: column;
   gap: $spacing-3;
-  padding: $spacing-5;  // 统一内边距 20rpx (10px)
+  padding: $spacing-5;
+  cursor: pointer;
+  transition: $transition-all;
 
   &:active {
     transform: translateY(0);
   }
 
-  /* ========== 顶部行：弱信息 ========== */
-  &__header {
+  /* ========== ① 顶部：标题 + 悬赏徽章 ========== */
+  &__top {
+    display: flex;
+    align-items: flex-start;
+    gap: $spacing-3;
+  }
+
+  &__title-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    font-size: 32rpx; // 16px
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    line-height: 1.45;
+    word-break: break-word;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 悬赏徽章：金色药丸，视觉权重高 */
+  &__reward-badge {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 8px;
+    background: linear-gradient(135deg, rgba(#F59E0B, 0.15), rgba(#F59E0B, 0.08));
+    border: 1px solid rgba(#F59E0B, 0.35);
+    border-radius: 20px;
+    color: #D97706;
+    font-size: 12px;
+    font-weight: $font-weight-semibold;
+    white-space: nowrap;
+    margin-top: 2px; // 与标题首行对齐
+  }
+
+  /* ========== ② 标签行 ========== */
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-2;
+  }
+
+  &__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    background: rgba($campus-blue, 0.07);
+    color: $campus-blue;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: $font-weight-medium;
+    white-space: nowrap;
+
+    &--more {
+      background: rgba($color-text-quaternary, 0.08);
+      color: $color-text-tertiary;
+    }
+  }
+
+  /* ========== ③ 已解决：采纳答案预览 ========== */
+  &__adopted {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-1;
+    padding: $spacing-3 $spacing-4;
+    background: rgba(#10B981, 0.05);
+    border-left: 2px solid #10B981;
+    border-radius: 0 $radius-sm $radius-sm 0;
+  }
+
+  &__adopted-label {
+    display: flex;
+    align-items: center;
+    gap: $spacing-1;
+    font-size: 11px;
+    font-weight: $font-weight-semibold;
+    color: #059669;
+
+    :deep(.cl-icon) {
+      color: #10B981;
+    }
+  }
+
+  &__adopted-preview {
+    font-size: $font-size-xs;
+    color: $color-text-secondary;
+    line-height: 1.5;
+    // 最多2行
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+  }
+
+  /* ========== ④ 底部行 ========== */
+  &__footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: $spacing-3;
+    padding-top: $spacing-3;
+    border-top: 1px solid $color-divider;
   }
 
+  /* 左：用户信息（弱化） */
   &__user {
     display: flex;
     align-items: center;
@@ -196,36 +322,60 @@ const handleCommentClick = () => emit('comment', props.question)
   }
 
   &__username {
-    font-size: $font-size-xs;
+    font-size: 11px;
     color: $color-text-tertiary;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 80px;
+    max-width: 72px;
     transition: $transition-color;
   }
 
   &__dot {
-    font-size: $font-size-xs;
+    font-size: 11px;
     color: $color-text-quaternary;
+    flex-shrink: 0;
   }
 
   &__time {
-    font-size: $font-size-xs;
+    font-size: 11px;
     color: $color-text-quaternary;
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  /* 状态标签（统一样式） */
-  &__status {
+  /* 热度标记 */
+  &__hot {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
-    height: $capsule-tag-height;        // 统一高度 40rpx
-    padding: $capsule-tag-padding;      // 统一内边距
-    border-radius: $capsule-tag-radius; // 统一圆角 20rpx
-    font-size: $capsule-tag-font-size;  // 统一字号
-    font-weight: $font-weight-semibold; // 统一字重
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    background: #EF4444;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: $font-weight-bold;
+    color: white;
+    line-height: 1;
+  }
+
+  /* 右：状态 + 数据 + CTA */
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    flex-shrink: 0;
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: $font-weight-semibold;
+    white-space: nowrap;
 
     &--pending {
       color: $campus-blue;
@@ -238,89 +388,32 @@ const handleCommentClick = () => emit('comment', props.question)
     }
   }
 
-  /* ========== 标题区：强视觉 ========== */
-  &__title {
-    font-size: 32rpx;  // 16px，比之前更大
-    font-weight: $font-weight-semibold;  // 600-700
-    color: $color-text-primary;
-    line-height: 1.4;
-    word-break: break-word;
-
-    // 最多2行
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-
-    // 标题与顶部紧凑
-    margin-top: $spacing-1;
-  }
-
-  /* ========== 摘要/提示区 ========== */
-  &__summary {
-    display: flex;
-    align-items: center;
-    gap: $spacing-2;
-    font-size: $font-size-xs;
-    color: $color-text-tertiary;
-    line-height: 1.5;
-
-    // 最多1行
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    // 图标颜色
-    :deep(.cl-icon) {
-      opacity: 0.7;
-    }
-  }
-
-  /* ========== 底部行：数据 + CTA ========== */
-  &__footer {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $spacing-4;
-    padding-top: $spacing-3;
-    border-top: 1px solid $color-divider;
-    margin-top: $spacing-1;
-  }
-
   &__meta {
     display: flex;
     align-items: center;
-    gap: $spacing-5;  // 增加间距
+    gap: $spacing-4;
   }
 
   &__meta-item {
     display: flex;
     align-items: center;
-    gap: $spacing-2;  // 图标与数字间距
-    font-size: $font-size-sm;  // 14px，比之前更大
+    gap: $spacing-1;
+    font-size: $font-size-xs;
     color: $color-text-tertiary;
     transition: $transition-color;
 
     &--clickable {
       cursor: pointer;
-
-      &:hover {
-        color: $campus-blue;
-      }
-    }
-
-    &--reward {
-      color: #F59E0B;
-      font-weight: $font-weight-medium;
+      &:hover { color: $campus-blue; }
     }
   }
 
-  /* CTA 按钮（弱化 outline 风格） */
+  /* CTA 按钮 */
   &__cta {
     display: flex;
     align-items: center;
     gap: $spacing-1;
-    padding: $spacing-1 $spacing-3;
+    padding: 4px 12px;
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
     color: $campus-blue;
@@ -348,60 +441,64 @@ const handleCommentClick = () => emit('comment', props.question)
     padding: 12px;
     gap: 8px;
 
-    &__header {
-      gap: $spacing-2;
-    }
-
-    &__username {
-      max-width: 60px;
-      font-size: 11px;
-    }
-
-    &__time {
-      font-size: 11px;
-    }
-
-    &__status {
-      font-size: 10px;
-      padding: 2px 6px;
-      height: auto;
-    }
-
     &__title {
       font-size: 14px;
       line-height: 1.4;
-      height: calc(14px * 1.4 * 2);
-      overflow: hidden;
-      margin-top: 0;
     }
 
-    &__summary {
+    &__reward-badge {
+      font-size: 10px;
+      padding: 2px 6px;
+    }
+
+    &__tags {
+      gap: 5px;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    &__tag {
+      font-size: 10px;
+      padding: 1px 6px;
+    }
+
+    &__adopted {
+      padding: 6px 8px;
+    }
+
+    &__adopted-preview {
       font-size: 11px;
+      -webkit-line-clamp: 1;
     }
 
     &__footer {
       padding-top: 8px;
-      margin-top: 0;
       gap: $spacing-2;
     }
 
+    &__username {
+      max-width: 52px;
+    }
+
+    &__actions {
+      gap: $spacing-2;
+    }
+
+    &__status {
+      // 移动端隐藏状态标签，用悬赏徽章和采纳预览代替
+      display: none;
+    }
+
     &__meta {
-      gap: $spacing-4;
-      flex: 1;
-      min-width: 0;
+      gap: $spacing-3;
     }
 
     &__meta-item {
       font-size: 11px;
-
-      /* 隐藏浏览量（最次要信息） */
-      &:first-child {
-        display: none;
-      }
     }
 
     &__cta {
-      padding: 4px 10px;
+      padding: 3px 9px;
       font-size: 11px;
     }
   }

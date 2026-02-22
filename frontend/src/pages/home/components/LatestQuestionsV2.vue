@@ -12,30 +12,34 @@
       </view>
     </view>
 
-    <!-- Loading State：骨架屏，5条列表匹配 ClFeedQAItem 结构 -->
+    <!-- Loading State：骨架屏，5条列表匹配 ClFeedQAItem 3.0 结构 -->
     <view v-if="loading" class="skeleton-list">
       <view v-for="i in 5" :key="i" class="skeleton-item">
-        <!-- Header：头像 + 用户名 + 时间 + 状态标签 -->
-        <view class="skeleton-header">
-          <view class="skeleton-avatar"></view>
-          <view class="skeleton-line skeleton-line--name"></view>
-          <view class="skeleton-line skeleton-line--dot"></view>
-          <view class="skeleton-line skeleton-line--time"></view>
-          <view class="skeleton-status"></view>
-        </view>
-        <!-- 标题 -->
-        <view class="skeleton-line skeleton-line--title"></view>
-        <view class="skeleton-line skeleton-line--title-short"></view>
-        <!-- 摘要 -->
-        <view class="skeleton-line skeleton-line--summary"></view>
-        <!-- Footer：元数据 + 按钮 -->
-        <view class="skeleton-footer">
-          <view class="skeleton-meta">
-            <view class="skeleton-line skeleton-line--meta"></view>
-            <view class="skeleton-line skeleton-line--meta"></view>
-            <view class="skeleton-line skeleton-line--meta"></view>
+        <!-- ① 顶部：标题 + 悬赏徽章 -->
+        <view class="skeleton-top">
+          <view class="skeleton-title-wrap">
+            <view class="skeleton-line skeleton-line--title"></view>
+            <view class="skeleton-line skeleton-line--title-short"></view>
           </view>
-          <view class="skeleton-btn"></view>
+          <view class="skeleton-badge"></view>
+        </view>
+        <!-- ② 标签行 -->
+        <view class="skeleton-tags">
+          <view class="skeleton-tag"></view>
+          <view class="skeleton-tag skeleton-tag--sm"></view>
+        </view>
+        <!-- ③ 底部：用户信息 + 数据 + 按钮 -->
+        <view class="skeleton-footer">
+          <view class="skeleton-user">
+            <view class="skeleton-avatar"></view>
+            <view class="skeleton-line skeleton-line--name"></view>
+            <view class="skeleton-line skeleton-line--time"></view>
+          </view>
+          <view class="skeleton-right">
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-line skeleton-line--meta"></view>
+            <view class="skeleton-btn"></view>
+          </view>
         </view>
       </view>
     </view>
@@ -129,6 +133,7 @@ const loadData = async () => {
     questionList.value = response.list.map((item: any) => ({
       id: item.qid || item.questionId || item.id,
       title: item.title || '',
+      adoptedAnswer: item.adoptedAnswerSummary || item.adoptedAnswer || '',
       user: {
         id: item.askerId || 0,
         username: item.askerNickname || item.askerName || '匿名用户',
@@ -139,6 +144,7 @@ const loadData = async () => {
       comments: item.answerCount || 0,
       likes: item.likes || 0,
       createdAt: item.createdAt || '',
+      lastAnsweredAt: item.lastAnsweredAt || item.updatedAt || '',
       isSolved: item.status === 1 || item.isSolved || false,
       rewardPoints: item.bounty || 0
     }))
@@ -303,57 +309,87 @@ defineExpose({ loadData })
   gap: $spacing-3;
 }
 
-.skeleton-header {
+// ① 顶部骨架
+.skeleton-top {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-3;
+}
+
+.skeleton-title-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-2;
+}
+
+.skeleton-badge {
+  width: 44px;
+  height: 22px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  @include skeleton-block;
+}
+
+// ② 标签骨架
+.skeleton-tags {
+  display: flex;
+  gap: $spacing-2;
+}
+
+.skeleton-tag {
+  width: 52px;
+  height: 18px;
+  border-radius: 10px;
+  @include skeleton-block;
+
+  &--sm { width: 36px; }
+}
+
+// ③ 底部骨架
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: $spacing-3;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.skeleton-user {
   display: flex;
   align-items: center;
   gap: $spacing-2;
 }
 
+.skeleton-right {
+  display: flex;
+  align-items: center;
+  gap: $spacing-3;
+}
+
 .skeleton-avatar {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   flex-shrink: 0;
   @include skeleton-block;
 }
 
-.skeleton-status {
-  margin-left: auto;
-  width: 48px;
-  height: 20px;
-  border-radius: $radius-base;
-  @include skeleton-block;
-}
-
-.skeleton-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: $spacing-1;
-}
-
-.skeleton-meta {
-  display: flex;
-  gap: $spacing-4;
-}
-
 .skeleton-btn {
-  width: 60px;
-  height: 26px;
-  border-radius: $radius-lg;
+  width: 52px;
+  height: 24px;
+  border-radius: $radius-md;
   @include skeleton-block;
 }
 
 .skeleton-line {
   @include skeleton-block;
 
-  &--name    { width: 64px;  height: 13px; }
-  &--dot     { width: 8px;   height: 13px; border-radius: 50%; }
-  &--time    { width: 48px;  height: 13px; }
+  &--name    { width: 52px;  height: 12px; }
+  &--time    { width: 44px;  height: 12px; }
   &--title   { width: 88%;   height: 16px; }
-  &--title-short { width: 60%; height: 16px; }
-  &--summary { width: 75%;   height: 13px; }
-  &--meta    { width: 36px;  height: 13px; }
+  &--title-short { width: 55%; height: 16px; }
+  &--meta    { width: 30px;  height: 12px; }
 }
 
 /* ========== 移动端适配 ========== */

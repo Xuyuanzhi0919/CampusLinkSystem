@@ -389,6 +389,7 @@ $charcoal: $gray-900;
     gap: 8px;
     justify-content: center;
     font-size: 11px;
+    padding: 4px 0;
   }
 
   @media (max-width: 480px) {

@@ -1799,22 +1799,18 @@ defineExpose({
   flex-direction: column;
 
   @include mobile {
-    // 移动端：统一边框容器包裹，卡片之间用分割线
-    background: $white;
-    border-radius: 12px;
-    border: 1px solid $gray-200;
-    overflow: hidden;
+    // 移动端：卡片之间 8px 间距，每张卡片独立圆角边框
+    gap: 8px;
     margin-bottom: 8px;
 
-    // 深层选择：让 QuestionCard 在移动端无独立阴影
     :deep(.question-card) {
       box-shadow: none !important;
-      border-radius: 0 !important;
+      border-radius: 12px !important;
       margin-bottom: 0 !important;
-      border-bottom: 1px solid $gray-100;
+      border: 1px solid $gray-200;
     }
 
-    // 分段分隔符在移动端隐藏（同时也是最后一个 child 时不影响末尾 border）
+    // 分段分隔符在移动端隐藏
     :deep(.section-divider) {
       display: none;
     }

@@ -444,10 +444,10 @@ defineExpose({ loadData })
   grid-template-columns: repeat(2, 1fr);
   gap: $spacing-6;
 
-  /* H5 移动端单列 */
+  /* H5 移动端双列，缩小间距 */
   /* #ifdef H5 */
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    gap: 10px;
   }
   /* #endif */
 
@@ -472,7 +472,7 @@ defineExpose({ loadData })
   gap: $spacing-6;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 

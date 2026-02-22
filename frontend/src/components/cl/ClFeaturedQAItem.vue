@@ -366,5 +366,80 @@ const handleCommentClick = () => emit('comment', props.question)
       }
     }
   }
+
+  /* ========== 移动端双列紧凑样式 ========== */
+  /* #ifdef H5 */
+  @media (max-width: 768px) {
+    padding: 10px;
+    gap: 7px;
+
+    &__header {
+      gap: $spacing-2;
+    }
+
+    &__user-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+    }
+
+    &__username {
+      font-size: 11px;
+    }
+
+    &__role {
+      display: none;
+    }
+
+    &__capsule {
+      font-size: 10px;
+      padding: 2px 6px;
+      height: auto;
+    }
+
+    &__title {
+      font-size: 13px;
+      -webkit-line-clamp: 2;
+    }
+
+    &__desc {
+      display: none;
+    }
+
+    &__tags {
+      display: none;
+    }
+
+    &__meta {
+      gap: 8px;
+      padding-top: 7px;
+      flex-wrap: wrap;
+    }
+
+    &__meta-item {
+      font-size: 10px;
+
+      /* 移动端只保留前两个 meta 项 */
+      &:nth-child(n+3) {
+        display: none;
+      }
+    }
+
+    &__actions {
+      gap: $spacing-2;
+    }
+
+    &__reward {
+      font-size: 10px;
+    }
+
+    &__btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  /* #endif */
 }
 </style>

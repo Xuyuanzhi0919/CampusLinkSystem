@@ -328,5 +328,70 @@ const handleDownloadClick = () => emit('download', props.resource)
       transform: scale(1.05);
     }
   }
+
+  /* ========== 移动端双列紧凑样式 ========== */
+  /* #ifdef H5 */
+  @media (max-width: 768px) {
+    padding: 10px;
+    gap: 7px;
+
+    &__header {
+      gap: $spacing-2;
+    }
+
+    &__icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    &__capsule {
+      font-size: 10px;
+      padding: 2px 6px;
+      height: auto;
+    }
+
+    &__title {
+      font-size: 13px;
+      -webkit-line-clamp: 2;
+    }
+
+    &__desc {
+      display: none;
+    }
+
+    &__tags {
+      display: none;
+    }
+
+    &__meta {
+      gap: 8px;
+      padding-top: 7px;
+      flex-wrap: wrap;
+    }
+
+    &__meta-item {
+      font-size: 10px;
+
+      &:nth-child(n+3) {
+        display: none;
+      }
+    }
+
+    &__actions {
+      gap: $spacing-2;
+    }
+
+    &__points {
+      font-size: 10px;
+    }
+
+    &__btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  /* #endif */
 }
 </style>

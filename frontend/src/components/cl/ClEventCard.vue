@@ -342,5 +342,70 @@ const handleRegisterClick = () => emit('register', props.event)
       box-shadow: 0 6rpx 20rpx rgba(39, 174, 96, 0.25);
     }
   }
+
+  /* ========== 移动端双列紧凑样式 ========== */
+  /* #ifdef H5 */
+  @media (max-width: 768px) {
+    padding: 10px;
+    gap: 7px;
+
+    &__header {
+      gap: $spacing-2;
+    }
+
+    &__icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    &__capsule {
+      font-size: 10px;
+      padding: 2px 6px;
+      height: auto;
+    }
+
+    &__title {
+      font-size: 13px;
+      -webkit-line-clamp: 2;
+    }
+
+    &__organizer {
+      font-size: 11px;
+    }
+
+    &__info {
+      gap: $spacing-1;
+    }
+
+    &__info-item {
+      font-size: 10px;
+
+      /* 移动端只保留时间，隐藏地点 */
+      &:nth-child(2) {
+        display: none;
+      }
+    }
+
+    &__meta {
+      gap: 8px;
+      padding-top: 7px;
+    }
+
+    &__meta-item {
+      font-size: 10px;
+
+      &:nth-child(2) {
+        display: none;
+      }
+    }
+
+    &__btn {
+      font-size: 11px;
+      padding: 5px 10px;
+      width: 100%;
+      justify-content: center;
+    }
+  }
+  /* #endif */
 }
 </style>

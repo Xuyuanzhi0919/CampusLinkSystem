@@ -65,11 +65,23 @@ export const ICONIFY_MAP: Record<string, string> = {
   'icon-home': 'lucide:home',
   'icon-compass': 'lucide:compass',
   'icon-bell': 'lucide:bell',
+  'icon-bell-off': 'lucide:bell-off',
   'icon-settings': 'lucide:settings',
   'icon-arrow-right': 'lucide:arrow-right',
   'icon-arrow-left': 'lucide:arrow-left',
+  'icon-arrow-up': 'lucide:arrow-up',
   'icon-chevron-right': 'lucide:chevron-right',
+  'icon-chevron-left': 'lucide:chevron-left',
   'icon-chevron-down': 'lucide:chevron-down',
+  'icon-more-vertical': 'lucide:more-vertical',
+  'icon-pencil': 'lucide:pencil',
+
+  // ========== 聊天图标 ==========
+  'icon-smile': 'lucide:smile',
+  'icon-image': 'lucide:image',
+  'icon-paperclip': 'lucide:paperclip',
+  'icon-mic': 'lucide:mic',
+  'icon-message-circle': 'lucide:message-circle',
 
   // ========== 状态图标 ==========
   'icon-success': 'lucide:check-circle',

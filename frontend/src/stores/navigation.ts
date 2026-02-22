@@ -34,7 +34,7 @@ export const useNavigationStore = defineStore('navigation', () => {
     { text: '首页', path: '/pages/home/index', icon: 'home', action: false },
     { text: '资源', path: '/pages/resource/index', icon: 'resource', action: false },
     { text: '发布', path: null, icon: 'publish', action: true },
-    { text: '社区', path: '/pages/community/index', icon: 'community', action: false },
+    { text: '问答', path: '/pages/question/index', icon: 'question', action: false },
     { text: '我的', path: '/pages/user/index', icon: 'user', action: false }
   ] as const
 

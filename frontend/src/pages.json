@@ -359,10 +359,10 @@
 				"text": "发布"
 			},
 			{
-				"pagePath": "pages/community/index",
+				"pagePath": "pages/question/index",
 				"iconPath": "static/tabbar/community.png",
 				"selectedIconPath": "static/tabbar/community-active.png",
-				"text": "社区"
+				"text": "问答"
 			},
 			{
 				"pagePath": "pages/user/index",

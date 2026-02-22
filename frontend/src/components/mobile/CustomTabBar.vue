@@ -55,15 +55,12 @@
                 </g>
               </template>
 
-              <!-- 社区图标 -->
+              <!-- 问答图标 -->
               <template v-else-if="index === 3">
                 <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="24" cy="12" r="6"/>
-                  <circle cx="12" cy="16" r="5"/>
-                  <circle cx="36" cy="16" r="5"/>
-                  <path d="M32 44c0-4.4-3.6-8-8-8s-8 3.6-8 8"/>
-                  <path d="M10 42c0-3.3 2.7-6 6-6h4"/>
-                  <path d="M38 42c0-3.3-2.7-6-6-6h-4"/>
+                  <path d="M8 6h32a2 2 0 0 1 2 2v22a2 2 0 0 1-2 2H16l-8 8V8a2 2 0 0 1 2-2z"/>
+                  <path d="M24 14v2"/>
+                  <circle cx="24" cy="22" r="1.5" fill="currentColor" stroke="none"/>
                 </g>
               </template>
 
@@ -158,7 +155,7 @@ const props = withDefaults(defineProps<{
 const navigationStore = useNavigationStore()
 
 // 使用统一导航 composable
-const { toHome, toResourceList, toCommunity, toUserCenter } = useNavigation()
+const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
 
 // Bottom Sheet 状态
 const showBottomSheet = ref(false)
@@ -204,7 +201,7 @@ const tabList = [
   { text: '首页', path: '/pages/home/index', action: false, handler: toHome },
   { text: '资源', path: '/pages/resource/index', action: false, handler: toResourceList },
   { text: '发布', path: null, action: true, handler: null },
-  { text: '社区', path: '/pages/community/index', action: false, handler: toCommunity },
+  { text: '问答', path: '/pages/question/index', action: false, handler: toQuestionList },
   { text: '我的', path: '/pages/user/index', action: false, handler: toUserCenter }
 ]
 

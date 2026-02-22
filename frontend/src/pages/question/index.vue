@@ -332,6 +332,9 @@
       </view>
     </view>
 
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
+
     <!-- PC端悬浮导航（仅 H5） -->
     <!-- #ifdef H5 -->
     <PCFloatingNav />
@@ -445,6 +448,16 @@ const hasMore = computed(() => storeHasMore.value)
 // 滚动相关
 const scrollTop = ref(0)
 const showBackToTop = ref(false)
+
+// 是否桌面端
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
 
 // 分类配置
 const categories: Array<{ label: string; value: string | null; icon: string; iconName: string }> = [

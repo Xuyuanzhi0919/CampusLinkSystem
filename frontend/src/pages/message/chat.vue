@@ -825,13 +825,37 @@ const handleGoBack = () => {
 }
 
 /**
- * 格式化时间
+ * 格式化时间：今天只显示 HH:MM，昨天显示"昨天 HH:MM"，
+ * 同年显示"M月D日 HH:MM"，跨年显示"YYYY/M/D HH:MM"
  */
 const formatTime = (dateStr: string): string => {
   const date = new Date(dateStr)
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  return `${hours}:${minutes}`
+  const now = new Date()
+  const hh = date.getHours().toString().padStart(2, '0')
+  const mm = date.getMinutes().toString().padStart(2, '0')
+  const timeStr = `${hh}:${mm}`
+
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+
+  if (isToday) return timeStr
+
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  const isYesterday =
+    date.getFullYear() === yesterday.getFullYear() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getDate() === yesterday.getDate()
+
+  if (isYesterday) return `昨天 ${timeStr}`
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}月${date.getDate()}日 ${timeStr}`
+  }
+
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${timeStr}`
 }
 
 /**

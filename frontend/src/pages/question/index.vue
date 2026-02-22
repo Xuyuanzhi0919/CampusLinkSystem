@@ -347,6 +347,7 @@ import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
+import { useNavigationStore } from '@/stores/navigation'
 import { questionSearchHistory } from '@/utils/searchHistory'
 import QuestionCard from './components/QuestionCard.vue'
 import RecommendSidebar from './components/RecommendSidebar.vue'
@@ -370,6 +371,7 @@ import { PCFloatingNav } from '@/components/desktop'
 
 // Store
 const questionStore = useQuestionStore()
+const navigationStore = useNavigationStore()
 
 // 数据状态 - 使用 storeToRefs 确保响应性
 const {
@@ -847,6 +849,7 @@ const isFirstShow = ref(true)
 onMounted(() => {
   loadQuestions(true)
   loadSearchHistory()
+  navigationStore.syncActivePath()
 
   // H5端监听窗口滚动事件
   // #ifdef H5

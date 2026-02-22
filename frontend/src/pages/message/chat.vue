@@ -863,7 +863,13 @@ const scrollToBottom = async () => {
  * 返回上一页
  */
 const handleGoBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack()
+  } else {
+    // 没有上一页（直接打开或刷新），跳回私信列表
+    uni.switchTab({ url: '/pages/message/index' })
+  }
 }
 
 /**

@@ -253,7 +253,9 @@
 
         <view class="modal-header">
           <text class="modal-title">筛选条件</text>
-          <text class="modal-close" @click="showFilterModal = false">✕</text>
+          <view class="modal-close" @click="showFilterModal = false">
+            <Icon name="x" :size="20" />
+          </view>
         </view>
 
         <view class="modal-body">
@@ -268,7 +270,7 @@
                 :class="{ selected: tempCategory === item.value }"
                 @click="tempCategory = item.value"
               >
-                <text class="option-icon">{{ item.icon }}</text>
+                <Icon :name="item.iconName" :size="15" class="option-icon-lucide" />
                 <text class="option-label">{{ item.label }}</text>
               </view>
             </view>
@@ -283,7 +285,7 @@
                 :class="{ selected: tempStatus === null }"
                 @click="tempStatus = null"
               >
-                <text class="option-icon">📋</text>
+                <Icon name="list" :size="15" class="option-icon-lucide" />
                 <text class="option-label">全部</text>
               </view>
               <view
@@ -291,7 +293,7 @@
                 :class="{ selected: tempStatus === 0 }"
                 @click="tempStatus = 0"
               >
-                <text class="option-icon">❓</text>
+                <Icon name="help-circle" :size="15" class="option-icon-lucide" />
                 <text class="option-label">未解决</text>
               </view>
               <view
@@ -299,7 +301,7 @@
                 :class="{ selected: tempStatus === 1 }"
                 @click="tempStatus = 1"
               >
-                <text class="option-icon">✅</text>
+                <Icon name="check-circle" :size="15" class="option-icon-lucide" />
                 <text class="option-label">已解决</text>
               </view>
             </view>
@@ -316,6 +318,7 @@
                 :class="{ selected: tempSortBy === item.value }"
                 @click="tempSortBy = item.value"
               >
+                <Icon :name="item.iconName" :size="15" class="option-icon-lucide" />
                 <text class="option-label">{{ item.label }}</text>
               </view>
             </view>
@@ -454,8 +457,11 @@ const categories: Array<{ label: string; value: string | null; icon: string; ico
 
 // 排序选项
 const sortOptions = [
-  { label: '回答数', value: 'answerCount' as const },
-  { label: '最新回答', value: 'lastAnswerTime' as const }
+  { label: '最新发布', value: 'created_at' as const, iconName: 'clock' },
+  { label: '浏览最多', value: 'views' as const, iconName: 'eye' },
+  { label: '悬赏最高', value: 'bounty' as const, iconName: 'award' },
+  { label: '回答数', value: 'answerCount' as const, iconName: 'message-square' },
+  { label: '最新回答', value: 'lastAnswerTime' as const, iconName: 'message-circle' }
 ]
 
 // 状态标签
@@ -2158,14 +2164,23 @@ defineExpose({
 }
 
 .modal-close {
-  font-size: 24px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: $gray-400;
-  line-height: 1;
+  border-radius: 8px;
   cursor: pointer;
-  transition: color 0.2s;
+  transition: all 0.2s;
 
   &:hover {
+    background: $gray-100;
     color: $gray-600;
+  }
+
+  &:active {
+    background: $gray-200;
   }
 }
 
@@ -2239,8 +2254,20 @@ defineExpose({
   }
 }
 
+// emoji 图标（已废弃，保留以防万一）
 .option-icon {
   font-size: 16px;
+}
+
+// Lucide 图标（用于筛选弹窗选项）
+.option-icon-lucide {
+  color: $gray-500;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.option-item.selected .option-icon-lucide {
+  color: $primary;
 }
 
 .option-label {

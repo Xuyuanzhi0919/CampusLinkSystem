@@ -356,6 +356,28 @@ defineExpose({ loadData })
   &--meta    { width: 36px;  height: 13px; }
 }
 
+/* ========== 移动端适配 ========== */
+/* #ifdef H5 */
+@media (max-width: 768px) {
+  .section-header {
+    margin-bottom: $spacing-4;
+    padding: 0;
+  }
+
+  .section-title {
+    font-size: $font-size-xl;
+  }
+
+  .section-subtitle {
+    font-size: $font-size-xs;
+  }
+
+  .questions-list {
+    gap: 8px;
+  }
+}
+/* #endif */
+
 .error-container,
 .empty-container {
   padding: $spacing-16;

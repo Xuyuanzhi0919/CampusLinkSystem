@@ -329,6 +329,8 @@ const handleCommentClick = () => emit('comment', props.question)
     border-radius: $radius-md;
     cursor: pointer;
     transition: $transition-all;
+    white-space: nowrap;
+    flex-shrink: 0;
 
     &:hover {
       background: rgba($campus-blue, 0.06);
@@ -339,5 +341,70 @@ const handleCommentClick = () => emit('comment', props.question)
       background: rgba($campus-blue, 0.1);
     }
   }
+
+  /* ========== 移动端紧凑样式 ========== */
+  /* #ifdef H5 */
+  @media (max-width: 768px) {
+    padding: 12px;
+    gap: 8px;
+
+    &__header {
+      gap: $spacing-2;
+    }
+
+    &__username {
+      max-width: 60px;
+      font-size: 11px;
+    }
+
+    &__time {
+      font-size: 11px;
+    }
+
+    &__status {
+      font-size: 10px;
+      padding: 2px 6px;
+      height: auto;
+    }
+
+    &__title {
+      font-size: 14px;
+      line-height: 1.4;
+      height: calc(14px * 1.4 * 2);
+      overflow: hidden;
+      margin-top: 0;
+    }
+
+    &__summary {
+      font-size: 11px;
+    }
+
+    &__footer {
+      padding-top: 8px;
+      margin-top: 0;
+      gap: $spacing-2;
+    }
+
+    &__meta {
+      gap: $spacing-4;
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__meta-item {
+      font-size: 11px;
+
+      /* 隐藏浏览量（最次要信息） */
+      &:first-child {
+        display: none;
+      }
+    }
+
+    &__cta {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+  }
+  /* #endif */
 }
 </style>

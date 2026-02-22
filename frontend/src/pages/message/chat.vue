@@ -3,7 +3,10 @@
     <!-- 顶部导航栏 -->
     <view class="nav-bar">
       <view class="nav-back" @click="handleGoBack">
-        <text class="back-icon">←</text>
+        <!-- Lucide: ChevronLeft -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
       </view>
       <view class="nav-center">
         <image
@@ -85,7 +88,16 @@
 
               <!-- 文件消息 -->
               <view v-else-if="message.msgType === MessageType.FILE" class="message-file" @click="handleDownloadFile(message.content)">
-                <view class="file-icon">📄</view>
+                <view class="file-icon">
+                  <!-- Lucide: FileText -->
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </view>
                 <view class="file-info">
                   <text class="file-name">{{ parseFileInfo(message.content).name }}</text>
                   <text class="file-size">{{ formatFileSize(parseFileInfo(message.content).size) }}</text>
@@ -115,44 +127,64 @@
       </view>
     </scroll-view>
 
-    <!-- 输入框 -->
+    <!-- 输入栏 -->
     <view class="input-bar">
-      <!-- 表情按钮 -->
-      <view class="emoji-btn" @click="handleToggleEmoji">
-        <text class="emoji-icon">{{ showEmojiPicker ? '⌨️' : '😀' }}</text>
+      <!-- 左侧工具区 -->
+      <view class="input-tools">
+        <!-- 表情 Lucide: Smile / Keyboard -->
+        <view class="tool-btn" @click="handleToggleEmoji">
+          <svg v-if="!showEmojiPicker" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+          <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>
+          </svg>
+        </view>
+
+        <!-- 图片 Lucide: Image -->
+        <view class="tool-btn" @click="handleChooseImage">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </view>
+
+        <!-- 文件 Lucide: Paperclip -->
+        <view class="tool-btn" @click="handleChooseFile">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </view>
       </view>
 
-      <!-- 图片按钮 -->
-      <view class="action-btn" @click="handleChooseImage">
-        <text class="action-icon">📷</text>
+      <!-- 输入框 + 发送按钮 -->
+      <view class="input-row">
+        <textarea
+          class="input-area"
+          v-model="inputContent"
+          placeholder="发送消息..."
+          :auto-height="true"
+          :maxlength="500"
+          :show-confirm-bar="false"
+          @focus="handleInputFocus"
+        />
+        <!-- 发送：Lucide SendHorizontal -->
+        <view
+          class="send-btn"
+          :class="{ 'send-btn--active': canSend }"
+          @click="handleSendMessage"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13"/>
+            <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+          </svg>
+        </view>
       </view>
-
-      <!-- 文件按钮 -->
-      <view class="action-btn" @click="handleChooseFile">
-        <text class="action-icon">📎</text>
-      </view>
-
-      <!-- 输入框 -->
-      <textarea
-        class="input-area"
-        v-model="inputContent"
-        placeholder="输入消息..."
-        :auto-height="true"
-        :maxlength="500"
-        :show-confirm-bar="false"
-        @focus="handleInputFocus"
-      />
-
-      <!-- 发送按钮 -->
-      <CButton
-        type="primary"
-        size="sm"
-        class="send-btn"
-        :disabled="!canSend"
-        @click="handleSendMessage"
-      >
-        发送
-      </CButton>
     </view>
 
     <!-- 表情选择器 -->
@@ -175,7 +207,6 @@ import type { Message } from '@/types/message'
 import { MessageType } from '@/types/message'
 import type { WebSocketMessage } from '@/composables/useWebSocket'
 import EmojiPicker from '@/components/EmojiPicker.vue'
-import CButton from '@/components/ui/CButton.vue'
 
 // 路由参数
 const otherUserId = ref<number>(0)
@@ -1001,10 +1032,8 @@ $accent:         #FF6B35;
   }
 }
 
-.back-icon {
-  font-size: 22px;
+.nav-back svg {
   color: $gray-700;
-  line-height: 1;
 }
 
 .nav-center {
@@ -1245,8 +1274,13 @@ $accent:         #FF6B35;
 }
 
 .file-icon {
-  font-size: 28px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .other-bubble & { color: $primary; }
+  .mine-bubble & { color: rgba(255, 255, 255, 0.9); }
 }
 
 .file-info {
@@ -1411,9 +1445,9 @@ $accent:         #FF6B35;
 
 .input-bar {
   display: flex;
-  align-items: flex-end;
+  flex-direction: column;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 10px 14px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(12px);
@@ -1422,53 +1456,84 @@ $accent:         #FF6B35;
   flex-shrink: 0;
 }
 
-.emoji-btn,
-.action-btn {
-  width: 38px;
-  height: 38px;
+// 工具栏（表情 / 图片 / 文件）
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tool-btn {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: $gray-100;
-  border-radius: 50%;
-  flex-shrink: 0;
+  border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
+  color: $gray-500;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 
   &:active {
-    background: $gray-200;
-    transform: scale(0.92);
+    background: $gray-100;
+    color: $primary;
+    transform: scale(0.9);
   }
 }
 
-.emoji-icon,
-.action-icon {
-  font-size: 20px;
-  line-height: 1;
+// 输入框 + 发送按钮横排
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .input-area {
   flex: 1;
-  min-height: 38px;
-  max-height: 100px;
-  padding: 8px 14px;
+  min-height: 40px;
+  max-height: 120px;
+  padding: 10px 14px;
   background: $gray-100;
-  border-radius: 19px;
+  border-radius: 20px;
   border: 1.5px solid transparent;
   font-size: 15px;
   color: $gray-800;
   line-height: 1.45;
-  transition: border-color 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
 
   &:focus {
-    border-color: rgba($primary, 0.4);
+    border-color: rgba($primary, 0.35);
     background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.06);
     outline: none;
   }
 }
 
+// 发送按钮：圆形图标
 .send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  background: $gray-200;
+  color: $gray-400;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+
+  // 有内容时激活
+  &--active {
+    background: linear-gradient(135deg, $primary, #1D4ED8);
+    color: $white;
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
+
+    &:active {
+      transform: scale(0.9);
+      box-shadow: 0 2px 6px rgba($primary, 0.25);
+    }
+  }
 }
 </style>

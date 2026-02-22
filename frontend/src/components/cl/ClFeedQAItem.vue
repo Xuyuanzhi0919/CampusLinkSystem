@@ -187,8 +187,8 @@ const handleCommentClick = () => emit('comment', props.question)
   @include card-base;
   display: flex;
   flex-direction: column;
-  gap: $spacing-3;
-  padding: $spacing-5;
+  gap: $spacing-4;
+  padding: $spacing-6;
   cursor: pointer;
   transition: $transition-all;
 
@@ -212,7 +212,7 @@ const handleCommentClick = () => emit('comment', props.question)
     font-size: 32rpx; // 16px
     font-weight: $font-weight-semibold;
     color: $color-text-primary;
-    line-height: 1.45;
+    line-height: 1.6;
     word-break: break-word;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -265,8 +265,8 @@ const handleCommentClick = () => emit('comment', props.question)
   &__adopted {
     display: flex;
     flex-direction: column;
-    gap: $spacing-1;
-    padding: $spacing-3 $spacing-4;
+    gap: $spacing-2;
+    padding: $spacing-4 $spacing-5;
     background: rgba(#10B981, 0.05);
     border-left: 2px solid #10B981;
     border-radius: 0 $radius-sm $radius-sm 0;
@@ -303,7 +303,7 @@ const handleCommentClick = () => emit('comment', props.question)
     align-items: center;
     justify-content: space-between;
     gap: $spacing-3;
-    padding-top: $spacing-3;
+    padding-top: $spacing-4;
     border-top: 1px solid $color-divider;
   }
 
@@ -413,7 +413,7 @@ const handleCommentClick = () => emit('comment', props.question)
     display: flex;
     align-items: center;
     gap: $spacing-1;
-    padding: 4px 12px;
+    padding: 5px 14px;
     font-size: $font-size-xs;
     font-weight: $font-weight-medium;
     color: $campus-blue;
@@ -438,12 +438,12 @@ const handleCommentClick = () => emit('comment', props.question)
   /* ========== 移动端紧凑样式 ========== */
   /* #ifdef H5 */
   @media (max-width: 768px) {
-    padding: 12px;
-    gap: 8px;
+    padding: 14px;
+    gap: 10px;
 
     &__title {
       font-size: 14px;
-      line-height: 1.4;
+      line-height: 1.5;
     }
 
     &__reward-badge {
@@ -472,7 +472,7 @@ const handleCommentClick = () => emit('comment', props.question)
     }
 
     &__footer {
-      padding-top: 8px;
+      padding-top: 10px;
       gap: $spacing-2;
     }
 

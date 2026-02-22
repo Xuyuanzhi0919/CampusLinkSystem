@@ -1484,23 +1484,25 @@ $accent:         #FF6B35;
 // 输入框 + 发送按钮横排
 .input-row {
   display: flex;
-  align-items: flex-end;
+  align-items: center;  // 始终垂直居中，单行/多行都对齐
   gap: 8px;
 }
 
 .input-area {
   flex: 1;
+  // 单行高度 = send-btn 40px，padding 上下各 9px，内容高 22px
   min-height: 40px;
   max-height: 120px;
-  padding: 10px 14px;
+  padding: 9px 14px;
   background: $gray-100;
   border-radius: 20px;
   border: 1.5px solid transparent;
   font-size: 15px;
   color: $gray-800;
-  line-height: 1.45;
+  line-height: 22px;  // 固定行高，配合 padding 使单行刚好 40px
   transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
   box-sizing: border-box;
+  vertical-align: middle;
 
   &:focus {
     border-color: rgba($primary, 0.35);
@@ -1510,7 +1512,7 @@ $accent:         #FF6B35;
   }
 }
 
-// 发送按钮：圆形图标
+// 发送按钮：圆形图标，固定 40px 与输入框单行等高
 .send-btn {
   width: 40px;
   height: 40px;

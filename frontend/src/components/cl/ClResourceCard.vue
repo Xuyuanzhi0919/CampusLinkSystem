@@ -57,9 +57,14 @@
 
     <!-- Action: 弱化按钮（outline 风格） -->
     <view class="featured-resource__actions">
-      <view class="featured-resource__points">
-        <ClIcon name="icon-coin" size="base" />
-        <text>{{ resource.points }} 积分</text>
+      <view class="featured-resource__points" :class="{ 'featured-resource__points--free': !resource.points }">
+        <template v-if="resource.points">
+          <ClIcon name="icon-coin" size="base" />
+          <text>{{ resource.points }} 积分</text>
+        </template>
+        <template v-else>
+          <text>免费</text>
+        </template>
       </view>
       <view class="featured-resource__btn featured-resource__btn--outline" @click.stop="handleDownloadClick">
         <ClIcon name="icon-download" size="base" />
@@ -281,7 +286,7 @@ const handleDownloadClick = () => emit('download', props.resource)
   &__actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: $spacing-4;
   }
 
@@ -290,8 +295,18 @@ const handleDownloadClick = () => emit('download', props.resource)
     align-items: center;
     gap: $spacing-2;
     font-size: $font-size-xs;
-    color: #F59E0B;
+    color: #D97706;
     font-weight: $font-weight-medium;
+    background: linear-gradient(135deg, rgba(#F59E0B, 0.12), rgba(#F59E0B, 0.06));
+    border: 1px solid rgba(#F59E0B, 0.25);
+    border-radius: 20px;
+    padding: 3px 10px;
+
+    &--free {
+      color: $color-success;
+      background: rgba($color-success, 0.08);
+      border-color: rgba($color-success, 0.25);
+    }
   }
 
   &__btn {

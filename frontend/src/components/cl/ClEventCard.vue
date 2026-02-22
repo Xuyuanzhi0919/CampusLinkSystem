@@ -38,15 +38,19 @@
       </view>
     </view>
 
-    <!-- Meta: 报名人数 + 浏览量 -->
+    <!-- Meta: 报名人数 + 剩余名额（替代无意义的浏览量） -->
     <view class="featured-event__meta">
       <view class="featured-event__meta-item">
         <ClIcon name="icon-user-group" size="base" />
         <text>{{ event.participants }} 人报名</text>
       </view>
-      <view class="featured-event__meta-item">
-        <ClIcon name="icon-eye" size="base" />
-        <text>{{ formatNumber(event.views) }}</text>
+      <view
+        v-if="event.remainingSlots !== undefined && !event.isEnded"
+        class="featured-event__meta-item"
+        :class="{ 'featured-event__meta-item--urgent': event.remainingSlots <= 10 }"
+      >
+        <ClIcon name="icon-fire" size="base" />
+        <text>仅剩 {{ event.remainingSlots }} 名额</text>
       </view>
     </view>
 
@@ -88,6 +92,7 @@ interface Event {
   endTime?: string
   location: string
   participants: number
+  remainingSlots?: number
   views: number
   isEnded: boolean
   isRegistering: boolean
@@ -196,7 +201,7 @@ const handleRegisterClick = () => emit('register', props.event)
     align-items: center;
     justify-content: center;
     border-radius: $radius-lg;
-    box-shadow: 0 4rpx 16rpx rgba(39, 174, 96, 0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: $transition-all;
   }
 
@@ -272,6 +277,11 @@ const handleRegisterClick = () => emit('register', props.event)
     gap: $meta-gap;
     font-size: $font-size-xs;
     color: $color-text-tertiary;
+
+    &--urgent {
+      color: #EF4444;
+      font-weight: $font-weight-medium;
+    }
   }
 
   /* ========== Actions ========== */
@@ -317,21 +327,19 @@ const handleRegisterClick = () => emit('register', props.event)
     }
   }
 
-  /* 已结束状态 */
+  /* 已结束状态：只灰化色条和图标，文字保持正常避免整体过"死" */
   &--ended {
     .featured-event__type-bar {
-      background: linear-gradient(90deg, $color-text-tertiary 0%, #C5CAD1 100%);  // lighten($color-text-tertiary, 20%)
-    }
-
-    .featured-event__title,
-    .featured-event__organizer,
-    .featured-event__info-item {
-      opacity: 0.6;
+      background: linear-gradient(90deg, $color-text-tertiary 0%, #C5CAD1 100%);
     }
 
     .featured-event__icon {
-      filter: grayscale(40%);
-      opacity: 0.7;
+      filter: grayscale(60%);
+      opacity: 0.6;
+    }
+
+    .featured-event__title {
+      color: $color-text-secondary;
     }
   }
 

@@ -40,7 +40,7 @@
       </view>
     </view>
 
-    <!-- Meta: 统一图标尺寸 + 增大间距 -->
+    <!-- Meta: 浏览/评论/点赞（去掉冗余时间项） -->
     <view class="featured-qa__meta">
       <view class="featured-qa__meta-item">
         <ClIcon name="icon-eye" size="base" />
@@ -54,18 +54,15 @@
         <ClIcon name="icon-heart" size="base" />
         <text>{{ formatNumber(question.likes) }}</text>
       </view>
-      <view class="featured-qa__meta-item">
-        <ClIcon name="icon-time" size="base" />
-        <text>{{ formatTime(question.createdAt) }}</text>
-      </view>
     </view>
 
-    <!-- Action: 弱化按钮（outline 风格） -->
+    <!-- Action: 左侧悬赏积分 + 右侧按钮，左右分离 -->
     <view class="featured-qa__actions">
       <view v-if="question.rewardPoints" class="featured-qa__reward">
         <ClIcon name="icon-coin" size="base" />
         <text>悬赏 {{ question.rewardPoints }} 积分</text>
       </view>
+      <view v-else class="featured-qa__spacer" />
       <view class="featured-qa__btn featured-qa__btn--outline" @click.stop="handleAnswerClick">
         <ClIcon name="icon-edit" size="base" />
         <text>回答问题</text>
@@ -291,10 +288,11 @@ const handleCommentClick = () => emit('comment', props.question)
 
   &__tag {
     font-size: $font-size-xs;
-    color: $color-text-tertiary;
+    color: $campus-blue;
     padding: $spacing-1 $spacing-3;
-    background: $color-bg-hover;
-    border-radius: $radius-sm;
+    background: rgba($campus-blue, 0.07);
+    border-radius: 10px;
+    font-weight: $font-weight-medium;
   }
 
   /* ========== Meta ========== */
@@ -327,8 +325,12 @@ const handleCommentClick = () => emit('comment', props.question)
   &__actions {
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: $spacing-4;
+  }
+
+  &__spacer {
+    flex: 1;
   }
 
   &__reward {
@@ -336,8 +338,12 @@ const handleCommentClick = () => emit('comment', props.question)
     align-items: center;
     gap: $spacing-2;
     font-size: $font-size-xs;
-    color: #F59E0B;
+    color: #D97706;
     font-weight: $font-weight-medium;
+    background: linear-gradient(135deg, rgba(#F59E0B, 0.12), rgba(#F59E0B, 0.06));
+    border: 1px solid rgba(#F59E0B, 0.25);
+    border-radius: 20px;
+    padding: 3px 10px;
   }
 
   &__btn {

@@ -250,6 +250,7 @@ const transformToEvent = (item: any) => {
     endTime: item.endTime || '',
     location: item.location || '待定',
     participants: item.currentParticipants || 0,
+    remainingSlots: item.remainingSlots ?? item.maxParticipants - item.currentParticipants ?? undefined,
     views: item.viewCount || 0,
     isEnded: false,
     isRegistering: isRegistering

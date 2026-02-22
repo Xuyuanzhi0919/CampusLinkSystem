@@ -132,48 +132,72 @@ const loading = ref(true)
 const hasError = ref(false)
 const featuredList = ref<any[]>([])
 
+// Fisher-Yates 洗牌，从数组中随机取 n 条
+const randomPick = <T>(arr: T[], n: number): T[] => {
+  const pool = [...arr]
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]]
+  }
+  return pool.slice(0, n)
+}
+
 // 加载混合推荐内容
+// 策略：
+//   问答  — 按浏览量 取前20，再按悬赏量 取前20，合并去重后随机抽2条，保证热度+价值兼顾
+//   资源  — 按下载量 取前20，随机抽2条
+//   活动  — 取最近进行中的活动（最多6条过滤后随机抽最多2条）
+//   每次进入页面重新随机，刷新可见不同内容
 const loadData = async () => {
   try {
     loading.value = true
     hasError.value = false
 
-    // 并行加载问答、资源、活动数据（使用正确的 API 参数）
     const now = new Date()
-    const [questionsRes, resourcesRes, activitiesRes] = await Promise.all([
-      getQuestionList({ page: 1, pageSize: 2 }).catch((err) => {
-        console.error('[FeaturedSection] 问答列表加载失败:', err)
-        return { list: [] }
-      }),
-      getResourceList({ page: 1, pageSize: 2 }).catch((err) => {
-        console.error('[FeaturedSection] 资源列表加载失败:', err)
-        return { list: [] }
-      }),
-      // 多请求一些，过滤后保证有足够数量
-      getActivityList({ page: 1, pageSize: 6 }).catch((err) => {
-        console.error('[FeaturedSection] 活动列表加载失败:', err)
-        return { list: [] }
-      })
+
+    // 并行拉取候选池（取更多条用于随机）
+    const [hotQuestionsRes, bountyQuestionsRes, resourcesRes, activitiesRes] = await Promise.all([
+      // 热门问答：按浏览量降序
+      getQuestionList({ page: 1, pageSize: 20, sortBy: 'views', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      // 高悬赏问答：按悬赏降序
+      getQuestionList({ page: 1, pageSize: 20, sortBy: 'bounty', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      // 高下载资源：按下载量降序
+      getResourceList({ page: 1, pageSize: 20, sortBy: 'downloads', sortOrder: 'desc' }).catch(() => ({ list: [] })),
+      // 活动：多取一些以便过滤
+      getActivityList({ page: 1, pageSize: 10 }).catch(() => ({ list: [] }))
     ])
 
-    // 按类型分组，固定交替顺序：问答 → 资源 → 活动 → 问答
-    const questions = (questionsRes.list || []).map((item: any) => ({ ...item, type: 'question' }))
-    const resources = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
-    // 过滤掉已结束（status=2/3）和 endTime 已过期的活动
-    const activities = (activitiesRes.list || [])
+    // 问答候选池：合并热门+高悬赏，按 qid 去重，随机抽2条
+    const seenQids = new Set<number>()
+    const questionPool: any[] = []
+    for (const item of [...(hotQuestionsRes.list || []), ...(bountyQuestionsRes.list || [])]) {
+      const id = item.qid || item.questionId || item.id
+      if (!seenQids.has(id)) {
+        seenQids.add(id)
+        questionPool.push({ ...item, type: 'question' })
+      }
+    }
+    const questions = randomPick(questionPool, 2)
+
+    // 资源候选池：随机抽2条
+    const resourcePool = (resourcesRes.list || []).map((item: any) => ({ ...item, type: 'resource' }))
+    const resources = randomPick(resourcePool, 2)
+
+    // 活动：过滤已结束，随机抽最多2条
+    const activityPool = (activitiesRes.list || [])
       .filter((item: any) => {
         if (item.status === 2 || item.status === 3) return false
         if (item.endTime && new Date(item.endTime) < now) return false
         return true
       })
-      .slice(0, 2)
       .map((item: any) => ({ ...item, type: 'activity' }))
+    const activities = randomPick(activityPool, 2)
 
-    // 交替插入，保证同类型卡片不连续，最多取 4 条
+    // 交替合并：问答 → 资源 → 活动，保证类型不连续，最多4条
     const interleaved: any[] = []
     const maxLen = Math.max(questions.length, resources.length, activities.length)
     for (let i = 0; i < maxLen && interleaved.length < 4; i++) {
-      if (questions[i]) interleaved.push(questions[i])
+      if (questions[i])                           interleaved.push(questions[i])
       if (interleaved.length < 4 && resources[i]) interleaved.push(resources[i])
       if (interleaved.length < 4 && activities[i]) interleaved.push(activities[i])
     }

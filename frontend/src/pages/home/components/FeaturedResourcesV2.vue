@@ -12,35 +12,32 @@
       </view>
     </view>
 
-    <!-- Loading State：骨架屏，结构完全对应 ClResourceCard 四区块 -->
-    <view v-if="loading" class="skeleton-grid">
+    <!-- Loading State：骨架屏，横向布局匹配 ClResourceCard -->
+    <view v-if="loading" class="skeleton-list">
       <view v-for="i in 4" :key="i" class="skeleton-card">
-        <!-- 顶部色条（绝对定位） -->
-        <view class="skeleton-top-bar"></view>
-        <!-- Header：图标 + 上传者 + 胶囊 -->
-        <view class="skeleton-header">
-          <view class="skeleton-icon-wrap">
-            <view class="skeleton-file-icon"></view>
-            <view class="skeleton-line skeleton-line--name"></view>
-          </view>
-          <view class="skeleton-capsule"></view>
+        <!-- 左侧图标区 -->
+        <view class="skeleton-aside">
+          <view class="skeleton-file-icon"></view>
+          <view class="skeleton-type-badge"></view>
         </view>
-        <!-- Body：标题 + 描述 -->
-        <view class="skeleton-body">
-          <view class="skeleton-line skeleton-line--title"></view>
-          <view class="skeleton-line skeleton-line--title-short"></view>
+        <!-- 右侧内容区 -->
+        <view class="skeleton-main">
+          <!-- 顶部：标题 + 积分徽章 -->
+          <view class="skeleton-top">
+            <view class="skeleton-line skeleton-line--title"></view>
+            <view class="skeleton-points"></view>
+          </view>
+          <!-- 描述 -->
           <view class="skeleton-line skeleton-line--desc"></view>
           <view class="skeleton-line skeleton-line--desc-short"></view>
-        </view>
-        <!-- Meta -->
-        <view class="skeleton-meta">
-          <view class="skeleton-line skeleton-line--meta"></view>
-          <view class="skeleton-line skeleton-line--meta"></view>
-        </view>
-        <!-- Actions -->
-        <view class="skeleton-actions">
-          <view class="skeleton-points"></view>
-          <view class="skeleton-btn"></view>
+          <!-- 底部 footer -->
+          <view class="skeleton-footer">
+            <view class="skeleton-meta">
+              <view class="skeleton-line skeleton-line--meta"></view>
+              <view class="skeleton-line skeleton-line--meta"></view>
+            </view>
+            <view class="skeleton-btn"></view>
+          </view>
         </view>
       </view>
     </view>
@@ -273,104 +270,95 @@ defineExpose({ loadData })
   border-radius: $radius-sm;
 }
 
-/* 骨架屏：单列列表 */
-.skeleton-grid {
+/* 骨架屏：单列横向卡片列表 */
+.skeleton-list {
   display: flex;
   flex-direction: column;
   gap: $spacing-4;
 }
 
-/* 骨架屏卡片：四区块结构，对应 ClResourceCard */
 .skeleton-card {
-  position: relative;
   background: $color-bg-card;
   border-radius: $card-radius;
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  box-shadow: $shadow-base;
+  border: 1px solid $card-border;
+  box-shadow: $card-shadow;
   overflow: hidden;
   display: flex;
+  flex-direction: row;
+  min-height: 100px;
+}
+
+/* 左侧图标区 */
+.skeleton-aside {
+  flex-shrink: 0;
+  width: 88px;
+  background: #F8F8F8;
+  display: flex;
   flex-direction: column;
-  gap: $featured-card-gap;
-  padding: $featured-card-padding;
-  padding-top: calc(#{$featured-card-padding} + 4px);
-}
-
-/* 顶部色条（绝对定位） */
-.skeleton-top-bar {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: #EBEBEB;
-  border-radius: $card-radius $card-radius 0 0;
-}
-
-/* Header：图标+上传者 + 胶囊（对应问答卡片 header） */
-.skeleton-header {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: $spacing-4;
-}
-
-.skeleton-icon-wrap {
-  display: flex;
-  align-items: center;
+  justify-content: center;
   gap: $spacing-3;
-  flex: 1;
-  min-width: 0;
+  padding: $spacing-4 0;
 }
 
 .skeleton-file-icon {
-  flex-shrink: 0;
   width: 32px;
   height: 32px;
   border-radius: $radius-base;
   @include skeleton-block;
 }
 
-.skeleton-capsule {
-  flex-shrink: 0;
-  width: 40px;
-  height: 22px;
-  border-radius: $capsule-tag-radius;
+.skeleton-type-badge {
+  width: 36px;
+  height: 18px;
+  border-radius: 6px;
   @include skeleton-block;
 }
 
-/* Body：标题 + 描述（flex:1 撑满） */
-.skeleton-body {
+/* 右侧内容区 */
+.skeleton-main {
+  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  gap: $spacing-2;
+  padding: $spacing-5 $spacing-6 $spacing-5 $spacing-5;
+  border-left: 1px solid $color-divider;
+}
+
+/* 顶部：标题 + 积分 */
+.skeleton-top {
+  display: flex;
+  align-items: flex-start;
   gap: $spacing-3;
-  flex: 1;
-}
-
-/* Meta：分隔线上方数据行 */
-.skeleton-meta {
-  display: flex;
-  gap: $meta-item-gap;
-  padding-top: $spacing-3;
-  border-top: 1px solid $color-divider;
-}
-
-/* Actions：积分 + 按钮，左右分离 */
-.skeleton-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .skeleton-points {
-  width: 64px;
-  height: 24px;
+  flex-shrink: 0;
+  width: 52px;
+  height: 22px;
   border-radius: 20px;
   @include skeleton-block;
 }
 
+/* 底部 footer */
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: $spacing-3;
+  border-top: 1px solid $color-divider;
+}
+
+.skeleton-meta {
+  display: flex;
+  gap: $spacing-5;
+}
+
 .skeleton-btn {
-  width: 64px;
-  height: 30px;
+  width: 60px;
+  height: 28px;
   border-radius: $radius-lg;
   @include skeleton-block;
 }
@@ -378,12 +366,10 @@ defineExpose({ loadData })
 .skeleton-line {
   @include skeleton-block;
 
-  &--name        { flex: 1; height: 13px; }
-  &--title       { width: 90%; height: 16px; }
-  &--title-short { width: 65%; height: 16px; }
-  &--desc        { width: 100%; height: 13px; }
-  &--desc-short  { width: 70%; height: 13px; }
-  &--meta        { width: 32px; height: 13px; }
+  &--title      { flex: 1; height: 15px; }
+  &--desc       { width: 100%; height: 13px; }
+  &--desc-short { width: 65%; height: 13px; }
+  &--meta       { width: 32px; height: 12px; }
 }
 
 .error-container,

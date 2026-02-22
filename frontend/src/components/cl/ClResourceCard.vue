@@ -1,68 +1,57 @@
 <template>
-  <view class="featured-resource" @click="handleCardClick">
-    <!-- 顶部类型色条（绝对定位，同问答卡片） -->
-    <view class="featured-resource__type-bar" :style="{ background: fileTypeConfig.color }"></view>
-
-    <!-- Header：文件图标 + 文件类型胶囊（对应问答的用户头像+角色+推荐胶囊） -->
-    <view class="featured-resource__header">
-      <view class="featured-resource__icon-wrap">
-        <view class="featured-resource__icon" :style="{ background: fileTypeConfig.bgColor }">
-          <ClIcon :name="fileTypeConfig.icon" size="md" :color="fileTypeConfig.color" />
-        </view>
-        <view class="featured-resource__uploader">
-          <text class="featured-resource__uploader-text">学习资料</text>
-        </view>
-      </view>
-      <view class="featured-resource__capsule">
+  <view class="res-card" @click="handleCardClick">
+    <!-- 左侧：文件图标区 -->
+    <view class="res-card__aside" :style="{ background: fileTypeConfig.bgColor }">
+      <ClIcon :name="fileTypeConfig.icon" size="xl" :color="fileTypeConfig.color" />
+      <view class="res-card__type-badge" :style="{ color: fileTypeConfig.color, borderColor: fileTypeConfig.color }">
         {{ getFileTypeName(resource.fileType) }}
       </view>
     </view>
 
-    <!-- Body：标题 + 描述 + 标签（结构完全对应问答卡片 body） -->
-    <view class="featured-resource__body">
-      <view class="featured-resource__title">{{ resource.title }}</view>
-
-      <view v-if="resource.description" class="featured-resource__desc">
-        {{ resource.description }}
-      </view>
-
-      <view v-if="resource.tags && resource.tags.length > 0" class="featured-resource__tags">
-        <view v-for="(tag, i) in resource.tags.slice(0, 3)" :key="i" class="featured-resource__tag">
-          {{ tag }}
+    <!-- 右侧：内容区 -->
+    <view class="res-card__main">
+      <!-- 标题 + 积分徽章 -->
+      <view class="res-card__top">
+        <view class="res-card__title">{{ resource.title }}</view>
+        <view class="res-card__points" :class="{ 'res-card__points--free': !resource.points }">
+          <template v-if="resource.points">
+            <ClIcon name="icon-coin" size="sm" />
+            <text>{{ resource.points }}</text>
+          </template>
+          <template v-else>
+            <text>免费</text>
+          </template>
         </view>
       </view>
-    </view>
 
-    <!-- Meta（对应问答卡片 meta，分隔线 + 数据行） -->
-    <view class="featured-resource__meta">
-      <view class="featured-resource__meta-item">
-        <ClIcon name="icon-download" size="base" />
-        <text>{{ formatNumber(resource.downloads) }}</text>
-      </view>
-      <view v-if="resource.favorites" class="featured-resource__meta-item featured-resource__meta-item--favorites">
-        <ClIcon name="icon-star" size="base" />
-        <text>{{ formatNumber(resource.favorites) }}</text>
-      </view>
-      <view v-if="resource.rating" class="featured-resource__meta-item featured-resource__meta-item--rating">
-        <ClIcon name="icon-fire" size="base" />
-        <text>{{ resource.rating.toFixed(1) }}</text>
-      </view>
-    </view>
+      <!-- 描述 -->
+      <view v-if="resource.description" class="res-card__desc">{{ resource.description }}</view>
 
-    <!-- Actions：积分左、下载按钮右（对应问答卡片的悬赏+回答按钮） -->
-    <view class="featured-resource__actions">
-      <view class="featured-resource__points" :class="{ 'featured-resource__points--free': !resource.points }">
-        <template v-if="resource.points">
-          <ClIcon name="icon-coin" size="base" />
-          <text>{{ resource.points }} 积分</text>
-        </template>
-        <template v-else>
-          <text>免费</text>
-        </template>
+      <!-- 标签 -->
+      <view v-if="resource.tags && resource.tags.length" class="res-card__tags">
+        <view v-for="(tag, i) in resource.tags.slice(0, 3)" :key="i" class="res-card__tag">{{ tag }}</view>
       </view>
-      <view class="featured-resource__btn" @click.stop="handleDownloadClick">
-        <ClIcon name="icon-download" size="base" />
-        <text>下载</text>
+
+      <!-- 底部：meta + 下载按钮 -->
+      <view class="res-card__footer">
+        <view class="res-card__meta">
+          <view class="res-card__meta-item">
+            <ClIcon name="icon-download" size="sm" />
+            <text>{{ formatNumber(resource.downloads) }}</text>
+          </view>
+          <view v-if="resource.favorites" class="res-card__meta-item res-card__meta-item--fav">
+            <ClIcon name="icon-star" size="sm" />
+            <text>{{ formatNumber(resource.favorites) }}</text>
+          </view>
+          <view v-if="resource.rating" class="res-card__meta-item res-card__meta-item--rating">
+            <ClIcon name="icon-fire" size="sm" />
+            <text>{{ resource.rating.toFixed(1) }}</text>
+          </view>
+        </view>
+        <view class="res-card__btn" @click.stop="handleDownloadClick">
+          <ClIcon name="icon-download" size="sm" />
+          <text>下载</text>
+        </view>
       </view>
     </view>
   </view>
@@ -87,11 +76,7 @@ interface Resource {
   points: number
 }
 
-interface Props {
-  resource: Resource
-}
-
-const props = defineProps<Props>()
+const props = defineProps<{ resource: Resource }>()
 
 const emit = defineEmits<{
   click: [resource: Resource]
@@ -101,13 +86,13 @@ const emit = defineEmits<{
 const fileTypeConfig = computed(() => {
   const config = getFileTypeIcon(props.resource.fileType)
   const colorMap: Record<string, { color: string; bgColor: string }> = {
-    '#E74C3C': { color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.08)' },
-    '#2B579A': { color: '#2B579A', bgColor: 'rgba(43, 87, 154, 0.08)' },
-    '#D24726': { color: '#D24726', bgColor: 'rgba(210, 71, 38, 0.08)' },
-    '#1D6F42': { color: '#1D6F42', bgColor: 'rgba(29, 111, 66, 0.08)' },
-    '#F39C12': { color: '#F39C12', bgColor: 'rgba(243, 156, 18, 0.08)' },
-    '#7F8C8D': { color: '#7F8C8D', bgColor: 'rgba(127, 140, 141, 0.08)' },
-    '#95A5A6': { color: '#95A5A6', bgColor: 'rgba(149, 165, 166, 0.08)' }
+    '#E74C3C': { color: '#E74C3C', bgColor: 'rgba(231, 76, 60, 0.06)' },
+    '#2B579A': { color: '#2B579A', bgColor: 'rgba(43, 87, 154, 0.06)' },
+    '#D24726': { color: '#D24726', bgColor: 'rgba(210, 71, 38, 0.06)' },
+    '#1D6F42': { color: '#1D6F42', bgColor: 'rgba(29, 111, 66, 0.06)' },
+    '#F39C12': { color: '#F39C12', bgColor: 'rgba(243, 156, 18, 0.06)' },
+    '#7F8C8D': { color: '#7F8C8D', bgColor: 'rgba(127, 140, 141, 0.06)' },
+    '#95A5A6': { color: '#95A5A6', bgColor: 'rgba(149, 165, 166, 0.06)' }
   }
   const theme = colorMap[config.color] || colorMap['#95A5A6']
   return { icon: config.icon, color: theme.color, bgColor: theme.bgColor }
@@ -136,162 +121,151 @@ const handleDownloadClick = () => emit('download', props.resource)
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
-.featured-resource {
-  @include featured-card-base;
+.res-card {
+  @include card-base;
+  flex-direction: row;
+  padding: 0;
+  gap: 0;
+  overflow: hidden;
   cursor: pointer;
+  min-height: 100px;
 
-  /* 顶部类型色条（绝对定位） */
-  &__type-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4rpx;
-    border-radius: $card-radius $card-radius 0 0;
-  }
-
-  /* ========== Header（对应问答卡片：用户行+胶囊） ========== */
-  &__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $spacing-4;
-    padding-top: $spacing-2;
-  }
-
-  &__icon-wrap {
-    display: flex;
-    align-items: center;
-    gap: $spacing-3;
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__icon {
+  /* ========== 左侧图标区 ========== */
+  &__aside {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: 88px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    border-radius: $radius-base;
+    gap: $spacing-3;
+    padding: $spacing-4 0;
     transition: $transition-all;
   }
 
-  &:hover &__icon {
-    transform: scale(1.05);
+  &:hover &__aside {
+    filter: brightness(0.96);
   }
 
-  &__uploader {
+  /* 文件类型徽标 */
+  &__type-badge {
+    font-size: 10px;
+    font-weight: $font-weight-bold;
+    padding: 2px 7px;
+    border: 1px solid currentColor;
+    border-radius: 6px;
+    opacity: 0.85;
+    letter-spacing: 0.5px;
+  }
+
+  /* ========== 右侧内容区 ========== */
+  &__main {
     flex: 1;
     min-width: 0;
-  }
-
-  &__uploader-text {
-    font-size: $font-size-sm;
-    font-weight: $font-weight-medium;
-    color: $color-text-secondary;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* 文件类型胶囊（对应问答卡片的 AI推荐/热门胶囊） */
-  &__capsule {
-    flex-shrink: 0;
-    display: inline-flex;
-    align-items: center;
-    height: $capsule-tag-height;
-    padding: $capsule-tag-padding;
-    border-radius: $capsule-tag-radius;
-    font-size: $capsule-tag-font-size;
-    font-weight: $font-weight-medium;
-    color: $campus-blue;
-    background: rgba($campus-blue, 0.1);
-  }
-
-  /* ========== Body（标题 + 描述 + 标签，flex:1 撑开） ========== */
-  &__body {
     display: flex;
     flex-direction: column;
+    gap: $spacing-2;
+    padding: $spacing-5 $spacing-6 $spacing-5 $spacing-5;
+    border-left: 1px solid $color-divider;
+  }
+
+  /* 顶部：标题 + 积分徽章 */
+  &__top {
+    display: flex;
+    align-items: flex-start;
     gap: $spacing-3;
-    flex: 1;
   }
 
   &__title {
-    @include card-title;
+    flex: 1;
+    min-width: 0;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
+  /* 积分/免费徽章 */
+  &__points {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 11px;
+    font-weight: $font-weight-semibold;
+    color: #D97706;
+    background: linear-gradient(135deg, rgba(#F59E0B, 0.12), rgba(#F59E0B, 0.05));
+    border: 1px solid rgba(#F59E0B, 0.3);
+    border-radius: 20px;
+    padding: 3px 8px;
+    white-space: nowrap;
+
+    &--free {
+      color: $color-success;
+      background: rgba($color-success, 0.08);
+      border-color: rgba($color-success, 0.3);
+    }
+  }
+
+  /* 描述 */
   &__desc {
-    @include card-desc;
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
+  /* 标签 */
   &__tags {
     display: flex;
-    align-items: center;
     gap: $spacing-2;
     flex-wrap: wrap;
-    margin-top: $spacing-1;
   }
 
   &__tag {
     font-size: $font-size-xs;
     color: $campus-blue;
-    padding: $spacing-1 $spacing-3;
     background: rgba($campus-blue, 0.07);
-    border-radius: 10px;
+    border-radius: 8px;
+    padding: 2px $spacing-3;
     font-weight: $font-weight-medium;
   }
 
-  /* ========== Meta（分隔线 + 数据行） ========== */
+  /* 底部：meta + 下载按钮 */
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: $spacing-3;
+    border-top: 1px solid $color-divider;
+  }
+
   &__meta {
     display: flex;
     align-items: center;
-    gap: $meta-item-gap;
-    padding-top: $spacing-3;
-    border-top: 1px solid $color-divider;
+    gap: $spacing-5;
   }
 
   &__meta-item {
     display: flex;
     align-items: center;
-    gap: $meta-gap;
+    gap: $spacing-1;
     font-size: $font-size-xs;
     color: $color-text-tertiary;
 
-    &--favorites { color: #F59E0B; }
-    &--rating    { color: #EF4444; }
+    &--fav    { color: #F59E0B; }
+    &--rating { color: #EF4444; }
   }
 
-  /* ========== Actions（积分左、下载按钮右） ========== */
-  &__actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: $spacing-4;
-  }
-
-  /* 积分/免费徽章（对应问答卡片的悬赏徽章） */
-  &__points {
-    display: inline-flex;
-    align-items: center;
-    gap: $spacing-2;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-medium;
-    color: #D97706;
-    background: linear-gradient(135deg, rgba(#F59E0B, 0.12), rgba(#F59E0B, 0.06));
-    border: 1px solid rgba(#F59E0B, 0.25);
-    border-radius: 20px;
-    padding: 3px 10px;
-
-    &--free {
-      color: $color-success;
-      background: rgba($color-success, 0.08);
-      border-color: rgba($color-success, 0.25);
-    }
-  }
-
-  /* 下载按钮（outline 风格，同问答卡片 CTA） */
+  /* 下载按钮 */
   &__btn {
     display: inline-flex;
     align-items: center;
@@ -306,89 +280,59 @@ const handleDownloadClick = () => emit('download', props.resource)
     color: $campus-blue;
     border: 1px solid $campus-blue;
 
-    &:hover { background: $campus-blue-lighter; }
+    &:hover  { background: $campus-blue-lighter; }
     &:active { background: #E5EFFF; }
   }
 
-  /* ========== 移动端双列紧凑样式（完全同问答卡片策略） ========== */
+  /* ========== 移动端 ========== */
   /* #ifdef H5 */
   @media (max-width: 768px) {
-    padding: 10px;
-    gap: 6px;
-    display: flex;
-    flex-direction: column;
+    min-height: 84px;
 
-    &__header {
+    &__aside {
+      width: 68px;
       gap: $spacing-2;
-      flex-shrink: 0;
     }
 
-    &__icon {
-      width: 28px;
-      height: 28px;
+    &__type-badge {
+      font-size: 9px;
+      padding: 1px 5px;
     }
 
-    &__uploader-text {
-      font-size: 12px;
-    }
-
-    &__capsule {
-      font-size: 10px;
-      padding: 2px 6px;
-      height: auto;
-    }
-
-    /* body 撑满剩余空间，让 meta/actions 贴底 */
-    &__body {
-      flex: 1;
-      gap: 5px;
+    &__main {
+      padding: $spacing-4 $spacing-4 $spacing-4 $spacing-4;
+      gap: $spacing-2;
     }
 
     &__title {
-      font-size: 13px;
-      line-height: 1.4;
+      font-size: $font-size-sm;
       -webkit-line-clamp: 2;
-      /* 固定 2 行高度，短标题也占满 */
-      height: calc(13px * 1.4 * 2);
-      overflow: hidden;
-    }
-
-    /* 隐藏描述和标签 */
-    &__desc  { display: none; }
-    &__tags  { display: none; }
-
-    &__meta {
-      gap: 6px;
-      padding-top: 6px;
-      flex-shrink: 0;
-    }
-
-    &__meta-item {
-      font-size: 10px;
-
-      /* 只保留前 2 个 */
-      &:nth-child(n+3) { display: none; }
-    }
-
-    &__actions {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 5px;
-      flex-shrink: 0;
     }
 
     &__points {
       font-size: 10px;
-      justify-content: center;
-      border-radius: 6px;
-      padding: 3px 8px;
+      padding: 2px 6px;
+    }
+
+    &__desc { display: none; }
+    &__tags { display: none; }
+
+    &__footer {
+      padding-top: $spacing-2;
+    }
+
+    &__meta {
+      gap: $spacing-3;
+    }
+
+    &__meta-item {
+      font-size: 10px;
+      &:nth-child(n+3) { display: none; }
     }
 
     &__btn {
       font-size: 11px;
-      padding: 5px 10px;
-      width: 100%;
-      justify-content: center;
+      padding: 4px 10px;
     }
   }
   /* #endif */

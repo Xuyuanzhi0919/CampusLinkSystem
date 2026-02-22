@@ -42,16 +42,31 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { getUnreadCount } from '@/services/message'
 
 const userStore = useUserStore()
 
 // 用户头像
 const userAvatar = computed(() => userStore.userInfo?.avatar || '')
 
-// 未读消息数（示例）
+// 未读消息数
 const unreadCount = ref(0)
+
+const fetchUnreadCount = async () => {
+  if (!userStore.isLoggedIn) return
+  try {
+    const res = await getUnreadCount()
+    if (res.data != null) unreadCount.value = res.data
+  } catch {
+    // 静默失败，不影响主流程
+  }
+}
+
+onMounted(() => {
+  fetchUnreadCount()
+})
 
 // Logo 点击 - 回到顶部
 const handleLogoClick = () => {
@@ -83,11 +98,8 @@ const handleMessage = () => {
     return
   }
 
-  uni.switchTab({
-    url: '/pages/message/index',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    }
+  uni.navigateTo({
+    url: '/pages/message/index'
   })
 }
 

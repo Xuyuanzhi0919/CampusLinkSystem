@@ -193,33 +193,62 @@
 
           <!-- 问题卡片列表 -->
           <template v-else-if="questions.length > 0">
-            <view class="question-card-container">
-              <template v-for="(item, index) in questions" :key="item.qid">
-                <QuestionCard
-                  :question="item"
-                  :keyword="searchKeyword"
-                  @click="handleQuestionClick(item.qid)"
-                />
+            <!-- 筛选/排序切换刷新时，旧卡片加半透明遮罩过渡 -->
+            <view class="question-list-wrap" :class="{ 'refreshing': loading }">
+              <view class="question-card-container">
+                <template v-for="(item, index) in questions" :key="item.qid">
+                  <QuestionCard
+                    :question="item"
+                    :keyword="searchKeyword"
+                    @click="handleQuestionClick(item.qid)"
+                  />
 
-                <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示)，移动端不显示 -->
-                <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
-                  <view class="divider-line"></view>
-                  <text class="divider-text">更多问题</text>
-                  <view class="divider-line"></view>
+                  <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示)，移动端不显示 -->
+                  <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
+                    <view class="divider-line"></view>
+                    <text class="divider-text">更多问题</text>
+                    <view class="divider-line"></view>
+                  </view>
+                </template>
+              </view>
+
+              <!-- 加载更多骨架（追加分页时） -->
+              <template v-if="loading && hasMore">
+                <view v-for="i in 2" :key="`skeleton-more-${i}`" class="skeleton-item">
+                  <GpSkeleton
+                    :loading="true"
+                    :animate="true"
+                    :animate-time="1.5"
+                    bg-color="#f0f2f5"
+                    highlight-bg-color="#e6e8eb"
+                    :configs="{
+                      padding: '0',
+                      gridRows: 1,
+                      gridColumns: 1,
+                      itemDirection: 'column',
+                      itemAlign: 'flex-start',
+                      headShow: false,
+                      textShow: true,
+                      textRows: 4,
+                      textRowsGap: '12rpx',
+                      textWidth: ['80%', '100%', '60%', '40%'],
+                      textHeight: ['40rpx', '28rpx', '28rpx', '24rpx'],
+                      textBorderRadius: '6rpx'
+                    }"
+                  />
                 </view>
               </template>
-            </view>
 
-            <!-- 加载更多按钮 -->
-            <view v-if="hasMore && questions.length > 0" class="load-more-btn" @click="handleLoadMore">
-              <Icon v-if="loading" name="loader" :size="16" class="loading-icon" />
-              <Icon v-else name="arrow-down" :size="16" />
-              <text>{{ loading ? '加载中...' : '加载更多' }}</text>
-            </view>
-            <view v-else-if="!hasMore && questions.length > 0" class="load-more-end">
-              <view class="end-line"></view>
-              <text class="end-text">没有更多了</text>
-              <view class="end-line"></view>
+              <!-- 加载更多按钮（空闲状态） -->
+              <view v-else-if="hasMore" class="load-more-btn" @click="handleLoadMore">
+                <Icon name="arrow-down" :size="16" />
+                <text>加载更多</text>
+              </view>
+              <view v-else class="load-more-end">
+                <view class="end-line"></view>
+                <text class="end-text">没有更多了</text>
+                <view class="end-line"></view>
+              </view>
             </view>
           </template>
 
@@ -1790,6 +1819,17 @@ defineExpose({
     .tab-icon {
       display: none;
     }
+  }
+}
+
+// 问题列表外层包裹（含刷新遮罩）
+.question-list-wrap {
+  position: relative;
+  transition: opacity 0.2s ease;
+
+  &.refreshing {
+    opacity: 0.45;
+    pointer-events: none;
   }
 }
 

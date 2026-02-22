@@ -424,7 +424,7 @@ $cream: $gray-50;            // 系统背景色
 .hero-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 48px 80px 70px;
+  padding: 80px 80px 70px;
   position: relative;
   z-index: 1;
   display: flex;
@@ -432,25 +432,25 @@ $cream: $gray-50;            // 系统背景色
   min-height: 500px;
 
   @media (max-width: 1600px) {
-    padding: 45px 64px 65px;
+    padding: 72px 64px 65px;
   }
 
   @media (max-width: 1440px) {
-    padding: 40px 56px 55px;
+    padding: 64px 56px 55px;
   }
 
   @media (max-width: 1200px) {
-    padding: 36px 48px 45px;
+    padding: 56px 48px 45px;
   }
 
   @media (max-width: 1024px) {
-    padding: 24px 28px 20px;
+    padding: 48px 28px 20px;
     justify-content: center;
     min-height: unset;
   }
 
   @media (max-width: 768px) {
-    padding: 20px 20px 16px;
+    padding: 40px 20px 16px;
   }
 
   @media (max-width: 480px) {

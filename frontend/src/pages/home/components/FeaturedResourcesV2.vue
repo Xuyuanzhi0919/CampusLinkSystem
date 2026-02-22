@@ -289,6 +289,7 @@ defineExpose({ loadData })
 }
 
 .skeleton-card {
+  position: relative;
   background: $color-bg-card;
   border-radius: $card-radius;
   border: 1px solid rgba(0, 0, 0, 0.04);
@@ -298,20 +299,24 @@ defineExpose({ loadData })
   flex-direction: column;
 }
 
-/* 顶部色条 */
+/* 顶部色条（绝对定位，同 featured-card-base） */
 .skeleton-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 4px;
-  width: 100%;
-  background: #F0F0F0;
-  flex-shrink: 0;
+  background: #EBEBEB;
+  border-radius: $card-radius $card-radius 0 0;
 }
 
-/* 卡片 body */
+/* 卡片 body（留出色条空间） */
 .skeleton-body {
   display: flex;
   flex-direction: column;
   gap: $spacing-3;
-  padding: $spacing-4 $spacing-5;
+  padding: $featured-card-padding;
+  padding-top: calc(#{$featured-card-padding} + 4px);
   flex: 1;
 }
 

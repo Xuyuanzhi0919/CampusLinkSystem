@@ -371,10 +371,14 @@ const handleCommentClick = () => emit('comment', props.question)
   /* #ifdef H5 */
   @media (max-width: 768px) {
     padding: 10px;
-    gap: 7px;
+    gap: 6px;
+    /* 卡片纵向伸展撑满同行高度 */
+    display: flex;
+    flex-direction: column;
 
     &__header {
       gap: $spacing-2;
+      flex-shrink: 0;
     }
 
     &__user-info {
@@ -387,9 +391,19 @@ const handleCommentClick = () => emit('comment', props.question)
       height: auto;
     }
 
+    /* body 撑满剩余空间，让 actions 贴底 */
+    &__body {
+      flex: 1;
+      gap: 5px;
+    }
+
     &__title {
       font-size: 13px;
+      line-height: 1.4;
+      /* 固定 2 行高度，短标题也占满 */
       -webkit-line-clamp: 2;
+      height: calc(13px * 1.4 * 2);
+      overflow: hidden;
     }
 
     &__desc {
@@ -401,15 +415,15 @@ const handleCommentClick = () => emit('comment', props.question)
     }
 
     &__meta {
-      gap: 8px;
-      padding-top: 7px;
-      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 6px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
 
     &__meta-item {
       font-size: 10px;
 
-      /* 移动端只保留前两个 meta 项 */
       &:nth-child(n+3) {
         display: none;
       }
@@ -419,6 +433,7 @@ const handleCommentClick = () => emit('comment', props.question)
       flex-direction: column;
       align-items: stretch;
       gap: 5px;
+      flex-shrink: 0;
     }
 
     &__reward {

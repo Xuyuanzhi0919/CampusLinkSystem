@@ -333,10 +333,13 @@ const handleDownloadClick = () => emit('download', props.resource)
   /* #ifdef H5 */
   @media (max-width: 768px) {
     padding: 10px;
-    gap: 7px;
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
 
     &__header {
       gap: $spacing-2;
+      flex-shrink: 0;
     }
 
     &__icon {
@@ -350,9 +353,17 @@ const handleDownloadClick = () => emit('download', props.resource)
       height: auto;
     }
 
+    &__body {
+      flex: 1;
+      gap: 5px;
+    }
+
     &__title {
       font-size: 13px;
+      line-height: 1.4;
       -webkit-line-clamp: 2;
+      height: calc(13px * 1.4 * 2);
+      overflow: hidden;
     }
 
     &__desc {
@@ -364,9 +375,10 @@ const handleDownloadClick = () => emit('download', props.resource)
     }
 
     &__meta {
-      gap: 8px;
-      padding-top: 7px;
-      flex-wrap: wrap;
+      gap: 6px;
+      padding-top: 6px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
     }
 
     &__meta-item {
@@ -381,6 +393,7 @@ const handleDownloadClick = () => emit('download', props.resource)
       flex-direction: column;
       align-items: stretch;
       gap: 5px;
+      flex-shrink: 0;
     }
 
     &__points {

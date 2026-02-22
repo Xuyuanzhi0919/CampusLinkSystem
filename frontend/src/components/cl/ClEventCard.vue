@@ -347,10 +347,13 @@ const handleRegisterClick = () => emit('register', props.event)
   /* #ifdef H5 */
   @media (max-width: 768px) {
     padding: 10px;
-    gap: 7px;
+    gap: 6px;
+    display: flex;
+    flex-direction: column;
 
     &__header {
       gap: $spacing-2;
+      flex-shrink: 0;
     }
 
     &__icon {
@@ -364,31 +367,41 @@ const handleRegisterClick = () => emit('register', props.event)
       height: auto;
     }
 
+    &__body {
+      flex: 1;
+      gap: 5px;
+    }
+
     &__title {
       font-size: 13px;
+      line-height: 1.4;
       -webkit-line-clamp: 2;
+      height: calc(13px * 1.4 * 2);
+      overflow: hidden;
     }
 
     &__organizer {
       font-size: 11px;
+      flex-shrink: 0;
     }
 
     &__info {
-      gap: $spacing-1;
+      gap: 3px;
     }
 
     &__info-item {
       font-size: 10px;
 
-      /* 移动端只保留时间，隐藏地点 */
+      /* 只保留时间，隐藏地点 */
       &:nth-child(2) {
         display: none;
       }
     }
 
     &__meta {
-      gap: 8px;
-      padding-top: 7px;
+      gap: 6px;
+      padding-top: 6px;
+      flex-shrink: 0;
     }
 
     &__meta-item {
@@ -397,6 +410,10 @@ const handleRegisterClick = () => emit('register', props.event)
       &:nth-child(2) {
         display: none;
       }
+    }
+
+    &__actions {
+      flex-shrink: 0;
     }
 
     &__btn {

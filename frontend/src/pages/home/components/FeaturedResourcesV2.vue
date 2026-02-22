@@ -255,13 +255,9 @@ defineExpose({ loadData })
 }
 
 .resources-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $spacing-6;
-
-  @media (max-width: 768px) {
-    gap: 10px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
 }
 
 // ========== 骨架屏 ==========
@@ -277,15 +273,11 @@ defineExpose({ loadData })
   border-radius: $radius-sm;
 }
 
-/* 骨架屏：2 列网格，匹配 ClResourceCard 纵向卡片结构 */
+/* 骨架屏：单列列表 */
 .skeleton-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $spacing-6;
-
-  @media (max-width: 768px) {
-    gap: 10px;
-  }
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-4;
 }
 
 /* 骨架屏卡片：四区块结构，对应 ClResourceCard */

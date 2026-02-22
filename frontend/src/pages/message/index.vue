@@ -101,6 +101,8 @@
 
       <view class="safe-bottom" />
     </scroll-view>
+
+    <CustomTabBar />
   </view>
 </template>
 
@@ -110,6 +112,7 @@ import { getConversationList } from '@/services/message'
 import type { Conversation } from '@/types/message'
 import { MessageType } from '@/types/message'
 import { ClIcon } from '@/components/cl'
+import CustomTabBar from '@/components/mobile/CustomTabBar.vue'
 
 const conversationList = ref<Conversation[]>([])
 const loading = ref(false)
@@ -557,6 +560,6 @@ $error:        #EF4444;
 // ─── 底部安全区 ───────────────────────────────────────────────────────────────
 
 .safe-bottom {
-  height: 80px;
+  height: 100px; // TabBar 60px + 安全区
 }
 </style>

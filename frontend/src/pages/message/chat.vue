@@ -311,29 +311,47 @@ function handleWebSocketMessage(message: WebSocketMessage) {
       break
 
     case 'send_success':
-      // 消息发送成功
-      addMessageToList({
-        mId: message.messageId || Date.now(),
-        senderId: currentUserId.value,
-        senderName: userStore.userInfo?.nickname || '',
-        senderAvatar: userStore.userInfo?.avatar || '',
-        receiverId: message.toUserId ?? otherUserId.value,
-        receiverName: otherUserNickname.value,
-        receiverAvatar: otherUserAvatar.value,
-        content: message.content,
-        msgType: message.msgType || MessageType.TEXT,
-        isRead: false,
-        createdAt: new Date(message.timestamp).toISOString()
-      })
-
-      // 滚动到底部
-      nextTick(() => {
-        scrollToBottom()
-      })
+      // 消息发送成功：用服务端返回的真实 messageId 更新乐观消息
+      // 找到最后一条发自自己的临时消息（mId < 0）并替换 ID
+      if (message.messageId) {
+        // 从尾部向前找最近一条内容匹配的临时乐观消息
+        let tempIdx = -1
+        for (let i = messageList.value.length - 1; i >= 0; i--) {
+          const m = messageList.value[i]
+          if (m.mId < 0 && m.senderId === currentUserId.value && m.content === message.content) {
+            tempIdx = i
+            break
+          }
+        }
+        if (tempIdx !== -1) {
+          messageList.value[tempIdx].mId = message.messageId
+        } else {
+          // 如果找不到乐观消息（极少数情况），兜底插入
+          addMessageToList({
+            mId: message.messageId,
+            senderId: currentUserId.value,
+            senderName: userStore.userInfo?.nickname || '',
+            senderAvatar: userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '',
+            receiverId: message.toUserId ?? otherUserId.value,
+            receiverName: otherUserNickname.value,
+            receiverAvatar: otherUserAvatar.value,
+            content: message.content,
+            msgType: message.msgType || MessageType.TEXT,
+            isRead: false,
+            createdAt: new Date(message.timestamp).toISOString()
+          })
+        }
+      }
       break
 
     case 'send_error':
-      // 消息发送失败
+      // 消息发送失败：移除最后一条临时乐观消息
+      for (let i = messageList.value.length - 1; i >= 0; i--) {
+        if (messageList.value[i].mId < 0) {
+          messageList.value.splice(i, 1)
+          break
+        }
+      }
       uni.showToast({
         title: message.message || '发送失败',
         icon: 'none'
@@ -479,32 +497,53 @@ const handleLoadMore = () => {
 
 /**
  * 发送消息（使用 WebSocket）
+ * 采用乐观更新：先立即将消息插入列表，再通过 WebSocket 发出
+ * send_success 回调收到服务端确认的 messageId 后，更新本地临时消息的 mId
  */
 const handleSendMessage = async () => {
   if (!canSend.value) return
 
   const content = inputContent.value.trim()
 
+  // 检查 WebSocket 连接状态
+  if (!wsConnected.value) {
+    uni.showToast({
+      title: 'WebSocket 未连接',
+      icon: 'none'
+    })
+    return
+  }
+
+  // 生成临时 ID（负数，避免与服务端 ID 冲突）
+  const tempId = -Date.now()
+
+  // 乐观更新：立即将消息插入列表
+  const optimisticMsg: Message = {
+    mId: tempId,
+    senderId: currentUserId.value,
+    senderName: userStore.userInfo?.nickname || '',
+    senderAvatar: userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '',
+    receiverId: otherUserId.value,
+    receiverName: otherUserNickname.value,
+    receiverAvatar: otherUserAvatar.value,
+    content,
+    msgType: MessageType.TEXT,
+    isRead: false,
+    createdAt: new Date().toISOString()
+  }
+  messageList.value.push(optimisticMsg)
+
+  // 清空输入框并滚动到底部
+  inputContent.value = ''
+  await nextTick()
+  scrollToBottom()
+
   try {
-    // 检查 WebSocket 连接状态
-    if (!wsConnected.value) {
-      uni.showToast({
-        title: 'WebSocket 未连接',
-        icon: 'none'
-      })
-      return
-    }
-
-    // 通过 WebSocket 发送消息
     await sendChatMessage(otherUserId.value, content, MessageType.TEXT)
-
-    // 清空输入框
-    inputContent.value = ''
-
-    // 消息会通过 WebSocket 的 send_success 回调添加到列表
-    // 不需要重新加载整个列表
-
   } catch (error: any) {
+    // 发送失败：移除乐观消息
+    const idx = messageList.value.findIndex(m => m.mId === tempId)
+    if (idx !== -1) messageList.value.splice(idx, 1)
     uni.showToast({
       title: error.message || '发送失败',
       icon: 'none'
@@ -812,8 +851,11 @@ const handleRecallMessage = async (message: Message) => {
 
 /**
  * 滚动到底部
+ * 通过先减 1 再设回最大值，强制 Vue 响应式重新触发 scroll-view 滚动
  */
-const scrollToBottom = () => {
+const scrollToBottom = async () => {
+  scrollTop.value = Math.max(0, scrollTop.value - 1)
+  await nextTick()
   scrollTop.value = 999999
 }
 

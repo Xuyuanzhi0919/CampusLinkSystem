@@ -41,15 +41,20 @@
           <!-- 头像区 -->
           <view class="avatar-wrap">
             <image
+              v-if="conversation.avatarUrl"
               class="avatar"
-              :src="conversation.avatarUrl || '/static/default-avatar.png'"
+              :src="conversation.avatarUrl"
               mode="aspectFill"
             />
+            <!-- 无头像时：彩色首字母 -->
+            <view v-else class="avatar-fallback" :style="{ background: getAvatarColor(index).bg }">
+              <text class="avatar-initial" :style="{ color: getAvatarColor(index).text }">{{ conversation.nickname?.charAt(0) ?? '?' }}</text>
+            </view>
             <!-- 未读角标 -->
             <view v-if="conversation.unreadCount > 0" class="unread-dot">
               <text class="unread-dot-text">{{ conversation.unreadCount > 99 ? '99+' : conversation.unreadCount }}</text>
             </view>
-            <!-- 在线状态（示意） -->
+            <!-- 在线状态 -->
             <view class="online-ring"></view>
           </view>
 
@@ -113,6 +118,17 @@ import { ClIcon } from '@/components/cl'
 const conversationList = ref<Conversation[]>([])
 const loading = ref(false)
 const refreshing = ref(false)
+
+// 彩色首字母头像色盘（与 Pencil 设计一致）
+const AVATAR_COLORS = [
+  { bg: '#DBEAFE', text: '#2563EB' }, // 蓝
+  { bg: '#D1FAE5', text: '#059669' }, // 绿
+  { bg: '#FEF3C7', text: '#D97706' }, // 黄
+  { bg: '#EDE9FE', text: '#7C3AED' }, // 紫
+  { bg: '#FCE7F3', text: '#DB2777' }, // 粉
+  { bg: '#F1F5F9', text: '#475569' }, // 灰
+]
+const getAvatarColor = (index: number) => AVATAR_COLORS[index % AVATAR_COLORS.length]
 
 // 计算总未读数
 const totalUnread = computed(() =>
@@ -320,6 +336,22 @@ $error:        #EF4444;
   background: $gray-100;
   display: block;
   border: 2px solid $gray-100;
+}
+
+.avatar-fallback {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-initial {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 .online-ring {

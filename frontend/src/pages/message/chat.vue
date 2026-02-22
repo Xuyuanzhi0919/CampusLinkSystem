@@ -8,13 +8,18 @@
           <path d="M15 18l-6-6 6-6"/>
         </svg>
       </view>
-      <view class="nav-center">
-        <image
-          v-if="otherUserAvatar"
-          class="nav-avatar"
-          :src="otherUserAvatar"
-          mode="aspectFill"
-        />
+      <view class="nav-user">
+        <view class="nav-avatar-wrap">
+          <image
+            v-if="otherUserAvatar"
+            class="nav-avatar"
+            :src="otherUserAvatar"
+            mode="aspectFill"
+          />
+          <view v-else class="nav-avatar-fallback">
+            <text class="nav-avatar-initial">{{ otherUserNickname.charAt(0) }}</text>
+          </view>
+        </view>
         <view class="nav-info">
           <text class="nav-title">{{ otherUserNickname }}</text>
           <!-- WebSocket 连接状态 / 输入状态 -->
@@ -27,12 +32,17 @@
             <text class="status-text">正在输入...</text>
           </view>
           <view v-else class="ws-status" :class="wsConnected ? 'connected' : 'disconnected'">
-            <text class="status-dot"></text>
+            <view class="status-dot"></view>
             <text class="status-text">{{ wsConnected ? '在线' : '离线' }}</text>
           </view>
         </view>
       </view>
-      <view class="nav-placeholder" />
+      <!-- 更多按钮 -->
+      <view class="nav-more">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+        </svg>
+      </view>
     </view>
 
     <!-- 消息列表 -->
@@ -88,14 +98,13 @@
 
               <!-- 文件消息 -->
               <view v-else-if="message.msgType === MessageType.FILE" class="message-file" @click="handleDownloadFile(message.content)">
-                <view class="file-icon">
+                <view class="file-icon-box">
                   <!-- Lucide: FileText -->
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14 2 14 8 20 8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
                     <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
                   </svg>
                 </view>
                 <view class="file-info">
@@ -103,17 +112,16 @@
                   <text class="file-size">{{ formatFileSize(parseFileInfo(message.content).size) }}</text>
                 </view>
               </view>
-            </view>
-            <view class="message-meta">
-              <text class="message-time">{{ formatTime(message.createdAt) }}</text>
-              <!-- 已读状态（仅显示自己发送的消息） -->
-              <text
-                v-if="message.senderId === currentUserId"
-                class="read-status"
-                :class="message.isRead ? 'is-read' : 'is-unread'"
-              >
-                {{ message.isRead ? '已读' : '未读' }}
-              </text>
+
+              <!-- 气泡内底部：时间 + 已读状态 -->
+              <view class="bubble-meta" :class="message.senderId === currentUserId ? 'meta-mine' : 'meta-other'">
+                <text class="bubble-time">{{ formatTime(message.createdAt) }}</text>
+                <text
+                  v-if="message.senderId === currentUserId"
+                  class="bubble-read"
+                  :class="message.isRead ? 'is-read' : 'is-unread'"
+                >{{ message.isRead ? '✓✓' : '✓' }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -976,6 +984,7 @@ $primary:        #2563EB;
 $primary-dark:   #1D4ED8;
 $primary-light:  rgba(37, 99, 235, 0.1);
 $teal:           #14B8A6;
+$chat-bg:        #EEF2FF;   // 聊天区背景（淡蓝紫，来自设计稿）
 $gray-50:        #F8FAFC;
 $gray-100:       #F1F5F9;
 $gray-200:       #E2E8F0;
@@ -996,7 +1005,7 @@ $accent:         #FF6B35;
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: $gray-50;
+  background: $chat-bg;
 }
 
 // ─── 顶部导航栏 ───────────────────────────────────────────────────────────────
@@ -1004,27 +1013,27 @@ $accent:         #FF6B35;
 .nav-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 56px;
-  padding: 0 4px;
+  padding: 0 4px 0 0;
   background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid $gray-200;
   flex-shrink: 0;
+  gap: 4px;
 }
 
 .nav-back {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 12px;
   cursor: pointer;
   color: $gray-700;
-  transition: background 0.15s ease;
   flex-shrink: 0;
+  transition: background 0.15s ease;
 
   &:active {
     background: $gray-100;
@@ -1032,32 +1041,53 @@ $accent:         #FF6B35;
   }
 }
 
-.nav-back svg {
-  color: $gray-700;
-}
-
-.nav-center {
+// 用户信息区（头像 + 姓名/状态），左对齐，占满中间空间
+.nav-user {
   flex: 1;
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
+  min-width: 0;
+}
+
+.nav-avatar-wrap {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid $gray-100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: $gray-200;
-  border: 2px solid $gray-100;
-  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.nav-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, $primary, $primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-avatar-initial {
+  font-size: 16px;
+  font-weight: 700;
+  color: $white;
+  line-height: 1;
 }
 
 .nav-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 2px;
+  gap: 3px;
+  min-width: 0;
 }
 
 .nav-title {
@@ -1066,11 +1096,30 @@ $accent:         #FF6B35;
   color: $gray-900;
   letter-spacing: -0.01em;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
 
-.nav-placeholder {
-  width: 48px;
+// 右侧更多按钮
+.nav-more {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: $gray-100;
+  cursor: pointer;
+  color: $gray-500;
   flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: $gray-200;
+    color: $primary;
+  }
 }
 
 // ─── 连接状态 ─────────────────────────────────────────────────────────────────
@@ -1085,7 +1134,7 @@ $accent:         #FF6B35;
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  display: inline-block;
+  flex-shrink: 0;
 }
 
 .ws-status.connected .status-dot {
@@ -1210,7 +1259,7 @@ $accent:         #FF6B35;
   word-wrap: break-word;
   word-break: break-all;
   max-width: 100%;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: transform 0.1s ease;
 
   &:active {
@@ -1218,27 +1267,65 @@ $accent:         #FF6B35;
   }
 }
 
-// 对方消息：白色气泡，左上角尖角
+// 对方消息：白色气泡，左上角直角（与头像相接）
 .other-bubble {
   background: $white;
-  border: 1px solid $gray-200;
-  border-bottom-left-radius: 4px;
+  border: 1px solid rgba($gray-200, 0.8);
+  border-top-left-radius: 4px;    // 左上角接近直角
 
   .message-text { color: $gray-800; }
+
+  .bubble-time { color: $gray-400; }
 }
 
-// 我的消息：主色渐变，右下角尖角
+// 我的消息：主色渐变，右上角直角（与边缘相接）
 .mine-bubble {
-  background: linear-gradient(135deg, $primary 0%, #1D4ED8 100%);
-  border-bottom-right-radius: 4px;
+  background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+  border-top-right-radius: 4px;   // 右上角接近直角
+  box-shadow: 0 4px 12px rgba($primary, 0.28);
 
   .message-text { color: $white; }
+
+  .bubble-time { color: rgba($white, 0.65); }
 }
 
 .message-text {
   font-size: 15px;
   line-height: 1.55;
   white-space: pre-wrap;
+}
+
+// ─── 气泡内底部元信息（时间 + 已读）──────────────────────────────────────────
+
+.bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.meta-other {
+  justify-content: flex-start;
+}
+
+.meta-mine {
+  justify-content: flex-end;
+}
+
+.bubble-time {
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bubble-read {
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -1px;
+
+  &.is-read   { color: rgba($white, 0.9); }
+  &.is-unread { color: rgba($white, 0.5); }
 }
 
 // ─── 图片消息 ─────────────────────────────────────────────────────────────────
@@ -1261,80 +1348,58 @@ $accent:         #FF6B35;
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
   min-width: 160px;
   cursor: pointer;
-
-  .mine-bubble & { background: rgba(255, 255, 255, 0.15); }
-  .other-bubble & { background: $gray-50; }
+  margin-bottom: 2px;
 
   &:active { opacity: 0.8; transform: scale(0.98); }
 }
 
-.file-icon {
-  flex-shrink: 0;
+// 文件图标方框
+.file-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 
-  .other-bubble & { color: $primary; }
-  .mine-bubble & { color: rgba(255, 255, 255, 0.9); }
+  .other-bubble & {
+    background: rgba($primary, 0.1);
+    color: $primary;
+  }
+
+  .mine-bubble & {
+    background: rgba($white, 0.2);
+    color: rgba($white, 0.95);
+  }
 }
 
 .file-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
 }
 
 .file-name {
   font-size: 13px;
-  color: inherit;
-  font-weight: 500;
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  .other-bubble & { color: $gray-800; }
+  .mine-bubble &  { color: $white; }
 }
 
 .file-size {
   font-size: 11px;
-  opacity: 0.65;
-}
 
-// ─── 消息元数据（时间+已读）──────────────────────────────────────────────────
-
-.message-meta {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 2px;
-}
-
-.message-time {
-  font-size: 11px;
-  color: $gray-400;
-  white-space: nowrap;
-}
-
-.read-status {
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 4px;
-  white-space: nowrap;
-
-  &.is-read {
-    color: $success;
-    background: rgba($success, 0.1);
-  }
-
-  &.is-unread {
-    color: $gray-400;
-    background: rgba($gray-400, 0.08);
-  }
+  .other-bubble & { color: $gray-400; }
+  .mine-bubble &  { color: rgba($white, 0.6); }
 }
 
 // ─── 正在输入指示 ─────────────────────────────────────────────────────────────
@@ -1460,7 +1525,7 @@ $accent:         #FF6B35;
 .input-tools {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 
 .tool-btn {
@@ -1469,13 +1534,14 @@ $accent:         #FF6B35;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
+  border-radius: 50%;           // 设计稿：圆形
   cursor: pointer;
   color: $gray-500;
+  background: $gray-100;        // 设计稿：填充灰色背景
   transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 
   &:active {
-    background: $gray-100;
+    background: rgba($primary, 0.1);
     color: $primary;
     transform: scale(0.9);
   }

@@ -1675,11 +1675,12 @@ defineExpose({
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
   @include mobile {
-    background: transparent;
-    border-radius: 0;
-    padding: 0 0 12px 0;
-    margin-bottom: 0;
+    background: $white;
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
     box-shadow: none;
+    border: 1px solid $gray-200;
   }
 }
 

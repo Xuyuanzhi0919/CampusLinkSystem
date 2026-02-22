@@ -12,35 +12,35 @@
       </view>
     </view>
 
-    <!-- Loading State：骨架屏，2列网格匹配 ClResourceCard 纵向卡片结构 -->
+    <!-- Loading State：骨架屏，结构完全对应 ClResourceCard 四区块 -->
     <view v-if="loading" class="skeleton-grid">
       <view v-for="i in 4" :key="i" class="skeleton-card">
-        <!-- 顶部色条 -->
+        <!-- 顶部色条（绝对定位） -->
         <view class="skeleton-top-bar"></view>
-        <!-- 卡片 body -->
-        <view class="skeleton-body">
-          <!-- 头部：图标 + 标题+胶囊 -->
-          <view class="skeleton-header">
+        <!-- Header：图标 + 上传者 + 胶囊 -->
+        <view class="skeleton-header">
+          <view class="skeleton-icon-wrap">
             <view class="skeleton-file-icon"></view>
-            <view class="skeleton-title-wrap">
-              <view class="skeleton-line skeleton-line--title"></view>
-              <view class="skeleton-capsule"></view>
-            </view>
+            <view class="skeleton-line skeleton-line--name"></view>
           </view>
-          <!-- 描述 -->
+          <view class="skeleton-capsule"></view>
+        </view>
+        <!-- Body：标题 + 描述 -->
+        <view class="skeleton-body">
+          <view class="skeleton-line skeleton-line--title"></view>
+          <view class="skeleton-line skeleton-line--title-short"></view>
           <view class="skeleton-line skeleton-line--desc"></view>
           <view class="skeleton-line skeleton-line--desc-short"></view>
-          <!-- 底部 meta + 操作 -->
-          <view class="skeleton-footer">
-            <view class="skeleton-meta">
-              <view class="skeleton-line skeleton-line--meta"></view>
-              <view class="skeleton-line skeleton-line--meta"></view>
-            </view>
-            <view class="skeleton-actions">
-              <view class="skeleton-points"></view>
-              <view class="skeleton-btn"></view>
-            </view>
-          </view>
+        </view>
+        <!-- Meta -->
+        <view class="skeleton-meta">
+          <view class="skeleton-line skeleton-line--meta"></view>
+          <view class="skeleton-line skeleton-line--meta"></view>
+        </view>
+        <!-- Actions -->
+        <view class="skeleton-actions">
+          <view class="skeleton-points"></view>
+          <view class="skeleton-btn"></view>
         </view>
       </view>
     </view>
@@ -288,6 +288,7 @@ defineExpose({ loadData })
   }
 }
 
+/* 骨架屏卡片：四区块结构，对应 ClResourceCard */
 .skeleton-card {
   position: relative;
   background: $color-bg-card;
@@ -297,9 +298,12 @@ defineExpose({ loadData })
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  gap: $featured-card-gap;
+  padding: $featured-card-padding;
+  padding-top: calc(#{$featured-card-padding} + 4px);
 }
 
-/* 顶部色条（绝对定位，同 featured-card-base） */
+/* 顶部色条（绝对定位） */
 .skeleton-top-bar {
   position: absolute;
   top: 0;
@@ -310,86 +314,84 @@ defineExpose({ loadData })
   border-radius: $card-radius $card-radius 0 0;
 }
 
-/* 卡片 body（留出色条空间） */
-.skeleton-body {
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-3;
-  padding: $featured-card-padding;
-  padding-top: calc(#{$featured-card-padding} + 4px);
-  flex: 1;
-}
-
-/* 头部：图标 + 标题区 */
+/* Header：图标+上传者 + 胶囊（对应问答卡片 header） */
 .skeleton-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-4;
+}
+
+.skeleton-icon-wrap {
+  display: flex;
+  align-items: center;
   gap: $spacing-3;
+  flex: 1;
+  min-width: 0;
 }
 
 .skeleton-file-icon {
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: $radius-base;
   @include skeleton-block;
 }
 
-.skeleton-title-wrap {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: $spacing-1;
-}
-
 .skeleton-capsule {
-  width: 36px;
-  height: 16px;
-  border-radius: 6px;
+  flex-shrink: 0;
+  width: 40px;
+  height: 22px;
+  border-radius: $capsule-tag-radius;
   @include skeleton-block;
 }
 
-/* 底部：meta + 操作 */
-.skeleton-footer {
+/* Body：标题 + 描述（flex:1 撑满） */
+.skeleton-body {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: auto;
+  flex-direction: column;
+  gap: $spacing-3;
+  flex: 1;
 }
 
+/* Meta：分隔线上方数据行 */
 .skeleton-meta {
   display: flex;
-  gap: $spacing-3;
+  gap: $meta-item-gap;
+  padding-top: $spacing-3;
+  border-top: 1px solid $color-divider;
 }
 
+/* Actions：积分 + 按钮，左右分离 */
 .skeleton-actions {
   display: flex;
   align-items: center;
-  gap: $spacing-2;
+  justify-content: space-between;
 }
 
 .skeleton-points {
-  width: 40px;
-  height: 20px;
+  width: 64px;
+  height: 24px;
   border-radius: 20px;
   @include skeleton-block;
 }
 
 .skeleton-btn {
-  width: 44px;
-  height: 24px;
-  border-radius: $radius-md;
+  width: 64px;
+  height: 30px;
+  border-radius: $radius-lg;
   @include skeleton-block;
 }
 
 .skeleton-line {
   @include skeleton-block;
 
-  &--title      { width: 90%; height: 14px; }
-  &--desc       { width: 100%; height: 12px; }
-  &--desc-short { width: 65%; height: 12px; }
-  &--meta       { width: 28px; height: 12px; }
+  &--name        { flex: 1; height: 13px; }
+  &--title       { width: 90%; height: 16px; }
+  &--title-short { width: 65%; height: 16px; }
+  &--desc        { width: 100%; height: 13px; }
+  &--desc-short  { width: 70%; height: 13px; }
+  &--meta        { width: 32px; height: 13px; }
 }
 
 .error-container,

@@ -268,6 +268,7 @@ const handleCommentClick = () => emit('comment', props.question)
     display: flex;
     flex-direction: column;
     gap: $spacing-3;
+    flex: 1;  // 撑满剩余空间，将 meta/actions 推到底部
   }
 
   &__title {

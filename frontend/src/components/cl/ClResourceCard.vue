@@ -1,24 +1,31 @@
 <template>
   <view class="featured-resource" @click="handleCardClick">
-    <!-- 顶部类型色条 -->
+    <!-- 顶部类型色条（绝对定位，同问答卡片） -->
     <view class="featured-resource__type-bar" :style="{ background: fileTypeConfig.color }"></view>
 
-    <!-- Header：文件图标 + 标题 + 胶囊 -->
+    <!-- Header：文件图标 + 文件类型胶囊（对应问答的用户头像+角色+推荐胶囊） -->
     <view class="featured-resource__header">
-      <view class="featured-resource__icon" :style="{ background: fileTypeConfig.bgColor }">
-        <ClIcon :name="fileTypeConfig.icon" size="md" :color="fileTypeConfig.color" />
+      <view class="featured-resource__icon-wrap">
+        <view class="featured-resource__icon" :style="{ background: fileTypeConfig.bgColor }">
+          <ClIcon :name="fileTypeConfig.icon" size="md" :color="fileTypeConfig.color" />
+        </view>
+        <view class="featured-resource__uploader">
+          <text class="featured-resource__uploader-text">学习资料</text>
+        </view>
       </view>
-      <view class="featured-resource__header-info">
-        <view class="featured-resource__title">{{ resource.title }}</view>
-        <view class="featured-resource__capsule">{{ getFileTypeName(resource.fileType) }}</view>
+      <view class="featured-resource__capsule">
+        {{ getFileTypeName(resource.fileType) }}
       </view>
     </view>
 
-    <!-- Body：描述 + 标签 -->
+    <!-- Body：标题 + 描述 + 标签（结构完全对应问答卡片 body） -->
     <view class="featured-resource__body">
+      <view class="featured-resource__title">{{ resource.title }}</view>
+
       <view v-if="resource.description" class="featured-resource__desc">
         {{ resource.description }}
       </view>
+
       <view v-if="resource.tags && resource.tags.length > 0" class="featured-resource__tags">
         <view v-for="(tag, i) in resource.tags.slice(0, 3)" :key="i" class="featured-resource__tag">
           {{ tag }}
@@ -26,7 +33,7 @@
       </view>
     </view>
 
-    <!-- Meta -->
+    <!-- Meta（对应问答卡片 meta，分隔线 + 数据行） -->
     <view class="featured-resource__meta">
       <view class="featured-resource__meta-item">
         <ClIcon name="icon-download" size="base" />
@@ -42,7 +49,7 @@
       </view>
     </view>
 
-    <!-- Actions：积分左、下载右 -->
+    <!-- Actions：积分左、下载按钮右（对应问答卡片的悬赏+回答按钮） -->
     <view class="featured-resource__actions">
       <view class="featured-resource__points" :class="{ 'featured-resource__points--free': !resource.points }">
         <template v-if="resource.points">
@@ -133,7 +140,7 @@ const handleDownloadClick = () => emit('download', props.resource)
   @include featured-card-base;
   cursor: pointer;
 
-  /* 顶部类型色条（绝对定位，同问答卡片） */
+  /* 顶部类型色条（绝对定位） */
   &__type-bar {
     position: absolute;
     top: 0;
@@ -143,18 +150,27 @@ const handleDownloadClick = () => emit('download', props.resource)
     border-radius: $card-radius $card-radius 0 0;
   }
 
-  /* ========== Header ========== */
+  /* ========== Header（对应问答卡片：用户行+胶囊） ========== */
   &__header {
     display: flex;
-    align-items: flex-start;
-    gap: $spacing-3;
+    align-items: center;
+    justify-content: space-between;
+    gap: $spacing-4;
     padding-top: $spacing-2;
+  }
+
+  &__icon-wrap {
+    display: flex;
+    align-items: center;
+    gap: $spacing-3;
+    flex: 1;
+    min-width: 0;
   }
 
   &__icon {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -166,33 +182,44 @@ const handleDownloadClick = () => emit('download', props.resource)
     transform: scale(1.05);
   }
 
-  &__header-info {
+  &__uploader {
     flex: 1;
     min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-1;
   }
 
-  &__title {
-    @include card-title;
+  &__uploader-text {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
+  /* 文件类型胶囊（对应问答卡片的 AI推荐/热门胶囊） */
   &__capsule {
-    align-self: flex-start;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-semibold;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    height: $capsule-tag-height;
+    padding: $capsule-tag-padding;
+    border-radius: $capsule-tag-radius;
+    font-size: $capsule-tag-font-size;
+    font-weight: $font-weight-medium;
     color: $campus-blue;
-    background: rgba($campus-blue, 0.08);
-    border-radius: 8px;
-    padding: 2px 7px;
+    background: rgba($campus-blue, 0.1);
   }
 
-  /* ========== Body ========== */
+  /* ========== Body（标题 + 描述 + 标签，flex:1 撑开） ========== */
   &__body {
     display: flex;
     flex-direction: column;
     gap: $spacing-3;
+    flex: 1;
+  }
+
+  &__title {
+    @include card-title;
   }
 
   &__desc {
@@ -216,7 +243,7 @@ const handleDownloadClick = () => emit('download', props.resource)
     font-weight: $font-weight-medium;
   }
 
-  /* ========== Meta ========== */
+  /* ========== Meta（分隔线 + 数据行） ========== */
   &__meta {
     display: flex;
     align-items: center;
@@ -236,7 +263,7 @@ const handleDownloadClick = () => emit('download', props.resource)
     &--rating    { color: #EF4444; }
   }
 
-  /* ========== Actions ========== */
+  /* ========== Actions（积分左、下载按钮右） ========== */
   &__actions {
     display: flex;
     align-items: center;
@@ -244,7 +271,7 @@ const handleDownloadClick = () => emit('download', props.resource)
     gap: $spacing-4;
   }
 
-  /* 积分/免费徽章 */
+  /* 积分/免费徽章（对应问答卡片的悬赏徽章） */
   &__points {
     display: inline-flex;
     align-items: center;
@@ -279,16 +306,11 @@ const handleDownloadClick = () => emit('download', props.resource)
     color: $campus-blue;
     border: 1px solid $campus-blue;
 
-    &:hover {
-      background: $campus-blue-lighter;
-    }
-
-    &:active {
-      background: #E5EFFF;
-    }
+    &:hover { background: $campus-blue-lighter; }
+    &:active { background: #E5EFFF; }
   }
 
-  /* ========== 移动端双列紧凑样式（同问答卡片策略） ========== */
+  /* ========== 移动端双列紧凑样式（完全同问答卡片策略） ========== */
   /* #ifdef H5 */
   @media (max-width: 768px) {
     padding: 10px;
@@ -302,27 +324,38 @@ const handleDownloadClick = () => emit('download', props.resource)
     }
 
     &__icon {
-      width: 32px;
-      height: 32px;
+      width: 28px;
+      height: 28px;
+    }
+
+    &__uploader-text {
+      font-size: 12px;
+    }
+
+    &__capsule {
+      font-size: 10px;
+      padding: 2px 6px;
+      height: auto;
+    }
+
+    /* body 撑满剩余空间，让 meta/actions 贴底 */
+    &__body {
+      flex: 1;
+      gap: 5px;
     }
 
     &__title {
       font-size: 13px;
       line-height: 1.4;
       -webkit-line-clamp: 2;
+      /* 固定 2 行高度，短标题也占满 */
       height: calc(13px * 1.4 * 2);
       overflow: hidden;
     }
 
-    &__capsule {
-      font-size: 10px;
-      padding: 1px 5px;
-    }
-
     /* 隐藏描述和标签 */
-    &__body {
-      display: none;
-    }
+    &__desc  { display: none; }
+    &__tags  { display: none; }
 
     &__meta {
       gap: 6px;
@@ -333,10 +366,8 @@ const handleDownloadClick = () => emit('download', props.resource)
     &__meta-item {
       font-size: 10px;
 
-      /* 只保留前 2 个 meta */
-      &:nth-child(n+3) {
-        display: none;
-      }
+      /* 只保留前 2 个 */
+      &:nth-child(n+3) { display: none; }
     }
 
     &__actions {

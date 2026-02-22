@@ -378,11 +378,17 @@ const handleDownloadClick = () => emit('download', props.resource)
     }
 
     &__actions {
-      gap: $spacing-2;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 5px;
     }
 
     &__points {
       font-size: 10px;
+      justify-content: center;
+      background: rgba(#F59E0B, 0.08);
+      border-radius: 6px;
+      padding: 3px 8px;
     }
 
     &__btn {

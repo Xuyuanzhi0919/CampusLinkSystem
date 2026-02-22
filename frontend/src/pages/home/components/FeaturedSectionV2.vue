@@ -8,7 +8,7 @@
       </view>
       <view class="header-right">
         <view class="refresh-btn" :class="{ 'refresh-btn--loading': loading }" @click="!loading && refreshFeatured()">
-          <text class="refresh-icon">↻</text>
+          <text class="refresh-icon" :class="{ 'refresh-icon--spinning': spinning }">↻</text>
           <text class="refresh-text">换一批</text>
         </view>
         <view class="view-more" @click="handleViewMore">
@@ -137,6 +137,7 @@ const nav = useNavigation()
 const loading = ref(true)
 const hasError = ref(false)
 const featuredList = ref<any[]>([])
+const spinning = ref(false)
 
 // ===== 已展示 ID 缓存（TTL 24小时） =====
 const SEEN_CACHE_KEY = 'featured_seen_ids'
@@ -276,9 +277,14 @@ const loadData = async () => {
   }
 }
 
-// 换一批：把当前展示内容追加进 seen，再重新筛选
+// 换一批：旋转动画持续到请求完成（至少转完一圈 400ms）
 const refreshFeatured = async () => {
-  await loadData()
+  spinning.value = true
+  const [, ] = await Promise.all([
+    loadData(),
+    new Promise(resolve => setTimeout(resolve, 400))
+  ])
+  spinning.value = false
 }
 
 /**
@@ -545,11 +551,15 @@ defineExpose({ loadData })
 .refresh-icon {
   font-size: $font-size-base;
   display: inline-block;
-  transition: transform 0.4s ease;
 
-  .refresh-btn:not(.refresh-btn--loading):active & {
-    transform: rotate(360deg);
+  &--spinning {
+    animation: spin-once 0.4s linear;
   }
+}
+
+@keyframes spin-once {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
 .refresh-text {

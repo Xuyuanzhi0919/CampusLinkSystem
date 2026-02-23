@@ -747,7 +747,6 @@ defineExpose({
 .delete-btn:active .delete-icon {
   color: #EF4444;
 }
-}
 
 /* ===== 骨架屏 ===== */
 .skeleton-card {

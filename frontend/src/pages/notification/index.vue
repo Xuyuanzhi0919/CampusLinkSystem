@@ -91,7 +91,7 @@
 
         <!-- 更早 -->
         <template v-if="earlierNotifications.length > 0">
-          <view class="date-divider">
+          <view class="date-divider date-divider-gap">
             <text class="date-divider-text gray">更早</text>
           </view>
           <view
@@ -570,23 +570,25 @@ defineExpose({
 
 /* ===== 日期分隔线 ===== */
 .date-divider {
-  padding: 0 16px;
-  height: 32px;
+  padding: 8px 16px 4px;
   display: flex;
   align-items: center;
   background: #F8FAFC;
+}
 
-  .date-divider-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2563EB;
-    font-family: 'DM Sans', sans-serif;
+.date-divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  font-family: 'DM Sans', sans-serif;
+}
 
-    // 更早用灰色
-    &.gray {
-      color: #9CA3AF;
-    }
-  }
+.date-divider-text.gray {
+  color: #9CA3AF;
+}
+
+.date-divider-gap {
+  margin-top: 4px;
 }
 
 /* ===== 通知卡片 ===== */

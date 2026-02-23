@@ -79,7 +79,8 @@
     <!-- ========== Sticky 导航区（分类+排序） ========== -->
     <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
       <view class="sticky-nav-container">
-        <!-- 左侧：分类Tabs -->
+        <!-- 左侧：分类Tabs（包裹一层加右侧渐变提示） -->
+        <view class="category-tabs-wrap">
         <view class="category-tabs">
           <view
             v-for="item in categories"
@@ -92,6 +93,8 @@
             <text class="tab-label">{{ item.label }}</text>
           </view>
         </view>
+
+        </view><!-- /category-tabs-wrap -->
 
         <!-- 右侧：排序+筛选（PC端） -->
         <view class="sort-controls">
@@ -184,30 +187,32 @@
             </view>
           </view>
 
-          <!-- 骨架屏 - 使用 gp-skeleton -->
+          <!-- 骨架屏（结构还原真实卡片：头像行+标题+摘要+底部统计） -->
           <template v-if="loading && questions.length === 0">
-            <view v-for="i in 5" :key="i" class="skeleton-item">
-              <GpSkeleton
-                :loading="true"
-                :animate="true"
-                :animate-time="1.5"
-                bg-color="#f0f2f5"
-                highlight-bg-color="#e6e8eb"
-                :configs="{
-                  padding: '0',
-                  gridRows: 1,
-                  gridColumns: 1,
-                  itemDirection: 'column',
-                  itemAlign: 'flex-start',
-                  headShow: false,
-                  textShow: true,
-                  textRows: 4,
-                  textRowsGap: '12rpx',
-                  textWidth: ['80%', '100%', '60%', '40%'],
-                  textHeight: ['40rpx', '28rpx', '28rpx', '24rpx'],
-                  textBorderRadius: '6rpx'
-                }"
-              />
+            <view v-for="i in 5" :key="i" class="skeleton-card">
+              <!-- 头像行 -->
+              <view class="skeleton-header">
+                <view class="skeleton-avatar skeleton-shine"></view>
+                <view class="skeleton-user-info">
+                  <view class="skeleton-name skeleton-shine"></view>
+                  <view class="skeleton-time skeleton-shine"></view>
+                </view>
+                <view class="skeleton-badge skeleton-shine"></view>
+              </view>
+              <!-- 标题（两行） -->
+              <view class="skeleton-title skeleton-shine"></view>
+              <view class="skeleton-title skeleton-title-short skeleton-shine"></view>
+              <!-- 摘要（两行） -->
+              <view class="skeleton-content skeleton-shine"></view>
+              <view class="skeleton-content skeleton-content-short skeleton-shine"></view>
+              <!-- 底部统计 -->
+              <view class="skeleton-footer">
+                <view class="skeleton-tag skeleton-shine"></view>
+                <view class="skeleton-tag skeleton-shine"></view>
+                <view class="skeleton-spacer"></view>
+                <view class="skeleton-stat skeleton-shine"></view>
+                <view class="skeleton-stat skeleton-shine"></view>
+              </view>
             </view>
           </template>
 
@@ -227,28 +232,23 @@
 
               <!-- 加载更多骨架（追加分页时） -->
               <template v-if="loading && hasMore">
-                <view v-for="i in 2" :key="`skeleton-more-${i}`" class="skeleton-item">
-                  <GpSkeleton
-                    :loading="true"
-                    :animate="true"
-                    :animate-time="1.5"
-                    bg-color="#f0f2f5"
-                    highlight-bg-color="#e6e8eb"
-                    :configs="{
-                      padding: '0',
-                      gridRows: 1,
-                      gridColumns: 1,
-                      itemDirection: 'column',
-                      itemAlign: 'flex-start',
-                      headShow: false,
-                      textShow: true,
-                      textRows: 4,
-                      textRowsGap: '12rpx',
-                      textWidth: ['80%', '100%', '60%', '40%'],
-                      textHeight: ['40rpx', '28rpx', '28rpx', '24rpx'],
-                      textBorderRadius: '6rpx'
-                    }"
-                  />
+                <view v-for="i in 2" :key="`skeleton-more-${i}`" class="skeleton-card">
+                  <view class="skeleton-header">
+                    <view class="skeleton-avatar skeleton-shine"></view>
+                    <view class="skeleton-user-info">
+                      <view class="skeleton-name skeleton-shine"></view>
+                      <view class="skeleton-time skeleton-shine"></view>
+                    </view>
+                    <view class="skeleton-badge skeleton-shine"></view>
+                  </view>
+                  <view class="skeleton-title skeleton-shine"></view>
+                  <view class="skeleton-title skeleton-title-short skeleton-shine"></view>
+                  <view class="skeleton-footer">
+                    <view class="skeleton-tag skeleton-shine"></view>
+                    <view class="skeleton-spacer"></view>
+                    <view class="skeleton-stat skeleton-shine"></view>
+                    <view class="skeleton-stat skeleton-shine"></view>
+                  </view>
                 </view>
               </template>
 
@@ -300,8 +300,8 @@
     </view>
 
     <!-- 🔍 筛选弹窗 -->
-    <view v-if="showFilterModal" class="filter-modal" @click="showFilterModal = false">
-      <view class="filter-modal-content" @click.stop>
+    <view v-if="filterModalVisible" class="filter-modal" :class="{ 'is-closing': filterModalClosing }" @click="handleCloseFilterModal">
+      <view class="filter-modal-content" :class="{ 'slide-down': filterModalClosing }" @click.stop>
         <!-- 移动端拖拽手柄 -->
         <view class="drag-handle">
           <view class="drag-indicator"></view>
@@ -309,7 +309,7 @@
 
         <view class="modal-header">
           <text class="modal-title">筛选条件</text>
-          <view class="modal-close" @click="showFilterModal = false">
+          <view class="modal-close" @click="handleCloseFilterModal">
             <Icon name="x" :size="20" />
           </view>
         </view>
@@ -476,8 +476,33 @@ const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnsw
 const hasBounty = ref(false) // 仅看有悬赏的问题
 let filterDebounce: number | null = null
 
-// 筛选弹窗
-const showFilterModal = ref(false)
+// 筛选弹窗（带关闭动画）
+const showFilterModal = ref(false)         // 逻辑开关（供外部按钮使用）
+const filterModalVisible = ref(false)      // 控制 v-if 渲染
+const filterModalClosing = ref(false)      // 控制关闭动画类
+
+// 打开弹窗：显示 + 同步临时筛选值
+watch(showFilterModal, (val) => {
+  if (val) {
+    filterModalVisible.value = true
+    filterModalClosing.value = false
+    tempCategory.value = category.value
+    tempStatus.value = status.value
+    tempSortBy.value = sortBy.value
+    tempHasBounty.value = hasBounty.value
+  }
+})
+
+// 关闭弹窗（带动画）
+const handleCloseFilterModal = () => {
+  filterModalClosing.value = true
+  setTimeout(() => {
+    filterModalVisible.value = false
+    filterModalClosing.value = false
+    showFilterModal.value = false
+  }, 260) // 与动画时长一致
+}
+
 const tempCategory = ref<string | null>(null)
 const tempStatus = ref<number | null>(null)
 const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
@@ -754,7 +779,7 @@ const handleConfirmFilter = () => {
   status.value = tempStatus.value
   sortBy.value = tempSortBy.value
   hasBounty.value = tempHasBounty.value
-  showFilterModal.value = false
+  handleCloseFilterModal()
   loadQuestions(true)
 }
 
@@ -916,15 +941,6 @@ const handleAskQuestion = () => {
   })
 }
 
-// 监听筛选弹窗打开，同步当前筛选值到临时变量
-watch(showFilterModal, (newVal) => {
-  if (newVal) {
-    tempCategory.value = category.value
-    tempStatus.value = status.value
-    tempSortBy.value = sortBy.value
-    tempHasBounty.value = hasBounty.value
-  }
-})
 
 // 监听页面滚动（各端）
 onPageScroll((e) => {
@@ -1527,13 +1543,38 @@ defineExpose({
   }
 }
 
+// 分类Tabs 外层包裹（加右侧渐变遮罩提示可横滑）
+.category-tabs-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  // 右侧渐变遮罩
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, $white);
+    pointer-events: none;
+    z-index: 1;
+
+    @include desktop {
+      display: none; // PC端不需要
+    }
+  }
+}
+
 // 分类Tabs
 .category-tabs {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex: 1;
   overflow-x: auto;
+  padding-right: 32px; // 为遮罩留空间
 
   /* #ifdef H5 */
   &::-webkit-scrollbar {
@@ -1953,14 +1994,111 @@ defineExpose({
   }
 }
 
-// 骨架屏容器
-.skeleton-item {
+// 骨架屏卡片（结构还原真实卡片）
+.skeleton-card {
   background: $white;
   border-radius: 12px;
   margin-bottom: 12px;
   padding: 16px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  border: 1px solid $gray-200;
   overflow: hidden;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.skeleton-shine {
+  background: linear-gradient(90deg, #f0f2f5 25%, #e6e8eb 50%, #f0f2f5 75%);
+  background-size: 800px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+.skeleton-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.skeleton-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.skeleton-user-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.skeleton-name {
+  width: 72px;
+  height: 13px;
+}
+
+.skeleton-time {
+  width: 52px;
+  height: 11px;
+}
+
+.skeleton-badge {
+  width: 52px;
+  height: 20px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.skeleton-title {
+  height: 18px;
+  width: 92%;
+  margin-bottom: 8px;
+}
+
+.skeleton-title-short {
+  width: 60%;
+  margin-bottom: 10px;
+}
+
+.skeleton-content {
+  height: 14px;
+  width: 100%;
+  margin-bottom: 6px;
+}
+
+.skeleton-content-short {
+  width: 75%;
+  margin-bottom: 12px;
+}
+
+.skeleton-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-top: 10px;
+  border-top: 1px solid $gray-100;
+}
+
+.skeleton-tag {
+  width: 48px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.skeleton-spacer {
+  flex: 1;
+}
+
+.skeleton-stat {
+  width: 36px;
+  height: 16px;
+  border-radius: 4px;
 }
 
 // 加载更多
@@ -2267,12 +2405,27 @@ defineExpose({
 }
 
 @keyframes slideUp {
-  from {
-    transform: translateY(100%);
-  }
-  to {
-    transform: translateY(0);
-  }
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+// 弹窗关闭动画
+.filter-modal.is-closing {
+  animation: fadeOut 0.26s ease-out forwards;
+}
+
+.filter-modal-content.slide-down {
+  animation: slideDown 0.26s ease-in forwards;
 }
 
 .drag-handle {

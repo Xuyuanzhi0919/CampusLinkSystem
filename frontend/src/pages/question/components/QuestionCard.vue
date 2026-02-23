@@ -1,5 +1,11 @@
 <template>
-  <view class="question-card" @click="handleClick">
+  <view class="question-card" :class="{ 'is-solved': question.status === 1, 'is-read': isRead }" @click="handleClick">
+    <!-- 悬赏条（有悬赏时顶部高亮bar） -->
+    <view v-if="question.bounty > 0" class="bounty-bar">
+      <Icon name="award" :size="13" class="bounty-bar-icon" />
+      <text class="bounty-bar-text">悬赏 {{ question.bounty }} 积分</text>
+    </view>
+
     <!-- 顶部：用户信息 + 分类标签 -->
     <view class="card-header">
       <view class="user-info">
@@ -18,9 +24,14 @@
         <view class="category-tag" :class="`category-${getCategoryType(question.category)}`">
           <text class="tag-label">{{ question.category }}</text>
         </view>
-        <view v-if="question.status === 1" class="solved-badge">
-          <Icon name="check-circle" :size="14" />
+        <!-- 已解决/未解决徽章 -->
+        <view v-if="question.status === 1" class="status-badge solved">
+          <Icon name="check-circle" :size="13" />
           <text class="badge-text">已解决</text>
+        </view>
+        <view v-else class="status-badge unsolved">
+          <Icon name="help-circle" :size="13" />
+          <text class="badge-text">待解决</text>
         </view>
       </view>
     </view>
@@ -31,7 +42,7 @@
       <text v-else>{{ question.title }}</text>
     </view>
 
-    <!-- 内容摘要（单行截断） -->
+    <!-- 内容摘要 -->
     <view v-if="contentPreview" class="card-content">
       <rich-text v-if="keyword" :nodes="highlightText(contentPreview, keyword)" />
       <text v-else>{{ contentPreview }}</text>
@@ -52,13 +63,10 @@
           +{{ remainingTagsCount }}
         </view>
       </view>
+      <view v-else class="card-tags-placeholder"></view>
 
       <!-- 数据统计 -->
       <view class="card-stats">
-        <view v-if="question.bounty > 0" class="stat-item reward">
-          <Icon name="gift" :size="14" class="stat-icon" />
-          <text class="stat-value">{{ question.bounty }}</text>
-        </view>
         <view class="stat-item">
           <Icon name="eye" :size="14" class="stat-icon" />
           <text class="stat-value">{{ formatNumber(question.views) }}</text>
@@ -90,6 +98,16 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   click: []
 }>()
+
+// 已读状态（从 localStorage 判断）
+const READ_KEY = 'question:read:'
+const isRead = computed(() => {
+  try {
+    return !!uni.getStorageSync(READ_KEY + props.question.qid)
+  } catch {
+    return false
+  }
+})
 
 // 内容预览（截取前80个字符）
 const contentPreview = computed(() => {
@@ -152,8 +170,11 @@ const highlightText = (text: string, keyword: string): string => {
   }
 }
 
-// 点击事件
+// 点击事件（同时标记已读）
 const handleClick = () => {
+  try {
+    uni.setStorageSync(READ_KEY + props.question.qid, 1)
+  } catch { /* ignore */ }
   emit('click')
 }
 </script>
@@ -164,12 +185,26 @@ const handleClick = () => {
 .question-card {
   background: $white;
   border-radius: 12px;
-  padding: 16px;  // 从32rpx减少到16px,提高信息密度
-  margin-bottom: 12px;  // 从24rpx减少到12px
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);  // 增强阴影对比度
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   border: 1px solid $gray-200;
   transition: all 0.2s ease-out;
   cursor: pointer;
+  overflow: hidden; // 配合 bounty-bar 圆角裁切
+
+  // 已读状态：标题变灰，降低视觉权重
+  &.is-read {
+    .card-title {
+      color: $gray-500;
+    }
+    background: $gray-50;
+  }
+
+  // 已解决：左侧绿色边框指示
+  &.is-solved {
+    border-left: 3px solid $success;
+  }
 
   &:active {
     transform: translateY(1px);
@@ -178,8 +213,31 @@ const handleClick = () => {
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);  // 增强阴影
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
     border-color: $gray-300;
+  }
+}
+
+// 悬赏顶部 bar
+.bounty-bar {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: -16px -16px 12px -16px; // 撑满卡片宽度
+  padding: 6px 14px;
+  background: linear-gradient(90deg, rgba($accent, 0.12) 0%, rgba($accent, 0.05) 100%);
+  border-bottom: 1px solid rgba($accent, 0.2);
+
+  .bounty-bar-icon {
+    color: $accent;
+    flex-shrink: 0;
+  }
+
+  .bounty-bar-text {
+    font-size: 12px;
+    font-weight: 600;
+    color: $accent;
+    letter-spacing: 0.2px;
   }
 }
 
@@ -268,19 +326,31 @@ const handleClick = () => {
   }
 }
 
-.solved-badge {
+.status-badge {
   display: flex;
   align-items: center;
   gap: $sp-1;
   padding: $sp-1 $sp-2;
-  background: rgba($success, 0.08);
-  color: $success;
   border-radius: $radius-sm;
   font-size: $font-size-xs;
 
   .badge-text {
     font-weight: $font-weight-medium;
   }
+
+  &.solved {
+    background: rgba($success, 0.08);
+    color: $success;
+  }
+
+  &.unsolved {
+    background: rgba($gray-400, 0.1);
+    color: $gray-500;
+  }
+}
+
+.card-tags-placeholder {
+  flex: 1;
 }
 
 // ===================================

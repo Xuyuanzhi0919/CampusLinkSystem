@@ -27,22 +27,42 @@
             </view>
           </view>
 
-          <!-- 搜索历史面板 -->
-          <view v-if="showSearchHistory && searchHistory.length > 0" class="search-history-dropdown">
-            <view class="history-header">
-              <text class="history-title">搜索历史</text>
-              <text class="history-clear" @click="handleClearHistory">清空</text>
-            </view>
-            <view class="history-list">
-              <view
-                v-for="(item, index) in searchHistory"
-                :key="index"
-                class="history-item"
-                @click="handleHistoryClick(item)"
-              >
-                <Icon name="clock" :size="14" class="history-icon" />
-                <text class="history-text">{{ item }}</text>
-                <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
+          <!-- 搜索历史/热门词面板 -->
+          <view v-if="showSearchHistory && !searchKeyword && (searchHistory.length > 0 || hotSearchWords.length > 0)" class="search-history-dropdown">
+            <!-- 搜索历史 -->
+            <template v-if="searchHistory.length > 0">
+              <view class="history-header">
+                <text class="history-title">搜索历史</text>
+                <text class="history-clear" @click="handleClearHistory">清空</text>
+              </view>
+              <view class="history-list">
+                <view
+                  v-for="(item, index) in searchHistory"
+                  :key="index"
+                  class="history-item"
+                  @click="handleHistoryClick(item)"
+                >
+                  <Icon name="clock" :size="14" class="history-icon" />
+                  <text class="history-text">{{ item }}</text>
+                  <Icon name="x" :size="14" class="history-remove" @click.stop="handleRemoveHistory(item)" />
+                </view>
+              </view>
+            </template>
+            <!-- 热门搜索词（无历史时显示，有历史时也追加） -->
+            <view class="hot-search-section">
+              <view class="history-header">
+                <text class="history-title">热门搜索</text>
+              </view>
+              <view class="hot-search-tags">
+                <view
+                  v-for="(word, index) in hotSearchWords"
+                  :key="index"
+                  class="hot-search-tag"
+                  @click="handleHistoryClick(word)"
+                >
+                  <Icon name="trending-up" :size="12" class="hot-tag-icon" />
+                  <text>{{ word }}</text>
+                </view>
               </view>
             </view>
           </view>
@@ -196,19 +216,12 @@
             <!-- 筛选/排序切换刷新时，旧卡片加半透明遮罩过渡 -->
             <view class="question-list-wrap" :class="{ 'refreshing': loading }">
               <view class="question-card-container">
-                <template v-for="(item, index) in questions" :key="item.qid">
+                <template v-for="item in questions" :key="item.qid">
                   <QuestionCard
                     :question="item"
                     :keyword="searchKeyword"
                     @click="handleQuestionClick(item.qid)"
                   />
-
-                  <!-- 每5个问题后添加分段分隔符(至少还有1个问题时才显示)，移动端不显示 -->
-                  <view v-if="(index + 1) % 5 === 0 && index < questions.length - 1" class="section-divider">
-                    <view class="divider-line"></view>
-                    <text class="divider-text">更多问题</text>
-                    <view class="divider-line"></view>
-                  </view>
                 </template>
               </view>
 
@@ -239,11 +252,13 @@
                 </view>
               </template>
 
-              <!-- 加载更多按钮（空闲状态） -->
+              <!-- 加载更多按钮（空闲状态，H5端自动触底加载，无需手动按钮） -->
+              <!-- #ifndef H5 -->
               <view v-else-if="hasMore" class="load-more-btn" @click="handleLoadMore">
                 <Icon name="arrow-down" :size="16" />
                 <text>加载更多</text>
               </view>
+              <!-- #endif -->
               <view v-else class="load-more-end">
                 <view class="end-line"></view>
                 <text class="end-text">没有更多了</text>
@@ -257,6 +272,18 @@
             <Icon :name="emptyIconName" :size="64" class="empty-icon" />
             <text class="empty-text">{{ emptyText }}</text>
             <text class="empty-hint">{{ emptyHint }}</text>
+            <view class="empty-actions">
+              <!-- 有筛选条件时显示清除按钮 -->
+              <view v-if="hasActiveFilters || searchKeyword" class="empty-action-btn secondary" @click="handleClearAllFilters">
+                <Icon name="x-circle" :size="15" />
+                <text>清除筛选</text>
+              </view>
+              <!-- 始终显示去提问按钮 -->
+              <view class="empty-action-btn primary" @click="handleAskQuestion">
+                <Icon name="edit-3" :size="15" />
+                <text>去提问</text>
+              </view>
+            </view>
           </view>
         </view>
 
@@ -332,6 +359,24 @@
               >
                 <Icon name="check-circle" :size="15" class="option-icon-lucide" />
                 <text class="option-label">已解决</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 有悬赏开关 -->
+          <view class="filter-group">
+            <text class="group-title">特殊筛选</text>
+            <view class="group-options">
+              <view
+                class="option-item option-item--toggle"
+                :class="{ selected: tempHasBounty }"
+                @click="tempHasBounty = !tempHasBounty"
+              >
+                <Icon name="award" :size="15" class="option-icon-lucide" />
+                <text class="option-label">有悬赏</text>
+                <view class="toggle-check" v-if="tempHasBounty">
+                  <Icon name="check" :size="12" />
+                </view>
               </view>
             </view>
           </view>
@@ -421,10 +466,14 @@ const searchHistory = ref<string[]>([])
 const searchLoading = ref(false)
 let searchDebounce: number | null = null
 
+// 热门搜索词（无历史时引导用户）
+const hotSearchWords = ['期末复习资料', 'Java多线程', '数据结构算法', '计算机网络', 'Python爬虫', 'MySQL优化']
+
 // 筛选条件
 const category = ref<string | null>(null)
 const status = ref<number | null>(null)
 const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
+const hasBounty = ref(false) // 仅看有悬赏的问题
 let filterDebounce: number | null = null
 
 // 筛选弹窗
@@ -432,6 +481,7 @@ const showFilterModal = ref(false)
 const tempCategory = ref<string | null>(null)
 const tempStatus = ref<number | null>(null)
 const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
+const tempHasBounty = ref(false)
 
 // 排序菜单
 const showSortMenu = ref(false)
@@ -442,7 +492,7 @@ const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 判断是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
-  return category.value !== null || status.value !== null || sortBy.value !== 'created_at'
+  return category.value !== null || status.value !== null || sortBy.value !== 'created_at' || hasBounty.value
 })
 
 // 活跃筛选项数量
@@ -450,6 +500,8 @@ const activeFilterCount = computed(() => {
   let count = 0
   if (category.value !== null) count++
   if (status.value !== null) count++
+  if (sortBy.value !== 'created_at') count++
+  if (hasBounty.value) count++
   return count
 })
 
@@ -555,6 +607,7 @@ const loadQuestions = async (refresh = false) => {
       keyword: searchKeyword.value,
       category: category.value,
       isSolved: status.value,  // 使用 isSolved 而不是 status
+      hasBounty: hasBounty.value ? 1 : undefined,
       page: page.value,
       pageSize: pageSize.value,
       sortBy: sortBy.value,
@@ -693,6 +746,7 @@ const handleResetFilter = () => {
   tempCategory.value = null
   tempStatus.value = null
   tempSortBy.value = 'created_at'
+  tempHasBounty.value = false
 }
 
 // 筛选弹窗 - 确定
@@ -700,6 +754,7 @@ const handleConfirmFilter = () => {
   category.value = tempCategory.value
   status.value = tempStatus.value
   sortBy.value = tempSortBy.value
+  hasBounty.value = tempHasBounty.value
   showFilterModal.value = false
   loadQuestions(true)
 }
@@ -757,6 +812,7 @@ const handleLoadMore = async () => {
       keyword: searchKeyword.value,
       category: category.value,
       isSolved: status.value,
+      hasBounty: hasBounty.value ? 1 : undefined,
       page: page.value,
       pageSize: pageSize.value,
       sortBy: sortBy.value,
@@ -844,6 +900,16 @@ const handleQuestionClick = (questionId: number) => {
   })
 }
 
+// 清除所有筛选条件
+const handleClearAllFilters = () => {
+  category.value = null
+  status.value = null
+  sortBy.value = 'created_at'
+  hasBounty.value = false
+  searchKeyword.value = ''
+  loadQuestions(true)
+}
+
 // 发布问题
 const handleAskQuestion = () => {
   uni.navigateTo({
@@ -857,6 +923,7 @@ watch(showFilterModal, (newVal) => {
     tempCategory.value = category.value
     tempStatus.value = status.value
     tempSortBy.value = sortBy.value
+    tempHasBounty.value = hasBounty.value
   }
 })
 
@@ -1297,6 +1364,45 @@ defineExpose({
 
   &:active {
     transform: scale(0.9);
+  }
+}
+
+// 热门搜索 tag 区域
+.hot-search-section {
+  border-top: 1px solid $gray-100;
+}
+
+.hot-search-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px 14px;
+}
+
+.hot-search-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  background: $gray-100;
+  border-radius: 14px;
+  font-size: 13px;
+  color: $gray-700;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  .hot-tag-icon {
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  &:hover {
+    background: rgba($primary, 0.1);
+    color: $primary;
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 }
 
@@ -1850,11 +1956,6 @@ defineExpose({
       margin-bottom: 0 !important;
       border: 1px solid $gray-200;
     }
-
-    // 分段分隔符在移动端隐藏
-    :deep(.section-divider) {
-      display: none;
-    }
   }
 }
 
@@ -1923,50 +2024,6 @@ defineExpose({
   }
 }
 
-// 分段分隔符
-.section-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 16px;
-  margin: 32px 0;
-  padding: 0 24px;
-
-  .divider-line {
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(
-      to right,
-      transparent 0%,
-      $gray-200 20%,
-      $gray-300 50%,
-      $gray-200 80%,
-      transparent 100%
-    );
-  }
-
-  .divider-text {
-    font-size: 12px;
-    font-weight: 500;
-    color: $gray-500;
-    white-space: nowrap;
-    padding: 4px 12px;
-    background: $gray-50;
-    border-radius: 12px;
-    border: 1px solid $gray-200;
-    user-select: none;
-  }
-
-  @include mobile {
-    margin: 24px 0;
-    gap: 12px;
-
-    .divider-text {
-      font-size: 11px;
-      padding: 3px 10px;
-    }
-  }
-}
 
 // 加载完成提示
 .load-more-end {
@@ -2013,6 +2070,49 @@ defineExpose({
 .empty-hint {
   font-size: 14px;
   color: $gray-500;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.empty-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 20px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.primary {
+    background: $primary;
+    color: $white;
+
+    &:hover {
+      background: darken($primary, 8%);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba($primary, 0.3);
+    }
+  }
+
+  &.secondary {
+    background: $gray-100;
+    color: $gray-700;
+    border: 1px solid $gray-200;
+
+    &:hover {
+      background: $gray-200;
+    }
+  }
+
+  &:active {
+    transform: scale(0.97);
+  }
 }
 
 // 右侧：侧栏（固定宽度 + sticky定位）
@@ -2321,6 +2421,24 @@ defineExpose({
 
 .option-item.selected .option-icon-lucide {
   color: $primary;
+}
+
+.option-item--toggle {
+  position: relative;
+  padding-right: 12px;
+}
+
+.toggle-check {
+  margin-left: 4px;
+  width: 18px;
+  height: 18px;
+  background: $primary;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  flex-shrink: 0;
 }
 
 .option-label {

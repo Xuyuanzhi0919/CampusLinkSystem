@@ -48,11 +48,15 @@
 
     <!-- 底部操作栏 -->
     <view class="answer-footer">
-      <!-- 左侧：点赞按钮 - 强化版 -->
+      <!-- 左侧：点赞 + 回复按钮 -->
       <view class="footer-left">
         <view class="like-button" :class="{ 'like-button--active': answer.isLiked }" @click="handleLike">
-          <Icon :name="answer.isLiked ? 'thumbs-up' : 'thumbs-up'" :size="18" class="like-icon" />
+          <Icon name="thumbs-up" :size="18" class="like-icon" />
           <text class="like-count">{{ formatNumber(answer.likes) }}</text>
+        </view>
+        <view class="reply-button" @click="handleReply">
+          <Icon name="message-circle" :size="18" class="reply-icon" />
+          <text class="reply-text">回复</text>
         </view>
       </view>
 
@@ -147,6 +151,7 @@ const emit = defineEmits<{
   like: [answerId: number]
   accept: [answerId: number]
   delete: [answerId: number]
+  reply: [answerId: number, responderName: string]
 }>()
 
 // Store
@@ -173,6 +178,11 @@ const handleAccept = () => {
 // 删除
 const handleDelete = () => {
   emit('delete', props.answer.answerId)
+}
+
+// 回复
+const handleReply = () => {
+  emit('reply', props.answer.answerId, props.answer.responderName)
 }
 
 // 预览图片
@@ -461,6 +471,10 @@ const handleReport = () => {
 }
 
 .footer-left {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+
   // 点赞按钮 - 强化版（品牌色突出）
   .like-button {
     display: inline-flex;
@@ -517,6 +531,48 @@ const handleReport = () => {
         transform: scale(1.02);
       }
     }
+  }
+}
+
+// 回复按钮
+.reply-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 40rpx;
+  background: $gray-50;
+  border: 2rpx solid $gray-200;
+  cursor: pointer;
+  transition: all $duration-base;
+
+  .reply-icon {
+    color: $gray-500;
+    transition: all $duration-base;
+  }
+
+  .reply-text {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: $gray-700;
+    transition: all $duration-base;
+  }
+
+  &:hover {
+    background: lighten($primary, 48%);
+    border-color: lighten($primary, 35%);
+
+    .reply-icon {
+      color: $primary;
+    }
+
+    .reply-text {
+      color: $primary;
+    }
+  }
+
+  &:active {
+    transform: scale(0.98);
   }
 }
 

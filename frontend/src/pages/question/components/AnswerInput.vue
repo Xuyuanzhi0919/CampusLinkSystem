@@ -243,10 +243,16 @@ const clear = () => {
   autoFocus.value = false
 }
 
+// 设置输入框内容（用于回复时预填 @用户名）
+const setContent = (text: string) => {
+  content.value = text
+}
+
 // 暴露方法给父组件
 defineExpose({
   clear,
-  expand: handleExpand  // 允许外部展开输入区
+  expand: handleExpand,
+  setContent
 })
 </script>
 

@@ -107,6 +107,7 @@
               @accept="handleAcceptAnswer"
               @like="handleLikeAnswer"
               @delete="handleDeleteAnswer"
+              @reply="handleReplyAnswer"
             />
 
             <!-- 加载更多 -->
@@ -572,6 +573,20 @@ const handleDeleteQuestion = () => {
       }
     }
   })
+}
+
+// 回复某个回答（展开输入框并预填 @用户名）
+const handleReplyAnswer = (answerId: number, responderName: string) => {
+  if (!requireLogin('answer')) return
+  answerInputRef.value?.expand()
+  // 展开后预填 @用户名，给用户回复上下文
+  setTimeout(() => {
+    const replyPrefix = `@${responderName} `
+    if (answerInputRef.value) {
+      // 通过 expand 方法展开后，直接向输入框追加内容（需要 AnswerInput 暴露 setContent）
+      answerInputRef.value?.setContent?.(replyPrefix)
+    }
+  }, 100)
 }
 
 // 问题点赞（有帮助）

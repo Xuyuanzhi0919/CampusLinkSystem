@@ -67,8 +67,8 @@
             :class="{ 'is-unread': !notification.isRead }"
             @click="handleNotificationClick(notification)"
           >
-            <view class="card-icon-wrap" :class="`icon-${getTypeKey(notification.notifyType)}`">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :class="`icon-color-${getTypeKey(notification.notifyType)}`" />
+            <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
             </view>
             <view class="card-body">
               <text class="card-title">{{ notification.title }}</text>
@@ -100,8 +100,8 @@
             class="notification-card is-read"
             @click="handleNotificationClick(notification)"
           >
-            <view class="card-icon-wrap icon-gray">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" class="icon-color-gray" />
+            <view class="card-icon-wrap" style="background: #F3F4F6;">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
             </view>
             <view class="card-body">
               <text class="card-title card-title-read">{{ notification.title }}</text>
@@ -202,22 +202,40 @@ const getTypeIcon = (type: string): string => {
   return map[type?.toUpperCase()] || 'bell'
 }
 
-// 通知类型 -> CSS key（用于颜色）
-const getTypeKey = (type: string): string => {
+// 通知类型 -> 图标背景色
+const getTypeBg = (type: string): string => {
   const map: Record<string, string> = {
-    ANSWER: 'blue',
-    COMMENT: 'blue',
-    LIKE: 'green',
-    FAVORITE: 'green',
-    SYSTEM: 'gray',
-    TASK: 'orange',
-    RESOURCE: 'gray',
-    QUESTION: 'blue',
-    ACTIVITY: 'purple',
-    MESSAGE: 'blue',
-    FOLLOW: 'green'
+    ANSWER: '#EFF6FF',
+    COMMENT: '#EFF6FF',
+    LIKE: '#F0FDF4',
+    FAVORITE: '#F0FDF4',
+    SYSTEM: '#F3F4F6',
+    TASK: '#FEF3C7',
+    RESOURCE: '#F3F4F6',
+    QUESTION: '#EFF6FF',
+    ACTIVITY: '#F5F3FF',
+    MESSAGE: '#EFF6FF',
+    FOLLOW: '#F0FDF4'
   }
-  return map[type?.toUpperCase()] || 'gray'
+  return map[type?.toUpperCase()] || '#F3F4F6'
+}
+
+// 通知类型 -> 图标颜色
+const getTypeColor = (type: string): string => {
+  const map: Record<string, string> = {
+    ANSWER: '#2563EB',
+    COMMENT: '#2563EB',
+    LIKE: '#22C55E',
+    FAVORITE: '#22C55E',
+    SYSTEM: '#9CA3AF',
+    TASK: '#D97706',
+    RESOURCE: '#9CA3AF',
+    QUESTION: '#2563EB',
+    ACTIVITY: '#7C3AED',
+    MESSAGE: '#2563EB',
+    FOLLOW: '#22C55E'
+  }
+  return map[type?.toUpperCase()] || '#9CA3AF'
 }
 
 // 积分奖励提取（仅回答被采纳时显示）
@@ -630,17 +648,6 @@ defineExpose({
   flex-shrink: 0;
 }
 
-.card-icon-wrap.icon-blue   { background: #EFF6FF; }
-.card-icon-wrap.icon-green  { background: #F0FDF4; }
-.card-icon-wrap.icon-orange { background: #FEF3C7; }
-.card-icon-wrap.icon-purple { background: #F5F3FF; }
-.card-icon-wrap.icon-gray   { background: #F3F4F6; }
-
-.icon-color-blue   { color: #2563EB; }
-.icon-color-green  { color: #22C55E; }
-.icon-color-orange { color: #D97706; }
-.icon-color-purple { color: #7C3AED; }
-.icon-color-gray   { color: #9CA3AF; }
 
 /* ===== 卡片内容 ===== */
 .card-body {

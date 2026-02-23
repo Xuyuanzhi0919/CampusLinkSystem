@@ -248,8 +248,8 @@
 		{
 			"path": "pages/notification/index",
 			"style": {
+				"navigationStyle": "custom",
 				"navigationBarTitleText": "通知中心",
-				"navigationBarBackgroundColor": "#FFFFFF",
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}

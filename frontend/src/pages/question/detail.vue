@@ -1230,19 +1230,11 @@ const handleRetry = () => {
 }
 
 // ===================================
-// 移动端：问题头部卡片和 AI 卡片扁平化
+// 移动端：回答列表容器加内边距
 // ===================================
 @include mobile {
-  // 让子组件的 CCard 在移动端也变为全宽无圆角
-  .main-content :deep(.c-card),
-  .main-content :deep(.question-header-card) {
-    border-radius: 0 !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-top: none !important;
-    box-shadow: none !important;
-    margin-bottom: 0 !important;
-    border-bottom: 1rpx solid $gray-100 !important;
+  .answers-list {
+    padding: 16rpx 0 8rpx;
   }
 }
 

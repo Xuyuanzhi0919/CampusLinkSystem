@@ -6,11 +6,10 @@
         <Icon name="arrow-left" :size="18" color="#1A1A1A" />
       </view>
       <text class="nav-title">通知中心</text>
-      <view v-if="hasUnread" class="mark-all-btn" @click="handleMarkAllRead">
-        <Icon name="check-check" :size="14" color="#2563EB" />
-        <text class="mark-text">全部已读</text>
+      <view class="mark-all-btn" :class="{ 'mark-all-btn--disabled': !hasUnread }" @click="handleMarkAllRead">
+        <Icon name="check-check" :size="14" :color="hasUnread ? '#2563EB' : '#C7D2FE'" />
+        <text class="mark-text" :class="{ 'mark-text--disabled': !hasUnread }">全部已读</text>
       </view>
-      <view v-else class="nav-placeholder" />
     </view>
 
     <!-- 分类 Tab 栏 -->
@@ -37,12 +36,9 @@
       class="content-scroll"
       scroll-y
       @scrolltolower="handleLoadMore"
-      @refresherrefresh="handleRefresh"
-      :refresher-enabled="true"
-      :refresher-triggered="refreshing"
     >
-      <!-- 骨架屏：初始加载 或 下拉刷新 -->
-      <template v-if="loading || refreshing">
+      <!-- 骨架屏：初始加载 -->
+      <template v-if="loading">
         <view
           v-for="(w, i) in skeletonWidths"
           :key="i"
@@ -58,7 +54,7 @@
       </template>
 
       <!-- 通知列表 -->
-      <template v-if="!loading && !refreshing && notificationList.length > 0">
+      <template v-if="!loading && notificationList.length > 0">
         <!-- 今天 -->
         <template v-if="todayNotifications.length > 0">
           <view class="date-divider">
@@ -124,7 +120,7 @@
       </template>
 
       <!-- 空状态 -->
-      <view v-if="!loading && !refreshing && notificationList.length === 0" class="empty-state">
+      <view v-if="!loading && notificationList.length === 0" class="empty-state">
         <view class="empty-icon-wrap">
           <Icon name="bell-off" :size="36" color="#9CA3AF" />
         </view>
@@ -179,7 +175,6 @@ const tabs = ref([
 const currentTab = ref('all')
 const notificationList = ref<any[]>([])
 const loading = ref(false)
-const refreshing = ref(false)
 const loadingMore = ref(false)
 const hasMore = ref(true)
 const page = ref(1)
@@ -297,9 +292,7 @@ const loadNotifications = async (isRefresh = false) => {
   if (!hasMore.value && !isRefresh) return
 
   try {
-    if (isRefresh) {
-      refreshing.value = true
-    } else if (page.value === 1) {
+    if (page.value === 1) {
       loading.value = true
     } else {
       loadingMore.value = true
@@ -324,7 +317,6 @@ const loadNotifications = async (isRefresh = false) => {
     uni.showToast({ title: error.message || '加载失败', icon: 'none' })
   } finally {
     loading.value = false
-    refreshing.value = false
     loadingMore.value = false
   }
 }
@@ -345,12 +337,6 @@ const handleTabChange = (tab: string) => {
   notificationList.value = []
   hasMore.value = true
   loadNotifications()
-}
-
-// 下拉刷新
-const handleRefresh = () => {
-  loadNotifications(true)
-  loadUnreadCount()
 }
 
 // 加载更多
@@ -466,12 +452,7 @@ onShow(() => {
   loadUnreadCount()
 })
 
-defineExpose({
-  onPullDownRefresh: () => {
-    handleRefresh()
-    setTimeout(() => uni.stopPullDownRefresh(), 1000)
-  }
-})
+defineExpose({})
 </script>
 
 <style lang="scss" scoped>
@@ -546,6 +527,15 @@ defineExpose({
   font-weight: 600;
   color: #2563EB;
   font-family: 'DM Sans', sans-serif;
+}
+
+.mark-text--disabled {
+  color: #C7D2FE;
+}
+
+.mark-all-btn--disabled {
+  background: #F5F5F5;
+  pointer-events: none;
 }
 
 /* ===== Tab 栏 ===== */

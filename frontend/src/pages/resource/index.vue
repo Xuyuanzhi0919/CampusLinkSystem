@@ -2299,11 +2299,10 @@ onUnmounted(() => {
 
 .category-tabs {
   display: flex;
-  align-items: stretch;
-  gap: 0;
+  align-items: center;
+  gap: 4px;
   flex: 1;
   overflow-x: auto;
-  height: 100%;
 
   /* #ifdef H5 */
   scrollbar-width: none;
@@ -2318,65 +2317,52 @@ onUnmounted(() => {
 .category-tab {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 0 14px;
-  height: 100%;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 18px;
   font-size: 14px;
   font-weight: 500;
-  color: $gray-600;
+  color: $gray-700;
   background: transparent;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
-  border-bottom: 2px solid transparent;
-  position: relative;
 
-  // 默认状态下的图标和文字颜色
   .tab-icon {
-    color: $gray-500;
+    color: $gray-600;
     flex-shrink: 0;
     transition: color 0.2s;
   }
 
-  text {
-    color: $gray-600;
-    transition: color 0.2s;
-  }
-
-  // Hover状态
-  &:hover:not(.category-tab--active) {
-    color: $gray-800;
+  &:hover {
+    background: $gray-100;
+    color: $gray-900;
 
     .tab-icon {
       color: $gray-700;
     }
-
-    text {
-      color: $gray-800;
-    }
   }
 
-  // 激活状态 - 底部下划线
+  // 激活状态 - pill 蓝色背景
   &.category-tab--active {
-    background: transparent !important;
-    color: $primary !important;
+    background: $primary;
+    color: $white;
     font-weight: 600;
-    border-bottom-color: $primary;
 
     .tab-icon {
-      color: $primary !important;
+      color: $white;
     }
 
     text,
     .tab-label {
-      color: $primary !important;
+      color: $white;
       font-weight: 600;
     }
   }
 
   @include mobile {
-    padding: 0 12px;
+    padding: 5px 12px;
     font-size: 13px;
   }
 }

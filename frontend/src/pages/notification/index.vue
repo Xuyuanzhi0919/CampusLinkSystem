@@ -226,9 +226,18 @@ const earlierNotifications = computed(() => {
 })
 
 // ===== 左滑删除手势 =====
-const swipeState = ref<Record<string | number, { startX: number; currentX: number; swiping: boolean }>>({})
-const SWIPE_THRESHOLD = 60  // 触发删除按钮的滑动距离
-const SWIPE_MAX = 72        // 最大滑动距离
+const SWIPE_THRESHOLD = 48  // 触发展开/收起的滑动距离
+const SWIPE_MAX = 72        // 最大滑动距离（删除区宽度）
+
+interface SwipeItem {
+  startX: number
+  startY: number
+  currentX: number   // 当前偏移（负值为向左）
+  baseX: number      // 本次手势开始时的偏移基准
+  isHorizontal: boolean | null  // null=未判定方向
+}
+
+const swipeState = ref<Record<string | number, SwipeItem>>({})
 
 const getSwipeX = (id: string | number): number => {
   return swipeState.value[id]?.currentX ?? 0
@@ -236,10 +245,13 @@ const getSwipeX = (id: string | number): number => {
 
 const onTouchStart = (e: TouchEvent, id: string | number) => {
   const touch = e.touches[0]
+  const prev = swipeState.value[id]
   swipeState.value[id] = {
     startX: touch.clientX,
-    currentX: swipeState.value[id]?.currentX ?? 0,
-    swiping: false
+    startY: touch.clientY,
+    currentX: prev?.currentX ?? 0,
+    baseX: prev?.currentX ?? 0,
+    isHorizontal: null
   }
 }
 
@@ -248,39 +260,39 @@ const onTouchMove = (e: TouchEvent, id: string | number) => {
   if (!state) return
   const touch = e.touches[0]
   const dx = touch.clientX - state.startX
-  // 仅向左滑
-  if (dx > 0 && state.currentX === 0) return
-  const newX = Math.max(-SWIPE_MAX, Math.min(0, (state.currentX === -SWIPE_MAX ? -SWIPE_MAX : 0) + dx))
-  swipeState.value[id] = { ...state, currentX: newX, swiping: true }
+  const dy = touch.clientY - state.startY
+
+  // 首次判断方向
+  if (state.isHorizontal === null) {
+    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return
+    const horizontal = Math.abs(dx) > Math.abs(dy)
+    swipeState.value[id] = { ...state, isHorizontal: horizontal }
+    if (!horizontal) return  // 纵向滚动，不处理
+  }
+  if (!state.isHorizontal) return  // 已判定为纵向
+
+  // 横向：阻止页面滚动，计算偏移
+  e.stopPropagation()
+  const newX = Math.max(-SWIPE_MAX, Math.min(0, state.baseX + dx))
+  swipeState.value[id] = { ...state, currentX: newX }
 }
 
-const onTouchEnd = (e: TouchEvent, id: string | number) => {
+const onTouchEnd = (_e: TouchEvent, id: string | number) => {
   const state = swipeState.value[id]
-  if (!state || !state.swiping) return
-  const touch = e.changedTouches[0]
-  const dx = touch.clientX - state.startX
+  if (!state || !state.isHorizontal) return
 
-  if (dx < -SWIPE_THRESHOLD) {
-    // 展开删除区
-    swipeState.value[id] = { ...state, currentX: -SWIPE_MAX, swiping: false }
-  } else if (dx > SWIPE_THRESHOLD / 2) {
-    // 关闭删除区
-    swipeState.value[id] = { ...state, currentX: 0, swiping: false }
-  } else {
-    // 回弹
-    swipeState.value[id] = { ...state, currentX: state.currentX < -SWIPE_THRESHOLD / 2 ? -SWIPE_MAX : 0, swiping: false }
-  }
+  // 根据最终位置决定展开还是收起
+  const snapTo = state.currentX < -(SWIPE_THRESHOLD) ? -SWIPE_MAX : 0
+  swipeState.value[id] = { ...state, currentX: snapTo, baseX: snapTo, isHorizontal: null }
 }
 
 const resetSwipe = (id: string | number) => {
-  if (swipeState.value[id]) {
-    swipeState.value[id] = { startX: 0, currentX: 0, swiping: false }
-  }
+  delete swipeState.value[id]
 }
 
-// 关闭所有滑动
+// 清空所有滑动状态（刷新/切 Tab 时调用）
 const closeAllSwipe = () => {
-  Object.keys(swipeState.value).forEach(id => resetSwipe(id))
+  swipeState.value = {}
 }
 
 // 通知类型 -> lucide 图标名

@@ -249,9 +249,7 @@
 			"path": "pages/notification/index",
 			"style": {
 				"navigationStyle": "custom",
-				"navigationBarTitleText": "通知中心",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
+				"navigationBarTitleText": "通知中心"
 			}
 		},
 		{

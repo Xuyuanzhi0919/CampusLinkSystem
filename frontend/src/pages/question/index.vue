@@ -1264,17 +1264,17 @@ defineExpose({
   max-height: 360px;
   overflow: hidden;
   z-index: 101;
-  animation: slideDown 0.2s ease-out;
+  animation: searchDropdownIn 0.2s ease-out;
+}
 
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+@keyframes searchDropdownIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

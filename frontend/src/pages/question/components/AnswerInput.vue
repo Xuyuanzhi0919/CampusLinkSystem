@@ -65,9 +65,9 @@
             <text v-if="images.length > 0" class="tool-badge">{{ images.length }}</text>
           </view>
 
-          <!-- 悬赏积分（可选功能） -->
-          <view class="tool-btn">
-            <Icon name="gift" :size="20" class="tool-icon" />
+          <!-- Emoji 表情 -->
+          <view class="tool-btn" @click="toggleEmojiPanel">
+            <Icon name="smile" :size="20" class="tool-icon" :class="{ 'tool-icon--active': showEmoji }" />
           </view>
         </view>
 
@@ -83,6 +83,16 @@
           <Icon name="send" :size="16" class="submit-icon" />
           发布回答
         </CButton>
+      </view>
+
+      <!-- Emoji 面板 -->
+      <view v-if="showEmoji" class="emoji-panel">
+        <view
+          v-for="emoji in emojiList"
+          :key="emoji"
+          class="emoji-item"
+          @click="insertEmoji(emoji)"
+        >{{ emoji }}</view>
       </view>
 
       <!-- 图片预览区 -->
@@ -145,6 +155,15 @@ const images = ref<string[]>([])
 const isFocused = ref(false)
 const isExpanded = ref(false) // 是否展开输入区
 const autoFocus = ref(false)  // 自动聚焦控制
+const showEmoji = ref(false)  // emoji 面板
+
+// 常用 emoji 列表
+const emojiList = [
+  '😀','😂','🥹','😊','😎','🤔','😅','🙏','👍','👎',
+  '❤️','🔥','✨','💡','🎉','👏','🤝','💪','🙌','👀',
+  '😭','😱','🤣','😴','🥳','🤯','😤','🥲','😬','🫡',
+  '📚','💻','🖥️','⚡','🎯','🚀','💯','✅','❌','⚠️',
+]
 
 // 是否可以提交
 const canSubmit = computed(() => {
@@ -198,6 +217,16 @@ const handleCollapse = () => {
   }
 }
 
+// 切换 emoji 面板
+const toggleEmojiPanel = () => {
+  showEmoji.value = !showEmoji.value
+}
+
+// 插入 emoji
+const insertEmoji = (emoji: string) => {
+  content.value += emoji
+}
+
 // 选择图片
 const handleChooseImage = () => {
   uni.chooseImage({
@@ -241,6 +270,7 @@ const clear = () => {
   isFocused.value = false
   isExpanded.value = false
   autoFocus.value = false
+  showEmoji.value = false
 }
 
 // 设置输入框内容（用于回复时预填 @用户名）
@@ -523,6 +553,40 @@ defineExpose({
       margin-right: 8rpx;
     }
   }
+}
+
+// ===================================
+// Emoji 面板
+// ===================================
+.emoji-panel {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  padding: 16rpx 24rpx;
+  border-top: 1rpx solid $gray-100;
+  background: $white;
+  animation: slideUp 0.2s ease-out;
+}
+
+.emoji-item {
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36rpx;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  transition: background $duration-fast;
+
+  &:active {
+    background: $gray-100;
+    transform: scale(1.2);
+  }
+}
+
+.tool-icon--active {
+  color: $primary !important;
 }
 
 // ===================================

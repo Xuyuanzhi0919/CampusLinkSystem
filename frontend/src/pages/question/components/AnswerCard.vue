@@ -246,10 +246,10 @@ const handleReport = () => {
   transition: all $duration-base $ease-out;
 
   // 统一卡片阴影和圆角
-  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04) !important; // Enhanced shadow
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.04) !important;
   border-radius: 24rpx !important; // 12px rounded corners
   padding: 48rpx !important; // 24px internal padding
-  border: 1rpx solid $gray-100; // Subtle border
+  border: 1rpx solid $gray-100;
 
   &:hover {
     box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.08) !important;
@@ -258,9 +258,9 @@ const handleReport = () => {
 
   // 最佳答案样式 - 清新现代风
   &--accepted {
-    background-color: #FFFDF5 !important;
-    border-color: #FACC15 !important;
-    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.06) !important;
+    background-color: #FFFBEB !important;
+    border-color: #F59E0B !important;
+    box-shadow: 0 6rpx 18rpx rgba(245, 158, 11, 0.1) !important;
     position: relative;
     overflow: hidden;
 
@@ -270,8 +270,8 @@ const handleReport = () => {
       top: 0;
       left: 0;
       right: 0;
-      height: 6rpx;
-      background: linear-gradient(90deg, #FACC15 0%, #FDE68A 100%);
+      height: 8rpx; // 加粗到 4px，视觉更突出
+      background: linear-gradient(90deg, #F59E0B 0%, #FBBF24 50%, #FDE68A 100%);
     }
 
     .answer-content {
@@ -279,7 +279,34 @@ const handleReport = () => {
     }
 
     &:hover {
-      box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08) !important;
+      box-shadow: 0 8rpx 24rpx rgba(245, 158, 11, 0.15) !important;
+    }
+  }
+
+  // 移动端：去掉卡片间 margin 和圆角，改为分割线风格
+  @include mobile {
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1rpx solid $gray-100 !important;
+    box-shadow: none !important;
+    padding: 36rpx 32rpx !important;
+
+    &:hover {
+      transform: none;
+      box-shadow: none !important;
+    }
+
+    // 最佳答案移动端：保留顶部金色条+黄色背景
+    &--accepted {
+      border-top: none !important; // 通过 ::before 实现顶部条
+      border-bottom: 1rpx solid rgba(#F59E0B, 0.2) !important;
+
+      &::before {
+        height: 6rpx;
+      }
     }
   }
 }
@@ -669,8 +696,7 @@ const handleReport = () => {
 // ===================================
 @include mobile {
   .answer-card {
-    padding: 32rpx !important; // Reduce padding on mobile
-    margin-bottom: 24rpx; // Slightly less spacing on mobile
+    // padding/margin 已在 .answer-card 的 @include mobile 块中处理
   }
 
   .responder-info {

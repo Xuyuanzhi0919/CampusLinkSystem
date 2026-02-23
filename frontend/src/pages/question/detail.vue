@@ -49,9 +49,17 @@
           <QuestionHeader
             :question="question"
             :show-breadcrumb="false"
+            :is-my-question="isMyQuestion"
+            :is-liked="questionLiked"
+            :is-collected="questionCollected"
+            :is-following="questionFollowing"
             @breadcrumb-click="handleBreadcrumbClick"
             @tag-click="handleTagClick"
             @preview-image="handlePreviewQuestionImage"
+            @like="handleQuestionLike"
+            @collect="handleCollect"
+            @share="handleShare"
+            @follow="handleFollow"
           />
 
           <!-- AI 回答卡片 -->
@@ -65,35 +73,29 @@
           </CCard>
 
           <!-- 回答导航条 -->
-          <CCard variant="elevated" class="answers-nav-card">
-            <view class="answers-nav">
-              <view class="answers-nav-left">
-                <text class="answers-count">{{ question.answerCount }} 个回答</text>
+          <view class="answers-nav-bar">
+            <view class="answers-nav-bar__left">
+              <text class="answers-count">{{ question.answerCount }} 个回答</text>
+            </view>
+            <view class="answers-nav-bar__right">
+              <view
+                class="sort-tab"
+                :class="{ 'sort-tab--active': sortBy === 'likes' }"
+                @click="handleSortChange('likes')"
+              >
+                <Icon name="thumbs-up" :size="14" class="sort-tab-icon" />
+                <text>点赞</text>
               </view>
-
-              <view class="answers-nav-right">
-                <CButton
-                  :type="sortBy === 'likes' ? 'primary' : 'ghost'"
-                  size="sm"
-                  :plain="sortBy !== 'likes'"
-                  @click="handleSortChange('likes')"
-                >
-                  <Icon name="thumbs-up" :size="16" class="sort-icon" />
-                  点赞
-                </CButton>
-
-                <CButton
-                  :type="sortBy === 'created_at' ? 'primary' : 'ghost'"
-                  size="sm"
-                  :plain="sortBy !== 'created_at'"
-                  @click="handleSortChange('created_at')"
-                >
-                  <Icon name="clock" :size="16" class="sort-icon" />
-                  时间
-                </CButton>
+              <view
+                class="sort-tab"
+                :class="{ 'sort-tab--active': sortBy === 'created_at' }"
+                @click="handleSortChange('created_at')"
+              >
+                <Icon name="timer" :size="14" class="sort-tab-icon" />
+                <text>时间</text>
               </view>
             </view>
-          </CCard>
+          </view>
 
           <!-- 回答列表 -->
           <view v-if="answers.length > 0" class="answers-list">
@@ -284,6 +286,11 @@ const questionId = ref(0)
 
 // 更多菜单状态
 const showMorePopup = ref(false)
+
+// 移动端操作栏状态（问题的点赞/收藏/关注）
+const questionLiked = ref(false)
+const questionCollected = ref(false)
+const questionFollowing = ref(false)
 
 // 登录引导弹窗状态
 const showLoginGuide = ref(false)
@@ -567,6 +574,12 @@ const handleDeleteQuestion = () => {
   })
 }
 
+// 问题点赞（有帮助）
+const handleQuestionLike = () => {
+  if (!requireLogin('like')) return
+  uni.showToast({ title: '感谢你的反馈！', icon: 'none' })
+}
+
 // 其他操作
 const handleFollow = () => {
   uni.showToast({ title: '关注功能开发中', icon: 'none' })
@@ -663,8 +676,9 @@ const handleRetry = () => {
   padding-bottom: calc($sp-6 + 200rpx);
 
   @include mobile {
-    padding: $sp-4;
+    padding: 0; // 移动端去掉外层 padding，由各组件自行控制
     padding-bottom: calc($sp-4 + 200rpx);
+    background: #F8FAFC;
   }
 }
 
@@ -781,7 +795,7 @@ const handleRetry = () => {
 
   @include mobile {
     max-width: 100%;
-    gap: 24rpx;
+    gap: 0; // 移动端去掉间距，靠各组件底部边框区分
   }
 }
 
@@ -931,40 +945,71 @@ const handleRetry = () => {
 }
 
 // ===================================
-// 回答导航条
+// 回答导航条（重新设计，扁平风格）
 // ===================================
-.answers-nav-card {
-  // 卡片基础样式由 CCard 提供
-}
-
-.answers-nav {
+.answers-nav-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: $white;
+  border-radius: $radius-lg;
+  padding: 0 $sp-6;
+  height: 88rpx;
+  border: 1rpx solid $gray-100;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 
+  // 移动端：无圆角、无阴影、全宽
   @include mobile {
-    flex-direction: column;
-    gap: $sp-4;
-    align-items: flex-start;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    box-shadow: none;
+    padding: 0 $sp-4;
+    background: #F8FAFC;
+  }
+
+  &__left {
+    .answers-count {
+      font-size: $font-size-base;
+      font-weight: $font-weight-bold;
+      color: $gray-900;
+    }
+  }
+
+  &__right {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
   }
 }
 
-.answers-nav-left {
-  .answers-count {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-bold;
-    color: $gray-900;
-  }
-}
-
-.answers-nav-right {
-  display: flex;
+.sort-tab {
+  display: inline-flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 8rpx;
+  padding: 10rpx 24rpx;
+  border-radius: 40rpx;
+  font-size: 26rpx;
+  color: $gray-500;
+  cursor: pointer;
+  transition: all $duration-base;
+  border: 1.5rpx solid transparent;
 
-  .sort-icon {
-    margin-right: $sp-2;
+  .sort-tab-icon {
     color: currentColor;
+    flex-shrink: 0;
+  }
+
+  &:active {
+    background: $gray-100;
+  }
+
+  &--active {
+    color: $primary;
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+    font-weight: 600;
   }
 }
 
@@ -1163,6 +1208,27 @@ const handleRetry = () => {
 // ===================================
 .bottom-placeholder {
   height: 100rpx;
+
+  @include mobile {
+    height: 40rpx;
+  }
+}
+
+// ===================================
+// 移动端：问题头部卡片和 AI 卡片扁平化
+// ===================================
+@include mobile {
+  // 让子组件的 CCard 在移动端也变为全宽无圆角
+  .main-content :deep(.c-card),
+  .main-content :deep(.question-header-card) {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    box-shadow: none !important;
+    margin-bottom: 0 !important;
+    border-bottom: 1rpx solid $gray-100 !important;
+  }
 }
 
 // ===================================

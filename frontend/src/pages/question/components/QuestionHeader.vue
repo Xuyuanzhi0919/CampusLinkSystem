@@ -90,6 +90,41 @@
         #{{ tag }}
       </CTag>
     </view>
+
+    <!-- 移动端操作栏（PC端由 DetailSidebar 提供） -->
+    <view class="mobile-action-bar">
+      <view class="mobile-action-bar__left">
+        <view
+          class="mobile-action-btn mobile-action-btn--primary"
+          :class="{ 'mobile-action-btn--active': isLiked }"
+          @click="emit('like')"
+        >
+          <Icon name="thumbs-up" :size="16" class="mobile-action-icon" />
+          <text class="mobile-action-text">有帮助</text>
+        </view>
+        <view
+          class="mobile-action-btn"
+          :class="{ 'mobile-action-btn--active': isCollected }"
+          @click="emit('collect')"
+        >
+          <Icon name="bookmark" :size="16" class="mobile-action-icon" />
+          <text class="mobile-action-text">收藏</text>
+        </view>
+        <view class="mobile-action-btn" @click="emit('share')">
+          <Icon name="share-2" :size="16" class="mobile-action-icon" />
+          <text class="mobile-action-text">分享</text>
+        </view>
+      </view>
+      <view
+        v-if="!isMyQuestion"
+        class="mobile-action-btn mobile-action-btn--follow"
+        :class="{ 'mobile-action-btn--following': isFollowing }"
+        @click="emit('follow')"
+      >
+        <Icon :name="isFollowing ? 'user-check' : 'user-plus'" :size="14" class="mobile-action-icon" />
+        <text class="mobile-action-text">{{ isFollowing ? '已关注' : '关注TA' }}</text>
+      </view>
+    </view>
   </CCard>
 </template>
 
@@ -103,8 +138,16 @@ import Icon from '@/components/icons/index.vue'
 const props = withDefaults(defineProps<{
   question: QuestionDetail
   showBreadcrumb?: boolean
+  isMyQuestion?: boolean
+  isLiked?: boolean
+  isCollected?: boolean
+  isFollowing?: boolean
 }>(), {
-  showBreadcrumb: true
+  showBreadcrumb: true,
+  isMyQuestion: false,
+  isLiked: false,
+  isCollected: false,
+  isFollowing: false
 })
 
 // Emits
@@ -113,6 +156,10 @@ const emit = defineEmits<{
   tagClick: [tag: string]
   previewImage: [index: number]
   askerClick: []
+  like: []
+  collect: []
+  share: []
+  follow: []
 }>()
 
 // 是否为已注销用户
@@ -380,5 +427,113 @@ const handlePreviewImage = (index: number) => {
   display: flex;
   gap: $sp-3;
   flex-wrap: wrap;
+}
+
+// ===================================
+// 移动端操作栏（仅移动端显示）
+// ===================================
+.mobile-action-bar {
+  display: none; // PC 端隐藏
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: $sp-4;
+    padding-top: $sp-4;
+    border-top: 1rpx solid $gray-100;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+  }
+}
+
+.mobile-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 12rpx 20rpx;
+  border-radius: 40rpx;
+  border: 1.5rpx solid $gray-200;
+  background: transparent;
+  cursor: pointer;
+  transition: all $duration-base;
+
+  &:active {
+    transform: scale(0.97);
+    background: $gray-50;
+  }
+
+  .mobile-action-icon {
+    color: $gray-500;
+    flex-shrink: 0;
+    transition: color $duration-base;
+  }
+
+  .mobile-action-text {
+    font-size: 24rpx;
+    color: $gray-600;
+    white-space: nowrap;
+    transition: color $duration-base;
+  }
+
+  // 蓝色激活态（有帮助按钮）
+  &--primary {
+    &.mobile-action-btn--active {
+      background: #EFF6FF;
+      border-color: #BFDBFE;
+
+      .mobile-action-icon {
+        color: $primary;
+      }
+
+      .mobile-action-text {
+        color: $primary;
+        font-weight: 600;
+      }
+    }
+
+    &:active {
+      background: #EFF6FF;
+    }
+  }
+
+  // 关注TA 按钮（蓝色填充）
+  &--follow {
+    background: $primary;
+    border-color: $primary;
+
+    .mobile-action-icon {
+      color: $white;
+    }
+
+    .mobile-action-text {
+      color: $white;
+      font-weight: 600;
+    }
+
+    &:active {
+      background: darken($primary, 8%);
+      border-color: darken($primary, 8%);
+    }
+  }
+
+  // 已关注状态
+  &--following {
+    background: $gray-50;
+    border-color: $gray-200;
+
+    .mobile-action-icon {
+      color: $gray-500;
+    }
+
+    .mobile-action-text {
+      color: $gray-500;
+      font-weight: 500;
+    }
+  }
 }
 </style>

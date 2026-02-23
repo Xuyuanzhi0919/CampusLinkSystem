@@ -596,16 +596,20 @@ defineExpose({
   padding: 14px 16px;
   gap: 12px;
   background: $white;
-  border-bottom: 1px solid #F4F4F5;
-  transition: background 0.2s;
+  border-radius: 12px;
+  margin: 0 12px 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: background 0.2s, box-shadow 0.2s;
   cursor: pointer;
 
   &.unread {
     background: #FAFBFF;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.08);
   }
 
   &.read {
     background: #F9FAFB;
+    box-shadow: none;
   }
 
   &:active {
@@ -740,7 +744,9 @@ defineExpose({
   padding: 14px 16px;
   gap: 12px;
   background: $white;
-  border-bottom: 1px solid #F4F4F5;
+  border-radius: 12px;
+  margin: 0 12px 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .skeleton-icon {

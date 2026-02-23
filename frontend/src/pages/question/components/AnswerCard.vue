@@ -298,15 +298,18 @@ const handleReport = () => {
     }
   }
 
-  // 移动端：卡片间用 8rpx 灰色间隙区分（背景色透出）
+  // 移动端：卡片间用间隙区分（背景色透出）
   @include mobile {
     margin-bottom: 16rpx !important;
-    border-radius: 16rpx !important;
-    border: 1rpx solid $gray-100 !important;
-    box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04) !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-bottom: 1rpx solid $gray-100 !important;
+    box-shadow: none !important;
     padding: 32rpx 28rpx !important;
-    margin-left: 24rpx !important;
-    margin-right: 24rpx !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
 
     &:hover {
       transform: none;
@@ -315,11 +318,11 @@ const handleReport = () => {
 
     // 最佳答案移动端：保留顶部金色条+黄色背景
     &--accepted {
-      border-color: #F59E0B !important;
+      border-top: 6rpx solid #F59E0B !important;
+      border-bottom: 1rpx solid rgba(#F59E0B, 0.2) !important;
 
       &::before {
-        height: 6rpx;
-        border-radius: 16rpx 16rpx 0 0;
+        display: none; // 移动端用 border-top 替代伪元素
       }
     }
   }

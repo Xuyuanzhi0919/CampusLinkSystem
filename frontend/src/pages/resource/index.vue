@@ -5,7 +5,7 @@
       <view class="top-nav-container">
         <!-- Logo -->
         <view class="brand-logo">
-          <Icon name="file-text" :size="20" class="logo-icon" />
+          <Icon name="layers" :size="20" class="logo-icon" />
           <text class="logo-text">资源广场</text>
         </view>
 
@@ -61,8 +61,8 @@
 
         <!-- 上传按钮 -->
         <view class="upload-button" @click="handleUploadClick">
-          <Icon name="image-plus" :size="16" class="upload-icon" />
-          <text class="upload-text">上传资源</text>
+          <Icon name="upload" :size="14" class="upload-icon" />
+          <text class="upload-text">上传</text>
         </view>
       </view>
     </view>
@@ -2299,10 +2299,11 @@ onUnmounted(() => {
 
 .category-tabs {
   display: flex;
-  align-items: center;
-  gap: 4px;
+  align-items: stretch;
+  gap: 0;
   flex: 1;
   overflow-x: auto;
+  height: 100%;
 
   /* #ifdef H5 */
   scrollbar-width: none;
@@ -2317,63 +2318,65 @@ onUnmounted(() => {
 .category-tab {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
-  border-radius: 18px;
+  gap: 5px;
+  padding: 0 14px;
+  height: 100%;
   font-size: 14px;
   font-weight: 500;
-  color: $gray-700;
+  color: $gray-600;
   background: transparent;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
+  border-bottom: 2px solid transparent;
+  position: relative;
 
   // 默认状态下的图标和文字颜色
   .tab-icon {
-    color: $gray-600;
+    color: $gray-500;
     flex-shrink: 0;
     transition: color 0.2s;
   }
 
   text {
-    color: $gray-700;
+    color: $gray-600;
     transition: color 0.2s;
   }
 
   // Hover状态
   &:hover:not(.category-tab--active) {
-    background: $gray-100;
-    color: $gray-900;
+    color: $gray-800;
 
     .tab-icon {
-      color: $gray-900;
+      color: $gray-700;
     }
 
     text {
-      color: $gray-900;
+      color: $gray-800;
     }
   }
 
-  // 激活状态 - 使用更高的优先级
+  // 激活状态 - 底部下划线
   &.category-tab--active {
-    background: $primary !important;
-    color: $white !important;
+    background: transparent !important;
+    color: $primary !important;
     font-weight: 600;
+    border-bottom-color: $primary;
 
     .tab-icon {
-      color: $white !important;
+      color: $primary !important;
     }
 
     text,
     .tab-label {
-      color: $white !important;
-      font-weight: 600; // 确保激活状态文字加粗
+      color: $primary !important;
+      font-weight: 600;
     }
   }
 
   @include mobile {
-    padding: 5px 12px;
+    padding: 0 12px;
     font-size: 13px;
   }
 }
@@ -2383,11 +2386,6 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-
-  // 移动端隐藏排序和筛选按钮
-  @include mobile {
-    display: none;
-  }
 }
 
 .sort-dropdown-wrapper {
@@ -2398,32 +2396,33 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 6px 12px;
-  min-width: 60px;
-  background: $gray-100;
-  border-radius: 16px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid $gray-200;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 
   &:hover {
-    background: $gray-200;
+    background: $gray-100;
+    border-color: $gray-300;
   }
 
   .sort-icon {
-    color: $gray-600;
+    color: $gray-500;
     flex-shrink: 0;
   }
 
   .sort-label {
-    font-size: 13px;
-    color: $gray-700;
+    font-size: 12px;
+    color: $gray-600;
     font-weight: 500;
   }
 
   .dropdown-icon {
-    color: $gray-600;
+    color: $gray-400;
     flex-shrink: 0;
     transition: transform 0.2s;
   }

@@ -1,137 +1,117 @@
 <template>
   <view
     class="resource-card"
-    :class="{ 'is-active': isActive, 'is-mobile': isMobile, 'is-hot': isHotResource }"
+    :class="{ 'is-active': isActive, 'is-mobile': isMobile }"
     @click="handleClick"
     @touchstart="onTouchStart"
     @touchend="onTouchEnd"
     @mouseenter="onMouseEnter"
     @mouseleave="onMouseLeave"
   >
-    <!-- P1-3: 高价值资源角标 -->
-    <view v-if="isHotResource" class="hot-badge">
-      <ClIcon name="icon-fire" size="sm" color="#FFFFFF" />
-      <text class="hot-badge-text">HOT</text>
+    <!-- 审核状态标签 (非已通过时显示) -->
+    <view
+      v-if="resource.status !== undefined && resource.status !== 1"
+      class="status-badge"
+      :class="`status-${resource.status}`"
+    >
+      {{ getStatusText(resource.status) }}
     </view>
 
-    <!-- 📌 第一层:标题 + 价值指标 (点赞数) -->
-    <view class="card-header">
-      <view class="title-row">
-        <!-- 资源类型图标 -->
-        <view class="type-icon" :class="`type-${getCategoryClass(resource.category)}`">
-          <ClIcon :name="getTypeIconName(resource.category)" size="base" color="#FFFFFF" />
+    <!-- 卡片主体：左侧图标徽章 + 右侧信息 -->
+    <view class="card-body">
+      <!-- 左侧：类型图标徽章 -->
+      <view class="type-badge" :class="`type-${getCategoryClass(resource.category)}`">
+        <ClIcon :name="getTypeIconName(resource.category)" size="base" color="#FFFFFF" />
+      </view>
+
+      <!-- 右侧：信息区 -->
+      <view class="card-info">
+        <!-- 标题行：标题 + 积分chip -->
+        <view class="title-row">
+          <rich-text v-if="keyword" class="title" :nodes="highlightText(resource.title, keyword)" />
+          <text v-else class="title">{{ resource.title }}</text>
+
+          <!-- 积分 chip（需要积分时显示） -->
+          <view v-if="resource.score && resource.score > 0" class="score-chip">
+            <ClIcon name="icon-coin" size="xs" color="#D97706" />
+            <text class="score-text">{{ resource.score }}</text>
+          </view>
+          <!-- 免费标签 -->
+          <view v-else class="free-chip">
+            <text class="free-text">免费</text>
+          </view>
         </view>
 
-        <!-- 标题 -->
-        <rich-text v-if="keyword" class="title" :nodes="highlightText(resource.title, keyword)" />
-        <text v-else class="title">{{ resource.title }}</text>
+        <!-- 元信息行：学校 · 时间 -->
+        <view class="meta-row">
+          <view v-if="resource.uploaderSchool" class="meta-item">
+            <ClIcon name="icon-building" size="xs" color="#9CA3AF" />
+            <text class="meta-text">{{ resource.uploaderSchool }}</text>
+          </view>
+          <text v-if="resource.uploaderSchool" class="meta-dot">·</text>
+          <text class="meta-time">{{ formatTime(resource.createdAt) }}</text>
+        </view>
 
-        <!--  点赞数 (弱提示) -->
-        <view class="likes-hint">
-          <ClIcon name="icon-heart" size="sm" color="#F87171" />
-          <text class="like-count">{{ formatNumber(resource.likes) }}</text>
+        <!-- Tag 行：课程名 + 文件类型 + 课程大小 -->
+        <view class="tags-row">
+          <view v-if="resource.courseName" class="tag-pill">
+            <text>{{ resource.courseName }}</text>
+          </view>
+          <view v-if="resource.fileType" class="tag-pill" :class="`tag-filetype-${resource.fileType?.toLowerCase()}`">
+            <text>{{ getFileTypeText(resource.fileType) }}</text>
+          </view>
+          <view v-if="resource.fileSize" class="tag-pill tag-size">
+            <text>{{ formatFileSize(resource.fileSize) }}</text>
+          </view>
         </view>
       </view>
-
-      <!-- 审核状态标签 (如果有) -->
-      <view
-        v-if="resource.status !== undefined && resource.status !== 1"
-        class="status-badge"
-        :class="`status-${resource.status}`"
-      >
-        {{ getStatusText(resource.status) }}
-      </view>
     </view>
 
-    <!-- 📌 第二层:描述 + 文件类型标签 -->
-    <view class="description-section">
-      <view class="description">
-        <rich-text v-if="keyword" :nodes="highlightText(resource.description, keyword)" />
-        <text v-else>{{ resource.description }}</text>
-      </view>
-
-      <!-- 文件类型标签紧贴描述 -->
-      <view class="file-type-badge" :class="`filetype-${resource.fileType}`">
-        <ClIcon :name="getFileTypeIconName(resource.fileType)" size="sm" />
-        <text>{{ getFileTypeText(resource.fileType) }}</text>
-      </view>
-    </view>
-
-    <!-- 📌 第三层:元信息 (课程/大小/上传者/时间) -->
-    <view class="meta-section">
-      <!-- 课程标签 -->
-      <view v-if="resource.courseName" class="tag course-tag">
-        <ClIcon name="icon-book" size="xs" color="#2563EB" />
-        <text>{{ resource.courseName }}</text>
-      </view>
-
-      <!-- 文件大小 -->
-      <view v-if="resource.fileSize" class="tag size-tag">
-        {{ formatFileSize(resource.fileSize) }}
-      </view>
-
-      <!-- 分隔符 -->
-      <view class="meta-divider">·</view>
-
-      <!-- 上传者 -->
-      <text class="meta-text">{{ resource.uploaderName }}</text>
-
-      <!-- 时间 -->
-      <view class="meta-divider">·</view>
-      <text class="meta-text meta-time">{{ formatTime(resource.createdAt) }}</text>
-    </view>
-
-    <!-- 📌 第四层:行为区 (积分+下载量) —— P1优化:移除操作按钮,只保留信息展示 -->
-    <view class="action-section">
-      <!-- 左侧:统计数据 (社会证明) -->
+    <!-- 底部 footer：统计 + 操作按钮 -->
+    <view class="card-footer">
+      <!-- 左侧：统计数据 -->
       <view class="stats-group">
-        <!-- 积分价格 (弱化显示) -->
-        <view class="stat-item stat-points">
-          <ClIcon name="icon-coin" size="sm" color="#9CA3AF" />
-          <text class="stat-value">{{ resource.score }}</text>
-        </view>
-
-        <!-- 下载量 -->
-        <view class="stat-item stat-downloads">
-          <ClIcon name="icon-download" size="sm" color="#6B7280" />
+        <view class="stat-item">
+          <ClIcon name="icon-download" size="xs" color="#9CA3AF" />
           <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
         </view>
-
-        <!-- 收藏数 (新增) -->
-        <view v-if="resource.favorites && resource.favorites > 0" class="stat-item stat-favorites">
-          <ClIcon name="icon-star" size="sm" color="#F59E0B" />
+        <view class="stat-item">
+          <ClIcon name="icon-heart" size="xs" color="#9CA3AF" />
+          <text class="stat-value">{{ formatNumber(resource.likes) }}</text>
+        </view>
+        <view v-if="resource.favorites && resource.favorites > 0" class="stat-item">
+          <ClIcon name="icon-star" size="xs" color="#9CA3AF" />
           <text class="stat-value">{{ formatNumber(resource.favorites) }}</text>
         </view>
       </view>
 
-      <!-- 右侧:操作按钮组 —— P1优化:改为hover显示 -->
-      <view class="action-buttons action-buttons--hover">
-        <!-- 收藏按钮 (hover显示) -->
+      <!-- 右侧：操作按钮 -->
+      <view class="action-buttons">
+        <!-- 收藏按钮：圆形图标按钮 -->
         <view
           class="icon-btn favorite-btn"
           :class="{ 'is-favorited': resource.isFavorited }"
           @click.stop="handleFavorite"
-          :title="resource.isFavorited ? '取消收藏' : '收藏'"
         >
           <ClIcon
             :name="resource.isFavorited ? 'icon-star' : 'icon-bookmark'"
             size="sm"
-            :color="resource.isFavorited ? '#FFFFFF' : '#F59E0B'"
+            :color="resource.isFavorited ? '#F59E0B' : '#6B7280'"
           />
         </view>
 
-        <!-- 下载按钮 (hover显示) -->
+        <!-- 下载按钮：蓝色圆角矩形 -->
         <view
-          class="icon-btn download-btn"
+          class="download-btn"
           :class="{ 'is-downloaded': resource.isDownloaded }"
           @click.stop="handleDownload"
-          :title="resource.isDownloaded ? '重新下载' : `下载 (${resource.score}积分)`"
         >
           <ClIcon
             name="icon-download"
             size="sm"
-            :color="resource.isDownloaded ? '#FFFFFF' : '#2563EB'"
+            :color="resource.isDownloaded ? '#10B981' : '#FFFFFF'"
           />
+          <text class="download-text">{{ resource.isDownloaded ? '已下载' : '下载' }}</text>
         </view>
       </view>
     </view>
@@ -139,7 +119,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 import { ResourceCategory, ResourceStatus } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
@@ -148,7 +128,7 @@ import ClIcon from '@/components/cl/ClIcon.vue'
 // Props
 interface Props {
   resource: ResourceItem
-  keyword?: string  // 搜索关键词,用于高亮
+  keyword?: string  // 搜索关键词，用于高亮
 }
 
 const props = defineProps<Props>()
@@ -161,15 +141,10 @@ const emit = defineEmits<{
   favorite: [resource: ResourceItem]
 }>()
 
-//  响应式状态
+// 响应式状态
 const isActive = ref(false)
 const isMobile = ref(false)
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
-
-// P1-3: 判断是否为热门资源 (下载量 >= 100 或 收藏数 >= 50)
-const isHotResource = computed(() => {
-  return (props.resource.downloads >= 100) || ((props.resource.favorites || 0) >= 50)
-})
 
 // 检测设备类型
 onMounted(() => {
@@ -193,7 +168,8 @@ const getCategoryClass = (category: number | string | undefined): string => {
       '试卷': 'paper',
       '笔记': 'note',
       '教材': 'textbook',
-      '实验报告': 'report'
+      '实验报告': 'report',
+      '视频': 'video'
     }
     return classMap[category] || '0'
   }
@@ -210,7 +186,8 @@ const getTypeIconName = (category: number | string | undefined): string => {
       '试卷': 'icon-file-text',
       '笔记': 'icon-edit',
       '教材': 'icon-book',
-      '实验报告': 'icon-file-text'
+      '实验报告': 'icon-file-text',
+      '视频': 'icon-play-circle'
     }
     return stringIconMap[category] || 'icon-file'
   }
@@ -224,7 +201,7 @@ const getTypeIconName = (category: number | string | undefined): string => {
 }
 
 /**
- *  获取审核状态文本
+ * 获取审核状态文本
  */
 const getStatusText = (status: number): string => {
   const statusMap: Record<number, string> = {
@@ -236,95 +213,55 @@ const getStatusText = (status: number): string => {
 }
 
 /**
- * 获取文件类型图标名称（ClIcon 使用）
- */
-const getFileTypeIconName = (fileType: string): string => {
-  const iconMap: Record<string, string> = {
-    pdf: 'icon-file-pdf',
-    docx: 'icon-file-word',
-    doc: 'icon-file-word',
-    pptx: 'icon-file-ppt',
-    ppt: 'icon-file-ppt',
-    xls: 'icon-file-excel',
-    xlsx: 'icon-file-excel',
-    zip: 'icon-file-zip',
-    rar: 'icon-file-zip',
-    txt: 'icon-file-text'
-  }
-  return iconMap[fileType?.toLowerCase()] || 'icon-file'
-}
-
-/**
- *  获取文件类型文本
+ * 获取文件类型文本
  */
 const getFileTypeText = (fileType: string): string => {
   return fileType?.toUpperCase() || 'FILE'
 }
 
 /**
- *  格式化文件大小
+ * 格式化文件大小
  */
 const formatFileSize = (bytes: number): string => {
   if (!bytes || bytes === 0) return ''
-
   const kb = 1024
   const mb = kb * 1024
   const gb = mb * 1024
-
-  if (bytes >= gb) {
-    return `${(bytes / gb).toFixed(1)} GB`
-  } else if (bytes >= mb) {
-    return `${(bytes / mb).toFixed(1)} MB`
-  } else if (bytes >= kb) {
-    return `${(bytes / kb).toFixed(0)} KB`
-  } else {
-    return `${bytes} B`
-  }
+  if (bytes >= gb) return `${(bytes / gb).toFixed(1)} GB`
+  if (bytes >= mb) return `${(bytes / mb).toFixed(1)} MB`
+  if (bytes >= kb) return `${(bytes / kb).toFixed(0)} KB`
+  return `${bytes} B`
 }
 
 /**
- *  格式化数字 (1000 -> 1k)
+ * 格式化数字 (1000 -> 1k)
  */
 const formatNumber = (num: number): string => {
   if (!num || num === 0) return '0'
-
-  if (num >= 10000) {
-    return `${(num / 10000).toFixed(1)}w`
-  } else if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}k`
-  } else {
-    return num.toString()
-  }
+  if (num >= 10000) return `${(num / 10000).toFixed(1)}w`
+  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`
+  return num.toString()
 }
 
 /**
- *  格式化时间
+ * 格式化时间
  */
 const formatTime = (time: string): string => {
   if (!time) return ''
-
   const date = new Date(time)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
-
   const minute = 60 * 1000
   const hour = 60 * minute
   const day = 24 * hour
-
-  if (diff < minute) {
-    return '刚刚'
-  } else if (diff < hour) {
-    return `${Math.floor(diff / minute)}分钟前`
-  } else if (diff < day) {
-    return `${Math.floor(diff / hour)}小时前`
-  } else if (diff < 7 * day) {
-    return `${Math.floor(diff / day)}天前`
-  } else {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
+  if (diff < minute) return '刚刚'
+  if (diff < hour) return `${Math.floor(diff / minute)}分钟前`
+  if (diff < day) return `${Math.floor(diff / hour)}小时前`
+  if (diff < 7 * day) return `${Math.floor(diff / day)}天前`
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${d}`
 }
 
 /**
@@ -332,252 +269,71 @@ const formatTime = (time: string): string => {
  */
 const highlightText = (text: string, keyword?: string): string => {
   if (!keyword || !text) return text
-
   try {
-    // 转义特殊字符
     const escapedKeyword = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`(${escapedKeyword})`, 'gi')
-
-    // 替换为带高亮样式的HTML（使用设计系统的 accent 色）
-    return text.replace(regex, '<span style="color: #FF6B35; font-weight: 600; background: rgba(255, 107, 53, 0.1); padding: 0 4px; border-radius: 4px;">$1</span>')
+    return text.replace(regex, '<span style="color: #2563EB; font-weight: 600; background: rgba(37, 99, 235, 0.08); padding: 0 2px; border-radius: 3px;">$1</span>')
   } catch (error) {
     return text
   }
 }
 
-/**
- *  头像加载失败处理
- */
-const handleAvatarError = (e: any) => {
-  e.target.src = defaultAvatar
-}
+// 触摸/鼠标交互
+const onTouchStart = () => { isActive.value = true }
+const onTouchEnd = () => { setTimeout(() => { isActive.value = false }, 150) }
+const onMouseEnter = () => { if (!isMobile.value) isActive.value = true }
+const onMouseLeave = () => { if (!isMobile.value) isActive.value = false }
 
-/**
- *  触摸/鼠标交互
- */
-const onTouchStart = () => {
-  isActive.value = true
-}
-
-const onTouchEnd = () => {
-  setTimeout(() => {
-    isActive.value = false
-  }, 150)
-}
-
-const onMouseEnter = () => {
-  if (!isMobile.value) {
-    isActive.value = true
-  }
-}
-
-const onMouseLeave = () => {
-  if (!isMobile.value) {
-    isActive.value = false
-  }
-}
-
-/**
- *  点击卡片
- */
-const handleClick = () => {
-  emit('click', props.resource)
-}
-
-/**
- *  点击下载按钮
- */
-const handleDownload = () => {
-  emit('download', props.resource)
-}
-
-/**
- *  点击点赞按钮
- */
-const handleLike = () => {
-  emit('like', props.resource)
-}
-
-/**
- *  点击收藏按钮 - P1新增
- */
-const handleFavorite = () => {
-  emit('favorite', props.resource)
-}
+// 事件处理
+const handleClick = () => { emit('click', props.resource) }
+const handleDownload = () => { emit('download', props.resource) }
+const handleFavorite = () => { emit('favorite', props.resource) }
 </script>
 
 <style scoped lang="scss">
+// ===== 卡片容器 =====
 .resource-card {
   background: #FFFFFF;
-  border-radius: 16rpx;
-  padding: 24rpx; // 20rpx→24rpx,增加内边距,减少拥挤感
-  margin-bottom: 20rpx; // 16rpx→20rpx,增加卡片间距,增强呼吸感
-  border: 1rpx solid #E5E7EB; // 🎯 新增:边框增强边界感
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04); // 🎯 优化:降低默认阴影强度
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  cursor: pointer;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1.5px solid #E4E4E7;
   position: relative;
-  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
 
-  // 悬停/激活效果
-  &.is-active,
-  &:hover {
-    border-color: #2563EB; // 🎯 新增:品牌色边框呼应
-    box-shadow: 0 8rpx 24rpx rgba(37, 99, 235, 0.12); // 🎯 优化:品牌色阴影
-    transform: translateY(-4rpx);
+  &:hover,
+  &.is-active {
+    border-color: #2563EB;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.10);
   }
 
-  // P1-3: 热门资源特殊样式
-  &.is-hot {
-    border-color: #FCA5A5; // 淡红色边框
-    background: linear-gradient(135deg, #FFFFFF 0%, #FEF2F2 100%); // 微红渐变背景
-
-    &:hover {
-      border-color: #EF4444;
-      box-shadow: 0 8rpx 24rpx rgba(239, 68, 68, 0.15);
-    }
-  }
-
-  // 移动端适配
+  // 移动端：无圆角、全宽、底部 border 分隔
   &.is-mobile {
+    border-radius: 0;
+    margin-bottom: 0;
+    border: none;
+    border-bottom: 1px solid #E4E4E7;
+    box-shadow: none;
+
+    &:hover,
     &.is-active {
-      background: #F9FAFB; // 🎯 优化:更柔和的激活态背景
-      border-color: #2563EB;
-      transform: scale(0.98);
+      border-color: transparent;
+      border-bottom-color: #E4E4E7;
+      box-shadow: none;
+      background: #F9FAFB;
     }
-  }
-}
-
-// P1-3: 热门角标
-.hot-badge {
-  position: absolute;
-  top: -2rpx;
-  right: -2rpx;
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  padding: 6rpx 12rpx;
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-  border-radius: 0 16rpx 0 16rpx; // 右上角贴合卡片
-  box-shadow: 0 4rpx 12rpx rgba(239, 68, 68, 0.3);
-  z-index: 10;
-
-  .hot-badge-icon {
-    font-size: 20rpx;
-    line-height: 1;
-  }
-
-  .hot-badge-text {
-    font-size: 20rpx;
-    font-weight: 700;
-    color: #FFFFFF;
-    letter-spacing: 0.5rpx;
-    text-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.2);
-  }
-}
-
-// 顶部标题行
-.card-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16rpx;
-  margin-bottom: 12rpx; // 8rpx→12rpx,增加层级间距
-}
-
-.title-row {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  min-width: 0;
-}
-
-.type-icon {
-  flex-shrink: 0;
-  width: 52rpx;
-  height: 52rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12rpx;
-
-  // 不同类型的渐变背景 - 统一颜色体系
-  // 课件 - 蓝色系
-  &.type-0,
-  &.type-courseware {
-    background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-  }
-
-  // 试题 - 橙色系
-  &.type-1,
-  &.type-paper {
-    background: linear-gradient(135deg, #FF9500 0%, #FF6B35 100%);
-  }
-
-  // 笔记 - 紫色系
-  &.type-2,
-  &.type-note {
-    background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
-  }
-
-  // 教材 - 红色系
-  &.type-3,
-  &.type-textbook {
-    background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
-  }
-
-  // 实验报告 - 青色系
-  &.type-4,
-  &.type-report {
-    background: linear-gradient(135deg, #1ABC9C 0%, #16A085 100%);
-  }
-}
-
-.title {
-  flex: 1;
-  font-size: 32rpx; // 30rpx→32rpx,参考HotQuestions
-  font-weight: 600; // 保持600,与HotQuestions一致
-  color: #111827;
-  line-height: 1.6; // 1.5→1.6,增强可读性
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  word-break: break-word;
-  letter-spacing: 0.2rpx;
-}
-
-// 点赞数弱提示 (标题右侧)
-.likes-hint {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  padding: 6rpx 12rpx; // 4rpx 10rpx→6rpx 12rpx,增加内边距
-  border-radius: 12rpx;
-  background: rgba(248, 113, 113, 0.08);
-  margin-left: 8rpx;
-
-  .like-icon-hint {
-    font-size: 20rpx; // 18rpx→20rpx,增加图标尺寸
-    color: #F87171;
-  }
-
-  .like-count {
-    font-size: 22rpx; // 20rpx→22rpx,增加字体尺寸
-    color: #6B7280;
-    font-weight: 500;
   }
 }
 
 // 审核状态标签
 .status-badge {
-  flex-shrink: 0;
-  padding: 6rpx 14rpx; // 12rpx→14rpx,增加内边距
-  border-radius: 28rpx;
-  font-size: 22rpx; // 20rpx→22rpx,增加字体尺寸
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 500;
   white-space: nowrap;
 
@@ -586,309 +342,310 @@ const handleFavorite = () => {
     color: #6B7280;
   }
 
-  &.status-1 {
-    background: rgba(16, 185, 129, 0.12);
-    color: #10B981;
-  }
-
   &.status-2 {
-    background: rgba(239, 68, 68, 0.12);
+    background: rgba(239, 68, 68, 0.10);
     color: #EF4444;
   }
 }
 
-// 📌 第二层:描述 + 文件类型
-.description-section {
-  margin-bottom: 16rpx;
+// ===== 卡片主体 =====
+.card-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
 }
 
-.description {
-  font-size: 26rpx;
-  font-weight: 400;
-  color: #6B7280;
-  line-height: 1.7;
+// 左侧类型图标徽章
+.type-badge {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  // 课件 - 蓝色
+  &.type-0,
+  &.type-courseware {
+    background: #2563EB;
+  }
+
+  // 试卷/试题 - 红色
+  &.type-1,
+  &.type-paper {
+    background: #EF4444;
+  }
+
+  // 笔记 - 绿色
+  &.type-2,
+  &.type-note {
+    background: #22C55E;
+  }
+
+  // 教材 - 橙色
+  &.type-3,
+  &.type-textbook {
+    background: #F97316;
+  }
+
+  // 实验报告 - 青色
+  &.type-4,
+  &.type-report {
+    background: #06B6D4;
+  }
+
+  // 视频 - 紫色
+  &.type-video {
+    background: #8B5CF6;
+  }
+}
+
+// 右侧信息区
+.card-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+// 标题行
+.title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+  line-height: 1.5;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-word;
-  letter-spacing: 0.1rpx;
-  margin-bottom: 10rpx;
 }
 
-.file-type-badge {
+// 积分 chip
+.score-chip {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 6rpx;
-  padding: 4rpx 10rpx;
-  border-radius: 10rpx;
-  font-size: 22rpx;
-  font-weight: 500;
-  white-space: nowrap;
-  background: rgba(59, 130, 246, 0.1);
-  color: #3B82F6;
+  gap: 3px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(245, 158, 11, 0.10);
+  border: 1px solid rgba(245, 158, 11, 0.20);
 
-  // 不同文件类型的颜色
-  &.filetype-pdf {
-    background: rgba(239, 68, 68, 0.1);
-    color: #EF4444;
-  }
-
-  &.filetype-docx,
-  &.filetype-doc {
-    background: rgba(37, 99, 235, 0.1);
-    color: #2563EB;
-  }
-
-  &.filetype-pptx,
-  &.filetype-ppt {
-    background: rgba(249, 115, 22, 0.1);
-    color: #F97316;
-  }
-
-  &.filetype-xlsx,
-  &.filetype-xls {
-    background: rgba(34, 197, 94, 0.1);
-    color: #22C55E;
-  }
-
-  &.filetype-zip,
-  &.filetype-rar {
-    background: rgba(147, 51, 234, 0.1);
-    color: #9333EA;
+  .score-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #D97706;
   }
 }
 
-// 📌 第三层:元信息 (课程/大小/上传者/时间)
-.meta-section {
+// 免费标签
+.free-chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(34, 197, 94, 0.10);
+  border: 1px solid rgba(34, 197, 94, 0.20);
+
+  .free-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: #16A34A;
+  }
+}
+
+// 元信息行
+.meta-row {
   display: flex;
   align-items: center;
-  gap: 16rpx; // 🎯 优化:10rpx→16rpx,增强呼吸感
-  margin-bottom: 14rpx; // 12rpx→14rpx,增强呼吸感
+  gap: 4px;
   flex-wrap: wrap;
-  font-size: 24rpx; // 22rpx→24rpx
-  color: #6B7280; // 🎯 优化:#9CA3AF→#6B7280,增强对比度
 }
 
-.tag {
+.meta-item {
   display: inline-flex;
   align-items: center;
-  padding: 6rpx 14rpx; // 🎯 优化:4rpx 12rpx→6rpx 14rpx,增加舒适度
-  border-radius: 10rpx;
-  font-size: 22rpx; // 20rpx→22rpx
-  font-weight: 500;
-  white-space: nowrap;
-
-  &.course-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6rpx;
-    background: rgba(37, 99, 235, 0.08);
-    color: #2563EB;
-  }
-
-  &.size-tag {
-    background: rgba(107, 114, 128, 0.08); // 🎯 优化:降低背景透明度
-    color: #4B5563; // 🎯 优化:加深文字颜色,增强对比度
-  }
-}
-
-.meta-divider {
-  color: #D1D5DB;
-  flex-shrink: 0;
+  gap: 3px;
 }
 
 .meta-text {
-  font-size: 24rpx; // 22rpx→24rpx,增强可读性
-  font-weight: 400; // 明确字重
+  font-size: 12px;
   color: #6B7280;
-  white-space: nowrap;
+}
 
-  &.meta-time {
-    color: #9CA3AF;
+.meta-dot {
+  font-size: 12px;
+  color: #D1D5DB;
+}
+
+.meta-time {
+  font-size: 12px;
+  color: #9CA3AF;
+}
+
+// Tags 行
+.tags-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.tag-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid #E4E4E7;
+  background: #FAFAFA;
+
+  text {
+    font-size: 11px;
+    color: #6B7280;
+  }
+
+  // PDF 红色
+  &.tag-filetype-pdf {
+    background: rgba(239, 68, 68, 0.06);
+    border-color: rgba(239, 68, 68, 0.20);
+    text { color: #EF4444; }
+  }
+
+  // PPT/PPTX 橙色
+  &.tag-filetype-ppt,
+  &.tag-filetype-pptx {
+    background: rgba(249, 115, 22, 0.06);
+    border-color: rgba(249, 115, 22, 0.20);
+    text { color: #F97316; }
+  }
+
+  // DOC/DOCX 蓝色
+  &.tag-filetype-doc,
+  &.tag-filetype-docx {
+    background: rgba(37, 99, 235, 0.06);
+    border-color: rgba(37, 99, 235, 0.20);
+    text { color: #2563EB; }
+  }
+
+  // XLS/XLSX 绿色
+  &.tag-filetype-xls,
+  &.tag-filetype-xlsx {
+    background: rgba(34, 197, 94, 0.06);
+    border-color: rgba(34, 197, 94, 0.20);
+    text { color: #16A34A; }
   }
 }
 
-// 📌 第四层:行为区 (积分+下载量+操作按钮)
-.action-section {
+// ===== 底部 footer =====
+.card-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12rpx;
-  padding-top: 14rpx; // 10rpx→14rpx,增加顶部间距
-  border-top: 1rpx solid #F3F4F6;
+  padding-top: 12px;
+  border-top: 1px solid #F3F4F6;
 }
 
+// 左侧统计
 .stats-group {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  flex: 1;
+  gap: 12px;
 }
 
-// P1优化:统计数据弱化显示,不抢眼
 .stat-item {
   display: flex;
   align-items: center;
-  gap: 4rpx;
-  font-size: 22rpx;
-  font-weight: 400;
-  padding: 4rpx 10rpx;
-  border-radius: 8rpx;
-  transition: all 0.2s ease;
+  gap: 4px;
 
   .stat-value {
-    color: #6B7280;
-    font-weight: 500;
-  }
-
-  &.stat-points {
-    background: rgba(107, 114, 128, 0.06);
+    font-size: 12px;
     color: #9CA3AF;
-
-    .stat-value {
-      color: #6B7280;
-      font-weight: 500;
-    }
-  }
-
-  &.stat-downloads {
-    background: rgba(107, 114, 128, 0.06);
-    color: #6B7280;
-  }
-
-  &.stat-favorites {
-    background: rgba(251, 191, 36, 0.1);
-    color: #F59E0B;
+    font-weight: 400;
   }
 }
 
-// 操作按钮容器 - PC hover 显示，移动端始终显示
+// 右侧操作按钮
 .action-buttons {
   display: flex;
   align-items: center;
-  gap: 8rpx;
-  flex-shrink: 0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-
-  // PC 端：默认隐藏，hover 时显示
-  &--hover {
-    opacity: 0;
-    transform: translateX(8rpx);
-    pointer-events: none;
-
-    .resource-card:hover &,
-    .resource-card.is-active & {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
-    }
-  }
-
-  // 移动端：始终显示
-  .resource-card.is-mobile & {
-    opacity: 1;
-    transform: translateX(0);
-    pointer-events: auto;
-  }
+  gap: 8px;
 }
 
-// P1优化:图标按钮样式 - 更轻量,不抢眼
+// 收藏按钮：32×32 圆形
 .icon-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 52rpx; // 从 56rpx → 52rpx,缩小
-  height: 52rpx;
-  border-radius: 50%;
+  border: 1.5px solid #E4E4E7;
+  background: #FFFFFF;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  background: #FFFFFF; // 从浅灰 → 纯白
-  border: 1.5rpx solid #E5E7EB;
-  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.04); // 添加微弱阴影
+  transition: all 0.2s;
 
   &:hover {
-    transform: scale(1.1);
-    box-shadow: 0 4rpx 8rpx rgba(0, 0, 0, 0.08);
     border-color: #D1D5DB;
+    background: #F9FAFB;
+  }
+
+  &.is-favorited {
+    border-color: #FCD34D;
+    background: rgba(251, 191, 36, 0.08);
+  }
+}
+
+// 下载按钮：蓝色圆角矩形
+.download-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  background: #2563EB;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+
+  .download-text {
+    font-size: 12px;
+    font-weight: 500;
+    color: #FFFFFF;
+  }
+
+  &:hover {
+    background: #1D4ED8;
   }
 
   &:active {
-    transform: scale(0.95);
-    box-shadow: 0 1rpx 2rpx rgba(0, 0, 0, 0.06);
+    background: #1E40AF;
+    transform: scale(0.97);
   }
 
-  // 收藏按钮
-  &.favorite-btn {
-    &:hover:not(.is-favorited) {
-      background: rgba(251, 191, 36, 0.08);
-      border-color: #FCD34D;
+  &.is-downloaded {
+    background: rgba(16, 185, 129, 0.10);
+    border: 1.5px solid rgba(16, 185, 129, 0.30);
+
+    .download-text {
+      color: #10B981;
     }
 
-    &.is-favorited {
-      background: #F59E0B;
-      border-color: #F59E0B;
-      box-shadow: 0 4rpx 12rpx rgba(245, 158, 11, 0.25);
-
-      &:hover {
-        background: #D97706;
-        border-color: #D97706;
-        box-shadow: 0 6rpx 16rpx rgba(217, 119, 6, 0.35);
-      }
-    }
-  }
-
-  // 下载按钮
-  &.download-btn {
-    &:hover:not(.is-downloaded) {
-      background: rgba(37, 99, 235, 0.08);
-      border-color: #93C5FD;
-    }
-
-    &.is-downloaded {
-      background: #10B981;
-      border-color: #10B981;
-      box-shadow: 0 4rpx 12rpx rgba(16, 185, 129, 0.25);
-
-      &:hover {
-        background: #059669;
-        border-color: #059669;
-        box-shadow: 0 6rpx 16rpx rgba(5, 150, 105, 0.35);
-      }
+    &:hover {
+      background: rgba(16, 185, 129, 0.15);
     }
   }
 }
-
-@keyframes like-bounce {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
-}
-
-//  响应式适配
-@media (max-width: 768px) {
-  .resource-card {
-    padding: 20rpx;
-  }
-
-  .title {
-    font-size: 30rpx;
-    line-height: 1.55;
-  }
-
-  .description {
-    font-size: 24rpx;
-    line-height: 1.6;
-  }
-
-  .card-header {
-    margin-bottom: 10rpx;
-  }
-
-  .tag {
-    font-size: 18rpx;
-    padding: 4rpx 10rpx;
-  }
-}
-
 </style>

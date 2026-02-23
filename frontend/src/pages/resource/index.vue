@@ -286,11 +286,6 @@
       </view>
     </view>
 
-    <!-- 上传资源悬浮按钮 -->
-    <view class="upload-fab" @click="handleUploadClick">
-      <Icon name="image-plus" :size="24" class="fab-icon" />
-    </view>
-
     <!-- 返回顶部按钮 -->
     <view v-if="showBackToTop" class="back-to-top-btn" @click="scrollToTop">
       <Icon name="arrow-left" :size="20" class="back-to-top-icon" style="transform: rotate(90deg)" />
@@ -3693,47 +3688,6 @@ onUnmounted(() => {
   color: $text-placeholder;
 }
 
-// 🎯 上传悬浮按钮 (移动端)
-.upload-fab {
-  position: fixed;
-  right: $sp-8;
-  bottom: 140rpx;
-  width: $btn-height-lg;
-  height: $btn-height-lg;
-  @include flex-center;
-  @include gradient-accent;
-  border-radius: $radius-full;
-  box-shadow: $shadow-fab;
-  cursor: pointer;
-  z-index: $z-fixed;
-  transition: all $duration-slow $ease-smooth;
-  animation: fadeInUp $duration-slow $ease-out;
-
-  &:active {
-    transform: translateY(-4rpx) scale(0.95);
-  }
-
-  &:hover {
-    transform: translateY(-8rpx);
-    box-shadow: 0 12rpx 32rpx rgba($accent, 0.4);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.fab-icon {
-  color: $white;
-}
-
 // 🎯 返回顶部按钮
 .back-to-top-btn {
   position: fixed;
@@ -3803,15 +3757,6 @@ onUnmounted(() => {
     padding: 20px 40px;
   }
 
-  // PC 端显示上传按钮，隐藏 FAB
-  .upload-btn-pc {
-    display: flex;
-  }
-
-  .upload-fab {
-    display: none;
-  }
-
   // PC 端返回顶部按钮位置调整
   .back-to-top-btn {
     right: $sp-12;
@@ -3830,16 +3775,6 @@ onUnmounted(() => {
 }
 
 @include mobile {
-  // 移动端隐藏 PC 端上传按钮
-  .upload-btn-pc {
-    display: none;
-  }
-
-  // 移动端显示 FAB
-  .upload-fab {
-    display: flex;
-  }
-
   // 移动端优化搜索区域
   .search-section {
     padding: $sp-3 $sp-6;

@@ -716,7 +716,6 @@ const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
   // 清除问题列表缓存（避免旧数据干扰）
   const cacheKeys = uni.getStorageInfoSync().keys.filter(k => k.includes('question:list'))
   cacheKeys.forEach(key => uni.removeStorageSync(key))
-  console.log('[Quick Filter] 清除缓存:', cacheKeys.length, '个')
 
   // 保留分类筛选，只重置状态和关键词
   status.value = null
@@ -965,8 +964,6 @@ onShow(() => {
   const context = getPageContext('question-list')
 
   if (context) {
-    console.log('[问答列表页] 恢复上下文:', context)
-
     // 恢复筛选条件
     if (context.filters) {
       category.value = context.filters.category ?? null
@@ -982,12 +979,9 @@ onShow(() => {
         // 延迟100ms确保列表渲染完成
         setTimeout(() => {
           restoreScrollPosition(context.scrollTop, 0)
-          console.log('[问答列表页] 恢复滚动位置:', context.scrollTop)
         }, 100)
       })
     })
-  } else {
-    console.log('[问答列表页] 无上下文,正常加载')
   }
 })
 

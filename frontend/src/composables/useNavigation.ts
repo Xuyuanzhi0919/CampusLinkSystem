@@ -284,7 +284,6 @@ export function useNavigation() {
     toDetailByType,
 
     // 发布页
-    toPublish, // 🎯 统一发布入口
     toUploadResource,
     toAskQuestion,
     toPublishTask,

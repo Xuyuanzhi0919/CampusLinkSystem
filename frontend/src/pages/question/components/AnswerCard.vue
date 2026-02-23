@@ -534,7 +534,7 @@ const handleReport = () => {
   }
 }
 
-// 回复按钮
+// 回复按钮（与点赞按钮完全一致的结构）
 .reply-button {
   display: inline-flex;
   align-items: center;
@@ -552,7 +552,7 @@ const handleReport = () => {
   }
 
   .reply-text {
-    font-size: 28rpx;
+    font-size: 28rpx; // 与 .like-count 一致
     font-weight: 500;
     color: $gray-700;
     transition: all $duration-base;
@@ -564,6 +564,7 @@ const handleReport = () => {
 
     .reply-icon {
       color: $primary;
+      transform: scale(1.1);
     }
 
     .reply-text {
@@ -781,11 +782,13 @@ const handleReport = () => {
     }
   }
 
-  .like-button {
+  .like-button,
+  .reply-button {
     padding: 10rpx 20rpx !important;
     gap: 8rpx !important;
 
-    .like-count {
+    .like-count,
+    .reply-text {
       font-size: 26rpx !important; // 13px on mobile
     }
   }

@@ -70,21 +70,23 @@
     <!-- ========== Sticky 导航区（分类+排序） ========== -->
     <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
       <view class="sticky-nav-container">
-        <!-- 左侧：分类Tabs -->
-        <view class="category-tabs">
-          <view
-            v-for="item in categories"
-            :key="item.value || 'all'"
-            class="category-tab"
-            :class="{ 'category-tab--active': currentCategory === item.value }"
-            @click="handleCategoryChange(item.value)"
-          >
-            <Icon :name="item.iconName" :size="14" class="tab-icon" />
-            <text class="tab-label">{{ item.label }}</text>
+        <!-- 左侧：分类Tabs（外层加渐变遮罩提示可横滑） -->
+        <view class="category-tabs-wrap">
+          <view class="category-tabs">
+            <view
+              v-for="item in categories"
+              :key="item.value || 'all'"
+              class="category-tab"
+              :class="{ 'category-tab--active': currentCategory === item.value }"
+              @click="handleCategoryChange(item.value)"
+            >
+              <Icon :name="item.iconName" :size="14" class="tab-icon" />
+              <text class="tab-label">{{ item.label }}</text>
+            </view>
           </view>
         </view>
 
-        <!-- 右侧：排序+筛选 -->
+        <!-- 右侧：排序+筛选（PC端） -->
         <view class="sort-controls">
           <!-- 排序下拉按钮 -->
           <view class="sort-dropdown-wrapper">
@@ -103,6 +105,12 @@
               <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
             </view>
           </view>
+        </view>
+
+        <!-- 移动端专用筛选图标按钮 -->
+        <view class="mobile-filter-btn" @click="toggleAdvancedFilter">
+          <Icon name="sliders" :size="16" class="mobile-filter-icon" />
+          <view v-if="hasActiveFilters" class="mobile-filter-badge"></view>
         </view>
       </view>
     </view>
@@ -2292,12 +2300,36 @@ onUnmounted(() => {
   }
 }
 
+.category-tabs-wrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+
+  // 移动端右侧渐变遮罩，提示可横滑
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, $white);
+    pointer-events: none;
+    z-index: 1;
+
+    @include desktop {
+      display: none;
+    }
+  }
+}
+
 .category-tabs {
   display: flex;
   align-items: center;
   gap: 4px;
-  flex: 1;
   overflow-x: auto;
+  padding-right: 32px; // 为渐变遮罩留空间（移动端）
 
   /* #ifdef H5 */
   scrollbar-width: none;
@@ -2307,6 +2339,10 @@ onUnmounted(() => {
     display: none;
   }
   /* #endif */
+
+  @include desktop {
+    padding-right: 0;
+  }
 }
 
 .category-tab {
@@ -2367,6 +2403,47 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+.mobile-filter-btn {
+  display: none;
+  position: relative;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &:hover {
+    background: $gray-200;
+  }
+
+  .mobile-filter-icon {
+    color: $gray-600;
+  }
+
+  @include mobile {
+    display: flex;
+  }
+}
+
+.mobile-filter-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 7px;
+  height: 7px;
+  background: $primary;
+  border-radius: 50%;
+  border: 1.5px solid $white;
 }
 
 .sort-dropdown-wrapper {

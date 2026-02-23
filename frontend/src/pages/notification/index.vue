@@ -423,7 +423,12 @@ const handleDelete = (notification: any) => {
 
 // 返回
 const handleBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack()
+  } else {
+    uni.switchTab({ url: '/pages/home/index' })
+  }
 }
 
 // 格式化时间

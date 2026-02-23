@@ -1,5 +1,27 @@
 <template>
   <view class="recommend-sidebar">
+    <!-- 社区统计模块 -->
+    <view class="sidebar-card stats-card">
+      <view class="card-header">
+        <Icon name="bar-chart-2" :size="16" class="header-icon" />
+        <text class="header-title">社区统计</text>
+      </view>
+      <view class="stats-grid">
+        <view class="stat-item">
+          <text class="stat-num">{{ communityStats.totalQuestions }}</text>
+          <text class="stat-label">总问题数</text>
+        </view>
+        <view class="stat-item">
+          <text class="stat-num">{{ communityStats.totalAnswers }}</text>
+          <text class="stat-label">回答总数</text>
+        </view>
+        <view class="stat-item stat-item--highlight">
+          <text class="stat-num stat-num--highlight">{{ communityStats.solveRate }}</text>
+          <text class="stat-label stat-label--highlight">解决率</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 快捷操作模块 -->
     <CCard variant="default" class="sidebar-card quick-actions-card">
       <view class="card-header">
@@ -174,6 +196,13 @@ interface FeaturedQuestionData {
   createdAt?: string  // 可选字段
 }
 
+// 社区统计
+const communityStats = ref({
+  totalQuestions: '--',
+  totalAnswers: '--',
+  solveRate: '--'
+})
+
 // 精选问题列表（真实 API 数据）
 const featuredQuestions = ref<FeaturedQuestionData[]>([])
 const isFeaturedDismissed = ref(false)
@@ -288,6 +317,33 @@ const getSearchRankClass = (index: number) => {
   return ''
 }
 
+// 格式化数字（超过 1000 显示 1.2k）
+const formatNumber = (n: number): string => {
+  if (n >= 10000) return (n / 10000).toFixed(1).replace(/\.0$/, '') + 'w'
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return String(n)
+}
+
+// 加载社区统计（从问题列表 total 字段派生）
+const loadCommunityStats = async () => {
+  try {
+    const [allRes, solvedRes] = await Promise.all([
+      getQuestionList({ page: 1, pageSize: 1, sortBy: 'created_at', sortOrder: 'desc' }),
+      getQuestionList({ page: 1, pageSize: 1, isSolved: 1, sortBy: 'created_at', sortOrder: 'desc' })
+    ])
+    const total = allRes.total ?? 0
+    const solved = solvedRes.total ?? 0
+    const rate = total > 0 ? Math.round((solved / total) * 100) : 0
+    communityStats.value = {
+      totalQuestions: formatNumber(total),
+      totalAnswers: '--',   // 暂无聚合接口，留待后端支持
+      solveRate: rate + '%'
+    }
+  } catch {
+    // 加载失败保持 '--' 占位
+  }
+}
+
 // 加载热门问题
 const loadHotQuestions = async () => {
   try {
@@ -371,6 +427,7 @@ const handleFeaturedRefresh = () => {
 
 // 组件挂载时加载数据
 onMounted(() => {
+  loadCommunityStats()
   loadFeaturedQuestion()
   loadHotQuestions()
   loadHotTags()
@@ -472,6 +529,58 @@ onMounted(() => {
 
   &:active {
     transform: scale(0.95);
+  }
+}
+
+// ===================================
+// 社区统计
+// ===================================
+.stats-card {
+  .card-header {
+    margin-bottom: 14px;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.stats-grid {
+  display: flex;
+  gap: 10px;
+}
+
+.stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #F8FAFC;
+  border-radius: 8px;
+
+  &--highlight {
+    background: #EFF6FF;
+  }
+}
+
+.stat-num {
+  font-size: 20px;
+  font-weight: 700;
+  color: $gray-900;
+  line-height: 1;
+
+  &--highlight {
+    color: $primary;
+  }
+}
+
+.stat-label {
+  font-size: 12px;
+  color: $gray-500;
+  white-space: nowrap;
+
+  &--highlight {
+    color: $primary;
   }
 }
 

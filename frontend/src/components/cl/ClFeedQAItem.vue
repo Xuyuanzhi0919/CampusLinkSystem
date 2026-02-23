@@ -1,5 +1,5 @@
 <template>
-  <view class="cl-feed-qa" @click="handleCardClick">
+  <view class="cl-feed-qa" :class="{ 'is-mobile': isMobile }" @click="handleCardClick">
 
     <!-- ① 顶部主区：标题 + 悬赏徽章 -->
     <view class="cl-feed-qa__top">
@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import ClAvatar from './ClAvatar.vue'
 import ClIcon from './ClIcon.vue'
 
@@ -128,6 +128,17 @@ const emit = defineEmits<{
   like: [question: Question]
   comment: [question: Question]
 }>()
+
+const isMobile = ref(false)
+
+onMounted(() => {
+  isMobile.value = window.innerWidth < 768
+  // #ifdef H5
+  window.addEventListener('resize', () => {
+    isMobile.value = window.innerWidth < 768
+  })
+  // #endif
+})
 
 // 状态标签样式
 const statusClass = computed(() => ({
@@ -436,72 +447,87 @@ const handleCommentClick = () => emit('comment', props.question)
   }
 
   /* ========== 移动端紧凑样式 ========== */
-  /* #ifdef H5 */
-  @media (max-width: 768px) {
+  &.is-mobile {
     padding: 14px;
     gap: 10px;
+    border-radius: 0;
+    margin-bottom: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+    border-bottom: 1px solid $color-divider;
+    box-shadow: none;
+    transform: none !important;
 
-    &__title {
+    &:hover {
+      box-shadow: none;
+      transform: none;
+    }
+
+    &:active {
+      background: #F9FAFB;
+      transform: none;
+    }
+
+    .cl-feed-qa__title {
       font-size: 14px;
       line-height: 1.5;
     }
 
-    &__reward-badge {
+    .cl-feed-qa__reward-badge {
       font-size: 10px;
       padding: 2px 6px;
     }
 
-    &__tags {
+    .cl-feed-qa__tags {
       gap: 5px;
       flex-wrap: nowrap;
       overflow: hidden;
     }
 
-    &__tag {
+    .cl-feed-qa__tag {
       font-size: 10px;
       padding: 1px 6px;
     }
 
-    &__adopted {
+    .cl-feed-qa__adopted {
       padding: 6px 8px;
     }
 
-    &__adopted-preview {
+    .cl-feed-qa__adopted-preview {
       font-size: 11px;
       -webkit-line-clamp: 1;
     }
 
-    &__footer {
+    .cl-feed-qa__footer {
       padding-top: 10px;
       gap: $spacing-2;
     }
 
-    &__username {
+    .cl-feed-qa__username {
       max-width: 52px;
     }
 
-    &__actions {
+    .cl-feed-qa__actions {
       gap: $spacing-2;
     }
 
-    &__status {
-      // 移动端隐藏状态标签，用悬赏徽章和采纳预览代替
+    .cl-feed-qa__status {
       display: none;
     }
 
-    &__meta {
+    .cl-feed-qa__meta {
       gap: $spacing-3;
     }
 
-    &__meta-item {
+    .cl-feed-qa__meta-item {
       font-size: 11px;
     }
 
-    &__cta {
+    .cl-feed-qa__cta {
       padding: 3px 9px;
       font-size: 11px;
     }
   }
-  /* #endif */
 }
 </style>

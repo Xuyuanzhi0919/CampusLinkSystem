@@ -2396,33 +2396,32 @@ onUnmounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 10px;
-  background: transparent;
-  border: 1px solid $gray-200;
-  border-radius: 8px;
+  padding: 5px 12px;
+  background: $gray-100;
+  border: none;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
 
   &:hover {
-    background: $gray-100;
-    border-color: $gray-300;
+    background: $gray-200;
   }
 
   .sort-icon {
-    color: $gray-500;
+    color: $gray-600;
     flex-shrink: 0;
   }
 
   .sort-label {
-    font-size: 12px;
-    color: $gray-600;
+    font-size: 13px;
+    color: $gray-700;
     font-weight: 500;
   }
 
   .dropdown-icon {
-    color: $gray-400;
+    color: $gray-500;
     flex-shrink: 0;
     transition: transform 0.2s;
   }

@@ -14,11 +14,17 @@
     <view class="answer-header">
       <!-- 左侧：头像 + 昵称 + 时间 -->
       <view class="responder-info">
-        <image
-          :src="answer.responderAvatar || '/static/default-avatar.png'"
-          class="responder-avatar"
-          mode="aspectFill"
-        />
+        <view class="avatar-wrap">
+          <image
+            v-if="answer.responderAvatar"
+            :src="answer.responderAvatar"
+            class="responder-avatar"
+            mode="aspectFill"
+          />
+          <view v-else class="avatar-fallback">
+            <text class="avatar-letter">{{ answer.responderName?.[0] || '?' }}</text>
+          </view>
+        </view>
         <view class="responder-details">
           <text class="responder-name">{{ answer.responderName }}</text>
           <text class="responder-time">{{ formatTime(answer.createdAt) }}</text>
@@ -322,7 +328,7 @@ const handleReport = () => {
 
 .accepted-badge-wrapper {
   display: inline-flex;
-  margin-bottom: $sp-3;
+  margin-bottom: $sp-4;
 }
 
 .answer-badge {
@@ -336,55 +342,68 @@ const handleReport = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: $sp-4;
-  padding-bottom: 0; // 移除内边距，更紧凑
+  margin-bottom: $sp-5;
 }
 
-// 回答者信息 - 强化版（更突出的头像和昵称）
+// 头像容器
+.avatar-wrap {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-full;
+  overflow: hidden;
+
+  .responder-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-full;
+    display: block;
+  }
+
+  // 无头像时的彩色字母占位
+  .avatar-fallback {
+    width: 100%;
+    height: 100%;
+    border-radius: $radius-full;
+    background: linear-gradient(135deg, #DBEAFE, #93C5FD);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .avatar-letter {
+      font-size: 28rpx;
+      font-weight: 700;
+      color: #1D4ED8;
+      line-height: 1;
+    }
+  }
+}
+
+// 回答者信息
 .responder-info {
   display: flex;
   align-items: center;
-  gap: 24rpx; // Increased gap from 12rpx to 24rpx
+  gap: 20rpx;
   flex: 1;
   min-width: 0;
-
-  .responder-avatar {
-    width: 64rpx; // 32px - Enhanced from 36rpx
-    height: 64rpx;
-    border-radius: $radius-full;
-    background: $gray-100;
-    flex-shrink: 0;
-    border: 2rpx solid $gray-200; // Slightly thicker border
-    transition: all $duration-base;
-
-    &:hover {
-      border-color: $primary;
-      transform: scale(1.05);
-    }
-  }
 
   .responder-details {
     flex: 1;
     display: flex;
     flex-direction: column;
-    gap: 4rpx; // Increased from 2rpx
+    gap: 6rpx;
     min-width: 0;
 
     .responder-name {
-      font-size: 30rpx; // 15-16px - Enhanced from 28rpx
-      font-weight: 600; // Bolder weight
-      color: $gray-900; // Darker color for more prominence
+      font-size: 28rpx;
+      font-weight: 600;
+      color: $gray-900;
       @include text-ellipsis(1);
-      transition: color $duration-base;
-
-      &:hover {
-        color: $primary;
-      }
     }
 
     .responder-time {
-      font-size: 24rpx; // 12px
-      color: $gray-500;
+      font-size: 22rpx;
+      color: $gray-400;
       font-weight: 400;
     }
   }
@@ -422,9 +441,9 @@ const handleReport = () => {
 // ===================================
 .answer-content {
   font-size: $font-size-base;
-  color: $gray-700; // 稍微柔和一点的黑色
-  line-height: 1.6;
-  margin-bottom: $sp-4;
+  color: $gray-700;
+  line-height: 1.7;
+  margin-bottom: $sp-5;
   white-space: pre-wrap;
   word-wrap: break-word;
 }
@@ -459,13 +478,12 @@ const handleReport = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: $sp-2;
-  padding-top: $sp-3;
+  margin-top: $sp-1;
+  padding-top: $sp-4;
   border-top: 1rpx solid $gray-100;
 
-  // 如果是最佳答案，底部分割线颜色微调
   .answer-card--accepted & {
-    border-top-color: rgba(#FACC15, 0.2);
+    border-top-color: rgba(#F59E0B, 0.15);
   }
 }
 
@@ -745,21 +763,15 @@ const handleReport = () => {
   }
 
   .responder-info {
-    gap: 16rpx; // Reduce gap on mobile
+    gap: 16rpx;
+  }
 
-    .responder-avatar {
-      width: 56rpx; // 28px on mobile
-      height: 56rpx;
-    }
+  .avatar-wrap {
+    width: 64rpx;
+    height: 64rpx;
 
-    .responder-details {
-      .responder-name {
-        font-size: 28rpx; // 14px on mobile
-      }
-
-      .responder-time {
-        font-size: 22rpx; // 11px on mobile
-      }
+    .avatar-letter {
+      font-size: 26rpx !important;
     }
   }
 

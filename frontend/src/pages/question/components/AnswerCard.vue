@@ -56,7 +56,6 @@
         </view>
         <view class="reply-button" @click="handleReply">
           <Icon name="message-circle" :size="18" class="reply-icon" />
-          <text class="reply-text">回复</text>
         </view>
       </view>
 
@@ -551,13 +550,6 @@ const handleReport = () => {
     transition: all $duration-base;
   }
 
-  .reply-text {
-    font-size: 28rpx; // 与 .like-count 一致
-    font-weight: 500;
-    color: $gray-700;
-    transition: all $duration-base;
-  }
-
   &:hover {
     background: lighten($primary, 48%);
     border-color: lighten($primary, 35%);
@@ -565,10 +557,6 @@ const handleReport = () => {
     .reply-icon {
       color: $primary;
       transform: scale(1.1);
-    }
-
-    .reply-text {
-      color: $primary;
     }
   }
 
@@ -782,15 +770,17 @@ const handleReport = () => {
     }
   }
 
-  .like-button,
-  .reply-button {
+  .like-button {
     padding: 10rpx 20rpx !important;
     gap: 8rpx !important;
 
-    .like-count,
-    .reply-text {
-      font-size: 26rpx !important; // 13px on mobile
+    .like-count {
+      font-size: 26rpx !important;
     }
+  }
+
+  .reply-button {
+    padding: 10rpx 14rpx !important; // 无文字，缩小水平 padding
   }
 }
 </style>

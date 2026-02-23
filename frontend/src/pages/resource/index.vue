@@ -313,88 +313,70 @@
       @cancel="handleDownloadCancel"
     />
 
-    <!-- 🎯 高级筛选抽屉（移动端） / Popover遮罩（PC端点击空白关闭） -->
-    <view v-if="showAdvancedFilter && !isDesktop" class="filter-drawer-mask" @click="showAdvancedFilter = false" />
+    <!-- PC端 Popover 遮罩 -->
     <view v-if="showAdvancedFilter && isDesktop" class="filter-popover-mask" @click="showAdvancedFilter = false" />
-    <view class="filter-drawer" :class="{ 'drawer-show': showAdvancedFilter && !isDesktop }">
-      <!-- 抽屉头部 -->
-      <view class="drawer-header">
-        <text class="drawer-title">高级筛选</text>
-        <view class="drawer-actions">
-          <text class="drawer-reset" @click="handleResetFilters">重置</text>
-          <view class="drawer-close" @click="showAdvancedFilter = false">
+
+    <!-- 移动端筛选 Modal -->
+    <view v-if="filterModalVisible && !isDesktop" class="filter-modal" :class="{ 'is-closing': filterModalClosing }" @click="handleCloseFilterModal">
+      <view class="filter-modal-content" :class="{ 'slide-down': filterModalClosing }" @click.stop>
+        <!-- 拖拽手柄 -->
+        <view class="drag-handle">
+          <view class="drag-indicator"></view>
+        </view>
+
+        <!-- 头部 -->
+        <view class="modal-header">
+          <text class="modal-title">筛选条件</text>
+          <view class="modal-close" @click="handleCloseFilterModal">
             <Icon name="x" :size="20" />
           </view>
         </view>
-      </view>
 
-      <!-- 筛选内容 -->
-      <view class="drawer-content">
-        <!-- 积分范围筛选 -->
-        <view class="filter-group">
-          <view class="filter-group-title">积分范围</view>
-          <view class="filter-options">
-            <view
-              class="filter-option"
-              :class="{ active: advancedFilters.scoreRange === null }"
-              @click="handleScoreRangeChange(null)"
-            >
-              <text class="option-label">全部</text>
+        <!-- 内容 -->
+        <view class="modal-body">
+          <!-- 积分范围 -->
+          <view class="filter-group">
+            <text class="group-title">积分范围</text>
+            <view class="group-options">
+              <view class="option-item" :class="{ selected: tempScoreRange === null }" @click="tempScoreRange = null">
+                <text class="option-label">全部</text>
+              </view>
+              <view class="option-item" :class="{ selected: tempScoreRange === 'free' }" @click="tempScoreRange = 'free'">
+                <text class="option-label">免费</text>
+              </view>
+              <view class="option-item" :class="{ selected: tempScoreRange === 'low' }" @click="tempScoreRange = 'low'">
+                <text class="option-label">低积分</text>
+                <text class="option-desc">1-5分</text>
+              </view>
+              <view class="option-item" :class="{ selected: tempScoreRange === 'medium' }" @click="tempScoreRange = 'medium'">
+                <text class="option-label">中积分</text>
+                <text class="option-desc">6-10分</text>
+              </view>
+              <view class="option-item" :class="{ selected: tempScoreRange === 'high' }" @click="tempScoreRange = 'high'">
+                <text class="option-label">高积分</text>
+                <text class="option-desc">10分+</text>
+              </view>
             </view>
-            <view
-              class="filter-option"
-              :class="{ active: advancedFilters.scoreRange === 'free' }"
-              @click="handleScoreRangeChange('free')"
-            >
-              <text class="option-label">免费</text>
-              <text class="option-desc">(0分)</text>
-            </view>
-            <view
-              class="filter-option"
-              :class="{ active: advancedFilters.scoreRange === 'low' }"
-              @click="handleScoreRangeChange('low')"
-            >
-              <text class="option-label">低积分</text>
-              <text class="option-desc">(1-5分)</text>
-            </view>
-            <view
-              class="filter-option"
-              :class="{ active: advancedFilters.scoreRange === 'medium' }"
-              @click="handleScoreRangeChange('medium')"
-            >
-              <text class="option-label">中积分</text>
-              <text class="option-desc">(6-10分)</text>
-            </view>
-            <view
-              class="filter-option"
-              :class="{ active: advancedFilters.scoreRange === 'high' }"
-              @click="handleScoreRangeChange('high')"
-            >
-              <text class="option-label">高积分</text>
-              <text class="option-desc">(10分以上)</text>
+          </view>
+
+          <!-- 学校资源 -->
+          <view class="filter-group">
+            <text class="group-title">学校资源</text>
+            <view class="option-item option-item--toggle" :class="{ selected: tempOnlyMySchool }" @click="tempOnlyMySchool = !tempOnlyMySchool">
+              <Icon name="building" :size="15" class="option-icon" />
+              <text class="option-label">只看本校资源</text>
+              <view v-if="tempOnlyMySchool" class="toggle-check">
+                <Icon name="check" :size="10" />
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 本校资源筛选 -->
-        <view class="filter-group">
-          <view class="filter-group-title">学校资源</view>
-          <view class="filter-switch-row">
-            <text class="switch-label">只看本校资源</text>
-            <switch
-              :checked="advancedFilters.onlyMySchool"
-              @change="handleMySchoolChange"
-              color="#FF6B35"
-            />
-          </view>
-          <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
+        <!-- 底部按钮 -->
+        <view class="modal-footer">
+          <CButton type="ghost" size="md" @click="handleResetFilters">重置</CButton>
+          <CButton type="primary" size="md" @click="handleConfirmFilter">确定</CButton>
         </view>
-      </view>
-
-      <!-- 抽屉底部 -->
-      <view class="drawer-footer">
-        <button class="drawer-cancel-btn" @click="showAdvancedFilter = false">取消</button>
-        <button class="drawer-confirm-btn" @click="handleApplyFilters">确定 ({{ filteredResultHint }})</button>
       </view>
     </view>
 
@@ -440,6 +422,7 @@ import {
   getCurrentScrollTop
 } from '@/utils/pageContext'
 import { requireLogin } from '@/utils/auth'
+import CButton from '@/components/ui/CButton.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
 import SkeletonResourceCard from '@/components/SkeletonResourceCard.vue'
 import EmptyState from '@/components/EmptyState.vue'
@@ -517,6 +500,8 @@ const showSortMenu = ref(false)
 
 // 🎯 高级筛选相关
 const showAdvancedFilter = ref(false)
+const filterModalVisible = ref(false)   // 控制移动端 Modal v-if
+const filterModalClosing = ref(false)   // 控制关闭动画
 const advancedFilters = ref<{
   scoreRange: 'free' | 'low' | 'medium' | 'high' | null
   onlyMySchool: boolean
@@ -524,6 +509,9 @@ const advancedFilters = ref<{
   scoreRange: null,
   onlyMySchool: false
 })
+// 移动端 Modal 临时值（确认前不影响实际筛选）
+const tempScoreRange = ref<'free' | 'low' | 'medium' | 'high' | null>(null)
+const tempOnlyMySchool = ref(false)
 
 // 当前用户学校ID（从本地存储获取）
 const userSchoolId = ref<number | null>(null)
@@ -930,7 +918,13 @@ const handleApplyFilters = () => {
 const handleResetFilters = () => {
   advancedFilters.value.scoreRange = null
   advancedFilters.value.onlyMySchool = false
-  showAdvancedFilter.value = false
+  tempScoreRange.value = null
+  tempOnlyMySchool.value = false
+  if (!isDesktop.value) {
+    handleCloseFilterModal()
+  } else {
+    showAdvancedFilter.value = false
+  }
   loadResourceList(true)
 }
 
@@ -1012,10 +1006,36 @@ const updatePopoverPosition = () => {
 
 const toggleAdvancedFilter = () => {
   showSortMenu.value = false
-  showAdvancedFilter.value = !showAdvancedFilter.value
-  if (showAdvancedFilter.value && isDesktop.value) {
-    nextTick(updatePopoverPosition)
+  if (isDesktop.value) {
+    // PC 端：直接切换 Popover
+    showAdvancedFilter.value = !showAdvancedFilter.value
+    if (showAdvancedFilter.value) {
+      nextTick(updatePopoverPosition)
+    }
+  } else {
+    // 移动端：打开 Modal，同步临时值
+    tempScoreRange.value = advancedFilters.value.scoreRange
+    tempOnlyMySchool.value = advancedFilters.value.onlyMySchool
+    filterModalVisible.value = true
+    filterModalClosing.value = false
+    showAdvancedFilter.value = true
   }
+}
+
+const handleCloseFilterModal = () => {
+  filterModalClosing.value = true
+  setTimeout(() => {
+    filterModalVisible.value = false
+    filterModalClosing.value = false
+    showAdvancedFilter.value = false
+  }, 260)
+}
+
+const handleConfirmFilter = () => {
+  advancedFilters.value.scoreRange = tempScoreRange.value
+  advancedFilters.value.onlyMySchool = tempOnlyMySchool.value
+  handleCloseFilterModal()
+  loadResourceList(true)
 }
 
 /**
@@ -3520,220 +3540,235 @@ onUnmounted(() => {
   }
 }
 
-// 🎯 高级筛选底部抽屉（移动端，< 1024px）
-.filter-drawer-mask {
+// 🎯 移动端筛选 Modal
+.filter-modal {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba($gray-900, 0.5);
-  z-index: $z-modal-backdrop;
-  animation: fadeIn $duration-slow $ease-out;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  &.is-closing {
+    animation: fadeOut 0.26s ease-out forwards;
+  }
 }
 
-.filter-drawer {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-height: 70vh;
+.filter-modal-content {
   background: $white;
-  border-radius: $sp-8 $sp-8 0 0;
-  z-index: $z-modal;
-  transform: translateY(100%);
-  transition: transform $duration-slow $ease-smooth;
+  border-radius: 20px 20px 0 0;
+  width: 100%;
+  max-height: calc(80vh - 50px);
   display: flex;
   flex-direction: column;
-  // PC 端隐藏底部抽屉
-  @media (min-width: 1024px) {
-    display: none;
-  }
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
+  animation: slideUp 0.3s ease-out;
 
-  &.drawer-show {
-    transform: translateY(0);
-  }
-
-  .drawer-header {
-    @include flex-between;
-    padding: $sp-8 $sp-8 $sp-6;
-    border-bottom: 1rpx solid $gray-100;
-
-    .drawer-title {
-      font-size: $font-size-lg;
-      font-weight: $font-weight-bold;
-      color: $gray-900;
-    }
-
-    .drawer-actions {
-      display: flex;
-      align-items: center;
-      gap: $sp-6;
-    }
-
-    .drawer-reset {
-      font-size: $font-size-sm;
-      color: $accent;
-      cursor: pointer;
-      transition: opacity $duration-base;
-
-      &:active {
-        opacity: 0.7;
-      }
-    }
-
-    .drawer-close {
-      font-size: $font-size-xl;
-      color: $text-placeholder;
-      cursor: pointer;
-      transition: color $duration-base;
-
-      &:active {
-        color: $gray-600;
-      }
-    }
-  }
-
-  .drawer-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: $sp-6 $sp-8;
-  }
-
-  .drawer-footer {
-    display: flex;
-    gap: $sp-4;
-    padding: $sp-6 $sp-8;
-    border-top: 1rpx solid $gray-100;
-    background: $white;
-
-    button {
-      flex: 1;
-      height: $btn-height-lg;
-      border-radius: $radius-button;
-      font-size: $font-size-base;
-      font-weight: $font-weight-semibold;
-      border: none;
-      cursor: pointer;
-      transition: $transition-slow;
-    }
-
-    .drawer-cancel-btn {
-      background: $bg-page;
-      color: $gray-600;
-
-      &:active {
-        opacity: 0.8;
-      }
-    }
-
-    .drawer-confirm-btn {
-      @include gradient-accent;
-      color: $white;
-      box-shadow: 0 4rpx 12rpx rgba($accent, 0.3);
-
-      &:active {
-        opacity: 0.9;
-      }
-    }
+  &.slide-down {
+    animation: slideDown 0.26s ease-in forwards;
   }
 }
 
-// 筛选组
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.drag-handle {
+  display: flex;
+  justify-content: center;
+  padding: 12px 0 4px;
+}
+
+.drag-indicator {
+  width: 40px;
+  height: 4px;
+  background: $gray-300;
+  border-radius: 2px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid $gray-100;
+}
+
+.modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-400;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-100;
+    color: $gray-600;
+  }
+}
+
+.modal-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+
+  /* #ifdef H5 */
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-thumb { background: $gray-300; border-radius: 3px; }
+  /* #endif */
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  padding-bottom: calc(16px + 50px); // 留出 TabBar 空间
+  border-top: 1px solid $gray-100;
+  background: $white;
+
+  :deep(.c-button) {
+    flex: 1;
+  }
+}
+
+// 筛选组（Modal 和 Popover 共用）
 .filter-group {
-  margin-bottom: $sp-10;
+  margin-bottom: 24px;
 
   &:last-child {
     margin-bottom: 0;
   }
+}
 
-  .filter-group-title {
-    font-size: $font-size-base;
-    font-weight: $font-weight-bold;
-    color: $gray-900;
-    margin-bottom: $sp-5;
+.group-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: $gray-700;
+  margin-bottom: 12px;
 
-    .filter-popover & {
-      font-size: 13px;
-      margin-bottom: 8px;
-    }
+  .filter-popover & {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+}
+
+.group-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.option-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: $gray-100;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 2px solid transparent;
+
+  &:hover {
+    background: $gray-200;
   }
 
-  .filter-options {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: $sp-4;
-
-    // Popover 内宽度充足，5个积分选项排一行
-    .filter-popover & {
-      grid-template-columns: repeat(5, 1fr);
-      gap: 6px;
-    }
-  }
-
-  .filter-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: $sp-1;
-    padding: $sp-5 $sp-3;
-    background: $bg-page;
-    border-radius: $radius-md;
-    border: 2rpx solid transparent;
-    cursor: pointer;
-    transition: $transition-slow;
-
-    &.active {
-      background: linear-gradient(135deg, rgba($accent, 0.1) 0%, rgba($accent, 0.1) 100%);
-      border-color: $accent;
-
-      .option-label {
-        color: $accent;
-        font-weight: $font-weight-bold;
-      }
-
-      .option-desc {
-        color: $accent;
-      }
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
+  &.selected {
+    background: rgba($primary, 0.08);
+    border-color: $primary;
 
     .option-label {
-      font-size: $font-size-sm;
-      color: $gray-800;
-      font-weight: $font-weight-semibold;
-      transition: $transition-slow;
+      color: $primary;
+      font-weight: 600;
     }
 
     .option-desc {
-      font-size: $font-size-xs;
-      color: $text-placeholder;
-      transition: $transition-slow;
+      color: $primary;
+    }
+
+    .option-icon {
+      color: $primary;
     }
   }
 
-  .filter-switch-row {
-    @include flex-between;
-    padding: $sp-6;
-    background: $bg-page;
-    border-radius: $radius-md;
-    margin-bottom: $sp-4;
-
-    .switch-label {
-      font-size: $font-size-base;
-      color: $gray-800;
-      font-weight: $font-weight-semibold;
-    }
+  .option-label {
+    font-size: 14px;
+    color: $gray-700;
+    font-weight: 500;
   }
 
-  .filter-hint {
-    font-size: $font-size-xs;
-    color: $text-placeholder;
-    line-height: $line-height-relaxed;
-    padding: 0 $sp-6;
+  .option-desc {
+    font-size: 12px;
+    color: $gray-500;
+  }
+
+  .option-icon {
+    color: $gray-500;
+    flex-shrink: 0;
+  }
+
+  // 开关型选项
+  &--toggle {
+    width: 100%;
+    justify-content: flex-start;
+    padding-right: 16px;
+
+    .option-label {
+      flex: 1;
+    }
+  }
+}
+
+.toggle-check {
+  width: 18px;
+  height: 18px;
+  background: $primary;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  flex-shrink: 0;
+}
+
+// Popover 内筛选项适配
+.filter-popover {
+  .group-options {
+    gap: 6px;
+  }
+
+  .option-item {
+    padding: 6px 12px;
+
+    .option-label {
+      font-size: 13px;
+    }
   }
 }
 

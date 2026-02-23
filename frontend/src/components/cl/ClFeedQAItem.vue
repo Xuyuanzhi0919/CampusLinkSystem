@@ -450,12 +450,7 @@ const handleCommentClick = () => emit('comment', props.question)
   &.is-mobile {
     padding: 14px;
     gap: 10px;
-    border-radius: 0;
-    margin-bottom: 0;
-    border-left: none;
-    border-right: none;
-    border-top: none;
-    border-bottom: 1px solid $color-divider;
+    margin-bottom: 10px;
     box-shadow: none;
     transform: none !important;
 

@@ -2258,7 +2258,8 @@ defineExpose({
   background: $white;
   border-radius: 20px 20px 0 0;
   width: 100%;
-  max-height: 80vh;
+  // 移动端：限制高度，为底部 TabBar 留出空间（约50px），避免 footer 被遮挡
+  max-height: calc(80vh - 50px);
   display: flex;
   flex-direction: column;
   box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.12);
@@ -2451,8 +2452,18 @@ defineExpose({
   display: flex;
   gap: 12px;
   padding: 16px 24px;
+  // 移动端底部加安全距离，避免被自定义 TabBar（约50px）遮住
+  padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   border-top: 1px solid $gray-100;
   background: $white;
+
+  @include mobile {
+    padding-bottom: calc(16px + 50px); // 16px原始间距 + 50px TabBar高度
+  }
+
+  @include desktop {
+    padding-bottom: 16px;
+  }
 }
 
 .footer-btn {

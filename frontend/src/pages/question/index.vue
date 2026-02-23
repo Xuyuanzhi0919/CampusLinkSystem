@@ -68,8 +68,17 @@
           </view>
         </view>
 
-        <!-- 提问按钮 -->
-        <view class="ask-button" @click="handleAskQuestion">
+        <!-- 移动端：通知图标按钮（桌面端由提问按钮替代） -->
+        <view v-if="!isDesktop" class="notification-btn" @click="handleGoNotification">
+          <Icon name="bell" :size="isHeaderCollapsed ? 18 : 20" class="notification-icon" />
+          <view v-if="unreadCount > 0" class="notification-badge">
+            <text v-if="unreadCount <= 99" class="badge-text">{{ unreadCount }}</text>
+            <text v-else class="badge-text">99+</text>
+          </view>
+        </view>
+
+        <!-- PC端：提问按钮 -->
+        <view v-if="isDesktop" class="ask-button" @click="handleAskQuestion">
           <Icon name="edit-3" :size="isHeaderCollapsed ? 14 : 16" class="ask-icon" />
           <text class="ask-text">提问</text>
         </view>
@@ -422,6 +431,8 @@ import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
 import { useNavigationStore } from '@/stores/navigation'
+import { useUserStore } from '@/stores/user'
+import { getUnreadCount } from '@/services/notification'
 import { questionSearchHistory } from '@/utils/searchHistory'
 import QuestionCard from './components/QuestionCard.vue'
 import RecommendSidebar from './components/RecommendSidebar.vue'
@@ -446,6 +457,24 @@ import { PCFloatingNav } from '@/components/desktop'
 // Store
 const questionStore = useQuestionStore()
 const navigationStore = useNavigationStore()
+const userStore = useUserStore()
+
+// 通知未读数（移动端顶部铃铛用）
+const unreadCount = ref(0)
+
+const loadUnreadCount = async () => {
+  if (!userStore.isLoggedIn) return
+  try {
+    const count = await getUnreadCount()
+    unreadCount.value = count ?? 0
+  } catch {
+    // 静默失败，不影响主功能
+  }
+}
+
+const handleGoNotification = () => {
+  uni.navigateTo({ url: '/pages/notification/index' })
+}
 
 // 数据状态 - 使用 storeToRefs 确保响应性
 const {
@@ -965,6 +994,7 @@ onMounted(() => {
   loadQuestions(true)
   loadSearchHistory()
   navigationStore.syncActivePath()
+  loadUnreadCount()
 
   // H5端监听窗口滚动事件
   // #ifdef H5
@@ -974,6 +1004,9 @@ onMounted(() => {
 
 // P0优化: 页面显示(从详情页返回时触发)
 onShow(() => {
+  // 每次显示都刷新通知未读数（含从通知页返回的情况）
+  loadUnreadCount()
+
   // 首次显示由 onMounted 处理,跳过
   if (isFirstShow.value) {
     isFirstShow.value = false
@@ -1417,6 +1450,51 @@ defineExpose({
 
   &:active {
     transform: scale(0.95);
+  }
+}
+
+// 通知图标按钮（移动端）
+.notification-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &:active {
+    background: rgba($primary, 0.08);
+  }
+
+  .notification-icon {
+    color: $text-primary;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    min-width: 16px;
+    height: 16px;
+    background: #f44336;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 1.5px solid $white;
+
+    .badge-text {
+      font-size: 10px;
+      color: $white;
+      font-weight: 700;
+      line-height: 1;
+    }
   }
 }
 

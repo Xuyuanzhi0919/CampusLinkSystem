@@ -308,11 +308,13 @@ const handleFavorite = () => { emit('favorite', props.resource) }
     box-shadow: 0 4px 16px rgba(37, 99, 235, 0.10);
   }
 
-  // 移动端：无圆角、全宽、底部 border 分隔
+  // 移动端：无圆角、底部 border 分隔
   &.is-mobile {
     border-radius: 0;
     margin-bottom: 0;
-    border: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
     border-bottom: 1px solid #E4E4E7;
     box-shadow: none;
 

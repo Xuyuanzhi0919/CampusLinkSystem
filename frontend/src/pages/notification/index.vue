@@ -64,11 +64,11 @@
             v-for="notification in todayNotifications"
             :key="notification.notificationId"
             class="notification-card"
-            :class="{ unread: !notification.isRead }"
+            :class="{ 'is-unread': !notification.isRead }"
             @click="handleNotificationClick(notification)"
           >
-            <view class="card-icon-wrap" :class="`type-${getTypeKey(notification.notifyType)}`">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" class="card-icon" />
+            <view class="card-icon-wrap" :class="`icon-${getTypeKey(notification.notifyType)}`">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :class="`icon-color-${getTypeKey(notification.notifyType)}`" />
             </view>
             <view class="card-body">
               <text class="card-title">{{ notification.title }}</text>
@@ -92,21 +92,21 @@
         <!-- 更早 -->
         <template v-if="earlierNotifications.length > 0">
           <view class="date-divider date-divider-gap">
-            <text class="date-divider-text gray">更早</text>
+            <text class="date-divider-text date-divider-text-gray">更早</text>
           </view>
           <view
             v-for="notification in earlierNotifications"
             :key="notification.notificationId"
-            class="notification-card read"
+            class="notification-card is-read"
             @click="handleNotificationClick(notification)"
           >
-            <view class="card-icon-wrap read" :class="`type-${getTypeKey(notification.notifyType)}`">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" class="card-icon read" />
+            <view class="card-icon-wrap icon-gray">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" class="icon-color-gray" />
             </view>
             <view class="card-body">
-              <text class="card-title read">{{ notification.title }}</text>
-              <text class="card-desc read">{{ notification.content }}</text>
-              <text class="card-time read">{{ formatTime(notification.createdAt) }}</text>
+              <text class="card-title card-title-read">{{ notification.title }}</text>
+              <text class="card-desc card-desc-read">{{ notification.content }}</text>
+              <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
             </view>
             <view class="card-right">
               <view class="delete-btn" @click.stop="handleDelete(notification)">
@@ -449,10 +449,10 @@ defineExpose({
   &:active {
     opacity: 0.7;
   }
+}
 
-  .back-icon {
-    color: #1A1A1A;
-  }
+.back-icon {
+  color: #1A1A1A;
 }
 
 .nav-title {
@@ -479,17 +479,17 @@ defineExpose({
   &:active {
     opacity: 0.7;
   }
+}
 
-  .mark-icon {
-    color: #2563EB;
-  }
+.mark-icon {
+  color: #2563EB;
+}
 
-  .mark-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: #2563EB;
-    font-family: 'DM Sans', sans-serif;
-  }
+.mark-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+  font-family: 'DM Sans', sans-serif;
 }
 
 /* ===== Tab 栏 ===== */
@@ -526,11 +526,11 @@ defineExpose({
   font-weight: 500;
   color: #9CA3AF;
   transition: color 0.2s;
+}
 
-  .tab-item.active & {
-    color: #2563EB;
-    font-weight: 600;
-  }
+.tab-item.active .tab-label {
+  color: #2563EB;
+  font-weight: 600;
 }
 
 .tab-badge {
@@ -542,13 +542,13 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 0 4px;
+}
 
-  .tab-badge-text {
-    font-size: 10px;
-    font-weight: 700;
-    color: $white;
-    line-height: 1;
-  }
+.tab-badge-text {
+  font-size: 10px;
+  font-weight: 700;
+  color: $white;
+  line-height: 1;
 }
 
 .tab-indicator {
@@ -583,7 +583,7 @@ defineExpose({
   font-family: 'DM Sans', sans-serif;
 }
 
-.date-divider-text.gray {
+.date-divider-text-gray {
   color: #9CA3AF;
 }
 
@@ -628,18 +628,19 @@ defineExpose({
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  &.type-blue  { background: #EFF6FF; .card-icon { color: #2563EB; } }
-  &.type-green { background: #F0FDF4; .card-icon { color: #22C55E; } }
-  &.type-orange { background: #FEF3C7; .card-icon { color: #D97706; } }
-  &.type-purple { background: #F5F3FF; .card-icon { color: #7C3AED; } }
-  &.type-gray  { background: #F3F4F6; .card-icon { color: #6B7280; } }
-
-  &.read {
-    background: #F3F4F6 !important;
-    .card-icon { color: #9CA3AF !important; }
-  }
 }
+
+.card-icon-wrap.icon-blue   { background: #EFF6FF; }
+.card-icon-wrap.icon-green  { background: #F0FDF4; }
+.card-icon-wrap.icon-orange { background: #FEF3C7; }
+.card-icon-wrap.icon-purple { background: #F5F3FF; }
+.card-icon-wrap.icon-gray   { background: #F3F4F6; }
+
+.icon-color-blue   { color: #2563EB; }
+.icon-color-green  { color: #22C55E; }
+.icon-color-orange { color: #D97706; }
+.icon-color-purple { color: #7C3AED; }
+.icon-color-gray   { color: #9CA3AF; }
 
 /* ===== 卡片内容 ===== */
 .card-body {
@@ -656,8 +657,10 @@ defineExpose({
   color: #1A1A1A;
   font-family: 'DM Sans', sans-serif;
   line-height: 1.4;
+}
 
-  &.read { color: #9CA3AF; }
+.card-title-read {
+  color: #9CA3AF;
 }
 
 .card-desc {
@@ -671,8 +674,10 @@ defineExpose({
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   text-overflow: ellipsis;
+}
 
-  &.read { color: #9CA3AF; }
+.card-desc-read {
+  color: #9CA3AF;
 }
 
 .card-footer {
@@ -685,20 +690,22 @@ defineExpose({
   font-size: 12px;
   color: #9CA3AF;
   font-family: 'DM Sans', sans-serif;
+}
 
-  &.read { color: #D1D5DB; }
+.card-time-read {
+  color: #D1D5DB;
 }
 
 .point-tag {
   padding: 3px 8px;
   background: #FEF3C7;
   border-radius: 10px;
+}
 
-  .point-text {
-    font-size: 11px;
-    font-weight: 600;
-    color: #D97706;
-  }
+.point-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #D97706;
 }
 
 /* ===== 右侧区域 ===== */
@@ -729,14 +736,17 @@ defineExpose({
 
   &:active {
     background: #FEE2E2;
-
-    .delete-icon { color: #EF4444; }
   }
+}
 
-  .delete-icon {
-    color: #D1D5DB;
-    transition: color 0.2s;
-  }
+.delete-icon {
+  color: #D1D5DB;
+  transition: color 0.2s;
+}
+
+.delete-btn:active .delete-icon {
+  color: #EF4444;
+}
 }
 
 /* ===== 骨架屏 ===== */
@@ -813,8 +823,10 @@ defineExpose({
   align-items: center;
   justify-content: center;
   margin-bottom: 4px;
+}
 
-  .empty-icon { color: #9CA3AF; }
+.empty-icon {
+  color: #9CA3AF;
 }
 
 .empty-title {

@@ -363,7 +363,7 @@
           <view class="filter-group">
             <text class="group-title">学校资源</text>
             <view class="option-item option-item--toggle" :class="{ selected: tempOnlyMySchool }" @click="tempOnlyMySchool = !tempOnlyMySchool">
-              <Icon name="building" :size="15" class="option-icon" />
+              <Icon name="building-2" :size="15" class="option-icon" />
               <text class="option-label">只看本校资源</text>
               <view v-if="tempOnlyMySchool" class="toggle-check">
                 <Icon name="check" :size="10" />

@@ -45,7 +45,7 @@
         <!-- 元信息行：学校 · 时间 -->
         <view class="meta-row">
           <view v-if="resource.uploaderSchool" class="meta-item">
-            <ClIcon name="icon-building" size="xs" color="#9CA3AF" />
+            <ClIcon name="icon-location" size="xs" color="#9CA3AF" />
             <text class="meta-text">{{ resource.uploaderSchool }}</text>
           </view>
           <text v-if="resource.uploaderSchool" class="meta-dot">·</text>

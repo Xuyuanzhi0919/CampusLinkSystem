@@ -67,37 +67,28 @@
           <view
             v-for="(notification, idx) in todayNotifications"
             :key="notification.notificationId"
-            class="swipe-wrap"
+            class="notification-card card-enter"
+            :class="{ 'is-unread': !notification.isRead }"
+            :style="{ animationDelay: `${idx * 0.04}s` }"
+            @click="handleNotificationClick(notification)"
           >
-            <!-- 左滑删除背景 -->
-            <view class="swipe-delete-bg" @click.stop="handleDelete(notification)">
-              <Icon name="trash-2" :size="20" color="#fff" />
+            <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
             </view>
-            <!-- 通知卡片 -->
-            <view
-              class="notification-card card-enter"
-              :class="{ 'is-unread': !notification.isRead }"
-              :style="{ animationDelay: `${idx * 0.04}s`, '--swipe-x': `${getSwipeX(notification.notificationId)}px` }"
-              @click="handleNotificationClick(notification)"
-              @touchstart="onTouchStart($event, notification.notificationId)"
-              @touchmove="onTouchMove($event, notification.notificationId)"
-              @touchend="onTouchEnd($event, notification.notificationId)"
-            >
-              <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
-                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
-              </view>
-              <view class="card-body">
-                <text class="card-title">{{ notification.title }}</text>
-                <text class="card-desc">{{ notification.content }}</text>
-                <view class="card-footer">
-                  <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
-                  <view v-if="getPointReward(notification)" class="point-tag">
-                    <text class="point-text">{{ getPointReward(notification) }}</text>
-                  </view>
+            <view class="card-body">
+              <text class="card-title">{{ notification.title }}</text>
+              <text class="card-desc">{{ notification.content }}</text>
+              <view class="card-footer">
+                <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
+                <view v-if="getPointReward(notification)" class="point-tag">
+                  <text class="point-text">{{ getPointReward(notification) }}</text>
                 </view>
               </view>
-              <view class="card-right">
-                <view v-if="!notification.isRead" class="unread-dot" />
+            </view>
+            <view class="card-right">
+              <view v-if="!notification.isRead" class="unread-dot" />
+              <view class="delete-btn" @click.stop="handleDelete(notification)">
+                <Icon name="trash-2" :size="15" color="#D1D5DB" />
               </view>
             </view>
           </view>
@@ -111,26 +102,21 @@
           <view
             v-for="(notification, idx) in earlierNotifications"
             :key="notification.notificationId"
-            class="swipe-wrap"
+            class="notification-card is-read card-enter"
+            :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
+            @click="handleNotificationClick(notification)"
           >
-            <view class="swipe-delete-bg">
-              <Icon name="trash-2" :size="20" color="#fff" />
+            <view class="card-icon-wrap" style="background: #F3F4F6;">
+              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
             </view>
-            <view
-              class="notification-card is-read card-enter"
-              :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s`, '--swipe-x': `${getSwipeX(notification.notificationId)}px` }"
-              @click="handleNotificationClick(notification)"
-              @touchstart="onTouchStart($event, notification.notificationId)"
-              @touchmove="onTouchMove($event, notification.notificationId)"
-              @touchend="onTouchEnd($event, notification.notificationId)"
-            >
-              <view class="card-icon-wrap" style="background: #F3F4F6;">
-                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
-              </view>
-              <view class="card-body">
-                <text class="card-title card-title-read">{{ notification.title }}</text>
-                <text class="card-desc card-desc-read">{{ notification.content }}</text>
-                <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
+            <view class="card-body">
+              <text class="card-title card-title-read">{{ notification.title }}</text>
+              <text class="card-desc card-desc-read">{{ notification.content }}</text>
+              <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
+            </view>
+            <view class="card-right">
+              <view class="delete-btn" @click.stop="handleDelete(notification)">
+                <Icon name="trash-2" :size="15" color="#D1D5DB" />
               </view>
             </view>
           </view>
@@ -224,76 +210,6 @@ const earlierNotifications = computed(() => {
   today.setHours(0, 0, 0, 0)
   return notificationList.value.filter(n => new Date(n.createdAt) < today)
 })
-
-// ===== 左滑删除手势 =====
-const SWIPE_THRESHOLD = 48  // 触发展开/收起的滑动距离
-const SWIPE_MAX = 72        // 最大滑动距离（删除区宽度）
-
-interface SwipeItem {
-  startX: number
-  startY: number
-  currentX: number   // 当前偏移（负值为向左）
-  baseX: number      // 本次手势开始时的偏移基准
-  isHorizontal: boolean | null  // null=未判定方向
-}
-
-const swipeState = ref<Record<string | number, SwipeItem>>({})
-
-const getSwipeX = (id: string | number): number => {
-  return swipeState.value[id]?.currentX ?? 0
-}
-
-const onTouchStart = (e: TouchEvent, id: string | number) => {
-  const touch = e.touches[0]
-  const prev = swipeState.value[id]
-  swipeState.value[id] = {
-    startX: touch.clientX,
-    startY: touch.clientY,
-    currentX: prev?.currentX ?? 0,
-    baseX: prev?.currentX ?? 0,
-    isHorizontal: null
-  }
-}
-
-const onTouchMove = (e: TouchEvent, id: string | number) => {
-  const state = swipeState.value[id]
-  if (!state) return
-  const touch = e.touches[0]
-  const dx = touch.clientX - state.startX
-  const dy = touch.clientY - state.startY
-
-  // 首次判断方向
-  if (state.isHorizontal === null) {
-    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return
-    const horizontal = Math.abs(dx) > Math.abs(dy)
-    swipeState.value[id] = { ...state, isHorizontal: horizontal }
-    if (!horizontal) return  // 纵向滚动，不处理
-  }
-  if (!state.isHorizontal) return  // 已判定为纵向
-
-  // 横向：阻止页面滚动，计算偏移
-  e.stopPropagation()
-  const newX = Math.max(-SWIPE_MAX, Math.min(0, state.baseX + dx))
-  swipeState.value[id] = { ...state, currentX: newX }
-}
-
-const onTouchEnd = (_e: TouchEvent, id: string | number) => {
-  const state = swipeState.value[id]
-  if (!state || !state.isHorizontal) return
-
-  // 根据最终位置决定展开还是收起
-  const snapTo = state.currentX < -(SWIPE_THRESHOLD) ? -SWIPE_MAX : 0
-  swipeState.value[id] = { ...state, currentX: snapTo, baseX: snapTo, isHorizontal: null }
-}
-
-const resetSwipe = (id: string | number) => {
-  delete swipeState.value[id]
-}
-
-// 清空所有滑动状态（刷新/切 Tab 时调用）
-const closeAllSwipe = () => {
-  swipeState.value = {}
-}
 
 // 通知类型 -> lucide 图标名
 const getTypeIcon = (type: string): string => {
@@ -424,7 +340,6 @@ const loadUnreadCount = async () => {
 // Tab 切换
 const handleTabChange = (tab: string) => {
   if (currentTab.value === tab) return
-  closeAllSwipe()
   currentTab.value = tab
   page.value = 1
   notificationList.value = []
@@ -434,7 +349,6 @@ const handleTabChange = (tab: string) => {
 
 // 下拉刷新
 const handleRefresh = () => {
-  closeAllSwipe()
   loadNotifications(true)
   loadUnreadCount()
 }
@@ -448,12 +362,6 @@ const handleLoadMore = () => {
 
 // 点击通知
 const handleNotificationClick = async (notification: any) => {
-  // 如果是滑动状态，先关闭滑动
-  if (swipeState.value[notification.notificationId]?.currentX !== 0) {
-    resetSwipe(notification.notificationId)
-    return
-  }
-
   if (!notification.isRead) {
     try {
       await markNotificationRead(notification.notificationId)
@@ -503,9 +411,8 @@ const handleMarkAllRead = async () => {
   }
 }
 
-// 删除通知（左滑触发或直接删除）
+// 删除通知
 const handleDelete = (notification: any) => {
-  resetSwipe(notification.notificationId)
   uni.showModal({
     title: '删除通知',
     content: '确定要删除这条通知吗？',
@@ -717,27 +624,6 @@ defineExpose({
   height: calc(100vh - 104px);
 }
 
-/* ===== 左滑容器 ===== */
-.swipe-wrap {
-  position: relative;
-  overflow: hidden;
-  margin: 0 12px 8px;
-  border-radius: 12px;
-}
-
-.swipe-delete-bg {
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 72px;
-  background: #EF4444;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 0 12px 12px 0;
-}
-
 /* ===== 日期分隔线 ===== */
 .date-divider {
   padding: 8px 16px 4px;
@@ -763,21 +649,19 @@ defineExpose({
 
 /* ===== 通知卡片 ===== */
 .notification-card {
-  --swipe-x: 0px;
   display: flex;
   align-items: flex-start;
   padding: 14px 16px;
   gap: 12px;
   background: $white;
   border-radius: 12px;
+  margin: 0 12px 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, background 0.2s;
-  transform: translateX(var(--swipe-x));
+  transition: background 0.15s;
   cursor: pointer;
-  will-change: transform;
 
   &:active {
-    background: #F9FAFB;
+    background: #F5F7FF;
   }
 }
 
@@ -796,14 +680,14 @@ defineExpose({
   opacity: 0.85;
 }
 
-/* 入场动画：仅控制 opacity，translateX 由 CSS 变量管理 */
+/* 入场动画 */
 .card-enter {
   animation: card-fade-up 0.3s ease both;
 }
 
 @keyframes card-fade-up {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== 图标区 ===== */
@@ -889,7 +773,7 @@ defineExpose({
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  gap: 8px;
   flex-shrink: 0;
   padding-top: 2px;
 }
@@ -900,6 +784,24 @@ defineExpose({
   border-radius: 50%;
   background: #2563EB;
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.delete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+
+  &:active {
+    background: #FEE2E2;
+  }
+}
+
+.delete-btn:active {
+  background: #FEE2E2;
 }
 
 /* ===== 骨架屏 ===== */

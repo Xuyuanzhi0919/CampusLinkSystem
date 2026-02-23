@@ -207,8 +207,10 @@ const handleClick = () => {
   }
 
   &:active {
-    transform: translateY(1px);
+    transform: scale(0.985);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    border-color: $primary;
+    transition: all 0.08s ease-out;
   }
 
   &:hover {

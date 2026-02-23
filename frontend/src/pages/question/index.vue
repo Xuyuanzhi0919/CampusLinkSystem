@@ -906,9 +906,9 @@ const onReachBottom = () => {
   handleLoadMore()
 }
 
-// 点击问题卡片
+// 点击问题卡片（带跳转动画）
 const handleQuestionClick = (questionId: number) => {
-  // P0优化: 保存当前页面上下文(滚动位置 + 筛选条件)
+  // 保存当前页面上下文(滚动位置 + 筛选条件)
   savePageContext('question-list', {
     scrollTop: getCurrentScrollTop(),
     filters: {
@@ -920,7 +920,11 @@ const handleQuestionClick = (questionId: number) => {
   })
 
   uni.navigateTo({
-    url: `/pages/question/detail?id=${questionId}`
+    url: `/pages/question/detail?id=${questionId}`,
+    // #ifndef H5
+    animationType: 'slide-in-right',
+    animationDuration: 220,
+    // #endif
   })
 }
 

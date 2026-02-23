@@ -206,6 +206,22 @@ uni-page-body {
     padding-bottom: 0 !important;
   }
 }
+
+/* H5 端页面切换动画（slide-in-right 风格）*/
+.uni-page-wrapper {
+  animation: page-enter 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 /* #endif */
 
 /* ========== 底部安全区适配优化 ========== */

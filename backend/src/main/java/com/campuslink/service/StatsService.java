@@ -2,10 +2,12 @@ package com.campuslink.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.campuslink.dto.stats.TodayStatsResponse;
+import com.campuslink.entity.Answer;
 import com.campuslink.entity.Question;
 import com.campuslink.entity.Resource;
 import com.campuslink.entity.Task;
 import com.campuslink.entity.User;
+import com.campuslink.mapper.AnswerMapper;
 import com.campuslink.mapper.QuestionMapper;
 import com.campuslink.mapper.ResourceMapper;
 import com.campuslink.mapper.TaskMapper;
@@ -29,6 +31,7 @@ import java.time.LocalTime;
 public class StatsService {
     private final UserMapper userMapper;
     private final QuestionMapper questionMapper;
+    private final AnswerMapper answerMapper;
     private final ResourceMapper resourceMapper;
     private final TaskMapper taskMapper;
 
@@ -108,12 +111,18 @@ public class StatsService {
         // 统计所有任务数
         Integer totalTasks = Math.toIntExact(taskMapper.selectCount(null));
 
+        // 统计所有回答数
+        LambdaQueryWrapper<Answer> answerWrapper = new LambdaQueryWrapper<>();
+        answerWrapper.eq(Answer::getStatus, 1);
+        Integer totalAnswers = Math.toIntExact(answerMapper.selectCount(answerWrapper));
+
         TodayStatsResponse response = new TodayStatsResponse();
         response.setActiveUsers(totalUsers);
         response.setNewQuestions(totalQuestions);
         response.setNewResources(totalResources);
         response.setNewTasks(totalTasks);
         response.setActivityParticipants(0);
+        response.setTotalAnswers(totalAnswers);
 
         return response;
     }

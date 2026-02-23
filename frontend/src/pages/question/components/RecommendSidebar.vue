@@ -167,6 +167,7 @@ import type { TagItem } from '@/components/TagCloud.vue'
 import HotQuestions from '@/components/HotQuestions.vue'
 import type { HotQuestionItem } from '@/components/HotQuestions.vue'
 import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
+import { getTotalStats } from '@/services/stats'
 
 interface ActiveUser {
   userId: number
@@ -324,19 +325,20 @@ const formatNumber = (n: number): string => {
   return String(n)
 }
 
-// 加载社区统计（从问题列表 total 字段派生）
+// 加载社区统计（/stats/total 接口 + 解决率从问题列表派生）
 const loadCommunityStats = async () => {
   try {
-    const [allRes, solvedRes] = await Promise.all([
-      getQuestionList({ page: 1, pageSize: 1, sortBy: 'created_at', sortOrder: 'desc' }),
+    const [statsRes, solvedRes] = await Promise.all([
+      getTotalStats(),
       getQuestionList({ page: 1, pageSize: 1, isSolved: 1, sortBy: 'created_at', sortOrder: 'desc' })
     ])
-    const total = allRes.total ?? 0
+    const total = statsRes.newQuestions ?? 0
+    const totalAnswers = statsRes.totalAnswers ?? 0
     const solved = solvedRes.total ?? 0
     const rate = total > 0 ? Math.round((solved / total) * 100) : 0
     communityStats.value = {
       totalQuestions: formatNumber(total),
-      totalAnswers: '--',   // 暂无聚合接口，留待后端支持
+      totalAnswers: formatNumber(totalAnswers),
       solveRate: rate + '%'
     }
   } catch {

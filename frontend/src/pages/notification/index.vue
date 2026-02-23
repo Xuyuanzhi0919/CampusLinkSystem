@@ -41,8 +41,8 @@
       :refresher-enabled="true"
       :refresher-triggered="refreshing"
     >
-      <!-- 骨架屏 -->
-      <template v-if="loading && notificationList.length === 0">
+      <!-- 骨架屏：初始加载 或 下拉刷新 -->
+      <template v-if="loading || refreshing">
         <view v-for="i in 5" :key="i" class="skeleton-card">
           <view class="skeleton-icon skeleton-shine" />
           <view class="skeleton-body">
@@ -54,7 +54,7 @@
       </template>
 
       <!-- 通知列表 -->
-      <template v-if="!loading && notificationList.length > 0">
+      <template v-if="!loading && !refreshing && notificationList.length > 0">
         <!-- 今天 -->
         <template v-if="todayNotifications.length > 0">
           <view class="date-divider">
@@ -118,7 +118,7 @@
       </template>
 
       <!-- 空状态 -->
-      <view v-if="!loading && notificationList.length === 0" class="empty-state">
+      <view v-if="!loading && !refreshing && notificationList.length === 0" class="empty-state">
         <view class="empty-icon-wrap">
           <Icon name="bell-off" :size="36" class="empty-icon" />
         </view>
@@ -126,14 +126,21 @@
         <text class="empty-desc">有新消息时会在这里提醒你</text>
       </view>
 
-      <!-- 加载更多 -->
-      <view v-if="notificationList.length > 0" class="load-more">
-        <view v-if="loadingMore" class="loading-more-row">
-          <view class="loading-dot" />
-          <view class="loading-dot" style="animation-delay: 0.15s;" />
-          <view class="loading-dot" style="animation-delay: 0.3s;" />
+      <!-- 加载更多骨架 -->
+      <template v-if="loadingMore">
+        <view v-for="i in 2" :key="`more-${i}`" class="skeleton-card">
+          <view class="skeleton-icon skeleton-shine" />
+          <view class="skeleton-body">
+            <view class="skeleton-title skeleton-shine" />
+            <view class="skeleton-desc skeleton-shine" />
+            <view class="skeleton-time skeleton-shine" />
+          </view>
         </view>
-        <text v-else-if="!hasMore" class="no-more-text">已经到底了</text>
+      </template>
+
+      <!-- 没有更多 -->
+      <view v-if="!loadingMore && notificationList.length > 0 && !hasMore" class="load-more">
+        <text class="no-more-text">已经到底了</text>
       </view>
 
       <view class="safe-bottom" />
@@ -251,6 +258,7 @@ const loadNotifications = async (isRefresh = false) => {
   if (isRefresh) {
     page.value = 1
     hasMore.value = true
+    notificationList.value = []
   }
   if (!hasMore.value && !isRefresh) return
 
@@ -854,25 +862,6 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 20px 0;
-}
-
-.loading-more-row {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.loading-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #9CA3AF;
-  animation: dot-bounce 0.6s infinite alternate;
-}
-
-@keyframes dot-bounce {
-  from { transform: translateY(0); opacity: 0.4; }
-  to   { transform: translateY(-4px); opacity: 1; }
 }
 
 .no-more-text {

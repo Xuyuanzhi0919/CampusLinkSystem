@@ -49,6 +49,14 @@
 			}
 		},
 		{
+			"path": "pages/resource/my",
+			"style": {
+				"navigationBarTitleText": "我的资源",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
 			"path": "pages/publish/index",
 			"style": {
 				"navigationBarTitleText": "选择发布类型",

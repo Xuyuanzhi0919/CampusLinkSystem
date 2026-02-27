@@ -198,24 +198,24 @@ const loadData = async () => {
     
     if (currentTab.value === 'uploads') {
       const res = await getMyResources(params)
-      if (res.data) {
+      if (res) {
         if (page.value === 1) {
-          list.value = res.data.list || []
-          total.value = res.data.total || 0
-          uploadCount.value = res.data.total || 0
+          list.value = res.list || []
+          total.value = res.total || 0
+          uploadCount.value = res.total || 0
         } else {
-          list.value.push(...(res.data.list || []))
+          list.value.push(...(res.list || []))
         }
       }
     } else {
       const res = await getMyDownloadHistory(params)
-      if (res.data) {
+      if (res) {
         if (page.value === 1) {
-          list.value = res.data.list || []
-          total.value = res.data.total || 0
-          downloadCount.value = res.data.total || 0
+          list.value = res.list || []
+          total.value = res.total || 0
+          downloadCount.value = res.total || 0
         } else {
-          list.value.push(...(res.data.list || []))
+          list.value.push(...(res.list || []))
         }
       }
     }

@@ -28,7 +28,16 @@
         >
           <!-- 左侧：图标和原因 -->
           <view class="card-left">
-            <text class="reason-icon">{{ getReasonIcon(item.reason) }}</text>
+            <view
+              class="reason-icon"
+              :style="{ background: getReasonIconStyle(item.reason).bg }"
+            >
+              <Icon
+                :name="getReasonIconName(item.reason)"
+                :size="36"
+                :color="getReasonIconStyle(item.reason).color"
+              />
+            </view>
             <view class="card-content">
               <text class="card-reason">{{ item.reason }}</text>
               <text class="card-after">变化后积分: {{ item.pointsAfter }}</text>
@@ -50,7 +59,9 @@
 
       <!-- 空状态 -->
       <view v-if="!loading && pointsList.length === 0" class="empty-state">
-        <text class="empty-icon">💰</text>
+        <view class="empty-icon">
+          <Icon name="award" :size="64" color="#D1D5DB" />
+        </view>
         <text class="empty-text">暂无积分记录</text>
         <text class="empty-tip">完成任务、上传资源等可以获得积分哦~</text>
       </view>
@@ -77,6 +88,7 @@ import { ref, onMounted } from 'vue'
 import { getPointsLog } from '@/services/user'
 import type { PointsLogItem } from '@/types/user'
 import { useUserStore } from '@/stores/user'
+import Icon from '@/components/icons/index.vue'
 
 // Store
 const userStore = useUserStore()
@@ -185,23 +197,43 @@ const handleCardClick = (item: PointsLogItem) => {
 }
 
 /**
- * 获取原因图标
+ * 获取原因对应的 Lucide 图标名
  */
-const getReasonIcon = (reason: string): string => {
+const getReasonIconName = (reason: string): string => {
   const iconMap: Record<string, string> = {
-    注册奖励: '🎁',
-    上传资源: '📤',
-    下载资源: '📥',
-    提问: '❓',
-    回答问题: '💬',
-    回答被采纳: '✅',
-    发布任务: '📝',
-    完成任务: '🎯',
-    接受任务: '👍',
-    活动签到: '✔️',
-    每日签到: '📅'
+    注册奖励:   'gift',
+    上传资源:   'file-plus',
+    下载资源:   'download',
+    提问:       'help-circle',
+    回答问题:   'message-circle',
+    回答被采纳: 'badge-check',
+    发布任务:   'file-text',
+    完成任务:   'target',
+    接受任务:   'thumbs-up',
+    活动签到:   'calendar-check',
+    每日签到:   'calendar'
   }
-  return iconMap[reason] || '💰'
+  return iconMap[reason] || 'zap'
+}
+
+/**
+ * 获取原因对应的图标背景色和前景色
+ */
+const getReasonIconStyle = (reason: string): { bg: string; color: string } => {
+  const styleMap: Record<string, { bg: string; color: string }> = {
+    注册奖励:   { bg: '#FEF3C7', color: '#D97706' },
+    上传资源:   { bg: '#EFF6FF', color: '#2563EB' },
+    下载资源:   { bg: '#F0FDF4', color: '#16A34A' },
+    提问:       { bg: '#FFF7ED', color: '#EA580C' },
+    回答问题:   { bg: '#EFF6FF', color: '#3B82F6' },
+    回答被采纳: { bg: '#ECFDF5', color: '#059669' },
+    发布任务:   { bg: '#F5F3FF', color: '#7C3AED' },
+    完成任务:   { bg: '#FFF1F2', color: '#E11D48' },
+    接受任务:   { bg: '#FFFBEB', color: '#D97706' },
+    活动签到:   { bg: '#F0FDF4', color: '#059669' },
+    每日签到:   { bg: '#EFF6FF', color: '#2563EB' }
+  }
+  return styleMap[reason] || { bg: '#F3F4F6', color: '#6B7280' }
 }
 
 /**
@@ -352,8 +384,13 @@ defineExpose({
 }
 
 .reason-icon {
-  font-size: 48rpx;
-  line-height: 48rpx;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .card-content {
@@ -399,7 +436,13 @@ defineExpose({
 }
 
 .empty-icon {
-  font-size: 120rpx;
+  width: 160rpx;
+  height: 160rpx;
+  background: #F3F4F6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: $sp-8;
 }
 

@@ -100,13 +100,6 @@
       <view class="page-bottom" />
     </view>
 
-    <!-- 注册弹窗 -->
-    <RegisterModal
-      :visible="showRegisterModal"
-      @update:visible="showRegisterModal = $event"
-      @register-success="handleRegisterSuccess"
-      @go-to-login="showRegisterModal = false"
-    />
   </view>
 </template>
 
@@ -115,7 +108,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/services/auth'
 import Icon from '@/components/icons/index.vue'
-import RegisterModal from '@/components/RegisterModal.vue'
 
 const userStore = useUserStore()
 
@@ -129,7 +121,6 @@ const loginLoading = ref(false)
 const showPassword = ref(false)
 const accountFocused = ref(false)
 const passwordFocused = ref(false)
-const showRegisterModal = ref(false)
 
 const canSubmit = computed(() => {
   return form.value.account.trim() && form.value.password.trim()
@@ -205,12 +196,7 @@ const handleLogin = async () => {
 }
 
 const handleGoToRegister = () => {
-  showRegisterModal.value = true
-}
-
-const handleRegisterSuccess = () => {
-  showRegisterModal.value = false
-  uni.showToast({ title: '注册成功，请登录', icon: 'success', duration: 2000 })
+  uni.navigateTo({ url: '/pages/auth/register' })
 }
 
 const handleForgotPassword = () => {

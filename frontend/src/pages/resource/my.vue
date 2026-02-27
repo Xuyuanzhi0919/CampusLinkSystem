@@ -3,7 +3,7 @@
     <!-- 顶部导航栏 -->
     <view class="nav-bar">
       <view class="nav-back" @click="handleBack">
-        <text class="back-icon">←</text>
+        <Icon name="arrow-left" :size="20" color="#333" />
       </view>
       <text class="nav-title">我的资源</text>
       <view class="nav-right" />
@@ -91,7 +91,9 @@
 
       <!-- 空状态 -->
       <view v-else class="empty-state">
-        <text class="empty-icon">{{ emptyIcon }}</text>
+        <view class="empty-icon-wrap">
+          <Icon :name="emptyIconName" :size="64" color="#D1D5DB" />
+        </view>
         <text class="empty-text">{{ emptyText }}</text>
         <text class="empty-hint" @click="handleEmptyAction">{{ emptyHint }}</text>
       </view>
@@ -108,6 +110,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getMyResources, getMyDownloadHistory, deleteResource } from '@/services/resource'
 import MyResourceCard from './components/MyResourceCard.vue'
+import Icon from '@/components/icons/index.vue'
 import type { ResourceItem } from '@/types/resource'
 
 // PC 端组件（仅 H5）
@@ -152,7 +155,7 @@ const statusFilters = [
 ]
 
 // 空状态配置
-const emptyIcon = computed(() => currentTab.value === 'uploads' ? '📁' : '📥')
+const emptyIconName = computed(() => currentTab.value === 'uploads' ? 'folder' : 'download')
 const emptyText = computed(() => currentTab.value === 'uploads' ? '暂无上传的资源' : '暂无下载记录')
 const emptyHint = computed(() => currentTab.value === 'uploads' ? '去上传资源' : '去浏览资源')
 
@@ -301,7 +304,7 @@ onMounted(() => {
 <style lang="scss" scoped>
 .my-resource-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #EEF2FF;
 }
 
 .nav-bar {
@@ -323,11 +326,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.back-icon {
-  font-size: 36rpx;
-  color: #333;
 }
 
 .nav-title {
@@ -463,8 +461,14 @@ onMounted(() => {
   padding: 120rpx 0;
 }
 
-.empty-icon {
-  font-size: 80rpx;
+.empty-icon-wrap {
+  width: 160rpx;
+  height: 160rpx;
+  border-radius: 50%;
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: 24rpx;
 }
 

@@ -1,23 +1,32 @@
 <template>
   <view class="login-page">
-    <view class="login-container">
-      <!-- Logo 和标题 -->
-      <view class="header">
-        <view class="logo-container">
-          <Icon name="graduation-cap" :size="80" color="#FFFFFF" />
+    <!-- 蓝色背景 -->
+    <view class="bg-blue">
+      <view class="orb orb--1" />
+      <view class="orb orb--2" />
+    </view>
+
+    <!-- 页面内容 -->
+    <view class="page-content">
+      <!-- 品牌头部 -->
+      <view class="brand-header">
+        <view class="logo-box">
+          <Icon name="graduation-cap" :size="60" color="#FFFFFF" />
         </view>
-        <text class="title">欢迎来到 CampusLink</text>
-        <text class="subtitle">高校资源互助与问答平台</text>
+        <text class="brand-title">CampusLink</text>
+        <text class="brand-subtitle">高校资源互助 · 问答社区</text>
       </view>
 
-      <!-- 登录表单 -->
-      <view class="form-container">
+      <!-- 表单卡片 -->
+      <view class="form-card">
+        <text class="card-title">账号登录</text>
+        <text class="card-subtitle">用你的账号，继续连接校园</text>
+
         <!-- 账号输入框 -->
         <view class="form-item">
-          <text class="label">账号</text>
           <view class="input-wrap" :class="{ focused: accountFocused }">
             <view class="input-icon">
-              <Icon name="user" :size="36" />
+              <Icon name="user" :size="34" color="#9CA3AF" />
             </view>
             <input
               v-model="form.account"
@@ -33,10 +42,9 @@
 
         <!-- 密码输入框 -->
         <view class="form-item">
-          <text class="label">密码</text>
           <view class="input-wrap" :class="{ focused: passwordFocused }">
             <view class="input-icon">
-              <Icon name="lock" :size="36" />
+              <Icon name="lock" :size="34" color="#9CA3AF" />
             </view>
             <input
               v-model="form.password"
@@ -49,7 +57,7 @@
               @confirm="handleLogin"
             />
             <view class="eye-toggle" @click="showPassword = !showPassword">
-              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="36" />
+              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="34" color="#9CA3AF" />
             </view>
           </view>
         </view>
@@ -58,7 +66,7 @@
         <view class="form-options">
           <view class="remember-me" @click="form.rememberMe = !form.rememberMe">
             <view class="checkbox" :class="{ 'checkbox-checked': form.rememberMe }">
-              <Icon v-if="form.rememberMe" name="check" :size="22" class="checkbox-icon" />
+              <Icon v-if="form.rememberMe" name="check" :size="20" class="checkbox-icon" />
             </view>
             <text class="option-text">记住账号</text>
           </view>
@@ -66,39 +74,30 @@
         </view>
 
         <!-- 登录按钮 -->
-        <view class="form-actions">
-          <view
-            class="login-btn"
-            :class="{ disabled: !canSubmit || loginLoading, loading: loginLoading }"
-            @click="handleLogin"
-          >
-            <view v-if="loginLoading" class="loading-spinner" />
-            <text class="btn-text">{{ loginLoading ? '登录中...' : '登录' }}</text>
-          </view>
+        <view
+          class="login-btn"
+          :class="{ disabled: !canSubmit || loginLoading }"
+          @click="handleLogin"
+        >
+          <view v-if="loginLoading" class="loading-spinner" />
+          <text class="btn-text">{{ loginLoading ? '登录中...' : '登录' }}</text>
+        </view>
 
-          <view class="links">
-            <text class="link" @click="handleGoToRegister">注册账号</text>
-            <text class="separator">|</text>
-            <text class="link link--muted" @click="handleForgotPassword">忘记密码</text>
-          </view>
+        <!-- 分隔线 -->
+        <view class="divider">
+          <view class="divider-line" />
+          <text class="divider-text">或</text>
+          <view class="divider-line" />
+        </view>
+
+        <!-- 注册行 -->
+        <view class="register-row" @click="handleGoToRegister">
+          <text class="register-hint">还没有账号?</text>
+          <text class="register-link">立即注册 →</text>
         </view>
       </view>
 
-      <!-- 测试账号提示（低调化） -->
-      <view class="test-accounts">
-        <view class="test-header">
-          <Icon name="info" :size="28" class="test-icon" />
-          <text class="test-title">测试账号</text>
-        </view>
-        <view class="test-item" @click="fillTestAccount('admin')">
-          <text class="test-username">admin</text>
-          <text class="test-password">admin123</text>
-        </view>
-        <view class="test-item" @click="fillTestAccount('testuser001')">
-          <text class="test-username">testuser001</text>
-          <text class="test-password">password123</text>
-        </view>
-      </view>
+      <view class="page-bottom" />
     </view>
 
     <!-- 注册弹窗 -->
@@ -205,17 +204,6 @@ const handleLogin = async () => {
   }
 }
 
-const fillTestAccount = (username: string) => {
-  if (username === 'admin') {
-    form.value.account = 'admin'
-    form.value.password = 'admin123'
-  } else if (username === 'testuser001') {
-    form.value.account = 'testuser001'
-    form.value.password = 'password123'
-  }
-  uni.showToast({ title: '已填充', icon: 'success', duration: 800 })
-}
-
 const handleGoToRegister = () => {
   showRegisterModal.value = true
 }
@@ -236,177 +224,235 @@ const handleForgotPassword = () => {
 </script>
 
 <style scoped lang="scss">
-@import '@/styles/variables.scss';
+
+// =============================================
+// 页面基础
+// =============================================
 
 .login-page {
+  position: relative;
   min-height: 100vh;
-  background: linear-gradient(160deg, $primary-50 0%, $bg-surface 55%);
+  background: #EEF2FF;
+  overflow-x: hidden;
+}
+
+// =============================================
+// 蓝色背景
+// =============================================
+
+.bg-blue {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 780rpx;
+  background: #2355C8;
+  border-radius: 0 0 88rpx 88rpx;
+  overflow: hidden;
+  z-index: 0;
+}
+
+.orb {
+  position: absolute;
+  border-radius: 50%;
+
+  &--1 {
+    width: 360rpx;
+    height: 360rpx;
+    top: -80rpx;
+    right: -60rpx;
+    background: rgba(147, 197, 253, 0.20);
+  }
+
+  &--2 {
+    width: 280rpx;
+    height: 280rpx;
+    bottom: 80rpx;
+    left: -80rpx;
+    background: rgba(56, 189, 248, 0.15);
+  }
+}
+
+// =============================================
+// 页面内容
+// =============================================
+
+.page-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+// =============================================
+// 品牌头部
+// =============================================
+
+.brand-header {
+  width: 100%;
+  padding: 160rpx 48rpx 80rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo-box {
+  width: 144rpx;
+  height: 144rpx;
+  background: rgba(255, 255, 255, 0.18);
+  border: 3rpx solid rgba(255, 255, 255, 0.35);
+  border-radius: 40rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: $sp-10;
+  margin-bottom: 32rpx;
 }
 
-.login-container {
-  width: 100%;
-  max-width: 600rpx;
-  background: $bg-surface;
-  border-radius: $radius-xl;
-  padding: $sp-20 $sp-12;
-  box-shadow: 0 8rpx 40rpx rgba($primary, 0.08), 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+.brand-title {
+  display: block;
+  font-size: 52rpx;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: 1rpx;
+  margin-bottom: 14rpx;
 }
 
-// ========================================
-// Header
-// ========================================
-
-.header {
-  text-align: center;
-  margin-bottom: $sp-16;
-
-  .logo-container {
-    width: 160rpx;
-    height: 160rpx;
-    margin: 0 auto $sp-8;
-    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-    border-radius: $radius-2xl;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 16rpx 48rpx rgba($primary, 0.25);
-  }
-
-  .title {
-    display: block;
-    font-size: $font-size-2xl;
-    font-weight: $font-weight-bold;
-    color: $gray-900;
-    margin-bottom: $sp-3;
-    letter-spacing: -0.5rpx;
-  }
-
-  .subtitle {
-    display: block;
-    font-size: $font-size-sm;
-    color: $gray-500;
-  }
+.brand-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: #BFDBFE;
+  letter-spacing: 0.5rpx;
 }
 
-// ========================================
-// Form
-// ========================================
+// =============================================
+// 表单卡片
+// =============================================
 
-.form-container {
-  margin-bottom: $sp-12;
+.form-card {
+  width: 684rpx;
+  background: #FFFFFF;
+  border-radius: 56rpx;
+  padding: 56rpx 48rpx 52rpx;
+  box-shadow:
+    0 32rpx 120rpx rgba(29, 78, 216, 0.13),
+    0 4rpx 24rpx rgba(0, 0, 0, 0.04);
 }
+
+.card-title {
+  display: block;
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10rpx;
+}
+
+.card-subtitle {
+  display: block;
+  font-size: 26rpx;
+  color: #9CA3AF;
+  margin-bottom: 48rpx;
+}
+
+// =============================================
+// 输入框
+// =============================================
 
 .form-item {
-  margin-bottom: $sp-8;
-
-  .label {
-    display: block;
-    font-size: $font-size-base;
-    font-weight: $font-weight-semibold;
-    color: $gray-700;
-    margin-bottom: $sp-3;
-  }
+  margin-bottom: 24rpx;
 }
 
 .input-wrap {
   display: flex;
   align-items: center;
-  height: 88rpx;
-  padding: 0 $sp-7;
-  background: $gray-100;
-  border: 2rpx solid transparent;
-  border-radius: $radius-md;
-  transition: all 0.2s;
-  gap: $sp-4;
+  height: 104rpx;
+  background: #F8FAFF;
+  border: 3rpx solid #E8EEFF;
+  border-radius: 24rpx;
+  padding: 0 28rpx;
+  gap: 16rpx;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 
   &.focused {
-    background: $bg-surface;
-    border-color: $primary;
-    box-shadow: 0 0 0 6rpx rgba($primary, 0.1);
+    background: #FFFFFF;
+    border-color: #2563EB;
+    box-shadow: 0 0 0 8rpx rgba(37, 99, 235, 0.08);
   }
 
   .input-icon {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    color: $gray-400;
   }
 
   .input {
     flex: 1;
     height: 100%;
-    font-size: $font-size-base;
-    color: $gray-900;
+    font-size: 28rpx;
+    color: #111827;
     background: transparent;
-    border: none;
-    outline: none;
   }
 
   .eye-toggle {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    padding: $sp-2;
-    color: $gray-400;
+    padding: 8rpx;
     cursor: pointer;
-    transition: color 0.15s;
 
     &:active {
-      color: $gray-600;
+      opacity: 0.6;
     }
   }
 }
 
-// ========================================
+// =============================================
 // 记住账号 & 忘记密码
-// ========================================
+// =============================================
 
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: $sp-8;
+  margin-bottom: 40rpx;
 }
 
 .remember-me {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 14rpx;
   cursor: pointer;
 
   .checkbox {
-    width: 32rpx;
-    height: 32rpx;
-    border: 2rpx solid $gray-300;
-    border-radius: 6rpx;
+    width: 36rpx;
+    height: 36rpx;
+    background: #EEF2FF;
+    border: 2rpx solid #C7D2FE;
+    border-radius: 8rpx;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
+    transition: background 0.15s, border-color 0.15s;
 
     &.checkbox-checked {
-      background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-      border-color: $primary;
+      background: #2563EB;
+      border-color: #2563EB;
     }
 
     .checkbox-icon {
-      color: #fff;
+      color: #FFFFFF;
     }
   }
 
   .option-text {
-    font-size: $font-size-sm;
-    color: $gray-600;
+    font-size: 26rpx;
+    color: #6B7280;
   }
 }
 
 .forgot-link {
-  font-size: $font-size-sm;
-  color: $primary;
+  font-size: 26rpx;
+  color: #4F46E5;
   cursor: pointer;
 
   &:active {
@@ -414,74 +460,51 @@ const handleForgotPassword = () => {
   }
 }
 
-.form-actions {
-  margin-top: $sp-4;
+// =============================================
+// 登录按钮
+// =============================================
 
-  .login-btn {
-    width: 100%;
-    height: 96rpx;
-    background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-    border-radius: $radius-full;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $sp-3;
-    box-shadow: 0 8rpx 24rpx rgba($primary, 0.3);
-    margin-bottom: $sp-8;
-    transition: all 0.2s;
-    cursor: pointer;
+.login-btn {
+  width: 100%;
+  height: 108rpx;
+  background: #2563EB;
+  border-radius: 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.38);
+  margin-bottom: 40rpx;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
 
-    &:active:not(.disabled) {
-      transform: scale(0.98);
-      box-shadow: 0 4rpx 12rpx rgba($primary, 0.25);
-    }
-
-    &.disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    .btn-text {
-      font-size: $font-size-lg;
-      font-weight: $font-weight-semibold;
-      color: $white;
-    }
+  &:active:not(.disabled) {
+    transform: scale(0.98);
+    box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.28);
   }
 
-  .links {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: $sp-4;
+  &.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-    .link {
-      font-size: $font-size-sm;
-      color: $primary;
-      cursor: pointer;
-
-      &:active {
-        opacity: 0.7;
-      }
-
-      &--muted {
-        color: $gray-500;
-      }
-    }
-
-    .separator {
-      font-size: $font-size-sm;
-      color: $gray-300;
-    }
+  .btn-text {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #FFFFFF;
   }
 }
 
-// Loading spinner
+// =============================================
+// Loading Spinner
+// =============================================
+
 .loading-spinner {
   width: 36rpx;
   height: 36rpx;
-  border: 3rpx solid rgba(255, 255, 255, 0.4);
-  border-top-color: $white;
-  border-radius: $radius-full;
+  border: 3rpx solid rgba(255, 255, 255, 0.35);
+  border-top-color: #FFFFFF;
+  border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
 
@@ -489,64 +512,60 @@ const handleForgotPassword = () => {
   to { transform: rotate(360deg); }
 }
 
-// ========================================
-// Test Accounts（低调化）
-// ========================================
+// =============================================
+// 分隔线
+// =============================================
 
-.test-accounts {
-  background: $gray-50;
-  border: 1.5rpx solid $gray-200;
-  border-radius: $radius-md;
-  padding: $sp-6;
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  margin-bottom: 36rpx;
 
-  .test-header {
-    display: flex;
-    align-items: center;
-    gap: $sp-2;
-    margin-bottom: $sp-4;
-    color: $gray-500;
-
-    .test-icon {
-      color: $gray-400;
-    }
-
-    .test-title {
-      font-size: $font-size-xs;
-      color: $gray-500;
-      font-weight: $font-weight-medium;
-    }
+  .divider-line {
+    flex: 1;
+    height: 2rpx;
+    background: #F3F4F6;
   }
 
-  .test-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: $sp-3 $sp-4;
-    border-radius: $radius-sm;
-    margin-bottom: $sp-2;
-    cursor: pointer;
-    transition: background 0.15s;
-
-    &:last-child {
-      margin-bottom: 0;
-    }
-
-    &:active {
-      background: $gray-100;
-    }
-
-    .test-username {
-      font-size: $font-size-sm;
-      font-weight: $font-weight-medium;
-      color: $gray-700;
-      font-family: monospace;
-    }
-
-    .test-password {
-      font-size: $font-size-xs;
-      color: $gray-400;
-      font-family: monospace;
-    }
+  .divider-text {
+    font-size: 24rpx;
+    color: #9CA3AF;
   }
+}
+
+// =============================================
+// 注册行
+// =============================================
+
+.register-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.7;
+  }
+
+  .register-hint {
+    font-size: 28rpx;
+    color: #6B7280;
+  }
+
+  .register-link {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #2563EB;
+  }
+}
+
+// =============================================
+// 页面底部间距
+// =============================================
+
+.page-bottom {
+  height: 80rpx;
 }
 </style>

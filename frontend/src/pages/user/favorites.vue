@@ -47,15 +47,15 @@
           <!-- 元信息 -->
           <view class="card-meta">
             <view class="meta-item">
-              <text class="meta-icon">👤</text>
+              <Icon name="user" :size="14" class="meta-icon" />
               <text class="meta-text">{{ item.creatorName }}</text>
             </view>
             <view class="meta-item">
-              <text class="meta-icon">👁</text>
+              <Icon name="eye" :size="14" class="meta-icon" />
               <text class="meta-text">{{ item.viewCount }}</text>
             </view>
             <view class="meta-item">
-              <text class="meta-icon">❤️</text>
+              <Icon name="heart" :size="14" class="meta-icon" />
               <text class="meta-text">{{ item.likeCount }}</text>
             </view>
           </view>
@@ -66,14 +66,16 @@
 
           <!-- 取消收藏按钮 -->
           <view class="remove-btn" @click.stop="handleRemoveFavorite(item)">
-            <text class="remove-icon">🗑️</text>
+            <Icon name="trash-2" :size="18" color="#EF4444" class="remove-icon" />
           </view>
         </view>
       </view>
 
       <!-- 空状态 -->
       <view v-if="!loading && favoriteList.length === 0" class="empty-state">
-        <text class="empty-icon">😔</text>
+        <view class="empty-icon">
+          <Icon name="bookmark" :size="64" color="#D1D5DB" />
+        </view>
         <text class="empty-text">暂无收藏内容</text>
         <text class="empty-tip">去收藏喜欢的资源、问题或任务吧~</text>
       </view>
@@ -99,6 +101,7 @@
 import { ref, onMounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { getMyFavorites, removeFavorite, type FavoriteItem } from '@/services/favorite'
+import Icon from '@/components/icons/index.vue'
 
 // Tab 配置
 const tabs = [
@@ -439,14 +442,17 @@ defineExpose({
 
   &:active {
     .remove-icon {
-      transform: scale(1.2);
+      transform: scale(1.15);
+      opacity: 1;
     }
   }
 }
 
 .remove-icon {
-  font-size: 40rpx;
+  display: flex;
+  align-items: center;
   transition: $transition-base;
+  opacity: 0.6;
 }
 
 .card-header {
@@ -512,7 +518,10 @@ defineExpose({
 }
 
 .meta-icon {
-  font-size: $font-size-sm;
+  color: $gray-400;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .meta-text {
@@ -536,7 +545,13 @@ defineExpose({
 }
 
 .empty-icon {
-  font-size: 120rpx;
+  width: 160rpx;
+  height: 160rpx;
+  background: #F3F4F6;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-bottom: $sp-8;
 }
 

@@ -56,11 +56,15 @@
 
       <!-- 我的上传列表 -->
       <template v-else-if="currentTab === 'uploads' && list.length > 0">
-        <ResourceCard
+        <MyResourceCard
           v-for="item in list"
           :key="item.resourceId"
-          :resource="transformResource(item)"
+          :resource="item"
+          :show-status="true"
+          :show-actions="true"
           @click="handleResourceClick(item.resourceId)"
+          @delete="handleDeleteResource"
+          @edit="handleEditResource"
         />
 
         <!-- 加载更多提示 -->
@@ -71,10 +75,11 @@
 
       <!-- 我的下载列表 -->
       <template v-else-if="currentTab === 'downloads' && list.length > 0">
-        <ResourceCard
+        <MyResourceCard
           v-for="item in list"
           :key="item.resourceId"
-          :resource="transformResource(item)"
+          :resource="item"
+          :show-status="false"
           @click="handleResourceClick(item.resourceId)"
         />
 
@@ -101,8 +106,8 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { getMyResources, getMyDownloadHistory } from '@/services/resource'
-import ResourceCard from '@/components/cl/ClResourceCard.vue'
+import { getMyResources, getMyDownloadHistory, deleteResource } from '@/services/resource'
+import MyResourceCard from './components/MyResourceCard.vue'
 import type { ResourceItem } from '@/types/resource'
 
 // PC 端组件（仅 H5）
@@ -244,6 +249,34 @@ const handleRefresh = () => {
 // 点击资源
 const handleResourceClick = (id: number) => {
   uni.navigateTo({ url: `/pages/resource/detail?id=${id}` })
+}
+
+// 删除资源
+const handleDeleteResource = async (resource: ResourceItem) => {
+  uni.showModal({
+    title: '确认删除',
+    content: `确定要删除「${resource.title}」吗？`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await deleteResource(resource.resourceId)
+          uni.showToast({ title: '删除成功', icon: 'success' })
+          // 从列表中移除
+          list.value = list.value.filter(item => item.resourceId !== resource.resourceId)
+          total.value--
+          uploadCount.value--
+        } catch (error) {
+          console.error('删除失败:', error)
+          uni.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    }
+  })
+}
+
+// 编辑资源
+const handleEditResource = (resource: ResourceItem) => {
+  uni.navigateTo({ url: `/pages/resource/upload?id=${resource.resourceId}` })
 }
 
 // 空状态操作

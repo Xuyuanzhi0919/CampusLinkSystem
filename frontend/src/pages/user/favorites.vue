@@ -28,15 +28,22 @@
           v-for="item in favoriteList"
           :key="item.favoriteId"
           class="favorite-card"
+          :class="`card-${item.targetType}`"
+          @click="handleCardClick(item)"
         >
-          <!-- 卡片主体区域（可点击跳转） -->
-          <view class="card-content" @click="handleCardClick(item)">
-            <!-- 类型标签 -->
-            <view class="card-header">
-              <view class="type-tag" :class="`type-${item.targetType}`">
-                <text class="tag-text">{{ getTypeLabel(item.targetType) }}</text>
+          <!-- 头部行：类型标签 + 时间 + 删除 -->
+          <view class="card-header">
+            <view class="type-badge" :class="`badge-${item.targetType}`">
+              <Icon :name="getTypeIcon(item.targetType)" :size="12" />
+              <text class="badge-text">{{ getTypeLabel(item.targetType) }}</text>
+            </view>
+            <view class="header-right">
+              <text class="card-time">{{ formatTime(item.createdAt) }}</text>
+              <view class="remove-btn" @click.stop="handleRemoveFavorite(item)">
+                <Icon name="trash-2" :size="15" color="#EF4444" />
               </view>
             </view>
+          </view>
 
           <!-- 标题 -->
           <text class="card-title">{{ item.title }}</text>
@@ -44,29 +51,21 @@
           <!-- 描述 -->
           <text v-if="item.description" class="card-desc">{{ item.description }}</text>
 
-          <!-- 元信息 -->
+          <!-- 底部元信息 -->
           <view class="card-meta">
             <view class="meta-item">
-              <Icon name="user" :size="14" class="meta-icon" />
+              <Icon name="user" :size="13" class="meta-icon" />
               <text class="meta-text">{{ item.creatorName }}</text>
             </view>
+            <view class="meta-divider" />
             <view class="meta-item">
-              <Icon name="eye" :size="14" class="meta-icon" />
+              <Icon name="eye" :size="13" class="meta-icon" />
               <text class="meta-text">{{ item.viewCount }}</text>
             </view>
             <view class="meta-item">
-              <Icon name="heart" :size="14" class="meta-icon" />
+              <Icon name="heart" :size="13" class="meta-icon" />
               <text class="meta-text">{{ item.likeCount }}</text>
             </view>
-          </view>
-
-            <!-- 收藏时间 -->
-            <text class="card-time">收藏于 {{ formatTime(item.createdAt) }}</text>
-          </view>
-
-          <!-- 取消收藏按钮 -->
-          <view class="remove-btn" @click.stop="handleRemoveFavorite(item)">
-            <Icon name="trash-2" :size="18" color="#EF4444" class="remove-icon" />
           </view>
         </view>
       </view>
@@ -302,6 +301,18 @@ const getTypeLabel = (type: string): string => {
 }
 
 /**
+ * 获取类型对应的 Lucide 图标名
+ */
+const getTypeIcon = (type: string): string => {
+  const iconMap: Record<string, string> = {
+    resource: 'layers',
+    question: 'help-circle',
+    task: 'briefcase'
+  }
+  return iconMap[type] || 'bookmark'
+}
+
+/**
  * 格式化时间
  */
 const formatTime = (dateStr: string): string => {
@@ -414,107 +425,129 @@ defineExpose({
 
 // 收藏卡片
 .favorite-card {
-  position: relative;
   background: $white;
   border-radius: $radius-md;
   margin-bottom: $sp-5;
-  box-shadow: $shadow-card;
-}
-
-.card-content {
-  padding: $sp-8;
-  padding-right: 80rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  border-left: 6rpx solid transparent;
+  padding: $sp-7 $sp-7 $sp-6;
+  transition: box-shadow 0.15s, transform 0.15s;
 
   &:active {
-    opacity: 0.8;
+    transform: scale(0.99);
+    box-shadow: 0 1rpx 6rpx rgba(0, 0, 0, 0.04);
   }
+
+  // 左边框 & 角标配色
+  &.card-resource { border-left-color: #10B981; }
+  &.card-question  { border-left-color: #3B82F6; }
+  &.card-task      { border-left-color: #F59E0B; }
 }
 
-.remove-btn {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 80rpx;
-  height: 100%;
-  @include flex-center;
-  background: linear-gradient(to left, $white 60%, transparent);
-  transition: $transition-base;
-
-  &:active {
-    .remove-icon {
-      transform: scale(1.15);
-      opacity: 1;
-    }
-  }
-}
-
-.remove-icon {
+// 头部行
+.card-header {
   display: flex;
   align-items: center;
-  transition: $transition-base;
-  opacity: 0.6;
-}
-
-.card-header {
+  justify-content: space-between;
   margin-bottom: $sp-4;
 }
 
-.type-tag {
+// 类型徽章
+.type-badge {
   display: inline-flex;
   align-items: center;
-  padding: $sp-2 $sp-4;
-  border-radius: $radius-xs;
-  font-size: $font-size-sm;
+  gap: 6rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 100rpx;
+  font-size: 22rpx;
+  font-weight: $font-weight-semibold;
 
-  &.type-resource {
-    background: $success-100;
-    color: $success;
+  &.badge-resource {
+    background: #ECFDF5;
+    color: #059669;
   }
-
-  &.type-question {
-    background: $accent-100;
-    color: $accent;
+  &.badge-question {
+    background: #EFF6FF;
+    color: #2563EB;
   }
-
-  &.type-task {
-    background: $favorite-50;
-    color: $favorite;
+  &.badge-task {
+    background: #FFFBEB;
+    color: #D97706;
   }
 }
 
-.tag-text {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
+.badge-text {
+  font-size: 22rpx;
 }
 
+// 头部右侧：时间 + 删除
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+}
+
+.card-time {
+  font-size: 22rpx;
+  color: $gray-400;
+}
+
+.remove-btn {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  transition: background 0.15s;
+  opacity: 0.55;
+
+  &:active {
+    background: #FEF2F2;
+    opacity: 1;
+  }
+}
+
+// 标题
 .card-title {
   display: block;
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
   color: $gray-800;
   margin-bottom: $sp-3;
+  line-height: 1.5;
   @include text-ellipsis(2);
 }
 
+// 描述
 .card-desc {
   display: block;
   font-size: 26rpx;
   color: $gray-500;
   margin-bottom: $sp-4;
+  line-height: 1.6;
   @include text-ellipsis(2);
 }
 
+// 底部元信息行
 .card-meta {
   display: flex;
   align-items: center;
-  gap: $sp-6;
-  margin-bottom: $sp-3;
+  gap: $sp-5;
+  margin-top: $sp-3;
 }
 
 .meta-item {
   display: flex;
   align-items: center;
   gap: $sp-2;
+}
+
+.meta-divider {
+  width: 2rpx;
+  height: 20rpx;
+  background: $gray-200;
+  flex-shrink: 0;
 }
 
 .meta-icon {
@@ -525,12 +558,6 @@ defineExpose({
 }
 
 .meta-text {
-  font-size: $font-size-sm;
-  color: $gray-400;
-}
-
-.card-time {
-  display: block;
   font-size: $font-size-sm;
   color: $gray-400;
 }

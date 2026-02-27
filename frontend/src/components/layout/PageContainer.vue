@@ -73,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import CNavBar from './CNavBar.vue'
+import { useNavigationStore } from '@/stores/navigation'
 
 /**
  * PageContainer - 页面容器组件
@@ -142,7 +143,14 @@ interface Props {
   padding?: string
   /** 是否由页面自定义返回逻辑（传 true 时 PageContainer 不自动 navigateBack） */
   customBack?: boolean
+  /**
+   * 滚动时自动隐藏/显示底部 TabBar
+   * 设为 false 可在特定页面禁用此行为
+   */
+  autoHideTabBar?: boolean
 }
+
+const navigationStore = useNavigationStore()
 
 const props = withDefaults(defineProps<Props>(), {
   showNavbar: true,
@@ -160,7 +168,8 @@ const props = withDefaults(defineProps<Props>(), {
   safeBottom: true,
   background: '',
   padding: '',
-  customBack: false
+  customBack: false,
+  autoHideTabBar: true
 })
 
 const emit = defineEmits<{
@@ -193,6 +202,10 @@ const handleBack = () => {
 }
 
 const handleScroll = (event: any) => {
+  if (props.autoHideTabBar) {
+    const scrollTop = event.detail?.scrollTop ?? 0
+    navigationStore.handleScroll(scrollTop)
+  }
   emit('scroll', event)
 }
 

@@ -195,8 +195,6 @@ const handleScroll = (e: any, tabIndex: number) => {
   // 当前 Tab 超过 300px 时显示回顶按钮
   if (tabIndex === currentTab.value) {
     showScrollTop.value = top > 300
-    // 同步 TabBar 滚动隐藏/显示
-    navigationStore.handleScroll(top)
     // 同步广播给 PCFloatingNav（PC 端通过此事件更新进度环）
     // #ifdef H5
     uni.$emit('inner-scroll', { scrollTop: top })

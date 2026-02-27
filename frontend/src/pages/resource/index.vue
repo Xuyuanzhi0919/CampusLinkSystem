@@ -806,8 +806,6 @@ const handleScroll = (e: any) => {
   currentScrollTop.value = top
   // 滚动超过一屏（800rpx ≈ 400px）时显示返回顶部按钮
   showBackToTop.value = top > 400
-  // 同步 TabBar 滚动隐藏/显示
-  navigationStore.handleScroll(top)
 }
 
 /**

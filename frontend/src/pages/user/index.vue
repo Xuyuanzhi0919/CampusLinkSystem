@@ -224,8 +224,6 @@ const scrollTopVal = ref<number | undefined>(undefined)
 const handleScroll = (e: any) => {
   const top = e.detail?.scrollTop ?? 0
   showScrollTop.value = top > 400
-  // 同步 TabBar 滚动隐藏/显示
-  navigationStore.handleScroll(top)
 }
 
 const scrollToTop = () => {

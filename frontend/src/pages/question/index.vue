@@ -893,6 +893,9 @@ const handleScroll = (scrollTopValue: number) => {
   // 滚动超过阈值时折叠顶部导航
   isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
 
+  // 同步 TabBar 滚动隐藏/显示（此页使用原生滚动，无法由 PageContainer 统一处理）
+  navigationStore.handleScroll(scrollTopValue)
+
   // #ifdef H5
   // H5端手动触发"到达底部"逻辑,实现自动加载更多
   const scrollHeight = document.documentElement.scrollHeight

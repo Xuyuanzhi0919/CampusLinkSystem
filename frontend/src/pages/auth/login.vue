@@ -11,7 +11,7 @@
       <!-- 品牌头部 -->
       <view class="brand-header">
         <view class="logo-box">
-          <Icon name="graduation-cap" :size="60" color="#FFFFFF" />
+          <Icon name="graduation-cap" :size="48" color="#FFFFFF" />
         </view>
         <text class="brand-title">CampusLink</text>
         <text class="brand-subtitle">高校资源互助 · 问答社区</text>
@@ -245,9 +245,9 @@ const handleForgotPassword = () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 780rpx;
+  height: 660rpx;
   background: #2355C8;
-  border-radius: 0 0 88rpx 88rpx;
+  border-radius: 0 0 72rpx 72rpx;
   overflow: hidden;
   z-index: 0;
 }
@@ -257,18 +257,18 @@ const handleForgotPassword = () => {
   border-radius: 50%;
 
   &--1 {
-    width: 360rpx;
-    height: 360rpx;
-    top: -80rpx;
-    right: -60rpx;
+    width: 280rpx;
+    height: 280rpx;
+    top: -60rpx;
+    right: -50rpx;
     background: rgba(147, 197, 253, 0.20);
   }
 
   &--2 {
-    width: 280rpx;
-    height: 280rpx;
-    bottom: 80rpx;
-    left: -80rpx;
+    width: 220rpx;
+    height: 220rpx;
+    bottom: 60rpx;
+    left: -60rpx;
     background: rgba(56, 189, 248, 0.15);
   }
 }
@@ -291,36 +291,36 @@ const handleForgotPassword = () => {
 
 .brand-header {
   width: 100%;
-  padding: 160rpx 48rpx 80rpx;
+  padding: 100rpx 48rpx 56rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .logo-box {
-  width: 144rpx;
-  height: 144rpx;
+  width: 120rpx;
+  height: 120rpx;
   background: rgba(255, 255, 255, 0.18);
   border: 3rpx solid rgba(255, 255, 255, 0.35);
-  border-radius: 40rpx;
+  border-radius: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32rpx;
+  margin-bottom: 24rpx;
 }
 
 .brand-title {
   display: block;
-  font-size: 52rpx;
+  font-size: 44rpx;
   font-weight: 700;
   color: #FFFFFF;
   letter-spacing: 1rpx;
-  margin-bottom: 14rpx;
+  margin-bottom: 10rpx;
 }
 
 .brand-subtitle {
   display: block;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #BFDBFE;
   letter-spacing: 0.5rpx;
 }
@@ -330,28 +330,28 @@ const handleForgotPassword = () => {
 // =============================================
 
 .form-card {
-  width: 684rpx;
+  width: 690rpx;
   background: #FFFFFF;
-  border-radius: 56rpx;
-  padding: 56rpx 48rpx 52rpx;
+  border-radius: 48rpx;
+  padding: 44rpx 44rpx 44rpx;
   box-shadow:
-    0 32rpx 120rpx rgba(29, 78, 216, 0.13),
-    0 4rpx 24rpx rgba(0, 0, 0, 0.04);
+    0 24rpx 80rpx rgba(29, 78, 216, 0.12),
+    0 4rpx 16rpx rgba(0, 0, 0, 0.04);
 }
 
 .card-title {
   display: block;
-  font-size: 42rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #111827;
-  margin-bottom: 10rpx;
+  margin-bottom: 8rpx;
 }
 
 .card-subtitle {
   display: block;
-  font-size: 26rpx;
+  font-size: 24rpx;
   color: #9CA3AF;
-  margin-bottom: 48rpx;
+  margin-bottom: 36rpx;
 }
 
 // =============================================
@@ -359,24 +359,24 @@ const handleForgotPassword = () => {
 // =============================================
 
 .form-item {
-  margin-bottom: 24rpx;
+  margin-bottom: 20rpx;
 }
 
 .input-wrap {
   display: flex;
   align-items: center;
-  height: 104rpx;
+  height: 92rpx;
   background: #F8FAFF;
-  border: 3rpx solid #E8EEFF;
-  border-radius: 24rpx;
-  padding: 0 28rpx;
-  gap: 16rpx;
+  border: 2rpx solid #E8EEFF;
+  border-radius: 20rpx;
+  padding: 0 24rpx;
+  gap: 14rpx;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 
   &.focused {
     background: #FFFFFF;
     border-color: #2563EB;
-    box-shadow: 0 0 0 8rpx rgba(37, 99, 235, 0.08);
+    box-shadow: 0 0 0 6rpx rgba(37, 99, 235, 0.08);
   }
 
   .input-icon {
@@ -414,7 +414,7 @@ const handleForgotPassword = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40rpx;
+  margin-bottom: 32rpx;
 }
 
 .remember-me {
@@ -466,21 +466,21 @@ const handleForgotPassword = () => {
 
 .login-btn {
   width: 100%;
-  height: 108rpx;
+  height: 96rpx;
   background: #2563EB;
-  border-radius: 28rpx;
+  border-radius: 24rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12rpx;
-  box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.38);
-  margin-bottom: 40rpx;
+  box-shadow: 0 10rpx 32rpx rgba(37, 99, 235, 0.35);
+  margin-bottom: 32rpx;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 
   &:active:not(.disabled) {
     transform: scale(0.98);
-    box-shadow: 0 6rpx 20rpx rgba(37, 99, 235, 0.28);
+    box-shadow: 0 4rpx 16rpx rgba(37, 99, 235, 0.25);
   }
 
   &.disabled {
@@ -489,7 +489,7 @@ const handleForgotPassword = () => {
   }
 
   .btn-text {
-    font-size: 32rpx;
+    font-size: 30rpx;
     font-weight: 600;
     color: #FFFFFF;
   }
@@ -520,7 +520,7 @@ const handleForgotPassword = () => {
   display: flex;
   align-items: center;
   gap: 20rpx;
-  margin-bottom: 36rpx;
+  margin-bottom: 28rpx;
 
   .divider-line {
     flex: 1;

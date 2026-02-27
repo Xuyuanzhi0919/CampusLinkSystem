@@ -54,6 +54,17 @@
           </view>
         </view>
 
+        <!-- 记住账号 & 忘记密码 -->
+        <view class="form-options">
+          <view class="remember-me" @click="form.rememberMe = !form.rememberMe">
+            <view class="checkbox" :class="{ 'checkbox-checked': form.rememberMe }">
+              <Icon v-if="form.rememberMe" name="check" :size="22" class="checkbox-icon" />
+            </view>
+            <text class="option-text">记住账号</text>
+          </view>
+          <text class="forgot-link" @click="handleForgotPassword">忘记密码?</text>
+        </view>
+
         <!-- 登录按钮 -->
         <view class="form-actions">
           <view
@@ -68,7 +79,7 @@
           <view class="links">
             <text class="link" @click="handleGoToRegister">注册账号</text>
             <text class="separator">|</text>
-            <text class="link" @click="handleForgotPassword">忘记密码</text>
+            <text class="link link--muted" @click="handleForgotPassword">忘记密码</text>
           </view>
         </view>
       </view>
@@ -89,33 +100,61 @@
         </view>
       </view>
     </view>
+
+    <!-- 注册弹窗 -->
+    <RegisterModal
+      :visible="showRegisterModal"
+      @update:visible="showRegisterModal = $event"
+      @register-success="handleRegisterSuccess"
+      @go-to-login="showRegisterModal = false"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { login } from '@/services/auth'
 import Icon from '@/components/icons/index.vue'
+import RegisterModal from '@/components/RegisterModal.vue'
 
 const userStore = useUserStore()
 
 const form = ref({
   account: '',
-  password: ''
+  password: '',
+  rememberMe: false
 })
 
 const loginLoading = ref(false)
 const showPassword = ref(false)
 const accountFocused = ref(false)
 const passwordFocused = ref(false)
+const showRegisterModal = ref(false)
 
 const canSubmit = computed(() => {
   return form.value.account.trim() && form.value.password.trim()
 })
 
+onMounted(() => {
+  const remembered = uni.getStorageSync('campuslink_remember_account')
+  if (remembered) {
+    form.value.account = remembered
+    form.value.rememberMe = true
+  }
+})
+
 const handleLogin = async () => {
   if (!canSubmit.value || loginLoading.value) return
+
+  if (!form.value.account.trim()) {
+    uni.showToast({ title: '请输入账号', icon: 'none' })
+    return
+  }
+  if (!form.value.password.trim()) {
+    uni.showToast({ title: '请输入密码', icon: 'none' })
+    return
+  }
 
   try {
     loginLoading.value = true
@@ -126,6 +165,12 @@ const handleLogin = async () => {
     })
 
     userStore.login(response)
+
+    if (form.value.rememberMe) {
+      uni.setStorageSync('campuslink_remember_account', form.value.account)
+    } else {
+      uni.removeStorageSync('campuslink_remember_account')
+    }
 
     uni.showToast({
       title: '登录成功',
@@ -141,12 +186,17 @@ const handleLogin = async () => {
   } catch (error: any) {
     let errorMessage = '登录失败，请检查账号和密码'
     if (error.message) {
-      if (error.message.includes('用户名或密码错误')) {
-        errorMessage = '账号或密码错误'
-      } else if (error.message.includes('网络')) {
-        errorMessage = '网络连接失败，请稍后重试'
-      } else if (error.message.includes('账号')) {
-        errorMessage = '账号不存在或已被禁用'
+      const msg = error.message
+      if (msg.includes('用户不存在') || msg.includes('账号不存在') || msg.includes('用户名或密码错误')) {
+        errorMessage = '账号或密码错误，请重新输入'
+      } else if (msg.includes('密码错误') || msg.includes('密码不正确')) {
+        errorMessage = '密码不正确，请重试'
+      } else if (msg.includes('账号已被禁用') || msg.includes('已禁用')) {
+        errorMessage = '账号已被禁用，请联系管理员'
+      } else if (msg.includes('网络') || msg.includes('Network')) {
+        errorMessage = '网络连接失败，请检查网络后重试'
+      } else {
+        errorMessage = msg
       }
     }
     uni.showToast({ title: errorMessage, icon: 'none', duration: 2500 })
@@ -167,11 +217,21 @@ const fillTestAccount = (username: string) => {
 }
 
 const handleGoToRegister = () => {
-  uni.showToast({ title: '注册功能开发中...', icon: 'none' })
+  showRegisterModal.value = true
+}
+
+const handleRegisterSuccess = () => {
+  showRegisterModal.value = false
+  uni.showToast({ title: '注册成功，请登录', icon: 'success', duration: 2000 })
 }
 
 const handleForgotPassword = () => {
-  uni.showToast({ title: '找回密码功能开发中...', icon: 'none' })
+  uni.showModal({
+    title: '找回密码',
+    content: '找回密码功能正在开发中，如需帮助请发送邮件至 support@campuslink.com',
+    showCancel: false,
+    confirmText: '知道了'
+  })
 }
 </script>
 
@@ -301,8 +361,61 @@ const handleForgotPassword = () => {
   }
 }
 
+// ========================================
+// 记住账号 & 忘记密码
+// ========================================
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $sp-8;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  cursor: pointer;
+
+  .checkbox {
+    width: 32rpx;
+    height: 32rpx;
+    border: 2rpx solid $gray-300;
+    border-radius: 6rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+
+    &.checkbox-checked {
+      background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
+      border-color: $primary;
+    }
+
+    .checkbox-icon {
+      color: #fff;
+    }
+  }
+
+  .option-text {
+    font-size: $font-size-sm;
+    color: $gray-600;
+  }
+}
+
+.forgot-link {
+  font-size: $font-size-sm;
+  color: $primary;
+  cursor: pointer;
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
 .form-actions {
-  margin-top: $sp-12;
+  margin-top: $sp-4;
 
   .login-btn {
     width: 100%;
@@ -348,6 +461,10 @@ const handleForgotPassword = () => {
 
       &:active {
         opacity: 0.7;
+      }
+
+      &--muted {
+        color: $gray-500;
       }
     }
 

@@ -94,6 +94,16 @@
   <!-- Bottom Sheet 遮罩 -->
   <view v-show="showBottomSheet" class="bottom-sheet-overlay" @click="closeBottomSheet"></view>
 
+  <!-- 登录引导弹窗（未登录点击「我的」时触发） -->
+  <ClLoginGuideModal
+    :visible="showLoginGuide"
+    title="请先登录"
+    content="登录后即可查看个人中心"
+    @confirm="handleLoginGuideConfirm"
+    @cancel="showLoginGuide = false"
+    @update:visible="showLoginGuide = $event"
+  />
+
   <!-- Bottom Sheet 底部抽屉 -->
   <view class="bottom-sheet" :class="{ 'show': showBottomSheet }">
     <!-- 顶部把手 -->
@@ -143,6 +153,8 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
+import { useUserStore } from '@/stores/user'
+import ClLoginGuideModal from '@/components/cl/ClLoginGuideModal.vue'
 
 // Props：外部传入未读数
 const props = withDefaults(defineProps<{
@@ -153,12 +165,21 @@ const props = withDefaults(defineProps<{
 
 // 使用导航状态管理
 const navigationStore = useNavigationStore()
+const userStore = useUserStore()
 
 // 使用统一导航 composable
 const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
 
 // Bottom Sheet 状态
 const showBottomSheet = ref(false)
+
+// 登录引导弹窗状态
+const showLoginGuide = ref(false)
+
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+  uni.navigateTo({ url: '/pages/auth/login' })
+}
 
 // 发布类型配置（与 /pages/publish/index.vue 保持一致：提问、资源、活动、任务）
 const publishTypes = [
@@ -220,6 +241,12 @@ const switchTab = (index: number) => {
   // 发布按钮：弹出 Bottom Sheet
   if (item.action) {
     openBottomSheet()
+    return
+  }
+
+  // 「我的」Tab 需要登录
+  if (index === 4 && !userStore.isLoggedIn) {
+    showLoginGuide.value = true
     return
   }
 

@@ -142,6 +142,21 @@
       </view>
     </template>
 
+    <!-- ===== 未登录态 ===== -->
+    <view v-else class="not-logged-in">
+      <view class="not-logged-in__icon">
+        <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" width="72" height="72">
+          <circle cx="24" cy="16" r="9" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M42 44c0-6-8-10-18-10S6 38 6 44" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </view>
+      <text class="not-logged-in__title">登录后查看个人中心</text>
+      <text class="not-logged-in__desc">积分、收藏、发布记录等信息登录后可见</text>
+      <view class="not-logged-in__btn" @click="() => uni.navigateTo({ url: '/pages/auth/login' })">
+        <text>立即登录</text>
+      </view>
+    </view>
+
     <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
     <PCFloatingNav v-if="isDesktop" />
@@ -270,6 +285,12 @@ const capabilityBadges = computed(() => ({
 
 // 数据加载
 const loadUserData = async () => {
+  // 未登录时不发请求，直接结束加载态
+  if (!userStore.isLoggedIn) {
+    loading.value = false
+    refreshing.value = false
+    return
+  }
   try {
     const [profileRes, statsRes, , notifRes, msgRes] = await Promise.all([
       getUserProfile(),
@@ -545,6 +566,64 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 .fab-pop-leave-active { transition: all 0.2s ease-in; }
 .fab-pop-enter-from,
 .fab-pop-leave-to { opacity: 0; transform: scale(0.5) translateY(20rpx); }
+
+/* ========== 未登录态 ========== */
+.not-logged-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 48rpx 64rpx;
+  gap: 20rpx;
+
+  &__icon {
+    width: 120rpx;
+    height: 120rpx;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(99, 102, 241, 0.08));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8rpx;
+  }
+
+  &__title {
+    font-size: 36rpx;
+    font-weight: 600;
+    color: $color-text-primary;
+    text-align: center;
+  }
+
+  &__desc {
+    font-size: 26rpx;
+    color: $color-text-tertiary;
+    text-align: center;
+    line-height: 1.6;
+  }
+
+  &__btn {
+    margin-top: 16rpx;
+    padding: 0 72rpx;
+    height: 88rpx;
+    background: $campus-blue;
+    border-radius: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8rpx 24rpx rgba($campus-blue, 0.35);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &:active { transform: scale(0.97); }
+
+    text {
+      font-size: 30rpx;
+      font-weight: 600;
+      color: #fff;
+    }
+  }
+}
 
 /* ========== 骨架屏 ========== */
 @keyframes skShimmer {

@@ -42,6 +42,7 @@ export interface ResourceItem {
   totalRatings?: number    // 总评分人数
   createdAt: string
   status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
+  rejectReason?: string    // 审核拒绝原因（status=2 时后端可能返回）
   isDownloaded?: boolean   // 是否已下载（可选，登录用户会有）
   isLiked?: boolean        // 是否已点赞（可选，登录用户会有）
   isFavorited?: boolean    // 是否已收藏（可选，登录用户会有）

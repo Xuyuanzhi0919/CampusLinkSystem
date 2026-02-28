@@ -1,9 +1,9 @@
 <template>
   <view class="my-resource-card" @click="handleClick">
     <view class="card-body">
-      <!-- 顶部行：状态 Pill | 文件类型标签 -->
-      <view class="top-row">
-        <view v-if="showStatus" class="status-pill" :class="`s${resource.status ?? 1}`">
+      <!-- 顶部行：状态 Pill | 文件类型标签（仅 showStatus 时显示） -->
+      <view v-if="showStatus" class="top-row">
+        <view class="status-pill" :class="`s${resource.status ?? 1}`">
           <view class="s-dot" />
           <text class="s-text">{{ statusText }}</text>
         </view>
@@ -12,29 +12,36 @@
         </view>
       </view>
 
-      <!-- 标题 -->
-      <text class="title">{{ resource.title }}</text>
+      <!-- 标题行（无状态时，文件类型标签内联显示） -->
+      <view class="title-row">
+        <text class="title">{{ resource.title }}</text>
+        <view v-if="!showStatus" class="file-tag">
+          <text class="file-tag-text">{{ fileTypeConfig.name }}</text>
+        </view>
+      </view>
 
       <!-- 描述 -->
       <text v-if="resource.description" class="desc">{{ resource.description }}</text>
 
-      <!-- 拒绝原因（status=2 且有原因文本时显示） -->
-      <view v-if="resource.status === 2 && (resource as any).rejectReason" class="reject-note">
-        <text class="reject-text">拒绝原因：{{ (resource as any).rejectReason }}</text>
+      <!-- 拒绝原因（status=REJECTED 且有原因文本时显示） -->
+      <view v-if="resource.status === ResourceStatus.REJECTED && resource.rejectReason" class="reject-note">
+        <text class="reject-text">拒绝原因：{{ resource.rejectReason }}</text>
       </view>
 
       <!-- 元信息行：下载/评分 | 积分徽章 -->
       <view class="meta-row">
         <view class="stats">
-          <Icon name="download" :size="12" color="#94A3B8" />
-          <text class="stat-num">{{ formatNumber(resource.downloads) }}</text>
-          <template v-if="resource.averageRating">
+          <view class="stat-group">
+            <Icon name="download" :size="12" color="#94A3B8" />
+            <text class="stat-num">{{ formatNumber(resource.downloads) }}</text>
+          </view>
+          <view v-if="resource.averageRating" class="stat-group">
             <Icon name="star" :size="12" color="#F59E0B" />
             <text class="rating-num">{{ resource.averageRating.toFixed(1) }}</text>
-          </template>
+          </view>
         </view>
         <view class="points-badge" :class="{ free: !resource.score }">
-          <text>{{ resource.score ? `${resource.score} 分` : '免费' }}</text>
+          <text class="points-text">{{ resource.score ? `${resource.score} 分` : '免费' }}</text>
         </view>
       </view>
     </view>
@@ -59,6 +66,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import { ResourceStatus } from '@/types/resource'
 import type { ResourceItem } from '@/types/resource'
 
 interface Props {
@@ -80,8 +88,12 @@ const emit = defineEmits<{
 
 // 状态文本
 const statusText = computed(() => {
-  const map: Record<number, string> = { 0: '待审核', 1: '已通过', 2: '已拒绝' }
-  return map[props.resource.status ?? 1] || '未知'
+  const map: Record<ResourceStatus, string> = {
+    [ResourceStatus.PENDING]:  '待审核',
+    [ResourceStatus.APPROVED]: '已通过',
+    [ResourceStatus.REJECTED]: '已拒绝',
+  }
+  return map[props.resource.status ?? ResourceStatus.APPROVED] || '未知'
 })
 
 // 文件类型配置
@@ -132,11 +144,19 @@ const handleEdit   = () => emit('edit',   props.resource)
     padding: 32rpx;
   }
 
-  // ---- 顶部行 ----
+  // ---- 顶部行（有状态时：pill | 文件标签） ----
   .top-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
+  }
+
+  // ---- 标题行（无状态时：标题 + 文件标签） ----
+  .title-row {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16rpx;
   }
 
   // ---- 状态 Pill ----
@@ -151,6 +171,7 @@ const handleEdit   = () => emit('edit',   props.resource)
       width: 14rpx;
       height: 14rpx;
       border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .s-text {
@@ -180,8 +201,9 @@ const handleEdit   = () => emit('edit',   props.resource)
     }
   }
 
-  // ---- 文件类型标签 ----
+  // ---- 文件类型标签（top-row 和 title-row 共用） ----
   .file-tag {
+    flex-shrink: 0;
     padding: 8rpx 20rpx;
     border-radius: 16rpx;
     background: #F1F5F9;
@@ -195,6 +217,7 @@ const handleEdit   = () => emit('edit',   props.resource)
 
   // ---- 标题 ----
   .title {
+    flex: 1;
     font-size: 32rpx;
     font-weight: 600;
     color: #0F172A;
@@ -236,7 +259,14 @@ const handleEdit   = () => emit('edit',   props.resource)
     justify-content: space-between;
   }
 
+  // stats：统计数据组，组间 16rpx，组内 8rpx
   .stats {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+  }
+
+  .stat-group {
     display: flex;
     align-items: center;
     gap: 8rpx;
@@ -245,7 +275,6 @@ const handleEdit   = () => emit('edit',   props.resource)
   .stat-num {
     font-size: 24rpx;
     color: #94A3B8;
-    margin-right: 8rpx;
   }
 
   .rating-num {
@@ -258,19 +287,22 @@ const handleEdit   = () => emit('edit',   props.resource)
     padding: 8rpx 24rpx;
     border-radius: 100rpx;
     background: #FEF3C7;
-    font-size: 24rpx;
-    font-weight: 600;
-    color: #B45309;
+
+    .points-text {
+      font-size: 24rpx;
+      font-weight: 600;
+      color: #B45309;
+    }
 
     &.free {
       background: #F0FDF4;
-      color: #16A34A;
+      .points-text { color: #16A34A; }
     }
   }
 
-  // ---- 分割线 ----
+  // ---- 分割线（1rpx 与全局保持一致） ----
   .divider {
-    height: 1px;
+    height: 1rpx;
     background: #F1F5F9;
   }
 

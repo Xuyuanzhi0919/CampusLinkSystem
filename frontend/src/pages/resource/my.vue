@@ -36,7 +36,7 @@
       </view>
     </view>
 
-    <!-- 内容区 -->
+    <!-- 内容区：flex:1 自动占满剩余高度，不依赖硬编码 calc -->
     <scroll-view
       class="content-container"
       scroll-y
@@ -66,11 +66,7 @@
           @delete="handleDeleteResource"
           @edit="handleEditResource"
         />
-
-        <!-- 加载更多提示 -->
-        <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
-        <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
-        <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
+        <view class="load-more">{{ loadMoreText }}</view>
       </template>
 
       <!-- 我的下载列表 -->
@@ -82,11 +78,7 @@
           :show-status="false"
           @click="handleResourceClick(item.resourceId)"
         />
-
-        <!-- 加载更多提示 -->
-        <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
-        <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
-        <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
+        <view class="load-more">{{ loadMoreText }}</view>
       </template>
 
       <!-- 空状态 -->
@@ -107,7 +99,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { getMyResources, getMyDownloadHistory, deleteResource } from '@/services/resource'
 import MyResourceCard from './components/MyResourceCard.vue'
 import Icon from '@/components/icons/index.vue'
@@ -117,7 +109,6 @@ import type { ResourceItem } from '@/types/resource'
 // #ifdef H5
 import { PCFloatingNav } from '@/components/desktop'
 // #endif
-import { formatTime } from '@/utils/formatters'
 
 // 当前Tab
 const currentTab = ref<'uploads' | 'downloads'>('uploads')
@@ -154,25 +145,17 @@ const statusFilters = [
   { label: '已拒绝', value: 2 }
 ]
 
+// 加载更多提示文字（合并三条 v-if）
+const loadMoreText = computed(() => {
+  if (loading.value && list.value.length > 0) return '加载中...'
+  if (hasMore.value) return '上拉加载更多'
+  return '没有更多了'
+})
+
 // 空状态配置
 const emptyIconName = computed(() => currentTab.value === 'uploads' ? 'folder' : 'download')
 const emptyText = computed(() => currentTab.value === 'uploads' ? '暂无上传的资源' : '暂无下载记录')
 const emptyHint = computed(() => currentTab.value === 'uploads' ? '去上传资源' : '去浏览资源')
-
-// 转换资源数据为卡片组件所需格式
-const transformResource = (item: any) => ({
-  id: item.resourceId,
-  title: item.title,
-  description: item.description,
-  fileType: item.fileType,
-  tags: item.tags || [],
-  downloads: item.downloads || 0,
-  views: item.views || 0,
-  favorites: item.favorites || 0,
-  rating: item.averageRating,
-  createdAt: item.createdAt,
-  points: item.score || 0
-})
 
 // Tab切换
 const handleTabChange = (tab: 'uploads' | 'downloads') => {
@@ -202,9 +185,12 @@ const loadData = async () => {
   loading.value = true
 
   try {
-    const params = { page: page.value, pageSize: pageSize.value }
-    
     if (currentTab.value === 'uploads') {
+      const params = {
+        page: page.value,
+        pageSize: pageSize.value,
+        ...(statusFilter.value !== null && { status: statusFilter.value })
+      }
       const res = await getMyResources(params)
       if (res) {
         if (page.value === 1) {
@@ -216,6 +202,7 @@ const loadData = async () => {
         }
       }
     } else {
+      const params = { page: page.value, pageSize: pageSize.value }
       const res = await getMyDownloadHistory(params)
       if (res) {
         if (page.value === 1) {
@@ -264,7 +251,6 @@ const handleDeleteResource = async (resource: ResourceItem) => {
         try {
           await deleteResource(resource.resourceId)
           uni.showToast({ title: '删除成功', icon: 'success' })
-          // 从列表中移除
           list.value = list.value.filter(item => item.resourceId !== resource.resourceId)
           total.value--
           uploadCount.value--
@@ -296,21 +282,21 @@ const handleBack = () => {
   uni.navigateBack()
 }
 
-onMounted(() => {
-  loadData()
-})
+loadData()
 </script>
 
 <style lang="scss" scoped>
+// 页面用 flex 列布局，scroll-view 通过 flex:1 自动撑满剩余高度
 .my-resource-page {
-  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: #EEF2FF;
 }
 
 .nav-bar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -339,6 +325,7 @@ onMounted(() => {
 }
 
 .tab-bar {
+  flex-shrink: 0;
   display: flex;
   background: #fff;
   padding: 0 32rpx;
@@ -352,13 +339,13 @@ onMounted(() => {
   justify-content: center;
   height: 88rpx;
   position: relative;
-  
+
   &.active {
     .tab-label {
       color: #6366f1;
       font-weight: 600;
     }
-    
+
     &::after {
       content: '';
       position: absolute;
@@ -385,6 +372,7 @@ onMounted(() => {
 }
 
 .filter-bar {
+  flex-shrink: 0;
   display: flex;
   gap: 16rpx;
   padding: 20rpx 32rpx;
@@ -396,10 +384,10 @@ onMounted(() => {
   padding: 12rpx 24rpx;
   border-radius: 32rpx;
   background: #f5f5f5;
-  
+
   &.active {
     background: rgba(99, 102, 241, 0.1);
-    
+
     .filter-label {
       color: #6366f1;
     }
@@ -411,9 +399,12 @@ onMounted(() => {
   color: #666;
 }
 
+// scroll-view 占满剩余高度，不需要手动计算
 .content-container {
-  height: calc(100vh - 176rpx - 100rpx);
+  flex: 1;
+  overflow: hidden;
   padding: 24rpx 32rpx;
+  box-sizing: border-box;
 }
 
 .skeleton-card {

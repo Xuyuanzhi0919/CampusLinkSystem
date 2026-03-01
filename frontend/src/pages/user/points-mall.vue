@@ -56,10 +56,6 @@
       <scroll-view
         class="items-scroll"
         scroll-y
-        refresher-enabled
-        :refresher-triggered="itemsRefreshing"
-        @refresherrefresh="handleItemsRefresh"
-        @scrolltolower="() => {}"
       >
         <!-- 骨架屏 -->
         <view v-if="itemsLoading" class="items-grid">
@@ -124,9 +120,6 @@
       <scroll-view
         class="records-scroll"
         scroll-y
-        refresher-enabled
-        :refresher-triggered="recordsRefreshing"
-        @refresherrefresh="handleRecordsRefresh"
         @scrolltolower="handleRecordsLoadMore"
       >
         <!-- 骨架屏 -->
@@ -167,7 +160,6 @@
 
           <!-- 加载更多指示器（滚动到底自动触发） -->
           <view v-if="recordsHasMore" class="load-more-indicator">
-            <view v-if="recordsLoadingMore" class="load-more-spinner" />
             <text class="load-more-text">{{ recordsLoadingMore ? '加载中…' : '上拉加载更多' }}</text>
           </view>
           <view v-else class="no-more">
@@ -273,9 +265,6 @@ const recordsLoadingMore = ref(false)
 const recordsHasMore = ref(true)
 const recordsPage = ref(1)
 
-// 下拉刷新触发状态
-const itemsRefreshing = ref(false)
-const recordsRefreshing = ref(false)
 
 // 可负担商品数量（用于 banner 副标题）
 const affordableCount = computed(() =>
@@ -349,42 +338,6 @@ const handleRecordsLoadMore = () => {
   }
 }
 
-// ─── 下拉刷新处理 ──────────────────────────────────────
-const handleItemsRefresh = async () => {
-  itemsRefreshing.value = true
-  try {
-    const [fetchedItems] = await Promise.all([
-      getRewardItems(activeCategory.value),
-      userStore.fetchUserInfo(),
-    ])
-    items.value = fetchedItems
-    currentPoints.value = userStore.userInfo?.points ?? currentPoints.value
-  } catch {
-    uni.showToast({ title: '刷新失败', icon: 'none' })
-  } finally {
-    itemsRefreshing.value = false
-  }
-}
-
-const handleRecordsRefresh = async () => {
-  recordsRefreshing.value = true
-  recordsPage.value = 1
-  recordsHasMore.value = true
-  try {
-    const [res] = await Promise.all([
-      getRedeemRecords(1, 10),
-      userStore.fetchUserInfo(),
-    ])
-    records.value = res.list
-    recordsHasMore.value = 10 < res.total
-    recordsPage.value = 2
-    currentPoints.value = userStore.userInfo?.points ?? currentPoints.value
-  } catch {
-    uni.showToast({ title: '刷新失败', icon: 'none' })
-  } finally {
-    recordsRefreshing.value = false
-  }
-}
 
 // ─── 确认弹窗逻辑 ──────────────────────────────────────
 const openConfirm = (item: RewardItem) => {
@@ -906,18 +859,6 @@ onMounted(async () => {
   padding: 16px;
 }
 
-.load-more-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid #E5E7EB;
-  border-top-color: #377DFF;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
 
 .load-more-text { font-size: 13px; color: #9CA3AF; }
 

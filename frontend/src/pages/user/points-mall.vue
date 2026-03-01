@@ -232,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { CNavBar } from '@/components/layout'
 import Icon from '@/components/icons/index.vue'
 import { useUserStore } from '@/stores/user'
@@ -277,6 +277,13 @@ const STATUS_LABELS: Record<number, string> = {
   1: '已发放',
   2: '已失效',
 }
+
+// 切换到「我的兑换」tab 时懒加载记录（首次或数据为空时触发）
+watch(activeMainTab, (tab) => {
+  if (tab === 'records' && records.value.length === 0 && !recordsLoading.value) {
+    loadRecords()
+  }
+})
 
 // ─── 商品逻辑 ──────────────────────────────────────────
 const loadItems = async () => {
@@ -354,12 +361,13 @@ const handleRedeem = async () => {
       userStore.userInfo.points = currentPoints.value
     }
 
+    const redeemed = confirmItem.value
     closeConfirm()
 
     uni.showToast({ title: '兑换成功！', icon: 'success' })
 
-    // 如果商品有限库存，刷新列表
-    if (confirmItem.value?.stock !== -1) {
+    // 有限库存商品兑换后刷新列表（无限库存无需刷新）
+    if (redeemed.stock !== -1) {
       loadItems()
     }
 

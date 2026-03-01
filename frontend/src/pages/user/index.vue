@@ -331,13 +331,16 @@ const handleGoToMall = () => uni.showToast({ title: '积分商城即将上线', 
 
 const handleStatClick = (key: string) => {
   const map: Record<string, string> = {
-    resources: '/pages/resource/my-list',
-    answers:   '/pages/question/my-answers',
-    likes:     '/pages/user/liked-list',
-    collections: '/pages/user/collection-list'
+    resources:   '/pages/resource/my',
+    answers:     '/pages/question/my',
+    collections: '/pages/user/favorites',
   }
   const url = map[key]
-  if (url) uni.navigateTo({ url, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+  if (url) {
+    uni.navigateTo({ url })
+  } else {
+    uni.showToast({ title: '该功能即将上线', icon: 'none' })
+  }
 }
 
 const handleBadgeClick = (badge: any) => {

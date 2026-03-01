@@ -23,16 +23,9 @@
       <view class="content">
         <view class="sk-summary" />
         <view v-for="i in 4" :key="i" class="sk-card">
-          <view class="sk-accent" />
-          <view class="sk-inner">
-            <view class="sk-icon" />
-            <view class="sk-body">
-              <view class="sk-tag" />
-              <view class="sk-title" />
-              <view class="sk-sub" />
-            </view>
-            <view class="sk-badge" />
-          </view>
+          <view class="sk-title-line" />
+          <view class="sk-title-line sk-title-line--short" />
+          <view class="sk-meta-line" />
         </view>
       </view>
     </scroll-view>
@@ -99,28 +92,16 @@
           class="list-card"
           @click="handleItemClick(item)"
         >
-          <!-- 左侧 accent 线 -->
-          <view class="card-accent" :class="`card-accent--${item.type}`" />
-          <!-- 内容 -->
-          <view class="card-inner">
-            <view class="card-icon" :class="`card-icon--${item.type}`">
-              <text :class="`card-icon-symbol card-icon-symbol--${item.type}`">
-                {{ item.type === 'resource' ? '≡' : '◎' }}
-              </text>
-            </view>
-            <view class="card-body">
-              <view class="card-tag" :class="`card-tag--${item.type}`">
-                <text class="card-tag-text">{{ item.type === 'resource' ? '资源' : '回答' }}</text>
-              </view>
-              <text class="card-title">{{ item.title }}</text>
-              <text v-if="item.type === 'answer' && item.questionTitle" class="card-sub">
-                {{ item.questionTitle }}
-              </text>
-            </view>
-            <view class="card-like-badge">
-              <text class="badge-heart">♥</text>
-              <text class="badge-num">{{ item.likes }}</text>
-            </view>
+          <text class="card-title">{{ item.title }}</text>
+          <text v-if="item.type === 'answer' && item.questionTitle" class="card-sub">
+            {{ item.questionTitle }}
+          </text>
+          <view class="card-meta">
+            <text class="card-meta-type" :class="`card-meta-type--${item.type}`">
+              {{ item.type === 'resource' ? '资源' : '回答' }}
+            </text>
+            <text class="card-meta-dot">·</text>
+            <text class="card-meta-likes">♥ {{ item.likes }}</text>
           </view>
         </view>
 
@@ -425,136 +406,63 @@ $muted-fill:  #F0EFEC;
 // ─── 列表项 ──────────────────────────────────────────────────
 .list-card {
   background: $white;
-  border-radius: 16px;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03);
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-
-  &:active {
-    transform: scale(0.985);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-  }
-  // #ifdef H5
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
-  }
-  // #endif
-}
-
-.card-accent {
-  width: 3px;
-  flex-shrink: 0;
-  &--resource { background: $blue; }
-  &--answer   { background: $teal; }
-}
-
-.card-inner {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 12px;
-  min-width: 0;
-}
-
-.card-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  &--resource { background: $blue-50; }
-  &--answer   { background: $teal-50; }
-}
-.card-icon-symbol {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  &--resource { color: $blue; }
-  &--answer   { color: $teal; }
-}
-
-.card-body {
-  flex: 1;
-  min-width: 0;
-  flex-shrink: 1;
+  border-radius: 14px;
+  padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  overflow: hidden;
-}
+  gap: 5px;
+  cursor: pointer;
+  transition: opacity 0.12s;
 
-.card-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 18px;
-  border-radius: 4px;
-  padding: 0 7px;
-  width: fit-content;
-  &--resource { background: $blue-50; }
-  &--answer   { background: $teal-50; }
-}
-.card-tag--resource .card-tag-text { color: $blue; }
-.card-tag--answer   .card-tag-text { color: $teal; }
-
-.card-tag-text {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.4px;
-  font-family: 'Outfit', sans-serif;
+  &:active { opacity: 0.7; }
+  // #ifdef H5
+  &:hover { background: #FAFAF8; }
+  // #endif
 }
 
 .card-title {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: $text-1;
-  font-family: 'Outfit', sans-serif;
-  line-height: 1.5;
+  line-height: 1.55;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+
 .card-sub {
-  font-size: 11px;
+  font-size: 12px;
   color: $text-3;
-  font-family: 'Outfit', sans-serif;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.card-like-badge {
-  width: 44px;
-  flex-shrink: 0;
+.card-meta {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 3px;
-  background: $rose-50;
-  border: 1px solid $rose-100;
-  border-radius: 10px;
-  padding: 8px 0;
+  gap: 5px;
+  margin-top: 2px;
 }
-.badge-heart {
-  font-size: 13px;
+
+.card-meta-type {
+  font-size: 12px;
+  font-weight: 500;
+  &--resource { color: $blue; }
+  &--answer   { color: $teal; }
+}
+
+.card-meta-dot {
+  font-size: 12px;
+  color: $text-4;
+  line-height: 1;
+}
+
+.card-meta-likes {
+  font-size: 12px;
   color: $rose;
-  line-height: 1;
-}
-.badge-num {
-  font-size: 13px;
-  font-weight: 700;
-  color: $rose-dark;
-  font-family: 'Outfit', sans-serif;
-  line-height: 1;
+  font-weight: 500;
 }
 
 // ─── 结尾行 ──────────────────────────────────────────────────
@@ -664,44 +572,25 @@ $muted-fill:  #F0EFEC;
 
 .sk-card {
   background: $white;
-  border-radius: 16px;
-  display: flex;
-  align-items: stretch;
-  overflow: hidden;
-}
-.sk-accent {
-  @extend %sk;
-  width: 3px;
-  border-radius: 0;
-}
-.sk-inner {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 12px;
-}
-.sk-icon {
-  @extend %sk;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-.sk-body {
-  flex: 1;
+  border-radius: 14px;
+  padding: 14px 16px 12px;
   display: flex;
   flex-direction: column;
-  gap: 7px;
+  gap: 8px;
 }
-.sk-tag   { @extend %sk; width: 36px; height: 18px; border-radius: 4px; }
-.sk-title { @extend %sk; width: 80%; height: 14px; }
-.sk-sub   { @extend %sk; width: 55%; height: 11px; }
-.sk-badge {
+
+.sk-title-line {
   @extend %sk;
-  width: 44px;
-  height: 50px;
-  border-radius: 10px;
-  flex-shrink: 0;
+  height: 14px;
+  width: 90%;
+
+  &--short { width: 60%; height: 14px; }
+}
+
+.sk-meta-line {
+  @extend %sk;
+  height: 12px;
+  width: 30%;
+  margin-top: 2px;
 }
 </style>

@@ -7,11 +7,11 @@
     <!-- 导航栏 -->
     <view class="nav-bar">
       <view class="back-btn" @click="handleBack">
-        <text class="back-arrow">←</text>
+        <ArrowLeft :size="20" :stroke-width="2" color="#6D6C6A" />
       </view>
       <view class="nav-title-row">
         <text class="nav-title">获赞</text>
-        <text class="nav-heart">♥</text>
+        <Heart :size="16" :stroke-width="2" color="#F43F5E" fill="#F43F5E" />
         <view v-if="totalLikes > 0" class="nav-badge">
           <text class="nav-badge-text">{{ totalLikes >= 1000 ? (totalLikes / 1000).toFixed(1) + 'k' : totalLikes }}</text>
         </view>
@@ -33,7 +33,7 @@
     <!-- 空状态 -->
     <view v-else-if="list.length === 0" class="empty">
       <view class="empty-ring">
-        <text class="empty-heart">♥</text>
+        <Heart :size="34" :stroke-width="1.5" color="#FDA4AF" />
       </view>
       <text class="empty-title">还没有内容被点赞</text>
       <text class="empty-desc">上传资源或回答问题，让更多同学发现你的价值</text>
@@ -53,7 +53,7 @@
         <view class="summary-card">
           <view class="summary-col">
             <view class="summary-circle summary-circle--sm">
-              <text class="summary-icon-text">≡</text>
+              <FileText :size="16" :stroke-width="2" color="white" />
             </view>
             <text class="summary-num">{{ stats.resourceLikes }}</text>
             <text class="summary-lbl">资源获赞</text>
@@ -61,7 +61,7 @@
           <view class="summary-divider" />
           <view class="summary-col">
             <view class="summary-circle summary-circle--lg">
-              <text class="summary-heart-text">♥</text>
+              <Heart :size="22" :stroke-width="2" color="white" fill="white" />
             </view>
             <text class="summary-num summary-num--total">{{ totalLikes }}</text>
             <text class="summary-lbl">总获赞</text>
@@ -69,7 +69,7 @@
           <view class="summary-divider" />
           <view class="summary-col">
             <view class="summary-circle summary-circle--sm">
-              <text class="summary-icon-text">◎</text>
+              <MessageCircle :size="16" :stroke-width="2" color="white" />
             </view>
             <text class="summary-num">{{ stats.answerLikes }}</text>
             <text class="summary-lbl">回答获赞</text>
@@ -101,7 +101,10 @@
               {{ item.type === 'resource' ? '资源' : '回答' }}
             </text>
             <text class="card-meta-dot">·</text>
-            <text class="card-meta-likes">♥ {{ item.likes }}</text>
+            <view class="card-meta-likes">
+              <Heart :size="12" :stroke-width="2.5" color="#F43F5E" fill="#F43F5E" />
+              <text class="card-meta-likes-count">{{ item.likes }}</text>
+            </view>
           </view>
         </view>
 
@@ -126,6 +129,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getLikedItems, type LikedItem } from '@/services/user'
+import { ArrowLeft, Heart, FileText, MessageCircle } from 'lucide-vue-next'
 
 const loading     = ref(true)
 const loadingMore = ref(false)
@@ -246,12 +250,6 @@ $muted-fill:  #F0EFEC;
   transition: opacity 0.12s;
   &:active { opacity: 0.6; }
 }
-.back-arrow {
-  font-size: 17px;
-  font-weight: 500;
-  color: $text-2;
-  line-height: 1;
-}
 
 .nav-title-row {
   display: flex;
@@ -265,11 +263,6 @@ $muted-fill:  #F0EFEC;
   color: $text-1;
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.3px;
-}
-.nav-heart {
-  font-size: 15px;
-  color: $rose;
-  line-height: 1;
 }
 .nav-badge {
   background: $rose;
@@ -330,18 +323,6 @@ $muted-fill:  #F0EFEC;
 
   &--sm { width: 34px; height: 34px; }
   &--lg { width: 42px; height: 42px; background: rgba(255, 255, 255, 0.28); }
-}
-
-.summary-icon-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: $white;
-  line-height: 1;
-}
-.summary-heart-text {
-  font-size: 20px;
-  color: $white;
-  line-height: 1;
 }
 
 .summary-num {
@@ -460,9 +441,15 @@ $muted-fill:  #F0EFEC;
 }
 
 .card-meta-likes {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.card-meta-likes-count {
   font-size: 12px;
   color: $rose;
   font-weight: 500;
+  line-height: 1;
 }
 
 // ─── 结尾行 ──────────────────────────────────────────────────
@@ -531,11 +518,6 @@ $muted-fill:  #F0EFEC;
   justify-content: center;
   animation: float 3s ease-in-out infinite;
   margin-bottom: 4px;
-}
-.empty-heart {
-  font-size: 32px;
-  color: #FDA4AF;
-  line-height: 1;
 }
 .empty-title {
   font-size: 16px;

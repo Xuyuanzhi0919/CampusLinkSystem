@@ -1,55 +1,46 @@
 <template>
-  <view class="liked-list-page">
+  <view class="page">
+
+    <!-- 状态栏占位 -->
+    <view class="status-bar" />
 
     <!-- 导航栏 -->
-    <view class="page-header">
-      <view class="status-bar-placeholder" />
-      <view class="header-inner">
-        <view class="back-btn" @click="handleBack">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </view>
-        <view class="header-title-wrap">
-          <text class="header-title">获赞</text>
-          <view class="header-heart-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-          </view>
-          <view v-if="totalLikes > 0" class="header-badge">
-            <text class="header-badge-text">{{ totalLikes >= 1000 ? (totalLikes / 1000).toFixed(1) + 'k' : totalLikes }}</text>
-          </view>
+    <view class="nav-bar">
+      <view class="back-btn" @click="handleBack">
+        <text class="back-arrow">←</text>
+      </view>
+      <view class="nav-title-row">
+        <text class="nav-title">获赞</text>
+        <text class="nav-heart">♥</text>
+        <view v-if="totalLikes > 0" class="nav-badge">
+          <text class="nav-badge-text">{{ totalLikes >= 1000 ? (totalLikes / 1000).toFixed(1) + 'k' : totalLikes }}</text>
         </view>
       </view>
     </view>
 
     <!-- 骨架屏 -->
-    <view v-if="loading" class="skeleton-wrap">
-      <view class="sk-summary" />
-      <view v-for="i in 4" :key="i" class="sk-item">
-        <view class="sk-icon" />
-        <view class="sk-content">
-          <view class="sk-line sk-line--tag" />
-          <view class="sk-line sk-line--title" />
-          <view class="sk-line sk-line--sub" />
+    <scroll-view v-if="loading" class="scroll" scroll-y>
+      <view class="content">
+        <view class="sk-summary" />
+        <view v-for="i in 4" :key="i" class="sk-card">
+          <view class="sk-accent" />
+          <view class="sk-inner">
+            <view class="sk-icon" />
+            <view class="sk-body">
+              <view class="sk-tag" />
+              <view class="sk-title" />
+              <view class="sk-sub" />
+            </view>
+            <view class="sk-badge" />
+          </view>
         </view>
-        <view class="sk-num" />
       </view>
-    </view>
+    </scroll-view>
 
     <!-- 空状态 -->
-    <view v-else-if="!loading && list.length === 0" class="empty-wrap">
-      <view class="empty-icon-wrap">
-        <view class="empty-icon-ring">
-          <svg viewBox="0 0 24 24" fill="none" class="empty-heart-svg">
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="#FDA4AF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </view>
-        <!-- 装饰小点 -->
-        <view class="empty-dot empty-dot--tl" />
-        <view class="empty-dot empty-dot--tr" />
-        <view class="empty-dot empty-dot--bl" />
+    <view v-else-if="list.length === 0" class="empty">
+      <view class="empty-ring">
+        <text class="empty-heart">♥</text>
       </view>
       <text class="empty-title">还没有内容被点赞</text>
       <text class="empty-desc">上传资源或回答问题，让更多同学发现你的价值</text>
@@ -58,113 +49,93 @@
     <!-- 列表 -->
     <scroll-view
       v-else
-      class="list-scroll"
+      class="scroll"
       scroll-y
       :lower-threshold="80"
       @scrolltolower="loadMore"
     >
-      <view class="list-wrap">
+      <view class="content">
 
         <!-- 汇总卡片 -->
         <view class="summary-card">
-          <view class="summary-bg-blur" />
-          <view class="summary-row">
-            <view class="summary-item">
-              <view class="summary-icon summary-icon--resource">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                  <path d="M14 2V8H20M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </view>
-              <text class="summary-num">{{ stats.resourceLikes }}</text>
-              <text class="summary-lbl">资源获赞</text>
+          <view class="summary-col">
+            <view class="summary-circle summary-circle--sm">
+              <text class="summary-icon-text">≡</text>
             </view>
-
-            <view class="summary-divider" />
-
-            <view class="summary-item summary-item--center">
-              <view class="summary-heart-wrap">
-                <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-                </svg>
-              </view>
-              <text class="summary-num summary-num--total">{{ totalLikes }}</text>
-              <text class="summary-lbl">总获赞</text>
+            <text class="summary-num">{{ stats.resourceLikes }}</text>
+            <text class="summary-lbl">资源获赞</text>
+          </view>
+          <view class="summary-divider" />
+          <view class="summary-col">
+            <view class="summary-circle summary-circle--lg">
+              <text class="summary-heart-text">♥</text>
             </view>
-
-            <view class="summary-divider" />
-
-            <view class="summary-item">
-              <view class="summary-icon summary-icon--answer">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </view>
-              <text class="summary-num">{{ stats.answerLikes }}</text>
-              <text class="summary-lbl">回答获赞</text>
+            <text class="summary-num summary-num--total">{{ totalLikes }}</text>
+            <text class="summary-lbl">总获赞</text>
+          </view>
+          <view class="summary-divider" />
+          <view class="summary-col">
+            <view class="summary-circle summary-circle--sm">
+              <text class="summary-icon-text">◎</text>
             </view>
+            <text class="summary-num">{{ stats.answerLikes }}</text>
+            <text class="summary-lbl">回答获赞</text>
           </view>
         </view>
 
         <!-- 分区标签 -->
-        <view class="section-label">
-          <view class="section-label-line" />
-          <text class="section-label-text">全部内容</text>
-          <view class="section-label-count">
-            <text class="section-label-count-text">{{ list.length }} 条</text>
+        <view class="section-row">
+          <view class="section-accent-line" />
+          <text class="section-label">全部内容</text>
+          <view class="section-count-pill">
+            <text class="section-count-text">共 {{ list.length }} 条</text>
           </view>
         </view>
 
-        <!-- 内容列表 -->
+        <!-- 列表项 -->
         <view
           v-for="item in list"
           :key="`${item.type}-${item.targetId}`"
-          class="list-item"
-          :class="`list-item--${item.type}`"
+          class="list-card"
           @click="handleItemClick(item)"
         >
-          <!-- 类型图标 -->
-          <view class="item-icon-wrap" :class="`item-icon-wrap--${item.type}`">
-            <svg v-if="item.type === 'resource'" viewBox="0 0 24 24" fill="none">
-              <path d="M14 2H6C5.46957 2 4.96086 2.21071 4.58579 2.58579C4.21071 2.96086 4 3.46957 4 4V20C4 20.5304 4.21071 21.0391 4.58579 21.4142C4.96086 21.7893 5.46957 22 6 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V8L14 2Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M14 2V8H20M16 13H8M16 17H8M10 9H8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-            <svg v-else viewBox="0 0 24 24" fill="none">
-              <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </view>
-
+          <!-- 左侧 accent 线 -->
+          <view class="card-accent" :class="`card-accent--${item.type}`" />
           <!-- 内容 -->
-          <view class="item-content">
-            <view class="item-type-tag" :class="`item-type-tag--${item.type}`">
-              <text>{{ item.type === 'resource' ? '资源' : '回答' }}</text>
+          <view class="card-inner">
+            <view class="card-icon" :class="`card-icon--${item.type}`">
+              <text :class="`card-icon-symbol card-icon-symbol--${item.type}`">
+                {{ item.type === 'resource' ? '≡' : '◎' }}
+              </text>
             </view>
-            <text class="item-title">{{ item.title }}</text>
-            <text v-if="item.type === 'answer' && item.questionTitle" class="item-sub">
-              {{ item.questionTitle }}
-            </text>
+            <view class="card-body">
+              <view class="card-tag" :class="`card-tag--${item.type}`">
+                <text class="card-tag-text">{{ item.type === 'resource' ? '资源' : '回答' }}</text>
+              </view>
+              <text class="card-title">{{ item.title }}</text>
+              <text v-if="item.type === 'answer' && item.questionTitle" class="card-sub">
+                {{ item.questionTitle }}
+              </text>
+            </view>
+            <view class="card-like-badge">
+              <text class="badge-heart">♥</text>
+              <text class="badge-num">{{ item.likes }}</text>
+            </view>
           </view>
+        </view>
 
-          <!-- 点赞数角标 -->
-          <view class="item-likes-badge">
-            <svg viewBox="0 0 24 24" fill="currentColor" class="likes-heart">
-              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-            </svg>
-            <text class="likes-num">{{ item.likes }}</text>
+        <!-- 加载更多 / 结尾 -->
+        <view v-if="loadingMore" class="end-row">
+          <view class="dot-wrap">
+            <view class="dot dot-1" /><view class="dot dot-2" /><view class="dot dot-3" />
           </view>
+        </view>
+        <view v-else-if="noMore && list.length > 0" class="end-row">
+          <view class="end-line" />
+          <text class="end-text">已加载全部</text>
+          <view class="end-line" />
         </view>
 
-        <!-- 加载更多 -->
-        <view v-if="loadingMore" class="load-more">
-          <view class="load-more-dots">
-            <view class="dot dot--1" /><view class="dot dot--2" /><view class="dot dot--3" />
-          </view>
-        </view>
-        <view v-else-if="noMore && list.length > 0" class="load-more">
-          <view class="load-more-divider" />
-          <text class="load-more-text">已加载全部</text>
-          <view class="load-more-divider" />
-        </view>
       </view>
     </scroll-view>
 
@@ -175,11 +146,11 @@
 import { ref, computed, onMounted } from 'vue'
 import { getLikedItems, type LikedItem } from '@/services/user'
 
-const loading  = ref(true)
+const loading     = ref(true)
 const loadingMore = ref(false)
-const noMore   = ref(false)
-const page     = ref(1)
-const list     = ref<LikedItem[]>([])
+const noMore      = ref(false)
+const page        = ref(1)
+const list        = ref<LikedItem[]>([])
 
 const stats = computed(() => ({
   resourceLikes: list.value.filter(i => i.type === 'resource').reduce((s, i) => s + i.likes, 0),
@@ -190,39 +161,33 @@ const totalLikes = computed(() => stats.value.resourceLikes + stats.value.answer
 
 const fetchList = async (reset = false) => {
   if (reset) {
-    page.value = 1
-    noMore.value = false
-    list.value = []
-    loading.value = true
+    page.value = 1; noMore.value = false; list.value = []; loading.value = true
   } else {
     loadingMore.value = true
   }
   try {
     const res = await getLikedItems(page.value, 20)
-    if (res && res.list) {
+    if (res?.list) {
       list.value = reset ? res.list : [...list.value, ...res.list]
       noMore.value = list.value.length >= (res.total ?? 0)
     }
-  } catch (err) {
+  } catch {
     uni.showToast({ title: '加载失败', icon: 'none' })
   } finally {
-    loading.value = false
-    loadingMore.value = false
+    loading.value = false; loadingMore.value = false
   }
 }
 
 const loadMore = () => {
   if (loadingMore.value || noMore.value) return
-  page.value++
-  fetchList()
+  page.value++; fetchList()
 }
 
 const handleItemClick = (item: LikedItem) => {
   if (item.type === 'resource') {
     uni.navigateTo({ url: `/pages/resource/detail?id=${item.targetId}` })
-  } else {
-    const qid = item.questionId
-    if (qid) uni.navigateTo({ url: `/pages/question/detail?id=${qid}` })
+  } else if (item.questionId) {
+    uni.navigateTo({ url: `/pages/question/detail?id=${item.questionId}` })
   }
 }
 
@@ -234,322 +199,287 @@ onMounted(() => fetchList(true))
 </script>
 
 <style lang="scss" scoped>
-@import '@/styles/variables.scss';
+// ─── 设计令牌（与 Pencil 稿对齐）────────────────────────────
+$bg:          #F5F4F1;
+$white:       #FFFFFF;
+$rose:        #F43F5E;
+$rose-dark:   #E11D48;
+$rose-50:     #FFF1F2;
+$rose-100:    #FFE4E6;
+$blue:        #3B82F6;
+$blue-50:     #EFF6FF;
+$teal:        #0D9488;
+$teal-50:     #F0FDFA;
+$text-1:      #1A1918;
+$text-2:      #6D6C6A;
+$text-3:      #9C9B99;
+$text-4:      #A8A7A5;
+$border:      #EDEDEB;
+$muted-bg:    #EDECEA;
+$muted-fill:  #F0EFEC;
 
-// ============================================================
-//  色彩语义（本页专用）
-// ============================================================
-$rose-50:  #FFF1F2;
-$rose-100: #FFE4E6;
-$rose-400: #FB7185;
-$rose-500: #F43F5E;
-$rose-600: #E11D48;
-$blue-50:  #EFF6FF;
-$blue-100: #DBEAFE;
-$blue-500: #3B82F6;
-$teal-50:  #F0FDFA;
-$teal-100: #CCFBF1;
-$teal-600: #0D9488;
-
-.liked-list-page {
+// ─── 页面 ────────────────────────────────────────────────────
+.page {
   min-height: 100vh;
-  background: #F8FAFC;
+  background: $bg;
   display: flex;
   flex-direction: column;
 }
 
-// ============================================================
-//  导航栏
-// ============================================================
-.status-bar-placeholder {
+// ─── 状态栏 ──────────────────────────────────────────────────
+.status-bar {
   // #ifdef H5
   display: none;
   // #endif
   height: var(--status-bar-height, 0px);
+  background: $bg;
 }
 
-.page-header {
+// ─── 导航栏 ──────────────────────────────────────────────────
+.nav-bar {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
-
-.header-inner {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 0 16px;
   height: 56px;
+  background: $white;
+  border-bottom: 1px solid $border;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  padding: 0 20px 0 16px;
+  // #ifdef H5
+  top: 0;
+  // #endif
 }
 
 .back-btn {
   width: 36px;
   height: 36px;
   border-radius: 10px;
+  background: $muted-fill;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $text-secondary;
-  cursor: pointer;
   flex-shrink: 0;
-  transition: background 0.15s, color 0.15s;
-  svg { width: 20px; height: 20px; }
-  &:active { background: $gray-100; }
-  // #ifdef H5
-  &:hover { background: $gray-100; color: $text-primary; }
-  // #endif
+  cursor: pointer;
+  transition: opacity 0.12s;
+  &:active { opacity: 0.6; }
+}
+.back-arrow {
+  font-size: 17px;
+  font-weight: 500;
+  color: $text-2;
+  line-height: 1;
 }
 
-.header-title-wrap {
+.nav-title-row {
   display: flex;
   align-items: center;
   gap: 6px;
   flex: 1;
 }
-
-.header-title {
+.nav-title {
   font-size: 18px;
   font-weight: 700;
-  color: $text-primary;
-  letter-spacing: -0.2px;
+  color: $text-1;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.3px;
 }
-
-.header-heart-icon {
-  width: 18px;
-  height: 18px;
-  color: $rose-500;
-  svg { width: 100%; height: 100%; }
+.nav-heart {
+  font-size: 15px;
+  color: $rose;
+  line-height: 1;
 }
-
-.header-badge {
-  background: $rose-500;
+.nav-badge {
+  background: $rose;
   border-radius: 100px;
-  padding: 2px 8px;
-  margin-left: 2px;
+  padding: 2px 9px;
 }
-.header-badge-text {
+.nav-badge-text {
   font-size: 12px;
   font-weight: 700;
-  color: #fff;
+  color: $white;
+  font-family: 'Outfit', sans-serif;
 }
 
-// ============================================================
-//  主滚动区
-// ============================================================
-.list-scroll {
+// ─── 滚动区 ──────────────────────────────────────────────────
+.scroll {
   flex: 1;
+  height: 0;
+  // #ifdef H5
   height: calc(100vh - 56px);
+  // #endif
 }
 
-.list-wrap {
-  max-width: 720px;
+.content {
+  max-width: 480px;
   margin: 0 auto;
-  padding: 16px 14px 60px;
+  padding: 16px 16px 48px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
-// ============================================================
-//  汇总卡片
-// ============================================================
+// ─── 汇总卡片 ────────────────────────────────────────────────
 .summary-card {
-  position: relative;
+  background: $rose;
   border-radius: 20px;
-  overflow: hidden;
-  background: linear-gradient(135deg, #FF6B8A 0%, #FF4F7B 40%, #E91E8C 100%);
-  padding: 24px 16px 20px;
-  box-shadow: 0 8px 24px rgba(244, 63, 94, 0.35);
-}
-
-.summary-bg-blur {
-  position: absolute;
-  inset: 0;
-  // 装饰光晕
-  &::before {
-    content: '';
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.12);
-    top: -30px;
-    right: -20px;
-  }
-  &::after {
-    content: '';
-    position: absolute;
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.08);
-    bottom: -20px;
-    left: 20px;
-  }
-}
-
-.summary-row {
-  position: relative;
-  z-index: 1;
+  height: 118px;
   display: flex;
   align-items: center;
   justify-content: space-around;
+  padding: 0 4px;
 }
 
-.summary-item {
+.summary-col {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  flex: 1;
-
-  &--center {
-    .summary-num { font-size: 28px; }
-  }
+  gap: 5px;
 }
 
-.summary-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 2px;
-  svg { width: 16px; height: 16px; }
-
-  &--resource { background: rgba(255,255,255,0.22); color: #fff; }
-  &--answer   { background: rgba(255,255,255,0.22); color: #fff; }
-}
-
-.summary-heart-wrap {
-  width: 40px;
-  height: 40px;
+.summary-circle {
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.22);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 2px;
-  svg {
-    width: 20px;
-    height: 20px;
-    color: #fff;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-  }
+
+  &--sm { width: 34px; height: 34px; }
+  &--lg { width: 42px; height: 42px; background: rgba(255, 255, 255, 0.28); }
+}
+
+.summary-icon-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: $white;
+  line-height: 1;
+}
+.summary-heart-text {
+  font-size: 20px;
+  color: $white;
+  line-height: 1;
 }
 
 .summary-num {
   font-size: 22px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: -0.5px;
+  font-weight: 700;
+  color: $white;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.8px;
   line-height: 1;
 
   &--total {
     font-size: 28px;
-    text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    letter-spacing: -1px;
   }
 }
-
 .summary-lbl {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
+  color: rgba(255, 255, 255, 0.78);
+  font-family: 'Outfit', sans-serif;
 }
-
 .summary-divider {
   width: 1px;
-  height: 40px;
-  background: rgba(255, 255, 255, 0.25);
+  height: 46px;
+  background: rgba(255, 255, 255, 0.28);
+  flex-shrink: 0;
 }
 
-// ============================================================
-//  分区标签
-// ============================================================
-.section-label {
+// ─── 分区标签 ────────────────────────────────────────────────
+.section-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 2px 2px;
+  padding: 4px 0 2px;
 }
-
-.section-label-line {
+.section-accent-line {
   width: 3px;
-  height: 14px;
+  height: 15px;
   border-radius: 2px;
-  background: $rose-500;
+  background: $rose;
+  flex-shrink: 0;
 }
-
-.section-label-text {
+.section-label {
+  flex: 1;
   font-size: 13px;
   font-weight: 700;
-  color: $text-secondary;
-  flex: 1;
+  color: $text-2;
+  font-family: 'Outfit', sans-serif;
 }
-
-.section-label-count {
-  background: $gray-100;
+.section-count-pill {
+  background: $muted-bg;
   border-radius: 100px;
   padding: 2px 8px;
 }
-.section-label-count-text {
+.section-count-text {
   font-size: 11px;
-  color: $text-tertiary;
   font-weight: 600;
+  color: $text-3;
+  font-family: 'Outfit', sans-serif;
 }
 
-// ============================================================
-//  列表项
-// ============================================================
-.list-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
+// ─── 列表项 ──────────────────────────────────────────────────
+.list-card {
   background: $white;
   border-radius: 16px;
-  padding: 14px 12px 14px 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.03);
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05), 0 2px 8px rgba(0, 0, 0, 0.03);
   cursor: pointer;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
-  border-left: 3px solid transparent;
-
-  &--resource { border-left-color: $blue-500; }
-  &--answer   { border-left-color: $teal-600; }
 
   &:active {
     transform: scale(0.985);
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
   // #ifdef H5
   &:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.09);
     transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
   }
   // #endif
 }
 
-.item-icon-wrap {
+.card-accent {
+  width: 3px;
+  flex-shrink: 0;
+  &--resource { background: $blue; }
+  &--answer   { background: $teal; }
+}
+
+.card-inner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+  min-width: 0;
+}
+
+.card-icon {
   width: 40px;
   height: 40px;
   border-radius: 12px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  svg { width: 18px; height: 18px; }
-
-  &--resource { background: $blue-50; color: $blue-500; }
-  &--answer   { background: $teal-50; color: $teal-600; }
+  &--resource { background: $blue-50; }
+  &--answer   { background: $teal-50; }
+}
+.card-icon-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  &--resource { color: $blue; }
+  &--answer   { color: $teal; }
 }
 
-.item-content {
+.card-body {
   flex: 1;
   min-width: 0;
   display: flex;
@@ -557,218 +487,129 @@ $teal-600: #0D9488;
   gap: 4px;
 }
 
-.item-type-tag {
+.card-tag {
   display: inline-flex;
   align-items: center;
-  padding: 2px 7px;
+  justify-content: center;
+  height: 18px;
   border-radius: 4px;
+  padding: 0 7px;
   width: fit-content;
+  &--resource { background: $blue-50; }
+  &--answer   { background: $teal-50; }
+}
+.card-tag-text {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  font-family: 'Outfit', sans-serif;
 
-  text {
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-  }
-
-  &--resource { background: $blue-50; text { color: $blue-500; } }
-  &--answer   { background: $teal-50; text { color: $teal-600; } }
+  .card-tag--resource & { color: $blue; }
+  .card-tag--answer   & { color: $teal; }
 }
 
-.item-title {
+.card-title {
   font-size: 14px;
   font-weight: 600;
-  color: $text-primary;
+  color: $text-1;
+  font-family: 'Outfit', sans-serif;
   line-height: 1.5;
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
-
-.item-sub {
+.card-sub {
   font-size: 11px;
-  color: $text-tertiary;
+  color: $text-3;
+  font-family: 'Outfit', sans-serif;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-
-  &::before {
-    content: '问题：';
-    font-weight: 500;
-  }
 }
 
-// 点赞数角标
-.item-likes-badge {
+.card-like-badge {
+  width: 44px;
+  flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
-  flex-shrink: 0;
+  justify-content: center;
+  gap: 3px;
   background: $rose-50;
   border: 1px solid $rose-100;
   border-radius: 10px;
-  padding: 6px 10px;
-  min-width: 44px;
+  padding: 8px 0;
 }
-
-.likes-heart {
-  width: 14px;
-  height: 14px;
-  color: $rose-500;
+.badge-heart {
+  font-size: 13px;
+  color: $rose;
+  line-height: 1;
 }
-
-.likes-num {
+.badge-num {
   font-size: 13px;
   font-weight: 700;
-  color: $rose-600;
+  color: $rose-dark;
+  font-family: 'Outfit', sans-serif;
   line-height: 1;
 }
 
-// ============================================================
-//  加载更多
-// ============================================================
-.load-more {
-  padding: 20px 0 8px;
+// ─── 结尾行 ──────────────────────────────────────────────────
+.end-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
+  padding: 12px 0 6px;
 }
-
-.load-more-text {
-  font-size: 12px;
-  color: $text-quaternary;
-}
-
-.load-more-divider {
+.end-line {
   flex: 1;
   height: 1px;
-  background: $border-light;
-  max-width: 60px;
+  background: #E5E4E1;
+  max-width: 72px;
+}
+.end-text {
+  font-size: 12px;
+  color: $text-4;
+  font-family: 'Outfit', sans-serif;
 }
 
-// 加载中小点动画
-@keyframes bounce-dot {
+// 加载中小点
+@keyframes bounce {
   0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
   40%           { transform: scale(1);   opacity: 1; }
 }
-
-.load-more-dots {
+.dot-wrap {
   display: flex;
   gap: 4px;
   align-items: center;
 }
-
 .dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: $rose-400;
-  animation: bounce-dot 1.2s ease-in-out infinite;
-
-  &--1 { animation-delay: 0s; }
-  &--2 { animation-delay: 0.2s; }
-  &--3 { animation-delay: 0.4s; }
+  background: $rose;
+  animation: bounce 1.2s ease-in-out infinite;
+  &-1 { animation-delay: 0s; }
+  &-2 { animation-delay: 0.2s; }
+  &-3 { animation-delay: 0.4s; }
 }
 
-// ============================================================
-//  骨架屏
-// ============================================================
-@keyframes shimmer {
-  0%   { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-%shimmer {
-  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.4s ease-in-out infinite;
-  border-radius: 6px;
-}
-
-.skeleton-wrap {
-  max-width: 720px;
-  margin: 0 auto;
-  padding: 16px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.sk-summary {
-  @extend %shimmer;
-  height: 112px;
-  border-radius: 20px;
-}
-
-.sk-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: $white;
-  border-radius: 16px;
-  padding: 14px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.sk-icon {
-  @extend %shimmer;
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  flex-shrink: 0;
-}
-
-.sk-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 7px;
-}
-
-.sk-line {
-  @extend %shimmer;
-
-  &--tag   { width: 36px; height: 18px; border-radius: 4px; }
-  &--title { width: 78%; height: 14px; }
-  &--sub   { width: 52%; height: 11px; }
-}
-
-.sk-num {
-  @extend %shimmer;
-  width: 44px;
-  height: 48px;
-  border-radius: 10px;
-  flex-shrink: 0;
-}
-
-// ============================================================
-//  空状态
-// ============================================================
-@keyframes float-heart {
+// ─── 空状态 ──────────────────────────────────────────────────
+@keyframes float {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(-6px); }
 }
-
-.empty-wrap {
+.empty {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 80px 32px;
   gap: 14px;
+  padding: 80px 32px;
 }
-
-.empty-icon-wrap {
-  position: relative;
-  width: 88px;
-  height: 88px;
-  margin-bottom: 4px;
-}
-
-.empty-icon-ring {
+.empty-ring {
   width: 88px;
   height: 88px;
   border-radius: 50%;
@@ -777,37 +618,87 @@ $teal-600: #0D9488;
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: float-heart 3s ease-in-out infinite;
-
-  .empty-heart-svg {
-    width: 36px;
-    height: 36px;
-  }
+  animation: float 3s ease-in-out infinite;
+  margin-bottom: 4px;
 }
-
-.empty-dot {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: $rose-100;
-
-  &--tl { top: 4px;  left: 8px;  width: 6px; height: 6px; }
-  &--tr { top: 8px;  right: 4px; background: $rose-50; border: 1.5px solid $rose-100; }
-  &--bl { bottom: 6px; left: 2px; background: $rose-50; border: 1.5px solid $rose-100; width: 10px; height: 10px; }
+.empty-heart {
+  font-size: 32px;
+  color: #FDA4AF;
+  line-height: 1;
 }
-
 .empty-title {
   font-size: 16px;
   font-weight: 700;
-  color: $text-secondary;
+  color: #6D6C6A;
+  font-family: 'Outfit', sans-serif;
 }
-
 .empty-desc {
   font-size: 13px;
-  color: $text-tertiary;
+  color: $text-3;
   text-align: center;
   line-height: 1.7;
   max-width: 240px;
+  font-family: 'Outfit', sans-serif;
+}
+
+// ─── 骨架屏 ──────────────────────────────────────────────────
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+%sk {
+  background: linear-gradient(90deg, #EDECEA 25%, #E0DFDB 50%, #EDECEA 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+.sk-summary {
+  @extend %sk;
+  height: 118px;
+  border-radius: 20px;
+}
+
+.sk-card {
+  background: $white;
+  border-radius: 16px;
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+}
+.sk-accent {
+  @extend %sk;
+  width: 3px;
+  border-radius: 0;
+}
+.sk-inner {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 12px;
+}
+.sk-icon {
+  @extend %sk;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+.sk-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.sk-tag   { @extend %sk; width: 36px; height: 18px; border-radius: 4px; }
+.sk-title { @extend %sk; width: 80%; height: 14px; }
+.sk-sub   { @extend %sk; width: 55%; height: 11px; }
+.sk-badge {
+  @extend %sk;
+  width: 44px;
+  height: 50px;
+  border-radius: 10px;
+  flex-shrink: 0;
 }
 </style>

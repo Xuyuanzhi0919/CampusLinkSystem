@@ -300,6 +300,14 @@
 			}
 		},
 		{
+			"path": "pages/about/index",
+			"style": {
+				"navigationBarTitleText": "关于我们",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/about/privacy",
 			"style": {
 				"navigationBarTitleText": "隐私政策",

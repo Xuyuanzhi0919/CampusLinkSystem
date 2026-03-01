@@ -305,9 +305,10 @@ $muted-fill:  #F0EFEC;
 // ─── 滚动区 ──────────────────────────────────────────────────
 .scroll {
   flex: 1;
-  height: 0;
+  overflow: hidden;
   // #ifdef H5
   height: calc(100vh - 56px);
+  overflow-y: auto;
   // #endif
 }
 
@@ -482,9 +483,11 @@ $muted-fill:  #F0EFEC;
 .card-body {
   flex: 1;
   min-width: 0;
+  flex-shrink: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  overflow: hidden;
 }
 
 .card-tag {
@@ -498,14 +501,14 @@ $muted-fill:  #F0EFEC;
   &--resource { background: $blue-50; }
   &--answer   { background: $teal-50; }
 }
+.card-tag--resource .card-tag-text { color: $blue; }
+.card-tag--answer   .card-tag-text { color: $teal; }
+
 .card-tag-text {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.4px;
   font-family: 'Outfit', sans-serif;
-
-  .card-tag--resource & { color: $blue; }
-  .card-tag--answer   & { color: $teal; }
 }
 
 .card-title {

@@ -230,6 +230,15 @@
 			}
 		},
 		{
+			"path": "pages/user/points-mall",
+			"style": {
+				"navigationBarTitleText": "积分商城",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
+				"disableScroll": true
+			}
+		},
+		{
 			"path": "pages/user/change-password",
 			"style": {
 				"navigationBarTitleText": "修改密码",

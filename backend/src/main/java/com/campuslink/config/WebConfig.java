@@ -64,6 +64,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/tag/hot/category",   // 分类热门标签（游客可浏览）
                         "/tag/search",         // 搜索标签（游客可浏览）
                         "/stats/today",        // 今日活跃统计（游客可浏览）
+                        "/reward/items",       // 积分商品列表（游客可浏览）
                         "/activity/list",      // 活动列表（使用可选认证）
                         "/club/list",          // 社团列表（使用可选认证）
                         "/notification/list",  // 校园公告列表（使用可选认证）

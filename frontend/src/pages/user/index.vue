@@ -327,7 +327,7 @@ const handleAskQuestion = () =>
 const handlePublishTask = () =>
   uni.navigateTo({ url: '/pages/task/publish', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 const handleJoinActivity = () => uni.navigateTo({ url: '/pages/club/my-activities' })
-const handleGoToMall = () => uni.showToast({ title: '积分商城即将上线', icon: 'none' })
+const handleGoToMall = () => uni.navigateTo({ url: '/pages/user/points-mall' })
 
 const handleStatClick = (key: string) => {
   const map: Record<string, string> = {

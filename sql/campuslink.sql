@@ -1543,4 +1543,57 @@ END
 ;;
 delimiter ;
 
+-- ----------------------------
+-- Table structure for reward_items（积分商品表）
+-- ----------------------------
+DROP TABLE IF EXISTS `reward_items`;
+CREATE TABLE `reward_items` (
+  `item_id`      BIGINT       NOT NULL AUTO_INCREMENT COMMENT '商品ID',
+  `name`         VARCHAR(50)  NOT NULL COMMENT '商品名称',
+  `description`  VARCHAR(200) NOT NULL COMMENT '商品描述',
+  `cover_img`    VARCHAR(255) DEFAULT NULL COMMENT '封面图片URL',
+  `points_cost`  INT          NOT NULL COMMENT '所需积分',
+  `stock`        INT          NOT NULL DEFAULT -1 COMMENT '库存，-1 表示无限',
+  `category`     VARCHAR(30)  NOT NULL COMMENT '分类：download|privilege|badge|coupon',
+  `effect_type`  VARCHAR(50)  NOT NULL COMMENT '效果类型，对应后端发放逻辑',
+  `effect_value` INT          NOT NULL DEFAULT 1 COMMENT '效果数值（下载次数、天数等）',
+  `status`       TINYINT      NOT NULL DEFAULT 1 COMMENT '0=下架 1=上架',
+  `sort`         INT          NOT NULL DEFAULT 0 COMMENT '排序权重，越小越靠前',
+  `created_at`   DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`item_id`),
+  INDEX `idx_category_status` (`category`, `status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分商品表';
+
+-- ----------------------------
+-- Table structure for redeem_records（积分兑换记录表）
+-- ----------------------------
+DROP TABLE IF EXISTS `redeem_records`;
+CREATE TABLE `redeem_records` (
+  `record_id`    BIGINT      NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+  `user_id`      BIGINT      NOT NULL COMMENT '用户ID',
+  `item_id`      BIGINT      NOT NULL COMMENT '商品ID',
+  `item_name`    VARCHAR(50) NOT NULL COMMENT '商品名称快照',
+  `points_cost`  INT         NOT NULL COMMENT '消耗积分快照',
+  `effect_type`  VARCHAR(50) NOT NULL COMMENT '效果类型快照，用于权益校验',
+  `effect_value` INT         NOT NULL DEFAULT 1 COMMENT '效果数值快照',
+  `status`       TINYINT     NOT NULL DEFAULT 0 COMMENT '0=待发放 1=已发放 2=已失效',
+  `created_at`   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '兑换时间',
+  PRIMARY KEY (`record_id`),
+  INDEX `idx_user_id`      (`user_id`),
+  INDEX `idx_user_effect`  (`user_id`, `effect_type`, `status`),
+  CONSTRAINT `fk_redeem_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`u_id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_redeem_item` FOREIGN KEY (`item_id`) REFERENCES `reward_items` (`item_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='积分兑换记录表';
+
+-- ----------------------------
+-- Seed data for reward_items（初始商品数据）
+-- ----------------------------
+INSERT INTO `reward_items` (`name`, `description`, `points_cost`, `stock`, `category`, `effect_type`, `effect_value`, `sort`) VALUES
+('额外下载 5 次',     '获得 5 次资源下载额度，下载资源时无需消耗积分',                  50,  -1,  'download',  'extra_download', 5,  1),
+('额外下载 20 次',    '获得 20 次资源下载额度，超值优惠',                               160, -1,  'download',  'extra_download', 20, 2),
+('问题置顶 7 天',     '你发布的 1 个问题将在问答列表置顶展示 7 天',                     100, -1,  'privilege', 'question_top',   7,  3),
+('「资深答者」标识',  '获得专属身份标识，展示在个人主页及所有回答中，限量发行',          200, 100, 'badge',     'badge_expert',   1,  4),
+('悬赏加成券 ×1.5',  '发布任务时悬赏积分效果提升 1.5 倍，有效期 30 天（一次性）',       300, -1,  'coupon',    'task_bonus',     30, 5),
+('会员体验 7 天',     '无限资源下载 + 问题推荐优先展示，有效期 7 天',                   500, -1,  'privilege', 'vip_trial',      7,  6);
+
 SET FOREIGN_KEY_CHECKS = 1;

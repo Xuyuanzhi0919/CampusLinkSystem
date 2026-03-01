@@ -333,6 +333,7 @@ const handleStatClick = (key: string) => {
   const map: Record<string, string> = {
     resources:   '/pages/resource/my',
     answers:     '/pages/question/my',
+    likes:       '/pages/user/liked-list',
     collections: '/pages/user/favorites',
   }
   const url = map[key]

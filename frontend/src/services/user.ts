@@ -76,3 +76,20 @@ export const getUserRanking = (page: number = 1, pageSize: number = 20) => {
     pageSize
   })
 }
+
+export interface LikedItem {
+  type: 'resource' | 'answer'
+  targetId: number
+  title: string
+  questionId?: number
+  questionTitle?: string
+  likes: number
+  createdAt: string
+}
+
+/**
+ * 获取我的获赞内容列表
+ */
+export const getLikedItems = (page: number = 1, pageSize: number = 20) => {
+  return request.get<PageResult<LikedItem>>('/user/likes/received', { page, pageSize })
+}

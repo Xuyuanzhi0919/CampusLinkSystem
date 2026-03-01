@@ -260,8 +260,22 @@ public class UserService {
         favoriteQuery.eq(com.campuslink.entity.Favorite::getUserId, userId);
         int favoriteCount = Math.toIntExact(favoriteMapper.selectCount(favoriteQuery));
 
-        // 查询获赞数 (暂时返回0,需要评论/点赞表)
-        int likeCount = 0;
+        // 查询获赞数：资源点赞总和 + 回答点赞总和
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resourceLikeQuery = new LambdaQueryWrapper<>();
+        resourceLikeQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .select(com.campuslink.entity.Resource::getLikes);
+        List<com.campuslink.entity.Resource> myResources = resourceMapper.selectList(resourceLikeQuery);
+        int resourceLikes = myResources.stream()
+                .mapToInt(r -> r.getLikes() == null ? 0 : r.getLikes()).sum();
+
+        LambdaQueryWrapper<com.campuslink.entity.Answer> answerLikeQuery = new LambdaQueryWrapper<>();
+        answerLikeQuery.eq(com.campuslink.entity.Answer::getResponderId, userId)
+                .select(com.campuslink.entity.Answer::getLikes);
+        List<com.campuslink.entity.Answer> myAnswerLikes = answerMapper.selectList(answerLikeQuery);
+        int answerLikes = myAnswerLikes.stream()
+                .mapToInt(a -> a.getLikes() == null ? 0 : a.getLikes()).sum();
+
+        int likeCount = resourceLikes + answerLikes;
 
         // 计算连续签到天数
         int checkInDays = calculateConsecutiveDays(userId);
@@ -448,6 +462,67 @@ public class UserService {
                 .consecutiveDays(consecutiveDays)
                 .checkInTime(LocalDateTime.now())
                 .build();
+    }
+
+    /**
+     * 获取用户内容被点赞列表（资源 + 回答，按点赞数降序，分页）
+     */
+    public PageResult<com.campuslink.dto.LikedItemVO> getLikedItems(Long userId, int page, int pageSize) {
+        List<com.campuslink.dto.LikedItemVO> all = new ArrayList<>();
+
+        // 资源（likes > 0）
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resQuery = new LambdaQueryWrapper<>();
+        resQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .gt(com.campuslink.entity.Resource::getLikes, 0)
+                .orderByDesc(com.campuslink.entity.Resource::getLikes);
+        List<com.campuslink.entity.Resource> resources = resourceMapper.selectList(resQuery);
+        for (com.campuslink.entity.Resource r : resources) {
+            all.add(com.campuslink.dto.LikedItemVO.builder()
+                    .type("resource")
+                    .targetId(r.getRid())
+                    .title(r.getTitle())
+                    .likes(r.getLikes() == null ? 0 : r.getLikes())
+                    .createdAt(r.getCreatedAt())
+                    .build());
+        }
+
+        // 回答（likes > 0），同时查关联问题标题
+        LambdaQueryWrapper<com.campuslink.entity.Answer> ansQuery = new LambdaQueryWrapper<>();
+        ansQuery.eq(com.campuslink.entity.Answer::getResponderId, userId)
+                .gt(com.campuslink.entity.Answer::getLikes, 0)
+                .orderByDesc(com.campuslink.entity.Answer::getLikes);
+        List<com.campuslink.entity.Answer> answers = answerMapper.selectList(ansQuery);
+        for (com.campuslink.entity.Answer a : answers) {
+            String questionTitle = null;
+            if (a.getQuestionId() != null) {
+                com.campuslink.entity.Question q = questionMapper.selectById(a.getQuestionId());
+                if (q != null) questionTitle = q.getTitle();
+            }
+            // 回答内容摘要：取前60字
+            String excerpt = a.getContent() == null ? "" :
+                    (a.getContent().length() > 60 ? a.getContent().substring(0, 60) + "…" : a.getContent());
+            all.add(com.campuslink.dto.LikedItemVO.builder()
+                    .type("answer")
+                    .targetId(a.getAid())
+                    .title(excerpt)
+                    .questionId(a.getQuestionId())
+                    .questionTitle(questionTitle)
+                    .likes(a.getLikes() == null ? 0 : a.getLikes())
+                    .createdAt(a.getCreatedAt())
+                    .build());
+        }
+
+        // 按点赞数降序整体排序
+        all.sort((a1, a2) -> Integer.compare(a2.getLikes(), a1.getLikes()));
+
+        long total = all.size();
+        int fromIdx = (page - 1) * pageSize;
+        int toIdx = (int) Math.min(fromIdx + pageSize, total);
+        List<com.campuslink.dto.LikedItemVO> pageData =
+                fromIdx >= total ? new ArrayList<>() : all.subList(fromIdx, toIdx);
+        long totalPages = (total + pageSize - 1) / pageSize;
+
+        return new PageResult<>(pageData, total, (long) page, (long) pageSize, totalPages);
     }
 
     /**

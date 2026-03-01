@@ -212,6 +212,14 @@
 			}
 		},
 		{
+			"path": "pages/user/liked-list",
+			"style": {
+				"navigationBarTitleText": "获赞",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/user/points-history",
 			"style": {
 				"navigationBarTitleText": "积分明细",

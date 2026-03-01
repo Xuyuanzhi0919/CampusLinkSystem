@@ -9,11 +9,11 @@
         v-for="tab in statusTabs"
         :key="tab.value"
         class="filter-tab"
-        :class="{ 'filter-tab--active': currentStatus === tab.value }"
         @click="switchStatus(tab.value)"
       >
-        <text class="tab-text">{{ tab.label }}</text>
+        <text class="tab-text" :class="{ 'tab-text--active': currentStatus === tab.value }">{{ tab.label }}</text>
         <view v-if="currentStatus === tab.value" class="tab-indicator" />
+
       </view>
     </view>
 
@@ -137,7 +137,7 @@ const switchStatus = (status: number) => {
 }
 
 const loadActivities = async (isRefresh = false) => {
-  if (loading.value) return
+  if (!isRefresh && loading.value) return
   if (!isRefresh && !hasMore.value) return
   loading.value = true
   try {
@@ -211,17 +211,17 @@ onMounted(() => loadActivities(true))
   height: 100%;
   padding: 0 18px;
   cursor: pointer;
-
-  &--active .tab-text {
-    font-weight: 700;
-    color: $campus-blue;
-  }
 }
 
 .tab-text {
   font-size: 14px;
   font-weight: 500;
   color: $color-text-tertiary;
+
+  &--active {
+    font-weight: 700;
+    color: $campus-blue;
+  }
 }
 
 .tab-indicator {

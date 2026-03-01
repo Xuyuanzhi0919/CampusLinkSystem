@@ -1,18 +1,13 @@
 <template>
   <view class="resource-detail-page">
     <!-- 顶部导航栏 -->
-    <view class="nav-bar">
-      <view class="nav-left" @click="goBack">
-        <Icon name="chevron-left" :size="22" :stroke-width="2" class="nav-icon" />
-        <text class="nav-text">返回</text>
-      </view>
-      <view class="nav-center">
-        <text class="nav-title">资源详情</text>
-      </view>
-      <view class="nav-right" @click="showMoreMenu">
-        <Icon name="more-horizontal" :size="22" :stroke-width="1.5" class="nav-icon" />
-      </view>
-    </view>
+    <CNavBar title="资源详情" :auto-back="false" @back="goBack">
+      <template #right>
+        <view class="nav-right" @click="showMoreMenu">
+          <Icon name="more-horizontal" :size="22" :stroke-width="1.5" class="nav-icon" />
+        </view>
+      </template>
+    </CNavBar>
 
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-container">
@@ -450,6 +445,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { onLoad, onUnload } from '@dcloudio/uni-app'
 import CommentList from '@/components/comment/CommentList.vue'
 import ResourceCard from '@/components/ResourceCard.vue'
@@ -1227,20 +1223,6 @@ const closePreview = () => {
   // #endif
 }
 
-// 顶部导航栏
-.nav-bar {
-  @include flex-between;
-  height: $btn-height-lg;
-  padding: 0 $sp-8;  // 增加左右padding：24rpx → 32rpx
-  background: $white;
-  border-bottom: none;  // 移除下边框，使用阴影代替
-  box-shadow: 0 2rpx 16rpx rgba($gray-900, 0.05);  // 添加轻微底部阴影
-  position: sticky;
-  top: 0;
-  z-index: $z-dropdown;
-}
-
-.nav-left,
 .nav-right {
   display: flex;
   align-items: center;
@@ -1252,23 +1234,6 @@ const closePreview = () => {
   color: $gray-800;
   display: flex;
   align-items: center;
-}
-
-.nav-text {
-  font-size: $font-size-base;
-  color: $gray-800;
-  margin-left: $sp-1;
-}
-
-.nav-center {
-  flex: 1;
-  text-align: center;
-}
-
-.nav-title {
-  font-size: $font-size-xl;  // 增大标题字体：32rpx → 36rpx
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
 }
 
 // 加载状态

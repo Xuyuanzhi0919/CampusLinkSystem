@@ -1,14 +1,7 @@
 <template>
   <view class="terms-page">
     <!-- 顶部导航栏 -->
-    <view class="page-header">
-      <view class="back-btn" @click="handleBack">
-        <svg viewBox="0 0 24 24" fill="none" class="back-icon">
-          <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </view>
-      <text class="page-title">用户协议</text>
-    </view>
+    <CNavBar title="用户协议" />
 
     <!-- 文档内容 -->
     <view class="content-wrapper">
@@ -514,6 +507,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { CNavBar } from '@/components/layout'
 
 const handleBack = () => {
   const pages = getCurrentPages()
@@ -551,54 +545,6 @@ const scrollToSection = (sectionId: string) => {
     rgba($primary, 0.04) 50%,
     $bg-page 100%
   );
-}
-
-// ==================== 顶部导航栏 ====================
-.page-header {
-  position: sticky;
-  top: 0;
-  z-index: $z-sticky;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 24px;
-  background: rgba($white, 0.95);
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid $border-light;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: $bg-page;
-  cursor: pointer;
-  transition: $transition-base;
-
-  &:hover {
-    background: $primary-50;
-
-    .back-icon {
-      color: $primary;
-    }
-  }
-
-  .back-icon {
-    width: 20px;
-    height: 20px;
-    color: $text-secondary;
-    transition: $transition-base;
-  }
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
 }
 
 // ==================== 内容区域 ====================

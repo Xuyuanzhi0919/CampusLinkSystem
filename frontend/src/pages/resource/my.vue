@@ -1,13 +1,7 @@
 <template>
   <view class="my-resource-page">
     <!-- 顶部导航栏 -->
-    <view class="nav-bar">
-      <view class="nav-back" @click="handleBack">
-        <Icon name="arrow-left" :size="20" color="#333" />
-      </view>
-      <text class="nav-title">我的资源</text>
-      <view class="nav-right" />
-    </view>
+    <CNavBar title="我的资源" />
 
     <!-- Tab切换 -->
     <view class="tab-bar">
@@ -100,6 +94,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { getMyResources, getMyDownloadHistory, deleteResource } from '@/services/resource'
 import MyResourceCard from './components/MyResourceCard.vue'
 import Icon from '@/components/icons/index.vue'
@@ -293,35 +288,6 @@ loadData()
   flex-direction: column;
   overflow: hidden;
   background: #EEF2FF;
-}
-
-.nav-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 32rpx;
-  background: #fff;
-  border-bottom: 1rpx solid #eee;
-}
-
-.nav-back {
-  width: 60rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-title {
-  font-size: 34rpx;
-  font-weight: 600;
-  color: #333;
-}
-
-.nav-right {
-  width: 60rpx;
 }
 
 .tab-bar {

@@ -1,16 +1,7 @@
 <template>
   <view class="privacy-page">
     <!-- 顶部导航 -->
-    <view class="page-header">
-      <view class="header-container">
-        <view class="back-btn" @click="handleBack">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </view>
-        <text class="page-title">隐私政策</text>
-      </view>
-    </view>
+    <CNavBar title="隐私政策" />
 
     <!-- 文档内容 -->
     <view class="content-wrapper">
@@ -491,6 +482,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { CNavBar } from '@/components/layout'
 
 // 目录数据
 const tocItems = ref([
@@ -541,58 +533,6 @@ const scrollToSection = (sectionId: string) => {
 .privacy-page {
   min-height: 100vh;
   background: $gray-50;
-}
-
-// ==================== 顶部导航 ====================
-.page-header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: $white;
-  border-bottom: 1px solid $border-light;
-  box-shadow: 0 2px 8px rgba($black, 0.04);
-}
-
-.header-container {
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 0 24px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: $radius-sm;
-  cursor: pointer;
-  transition: $transition-fast;
-  color: $text-secondary;
-
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  &:hover {
-    background: $gray-100;
-    color: $text-primary;
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
-
-.page-title {
-  font-size: 18px;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
 }
 
 // ==================== 内容区域 ====================

@@ -1,18 +1,7 @@
 <template>
   <view class="ask-page">
-    <!-- 顶部导航栏（固定） -->
-    <view class="top-navbar">
-      <view class="navbar-content">
-        <view class="nav-left" @click="handleCancel">
-          <Icon name="arrow-left" :size="20" />
-          <text class="nav-text">返回</text>
-        </view>
-        <text class="nav-title">{{ editMode ? '编辑问题' : '提问' }}</text>
-        <view class="nav-right">
-          <!-- 占位，保持标题居中 -->
-        </view>
-      </view>
-    </view>
+    <!-- 顶部导航栏 -->
+    <CNavBar :title="editMode ? '编辑问题' : '提问'" :auto-back="false" @back="handleCancel" />
 
     <!-- 内容区（双栏布局） -->
     <scroll-view class="content-area" scroll-y>
@@ -303,6 +292,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { onLoad } from '@dcloudio/uni-app'
 import { createQuestion, updateQuestion, getQuestionDetail } from '@/services/question'
 import { useUserStore } from '@/stores/user'
@@ -878,69 +868,6 @@ const handleSubmit = async () => {
   background: $bg-page;
   display: flex;
   flex-direction: column;
-}
-
-// ===================================
-// 顶部导航栏（固定）
-// ===================================
-.top-navbar {
-  position: sticky;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
-  z-index: $z-fixed;
-  padding-top: constant(safe-area-inset-top);
-  padding-top: env(safe-area-inset-top);
-}
-
-.navbar-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 $sp-6;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $sp-2;
-  padding: $sp-2 $sp-3;
-  cursor: pointer;
-  color: $gray-700;
-  border-radius: $radius-md;
-  transition: all $duration-base;
-
-  &:hover {
-    background: $gray-50;
-  }
-
-  &:active {
-    color: $primary;
-    background: $primary-50;
-  }
-}
-
-.nav-text {
-  font-size: $font-size-base;
-  font-weight: $font-weight-medium;
-  line-height: 1;
-}
-
-.nav-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-900;
-}
-
-.nav-right {
-  width: 80rpx; // 占位，保持标题居中
 }
 
 // ===================================

@@ -1,22 +1,16 @@
 <template>
   <view class="page">
 
-    <!-- 状态栏占位 -->
-    <view class="status-bar" />
-
     <!-- 导航栏 -->
-    <view class="nav-bar">
-      <view class="back-btn" @click="handleBack">
-        <ArrowLeft :size="20" :stroke-width="2" color="#6D6C6A" />
-      </view>
-      <view class="nav-title-row">
+    <CNavBar title-align="left" :auto-back="false" @back="handleBack">
+      <template #title>
         <text class="nav-title">获赞</text>
         <Heart :size="16" :stroke-width="2" color="#F43F5E" fill="#F43F5E" />
         <view v-if="totalLikes > 0" class="nav-badge">
           <text class="nav-badge-text">{{ totalLikes >= 1000 ? (totalLikes / 1000).toFixed(1) + 'k' : totalLikes }}</text>
         </view>
-      </view>
-    </view>
+      </template>
+    </CNavBar>
 
     <!-- 骨架屏 -->
     <scroll-view v-if="loading" class="scroll" scroll-y>
@@ -129,7 +123,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { getLikedItems, type LikedItem } from '@/services/user'
-import { ArrowLeft, Heart, FileText, MessageCircle } from 'lucide-vue-next'
+import { Heart, FileText, MessageCircle } from 'lucide-vue-next'
+import { CNavBar } from '@/components/layout'
 
 const loading     = ref(true)
 const loadingMore = ref(false)
@@ -211,52 +206,7 @@ $muted-fill:  #F0EFEC;
   flex-direction: column;
 }
 
-// ─── 状态栏 ──────────────────────────────────────────────────
-.status-bar {
-  // #ifdef H5
-  display: none;
-  // #endif
-  height: var(--status-bar-height, 0px);
-  background: $bg;
-}
-
-// ─── 导航栏 ──────────────────────────────────────────────────
-.nav-bar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  height: 56px;
-  background: $white;
-  border-bottom: 1px solid $border;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0 20px 0 16px;
-  // #ifdef H5
-  top: 0;
-  // #endif
-}
-
-.back-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: $muted-fill;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  transition: opacity 0.12s;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 1;
-}
+// ─── 导航栏 title slot 内容 ──────────────────────────────────
 .nav-title {
   font-size: 18px;
   font-weight: 700;

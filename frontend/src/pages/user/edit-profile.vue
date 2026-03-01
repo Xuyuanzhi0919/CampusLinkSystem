@@ -1,26 +1,19 @@
 <template>
   <view class="edit-profile-page">
-    <!-- 自定义导航栏 -->
-    <view class="custom-navbar">
-      <view class="navbar-content">
-        <view class="navbar-left" @click="handleBack">
-          <text class="back-icon">←</text>
-          <text class="back-text">返回</text>
-        </view>
-        <text class="navbar-title">编辑资料</text>
-        <view class="navbar-right">
-          <CButton
-            type="primary"
-            size="sm"
-            :disabled="!canSave"
-            :loading="saving"
-            @click="handleSave"
-          >
-            保存
-          </CButton>
-        </view>
-      </view>
-    </view>
+    <!-- 顶部导航栏 -->
+    <CNavBar title="编辑资料" :auto-back="false" @back="handleBack">
+      <template #right>
+        <CButton
+          type="primary"
+          size="sm"
+          :disabled="!canSave"
+          :loading="saving"
+          @click="handleSave"
+        >
+          保存
+        </CButton>
+      </template>
+    </CNavBar>
 
     <!-- 内容区域 -->
     <scroll-view class="content-scroll" scroll-y>
@@ -139,6 +132,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { useUserStore } from '@/stores/user'
 import type { UpdateProfileRequest } from '@/types/user'
 import { getUserProfile, updateUserProfile } from '@/services/user'
@@ -477,58 +471,10 @@ onMounted(() => {
   background: $gray-50;
 }
 
-// 自定义导航栏
-.custom-navbar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
-  z-index: $z-modal;
-}
-
-.navbar-content {
-  @include flex-between;
-  height: 88rpx;
-  padding: 0 $sp-8;
-  padding-top: env(safe-area-inset-top);
-}
-
-.navbar-left {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-}
-
-.back-icon {
-  font-size: 40rpx;
-  color: $gray-800;
-}
-
-.back-text {
-  font-size: $font-size-base;
-  color: $gray-800;
-}
-
-.navbar-title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-}
-
-.navbar-right {
-  display: flex;
-  justify-content: flex-end;
-}
-
 // 内容区域
 .content-scroll {
-  height: 100vh;
-  padding-top: calc(88rpx + env(safe-area-inset-top));
+  height: calc(100vh - 56px);
+  overflow-y: auto;
 }
 
 // 头像区域

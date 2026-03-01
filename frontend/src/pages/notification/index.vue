@@ -1,16 +1,14 @@
 <template>
   <view class="notification-page">
     <!-- 顶部导航栏 -->
-    <view class="top-navbar">
-      <view class="nav-back" @click="handleBack">
-        <Icon name="arrow-left" :size="18" color="#1A1A1A" />
-      </view>
-      <text class="nav-title">通知中心</text>
-      <view class="mark-all-btn" :class="{ 'mark-all-btn--disabled': !hasUnread }" @click="handleMarkAllRead">
-        <Icon name="check-check" :size="14" :color="hasUnread ? '#2563EB' : '#C7D2FE'" />
-        <text class="mark-text" :class="{ 'mark-text--disabled': !hasUnread }">全部已读</text>
-      </view>
-    </view>
+    <CNavBar title="通知中心" :auto-back="false" @back="handleBack">
+      <template #right>
+        <view class="mark-all-btn" :class="{ 'mark-all-btn--disabled': !hasUnread }" @click="handleMarkAllRead">
+          <Icon name="check-check" :size="14" :color="hasUnread ? '#2563EB' : '#C7D2FE'" />
+          <text class="mark-text" :class="{ 'mark-text--disabled': !hasUnread }">全部已读</text>
+        </view>
+      </template>
+    </CNavBar>
 
     <!-- 分类 Tab 栏 -->
     <view class="tab-bar">
@@ -154,6 +152,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { onShow } from '@dcloudio/uni-app'
 import {
   getMyNotifications,
@@ -468,48 +467,6 @@ defineExpose({})
   background: #F8FAFC;
   display: flex;
   flex-direction: column;
-}
-
-/* ===== 顶部导航 ===== */
-.top-navbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 56px;
-  padding: 0 16px;
-  background: $white;
-  border-bottom: 1px solid #E4E4E7;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  background: #F4F4F5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.15s;
-
-  &:active {
-    background: #E4E4E7;
-  }
-}
-
-.nav-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1A1A1A;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.nav-placeholder {
-  width: 80px;
 }
 
 .mark-all-btn {

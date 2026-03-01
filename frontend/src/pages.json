@@ -134,9 +134,8 @@
 		{
 			"path": "pages/club/activity-list",
 			"style": {
-				"navigationBarTitleText": "活动广场",
 				"navigationStyle": "custom",
-				"enablePullDownRefresh": true
+				"disableScroll": true
 			}
 		},
 		{

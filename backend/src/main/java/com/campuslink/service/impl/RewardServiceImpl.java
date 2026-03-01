@@ -118,7 +118,9 @@ public class RewardServiceImpl implements RewardService {
                 .map(this::toRecordVO)
                 .collect(Collectors.toList());
 
-        return new PageResult<>(list, result.getTotal(), page, pageSize);
+        long total = result.getTotal();
+        long totalPages = (total + pageSize - 1) / pageSize;
+        return new PageResult<>(list, total, (long) page, (long) pageSize, totalPages);
     }
 
     @Override

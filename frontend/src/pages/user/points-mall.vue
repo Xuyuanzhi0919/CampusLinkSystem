@@ -5,16 +5,20 @@
 
     <!-- 积分概览 -->
     <view class="points-banner">
-      <view class="banner-left">
-        <text class="banner-label">我的积分</text>
-        <view class="banner-value-row">
-          <Icon name="star" :size="20" color="#F59E0B" />
-          <text class="banner-value">{{ currentPoints }}</text>
-        </view>
+      <text class="banner-label">我的积分</text>
+      <view class="banner-value-row">
+        <Icon name="star" :size="26" color="#F59E0B" />
+        <text class="banner-value">{{ currentPoints.toLocaleString() }}</text>
       </view>
-      <view class="banner-right" @click="goHistory">
-        <text class="banner-link">查看明细</text>
-        <Icon name="chevron-right" :size="14" color="#6D6C6A" />
+      <view class="banner-sub-row">
+        <text class="banner-sub">
+          <text v-if="affordableCount > 0">可兑换 {{ affordableCount }} 件商品</text>
+          <text v-else>积分不足以兑换任何商品</text>
+        </text>
+        <view class="banner-history-btn" @click="goHistory">
+          <text class="banner-history-text">明细</text>
+          <Icon name="chevron-right" :size="12" color="rgba(255,255,255,0.7)" />
+        </view>
       </view>
     </view>
 
@@ -228,7 +232,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { CNavBar } from '@/components/layout'
 import Icon from '@/components/icons/index.vue'
 import { useUserStore } from '@/stores/user'
@@ -257,6 +261,11 @@ const recordsLoading = ref(false)
 const recordsLoadingMore = ref(false)
 const recordsHasMore = ref(true)
 const recordsPage = ref(1)
+
+// 可负担商品数量（用于 banner 副标题）
+const affordableCount = computed(() =>
+  items.value.filter(item => item.pointsCost <= currentPoints.value).length
+)
 
 // 确认弹窗
 const confirmItem = ref<RewardItem | null>(null)
@@ -426,45 +435,60 @@ onMounted(async () => {
 // ── 积分概览 ──────────────────────────────────
 .points-banner {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 14px;
+  flex-direction: column;
+  gap: 6px;
+  padding: 20px 20px 22px;
   background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
   flex-shrink: 0;
 }
 
-.banner-left { display: flex; flex-direction: column; gap: 4px; }
-
 .banner-label {
   font-size: 12px;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255,255,255,0.65);
   letter-spacing: 0.5px;
 }
 
 .banner-value-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .banner-value {
-  font-size: 28px;
+  font-size: 36px;
   font-weight: 800;
   color: #FFFFFF;
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
+  line-height: 1;
 }
 
-.banner-right {
+.banner-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+
+.banner-sub {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+}
+
+.banner-history-btn {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 6px 10px;
-  background: rgba(255,255,255,0.1);
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.15);
   border-radius: 20px;
   cursor: pointer;
 }
 
-.banner-link { font-size: 12px; color: rgba(255,255,255,0.8); }
+.banner-history-text {
+  font-size: 12px;
+  color: rgba(255,255,255,0.85);
+  font-weight: 500;
+}
 
 // ── 主 Tab ────────────────────────────────────
 .main-tabs {

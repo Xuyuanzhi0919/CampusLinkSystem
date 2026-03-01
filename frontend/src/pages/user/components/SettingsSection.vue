@@ -35,9 +35,8 @@ const emit = defineEmits<{
 }>()
 
 const settingsItems = computed<SettingsItem[]>(() => [
-  { id: 'edit-profile',    label: '编辑资料', icon: 'user',     color: 'blue',  path: '/pages/user/edit-profile' },
-  { id: 'system-settings', label: '系统设置', icon: 'settings', color: 'slate', path: '/pages/user/settings' },
-  { id: 'about',           label: '关于我们', icon: 'info',     color: 'teal',  path: '/pages/user/about' }
+  { id: 'edit-profile', label: '编辑资料', icon: 'user', color: 'blue', path: '/pages/user/edit-profile' },
+  { id: 'about',        label: '关于我们', icon: 'info', color: 'teal', path: '/pages/user/about' }
 ])
 
 const handleItemClick = (item: SettingsItem) => emit('itemClick', item)

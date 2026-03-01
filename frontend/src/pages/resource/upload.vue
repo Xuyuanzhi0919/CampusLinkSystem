@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { onLoad } from '@dcloudio/uni-app'
 import config from '@/config'
 import { createResource } from '@/services/resource'
@@ -499,14 +500,7 @@ onLoad(() => {
 <template>
   <view class="upload-page">
     <!-- 顶部导航栏 -->
-    <view class="navbar">
-      <view class="nav-left" @click="handleCancel">
-        <text class="back-icon">←</text>
-        <text class="back-text">返回</text>
-      </view>
-      <view class="nav-title">上传资源</view>
-      <view class="nav-right"></view>
-    </view>
+    <CNavBar title="上传资源" :auto-back="false" @back="handleCancel" />
 
     <!-- 内容区（双栏布局） -->
     <scroll-view class="content-area" scroll-y>
@@ -687,46 +681,6 @@ onLoad(() => {
   background: $bg-page;
   display: flex;
   flex-direction: column;
-}
-
-// 顶部导航栏
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: $z-dropdown;
-  @include flex-between;
-  height: 44px;
-  padding: 0 $sp-4;
-  background: $white;
-  border-bottom: 1px solid $gray-200;
-  flex-shrink: 0;
-
-  .nav-left {
-    display: flex;
-    align-items: center;
-    gap: $sp-1;
-    cursor: pointer;
-
-    .back-icon {
-      font-size: $font-size-xl;
-      color: $gray-800;
-    }
-
-    .back-text {
-      font-size: $font-size-lg;
-      color: $gray-800;
-    }
-  }
-
-  .nav-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-medium;
-    color: $gray-800;
-  }
-
-  .nav-right {
-    width: 60px;
-  }
 }
 
 // 内容区域（双栏布局）

@@ -1,14 +1,7 @@
 <template>
   <view class="publish-selector-page">
     <!-- 顶部导航栏 -->
-    <view class="navbar">
-      <view class="nav-left" @click="handleBack">
-        <Icon name="arrow-left" :size="20" />
-        <text class="nav-text">返回</text>
-      </view>
-      <text class="nav-title">选择发布类型</text>
-      <view class="nav-right"></view>
-    </view>
+    <CNavBar title="选择发布类型" :auto-back="false" @back="handleBack" />
 
     <!-- 主内容区 -->
     <scroll-view class="content-area" scroll-y>
@@ -147,6 +140,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import { CNavBar } from '@/components/layout'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -209,37 +203,6 @@ const handleBack = () => {
   background: $bg-page;
   display: flex;
   flex-direction: column;
-}
-
-// 顶部导航栏
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: $z-dropdown;
-  @include flex-between;
-  height: 44px;
-  padding: 0 $sp-4;
-  background: $white;
-  border-bottom: 1px solid $gray-200;
-  flex-shrink: 0;
-
-  .nav-left {
-    display: flex;
-    align-items: center;
-    gap: $sp-1;
-    cursor: pointer;
-    color: $gray-800;
-  }
-
-  .nav-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-medium;
-    color: $gray-800;
-  }
-
-  .nav-right {
-    width: 60px;
-  }
 }
 
 // 内容区域

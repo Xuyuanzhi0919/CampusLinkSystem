@@ -1,15 +1,7 @@
 <template>
   <view class="recommend-page">
     <!-- 顶部导航 -->
-    <view class="navbar">
-      <view class="nav-content">
-        <view class="nav-left" @click="goBack">
-          <text class="back-icon">←</text>
-        </view>
-        <text class="nav-title">全部推荐</text>
-        <view class="nav-right"></view>
-      </view>
-    </view>
+    <CNavBar title="全部推荐" />
 
     <!-- Tab 切换 -->
     <view class="tabs-container">
@@ -80,6 +72,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
+import { CNavBar } from '@/components/layout'
 
 // Tab 配置
 const tabs = [
@@ -215,44 +208,6 @@ onLoad((options: any) => {
   min-height: 100vh;
   background: var(--cl-bg, #F7F8FA);
   padding-bottom: 120rpx;
-}
-
-/* 导航栏 */
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: saturate(180%) blur(10px);
-  border-bottom: 1px solid var(--cl-divider, #E5E7EB);
-}
-
-.nav-content {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 88rpx;
-  padding: 0 32rpx;
-}
-
-.nav-left {
-  width: 80rpx;
-  cursor: pointer;
-}
-
-.back-icon {
-  font-size: 40rpx;
-  color: var(--cl-text, #0F172A);
-}
-
-.nav-title {
-  font-size: 32rpx;
-  font-weight: 600;
-  color: var(--cl-text, #0F172A);
-}
-
-.nav-right {
-  width: 80rpx;
 }
 
 /* Tab 切换 */

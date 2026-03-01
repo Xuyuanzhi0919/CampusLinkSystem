@@ -179,10 +179,8 @@
 		{
 			"path": "pages/club/my-activities",
 			"style": {
-				"navigationBarTitleText": "我的活动",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
+				"navigationStyle": "custom",
+				"disableScroll": true
 			}
 		},
 		{

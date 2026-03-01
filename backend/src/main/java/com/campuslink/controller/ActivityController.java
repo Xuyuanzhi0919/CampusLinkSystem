@@ -107,9 +107,10 @@ public class ActivityController {
     public Result<PageResult<ActivityResponse>> getMyActivities(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer status,
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        PageResult<ActivityResponse> result = activityService.getMyActivities(userId, page, pageSize);
+        PageResult<ActivityResponse> result = activityService.getMyActivities(userId, page, pageSize, status);
         return Result.success(result);
     }
 }

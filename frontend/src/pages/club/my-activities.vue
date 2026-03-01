@@ -142,7 +142,7 @@ const loadActivities = async (isRefresh = false) => {
   loading.value = true
   try {
     const currentPage = isRefresh ? 1 : page.value
-    const params: any = { page: currentPage, pageSize: 15 }
+    const params: { page: number; pageSize: number; status?: number } = { page: currentPage, pageSize: 15 }
     if (currentStatus.value !== -1) params.status = currentStatus.value
     const res = await getMyActivities(params)
     if (isRefresh) {

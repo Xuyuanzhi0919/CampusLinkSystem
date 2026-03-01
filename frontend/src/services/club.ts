@@ -116,7 +116,7 @@ export const getMyClubs = (params: { page?: number; pageSize?: number } = {}) =>
  * 获取我报名的活动
  * @param params 查询参数
  */
-export const getMyActivities = (params: { page?: number; pageSize?: number } = {}) => {
+export const getMyActivities = (params: { page?: number; pageSize?: number; status?: number } = {}) => {
   return request.get<PageResult<ActivityItem>>('/activity/my', params)
 }
 

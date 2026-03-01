@@ -330,7 +330,7 @@ public class ActivityService {
     /**
      * 获取我报名的活动
      */
-    public PageResult<ActivityResponse> getMyActivities(Long userId, Integer page, Integer pageSize) {
+    public PageResult<ActivityResponse> getMyActivities(Long userId, Integer page, Integer pageSize, Integer status) {
         // 查询用户报名的活动ID列表
         LambdaQueryWrapper<ActivityParticipant> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ActivityParticipant::getUserId, userId);
@@ -348,6 +348,7 @@ public class ActivityService {
         Page<Activity> activityPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<Activity> activityWrapper = new LambdaQueryWrapper<>();
         activityWrapper.in(Activity::getActivityId, activityIds)
+                .eq(status != null, Activity::getStatus, status)
                 .orderByDesc(Activity::getCreatedAt);
 
         activityPage = activityMapper.selectPage(activityPage, activityWrapper);

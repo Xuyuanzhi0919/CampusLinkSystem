@@ -7,10 +7,16 @@
     <view class="banner">
       <text class="banner-label">当前积分</text>
       <view class="banner-value-row">
-        <Icon name="star" :size="22" color="#F59E0B" />
-        <text class="banner-value">{{ userStore.userInfo?.points ?? 0 }}</text>
+        <Icon name="star" :size="26" color="#F59E0B" />
+        <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
       </view>
-      <text class="banner-desc">可用于下载资源、发布悬赏等</text>
+      <view class="banner-sub-row">
+        <text class="banner-desc">可用于下载资源、发布悬赏</text>
+        <view class="banner-mall-btn" @click="uni.navigateTo({ url: '/pages/user/points-mall' })">
+          <text class="banner-mall-text">去商城</text>
+          <Icon name="chevron-right" :size="12" color="rgba(255,255,255,0.7)" />
+        </view>
+      </view>
     </view>
 
     <!-- 记录列表 -->
@@ -188,8 +194,8 @@ onMounted(() => loadPoints())
 .banner {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 16px 20px 18px;
+  gap: 6px;
+  padding: 20px 20px 22px;
   background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
   flex-shrink: 0;
 }
@@ -203,21 +209,43 @@ onMounted(() => loadPoints())
 .banner-value-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 .banner-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 800;
   color: #FFFFFF;
   letter-spacing: -1px;
   line-height: 1;
 }
 
-.banner-desc {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
+.banner-sub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 2px;
+}
+
+.banner-desc {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.banner-mall-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.banner-mall-text {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
 }
 
 // ── 列表 ──────────────────────────────────────

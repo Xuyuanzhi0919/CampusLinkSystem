@@ -339,7 +339,7 @@ const handleBack = () => {
 
 .brand-title {
   display: block;
-  font-size: 44rpx;
+  font-size: 36rpx;
   font-weight: 700;
   color: #FFFFFF;
   letter-spacing: 1rpx;
@@ -369,7 +369,7 @@ const handleBack = () => {
 
 .card-title {
   display: block;
-  font-size: 36rpx;
+  font-size: 30rpx;
   font-weight: 700;
   color: #111827;
   margin-bottom: 8rpx;
@@ -416,7 +416,7 @@ const handleBack = () => {
   .input {
     flex: 1;
     height: 100%;
-    font-size: 28rpx;
+    font-size: 26rpx;
     color: #111827;
     background: transparent;
   }
@@ -517,7 +517,7 @@ const handleBack = () => {
   }
 
   .btn-text {
-    font-size: 30rpx;
+    font-size: 28rpx;
     font-weight: 600;
     color: #FFFFFF;
   }
@@ -578,12 +578,12 @@ const handleBack = () => {
   }
 
   .register-hint {
-    font-size: 28rpx;
+    font-size: 26rpx;
     color: #6B7280;
   }
 
   .register-link {
-    font-size: 28rpx;
+    font-size: 26rpx;
     font-weight: 600;
     color: #2563EB;
   }

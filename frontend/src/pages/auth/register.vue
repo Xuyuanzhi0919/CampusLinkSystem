@@ -525,7 +525,7 @@ onUnmounted(() => {
 
 .page-title {
   display: block;
-  font-size: 48rpx;
+  font-size: 40rpx;
   font-weight: 700;
   color: #FFFFFF;
   margin-bottom: 10rpx;
@@ -603,7 +603,7 @@ onUnmounted(() => {
   .input {
     flex: 1;
     height: 100%;
-    font-size: 28rpx;
+    font-size: 26rpx;
     color: #111827;
     background: transparent;
   }
@@ -759,7 +759,7 @@ onUnmounted(() => {
   }
 
   .btn-text {
-    font-size: 30rpx;
+    font-size: 28rpx;
     font-weight: 600;
     color: #FFFFFF;
   }

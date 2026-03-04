@@ -1,665 +1,1107 @@
 <template>
   <view class="publish-activity-page">
-    <scroll-view class="form-scroll" scroll-y>
+    <!-- 顶部导航栏 -->
+    <CNavBar title="发布活动" :auto-back="false" @back="handleCancel" />
+
+    <scroll-view class="content-area" scroll-y>
       <view class="form-container">
-
-        <!-- 活动封面 -->
-        <view class="section">
-          <text class="section-title">活动封面</text>
-          <view class="cover-picker" @click="handlePickCover">
-            <image v-if="form.coverImage" class="cover-preview" :src="form.coverImage" mode="aspectFill" />
-            <view v-else class="cover-placeholder">
-              <Icon name="image-plus" :size="32" color="#9CA3AF" />
-              <text class="placeholder-text">上传封面图片</text>
-              <text class="placeholder-hint">建议尺寸 16:9</text>
-            </view>
+        <!-- 活动标题 -->
+        <CCard variant="elevated" class="form-card">
+          <view class="card-header">
+            <Icon name="type" :size="20" class="header-icon" />
+            <text class="header-title">基本信息</text>
           </view>
-        </view>
 
-        <!-- 基本信息 -->
-        <view class="section">
-          <text class="section-title">基本信息</text>
-          <view class="form-card">
-
-            <!-- 活动标题 -->
-            <view class="form-item">
-              <text class="form-label required">活动标题</text>
-              <input
-                class="form-input"
-                v-model="form.title"
-                placeholder="请输入活动标题（5-50字）"
-                maxlength="50"
-                @input="clearError('title')"
-              />
-              <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">活动标题</text>
+              <text class="required">*</text>
             </view>
-
-            <view class="divider" />
-
-            <!-- 活动类型 -->
-            <view class="form-item form-item--picker" @click="showTypePicker = true">
-              <text class="form-label required">活动类型</text>
-              <view class="picker-value">
-                <text :class="form.activityType ? 'value-text' : 'placeholder-text'">
-                  {{ form.activityType ? activityTypeLabels[form.activityType] : '请选择类型' }}
-                </text>
-                <Icon name="chevron-right" :size="16" color="#9CA3AF" />
-              </view>
+            <input
+              v-model="formData.title"
+              class="form-input"
+              placeholder="请输入活动标题，5-200个字符"
+              maxlength="200"
+            />
+            <view class="input-footer">
+              <text class="input-hint">简洁明了的标题能吸引更多人参与</text>
+              <text class="input-count">{{ formData.title.length }}/200</text>
             </view>
-
-            <view class="divider" />
-
-            <!-- 活动地点 -->
-            <view class="form-item">
-              <text class="form-label required">活动地点</text>
-              <input
-                class="form-input"
-                v-model="form.location"
-                placeholder="请输入具体地点"
-                maxlength="100"
-                @input="clearError('location')"
-              />
-              <text v-if="errors.location" class="error-text">{{ errors.location }}</text>
-            </view>
-
+            <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
           </view>
-        </view>
+
+          <!-- 活动描述 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">活动描述</text>
+              <text class="required">*</text>
+            </view>
+            <textarea
+              v-model="formData.description"
+              class="form-textarea"
+              placeholder="请详细描述活动内容、参与要求、注意事项等..."
+              maxlength="2000"
+              :auto-height="true"
+            />
+            <view class="input-footer">
+              <text class="input-hint">详细描述有助于用户了解活动详情</text>
+              <text class="input-count" :class="{ 'count-warning': formData.description.length > 1900 }">
+                {{ formData.description.length }}/2000
+              </text>
+            </view>
+            <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
+          </view>
+
+          <!-- 活动地点 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">活动地点</text>
+              <text class="required">*</text>
+            </view>
+            <input
+              v-model="formData.location"
+              class="form-input"
+              placeholder="请输入活动地点"
+              maxlength="200"
+            />
+            <text v-if="errors.location" class="error-text">{{ errors.location }}</text>
+          </view>
+        </CCard>
 
         <!-- 时间设置 -->
-        <view class="section">
-          <text class="section-title">时间设置</text>
-          <view class="form-card">
-
-            <!-- 开始时间 -->
-            <view class="form-item form-item--picker">
-              <text class="form-label required">开始时间</text>
-              <picker
-                mode="multiSelector"
-                :range="dateTimeRange"
-                :value="startTimeIndex"
-                @change="handleStartTimeChange"
-              >
-                <view class="picker-value">
-                  <text :class="form.startTime ? 'value-text' : 'placeholder-text'">
-                    {{ form.startTime ? formatDisplayTime(form.startTime) : '请选择开始时间' }}
-                  </text>
-                  <Icon name="chevron-right" :size="16" color="#9CA3AF" />
-                </view>
-              </picker>
-              <text v-if="errors.startTime" class="error-text">{{ errors.startTime }}</text>
-            </view>
-
-            <view class="divider" />
-
-            <!-- 结束时间 -->
-            <view class="form-item form-item--picker">
-              <text class="form-label required">结束时间</text>
-              <picker
-                mode="multiSelector"
-                :range="dateTimeRange"
-                :value="endTimeIndex"
-                @change="handleEndTimeChange"
-              >
-                <view class="picker-value">
-                  <text :class="form.endTime ? 'value-text' : 'placeholder-text'">
-                    {{ form.endTime ? formatDisplayTime(form.endTime) : '请选择结束时间' }}
-                  </text>
-                  <Icon name="chevron-right" :size="16" color="#9CA3AF" />
-                </view>
-              </picker>
-              <text v-if="errors.endTime" class="error-text">{{ errors.endTime }}</text>
-            </view>
-
+        <CCard variant="elevated" class="form-card">
+          <view class="card-header">
+            <Icon name="calendar" :size="20" class="header-icon" />
+            <text class="header-title">时间设置</text>
           </view>
-        </view>
+
+          <!-- 开始时间 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">开始时间</text>
+              <text class="required">*</text>
+            </view>
+            <picker
+              mode="multiSelector"
+              :range="[dateRange, timeRange]"
+              :value="[startDateIndex, startTimeIndex]"
+              @change="handleStartTimeChange"
+              @columnchange="handleStartColumnChange"
+            >
+              <view class="picker-trigger" :class="{ error: errors.startTime }">
+                <text :class="{ placeholder: !formData.startTime }">
+                  {{ formData.startTime ? formatDateTime(formData.startTime) : '请选择开始时间' }}
+                </text>
+                <text class="arrow">▼</text>
+              </view>
+            </picker>
+            <text v-if="errors.startTime" class="error-text">{{ errors.startTime }}</text>
+          </view>
+
+          <!-- 结束时间 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">结束时间</text>
+              <text class="required">*</text>
+            </view>
+            <picker
+              mode="multiSelector"
+              :range="[dateRange, timeRange]"
+              :value="[endDateIndex, endTimeIndex]"
+              @change="handleEndTimeChange"
+              @columnchange="handleEndColumnChange"
+            >
+              <view class="picker-trigger" :class="{ error: errors.endTime }">
+                <text :class="{ placeholder: !formData.endTime }">
+                  {{ formData.endTime ? formatDateTime(formData.endTime) : '请选择结束时间' }}
+                </text>
+                <text class="arrow">▼</text>
+              </view>
+            </picker>
+            <text v-if="errors.endTime" class="error-text">{{ errors.endTime }}</text>
+          </view>
+
+          <!-- 报名截止时间 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">报名截止</text>
+              <text class="required">*</text>
+            </view>
+            <picker
+              mode="multiSelector"
+              :range="[dateRange, timeRange]"
+              :value="[deadlineDateIndex, deadlineTimeIndex]"
+              @change="handleDeadlineChange"
+              @columnchange="handleDeadlineColumnChange"
+            >
+              <view class="picker-trigger" :class="{ error: errors.signupDeadline }">
+                <text :class="{ placeholder: !formData.signupDeadline }">
+                  {{ formData.signupDeadline ? formatDateTime(formData.signupDeadline) : '请选择报名截止时间' }}
+                </text>
+                <text class="arrow">▼</text>
+              </view>
+            </picker>
+            <text v-if="errors.signupDeadline" class="error-text">{{ errors.signupDeadline }}</text>
+          </view>
+        </CCard>
 
         <!-- 参与设置 -->
-        <view class="section">
-          <text class="section-title">参与设置</text>
-          <view class="form-card">
-
-            <!-- 人数限制 -->
-            <view class="form-item form-item--row">
-              <view class="row-label-area">
-                <text class="form-label">人数上限</text>
-                <text class="form-sublabel">0 表示不限制</text>
-              </view>
-              <input
-                class="form-input form-input--number"
-                v-model="form.maxParticipantsStr"
-                type="number"
-                placeholder="0"
-                maxlength="5"
-              />
-            </view>
-
-            <view class="divider" />
-
-            <!-- 奖励积分 -->
-            <view class="form-item form-item--row">
-              <view class="row-label-area">
-                <text class="form-label">参与奖励积分</text>
-                <text class="form-sublabel">参与者签到后获得</text>
-              </view>
-              <input
-                class="form-input form-input--number"
-                v-model="form.rewardPointsStr"
-                type="number"
-                placeholder="10"
-                maxlength="4"
-              />
-            </view>
-
+        <CCard variant="elevated" class="form-card">
+          <view class="card-header">
+            <Icon name="users" :size="20" class="header-icon" />
+            <text class="header-title">参与设置</text>
           </view>
-        </view>
 
-        <!-- 活动描述 -->
-        <view class="section">
-          <view class="section-header">
-            <text class="section-title">活动描述</text>
-            <text class="char-count">{{ form.description.length }}/1000</text>
-          </view>
-          <view class="textarea-card">
-            <textarea
-              class="form-textarea"
-              v-model="form.description"
-              placeholder="详细描述活动内容、注意事项等..."
-              maxlength="1000"
-              auto-height
+          <!-- 最大参与人数 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">最大参与人数</text>
+              <text class="required">*</text>
+            </view>
+            <input
+              v-model.number="formData.maxParticipants"
+              class="form-input"
+              type="number"
+              placeholder="请输入最大参与人数"
+              min="1"
             />
+            <view class="input-footer">
+              <text class="input-hint">设置合理的参与人数上限</text>
+            </view>
+            <text v-if="errors.maxParticipants" class="error-text">{{ errors.maxParticipants }}</text>
           </view>
-        </view>
+
+          <!-- 参与奖励积分 -->
+          <view class="form-group">
+            <view class="form-label">
+              <text class="label-text">参与奖励</text>
+              <text class="label-hint">（积分）</text>
+            </view>
+            <view class="reward-selector">
+              <view
+                v-for="points in rewardOptions"
+                :key="points"
+                class="reward-item"
+                :class="{ active: formData.rewardPoints === points }"
+                @click="handleRewardSelect(points)"
+              >
+                <text class="reward-points">{{ points }}</text>
+                <text class="reward-label">积分</text>
+              </view>
+            </view>
+            <view class="reward-hint">
+              <text class="hint-icon">💡</text>
+              <text class="hint-text">参与者完成签到后可获得奖励积分</text>
+            </view>
+          </view>
+        </CCard>
+
+        <!-- 封面图片（可选） -->
+        <CCard variant="elevated" class="form-card">
+          <view class="card-header">
+            <Icon name="image" :size="20" class="header-icon" />
+            <text class="header-title">封面图片</text>
+            <text class="header-optional">（可选）</text>
+          </view>
+
+          <view class="form-group">
+            <!-- 已上传封面 -->
+            <view v-if="formData.coverImage" class="cover-preview">
+              <image :src="formData.coverImage" class="cover-image" mode="aspectFill" />
+              <view class="cover-actions">
+                <view class="action-btn" @click="handleRemoveCover">
+                  <Icon name="trash-2" :size="16" color="#EF4444" />
+                  <text class="action-text danger">移除</text>
+                </view>
+              </view>
+            </view>
+            <!-- 上传按钮 -->
+            <view v-else class="upload-cover-btn" @click="handleUploadCover">
+              <Icon name="image-plus" :size="24" class="upload-icon" />
+              <text class="upload-text">上传封面图片</text>
+              <text class="upload-hint">建议尺寸 16:9，支持 JPG/PNG</text>
+            </view>
+          </view>
+        </CCard>
 
         <!-- 提交按钮 -->
-        <view class="submit-area">
-          <view
-            class="submit-btn"
-            :class="{ 'submit-btn--loading': submitting }"
+        <view class="submit-section">
+          <CButton
+            type="primary"
+            size="lg"
+            block
+            :disabled="!isFormValid"
+            :loading="submitting"
             @click="handleSubmit"
           >
-            <Icon v-if="submitting" name="loader" :size="18" class="loading-icon" />
-            <text class="submit-text">{{ submitting ? '发布中...' : '发布活动' }}</text>
-          </view>
+            发布活动
+          </CButton>
+          <text class="submit-hint">发布后可在活动详情页进行管理</text>
         </view>
-
       </view>
     </scroll-view>
 
-    <!-- 活动类型选择弹窗 -->
-    <view v-if="showTypePicker" class="picker-overlay" @click="showTypePicker = false">
+    <!-- 社团选择弹窗 -->
+    <view v-if="showClubPicker" class="picker-mask" @click="showClubPicker = false">
       <view class="picker-sheet" @click.stop>
         <view class="picker-header">
-          <text class="picker-title">选择活动类型</text>
-          <view @click="showTypePicker = false">
-            <Icon name="x" :size="18" color="#6B7280" />
+          <text class="picker-title">选择社团</text>
+          <view class="picker-close" @click="showClubPicker = false">
+            <Icon name="x" :size="20" />
           </view>
         </view>
-        <view class="picker-list">
+        <scroll-view class="picker-content" scroll-y>
           <view
-            v-for="(label, value) in activityTypeLabels"
-            :key="value"
-            class="picker-item"
-            :class="{ 'picker-item--active': form.activityType === value }"
-            @click="selectType(value)"
+            v-for="club in myClubs"
+            :key="club.clubId"
+            class="club-item"
+            :class="{ active: formData.clubId === club.clubId }"
+            @click="handleSelectClub(club)"
           >
-            <text class="picker-item-text">{{ label }}</text>
-            <Icon v-if="form.activityType === value" name="check" :size="16" color="#377DFF" />
+            <image :src="club.avatar || '/static/default-avatar.png'" class="club-avatar" mode="aspectFill" />
+            <view class="club-info">
+              <text class="club-name">{{ club.name }}</text>
+              <text class="club-members">{{ club.memberCount }} 成员</text>
+            </view>
+            <Icon v-if="formData.clubId === club.clubId" name="check" :size="20" color="#2355C8" />
           </view>
-        </view>
+          <view v-if="myClubs.length === 0" class="empty-clubs">
+            <text class="empty-text">您还不是任何社团的管理员</text>
+            <CButton type="primary" size="sm" @click="handleCreateClub">创建社团</CButton>
+          </view>
+        </scroll-view>
       </view>
     </view>
-
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { onLoad } from '@dcloudio/uni-app'
+import { CNavBar } from '@/components/layout'
+import CCard from '@/components/ui/CCard.vue'
+import CButton from '@/components/ui/CButton.vue'
 import Icon from '@/components/icons/index.vue'
 import { createActivity } from '@/services/club'
+import { getMyClubs } from '@/services/club'
+import type { ActivityCreateParams, ClubItem } from '@/types/club'
+import { uploadToOSS } from '@/utils/upload'
 
-// 从路由参数获取 clubId
-const clubId = ref<number>(0)
-
-onMounted(() => {
-  const pages = getCurrentPages()
-  const currentPage = pages[pages.length - 1] as any
-  const options = currentPage.options || currentPage.$route?.query || {}
-  clubId.value = Number(options.clubId || 0)
-})
-
-const activityTypeLabels: Record<string, string> = {
-  '1': '讲座',
-  '2': '比赛',
-  '3': '社交活动',
-  '4': '公益志愿',
-  '5': '其他'
-}
-
-// 生成日期选择器范围（未来 90 天）
-const generateDateRange = () => {
-  const dates: string[] = []
-  const today = new Date()
-  for (let i = 0; i <= 90; i++) {
-    const d = new Date(today)
-    d.setDate(today.getDate() + i)
-    const m = String(d.getMonth() + 1).padStart(2, '0')
-    const day = String(d.getDate()).padStart(2, '0')
-    dates.push(`${d.getFullYear()}-${m}-${day}`)
-  }
-  return dates
-}
-
-const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0') + ':00')
-const dateRange = generateDateRange()
-const dateTimeRange = [dateRange, hours]
-
-const startTimeIndex = ref([0, 9])   // 默认今天 09:00
-const endTimeIndex = ref([0, 11])    // 默认今天 11:00
-
-const form = reactive({
+// 表单数据
+const formData = ref<ActivityCreateParams>({
+  clubId: 0,
   title: '',
-  activityType: '',
+  description: '',
   location: '',
   startTime: '',
   endTime: '',
-  description: '',
-  coverImage: '',
-  maxParticipantsStr: '0',
-  rewardPointsStr: '10'
+  maxParticipants: 50,
+  signupDeadline: '',
+  rewardPoints: 0,
+  coverImage: ''
 })
 
-const errors = reactive<Record<string, string>>({})
+// 表单错误
+const errors = ref<Record<string, string>>({})
+
+// 提交状态
 const submitting = ref(false)
-const showTypePicker = ref(false)
 
-const clearError = (field: string) => {
-  delete errors[field]
+// 社团选择
+const showClubPicker = ref(false)
+const myClubs = ref<ClubItem[]>([])
+
+// 奖励积分选项
+const rewardOptions = [0, 5, 10, 20, 30, 50]
+
+// 日期时间选择器数据
+const dateRange = ref<string[]>([])
+const timeRange = ref<string[]>([])
+
+// 开始时间选择索引
+const startDateIndex = ref(0)
+const startTimeIndex = ref(0)
+
+// 结束时间选择索引
+const endDateIndex = ref(0)
+const endTimeIndex = ref(0)
+
+// 报名截止时间选择索引
+const deadlineDateIndex = ref(0)
+const deadlineTimeIndex = ref(0)
+
+// 初始化日期时间范围
+const initDateTimeRange = () => {
+  // 生成未来30天的日期
+  const dates: string[] = []
+  const today = new Date()
+  for (let i = 0; i < 30; i++) {
+    const date = new Date(today)
+    date.setDate(today.getDate() + i)
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()]
+    dates.push(`${month}-${day} ${weekDay}`)
+  }
+  dateRange.value = dates
+
+  // 生成时间选项（每30分钟）
+  const times: string[] = []
+  for (let h = 0; h < 24; h++) {
+    for (let m = 0; m < 60; m += 30) {
+      const hour = h.toString().padStart(2, '0')
+      const minute = m.toString().padStart(2, '0')
+      times.push(`${hour}:${minute}`)
+    }
+  }
+  timeRange.value = times
 }
 
-const selectType = (value: string) => {
-  form.activityType = value
-  showTypePicker.value = false
+/**
+ * 格式化日期时间显示
+ */
+const formatDateTime = (isoString: string): string => {
+  if (!isoString) return ''
+  const date = new Date(isoString)
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  const hour = date.getHours().toString().padStart(2, '0')
+  const minute = date.getMinutes().toString().padStart(2, '0')
+  const weekDay = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][date.getDay()]
+  return `${month}-${day} ${weekDay} ${hour}:${minute}`
 }
 
-const buildISOTime = (dateStr: string, hourStr: string): string => {
-  return `${dateStr}T${hourStr}:00`
+/**
+ * 从选择器索引构建 ISO 日期字符串
+ */
+const buildISODateTime = (dateIdx: number, timeIdx: number): string => {
+  const today = new Date()
+  const targetDate = new Date(today)
+  targetDate.setDate(today.getDate() + dateIdx)
+  
+  const timeStr = timeRange.value[timeIdx]
+  const [hour, minute] = timeStr.split(':')
+  
+  targetDate.setHours(parseInt(hour), parseInt(minute), 0, 0)
+  return targetDate.toISOString()
+}
+
+// 开始时间选择处理
+const handleStartColumnChange = (e: any) => {
+  if (e.detail.column === 0) {
+    startDateIndex.value = e.detail.value
+  } else {
+    startTimeIndex.value = e.detail.value
+  }
 }
 
 const handleStartTimeChange = (e: any) => {
-  const val: number[] = e.detail.value
-  startTimeIndex.value = val
-  form.startTime = buildISOTime(dateRange[val[0]], hours[val[1]])
-  clearError('startTime')
+  const [dateIdx, timeIdx] = e.detail.value
+  startDateIndex.value = dateIdx
+  startTimeIndex.value = timeIdx
+  formData.value.startTime = buildISODateTime(dateIdx, timeIdx)
+  errors.value.startTime = ''
+}
+
+// 结束时间选择处理
+const handleEndColumnChange = (e: any) => {
+  if (e.detail.column === 0) {
+    endDateIndex.value = e.detail.value
+  } else {
+    endTimeIndex.value = e.detail.value
+  }
 }
 
 const handleEndTimeChange = (e: any) => {
-  const val: number[] = e.detail.value
-  endTimeIndex.value = val
-  form.endTime = buildISOTime(dateRange[val[0]], hours[val[1]])
-  clearError('endTime')
+  const [dateIdx, timeIdx] = e.detail.value
+  endDateIndex.value = dateIdx
+  endTimeIndex.value = timeIdx
+  formData.value.endTime = buildISODateTime(dateIdx, timeIdx)
+  errors.value.endTime = ''
 }
 
-const formatDisplayTime = (iso: string): string => {
-  if (!iso) return ''
-  const d = new Date(iso)
-  const m = d.getMonth() + 1
-  const day = d.getDate()
-  const h = String(d.getHours()).padStart(2, '0')
-  const min = String(d.getMinutes()).padStart(2, '0')
-  return `${m}月${day}日 ${h}:${min}`
+// 报名截止时间选择处理
+const handleDeadlineColumnChange = (e: any) => {
+  if (e.detail.column === 0) {
+    deadlineDateIndex.value = e.detail.value
+  } else {
+    deadlineTimeIndex.value = e.detail.value
+  }
 }
 
-const handlePickCover = () => {
-  uni.chooseImage({
-    count: 1,
-    sizeType: ['compressed'],
-    sourceType: ['album', 'camera'],
-    success: (res) => {
-      form.coverImage = res.tempFilePaths[0]
+const handleDeadlineChange = (e: any) => {
+  const [dateIdx, timeIdx] = e.detail.value
+  deadlineDateIndex.value = dateIdx
+  deadlineTimeIndex.value = timeIdx
+  formData.value.signupDeadline = buildISODateTime(dateIdx, timeIdx)
+  errors.value.signupDeadline = ''
+}
+
+/**
+ * 选择奖励积分
+ */
+const handleRewardSelect = (points: number) => {
+  formData.value.rewardPoints = points
+}
+
+/**
+ * 上传封面图片
+ */
+const handleUploadCover = async () => {
+  try {
+    uni.chooseImage({
+      count: 1,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+      success: async (res) => {
+        const tempFilePath = res.tempFilePaths[0]
+        uni.showLoading({ title: '上传中...' })
+        
+        try {
+          const imageUrl = await uploadToOSS(tempFilePath)
+          formData.value.coverImage = imageUrl
+          uni.hideLoading()
+          uni.showToast({ title: '上传成功', icon: 'success' })
+        } catch (error) {
+          uni.hideLoading()
+          uni.showToast({ title: '上传失败', icon: 'none' })
+        }
+      }
+    })
+  } catch (error) {
+    console.error('选择图片失败:', error)
+  }
+}
+
+/**
+ * 移除封面图片
+ */
+const handleRemoveCover = () => {
+  formData.value.coverImage = ''
+}
+
+/**
+ * 选择社团
+ */
+const handleSelectClub = (club: ClubItem) => {
+  formData.value.clubId = club.clubId
+  showClubPicker.value = false
+  errors.value.clubId = ''
+}
+
+/**
+ * 创建社团
+ */
+const handleCreateClub = () => {
+  showClubPicker.value = false
+  uni.navigateTo({ url: '/pages/club/create' })
+}
+
+/**
+ * 加载我的社团列表
+ */
+const loadMyClubs = async () => {
+  try {
+    const result = await getMyClubs({ page: 1, pageSize: 100 })
+    myClubs.value = result.list
+    
+    // 如果只有一个社团，自动选中
+    if (myClubs.value.length === 1) {
+      formData.value.clubId = myClubs.value[0].clubId
     }
-  })
+  } catch (error) {
+    console.error('加载社团列表失败:', error)
+  }
 }
 
-const validate = (): boolean => {
-  let valid = true
+/**
+ * 表单验证
+ */
+const validateForm = (): boolean => {
+  errors.value = {}
+  let isValid = true
 
-  if (!form.title.trim()) {
-    errors.title = '请输入活动标题'
-    valid = false
-  } else if (form.title.trim().length < 5) {
-    errors.title = '活动标题至少5个字'
-    valid = false
+  if (!formData.value.clubId) {
+    errors.value.clubId = '请选择社团'
+    isValid = false
   }
 
-  if (!form.location.trim()) {
-    errors.location = '请输入活动地点'
-    valid = false
+  if (formData.value.title.length < 5) {
+    errors.value.title = '标题长度至少5个字符'
+    isValid = false
   }
 
-  if (!form.startTime) {
-    errors.startTime = '请选择开始时间'
-    valid = false
+  if (formData.value.description.length < 10) {
+    errors.value.description = '描述长度至少10个字符'
+    isValid = false
   }
 
-  if (!form.endTime) {
-    errors.endTime = '请选择结束时间'
-    valid = false
-  } else if (form.startTime && form.endTime <= form.startTime) {
-    errors.endTime = '结束时间须晚于开始时间'
-    valid = false
+  if (!formData.value.location) {
+    errors.value.location = '请输入活动地点'
+    isValid = false
   }
 
-  return valid
+  if (!formData.value.startTime) {
+    errors.value.startTime = '请选择开始时间'
+    isValid = false
+  }
+
+  if (!formData.value.endTime) {
+    errors.value.endTime = '请选择结束时间'
+    isValid = false
+  }
+
+  if (formData.value.startTime && formData.value.endTime) {
+    if (new Date(formData.value.startTime) >= new Date(formData.value.endTime)) {
+      errors.value.endTime = '结束时间必须晚于开始时间'
+      isValid = false
+    }
+  }
+
+  if (!formData.value.signupDeadline) {
+    errors.value.signupDeadline = '请选择报名截止时间'
+    isValid = false
+  }
+
+  if (formData.value.signupDeadline && formData.value.startTime) {
+    if (new Date(formData.value.signupDeadline) > new Date(formData.value.startTime)) {
+      errors.value.signupDeadline = '报名截止时间不能晚于活动开始时间'
+      isValid = false
+    }
+  }
+
+  if (!formData.value.maxParticipants || formData.value.maxParticipants < 1) {
+    errors.value.maxParticipants = '参与人数至少为1'
+    isValid = false
+  }
+
+  return isValid
 }
 
+/**
+ * 表单是否有效
+ */
+const isFormValid = computed(() => {
+  return (
+    formData.value.clubId > 0 &&
+    formData.value.title.length >= 5 &&
+    formData.value.description.length >= 10 &&
+    formData.value.location.length > 0 &&
+    formData.value.startTime &&
+    formData.value.endTime &&
+    formData.value.signupDeadline &&
+    formData.value.maxParticipants >= 1
+  )
+})
+
+/**
+ * 检查表单是否有未保存的内容
+ */
+const hasUnsavedChanges = computed(() => {
+  return !!(
+    formData.value.title ||
+    formData.value.description ||
+    formData.value.location ||
+    formData.value.startTime ||
+    formData.value.endTime ||
+    formData.value.coverImage
+  )
+})
+
+/**
+ * 取消发布
+ */
+const handleCancel = () => {
+  if (hasUnsavedChanges.value) {
+    uni.showModal({
+      title: '提示',
+      content: '您有未保存的内容，确定要离开吗？',
+      success: (res) => {
+        if (res.confirm) {
+          uni.navigateBack({
+            fail: () => {
+              uni.switchTab({ url: '/pages/home/index' })
+            }
+          })
+        }
+      }
+    })
+  } else {
+    uni.navigateBack({
+      fail: () => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }
+    })
+  }
+}
+
+/**
+ * 提交表单
+ */
 const handleSubmit = async () => {
-  if (!validate()) return
-  if (submitting.value) return
-  if (!clubId.value) {
-    uni.showToast({ title: '社团信息缺失', icon: 'none' })
-    return
-  }
+  if (!validateForm()) return
 
   try {
     submitting.value = true
-    await createActivity({
-      clubId: clubId.value,
-      title: form.title.trim(),
-      description: form.description.trim(),
-      location: form.location.trim(),
-      startTime: form.startTime,
-      endTime: form.endTime,
-      maxParticipants: Number(form.maxParticipantsStr) || 0,
-      rewardPoints: Number(form.rewardPointsStr) || 0,
-      coverImage: form.coverImage || undefined,
-      signupDeadline: form.startTime,  // 默认报名截止为开始时间
-      checkInPoints: Number(form.rewardPointsStr) || 0
+
+    const response = await createActivity(formData.value)
+
+    uni.showToast({
+      title: '发布成功',
+      icon: 'success',
+      duration: 1500
     })
 
-    uni.showToast({ title: '活动发布成功', icon: 'success', duration: 2000 })
-    setTimeout(() => uni.navigateBack(), 1500)
+    setTimeout(() => {
+      uni.redirectTo({
+        url: `/pages/club/activity-detail?id=${response.activityId}`
+      })
+    }, 1500)
   } catch (error: any) {
-    uni.showToast({ title: error?.message || '发布失败，请重试', icon: 'none' })
+    console.error('发布活动失败:', error)
+    uni.showToast({
+      title: error.message || '发布失败，请重试',
+      icon: 'none',
+      duration: 2000
+    })
   } finally {
     submitting.value = false
   }
 }
+
+// 页面加载
+onLoad((options) => {
+  initDateTimeRange()
+  loadMyClubs()
+  
+  // 如果传入了clubId，直接选中
+  if (options.clubId) {
+    formData.value.clubId = Number(options.clubId)
+  }
+})
 </script>
 
-<style scoped lang="scss">
-@import '@/styles/design-tokens.scss';
+<style lang="scss" scoped>
+@import '@/styles/variables.scss';
 
 .publish-activity-page {
   min-height: 100vh;
-  background: $color-bg-page;
-  display: flex;
-  flex-direction: column;
+  background: $gray-50;
 }
 
-.form-scroll { flex: 1; }
+.content-area {
+  height: calc(100vh - 56px);
+}
 
 .form-container {
-  padding: 16px 16px 40px;
-  max-width: 640px;
-  margin: 0 auto;
+  padding: $sp-4;
+  padding-bottom: 100rpx;
 }
 
-/* ========== Section ========== */
-.section { margin-bottom: 20px; }
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: $color-text-secondary;
-  margin-bottom: 10px;
-  display: block;
-}
-
-.char-count {
-  font-size: 12px;
-  color: $color-text-quaternary;
-}
-
-/* ========== 封面上传 ========== */
-.cover-picker {
-  width: 100%;
-  height: 160px;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.cover-preview {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.cover-placeholder {
-  width: 100%;
-  height: 100%;
-  background: $color-bg-hover;
-  border: 2px dashed $color-border;
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-
-  .placeholder-text {
-    font-size: 14px;
-    color: $color-text-tertiary;
-    font-weight: 500;
-  }
-
-  .placeholder-hint {
-    font-size: 12px;
-    color: $color-text-quaternary;
-  }
-}
-
-/* ========== 表单卡片 ========== */
+// 表单卡片
 .form-card {
-  background: $color-bg-card;
-  border-radius: 12px;
-  box-shadow: $shadow-card;
-  overflow: hidden;
+  margin-bottom: $sp-4;
 }
 
-.form-item {
-  padding: 14px 16px;
+.card-header {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-
-  &--picker {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-  }
-
-  &--row {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
+  align-items: center;
+  margin-bottom: $sp-4;
 }
 
-.row-label-area {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+.header-icon {
+  color: $primary;
+  margin-right: $sp-2;
+}
+
+.header-title {
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.header-optional {
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-2;
+}
+
+// 表单组
+.form-group {
+  margin-bottom: $sp-4;
 }
 
 .form-label {
-  font-size: 14px;
-  font-weight: 500;
-  color: $color-text-primary;
-
-  &.required::after {
-    content: ' *';
-    color: $color-danger;
-  }
+  display: flex;
+  align-items: center;
+  margin-bottom: $sp-2;
 }
 
-.form-sublabel {
-  font-size: 12px;
-  color: $color-text-quaternary;
+.label-text {
+  font-size: $font-size-base;
+  color: $gray-700;
+  font-weight: 500;
+}
+
+.label-hint {
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-1;
+}
+
+.required {
+  color: $danger;
+  margin-left: $sp-1;
+}
+
+.optional {
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-1;
 }
 
 .form-input {
-  font-size: 14px;
-  color: $color-text-primary;
-  background: transparent;
-  border: none;
-  outline: none;
   width: 100%;
+  height: 88rpx;
+  padding: $sp-3 $sp-4;
+  background: $white;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  color: $gray-900;
+  transition: border-color 0.2s;
 
-  &--number {
-    width: 80px;
-    text-align: right;
-    font-weight: 600;
-    color: $campus-blue;
+  &:focus {
+    border-color: $primary;
+    outline: none;
   }
-}
 
-.picker-value {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-
-  .value-text { font-size: 14px; color: $color-text-primary; }
-  .placeholder-text { font-size: 14px; color: $color-text-placeholder; }
-}
-
-.divider {
-  height: 1px;
-  background: $color-divider;
-  margin: 0 16px;
-}
-
-.error-text {
-  font-size: 12px;
-  color: $color-danger;
-}
-
-/* ========== 文本框 ========== */
-.textarea-card {
-  background: $color-bg-card;
-  border-radius: 12px;
-  box-shadow: $shadow-card;
-  padding: 14px 16px;
+  &::placeholder {
+    color: $gray-400;
+  }
 }
 
 .form-textarea {
   width: 100%;
-  min-height: 120px;
-  font-size: 14px;
-  color: $color-text-primary;
+  min-height: 200rpx;
+  padding: $sp-3 $sp-4;
+  background: $white;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  color: $gray-900;
   line-height: 1.6;
-  background: transparent;
-}
+  transition: border-color 0.2s;
 
-/* ========== 提交按钮 ========== */
-.submit-area {
-  margin-top: 8px;
-}
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
 
-.submit-btn {
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, #27AE60 0%, #2ECC71 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: $transition-all;
-
-  &:active { transform: scale(0.98); opacity: 0.9; }
-  &--loading { opacity: 0.75; pointer-events: none; }
-
-  .loading-icon {
-    color: #FFFFFF;
-    animation: spin 1s linear infinite;
+  &::placeholder {
+    color: $gray-400;
   }
 }
 
-.submit-text {
-  font-size: 16px;
+.input-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $sp-1;
+}
+
+.input-hint {
+  font-size: $font-size-xs;
+  color: $gray-400;
+}
+
+.input-count {
+  font-size: $font-size-xs;
+  color: $gray-400;
+
+  &.count-warning {
+    color: $warning;
+  }
+}
+
+.error-text {
+  font-size: $font-size-xs;
+  color: $danger;
+  margin-top: $sp-1;
+}
+
+// 选择器触发器
+.picker-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 88rpx;
+  padding: $sp-3 $sp-4;
+  background: $white;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-lg;
+  transition: border-color 0.2s;
+
+  &.error {
+    border-color: $danger;
+  }
+
+  .placeholder {
+    color: $gray-400;
+  }
+
+  .arrow {
+    color: $gray-400;
+    font-size: $font-size-sm;
+  }
+}
+
+// 奖励选择器
+.reward-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
+}
+
+.reward-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: calc((100% - 40rpx) / 6);
+  padding: $sp-2;
+  background: $white;
+  border: 2rpx solid $gray-200;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &.active {
+    background: rgba($primary, 0.1);
+    border-color: $primary;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+.reward-points {
+  font-size: $font-size-lg;
   font-weight: 600;
-  color: #FFFFFF;
+  color: $gray-900;
 }
 
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.reward-label {
+  font-size: $font-size-xs;
+  color: $gray-500;
 }
 
-/* ========== 类型选择弹窗 ========== */
-.picker-overlay {
+.reward-hint {
+  display: flex;
+  align-items: center;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  background: $gray-50;
+  border-radius: $radius-sm;
+}
+
+.hint-icon {
+  margin-right: $sp-1;
+}
+
+.hint-text {
+  font-size: $font-size-xs;
+  color: $gray-500;
+}
+
+// 封面图片
+.cover-preview {
+  position: relative;
+  border-radius: $radius-lg;
+  overflow: hidden;
+}
+
+.cover-image {
+  width: 100%;
+  height: 300rpx;
+}
+
+.cover-actions {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: $sp-2;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  padding: $sp-1 $sp-2;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-sm;
+}
+
+.action-text {
+  font-size: $font-size-xs;
+  margin-left: $sp-1;
+
+  &.danger {
+    color: $danger;
+  }
+}
+
+.upload-cover-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300rpx;
+  background: $white;
+  border: 2rpx dashed $gray-300;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:active {
+    background: $gray-50;
+    border-color: $primary;
+  }
+}
+
+.upload-icon {
+  color: $gray-400;
+  margin-bottom: $sp-2;
+}
+
+.upload-text {
+  font-size: $font-size-base;
+  color: $gray-600;
+  margin-bottom: $sp-1;
+}
+
+.upload-hint {
+  font-size: $font-size-xs;
+  color: $gray-400;
+}
+
+// 提交区域
+.submit-section {
+  margin-top: $sp-6;
+  padding: $sp-4;
+  background: $white;
+  border-radius: $radius-lg;
+}
+
+.submit-hint {
+  display: block;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $gray-400;
+  margin-top: $sp-2;
+}
+
+// 社团选择弹窗
+.picker-mask {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  display: flex;
-  align-items: flex-end;
 }
 
 .picker-sheet {
-  width: 100%;
-  background: $color-bg-card;
-  border-radius: 20px 20px 0 0;
-  padding-bottom: env(safe-area-inset-bottom);
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 70vh;
+  background: $white;
+  border-radius: $radius-xl $radius-xl 0 0;
+  overflow: hidden;
 }
 
 .picker-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid $color-divider;
+  align-items: center;
+  padding: $sp-4;
+  border-bottom: 2rpx solid $gray-100;
 }
 
 .picker-title {
-  font-size: 16px;
+  font-size: $font-size-lg;
   font-weight: 600;
-  color: $color-text-primary;
+  color: $gray-900;
 }
 
-.picker-list { padding: 8px 0; }
+.picker-close {
+  padding: $sp-2;
+  cursor: pointer;
+}
 
-.picker-item {
+.picker-content {
+  max-height: 60vh;
+  padding: $sp-2;
+}
+
+.club-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-lg;
   cursor: pointer;
-  transition: $transition-bg;
+  transition: background 0.2s;
 
-  &:active { background: $color-bg-hover; }
-  &--active .picker-item-text { color: $campus-blue; font-weight: 600; }
+  &:active {
+    background: $gray-50;
+  }
+
+  &.active {
+    background: rgba($primary, 0.1);
+  }
 }
 
-.picker-item-text {
-  font-size: 15px;
-  color: $color-text-primary;
+.club-avatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  margin-right: $sp-3;
 }
 
-@media (min-width: 1024px) {
-  .form-container { padding: 32px 0 60px; }
+.club-info {
+  flex: 1;
+}
 
-  .picker-overlay { align-items: center; }
-  .picker-sheet { width: 480px; border-radius: 16px; margin: 0 auto; }
+.club-name {
+  display: block;
+  font-size: $font-size-base;
+  font-weight: 500;
+  color: $gray-900;
+  margin-bottom: $sp-1;
+}
+
+.club-members {
+  font-size: $font-size-sm;
+  color: $gray-500;
+}
+
+.empty-clubs {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $sp-8;
+}
+
+.empty-text {
+  font-size: $font-size-base;
+  color: $gray-500;
+  margin-bottom: $sp-4;
 }
 </style>

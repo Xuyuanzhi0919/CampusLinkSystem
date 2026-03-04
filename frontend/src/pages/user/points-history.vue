@@ -197,15 +197,16 @@ onMounted(() => loadPoints())
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #F9FAFB;
+  background: #EEF2FF;
   overflow: hidden;
 }
 
 // ── Banner ────────────────────────────────────
 .banner {
   flex-shrink: 0;
-  padding: 10px 16px 18px;
+  padding: 10px 16px 20px;
   background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
+  border-radius: 0 0 22px 22px;
   overflow: hidden;
   max-height: 120px;
   opacity: 1;

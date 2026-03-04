@@ -5,16 +5,21 @@
 
     <!-- 积分概览 Banner -->
     <view class="banner" :class="{ 'banner--hidden': bannerHidden }">
-      <text class="banner-label">当前积分</text>
-      <view class="banner-value-row">
-        <Icon name="star" :size="26" color="#F59E0B" />
-        <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
-      </view>
-      <view class="banner-sub-row">
-        <text class="banner-desc">可用于下载资源、发布悬赏</text>
+      <view class="banner-card">
+        <!-- 左侧：图标 + 积分信息 -->
+        <view class="banner-card-left">
+          <view class="banner-icon-wrap">
+            <Icon name="star" :size="22" color="#F59E0B" />
+          </view>
+          <view class="banner-info">
+            <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
+            <text class="banner-desc">可用于下载资源、发布悬赏</text>
+          </view>
+        </view>
+        <!-- 右侧：去商城按钮 -->
         <view class="banner-mall-btn" @click="uni.navigateTo({ url: '/pages/user/points-mall' })">
           <text class="banner-mall-text">去商城</text>
-          <Icon name="chevron-right" :size="12" color="rgba(255,255,255,0.7)" />
+          <Icon name="chevron-right" :size="13" color="#2563EB" />
         </view>
       </view>
     </view>
@@ -198,14 +203,11 @@ onMounted(() => loadPoints())
 
 // ── Banner ────────────────────────────────────
 .banner {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 20px 20px 22px;
-  background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
   flex-shrink: 0;
+  padding: 10px 16px 18px;
+  background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
   overflow: hidden;
-  max-height: 200px;
+  max-height: 120px;
   opacity: 1;
   transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
 
@@ -217,52 +219,73 @@ onMounted(() => loadPoints())
   }
 }
 
-.banner-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.65);
-  letter-spacing: 0.5px;
-}
-
-.banner-value-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.banner-value {
-  font-size: 36px;
-  font-weight: 800;
-  color: #FFFFFF;
-  letter-spacing: -1px;
-  line-height: 1;
-}
-
-.banner-sub-row {
+.banner-card {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 16px;
+  padding: 14px 16px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 2px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.banner-card-left {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+
+.banner-icon-wrap {
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1.5px solid rgba(255, 255, 255, 0.38);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.banner-value {
+  font-size: 26px;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.5px;
+  line-height: 1;
 }
 
 .banner-desc {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.72);
 }
 
 .banner-mall-btn {
   display: flex;
   align-items: center;
   gap: 2px;
-  padding: 4px 10px;
-  background: rgba(255, 255, 255, 0.15);
+  padding: 7px 13px;
+  background: #FFFFFF;
   border-radius: 20px;
   cursor: pointer;
+  flex-shrink: 0;
+
+  &:active { opacity: 0.85; }
 }
 
 .banner-mall-text {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 500;
+  font-size: 13px;
+  color: #2563EB;
+  font-weight: 600;
 }
 
 // ── 列表 ──────────────────────────────────────

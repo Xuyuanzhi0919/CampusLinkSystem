@@ -7,7 +7,13 @@
           <Icon name="arrow-left" :size="20" color="#FFFFFF" />
         </view>
         <text class="nav-title">{{ editMode ? '编辑问题' : '提问' }}</text>
-        <view class="nav-placeholder" />
+        <view
+          class="nav-publish"
+          :class="{ 'is-disabled': !canSubmit || loading || submitting }"
+          @click="handleSubmit"
+        >
+          <text class="nav-publish-text">{{ submitting ? '提交中' : (editMode ? '保存' : '发布') }}</text>
+        </view>
       </view>
       <view class="header-hero">
         <text class="hero-title">{{ editMode ? '修改你的问题' : '遇到了什么问题？' }}</text>
@@ -870,20 +876,29 @@ const handleSubmit = async () => {
 
 <style lang="scss" scoped>
 // ===================================
-// 渐变头部
+// 渐变头部 — 移动端 + PC 全响应式
 // ===================================
 .page-header {
+  flex-shrink: 0;
   background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
   border-radius: 0 0 24px 24px;
-  padding-bottom: 16px;
-  flex-shrink: 0;
+  // 移动端状态栏安全区
+  padding-top: constant(safe-area-inset-top);
+  padding-top: env(safe-area-inset-top);
 }
 
 .header-nav {
   display: flex;
   align-items: center;
   height: 56px;
-  padding: 0 16px 0 12px;
+  padding: 0 12px;
+
+  @media (min-width: 769px) {
+    height: 64px;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 80px;
+  }
 }
 
 .nav-back {
@@ -895,6 +910,9 @@ const handleSubmit = async () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s;
+
   &:active { opacity: 0.6; }
 }
 
@@ -904,17 +922,64 @@ const handleSubmit = async () => {
   font-size: 17px;
   font-weight: 700;
   color: #FFFFFF;
+
+  @media (min-width: 769px) {
+    font-size: 18px;
+  }
 }
 
-.nav-placeholder {
-  width: 36px;
+// 头部发布按钮（右侧）
+.nav-publish {
+  height: 34px;
+  padding: 0 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+
+  &:active:not(.is-disabled) {
+    transform: scale(0.97);
+    background: rgba(255, 255, 255, 0.75);
+  }
+
+  &.is-disabled {
+    opacity: 0.45;
+  }
+
+  @media (min-width: 769px) {
+    height: 38px;
+    padding: 0 22px;
+    border-radius: 19px;
+  }
+}
+
+.nav-publish-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #3B82F6;
+
+  @media (min-width: 769px) {
+    font-size: 15px;
+  }
 }
 
 .header-hero {
-  padding: 4px 20px 12px;
+  padding: 2px 16px 20px;
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  @media (min-width: 769px) {
+    max-width: 1280px;
+    margin: 0 auto;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 80px 28px;
+  }
 }
 
 .hero-title {
@@ -922,11 +987,20 @@ const handleSubmit = async () => {
   font-weight: 800;
   color: #FFFFFF;
   line-height: 1.3;
+
+  @media (min-width: 769px) {
+    font-size: 28px;
+  }
 }
 
 .hero-sub {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.85);
+
+  @media (min-width: 769px) {
+    font-size: 15px;
+    margin-top: 2px;
+  }
 }
 
 // ===================================
@@ -1748,7 +1822,7 @@ const handleSubmit = async () => {
 
 
 // ===================================
-// 底部操作栏
+// 底部操作栏（PC 端显示，移动端隐藏）
 // ===================================
 .bottom-action-bar {
   flex-shrink: 0;
@@ -1757,6 +1831,11 @@ const handleSubmit = async () => {
   box-shadow: 0 -2px 12px rgba($black, 0.06);
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
+
+  // 移动端隐藏：主操作按钮已在头部导航栏
+  @include mobile {
+    display: none;
+  }
 }
 
 .action-bar-content {

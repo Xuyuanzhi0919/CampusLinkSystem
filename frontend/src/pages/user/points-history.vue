@@ -210,7 +210,7 @@ onMounted(() => loadPoints())
 // ── 统一头部 ──────────────────────────────────
 .page-header {
   flex-shrink: 0;
-  background: linear-gradient(160deg, #1E3A8A 0%, #2563EB 55%, #3B82F6 100%);
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
   border-radius: 0 0 24px 24px;
 }
 

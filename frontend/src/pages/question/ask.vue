@@ -882,23 +882,25 @@ const handleSubmit = async () => {
 .header-nav {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 56px;
-  padding: 0 12px 0 16px;
+  padding: 0 16px 0 12px;
 }
 
 .nav-back {
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
+  &:active { opacity: 0.6; }
 }
 
 .nav-title {
+  flex: 1;
+  text-align: center;
   font-size: 17px;
   font-weight: 700;
   color: #FFFFFF;
@@ -906,7 +908,6 @@ const handleSubmit = async () => {
 
 .nav-placeholder {
   width: 36px;
-  height: 36px;
 }
 
 .header-hero {

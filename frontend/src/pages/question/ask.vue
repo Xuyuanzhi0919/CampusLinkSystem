@@ -259,8 +259,6 @@
           </view>
         </CCard>
 
-        <!-- 底部占位（为固定操作栏留空间） -->
-        <view class="bottom-spacer" />
         </view>
       </view>
     </scroll-view>
@@ -953,22 +951,22 @@ const handleSubmit = async () => {
 .main-container {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 20px 80px 0;
+  padding: 20px 80px 24px;
   display: flex;
   gap: 32px;
   align-items: start;
 
   @media (max-width: 1440px) {
-    padding: 20px 48px 0;
+    padding: 20px 48px 24px;
     gap: 24px;
   }
 
   @media (max-width: 1200px) {
-    padding: 20px 32px 0;
+    padding: 20px 32px 24px;
   }
 
   @include mobile {
-    padding: 16px 16px 0;
+    padding: 16px 16px 24px;
     flex-direction: column;
     gap: 16px;
   }
@@ -1747,26 +1745,15 @@ const handleSubmit = async () => {
   line-height: 1.6;  // 从1.5增加
 }
 
-// ===================================
-// 底部占位
-// ===================================
-.bottom-spacer {
-  height: 200rpx; // 为底部固定操作栏留空间
-}
 
 // ===================================
-// 底部固定操作栏
+// 底部操作栏
 // ===================================
 .bottom-action-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  flex-shrink: 0;
   background: $white;
-  border-top: 2rpx solid $gray-200;
-  box-shadow: 0 -2rpx 12rpx rgba($black, 0.08);
-  backdrop-filter: blur(8px);
-  z-index: $z-fixed;
+  border-top: 1px solid $gray-200;
+  box-shadow: 0 -2px 12px rgba($black, 0.06);
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 }

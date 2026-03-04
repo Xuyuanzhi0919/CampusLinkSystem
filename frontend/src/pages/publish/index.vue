@@ -1,16 +1,24 @@
 <template>
   <view class="publish-selector-page">
-    <!-- 顶部导航栏 -->
-    <CNavBar title="选择发布类型" :auto-back="false" @back="handleBack" />
+
+    <!-- 统一渐变头部 -->
+    <view class="page-header">
+      <view class="header-nav">
+        <view class="nav-back" @click="handleBack">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">发布内容</text>
+        <view class="nav-placeholder" />
+      </view>
+      <view class="header-hero">
+        <text class="hero-title">你想做什么？</text>
+        <text class="hero-sub">选择一种方式，参与校园互助</text>
+      </view>
+    </view>
 
     <!-- 主内容区 -->
     <scroll-view class="content-area" scroll-y>
       <view class="selector-container">
-        <!-- 页面标题 -->
-        <view class="page-header">
-          <text class="header-title">你想做什么？</text>
-          <text class="header-subtitle">选择一种方式，参与校园互助</text>
-        </view>
 
         <!-- 发布类型网格 -->
         <view class="publish-grid">
@@ -140,7 +148,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
-import { CNavBar } from '@/components/layout'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -200,9 +207,63 @@ const handleBack = () => {
 
 .publish-selector-page {
   min-height: 100vh;
-  background: $bg-page;
+  background: #F1F5F9;
   display: flex;
   flex-direction: column;
+}
+
+// ── 统一渐变头部 ──
+.page-header {
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px 0 12px;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.nav-placeholder { width: 36px; }
+
+.header-hero {
+  padding: 12px 20px 20px;
+  text-align: center;
+}
+
+.hero-title {
+  display: block;
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFFFFF;
+  margin-bottom: 4px;
+}
+
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.82);
 }
 
 // 内容区域
@@ -213,34 +274,10 @@ const handleBack = () => {
 .selector-container {
   max-width: 900px;
   margin: 0 auto;
-  padding: $sp-8 $sp-5;
+  padding: $sp-5 $sp-5 $sp-8;
 
   @include desktop {
-    padding: $sp-12 $sp-10;
-  }
-}
-
-// 页面标题
-.page-header {
-  text-align: center;
-  margin-bottom: $sp-10;
-
-  .header-title {
-    display: block;
-    font-size: 32px;
-    font-weight: $font-weight-bold;
-    color: $gray-900;
-    margin-bottom: $sp-2;
-
-    @include mobile {
-      font-size: 28px;
-    }
-  }
-
-  .header-subtitle {
-    display: block;
-    font-size: $font-size-base;
-    color: $gray-600;
+    padding: $sp-8 $sp-10;
   }
 }
 

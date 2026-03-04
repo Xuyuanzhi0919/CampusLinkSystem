@@ -1,8 +1,18 @@
 <template>
   <view class="publish-task-page">
-    <!-- 顶部导航栏 -->
-    <CNavBar title="发布任务" :auto-back="false" @back="handleCancel" />
 
+    <!-- 统一渐变头部 -->
+    <view class="page-header">
+      <view class="header-nav">
+        <view class="nav-back" @click="handleCancel">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">发布任务</text>
+        <view class="nav-placeholder" />
+      </view>
+    </view>
+
+    <scroll-view class="content-scroll" scroll-y>
     <view class="form-container">
       <!-- 标题 -->
       <view class="form-group">
@@ -163,6 +173,7 @@
         发布任务
       </CButton>
     </view>
+    </scroll-view>
   </view>
 </template>
 
@@ -172,7 +183,7 @@ import { publishTask } from '@/services/task'
 import type { PublishTaskRequest, TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
 import CButton from '@/components/ui/CButton.vue'
-import { CNavBar } from '@/components/layout'
+import Icon from '@/components/icons/index.vue'
 
 const userStore = useUserStore()
 
@@ -573,16 +584,59 @@ const formatDeadline = (dateStr: string): string => {
 // 变量已通过 uni.scss 全局注入
 
 .publish-task-page {
-  min-height: 100vh;
-  background: $bg-page;
-  padding: $sp-8;
-  padding-bottom: 120rpx;
+  height: 100vh;
+  background: #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+// ── 统一渐变头部 ──
+.page-header {
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px 0 12px;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.nav-placeholder { width: 36px; }
+
+.content-scroll {
+  flex: 1;
+  height: 0;
 }
 
 .form-container {
   background: $white;
   border-radius: $radius-card;
-  padding: $sp-8;
+  margin: 12px 16px 24px;
+  padding: $sp-6;
 }
 
 // ===================================

@@ -1,10 +1,39 @@
 <template>
   <view class="publish-activity-page">
-    <!-- 顶部导航栏 -->
-    <CNavBar title="发布活动" :auto-back="false" @back="handleCancel" />
+
+    <!-- 统一渐变头部 -->
+    <view class="page-header">
+      <view class="header-nav">
+        <view class="nav-back" @click="handleCancel">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">发布活动</text>
+        <view class="nav-placeholder" />
+      </view>
+    </view>
 
     <scroll-view class="content-area" scroll-y>
       <view class="form-container">
+
+        <!-- 所属社团 -->
+        <CCard variant="elevated" class="form-card">
+          <view class="card-header">
+            <Icon name="users" :size="20" class="header-icon" />
+            <text class="header-title">所属社团</text>
+          </view>
+          <view class="form-group">
+            <view class="club-selector" @click="showClubPicker = true">
+              <view v-if="selectedClub" class="club-selected">
+                <image :src="selectedClub.logoUrl || '/static/default-avatar.png'" class="club-avatar-sm" mode="aspectFill" />
+                <text class="club-selected-name">{{ selectedClub.clubName }}</text>
+              </view>
+              <text v-else class="picker-placeholder">请选择所属社团</text>
+              <Icon name="chevron-right" :size="16" color="#9CA3AF" />
+            </view>
+            <text v-if="errors.clubId" class="error-text">{{ errors.clubId }}</text>
+          </view>
+        </CCard>
+
         <!-- 活动标题 -->
         <CCard variant="elevated" class="form-card">
           <view class="card-header">
@@ -249,6 +278,7 @@
             class="club-item"
             :class="{ active: formData.clubId === club.clubId }"
             @click="handleSelectClub(club)"
+          >
             <image :src="club.logoUrl || '/static/default-avatar.png'" class="club-avatar" mode="aspectFill" />
             <view class="club-info">
               <text class="club-name">{{ club.clubName }}</text>
@@ -269,11 +299,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { CNavBar } from '@/components/layout'
 import CCard from '@/components/ui/CCard.vue'
 import CButton from '@/components/ui/CButton.vue'
 import Icon from '@/components/icons/index.vue'
-import { createActivity } from '@/services/club'
+import { createActivity, getMyClubs } from '@/services/club'
 import type { ActivityCreateParams, ClubItem } from '@/types/club'
 import { uploadToOSS } from '@/utils/upload'
 
@@ -299,6 +328,10 @@ const submitting = ref(false)
 // 社团选择
 const showClubPicker = ref(false)
 const myClubs = ref<ClubItem[]>([])
+// 当前选中的社团
+const selectedClub = computed(() =>
+  myClubs.value.find(c => c.clubId === formData.value.clubId) || null
+)
 // 奖励积分选项
 const rewardOptions = [0, 5, 10, 20, 30, 50]
 // 日期时间选择器数据
@@ -379,8 +412,7 @@ const handleStartTimeChange = (e: any) => {
   startDateIndex.value = dateIdx
   startTimeIndex.value = timeIdx
   formData.value.startTime = buildISODateTime(dateIdx, timeIdx)
-    errors.value.startTime = ''
-  }
+  errors.value.startTime = ''
 }
 // 结束时间选择处理
 const handleEndColumnChange = (e: any) => {
@@ -392,11 +424,10 @@ const handleEndColumnChange = (e: any) => {
 }
 const handleEndTimeChange = (e: any) => {
   const [dateIdx, timeIdx] = e.detail.value
-    endDateIndex.value = dateIdx
-    endTimeIndex.value = timeIdx
-    formData.value.endTime = buildISODateTime(dateIdx, timeIdx)
-    errors.value.endTime = ''
-  }
+  endDateIndex.value = dateIdx
+  endTimeIndex.value = timeIdx
+  formData.value.endTime = buildISODateTime(dateIdx, timeIdx)
+  errors.value.endTime = ''
 }
 // 报名截止时间选择处理
 const handleDeadlineColumnChange = (e: any) => {
@@ -408,11 +439,10 @@ const handleDeadlineColumnChange = (e: any) => {
 }
 const handleDeadlineChange = (e: any) => {
   const [dateIdx, timeIdx] = e.detail.value
-    deadlineDateIndex.value = dateIdx
-    deadlineTimeIndex.value = timeIdx
-    formData.value.signupDeadline = buildISODateTime(dateIdx, timeIdx)
-    errors.value.signupDeadline = ''
-  }
+  deadlineDateIndex.value = dateIdx
+  deadlineTimeIndex.value = timeIdx
+  formData.value.signupDeadline = buildISODateTime(dateIdx, timeIdx)
+  errors.value.signupDeadline = ''
 }
 /**
  * 选择奖励积分
@@ -433,7 +463,10 @@ const handleUploadCover = async () => {
         const tempFilePath = res.tempFilePaths[0]
         uni.showLoading({ title: '上传中...' })
         try {
-          const imageUrl = await uploadToOSS(tempFilePath, 'activity-cover')
+          // 先获取OSS签名
+          const { getOSSSignature } = await import('@/utils/upload')
+          const signature = await getOSSSignature(tempFilePath.split('/').pop() || 'cover.jpg')
+          const imageUrl = await uploadToOSS(tempFilePath, signature)
           formData.value.coverImage = imageUrl
           uni.hideLoading()
           uni.showToast({ title: '上传成功', icon: 'success' })
@@ -627,373 +660,399 @@ onLoad((options) => {
   if (options?.clubId) {
     formData.value.clubId = Number(options.clubId)
   }
-  }
-  }
-  }
-  }
-  if (options && options.clubId) {
-      formData.value.clubId = Number(options.clubId)
-    }
-  }
-  })
-  }
-  }
-  }
-  }
-  if (!options) {
-      initDateTimeRange()
-      loadMyClubs()
-    }
-  }
-  }
-}
+})
 </script>
 <style lang="scss" scoped>
 @import '@/styles/variables.scss';
 
 .publish-activity-page {
-  min-height: 100vh;
-  background: $gray-50;
+  height: 100vh;
+  background: #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+
+// ── 统一渐变头部 ──
+.page-header {
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px 0 12px;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.nav-placeholder { width: 36px; }
+
 .content-area {
-  height: calc(100vh - 56px);
+  flex: 1;
+  height: 0;
 }
+
 .form-container {
   padding: $sp-4;
   padding-bottom: 100rpx;
 }
+
 // 表单卡片
 .form-card {
   margin-bottom: $sp-4;
 }
+
 .card-header {
   display: flex;
   align-items: center;
   margin-bottom: $sp-4;
 }
+
 .header-icon {
   color: $primary;
-    margin-right: $sp-2;
+  margin-right: $sp-2;
 }
+
 .header-title {
-    font-size: $font-size-lg;
-    font-weight: 600;
-    color: $gray-900;
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $gray-900;
 }
+
 .header-optional {
-    font-size: $font-size-sm;
-    color: $gray-400;
-    margin-left: $sp-2;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-2;
 }
+
+// 社团选择器
+.club-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 44px;
+  padding: 0 $sp-3;
+  background: $gray-50;
+  border: 1px solid $gray-200;
+  border-radius: $radius-base;
+  cursor: pointer;
+  &:active { background: $gray-100; }
+}
+
+.club-selected {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  flex: 1;
+}
+
+.club-avatar-sm {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.club-selected-name {
+  font-size: $font-size-base;
+  color: $gray-900;
+  font-weight: 500;
+}
+
+.picker-placeholder {
+  font-size: $font-size-base;
+  color: $gray-400;
+  flex: 1;
+}
+
 // 表单组
 .form-group {
-    margin-bottom: $sp-4;
+  margin-bottom: $sp-4;
 }
+
 .form-label {
-    display: flex;
-    align-items: center;
-    margin-bottom: $sp-2;
+  display: flex;
+  align-items: center;
+  margin-bottom: $sp-2;
 }
+
 .label-text {
-    font-size: $font-size-base;
-    color: $gray-700;
-    font-weight: 500;
+  font-size: $font-size-base;
+  color: $gray-700;
+  font-weight: 500;
 }
+
+.label-hint {
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-1;
+}
+
 .required {
-    color: $danger;
-    margin-left: $sp-1;
+  color: $error;
+  margin-left: $sp-1;
 }
+
 .optional {
-    font-size: $font-size-sm;
-    color: $gray-400;
-    margin-left: $sp-1;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  margin-left: $sp-1;
 }
+
 .form-input {
   width: 100%;
-  height: 88rpx;
-    padding: $sp-3 $sp-4;
-    background: $white;
-    border: 2rpx solid $gray-200;
-    border-radius: $radius-lg;
-    font-size: $font-size-base;
-    color: $gray-900;
-    transition: border-color 0.2s;
-  &:focus {
-    border-color: $primary;
-    outline: none;
-  }
-  &::placeholder {
-    color: $gray-400;
-  }
+  height: 44px;
+  padding: 0 $sp-3;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
+  color: $gray-900;
+  transition: border-color 0.2s;
+  &:focus { border-color: $primary; }
+  &::placeholder { color: $gray-400; }
 }
+
 .form-textarea {
   width: 100%;
-  min-height: 200rpx;
-    padding: $sp-3$sp-4;
-    background: $white;
-    border: 2rpx solid $gray-200;
-    border-radius: $radius-lg;
-    font-size: $font-size-base;
-    color: $gray-900;
-    line-height: 1.6;
-    transition: border-color 0.2s;
-  &:focus {
-    border-color: $primary;
-    outline: none;
-  }
-  &::placeholder {
-    color: $gray-400;
-  }
+  min-height: 100px;
+  padding: $sp-3 $sp-4;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-base;
+  font-size: $font-size-base;
+  color: $gray-900;
+  line-height: 1.6;
+  transition: border-color 0.2s;
+  &:focus { border-color: $primary; }
+  &::placeholder { color: $gray-400; }
 }
+
 .input-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: $sp-1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: $sp-1;
 }
+
 .input-hint {
-    font-size: $font-size-xs;
-    color: $gray-400;
+  font-size: $font-size-xs;
+  color: $gray-400;
 }
+
 .input-count {
-    font-size: $font-size-xs;
-    color: $gray-400;
-  &.count-warning {
-    color: $warning;
-  }
+  font-size: $font-size-xs;
+  color: $gray-400;
+  &.count-warning { color: $warning; }
 }
+
 .error-text {
-    font-size: $font-size-xs;
-    color: $danger;
-    margin-top: $sp-1;
+  font-size: $font-size-xs;
+  color: $error;
+  margin-top: $sp-1;
+  display: block;
 }
+
 // 选择器触发器
 .picker-trigger {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    height: 88rpx;
-    padding: $sp-3$sp-4;
-    background: $white;
-    border: 2rpx solid $gray-200;
-    border-radius: $radius-lg;
-    transition: border-color 0.2s;
-  &.error {
-    border-color: $danger;
-  }
-  .placeholder {
-    color: $gray-400;
-  }
-  .arrow {
-    color: $gray-400;
-    font-size: $font-size-sm;
-  }
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 44px;
+  padding: 0 $sp-3;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-base;
+  transition: border-color 0.2s;
+  &.error { border-color: $error; }
+  .placeholder { color: $gray-400; }
+  .arrow { color: $gray-400; font-size: $font-size-sm; }
 }
+
 // 奖励选择器
 .reward-selector {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $sp-2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: $sp-2;
 }
+
 .reward-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    width: calc((100% - 40rpx) / 6);
-    padding: $sp-2;
-    background: $white;
-    border: 2rpx solid $gray-200;
-    border-radius: $radius-md;
-    cursor: pointer;
-    transition: all 0.2s;
-  &:active {
-    transform: scale(0.95);
-    background: rgba($primary, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: calc((100% - 40rpx) / 6);
+  padding: $sp-2;
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-md;
+  cursor: pointer;
+  transition: all 0.2s;
+  &.active {
+    background: rgba($primary, 0.08);
     border-color: $primary;
+    .reward-points { color: $primary; }
   }
+  &:active { transform: scale(0.95); }
 }
+
 .reward-points {
-    font-size: $font-size-lg;
-    font-weight: 600;
-    color: $gray-900;
+  font-size: $font-size-lg;
+  font-weight: 600;
+  color: $gray-900;
 }
+
 .reward-label {
-    font-size: $font-size-xs;
-    color: $gray-500;
+  font-size: $font-size-xs;
+  color: $gray-500;
 }
+
 .reward-hint {
-    display: flex;
-    align-items: center;
-    margin-top: $sp-2;
-    padding: $sp-2 $sp-3;
-    background: $gray-50;
-    border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  background: $gray-50;
+  border-radius: $radius-sm;
 }
-.hint-icon {
-    margin-right: $sp-1;
-}
-.hint-text {
-    font-size: $font-size-xs;
-    color: $gray-500;
-  }
+
+.hint-icon { margin-right: $sp-1; }
+.hint-text { font-size: $font-size-xs; color: $gray-500; }
+
 // 封面图片
 .cover-preview {
-    position: relative;
-    border-radius: $radius-lg;
-    overflow: hidden;
+  position: relative;
+  border-radius: $radius-lg;
+  overflow: hidden;
 }
-.cover-image {
-    width: 100%;
-    height: 300rpx;
-}
+
+.cover-image { width: 100%; height: 300rpx; }
+
 .cover-actions {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: flex-end;
-    padding: $sp-2;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: flex-end;
+  padding: $sp-2;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.5));
 }
+
 .action-btn {
-    display: flex;
-    align-items: center;
-    padding: $sp-1 $sp-2;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  padding: $sp-1 $sp-2;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: $radius-sm;
 }
+
 .action-text {
-    font-size: $font-size-xs;
-    margin-left: $sp-1;
-  &.danger {
-    color: $danger;
-  }
+  font-size: $font-size-xs;
+  margin-left: $sp-1;
+  &.danger { color: $error; }
 }
+
 .upload-cover-btn {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    height: 300rpx;
-    background: $white;
-    border: 2rpx dashed $gray-300;
-    border-radius: $radius-lg;
-    cursor: pointer;
-    transition: all 0.2s;
-  &:active {
-    background: $gray-50;
-    border-color: $primary;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 300rpx;
+  background: $white;
+  border: 2rpx dashed $gray-300;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: all 0.2s;
+  &:active { background: $gray-50; border-color: $primary; }
 }
-.upload-icon {
-    color: $gray-400;
-    margin-bottom: $sp-2;
-}
-.upload-text {
-    font-size: $font-size-base;
-    color: $gray-600;
-    margin-bottom: $sp-1;
-}
-.upload-hint {
-    font-size: $font-size-xs;
-    color: $gray-400;
-  }
+
+.upload-icon { color: $gray-400; margin-bottom: $sp-2; }
+.upload-text { font-size: $font-size-base; color: $gray-600; margin-bottom: $sp-1; }
+.upload-hint { font-size: $font-size-xs; color: $gray-400; }
+
 // 提交区域
 .submit-section {
-    margin-top: $sp-6;
-    padding: $sp-4;
-    background: $white;
-    border-radius: $radius-lg;
+  margin-top: $sp-6;
+  padding: $sp-4;
+  background: $white;
+  border-radius: $radius-lg;
 }
+
 .submit-hint {
-    display: block;
-    text-align: center;
-    font-size: $font-size-xs;
-    color: $gray-400;
-    margin-top: $sp-2;
-  }
+  display: block;
+  text-align: center;
+  font-size: $font-size-xs;
+  color: $gray-400;
+  margin-top: $sp-2;
+}
+
 // 社团选择弹窗
 .picker-mask {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
+
 .picker-sheet {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    max-height: 70vh;
-    background: $white;
-    border-radius: $radius-xl $radius-xl 0 0;
-    overflow: hidden;
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  max-height: 70vh;
+  background: $white;
+  border-radius: $radius-xl $radius-xl 0 0;
+  overflow: hidden;
 }
+
 .picker-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: $sp-4;
-    border-bottom: 2rpx solid $gray-100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $sp-4;
+  border-bottom: 1px solid $gray-100;
 }
-.picker-title {
-    font-size: $font-size-lg;
-    font-weight: 600;
-    color: $gray-900;
-}
-.picker-close {
-    padding: $sp-2;
-    cursor: pointer;
-}
-.picker-content {
-    max-height: 60vh;
-    padding: $sp-2;
-}
+
+.picker-title { font-size: $font-size-lg; font-weight: 600; color: $gray-900; }
+.picker-close { padding: $sp-2; cursor: pointer; }
+
+.picker-content { max-height: 60vh; padding: $sp-2; }
+
 .club-item {
-    display: flex;
-    align-items: center;
-    padding: $sp-3$sp-4;
-    border-radius: $radius-lg;
-    cursor: pointer;
-    transition: background 0.2s;
-  &:active {
-    background: rgba($primary, 0.1);
-  }
+  display: flex;
+  align-items: center;
+  padding: $sp-3 $sp-4;
+  border-radius: $radius-lg;
+  cursor: pointer;
+  transition: background 0.2s;
+  &:active { background: rgba($primary, 0.1); }
 }
-.club-avatar {
-    width: 80rpx;
-    height: 80rpx;
-    border-radius: $radius-md;
-    margin-right: $sp-3;
-}
-.club-info {
-    flex: 1;
-}
-.club-name {
-    display: block;
-    font-size: $font-size-base;
-    font-weight: 500;
-    color: $gray-900;
-    margin-bottom: $sp-1;
-}
-.club-members {
-    font-size: $font-size-sm;
-    color: $gray-500;
-  }
-.empty-clubs {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: $sp-8;
-}
-.empty-text {
-    font-size: $font-size-base;
-    color: $gray-500;
-    margin-bottom: $sp-4;
-  }
+
+.club-avatar { width: 80rpx; height: 80rpx; border-radius: $radius-md; margin-right: $sp-3; }
+.club-info { flex: 1; }
+.club-name { display: block; font-size: $font-size-base; font-weight: 500; color: $gray-900; margin-bottom: $sp-1; }
+.club-members { font-size: $font-size-sm; color: $gray-500; }
+
+.empty-clubs { display: flex; flex-direction: column; align-items: center; padding: $sp-8; }
+.empty-text { font-size: $font-size-base; color: $gray-500; margin-bottom: $sp-4; }
 </style>

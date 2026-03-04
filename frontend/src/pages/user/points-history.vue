@@ -1,7 +1,12 @@
 <template>
   <view class="page">
     <!-- 顶部导航 -->
-    <CNavBar title="积分明细" />
+    <CNavBar
+      title="积分明细"
+      background="linear-gradient(135deg, #1E3A8A 0%, #2563EB 60%, #3B82F6 100%)"
+      text-color="#FFFFFF"
+      :border="false"
+    />
 
     <!-- 积分概览 Banner -->
     <view class="banner" :class="{ 'banner--hidden': bannerHidden }">
@@ -199,6 +204,10 @@ onMounted(() => loadPoints())
   height: 100vh;
   background: #F1F5F9;
   overflow: hidden;
+}
+
+:deep(.c-navbar__back) {
+  background: rgba(255, 255, 255, 0.18);
 }
 
 // ── Banner ────────────────────────────────────

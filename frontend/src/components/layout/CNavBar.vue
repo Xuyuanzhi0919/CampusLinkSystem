@@ -100,7 +100,7 @@ const handleBack = () => {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    color: #6D6C6A;
+    color: inherit;
     transition: opacity 0.12s;
     &:active { opacity: 0.6; }
     // #ifdef H5
@@ -124,7 +124,7 @@ const handleBack = () => {
   &__title {
     font-size: 18px;
     font-weight: 700;
-    color: #1A1918;
+    color: inherit;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -167,8 +167,8 @@ const handleNavigate = (type: string) => {
   const routes: Record<string, string> = {
     question: '/pages/question/ask',
     resource: '/pages/resource/upload',
-    activity: '/pages/club/publish-activity', // 待创建
-    task: '/pages/task/publish' // 待创建
+    activity: '/pages/club/publish-activity', // 待开发
+    task: '/pages/task/publish'// 已完成
   }
 
   const url = routes[type]

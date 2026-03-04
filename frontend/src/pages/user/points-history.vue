@@ -4,7 +4,7 @@
     <CNavBar title="积分明细" />
 
     <!-- 积分概览 Banner -->
-    <view class="banner">
+    <view class="banner" :class="{ 'banner--hidden': bannerHidden }">
       <text class="banner-label">当前积分</text>
       <view class="banner-value-row">
         <Icon name="star" :size="26" color="#F59E0B" />
@@ -23,6 +23,7 @@
     <scroll-view
       class="content-scroll"
       scroll-y
+      @scroll="handleScroll"
       @scrolltolower="handleLoadMore"
     >
       <!-- 骨架屏 -->
@@ -91,6 +92,11 @@ import type { PointsLogItem } from '@/types/user'
 import { useUserStore } from '@/stores/user'
 
 const userStore = useUserStore()
+
+const bannerHidden = ref(false)
+const handleScroll = (e: any) => {
+  bannerHidden.value = e.detail.scrollTop > 50
+}
 
 const pointsList = ref<PointsLogItem[]>([])
 const loading = ref(false)
@@ -198,6 +204,17 @@ onMounted(() => loadPoints())
   padding: 20px 20px 22px;
   background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
   flex-shrink: 0;
+  overflow: hidden;
+  max-height: 200px;
+  opacity: 1;
+  transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
+
+  &--hidden {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    opacity: 0;
+  }
 }
 
 .banner-label {

@@ -1,5 +1,8 @@
 <template>
   <view class="publish-task-page">
+    <!-- 顶部导航栏 -->
+    <CNavBar title="发布任务" :auto-back="false" @back="handleCancel" />
+
     <view class="form-container">
       <!-- 标题 -->
       <view class="form-group">
@@ -169,6 +172,7 @@ import { publishTask } from '@/services/task'
 import type { PublishTaskRequest, TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
 import CButton from '@/components/ui/CButton.vue'
+import { CNavBar } from '@/components/layout'
 
 const userStore = useUserStore()
 
@@ -237,6 +241,47 @@ const errors = ref({
 
 // 提交状态
 const submitting = ref(false)
+
+/**
+ * 检查表单是否有未保存的内容
+ */
+const hasUnsavedChanges = computed(() => {
+  return !!(
+    formData.value.title ||
+    formData.value.content ||
+    formData.value.taskType ||
+    formData.value.rewardPoints > 0 ||
+    formData.value.location ||
+    formData.value.deadline
+  )
+})
+
+/**
+ * 取消发布
+ */
+const handleCancel = () => {
+  if (hasUnsavedChanges.value) {
+    uni.showModal({
+      title: '提示',
+      content: '您有未保存的内容，确定要离开吗？',
+      success: (res) => {
+        if (res.confirm) {
+          uni.navigateBack({
+            fail: () => {
+              uni.switchTab({ url: '/pages/home/index' })
+            }
+          })
+        }
+      }
+    })
+  } else {
+    uni.navigateBack({
+      fail: () => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }
+    })
+  }
+}
 
 // 奖励积分选择器
 const rewardOptions = [10, 20, 30, 50, 100]

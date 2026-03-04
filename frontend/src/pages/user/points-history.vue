@@ -13,8 +13,8 @@
         <view class="nav-placeholder" />
       </view>
 
-      <!-- 积分卡（滚动时收起）-->
-      <view class="banner-wrap" :class="{ 'banner-wrap--hidden': bannerHidden }">
+      <!-- 积分卡 -->
+      <view class="banner-wrap">
         <view class="banner-card">
           <view class="banner-glow" />
           <view class="banner-star">
@@ -37,7 +37,6 @@
     <scroll-view
       class="content-scroll"
       scroll-y
-      @scroll="handleScroll"
       @scrolltolower="handleLoadMore"
     >
       <!-- 骨架屏 -->
@@ -145,7 +144,6 @@ const formatTime = (dateStr: string): string => {
 
 // ── 响应式状态 ────────────────────────────────
 const userStore = useUserStore()
-const bannerHidden = ref(false)
 const pointsList   = ref<PointsLogItem[]>([])
 const loading      = ref(false)
 const loadingMore  = ref(false)
@@ -154,8 +152,6 @@ const page         = ref(1)
 const PAGE_SIZE    = 20
 
 // ── 交互 ──────────────────────────────────────
-const handleScroll = (e: any) => { bannerHidden.value = e.detail.scrollTop > 50 }
-
 const goBack = () =>
   uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/home/index' }) })
 
@@ -248,19 +244,9 @@ onMounted(() => loadPoints())
 
 .nav-placeholder { width: 36px; flex-shrink: 0; }
 
-// ── 积分卡收起动画 ─────────────────────────────
+// ── 积分卡 ────────────────────────────────────
 .banner-wrap {
   padding: 0 16px 16px;
-  overflow: hidden;
-  max-height: 100px;
-  opacity: 1;
-  transition: max-height 0.28s ease, padding-bottom 0.28s ease, opacity 0.18s ease;
-
-  &--hidden {
-    max-height: 0;
-    padding-bottom: 0;
-    opacity: 0;
-  }
 }
 
 // ── 积分卡 ────────────────────────────────────

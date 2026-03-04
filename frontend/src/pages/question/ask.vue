@@ -1,9 +1,21 @@
 <template>
   <view class="ask-page">
-    <!-- 顶部导航栏 -->
-    <CNavBar :title="editMode ? '编辑问题' : '提问'" :auto-back="false" @back="handleCancel" />
+    <!-- 渐变头部 -->
+    <view class="page-header">
+      <view class="header-nav">
+        <view class="nav-back" @click="handleCancel">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">{{ editMode ? '编辑问题' : '提问' }}</text>
+        <view class="nav-placeholder" />
+      </view>
+      <view class="header-hero">
+        <text class="hero-title">{{ editMode ? '修改你的问题' : '遇到了什么问题？' }}</text>
+        <text class="hero-sub">{{ editMode ? '更新问题帮助更多人找到答案' : '描述得越清楚，越快获得优质答案' }}</text>
+      </view>
+    </view>
 
-    <!-- 内容区（双栏布局） -->
+    <!-- 内容区 -->
     <scroll-view class="content-area" scroll-y>
       <view class="main-container">
         <!-- 左侧：表单区 -->
@@ -292,7 +304,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { CNavBar } from '@/components/layout'
 import { onLoad } from '@dcloudio/uni-app'
 import { createQuestion, updateQuestion, getQuestionDetail } from '@/services/question'
 import { useUserStore } from '@/stores/user'
@@ -861,48 +872,105 @@ const handleSubmit = async () => {
 
 <style lang="scss" scoped>
 // ===================================
+// 渐变头部
+// ===================================
+.page-header {
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
+  padding-bottom: 16px;
+  flex-shrink: 0;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 12px 0 16px;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.nav-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+.nav-placeholder {
+  width: 36px;
+  height: 36px;
+}
+
+.header-hero {
+  padding: 4px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hero-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #FFFFFF;
+  line-height: 1.3;
+}
+
+.hero-sub {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+// ===================================
 // 页面整体布局
 // ===================================
 .ask-page {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: $bg-page;
   display: flex;
   flex-direction: column;
 }
 
 // ===================================
-// 内容区（双栏布局）
+// 内容区
 // ===================================
 .content-area {
   flex: 1;
+  height: 0;
   overflow-y: auto;
 }
 
 .main-container {
-  max-width: 1280px;  // 与首页一致
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 32px 80px 0;  // 与首页一致
+  padding: 20px 80px 0;
   display: flex;
   gap: 32px;
   align-items: start;
 
-  @media (max-width: 1600px) {
-    padding: 32px 64px 0;
-  }
-
   @media (max-width: 1440px) {
-    padding: 32px 48px 0;
+    padding: 20px 48px 0;
     gap: 24px;
   }
 
   @media (max-width: 1200px) {
-    padding: 32px 32px 0;
+    padding: 20px 32px 0;
   }
 
   @include mobile {
     padding: 16px 16px 0;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 }
 

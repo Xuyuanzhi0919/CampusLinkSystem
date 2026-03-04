@@ -77,7 +77,7 @@ mysql -u root -p campuslink < sql/campuslink.sql
 前端 `utils/request.ts` 的 `Request` 类实现：Token 剩余 < 15 分钟时提前刷新；`isRefreshing` 标志位 + `requestQueue` 数组防止并发刷新竞争。后端 `AsyncConfig` 配置专用通知线程池（core=4, max=8, queue=200, CallerRunsPolicy），`WebSocketConfig` 使用 `@Conditional` 避免测试环境启动失败。
 
 ### 前端路由（uni-app pages.json）
-uni-app 采用文件系统式路由，路由配置在 `frontend/src/pages.json`，共约 40 个页面（以 pages.json 中实际 path 条目数为准）。TabBar 使用 `custom: true` 自定义实现（`components/layout/CustomTabBar.vue`），5个入口：首页、资源、发布（中心按钮）、社区、我的。H5 模式下有路由守卫（`router/index.ts`）。
+uni-app 采用文件系统式路由，路由配置在 `frontend/src/pages.json`，共 43 个路由条目。TabBar 使用 `custom: true` 自定义实现（`components/layout/CustomTabBar.vue`），5个入口：首页、资源、发布（中心按钮）、问答（`pages/question/index`）、我的。注意：`pages/community/index` 是独立的社区门户页（含社团/活动/问答聚合），通过首页入口跳转，不在 TabBar 内。H5 模式下有路由守卫（`router/index.ts`）。
 
 ### 前端状态管理
 - `stores/user.ts`：Token、RefreshToken、userInfo 持久化到 `uni.setStorageSync`；处理后端字段差异（`uid`↔`userId`，`avatarUrl`↔`avatar`）
@@ -123,6 +123,7 @@ import { useRouter } from 'vue-router'
 
 ### API 层
 - 前端 `services/` 下 15 个业务服务文件：`activity`、`ai`、`auth`、`club`、`comment`、`favorite`、`message`、`notification`、`question`、`resource`、`search`、`stats`、`tag`、`task`、`user`，均调用 `utils/request.ts`
+- AI 助手页面：`pages/ai/chat`，调用后端 DeepSeek API；社区门户页 `pages/community/index`；推荐页 `pages/recommend/index`；关于页 `pages/about/`（index/privacy/terms）
 - H5 开发时 Vite Proxy 将 `/api` 转发到 `http://localhost:8080`（配置在 `vite.config.ts`，**不重写路径**，因后端 context-path 已是 `/api/v1`）
 - 生产环境 baseURL：`https://api.campuslink.com/api/v1`
 - `PdfProxyController`：后端代理 PDF 文件请求，绕过浏览器跨域限制
@@ -162,7 +163,7 @@ CampusLink/
 │   └── *.http                 # IntelliJ HTTP Client 接口测试文件
 ├── frontend/
 │   └── src/
-│       ├── pages/             # 31 个页面（文件系统路由）
+│       ├── pages/             # 43 个路由（文件系统路由，见 pages.json）
 │       ├── components/        # 分 ui/layout/cl/mobile/desktop/ 组织
 │       ├── composables/       # Vue 组合函数（useRequest、useWebSocket、usePaging 等）
 │       ├── stores/            # user、question、navigation
@@ -189,6 +190,12 @@ perf: 性能优化
 test: 测试相关
 chore: 构建/工具链相关
 ```
+
+## 注意事项
+
+- `pages/home/components/hero/` 下存在 `_backup.vue` 和 `_new_styles.scss` 等备份文件，勿编辑，以当前活跃文件（无后缀 `_backup`）为准
+- `sql/campuslink.sql` 是单一初始化脚本（含建表和初始数据），README 中的 `schema.sql` / `init-data.sql` 描述已过时
+- `backend/src/main/resources/application-local.yml` 包含本地敏感配置，已在 `.gitignore` 中排除，不应提交
 
 ## 代码规范
 

@@ -6,20 +6,21 @@
     <!-- 积分概览 Banner -->
     <view class="banner" :class="{ 'banner--hidden': bannerHidden }">
       <view class="banner-card">
-        <!-- 左侧：图标 + 积分信息 -->
-        <view class="banner-card-left">
-          <view class="banner-icon-wrap">
-            <Icon name="star" :size="22" color="#F59E0B" />
-          </view>
-          <view class="banner-info">
-            <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
-            <text class="banner-desc">可用于下载资源、发布悬赏</text>
-          </view>
+        <!-- 装饰光晕 -->
+        <view class="banner-glow" />
+        <!-- 星星图标 -->
+        <view class="banner-star">
+          <Icon name="star" :size="32" color="#FCD34D" />
         </view>
-        <!-- 右侧：去商城按钮 -->
+        <!-- 积分信息 -->
+        <view class="banner-info">
+          <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
+          <text class="banner-desc">可用于下载资源、发布悬赏</text>
+        </view>
+        <!-- 去商城按钮 -->
         <view class="banner-mall-btn" @click="uni.navigateTo({ url: '/pages/user/points-mall' })">
           <text class="banner-mall-text">去商城</text>
-          <Icon name="chevron-right" :size="13" color="#2563EB" />
+          <Icon name="chevron-right" :size="13" color="#FFFFFF" />
         </view>
       </view>
     </view>
@@ -33,18 +34,21 @@
     >
       <!-- 骨架屏 -->
       <view v-if="loading && pointsList.length === 0" class="list">
-        <view v-for="i in 8" :key="i" class="record-card record-card--skeleton">
-          <view class="skeleton-icon" />
-          <view class="skeleton-body">
-            <view class="skeleton-line skeleton-line--long" />
-            <view class="skeleton-line skeleton-line--short" />
+        <view class="list-wrapper">
+          <view v-for="i in 8" :key="i" class="record-card record-card--skeleton">
+            <view class="skeleton-icon" />
+            <view class="skeleton-body">
+              <view class="skeleton-line skeleton-line--long" />
+              <view class="skeleton-line skeleton-line--short" />
+            </view>
+            <view class="skeleton-amount" />
           </view>
-          <view class="skeleton-amount" />
         </view>
       </view>
 
       <!-- 记录列表 -->
       <view v-else-if="pointsList.length > 0" class="list">
+        <view class="list-wrapper">
         <view
           v-for="item in pointsList"
           :key="item.logId"
@@ -72,6 +76,7 @@
           </text>
         </view>
 
+        </view>
         <!-- 加载更多 -->
         <view class="footer-tip">
           <text class="footer-text">{{ loadingMore ? '加载中…' : hasMore ? '上拉加载更多' : '已显示全部记录' }}</text>
@@ -197,18 +202,18 @@ onMounted(() => loadPoints())
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background: #EEF2FF;
+  background: linear-gradient(180deg, #E8EEFF 0%, #EEF2FF 50%, #F4F6FF 100%);
   overflow: hidden;
 }
 
 // ── Banner ────────────────────────────────────
 .banner {
   flex-shrink: 0;
-  padding: 10px 16px 20px;
-  background: linear-gradient(135deg, #377DFF 0%, #2563EB 100%);
-  border-radius: 0 0 22px 22px;
+  padding: 10px 16px 22px;
+  background: linear-gradient(135deg, #1D4ED8 0%, #3B82F6 100%);
+  border-radius: 0 0 24px 24px;
   overflow: hidden;
-  max-height: 120px;
+  max-height: 130px;
   opacity: 1;
   transition: max-height 0.3s ease, opacity 0.25s ease, padding 0.3s ease;
 
@@ -221,71 +226,82 @@ onMounted(() => loadPoints())
 }
 
 .banner-card {
-  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+  background: rgba(255, 255, 255, 0.13);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 18px;
   padding: 14px 16px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-}
-
-.banner-card-left {
-  display: flex;
-  align-items: center;
   gap: 13px;
+  overflow: hidden;
 }
 
-.banner-icon-wrap {
-  width: 42px;
-  height: 42px;
-  background: rgba(255, 255, 255, 0.18);
-  border: 1.5px solid rgba(255, 255, 255, 0.38);
-  border-radius: 12px;
+.banner-glow {
+  position: absolute;
+  top: -18px;
+  right: -18px;
+  width: 90px;
+  height: 90px;
+  background: rgba(147, 197, 253, 0.35);
+  border-radius: 50%;
+  filter: blur(22px);
+  pointer-events: none;
+}
+
+.banner-star {
+  width: 52px;
+  height: 52px;
+  background: rgba(251, 191, 36, 0.18);
+  border: 1.5px solid rgba(251, 191, 36, 0.32);
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.2);
 }
 
 .banner-info {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
+  min-width: 0;
 }
 
 .banner-value {
-  font-size: 26px;
+  font-size: 30px;
   font-weight: 800;
   color: #FFFFFF;
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
   line-height: 1;
 }
 
 .banner-desc {
   font-size: 11px;
-  color: rgba(255, 255, 255, 0.72);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .banner-mall-btn {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 7px 13px;
-  background: #FFFFFF;
+  gap: 3px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: 20px;
   cursor: pointer;
   flex-shrink: 0;
 
-  &:active { opacity: 0.85; }
+  &:active { opacity: 0.75; }
 }
 
 .banner-mall-text {
   font-size: 13px;
-  color: #2563EB;
+  color: #FFFFFF;
   font-weight: 600;
 }
 
@@ -299,9 +315,14 @@ onMounted(() => loadPoints())
 .list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
   padding: 12px 16px;
-  gap: 8px;
+}
+
+.list-wrapper {
+  background: #FFFFFF;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 16px rgba(37, 99, 235, 0.07);
 }
 
 // ── 记录卡片 ──────────────────────────────────
@@ -309,16 +330,18 @@ onMounted(() => loadPoints())
   display: flex;
   align-items: center;
   gap: 12px;
-  background: white;
-  border-radius: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
+  background: transparent;
 
-  &:active { opacity: 0.75; }
+  &:not(:last-child) {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  &:active { background: #F8FAFF; }
 
   &--skeleton {
     min-height: 56px;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
-    background: #F3F4F6;
   }
 }
 
@@ -352,8 +375,8 @@ onMounted(() => loadPoints())
 }
 
 .record-amount {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 800;
   flex-shrink: 0;
 
   &--plus  { color: #10B981; }

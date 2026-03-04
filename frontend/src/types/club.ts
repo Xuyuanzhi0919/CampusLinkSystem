@@ -109,7 +109,8 @@ export interface ActivityCreateParams {
   startTime: string
   endTime: string
   maxParticipants: number
-  signupDeadline: string
-  checkInPoints: number
+    signupDeadline: string
+    checkInPoints: number
+    rewardPoints?: number // 添加奖励积分字段
 }
 

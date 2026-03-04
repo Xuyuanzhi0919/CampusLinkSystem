@@ -6,12 +6,19 @@
       <view class="orb orb--2" />
     </view>
 
+    <!-- 顶部导航 -->
+    <view class="top-nav">
+      <view class="back-btn" @click="handleBack">
+        <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+      </view>
+    </view>
+
     <!-- 页面内容 -->
     <view class="page-content">
       <!-- 品牌头部 -->
       <view class="brand-header">
         <view class="logo-box">
-          <Icon name="graduation-cap" :size="48" color="#FFFFFF" />
+          <Icon name="graduation-cap" :size="32" color="#FFFFFF" />
         </view>
         <text class="brand-title">CampusLink</text>
         <text class="brand-subtitle">高校资源互助 · 问答社区</text>
@@ -26,7 +33,7 @@
         <view class="form-item">
           <view class="input-wrap" :class="{ focused: accountFocused }">
             <view class="input-icon">
-              <Icon name="user" :size="34" color="#9CA3AF" />
+              <Icon name="user" :size="18" color="#9CA3AF" />
             </view>
             <input
               v-model="form.account"
@@ -44,7 +51,7 @@
         <view class="form-item">
           <view class="input-wrap" :class="{ focused: passwordFocused }">
             <view class="input-icon">
-              <Icon name="lock" :size="34" color="#9CA3AF" />
+              <Icon name="lock" :size="18" color="#9CA3AF" />
             </view>
             <input
               v-model="form.password"
@@ -57,7 +64,7 @@
               @confirm="handleLogin"
             />
             <view class="eye-toggle" @click="showPassword = !showPassword">
-              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="34" color="#9CA3AF" />
+              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="18" color="#9CA3AF" />
             </view>
           </view>
         </view>
@@ -66,7 +73,7 @@
         <view class="form-options">
           <view class="remember-me" @click="form.rememberMe = !form.rememberMe">
             <view class="checkbox" :class="{ 'checkbox-checked': form.rememberMe }">
-              <Icon v-if="form.rememberMe" name="check" :size="20" class="checkbox-icon" />
+              <Icon v-if="form.rememberMe" name="check" :size="14" class="checkbox-icon" />
             </view>
             <text class="option-text">记住账号</text>
           </view>
@@ -207,6 +214,15 @@ const handleForgotPassword = () => {
     confirmText: '知道了'
   })
 }
+
+const handleBack = () => {
+  uni.navigateBack({
+    fail: () => {
+      // 如果无法返回（比如直接打开登录页），则跳转到首页
+      uni.switchTab({ url: '/pages/home/index' })
+    }
+  })
+}
 </script>
 
 <style scoped lang="scss">
@@ -220,6 +236,32 @@ const handleForgotPassword = () => {
   min-height: 100vh;
   background: #EEF2FF;
   overflow-x: hidden;
+}
+
+// =============================================
+// 顶部导航
+// =============================================
+
+.top-nav {
+  position: relative;
+  z-index: 10;
+  padding: 80rpx 32rpx 0;
+}
+
+.back-btn {
+  width: 72rpx;
+  height: 72rpx;
+  background: rgba(255, 255, 255, 0.15);
+  border: 2rpx solid rgba(255, 255, 255, 0.25);
+  border-radius: 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.25);
+  }
 }
 
 // =============================================

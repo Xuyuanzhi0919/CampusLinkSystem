@@ -19,9 +19,7 @@
       <view class="preamble-section">
         <view class="note-box note-box--info">
           <view class="note-icon">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M12 8V12M12 16H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="info" :size="20" />
           </view>
           <view class="note-content">
             <text class="note-title">协议说明</text>
@@ -81,9 +79,7 @@
             <view class="feature-list">
               <view class="feature-item">
                 <view class="feature-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="check-circle" :size="28" />
                 </view>
                 <view class="feature-content">
                   <text class="feature-title">资源分享</text>
@@ -92,9 +88,7 @@
               </view>
               <view class="feature-item">
                 <view class="feature-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M8 12H8.01M12 12H12.01M16 12H16.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="message-circle" :size="28" />
                 </view>
                 <view class="feature-content">
                   <text class="feature-title">问答社区</text>
@@ -103,9 +97,7 @@
               </view>
               <view class="feature-item">
                 <view class="feature-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 3.89543" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="file-text" :size="28" />
                 </view>
                 <view class="feature-content">
                   <text class="feature-title">任务互助</text>
@@ -114,9 +106,7 @@
               </view>
               <view class="feature-item">
                 <view class="feature-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M17 20H22V18C22 16.3431 20.6569 15 19 15C18.0444 15 17.1931 15.4468 16.6438 16.1429M17 20H7M17 20V18C17 17.3438 16.8736 16.717 16.6438 16.1429M7 20H2V18C2 16.3431 3.34315 15 5 15C5.95561 15 6.80686 15.4468 7.35625 16.1429M7 20V18C7 17.3438 7.12642 16.717 7.35625 16.1429M7.35625 16.1429C8.0935 14.301 9.89482 13 12 13C14.1052 13 15.9065 14.301 16.6438 16.1429M15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5.34315 10.3431 4 12 4C13.6569 4 15 5.34315 15 7ZM21 10C21 11.1046 20.1046 12 19 12C17.8954 12 17 11.1046 17 10C17 8.89543 17.8954 8 19 8C20.1046 8 21 8.89543 21 10ZM7 10C7 11.1046 6.10457 12 5 12C3.89543 12 3 11.1046 3 10C3 8.89543 3.89543 8 5 8C6.10457 8 7 8.89543 7 10Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="users" :size="28" />
                 </view>
                 <view class="feature-content">
                   <text class="feature-title">社团活动</text>
@@ -181,9 +171,7 @@
             <text class="subsection-text">您可随时申请注销账号，注销后：</text>
             <view class="note-box note-box--warning">
               <view class="note-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
+                <Icon name="alert-circle" :size="20" />
               </view>
               <view class="note-content">
                 <text class="note-title">注销须知</text>
@@ -311,9 +299,7 @@
             <text class="subsection-text">如发现侵权内容，请提供以下材料：</text>
             <view class="note-box note-box--action">
               <view class="note-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
+                <Icon name="check-circle" :size="20" />
               </view>
               <view class="note-content">
                 <text class="note-title">投诉材料清单</text>
@@ -344,9 +330,7 @@
             <text class="subsection-text">用户发布的内容仅代表其个人观点，平台不对内容的真实性、准确性、完整性负责。</text>
             <view class="note-box note-box--warning">
               <view class="note-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                </svg>
+                <Icon name="alert-circle" :size="20" />
               </view>
               <view class="note-content">
                 <text class="note-title">免责提示</text>
@@ -446,9 +430,7 @@
             <view class="contact-grid">
               <view class="contact-card">
                 <view class="contact-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 8L10.89 13.26C11.5 13.67 12.5 13.67 13.11 13.26L21 8M5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7V17C3 18.1046 3.89543 19 5 19Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="mail" :size="28" />
                 </view>
                 <view class="contact-info">
                   <text class="contact-label">客服邮箱</text>
@@ -457,9 +439,7 @@
               </view>
               <view class="contact-card">
                 <view class="contact-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M3 5C3 3.89543 3.89543 3 5 3H8.27924C8.70967 3 9.09181 3.27543 9.22792 3.68377L10.7257 8.17721C10.8831 8.64932 10.6694 9.16531 10.2243 9.38787L7.96701 10.5165C9.06925 12.9612 11.0388 14.9308 13.4835 16.033L14.6121 13.7757C14.8347 13.3306 15.3507 13.1169 15.8228 13.2743L20.3162 14.7721C20.7246 14.9082 21 15.2903 21 15.7208V19C21 20.1046 20.1046 21 19 21H18C9.71573 21 3 14.2843 3 6V5Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="phone" :size="28" />
                 </view>
                 <view class="contact-info">
                   <text class="contact-label">客服热线</text>
@@ -468,10 +448,7 @@
               </view>
               <view class="contact-card">
                 <view class="contact-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M17.657 16.657L13.414 20.9C13.039 21.275 12.535 21.487 12.008 21.487C11.481 21.487 10.977 21.275 10.602 20.9L6.343 16.657C5.22422 15.5381 4.46234 14.1127 4.15369 12.5608C3.84504 11.009 4.00349 9.40047 4.60901 7.93868C5.21452 6.4769 6.2399 5.22749 7.55548 4.34846C8.87107 3.46943 10.4178 3 12 3C13.5822 3 15.1289 3.46943 16.4445 4.34846C17.7601 5.22749 18.7855 6.4769 19.391 7.93868C19.9965 9.40047 20.155 11.009 19.8463 12.5608C19.5377 14.1127 18.7758 15.5381 17.657 16.657V16.657Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M15 11C15 12.6569 13.6569 14 12 14C10.3431 14 9 12.6569 9 11C9 9.34315 10.3431 8 12 8C13.6569 8 15 9.34315 15 11Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="map-pin" :size="28" />
                 </view>
                 <view class="contact-info">
                   <text class="contact-label">办公地址</text>
@@ -480,9 +457,7 @@
               </view>
               <view class="contact-card">
                 <view class="contact-icon">
-                  <svg viewBox="0 0 24 24" fill="none">
-                    <path d="M12 8V12L15 15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="clock" :size="28" />
                 </view>
                 <view class="contact-info">
                   <text class="contact-label">工作时间</text>
@@ -508,6 +483,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CNavBar } from '@/components/layout'
+import Icon from '@/components/icons/index.vue'
 
 const handleBack = () => {
   const pages = getCurrentPages()

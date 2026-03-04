@@ -11,10 +11,7 @@
           <text class="doc-title">CampusLink 隐私政策</text>
           <text class="doc-meta">生效日期：2025年1月1日 | 最后更新：2025年1月4日</text>
           <view class="doc-summary">
-            <svg class="summary-icon" viewBox="0 0 24 24" fill="none">
-              <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="info" :size="20" class="summary-icon" />
             <text class="summary-text">
               我们非常重视您的隐私保护。本隐私政策详细说明了 CampusLink 如何收集、使用、存储和保护您的个人信息。
             </text>
@@ -139,10 +136,7 @@
             </view>
 
             <view class="note-box note-box--info">
-              <svg class="note-icon" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-                <path d="M12 16V12M12 8H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <Icon name="info" :size="20" class="note-icon" />
               <view class="note-content">
                 <text class="note-title">重要说明</text>
                 <text class="note-text">我们<text class="highlight">不会</text>出售、出租或以其他方式向第三方披露您的个人信息,除非获得您的明确同意或法律要求。</text>
@@ -162,33 +156,22 @@
               </text>
               <view class="security-grid">
                 <view class="security-card">
-                  <svg class="security-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="shield" :size="32" class="security-icon" />
                   <text class="security-title">数据加密</text>
                   <text class="security-desc">HTTPS/TLS传输加密</text>
                 </view>
                 <view class="security-card">
-                  <svg class="security-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" stroke="currentColor" stroke-width="2"/>
-                    <path d="M7 11V7C7 5.67392 7.52678 4.40215 8.46447 3.46447C9.40215 2.52678 10.6739 2 12 2C13.3261 2 14.5979 2.52678 15.5355 3.46447C16.4732 4.40215 17 5.67392 17 7V11" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="lock" :size="32" class="security-icon" />
                   <text class="security-title">访问控制</text>
                   <text class="security-desc">严格的权限管理</text>
                 </view>
                 <view class="security-card">
-                  <svg class="security-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 16V8C21 6.89543 20.1046 6 19 6H5C3.89543 6 3 6.89543 3 8V16C3 17.1046 3.89543 18 5 18H19C20.1046 18 21 17.1046 21 16Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M3 10H21M7 14H7.01M11 14H11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
+                  <Icon name="badge-check" :size="32" class="security-icon" />
                   <text class="security-title">安全审计</text>
                   <text class="security-desc">定期安全评估</text>
                 </view>
                 <view class="security-card">
-                  <svg class="security-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M2 17L12 22L22 17M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="layers" :size="32" class="security-icon" />
                   <text class="security-title">数据备份</text>
                   <text class="security-desc">定期备份机制</text>
                 </view>
@@ -225,10 +208,7 @@
             <view class="rights-grid">
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2"/>
-                    <path d="M2.45825 12C3.73253 7.94288 7.52281 5 12 5C16.4772 5 20.2675 7.94291 21.5418 12C20.2675 16.0571 16.4772 19 12 19C7.52281 19 3.73253 16.0571 2.45825 12Z" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="eye" :size="24" class="right-icon" />
                   <text class="right-title">访问权</text>
                 </view>
                 <text class="right-desc">随时查看和导出您的个人信息</text>
@@ -236,10 +216,7 @@
 
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M11 4H4C3.46957 4 2.96086 4.21071 2.58579 4.58579C2.21071 4.96086 2 5.46957 2 6V20C2 20.5304 2.21071 21.0391 2.58579 21.4142C2.96086 21.7893 3.46957 22 4 22H18C18.5304 22 19.0391 21.7893 19.4142 21.4142C19.7893 21.0391 20 20.5304 20 20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M18.5 2.5C18.8978 2.10217 19.4374 1.87868 20 1.87868C20.5626 1.87868 21.1022 2.10217 21.5 2.5C21.8978 2.89782 22.1213 3.43739 22.1213 4C22.1213 4.56261 21.8978 5.10217 21.5 5.5L12 15L8 16L9 12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="edit" :size="24" class="right-icon" />
                   <text class="right-title">更正权</text>
                 </view>
                 <text class="right-desc">修改或更新不准确的个人信息</text>
@@ -247,9 +224,7 @@
 
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M3 6H5H21M19 6V20C19 20.5304 18.7893 21.0391 18.4142 21.4142C18.0391 21.7893 17.5304 22 17 22H7C6.46957 22 5.96086 21.7893 5.58579 21.4142C5.21071 21.0391 5 20.5304 5 20V6M8 6V4C8 3.46957 8.21071 2.96086 8.58579 2.58579C8.96086 2.21071 9.46957 2 10 2H14C14.5304 2 15.0391 2.21071 15.4142 2.58579C15.7893 2.96086 16 3.46957 16 4V6M10 11V17M14 11V17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="trash" :size="24" class="right-icon" />
                   <text class="right-title">删除权</text>
                 </view>
                 <text class="right-desc">删除您的个人信息或注销账户</text>
@@ -257,10 +232,7 @@
 
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M18 8C18 6.4087 17.3679 4.88258 16.2426 3.75736C15.1174 2.63214 13.5913 2 12 2C10.4087 2 8.88258 2.63214 7.75736 3.75736C6.63214 4.88258 6 6.4087 6 8C6 15 3 17 3 17H21C21 17 18 15 18 8Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M13.73 21C13.5542 21.3031 13.3019 21.5547 12.9982 21.7295C12.6946 21.9044 12.3504 21.9965 12 21.9965C11.6496 21.9965 11.3054 21.9044 11.0018 21.7295C10.6982 21.5547 10.4458 21.3031 10.27 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="bell" :size="24" class="right-icon" />
                   <text class="right-title">撤回同意权</text>
                 </view>
                 <text class="right-desc">撤回之前授予的信息处理同意</text>
@@ -268,10 +240,7 @@
 
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="5" y="2" width="14" height="20" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <path d="M12 18H12.01M9 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
+                  <Icon name="settings" :size="24" class="right-icon" />
                   <text class="right-title">限制处理权</text>
                 </view>
                 <text class="right-desc">限制我们处理您个人信息的方式</text>
@@ -279,9 +248,7 @@
 
               <view class="right-card">
                 <view class="right-header">
-                  <svg class="right-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 15V19C21 19.5304 20.7893 20.0391 20.4142 20.4142C20.0391 20.7893 19.5304 21 19 21H5C4.46957 21 3.96086 20.7893 3.58579 20.4142C3.21071 20.0391 3 19.5304 3 19V15M17 8L12 3M12 3L7 8M12 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="share" :size="24" class="right-icon" />
                   <text class="right-title">数据可携权</text>
                 </view>
                 <text class="right-desc">以结构化格式导出您的数据</text>
@@ -289,9 +256,7 @@
             </view>
 
             <view class="note-box note-box--action">
-              <svg class="note-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="zap" :size="20" class="note-icon" />
               <view class="note-content">
                 <text class="note-title">如何行使您的权利</text>
                 <text class="note-text">您可以通过个人中心的"隐私设置"或发送邮件至 privacy@campuslink.edu.cn 来行使上述权利。</text>
@@ -366,9 +331,7 @@
             </view>
 
             <view class="note-box note-box--warning">
-              <svg class="note-icon" viewBox="0 0 24 24" fill="none">
-                <path d="M12 9V13M12 17H12.01M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="alert-triangle" :size="20" class="note-icon" />
               <view class="note-content">
                 <text class="note-title">监护人须知</text>
                 <text class="note-text">如果您是未成年人的监护人,发现孩子在未经您同意的情况下向我们提供了个人信息,请联系我们,我们将采取措施尽快删除相关信息。</text>
@@ -426,35 +389,25 @@
 
               <view class="contact-grid">
                 <view class="contact-card">
-                  <svg class="contact-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M3 8L10.89 13.26C11.23 13.47 11.61 13.59 12 13.59C12.39 13.59 12.77 13.47 13.11 13.26L21 8M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="mail" :size="28" class="contact-icon" />
                   <text class="contact-label">电子邮件</text>
                   <text class="contact-value">privacy@campuslink.edu.cn</text>
                 </view>
 
                 <view class="contact-card">
-                  <svg class="contact-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2"/>
-                  </svg>
+                  <Icon name="map-pin" :size="28" class="contact-icon" />
                   <text class="contact-label">通讯地址</text>
                   <text class="contact-value">北京市海淀区某某大学科技园</text>
                 </view>
 
                 <view class="contact-card">
-                  <svg class="contact-icon" viewBox="0 0 24 24" fill="none">
-                    <path d="M22 16.92V19.92C22.0011 20.1985 21.9441 20.4741 21.8325 20.7293C21.7209 20.9845 21.5573 21.2136 21.3521 21.4018C21.1468 21.5901 20.9046 21.7335 20.6407 21.8227C20.3769 21.9119 20.0974 21.9451 19.82 21.92C16.7428 21.5856 13.7869 20.5341 11.19 18.85C8.77382 17.3146 6.72533 15.2661 5.18999 12.85C3.49997 10.2412 2.44824 7.27097 2.11999 4.17997C2.095 3.90344 2.12787 3.62474 2.21649 3.3616C2.30512 3.09846 2.44756 2.85666 2.63476 2.6516C2.82196 2.44653 3.0498 2.28268 3.30379 2.1705C3.55777 2.05831 3.83233 2.00024 4.10999 1.99997H7.10999C7.5953 1.9952 8.06579 2.16705 8.43376 2.48351C8.80173 2.79996 9.04207 3.23942 9.10999 3.71997C9.23662 4.68004 9.47144 5.6227 9.80999 6.52997C9.94454 6.8879 9.97366 7.27689 9.8939 7.65086C9.81415 8.02482 9.62886 8.36809 9.35999 8.63998L8.08999 9.90997C9.51355 12.4135 11.5864 14.4864 14.09 15.91L15.36 14.64C15.6319 14.3711 15.9751 14.1858 16.3491 14.1061C16.7231 14.0263 17.1121 14.0554 17.47 14.19C18.3773 14.5285 19.3199 14.7634 20.28 14.89C20.7658 14.9585 21.2094 15.2032 21.5265 15.5775C21.8437 15.9518 22.0122 16.4296 22 16.92Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                  </svg>
+                  <Icon name="phone" :size="28" class="contact-icon" />
                   <text class="contact-label">客服热线</text>
                   <text class="contact-value">400-XXX-XXXX</text>
                 </view>
 
                 <view class="contact-card">
-                  <svg class="contact-icon" viewBox="0 0 24 24" fill="none">
-                    <rect x="2" y="6" width="20" height="12" rx="2" stroke="currentColor" stroke-width="2"/>
-                    <path d="M2 10H22M6 14H6.01M10 14H14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                  </svg>
+                  <Icon name="clock" :size="28" class="contact-icon" />
                   <text class="contact-label">工作时间</text>
                   <text class="contact-value">周一至周五 9:00-18:00</text>
                 </view>
@@ -483,6 +436,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { CNavBar } from '@/components/layout'
+import Icon from '@/components/icons/index.vue'
 
 // 目录数据
 const tocItems = ref([

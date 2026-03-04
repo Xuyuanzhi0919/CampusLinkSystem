@@ -9,7 +9,7 @@
     <!-- 顶部导航 -->
     <view class="top-nav">
       <view class="back-btn" @click="handleBack">
-        <Icon name="arrow-left" :size="40" color="#FFFFFF" />
+        <Icon name="arrow-left" :size="20" color="#FFFFFF" />
       </view>
     </view>
 
@@ -28,7 +28,7 @@
         <view class="form-item">
           <text class="field-label">邮箱 / 手机号</text>
           <view class="input-wrap" :class="{ focused: accountFocused, error: accountError }">
-            <view class="input-icon"><Icon name="mail" :size="32" color="#9CA3AF" /></view>
+            <view class="input-icon"><Icon name="mail" :size="18" color="#9CA3AF" /></view>
             <input
               v-model="formData.account"
               class="input"
@@ -44,7 +44,7 @@
         <view class="form-item">
           <text class="field-label">用户名</text>
           <view class="input-wrap" :class="{ focused: usernameFocused, error: usernameError }">
-            <view class="input-icon"><Icon name="user" :size="32" color="#9CA3AF" /></view>
+            <view class="input-icon"><Icon name="user" :size="18" color="#9CA3AF" /></view>
             <input
               v-model="formData.username"
               class="input"
@@ -57,10 +57,10 @@
               <view class="mini-spinner" />
             </view>
             <view v-else-if="usernameAvailable === true" class="status-icon ok">
-              <Icon name="check" :size="24" color="#10B981" />
+              <Icon name="check" :size="16" color="#10B981" />
             </view>
             <view v-else-if="usernameAvailable === false" class="status-icon err">
-              <Icon name="x" :size="24" color="#EF4444" />
+              <Icon name="x" :size="16" color="#EF4444" />
             </view>
           </view>
           <text v-if="usernameHint" class="hint-text" :class="{ 'hint-error': usernameAvailable === false }">
@@ -72,7 +72,7 @@
         <view class="form-item">
           <text class="field-label">昵称 <text class="optional">（选填）</text></text>
           <view class="input-wrap" :class="{ focused: nicknameFocused }">
-            <view class="input-icon"><Icon name="smile" :size="32" color="#9CA3AF" /></view>
+            <view class="input-icon"><Icon name="smile" :size="18" color="#9CA3AF" /></view>
             <input
               v-model="formData.nickname"
               class="input"
@@ -88,7 +88,7 @@
         <view class="form-item">
           <text class="field-label">设置密码</text>
           <view class="input-wrap" :class="{ focused: passwordFocused, error: passwordError }">
-            <view class="input-icon"><Icon name="lock" :size="32" color="#9CA3AF" /></view>
+            <view class="input-icon"><Icon name="lock" :size="18" color="#9CA3AF" /></view>
             <input
               v-model="formData.password"
               class="input"
@@ -98,7 +98,7 @@
               @blur="passwordFocused = false"
             />
             <view class="eye-toggle" @click="showPassword = !showPassword">
-              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="32" color="#9CA3AF" />
+              <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="18" color="#9CA3AF" />
             </view>
           </view>
           <!-- 密码强度条 -->
@@ -120,7 +120,7 @@
         <view class="form-item">
           <text class="field-label">确认密码</text>
           <view class="input-wrap" :class="{ focused: confirmFocused, error: confirmError }">
-            <view class="input-icon"><Icon name="lock" :size="32" color="#9CA3AF" /></view>
+            <view class="input-icon"><Icon name="lock" :size="18" color="#9CA3AF" /></view>
             <input
               v-model="formData.confirmPassword"
               class="input"
@@ -130,7 +130,7 @@
               @blur="confirmFocused = false"
             />
             <view class="eye-toggle" @click="showConfirm = !showConfirm">
-              <Icon :name="showConfirm ? 'eye' : 'eye-off'" :size="32" color="#9CA3AF" />
+              <Icon :name="showConfirm ? 'eye' : 'eye-off'" :size="18" color="#9CA3AF" />
             </view>
           </view>
         </view>
@@ -140,7 +140,7 @@
           <text class="field-label">验证码</text>
           <view class="code-row">
             <view class="input-wrap code-input" :class="{ focused: codeFocused }">
-              <view class="input-icon"><Icon name="shield-check" :size="32" color="#9CA3AF" /></view>
+              <view class="input-icon"><Icon name="shield-check" :size="18" color="#9CA3AF" /></view>
               <input
                 v-model="formData.code"
                 class="input"

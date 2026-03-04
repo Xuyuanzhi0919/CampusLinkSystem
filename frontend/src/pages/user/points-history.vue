@@ -251,6 +251,8 @@ onMounted(() => loadPoints())
 // ── 列表 ──────────────────────────────────────
 .content-scroll {
   flex: 1;
+  height: 0;
+  overflow-y: auto;
 }
 
 .list {

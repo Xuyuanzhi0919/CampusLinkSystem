@@ -2,6 +2,10 @@
   <!-- ====== PC 端：紧凑横向 Profile Header ====== -->
   <view v-if="isDesktop" class="hero hero--pc">
     <view class="hero-bg" />
+    <!-- 装饰：右上角高光球（与移动端一致的视觉语言） -->
+    <view class="hero-pc-deco" />
+    <!-- 装饰：左下角柔光晕 -->
+    <view class="hero-pc-deco hero-pc-deco--lt" />
     <view class="hero-pc-inner">
       <!-- 头像 -->
       <view class="hero-avatar-wrap" @click="$emit('editProfile')">
@@ -546,7 +550,30 @@ const quickStats = computed(() => [
   position: relative;
   overflow: hidden;
   width: 100%;
-  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.14);
+  box-shadow: 0 4px 24px rgba(30, 58, 138, 0.18);
+}
+
+/* PC 装饰光晕：右上角主球 + 左下角副晕 */
+.hero-pc-deco {
+  position: absolute;
+  top: -60px;
+  right: 10%;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.13) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 1;
+
+  &--lt {
+    top: auto;
+    bottom: -80px;
+    right: auto;
+    left: 8%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.06) 0%, transparent 65%);
+  }
 }
 
 /* 内容行：max-width 居中，水平 flex

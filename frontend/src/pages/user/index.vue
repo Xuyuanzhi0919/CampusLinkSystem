@@ -420,11 +420,13 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 
 /* ========== PC 端：普通文档流 ========== */
 /* 不加 padding-top：Hero Banner 从 y=0 开始填充渐变背景，
-   固定 WebHeader 以 z-index 浮在上层，header 留白由 hero-pc-inner 内部处理 */
+   固定 WebHeader 以 z-index 浮在上层，header 留白由 hero-pc-inner 内部处理。
+   背景使用极淡蓝色渐变（Hero 蓝 → 透明），让 Hero 与内容区视觉衔接更自然 */
 .pc-content {
   width: 100%;
   min-height: 100vh;
-  background: $color-bg-page;
+  background-color: $color-bg-page;
+  background-image: linear-gradient(180deg, rgba(45, 63, 160, 0.05) 0px, rgba(45, 63, 160, 0) 300px);
   box-sizing: border-box;
 }
 
@@ -553,7 +555,9 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   text-transform: uppercase;
 
   @media (min-width: 1024px) {
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
   }
 }
 

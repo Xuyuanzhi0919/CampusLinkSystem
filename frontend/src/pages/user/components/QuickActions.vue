@@ -61,6 +61,7 @@ const actions = [
 
   @media (min-width: 1024px) {
     border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 }
 

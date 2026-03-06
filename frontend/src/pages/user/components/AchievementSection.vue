@@ -160,6 +160,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
   @media (min-width: 1024px) {
     border-radius: 14px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -202,6 +203,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
   @media (min-width: 1024px) {
     font-size: 21px;
+    color: $campus-blue; // PC 端数字加蓝色强调，形成视觉焦点
   }
 }
 

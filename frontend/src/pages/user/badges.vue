@@ -41,7 +41,7 @@
               <view class="ov-progress-fill" :style="{ width: progressPercent + '%' }" />
             </view>
             <text v-if="remainCount > 0" class="ov-progress-hint">
-              再解锁 {{ remainCount }} 枚，升级为「{{ nextTitle }}」
+              再解锁 {{ remainCount }} 枚，升级为「{{ nextTitle }}」，解锁 +{{ nextReward }} 积分
             </text>
             <text v-else class="ov-progress-hint ov-progress-hint--maxed">
               已解锁全部徽章 🎉
@@ -344,12 +344,12 @@ const TABS = [
 ]
 
 const ACHIEVEMENT_TITLES = [
-  { min: 0,  title: '探索者',    next: '初学者'   },
-  { min: 1,  title: '初学者',    next: '进阶者'   },
-  { min: 3,  title: '进阶者',    next: '知识达人' },
-  { min: 6,  title: '知识达人',  next: '贡献之星' },
-  { min: 9,  title: '贡献之星',  next: '徽章达人' },
-  { min: 11, title: '徽章达人',  next: ''         },
+  { min: 0,  title: '探索者',    next: '初学者',   nextReward: 20  },
+  { min: 1,  title: '初学者',    next: '进阶者',   nextReward: 30  },
+  { min: 3,  title: '进阶者',    next: '知识达人', nextReward: 50  },
+  { min: 6,  title: '知识达人',  next: '贡献之星', nextReward: 80  },
+  { min: 9,  title: '贡献之星',  next: '徽章达人', nextReward: 100 },
+  { min: 11, title: '徽章达人',  next: '',         nextReward: 0   },
 ]
 
 const BADGE_PINNED_KEY = 'cl_badge_pinned'
@@ -441,6 +441,14 @@ const nextTitle = computed(() => {
     if (n >= ACHIEVEMENT_TITLES[i].min) return ACHIEVEMENT_TITLES[i].next
   }
   return ''
+})
+
+const nextReward = computed(() => {
+  const n = unlockedCount.value
+  for (let i = ACHIEVEMENT_TITLES.length - 1; i >= 0; i--) {
+    if (n >= ACHIEVEMENT_TITLES[i].min) return ACHIEVEMENT_TITLES[i].nextReward
+  }
+  return 0
 })
 
 // 排序：已解锁（最新解锁在前）→ 未解锁
@@ -846,6 +854,12 @@ const handleGoTask = () => {
     .tab-count { color: $campus-blue; }
   }
 
+  // #ifdef H5
+  &:not(.tab-item--active):hover {
+    .tab-label { color: $campus-blue; }
+  }
+  // #endif
+
   @media (min-width: 1024px) {
     padding: 12px 20px 10px;
 
@@ -940,8 +954,17 @@ const handleGoTask = () => {
 
     // #ifdef H5
     &:hover {
-      box-shadow: $shadow-xs;
+      /* 灰度降低，提示卡片可交互 */
+      opacity: 0.82;
+      filter: grayscale(20%);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
       transform: none;
+
+      .bc-hint {
+        color: $campus-blue-dark;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
     }
     // #endif
   }

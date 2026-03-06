@@ -1176,16 +1176,33 @@ onLoad(() => {
   background: rgba(0, 0, 0, 0.45);
   z-index: 200;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end;       // 移动端：底部抽屉
+
+  // PC 端：居中弹窗
+  @media (min-width: 750px) {
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+  }
 }
 
 .cat-sheet {
   width: 100%;
   background: $color-bg-card;
-  border-radius: 20px 20px 0 0;
+  border-radius: 20px 20px 0 0;  // 移动端：仅顶部圆角
   padding: $sp-6 $sp-6 $sp-8;
   max-height: 80vh;
   overflow-y: auto;
+
+  // PC 端：居中对话框
+  @media (min-width: 750px) {
+    width: 580px;
+    max-width: 90vw;
+    max-height: 75vh;
+    border-radius: $radius-card;  // 四角圆角
+    padding: $sp-8;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.12), 0 4px 16px rgba(0, 0, 0, 0.06);
+  }
 }
 
 .sheet-header {
@@ -1219,11 +1236,16 @@ onLoad(() => {
   &:active { opacity: 0.6; }
 }
 
-// 分类 2 列网格
+// 分类网格：移动端 2 列，PC 端 3 列
 .cat-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: $sp-4;
+
+  @media (min-width: 750px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: $sp-5;
+  }
 }
 
 .cat-item {
@@ -1234,13 +1256,14 @@ onLoad(() => {
   border-radius: $radius-card;
   border: 1.5px solid $color-border-light;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
   position: relative;
 
   /* #ifdef H5 */
   &:hover {
     border-color: $campus-blue;
     background: $campus-blue-lighter;
+    box-shadow: 0 2px 8px rgba($campus-blue, 0.1);
   }
   /* #endif */
 
@@ -1249,6 +1272,15 @@ onLoad(() => {
   &--selected {
     border-color: $campus-blue;
     background: $campus-blue-lighter;
+    box-shadow: 0 2px 8px rgba($campus-blue, 0.1);
+  }
+
+  // PC 端：垂直堆叠布局，图标居中
+  @media (min-width: 750px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: $sp-3;
+    padding: $sp-6;
   }
 }
 
@@ -1260,6 +1292,12 @@ onLoad(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+
+  @media (min-width: 750px) {
+    width: 48px;
+    height: 48px;
+    border-radius: $radius-lg;
+  }
 }
 
 .cat-info {
@@ -1273,6 +1311,11 @@ onLoad(() => {
   font-weight: $font-weight-medium;
   color: $color-text-primary;
   margin-bottom: 2rpx;
+
+  @media (min-width: 750px) {
+    font-size: $font-size-base;
+    margin-bottom: $sp-1;
+  }
 }
 
 .cat-desc {
@@ -1282,6 +1325,12 @@ onLoad(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  @media (min-width: 750px) {
+    white-space: normal;      // PC 端允许换行
+    overflow: visible;
+    text-overflow: unset;
+  }
 }
 
 .cat-check {

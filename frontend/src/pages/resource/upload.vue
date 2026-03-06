@@ -699,6 +699,7 @@ onLoad(() => {
 </template>
 
 <style scoped lang="scss">
+@import '@/styles/design-tokens.scss';
 
 .upload-page {
   min-height: 100vh;
@@ -803,8 +804,8 @@ onLoad(() => {
 
 .card-required {
   font-size: $font-size-xs;
-  color: $color-error;
-  background: rgba($color-error, 0.08);
+  color: $error;
+  background: rgba($error, 0.08);
   padding: 2rpx $sp-3;
   border-radius: $radius-base;
 }
@@ -957,7 +958,7 @@ onLoad(() => {
 
 .required-star {
   font-size: $font-size-sm;
-  color: $color-error;
+  color: $error;
   margin-left: 2rpx;
 }
 
@@ -1060,7 +1061,7 @@ onLoad(() => {
 .error-text {
   display: block;
   font-size: $font-size-xs;
-  color: $color-error;
+  color: $error;
   margin-top: $sp-2;
 }
 

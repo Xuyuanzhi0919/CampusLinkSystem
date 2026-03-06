@@ -11,7 +11,12 @@
     </CNavBar>
 
     <!-- ══════════════════ 页面滚动区 ══════════════════ -->
-    <scroll-view class="page-scroll" scroll-y>
+    <scroll-view
+      class="page-scroll"
+      scroll-y
+      ref="pageScrollRef"
+      @mousedown="onScrollMouseDown"
+    >
       <view class="page-inner">
 
         <!-- ── 成就概览卡片 ── -->
@@ -444,6 +449,32 @@ const loadPinned = (): number[] => {
 }
 const pinnedIds = ref<number[]>(loadPinned())
 
+/* ── H5 鼠标拖拽滚动 ── */
+const pageScrollRef = ref()
+// #ifdef H5
+const onScrollMouseDown = (e: MouseEvent) => {
+  const el = (pageScrollRef.value as any)?.$el as HTMLElement | null
+  if (!el) return
+  const startY   = e.clientY
+  const startTop = el.scrollTop
+  let moved = false
+
+  const handleMove = (ev: MouseEvent) => {
+    const diff = ev.clientY - startY
+    if (!moved && Math.abs(diff) < 4) return
+    moved = true
+    el.scrollTop = startTop - diff
+    ev.preventDefault()
+  }
+  const handleUp = () => {
+    window.removeEventListener('mousemove', handleMove)
+    window.removeEventListener('mouseup',   handleUp)
+  }
+  window.addEventListener('mousemove', handleMove)
+  window.addEventListener('mouseup',   handleUp)
+}
+// #endif
+
 // 弹窗状态（detail）
 const showDetail = ref(false)
 const detailUp   = ref(false)
@@ -610,14 +641,22 @@ const handleGoTask = () => {
 .badges-page {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;       /* 固定视口高度，scroll-view 才能接管滚动 */
+  overflow: hidden;
   background: $color-bg-page;
 }
 
 .page-scroll {
   flex: 1;
-  height: 0;
+  min-height: 0;       /* flex 子项：允许缩小到 0，overflow 才生效 */
 }
+
+/* #ifdef H5 */
+.page-scroll {
+  cursor: grab;
+  &:active { cursor: grabbing; }
+}
+/* #endif */
 
 .page-inner {
   padding: 20rpx 24rpx 0;

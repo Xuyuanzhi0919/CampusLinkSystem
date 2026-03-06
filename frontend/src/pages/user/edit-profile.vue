@@ -159,21 +159,29 @@
           <!-- 占位，让标题居中 -->
           <text class="sheet-cancel sheet-cancel--ghost">取消</text>
         </view>
+        <!-- 标题与选项之间的分割线 -->
+        <view class="sheet-header-sep" />
 
         <!-- 选项列表 -->
         <view class="sheet-list">
-          <view
-            v-for="item in gradeOptions"
-            :key="item.value"
-            class="sheet-item"
-            :class="{ 'sheet-item--active': formData.grade === item.value }"
-            @click="selectGrade(item.value)"
-          >
-            <text class="sheet-item-label">{{ item.label }}</text>
-            <view v-if="formData.grade === item.value" class="sheet-check">
-              <text class="check-icon">✓</text>
+          <template v-for="(item, i) in gradeOptions" :key="item.value">
+            <!-- 本科组标签 -->
+            <view v-if="i === 0" class="group-label">本科</view>
+            <!-- 研究生组：先加分隔区块，再加组标签 -->
+            <view v-if="i === 4" class="group-divider" />
+            <view v-if="i === 4" class="group-label">研究生</view>
+            <!-- 选项行 -->
+            <view
+              class="sheet-item"
+              :class="{ 'sheet-item--active': formData.grade === item.value }"
+              @click="selectGrade(item.value)"
+            >
+              <text class="sheet-item-label">{{ item.label }}</text>
+              <view v-if="formData.grade === item.value" class="sheet-check">
+                <text class="check-icon">✓</text>
+              </view>
             </view>
-          </view>
+          </template>
         </view>
 
         <view class="sheet-bottom" />
@@ -915,6 +923,7 @@ onMounted(() => {
   bottom: 0;
   background: $white;
   border-radius: 24rpx 24rpx 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
   transform: translateY(100%);
   transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 
@@ -987,6 +996,43 @@ onMounted(() => {
 
   @media (min-width: 1024px) {
     font-size: 15px;
+  }
+}
+
+// 标题下分割线
+.sheet-header-sep {
+  height: 1rpx;
+  background: $gray-100;
+  margin: 0 40rpx;
+
+  @media (min-width: 1024px) {
+    height: 1px;
+    margin: 0 28px;
+  }
+}
+
+// 分组标签（本科 / 研究生）
+.group-label {
+  font-size: 22rpx;
+  color: $gray-400;
+  font-weight: $font-weight-medium;
+  padding: 18rpx 40rpx 6rpx;
+
+  @media (min-width: 1024px) {
+    font-size: 11px;
+    padding: 12px 28px 4px;
+  }
+}
+
+// 本科与研究生之间的视觉分隔块
+.group-divider {
+  height: 10rpx;
+  background: $gray-50;
+  margin-top: 4rpx;
+
+  @media (min-width: 1024px) {
+    height: 6px;
+    margin-top: 2px;
   }
 }
 

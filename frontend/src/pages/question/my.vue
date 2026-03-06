@@ -73,21 +73,31 @@
             class="answer-card"
             @click="handleAnswerClick(item)"
           >
-            <!-- 问题标题 -->
-            <view class="answer-question">
-              <text class="question-icon">Q</text>
-              <text class="question-title">{{ item.question.title }}</text>
+            <!-- 顶部：状态标签 + 发布时间 -->
+            <view class="ac-header">
+              <view class="ac-status" :class="item.isAccepted ? 'ac-status--accepted' : 'ac-status--pending'">
+                <Icon v-if="item.isAccepted" name="check-circle" :size="11" />
+                <text class="ac-status-text">{{ item.isAccepted ? '已采纳' : '待采纳' }}</text>
+              </view>
+              <text class="ac-time">{{ formatTime(item.createdAt) }}</text>
             </view>
 
-            <!-- 回答内容 -->
-            <view class="answer-content">{{ item.content }}</view>
+            <!-- 中部：所回答的问题标题 + 回答摘要 -->
+            <view class="ac-question-row">
+              <view class="ac-q-badge">Q</view>
+              <text class="ac-q-title">{{ item.question.title }}</text>
+            </view>
+            <view class="ac-body">{{ item.content }}</view>
 
-            <!-- 底部信息 -->
-            <view class="answer-footer">
-              <text class="answer-time">{{ formatTime(item.createdAt) }}</text>
-              <view class="answer-stats">
-                <text class="stat-item">👍 {{ item.likes }}</text>
-                <text v-if="item.isAccepted" class="stat-accepted">✓ 已采纳</text>
+            <!-- 底部：互动数据 + 查看详情 -->
+            <view class="ac-footer">
+              <view class="ac-stat">
+                <Icon name="thumbs-up" :size="13" class="ac-stat-icon" />
+                <text class="ac-stat-val">{{ formatNumber(item.likes) }}</text>
+              </view>
+              <view class="ac-link">
+                <text class="ac-link-text">查看详情</text>
+                <Icon name="chevron-right" :size="12" class="ac-link-icon" />
               </view>
             </view>
           </view>
@@ -118,6 +128,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { getMyQuestions, getMyAnswers } from '@/services/question'
 import QuestionCard from './components/QuestionCard.vue'
+import Icon from '@/components/icons/index.vue'
 import type { QuestionItem, AnswerItem } from '@/types/question'
 
 // 移动端组件
@@ -127,7 +138,7 @@ import { CustomTabBar } from '@/components/mobile'
 // #ifdef H5
 import { PCFloatingNav } from '@/components/desktop'
 // #endif
-import { formatTime } from '@/utils/formatters'
+import { formatTime, formatNumber } from '@/utils/formatters'
 
 // 当前Tab
 const currentTab = ref<'questions' | 'answers'>('questions')
@@ -356,15 +367,16 @@ onMounted(() => {
   height: 88rpx;
   position: relative;
   transition: $transition-base;
+  cursor: pointer;
+
+  &:hover:not(.active) .tab-label {
+    color: $gray-700;
+  }
 
   &.active {
     .tab-label {
       color: $primary;
       font-weight: $font-weight-semibold;
-    }
-
-    .tab-count {
-      color: $primary;
     }
 
     &::after {
@@ -387,10 +399,10 @@ onMounted(() => {
     transition: $transition-base;
   }
 
+  // 数量标签固定灰色，不跟随 active 变色
   .tab-count {
-    font-size: $font-size-sm;
+    font-size: $font-size-xs;
     color: $gray-400;
-    transition: color $duration-base;
   }
 }
 
@@ -404,22 +416,36 @@ onMounted(() => {
 
 .filter-inner {
   display: flex;
-  gap: $sp-3;
-  padding: $sp-4 $sp-6;
+  gap: 0;
+  padding: 0 $sp-4;
 }
 
 .filter-item {
-  padding: $sp-2 $sp-5;
-  background: $gray-50;
-  border-radius: $radius-xl;
+  padding: $sp-3 $sp-4;
+  position: relative;
+  cursor: pointer;
   transition: $transition-base;
 
-  &.active {
-    background: rgba($primary, 0.12);
+  &:hover:not(.active) .filter-label {
+    color: $gray-700;
+  }
 
+  &.active {
     .filter-label {
       color: $primary;
       font-weight: $font-weight-semibold;
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 24rpx;
+      height: 3rpx;
+      background: $primary;
+      border-radius: 2rpx 2rpx 0 0;
     }
   }
 
@@ -443,80 +469,153 @@ onMounted(() => {
 }
 
 // ===================================
-// 回答卡片
+// 回答卡片（三层结构）
 // ===================================
 .answer-card {
   background: $white;
-  border-radius: $radius-md;
-  padding: $sp-5 18rpx;
-  margin-bottom: $sp-3;
-  box-shadow: 0 1rpx 4rpx rgba($gray-900, 0.06);
-  transition: $transition-base;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  border: 1px solid $gray-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+  cursor: pointer;
+  transition: all 0.2s ease-out;
+  overflow: hidden;
+
+  @media (min-width: 768px) {
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      border-color: $gray-300;
+    }
+  }
 
   &:active {
-    transform: translateY(1rpx);
-    box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
+    transform: scale(0.985);
+    transition: all 0.08s ease-out;
   }
 }
 
-.answer-question {
+// 顶部：状态标签 + 发布时间
+.ac-header {
   display: flex;
   align-items: center;
-  gap: $sp-2 + 2rpx;
-  margin-bottom: $sp-3;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
 
-  .question-icon {
-    width: 36rpx;
-    height: 36rpx;
-    background: rgba($primary, 0.12);
-    border-radius: $radius-base;
-    @include flex-center;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-bold;
-    color: $primary;
-    flex-shrink: 0;
+.ac-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+
+  .ac-status-text {
+    font-size: 12px;
+    font-weight: 500;
   }
 
-  .question-title {
-    flex: 1;
-    font-size: $font-size-sm;
-    font-weight: $font-weight-semibold;
-    color: $gray-700;
-    @include text-ellipsis(1);
+  &--accepted {
+    background: rgba($success, 0.08);
+    color: $success;
+  }
+
+  &--pending {
+    background: rgba($gray-400, 0.1);
+    color: $gray-500;
   }
 }
 
-.answer-content {
-  font-size: $font-size-base;
-  color: $gray-900;
-  line-height: $line-height-relaxed;
-  margin-bottom: $sp-3;
-  @include text-ellipsis(3);
+.ac-time {
+  font-size: 12px;
+  color: $gray-400;
 }
 
-.answer-footer {
-  @include flex-between;
+// 中部：所回答问题标题
+.ac-question-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 8px;
+}
 
-  .answer-time {
-    font-size: $font-size-xs;
+.ac-q-badge {
+  width: 20px;
+  height: 20px;
+  background: rgba($primary, 0.1);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: $primary;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.ac-q-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 600;
+  color: $gray-800;
+  line-height: 1.45;
+  @include text-ellipsis(2);
+}
+
+// 回答摘要
+.ac-body {
+  font-size: 14px;
+  color: $gray-600;
+  line-height: 1.55;
+  @include text-ellipsis(2);
+  margin-bottom: 12px;
+}
+
+// 底部：互动数据 + 操作入口
+.ac-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid $gray-100;
+}
+
+.ac-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+
+  .ac-stat-icon {
     color: $gray-400;
   }
 
-  .answer-stats {
-    display: flex;
-    align-items: center;
-    gap: $sp-4;
+  .ac-stat-val {
+    font-size: 13px;
+    color: $gray-500;
+    font-weight: $font-weight-medium;
+  }
+}
 
-    .stat-item {
-      font-size: $font-size-xs;
-      color: $gray-500;
-    }
+.ac-link {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  transition: $transition-base;
 
-    .stat-accepted {
-      font-size: $font-size-xs;
-      color: $success;
-      font-weight: $font-weight-semibold;
-    }
+  @media (min-width: 768px) {
+    &:hover .ac-link-text { opacity: 0.75; }
+  }
+
+  .ac-link-text {
+    font-size: 13px;
+    color: $primary;
+    font-weight: $font-weight-medium;
+  }
+
+  .ac-link-icon {
+    color: $primary;
   }
 }
 

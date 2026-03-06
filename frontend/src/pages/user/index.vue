@@ -969,10 +969,10 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   cursor: pointer;
   transition: background 0.12s ease;
 
-  &:active { background: $color-bg-secondary; }
+  &:active { background: $color-bg-hover; }
 
   // #ifdef H5
-  &:hover { background: $color-bg-secondary; }
+  &:hover { background: $color-bg-hover; }
   // #endif
 
   @media (min-width: 1024px) {

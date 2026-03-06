@@ -512,6 +512,21 @@ public class ResourceService {
     }
 
     /**
+     * 删除资源（仅上传者本人）
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteResource(Long resourceId, Long userId) {
+        Resource resource = resourceMapper.selectById(resourceId);
+        if (resource == null) {
+            throw new BusinessException(ResultCode.RESOURCE_NOT_FOUND);
+        }
+        if (!resource.getUploaderId().equals(userId)) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+        resourceMapper.deleteById(resourceId);
+    }
+
+    /**
      * 用户对资源进行评分
      *
      * @param resourceId 资源ID

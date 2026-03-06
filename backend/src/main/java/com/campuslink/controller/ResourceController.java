@@ -186,6 +186,17 @@ public class ResourceController {
         return Result.success("已拒绝资源");
     }
 
+    @Operation(summary = "删除资源（仅上传者本人）")
+    @DeleteMapping("/{id}")
+    public Result<Void> deleteResource(
+            @PathVariable Long id,
+            HttpServletRequest httpRequest
+    ) {
+        Long userId = (Long) httpRequest.getAttribute("userId");
+        resourceService.deleteResource(id, userId);
+        return Result.success("删除成功");
+    }
+
     @Operation(summary = "获取我上传的资源列表")
     @GetMapping("/my")
     public Result<PageResult<ResourceListResponse>> getMyResources(

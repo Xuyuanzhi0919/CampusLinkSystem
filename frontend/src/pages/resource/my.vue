@@ -434,6 +434,25 @@ loadData()
   cursor: grab;
   &:active { cursor: grabbing; }
 }
+
+.tab-item {
+  cursor: pointer;
+  &:not(.active):hover .tab-label {
+    color: #377DFF;
+    transition: color 0.18s;
+  }
+}
+
+.filter-item {
+  cursor: pointer;
+  &:not(.active):hover {
+    background: var(--filter-bg);
+    .filter-label {
+      color: var(--filter-color);
+      transition: color 0.18s;
+    }
+  }
+}
 /* #endif */
 
 .skeleton-card {

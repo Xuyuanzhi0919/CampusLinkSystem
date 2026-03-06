@@ -438,7 +438,6 @@ const handleSubmit = async () => {
  * 🎯 描述框获得焦点时的处理
  */
 const handleDescriptionFocus = () => {
-  // 可以在这里添加焦点提示逻辑
   console.log('Description field focused')
 }
 
@@ -511,192 +510,208 @@ onLoad(() => {
       </view>
     </view>
 
-    <!-- 内容区（双栏布局） -->
+    <!-- 主内容滚动区 -->
     <scroll-view class="content-area" scroll-y>
-      <view class="main-container">
-        <!-- 左侧：表单区 -->
-        <view class="form-section">
-      <!-- 📁 文件上传区域 -->
-      <view class="section">
-        <view class="section-title">选择文件</view>
+      <view class="page-inner">
 
-        <!-- 未上传状态 -->
-        <view v-if="!file" class="upload-area" @click="chooseFile">
-          <view class="upload-icon">📁</view>
-          <text class="upload-title">点击选择文件（必选）</text>
-          <text class="upload-hint">支持 PDF、DOC、PPT、XLS、TXT、MD 等格式</text>
-          <text class="upload-limit">单个文件最大 50MB</text>
-        </view>
+        <!-- ── 卡片一：文件选择 ── -->
+        <view class="section-card">
+          <view class="card-header">
+            <view class="card-accent-bar" />
+            <text class="card-title">选择文件</text>
+            <text class="card-required">必选</text>
+          </view>
 
-        <!-- 上传中 -->
-        <view v-else-if="uploading" class="upload-progress">
-          <text class="file-name">{{ fileName }}</text>
-          <progress
-            :percent="uploadProgress"
-            show-info
-            stroke-width="8"
-            activeColor="#ff6b35"
-          />
-          <text class="progress-text">正在上传... {{ uploadProgress }}%</text>
-        </view>
+          <!-- 未上传状态 -->
+          <view v-if="!file" class="upload-area" @click="chooseFile">
+            <view class="upload-icon-wrap">
+              <Icon name="folder-open" :size="40" color="#377DFF" />
+            </view>
+            <text class="upload-title">点击选择文件</text>
+            <text class="upload-hint">支持 PDF、DOC、PPT、XLS、TXT、MD 等格式</text>
+            <text class="upload-limit">单个文件最大 50MB</text>
+          </view>
 
-        <!-- 上传完成 -->
-        <view v-else class="upload-success">
-          <view class="file-info">
-            <text class="file-icon">✓</text>
+          <!-- 上传中 -->
+          <view v-else-if="uploading" class="upload-progress">
+            <view class="progress-header">
+              <Icon name="loader" :size="16" color="#377DFF" />
+              <text class="file-name-text">{{ fileName }}</text>
+            </view>
+            <progress
+              :percent="uploadProgress"
+              show-info
+              stroke-width="6"
+              activeColor="#377DFF"
+              backgroundColor="#EFF5FF"
+            />
+            <text class="progress-label">正在上传 {{ uploadProgress }}%</text>
+          </view>
+
+          <!-- 上传完成 -->
+          <view v-else class="upload-success">
+            <view class="success-icon-wrap">
+              <Icon name="check-circle" :size="20" color="#22C55E" />
+            </view>
             <view class="file-details">
-              <text class="file-name">{{ fileName }}</text>
-              <text class="file-size">{{ formatFileSize(fileSize) }}</text>
+              <text class="file-name-text">{{ fileName }}</text>
+              <text class="file-size-text">{{ formatFileSize(fileSize) }}</text>
+            </view>
+            <view class="re-upload-btn" @click="reUpload">
+              <Icon name="refresh-cw" :size="13" color="#377DFF" />
+              <text class="re-upload-text">重新选择</text>
             </view>
           </view>
-          <button class="re-upload-btn" @click="reUpload">重新上传</button>
         </view>
-      </view>
+        <!-- /卡片一 -->
 
-      <!-- 📝 资源信息表单 -->
-      <view class="section">
-        <view class="section-title">资源信息</view>
-
-        <!-- 资源标题 -->
-        <view class="form-item">
-          <view class="form-label">
-            <text>资源标题</text>
-            <text class="required">*</text>
-            <text class="char-count">{{ form.title.length }}/100</text>
-          </view>
-          <input
-            v-model="form.title"
-            class="form-input"
-            placeholder="如：2024 数据结构期末复习提纲"
-            maxlength="100"
-            @blur="validateField('title')"
-          />
-          <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
-        </view>
-
-        <!-- 资源描述(结构化引导) -->
-        <view class="form-item">
-          <view class="form-label">
-            <text>资源描述</text>
-            <text class="required">*</text>
-            <text class="char-count">{{ form.description.length }}/500</text>
+        <!-- ── 卡片二：资源信息 ── -->
+        <view class="section-card">
+          <view class="card-header">
+            <view class="card-accent-bar" />
+            <text class="card-title">资源信息</text>
           </view>
 
-          <!-- 结构化填写提示 -->
-          <view v-if="!form.description || form.description.length < 10" class="description-guide">
-            <text class="guide-title">💡 可参考以下结构填写:</text>
-            <view class="guide-items">
-              <text class="guide-item">1️⃣ 适用课程/年级: 如"大二数据结构课程"</text>
-              <text class="guide-item">2️⃣ 包含内容: 如"含答案+解析+思维导图"</text>
-              <text class="guide-item">3️⃣ 使用建议: 如"适合期末复习,覆盖90%考点"</text>
+          <!-- 资源标题 -->
+          <view class="form-item">
+            <view class="form-label">
+              <text class="label-text">资源标题</text>
+              <text class="required-star">*</text>
+              <text class="char-count">{{ form.title.length }}/100</text>
             </view>
+            <input
+              v-model="form.title"
+              class="form-input"
+              placeholder="如：2024 数据结构期末复习提纲"
+              maxlength="100"
+              @blur="validateField('title')"
+            />
+            <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
           </view>
 
-          <textarea
-            v-model="form.description"
-            class="form-textarea"
-            :class="{ 'has-guide': !form.description || form.description.length < 10 }"
-            placeholder="按上方提示结构填写,帮助同学快速了解资源价值..."
-            maxlength="500"
-            @blur="validateField('description')"
-            @focus="handleDescriptionFocus"
-          />
-          <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
-        </view>
-
-        <!-- 资源分类(带智能推荐) -->
-        <view class="form-item">
-          <view class="form-label">
-            <text>资源分类</text>
-            <text class="required">*</text>
-            <text v-if="recommendedCategory" class="label-hint">
-              💡 推荐:{{ recommendedCategory }}
-            </text>
-          </view>
-
-          <!-- 分类选择器 -->
-          <picker
-            :range="categories"
-            range-key="label"
-            @change="handleCategoryChange"
-          >
-            <view class="picker-input" :class="{ 'has-value': form.category }">
-              <text class="picker-value">
-                {{ getCategoryDisplay(form.category) || '请选择最匹配的分类' }}
-              </text>
-              <text class="picker-arrow">▼</text>
+          <!-- 资源描述 -->
+          <view class="form-item">
+            <view class="form-label">
+              <text class="label-text">资源描述</text>
+              <text class="required-star">*</text>
+              <text class="char-count">{{ form.description.length }}/500</text>
             </view>
-          </picker>
 
-          <!-- 已选分类说明 -->
-          <view v-if="form.category" class="category-hint">
-            <Icon name="info" :size="14" />
-            <text>{{ getCategoryDesc(form.category) }}</text>
+            <!-- 内嵌引导提示条 -->
+            <view v-if="!form.description || form.description.length < 10" class="desc-guide">
+              <Icon name="lightbulb" :size="13" color="#377DFF" />
+              <text class="guide-text">可参考：适用课程/年级 · 包含内容 · 使用建议</text>
+            </view>
+
+            <textarea
+              v-model="form.description"
+              class="form-textarea"
+              placeholder="帮助同学快速了解资源价值..."
+              maxlength="500"
+              @blur="validateField('description')"
+              @focus="handleDescriptionFocus"
+            />
+            <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
           </view>
 
-          <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
-        </view>
+          <!-- 资源分类 -->
+          <view class="form-item">
+            <view class="form-label">
+              <text class="label-text">资源分类</text>
+              <text class="required-star">*</text>
+              <text v-if="recommendedCategory" class="label-hint">💡 推荐：{{ recommendedCategory }}</text>
+            </view>
 
-        <!-- 课程名称 -->
-        <view class="form-item">
-          <view class="form-label">
-            <text>课程名称（选填）</text>
+            <picker
+              :range="categories"
+              range-key="label"
+              @change="handleCategoryChange"
+            >
+              <view class="picker-input" :class="{ 'has-value': form.category }">
+                <text class="picker-value">
+                  {{ getCategoryDisplay(form.category) || '请选择最匹配的分类' }}
+                </text>
+                <Icon name="chevron-down" :size="14" :color="form.category ? '#377DFF' : '#94A3B8'" />
+              </view>
+            </picker>
+
+            <!-- 已选分类说明 -->
+            <view v-if="form.category" class="category-hint">
+              <Icon name="info" :size="12" color="#94A3B8" />
+              <text class="category-hint-text">{{ getCategoryDesc(form.category) }}</text>
+            </view>
+
+            <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
           </view>
-          <input
-            v-model="form.courseName"
-            class="form-input"
-            placeholder="如：数据结构"
-            maxlength="50"
-            @blur="validateField('courseName')"
-          />
-          <text v-if="errors.courseName" class="error-text">{{ errors.courseName }}</text>
-        </view>
-      </view>
 
-      <!-- ℹ️ 上传须知 -->
-      <view class="section notice-section">
-        <view class="notice-content">
-          <text class="notice-item">支持 PDF、Office 文档等格式，单个文件最大 50MB</text>
-          <text class="notice-item">审核通过可获得 <text class="highlight">10 积分</text> 奖励</text>
+          <!-- 课程名称（选填） -->
+          <view class="form-item form-item--last">
+            <view class="form-label">
+              <text class="label-text">课程名称</text>
+              <text class="optional-tag">选填</text>
+            </view>
+            <input
+              v-model="form.courseName"
+              class="form-input"
+              placeholder="如：数据结构"
+              maxlength="50"
+              @blur="validateField('courseName')"
+            />
+            <text v-if="errors.courseName" class="error-text">{{ errors.courseName }}</text>
+          </view>
         </view>
-        <text class="notice-link" @click="showUploadGuide">查看详细上传规则 &gt;</text>
-      </view>
+        <!-- /卡片二 -->
 
-      <!-- 底部按钮 - 移动端固定在底部 -->
-      <view class="submit-actions">
-        <CButton type="ghost" size="lg" @click="handleCancel">取消</CButton>
+        <!-- 上传须知 -->
+        <view class="upload-notice">
+          <text class="notice-text">
+            支持 PDF / Office 等格式，单文件最大 50MB。审核通过可获得
+            <text class="notice-highlight">10 积分</text>
+            奖励。
+          </text>
+          <text class="notice-link" @click="showUploadGuide">查看详细规则</text>
+        </view>
+
+        <!-- 底部占位（移动端 fixed bar 高度补偿） -->
+        <view class="bottom-spacer" />
+
+      </view>
+    </scroll-view>
+
+    <!-- 底部操作栏 -->
+    <view class="submit-bar">
+      <view class="submit-bar-inner">
+        <CButton type="ghost" size="lg" class="btn-cancel" @click="handleCancel">取消</CButton>
         <CButton
-          type="accent"
+          type="primary"
           size="lg"
+          class="btn-submit"
           :disabled="!canSubmit"
           :loading="submitting"
           @click="handleSubmit"
         >
-          {{ canSubmit ? '提交并参与资源共享' : '请完善资源信息后提交' }}
+          {{ submitting ? '提交中...' : '提交审核' }}
         </CButton>
       </view>
     </view>
-    <!-- /左侧：表单区 -->
-  </view>
-</scroll-view>
+
   </view>
 </template>
 
 <style scoped lang="scss">
-// 变量已通过 uni.scss 全局注入
 
 .upload-page {
   min-height: 100vh;
-  background: #F1F5F9;
+  background: $color-bg-page;
   display: flex;
   flex-direction: column;
 }
 
-// ── 统一渐变头部 ──
+// ── 渐变头部（与 badges.vue 一致）──
 .page-header {
   flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
+  background: linear-gradient(135deg, $campus-blue 0%, $campus-blue-light 100%);
+  border-radius: 0 0 24rpx 24rpx;
 }
 
 .header-nav {
@@ -715,7 +730,12 @@ onLoad(() => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  &:active { opacity: 0.6; }
+  transition: background $transition-fast $transition-ease-in-out;
+  &:active { background: rgba(255, 255, 255, 0.2); }
+
+  /* #ifdef H5 */
+  &:hover { background: rgba(255, 255, 255, 0.2); }
+  /* #endif */
 }
 
 .nav-title {
@@ -728,373 +748,404 @@ onLoad(() => {
 
 .nav-placeholder { width: 36px; }
 
-// 内容区域
+// ── 内容滚动区 ──
 .content-area {
   flex: 1;
-
-  @include mobile {
-    height: auto;
-  }
 }
 
-.main-container {
-  max-width: 1200px;
+.page-inner {
+  max-width: 720px;
   margin: 0 auto;
-  padding: $sp-5 $sp-5;
-  display: flex;
-  gap: $sp-6;
+  padding: $sp-8 $sp-8 0;
 
   @include mobile {
-    flex-direction: column;
-    gap: $sp-4;
-    padding: $sp-4 $sp-4;
-  }
-
-  @include desktop {
-    padding: $sp-8 $sp-6;
+    padding: $sp-6 $sp-5 0;
   }
 }
 
-// 表单区(居中布局)
-.form-section {
-  flex: 1;
-  min-width: 0;
-  max-width: 800px;
-  margin: 0 auto; // 居中显示
-}
-
-// 右侧辅助栏已删除
-
-// 区块
-.section {
+// ── 卡片容器 ──
+.section-card {
+  background: $color-bg-card;
+  border-radius: $radius-card;
+  padding: $sp-8;
+  box-shadow: $card-shadow;
   margin-bottom: $sp-5;
 
-  @include desktop {
-    margin-bottom: $sp-6;
-  }
-
-  .section-title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-medium;
-    color: $gray-800;
-    margin-bottom: $sp-3;
+  @include mobile {
+    padding: $sp-6;
   }
 }
 
-// 文件上传区域
-.upload-area {
-  border: 2px dashed $gray-300;
+// 卡片头部
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-4;
+  border-bottom: 1px solid $color-border-light;
+}
+
+.card-accent-bar {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  background: $campus-blue;
+  flex-shrink: 0;
+}
+
+.card-title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  flex: 1;
+}
+
+.card-required {
+  font-size: $font-size-xs;
+  color: $color-error;
+  background: rgba($color-error, 0.08);
+  padding: 2rpx $sp-3;
   border-radius: $radius-base;
+}
+
+// ── 文件区 ──
+.upload-area {
+  border: 2px dashed $color-border-light;
+  border-radius: $radius-lg;
   padding: $sp-10 $sp-5;
   text-align: center;
   cursor: pointer;
-  transition: $transition-slow;
-  background: $gray-50;
-  box-shadow: 0 1px 2px rgba($gray-900, 0.03);
+  transition: all 0.2s ease;
+  background: $color-bg-page;
 
+  /* #ifdef H5 */
   &:hover {
-    border-color: $accent;
-    background: $accent-50;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($accent, 0.15);
+    border-color: $campus-blue;
+    background: $campus-blue-lighter;
   }
-
+  /* #endif */
   &:active {
-    transform: translateY(0);
+    border-color: $campus-blue;
+    background: $campus-blue-lighter;
+    transform: scale(0.99);
   }
 
-  .upload-icon {
-    font-size: 52px;
+  .upload-icon-wrap {
+    display: flex;
+    justify-content: center;
     margin-bottom: $sp-4;
   }
 
   .upload-title {
     display: block;
-    font-size: $font-size-lg;
+    font-size: $font-size-base;
     font-weight: $font-weight-medium;
-    color: $gray-800;
+    color: $color-text-primary;
     margin-bottom: $sp-2;
   }
 
   .upload-hint {
     display: block;
     font-size: $font-size-sm;
-    color: $gray-600;
+    color: $color-text-tertiary;
     margin-bottom: $sp-1;
   }
 
   .upload-limit {
     display: block;
     font-size: $font-size-xs;
-    color: $gray-400;
+    color: $color-text-quaternary;
   }
 }
 
-// 上传进度
+// 上传中
 .upload-progress {
-  padding: $sp-6;
-  background: $white;
-  border-radius: $radius-base;
-  border: 1px solid $gray-200;
-
-  .file-name {
-    display: block;
-    font-size: $font-size-base;
-    color: $gray-800;
+  .progress-header {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
     margin-bottom: $sp-3;
-    word-break: break-all;
   }
 
-  .progress-text {
+  .progress-label {
     display: block;
     font-size: $font-size-xs;
-    color: $gray-600;
-    text-align: center;
+    color: $color-text-tertiary;
+    text-align: right;
     margin-top: $sp-2;
   }
 }
 
 // 上传成功
 .upload-success {
-  padding: $sp-5;
-  background: $white;
-  border-radius: $radius-base;
-  border: 1px solid $success;
-  @include flex-between;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-4;
+  background: rgba(#22C55E, 0.06);
+  border: 1px solid rgba(#22C55E, 0.2);
+  border-radius: $radius-lg;
 
-  .file-info {
+  .success-icon-wrap {
+    flex-shrink: 0;
+  }
+
+  .file-details {
     flex: 1;
-    display: flex;
-    align-items: center;
-    gap: $sp-3;
-
-    .file-icon {
-      font-size: $font-size-2xl;
-      color: $success;
-    }
-
-    .file-details {
-      flex: 1;
-
-      .file-name {
-        display: block;
-        font-size: $font-size-base;
-        color: $gray-800;
-        word-break: break-all;
-        margin-bottom: $sp-1;
-      }
-
-      .file-size {
-        display: block;
-        font-size: $font-size-xs;
-        color: $gray-600;
-      }
-    }
+    min-width: 0;
   }
 
-  .re-upload-btn {
-    padding: $sp-2 $sp-4;
-    font-size: $font-size-base;
-    color: $accent;
-    background: $white;
-    border: 1px solid $accent;
-    border-radius: $radius-sm;
-  }
-}
-
-// 表单项
-.form-item {
-  margin-bottom: $sp-4;
-
-  @include desktop {
-    margin-bottom: $sp-5;
-  }
-
-  .form-label {
-    @include flex-between;
-    font-size: $font-size-base;
-    color: $gray-800;
-    margin-bottom: $sp-2;
-
-    .required {
-      color: $error;
-      margin-left: $sp-1;
-    }
-
-    .char-count {
-      font-size: $font-size-xs;
-      color: $gray-400;
-      margin-left: auto;
-    }
-  }
-
-  .form-input,
-  .form-textarea,
-  .picker-input {
-    width: 100%;
-    padding: $sp-2 $sp-3;
-    border: 1px solid $gray-200;
-    border-radius: $radius-base;
-    font-size: $font-size-base;
-    background: $white;
-    @include flex-between;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &:hover {
-      border-color: $primary;
-    }
-
-    &.has-value {
-      border-color: $primary;
-      background: rgba(37, 99, 235, 0.02);
-
-      .picker-value {
-        color: $gray-900;
-      }
-    }
-
-    .picker-value {
-      flex: 1;
-      color: $gray-500;
-    }
-
-    .picker-arrow {
-      font-size: $font-size-xs;
-      color: $gray-400;
-      margin-left: $sp-2;
-    }
-  }
-
-  // 🎯 分类提示信息
-  .label-hint {
-    margin-left: $sp-2;
-    font-size: $font-size-xs;
-    font-weight: $font-weight-normal;
-    color: $primary;
-  }
-
-  .category-hint {
-    display: flex;
-    align-items: center;
-    gap: $sp-1;
-    margin-top: $sp-2;
-    padding: $sp-2;
-    background: $gray-50;
-    border-radius: $radius-sm;
-    font-size: $font-size-xs;
-    color: $gray-600;
-  }
-
-  .form-textarea {
-    min-height: 120px;
-    line-height: $line-height-relaxed;
-
-    &.has-guide {
-      min-height: 150px;
-    }
-  }
-
-  // 🎯 描述字段结构化引导
-  .description-guide {
-    margin-bottom: $sp-3;
-    padding: $sp-3;
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(37, 99, 235, 0.03) 100%);
-    border: 1px solid rgba(37, 99, 235, 0.15);
-    border-radius: $radius-base;
-
-    .guide-title {
-      display: block;
-      font-size: $font-size-sm;
-      font-weight: $font-weight-semibold;
-      color: $primary;
-      margin-bottom: $sp-2;
-    }
-
-    .guide-items {
-      display: flex;
-      flex-direction: column;
-      gap: $sp-1;
-    }
-
-    .guide-item {
-      font-size: $font-size-xs;
-      color: $gray-700;
-      line-height: $line-height-relaxed;
-      padding-left: $sp-1;
-    }
-  }
-
-  .picker-input {
-    @include flex-between;
-    color: $gray-800;
-
-    .picker-arrow {
-      font-size: $font-size-xs;
-      color: $gray-400;
-    }
-  }
-
-  .error-text {
+  .file-size-text {
     display: block;
     font-size: $font-size-xs;
-    color: $error;
-    margin-top: $sp-1;
+    color: $color-text-tertiary;
+    margin-top: 2rpx;
   }
 }
 
-// 上传须知
-.notice-section {
-  padding: $sp-3 0;
-  border-top: 1px solid $gray-100;
+.file-name-text {
+  display: block;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  word-break: break-all;
+  line-height: 1.4;
+}
 
-  .notice-content {
-    .notice-item {
-      display: block;
-      font-size: $font-size-sm;
-      color: $gray-400;
-      line-height: $line-height-loose;
+.re-upload-btn {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  border: 1px solid $campus-blue;
+  border-radius: $radius-sm;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
 
-      .highlight {
-        color: $accent;
-        font-weight: $font-weight-medium;
-      }
-    }
+  /* #ifdef H5 */
+  &:hover { background: $campus-blue-lighter; }
+  /* #endif */
+  &:active { background: $campus-blue-lighter; }
+
+  .re-upload-text {
+    font-size: $font-size-xs;
+    color: $campus-blue;
+    white-space: nowrap;
+  }
+}
+
+// ── 表单项 ──
+.form-item {
+  margin-bottom: $sp-6;
+
+  &--last { margin-bottom: 0; }
+}
+
+.form-label {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  margin-bottom: $sp-3;
+}
+
+.label-text {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.required-star {
+  font-size: $font-size-sm;
+  color: $color-error;
+  margin-left: 2rpx;
+}
+
+.optional-tag {
+  font-size: $font-size-xs;
+  color: $color-text-quaternary;
+  background: $color-bg-page;
+  padding: 0 $sp-3;
+  border-radius: $radius-base;
+  margin-left: $sp-1;
+}
+
+.char-count {
+  font-size: $font-size-xs;
+  color: $color-text-quaternary;
+  margin-left: auto;
+}
+
+.label-hint {
+  font-size: $font-size-xs;
+  color: $campus-blue;
+  margin-left: auto;
+}
+
+// 描述引导提示条
+.desc-guide {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-3 $sp-4;
+  background: $campus-blue-lighter;
+  border-radius: $radius-lg;
+  margin-bottom: $sp-3;
+
+  .guide-text {
+    font-size: $font-size-xs;
+    color: $campus-blue;
+    line-height: 1.5;
+  }
+}
+
+// 输入框统一样式
+.form-input,
+.form-textarea,
+.picker-input {
+  width: 100%;
+  padding: $sp-4 $sp-5;
+  border: 1px solid $color-border-light;
+  border-radius: $radius-lg;
+  font-size: $font-size-base;
+  color: $color-text-primary;
+  background: $color-bg-page;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  min-height: 120px;
+  line-height: $line-height-relaxed;
+}
+
+// Picker 特殊样式
+.picker-input {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+
+  &.has-value {
+    border-color: $campus-blue;
+    background: rgba($campus-blue, 0.02);
+
+    .picker-value { color: $color-text-primary; }
+  }
+
+  .picker-value {
+    flex: 1;
+    font-size: $font-size-base;
+    color: $color-text-quaternary;
+  }
+}
+
+// 分类说明
+.category-hint {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+
+  .category-hint-text {
+    font-size: $font-size-xs;
+    color: $color-text-tertiary;
+  }
+}
+
+// 错误提示
+.error-text {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-error;
+  margin-top: $sp-2;
+}
+
+// ── 上传须知（轻量）──
+.upload-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: $sp-2;
+  padding: $sp-4 $sp-5;
+  margin-bottom: $sp-4;
+
+  .notice-text {
+    font-size: $font-size-xs;
+    color: $color-text-quaternary;
+    line-height: 1.6;
+  }
+
+  .notice-highlight {
+    color: $campus-blue;
+    font-weight: $font-weight-medium;
   }
 
   .notice-link {
-    display: inline-block;
-    font-size: $font-size-sm;
-    color: $accent;
-    margin-top: $sp-2;
+    font-size: $font-size-xs;
+    color: $campus-blue;
+    white-space: nowrap;
     cursor: pointer;
+    flex-shrink: 0;
 
-    &:hover {
-      opacity: 0.8;
-    }
+    /* #ifdef H5 */
+    &:hover { opacity: 0.8; }
+    /* #endif */
   }
 }
 
-// 底部按钮
-.submit-actions {
-  display: flex;
-  gap: $sp-3;
-  margin-top: $sp-8;
+// 底部占位补偿（给 fixed bar 腾空间）
+.bottom-spacer {
+  height: 80px;
 
-  // CButton 组件等宽
-  :deep(.c-button) {
-    flex: 1;
-  }
+  @include desktop { height: 0; }
+}
+
+// ── 底部操作栏 ──
+.submit-bar {
+  flex-shrink: 0;
+  background: $color-bg-card;
+  border-top: 1px solid $color-border-light;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
 
   @include mobile {
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    padding: $sp-3 $sp-5;
-    background: $white;
-    box-shadow: 0 -2px 8px rgba($gray-900, 0.1);
-    margin: 0;
+    z-index: 100;
+  }
+}
+
+.submit-bar-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  gap: $sp-4;
+  padding: $sp-4 $sp-8;
+
+  @include mobile {
+    padding: $sp-4 $sp-5;
+  }
+}
+
+.btn-cancel {
+  flex: 0 0 auto;
+  min-width: 120rpx;
+}
+
+.btn-submit {
+  flex: 1;
+
+  // 禁用状态：浅蓝占位色
+  &:deep(.c-button--disabled) {
+    background: $campus-blue-lighter !important;
+    color: $campus-blue !important;
+    opacity: 0.6;
   }
 }
 </style>

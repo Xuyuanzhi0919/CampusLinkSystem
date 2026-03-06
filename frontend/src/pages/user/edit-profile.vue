@@ -931,16 +931,24 @@ onMounted(() => {
     transform: translateY(0);
   }
 
+  // PC 端：改为居中 Modal，不再是底部弹窗
   @media (min-width: 1024px) {
-    max-width: 600px;
+    position: fixed;
     left: 50%;
     right: auto;
-    width: 100%;
-    transform: translateX(-50%) translateY(100%);
-    border-radius: 14px 14px 0 0;
+    bottom: auto;
+    top: 50%;
+    width: 360px;
+    border-radius: 14px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    // 初始态：轻微缩小 + 透明，模拟"弹出"感
+    transform: translate(-50%, -50%) scale(0.95);
+    opacity: 0;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease;
 
     &--up {
-      transform: translateX(-50%) translateY(0);
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
     }
   }
 }
@@ -953,10 +961,9 @@ onMounted(() => {
   background: $gray-200;
   margin: 18rpx auto 0;
 
+  // PC 端无触屏拖拽，隐藏拖拽条
   @media (min-width: 1024px) {
-    width: 40px;
-    height: 5px;
-    margin-top: 12px;
+    display: none;
   }
 }
 
@@ -968,7 +975,8 @@ onMounted(() => {
   padding: 20rpx 40rpx 16rpx;
 
   @media (min-width: 1024px) {
-    padding: 14px 28px 12px;
+    // 无拖拽条，顶部适当增加内边距补偿
+    padding: 20px 28px 14px;
   }
 }
 

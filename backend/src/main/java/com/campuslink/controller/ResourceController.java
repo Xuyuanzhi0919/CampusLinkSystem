@@ -65,13 +65,14 @@ public class ResourceController {
             @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder,
             @Parameter(description = "最低积分（含）") @RequestParam(required = false) Integer scoreMin,
             @Parameter(description = "最高积分（含），不传表示无上限") @RequestParam(required = false) Integer scoreMax,
+            @Parameter(description = "上传者ID（按贡献者筛选）") @RequestParam(required = false) Long uploaderId,
             HttpServletRequest httpRequest
     ) {
         // 获取当前用户ID（可能为null，表示未登录）
         Long currentUserId = (Long) httpRequest.getAttribute("userId");
 
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, keyword, page, pageSize, sortBy, sortOrder, scoreMin, scoreMax, currentUserId
+                category, schoolId, keyword, page, pageSize, sortBy, sortOrder, scoreMin, scoreMax, currentUserId, uploaderId
         );
         return Result.success(result);
     }

@@ -88,7 +88,8 @@ public class ResourceService {
             String sortOrder,
             Integer scoreMin,
             Integer scoreMax,
-            Long currentUserId
+            Long currentUserId,
+            Long uploaderId
     ) {
         // 构建分页对象
         Page<Resource> pageObj = new Page<>(page, pageSize);
@@ -102,6 +103,9 @@ public class ResourceService {
         }
         if (schoolId != null) {
             queryWrapper.eq(Resource::getSchoolId, schoolId);
+        }
+        if (uploaderId != null) {
+            queryWrapper.eq(Resource::getUploaderId, uploaderId);
         }
         if (keyword != null && !keyword.isEmpty()) {
             queryWrapper.and(wrapper -> wrapper

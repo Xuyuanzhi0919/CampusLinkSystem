@@ -187,6 +187,15 @@
       <view class="content-container">
         <!-- 中间:资源列表 -->
         <view class="resource-list-column">
+          <!-- 贡献者筛选 Banner -->
+          <view v-if="contributorFilter" class="contributor-filter-banner">
+            <Icon name="user" :size="14" class="banner-icon" />
+            <text class="banner-text">正在查看 {{ contributorFilter.username }} 的资源</text>
+            <view class="banner-clear" @click="clearContributorFilter">
+              <Icon name="x" :size="14" />
+            </view>
+          </view>
+
           <!-- 骨架屏 - 加载中 -->
           <template v-if="loading && resources.length === 0">
             <SkeletonResourceCard v-for="n in 5" :key="n" />
@@ -588,6 +597,9 @@ const favoritedResourceIds = ref<Set<number>>(new Set())
 // 🎯 活跃贡献者"查看全部"展开状态
 const showAllContributors = ref(false)
 
+// 🎯 贡献者筛选：点击贡献者后按 uploaderId 过滤，null 表示不筛选
+const contributorFilter = ref<{ userId: number; username: string } | null>(null)
+
 // 🎯 登录引导弹窗状态
 const showLoginGuide = ref(false)
 const loginGuideActionType = ref('default')
@@ -756,6 +768,11 @@ const loadResourceList = async (isRefresh = false) => {
       params.schoolId = userSchoolId.value
     }
 
+    // 贡献者筛选
+    if (contributorFilter.value) {
+      params.uploaderId = contributorFilter.value.userId
+    }
+
     // 应用高级筛选：积分范围（传给后端过滤，保证分页数量准确）
     if (advancedFilters.value.scoreRange) {
       switch (advancedFilters.value.scoreRange) {
@@ -888,6 +905,7 @@ const handleCategoryChange = (category: string | null) => {
   if (currentCategory.value === category) return
 
   currentCategory.value = category
+  contributorFilter.value = null  // 切换分类时清空贡献者筛选
   loadResourceList(true)
 }
 
@@ -1000,6 +1018,7 @@ const handleSearch = () => {
  */
 const clearSearch = () => {
   searchKeyword.value = ''
+  contributorFilter.value = null  // 清空搜索时也清空贡献者筛选
   loadResourceList(true)
 }
 
@@ -1103,18 +1122,28 @@ const handleResourceClick = (resource: ResourceItem) => {
 }
 
 /**
- * 🎯 点击贡献者：以该上传者名称为关键词筛选资源
+ * 🎯 点击贡献者：按 uploaderId 精确筛选该用户上传的资源
+ * 再次点击同一贡献者则清除筛选
  */
 const handleContributorClick = (user: { userId: number; username: string }) => {
-  searchKeyword.value = user.username
-  // 滚动到顶部并重新加载
+  if (contributorFilter.value?.userId === user.userId) {
+    // 再次点击：取消筛选
+    contributorFilter.value = null
+    uni.showToast({ title: '已清除筛选', icon: 'none', duration: 1200 })
+  } else {
+    contributorFilter.value = { userId: user.userId, username: user.username }
+    uni.showToast({ title: `查看 ${user.username} 的资源`, icon: 'none', duration: 1200 })
+  }
   scrollToTop()
   loadResourceList(true)
-  uni.showToast({
-    title: `查看 ${user.username} 的资源`,
-    icon: 'none',
-    duration: 1500
-  })
+}
+
+/**
+ * 🎯 清除贡献者筛选
+ */
+const clearContributorFilter = () => {
+  contributorFilter.value = null
+  loadResourceList(true)
 }
 
 /**
@@ -3197,6 +3226,47 @@ onUnmounted(() => {
     font-size: $font-size-sm;
     color: $gray-500;
     margin-bottom: 24px;
+  }
+}
+
+// 贡献者筛选激活 banner
+.contributor-filter-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  background: rgba($primary, 0.06);
+  border: 1px solid rgba($primary, 0.18);
+  border-radius: 10px;
+
+  .banner-icon {
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  .banner-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: $primary;
+  }
+
+  .banner-clear {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: $primary;
+    cursor: pointer;
+    transition: background 0.18s;
+
+    &:hover {
+      background: rgba($primary, 0.12);
+    }
   }
 }
 

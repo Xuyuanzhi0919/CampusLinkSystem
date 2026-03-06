@@ -79,6 +79,7 @@ export interface ResourceListParams {
   sortOrder?: 'asc' | 'desc'
   scoreMin?: number  // 最低积分（含），对应高级筛选积分范围
   scoreMax?: number  // 最高积分（含），不传表示无上限
+  uploaderId?: number  // 按上传者筛选（点击侧边栏贡献者时传入）
 }
 
 // 资源上传参数

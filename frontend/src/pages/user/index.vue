@@ -58,26 +58,29 @@
             <text class="customize-entry__icon">⊞</text>
             <text class="customize-entry__label">自定义</text>
           </view>
-          <QuickActions
-            v-if="layoutConfig.showQuickActions"
-            @publish-resource="handlePublishResource"
-            @ask-question="handleAskQuestion"
-            @publish-task="handlePublishTask"
-            @join-activity="handleJoinActivity"
-            @go-to-mall="handleGoToMall"
-          />
-          <AchievementSection
-            v-if="userProfile && layoutConfig.showAchievement"
-            :level="userProfile.level || 1"
-            :level-name="levelName"
-            :current-exp="userProfile.points || 0"
-            :next-level-exp="nextLevelExp"
-            :stats="achievementStats"
-            :badges="userBadges"
-            @stat-click="handleStatClick"
-            @badge-click="handleBadgeClick"
-            @view-all-badges="handleViewAllBadges"
-          />
+          <!-- 动态模块：顺序由 layoutConfig.moduleOrder 控制 -->
+          <template v-for="modKey in layoutConfig.moduleOrder" :key="modKey">
+            <QuickActions
+              v-if="modKey === 'showQuickActions' && layoutConfig.showQuickActions"
+              @publish-resource="handlePublishResource"
+              @ask-question="handleAskQuestion"
+              @publish-task="handlePublishTask"
+              @join-activity="handleJoinActivity"
+              @go-to-mall="handleGoToMall"
+            />
+            <AchievementSection
+              v-if="modKey === 'showAchievement' && userProfile && layoutConfig.showAchievement"
+              :level="userProfile.level || 1"
+              :level-name="levelName"
+              :current-exp="userProfile.points || 0"
+              :next-level-exp="nextLevelExp"
+              :stats="achievementStats"
+              :badges="userBadges"
+              @stat-click="handleStatClick"
+              @badge-click="handleBadgeClick"
+              @view-all-badges="handleViewAllBadges"
+            />
+          </template>
           <view class="section-block">
             <view class="section-label">
               <view class="section-label-dot" />
@@ -202,20 +205,25 @@
           </view>
         </view>
         <view class="cs-divider" />
-        <!-- 配置项列表 -->
-        <view class="cs-list">
+        <!-- 配置项列表（支持拖拽排序） -->
+        <view class="cs-list" @touchmove.prevent="onDragMove" @touchend="onDragEnd" @touchcancel="onDragEnd">
           <view
-            v-for="mod in layoutModules"
+            v-for="(mod, i) in sortedLayoutModules"
             :key="mod.key"
             class="cs-item"
-            @click="toggleModule(mod.key)"
+            :class="{ 'cs-item--dragging': drag.active && i === drag.index }"
+            :style="getItemStyle(i)"
           >
+            <!-- 拖拽手柄 -->
+            <view class="cs-drag-handle" @touchstart.prevent="(e: TouchEvent) => onDragStart(e, i)">
+              <text class="cs-drag-icon">⠿</text>
+            </view>
             <view class="cs-item-info">
               <text class="cs-item-name">{{ mod.name }}</text>
               <text class="cs-item-desc">{{ mod.desc }}</text>
             </view>
-            <!-- iOS 风格开关 -->
-            <view class="cs-switch" :class="{ 'cs-switch--on': layoutConfig[mod.key] }">
+            <!-- iOS 风格开关（click.stop 防止冒泡到 cs-item） -->
+            <view class="cs-switch" :class="{ 'cs-switch--on': layoutConfig[mod.key] }" @click.stop="toggleModule(mod.key)">
               <view class="cs-switch-thumb" />
             </view>
           </view>
@@ -273,8 +281,13 @@ const LAYOUT_KEY = 'cl_profile_layout'
 interface ProfileLayout {
   showQuickActions: boolean
   showAchievement: boolean
+  moduleOrder: string[]   // layoutModules 中 key 的顺序，控制页面渲染顺序
 }
-const DEFAULT_LAYOUT: ProfileLayout = { showQuickActions: true, showAchievement: true }
+const DEFAULT_LAYOUT: ProfileLayout = {
+  showQuickActions: true,
+  showAchievement: true,
+  moduleOrder: ['showQuickActions', 'showAchievement'],
+}
 
 const loadLayout = (): ProfileLayout => {
   try {
@@ -308,11 +321,64 @@ const closeCustomizeSheet = () => {
   setTimeout(() => { showCustomizeSheet.value = false }, 300)
 }
 
-// 面板配置项定义
+// 面板配置项定义（key 与 ProfileLayout 属性名一致）
 const layoutModules = [
   { key: 'showQuickActions' as keyof ProfileLayout, name: '快捷操作', desc: '发资源、提问题、发任务等快速入口' },
   { key: 'showAchievement' as keyof ProfileLayout,  name: '成就卡片', desc: '等级进度、数据统计、徽章收集' },
 ]
+
+// 按 moduleOrder 排序，供自定义面板列表渲染（拖拽后实时更新）
+const sortedLayoutModules = computed(() => {
+  const order = layoutConfig.value.moduleOrder?.length
+    ? layoutConfig.value.moduleOrder
+    : layoutModules.map(m => m.key)
+  return order.map(k => layoutModules.find(m => m.key === k)!).filter(Boolean)
+})
+
+// ========== 拖拽排序（自定义面板内） ==========
+const ITEM_H = 80 // cs-item 估算高度（px），用于计算目标位置
+const drag = ref({ active: false, index: -1, startY: 0, offsetY: 0, dropIndex: -1 })
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+
+const onDragStart = (e: TouchEvent, index: number) => {
+  drag.value = { active: true, index, startY: e.touches[0].clientY, offsetY: 0, dropIndex: index }
+}
+const onDragMove = (e: TouchEvent) => {
+  if (!drag.value.active) return
+  const offsetY = e.touches[0].clientY - drag.value.startY
+  const dropIndex = clamp(drag.value.index + Math.round(offsetY / ITEM_H), 0, layoutModules.length - 1)
+  drag.value = { ...drag.value, offsetY, dropIndex }
+}
+const onDragEnd = () => {
+  if (!drag.value.active) return
+  const { index, dropIndex } = drag.value
+  drag.value = { active: false, index: -1, startY: 0, offsetY: 0, dropIndex: -1 }
+  if (index === dropIndex) return
+  const newOrder = [...(layoutConfig.value.moduleOrder?.length
+    ? layoutConfig.value.moduleOrder
+    : layoutModules.map(m => m.key))]
+  const [moved] = newOrder.splice(index, 1)
+  newOrder.splice(dropIndex, 0, moved)
+  layoutConfig.value = { ...layoutConfig.value, moduleOrder: newOrder }
+  saveLayout()
+}
+
+// 拖拽时各列表项的 inline style（被拖项跟手，其余项位移让位）
+const getItemStyle = (i: number): Record<string, string> => {
+  if (!drag.value.active) return {}
+  if (i === drag.value.index) return {
+    transform: `translateY(${drag.value.offsetY}px)`,
+    zIndex: '10',
+    boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+    opacity: '0.96',
+    transition: 'box-shadow 0.15s ease',
+  }
+  const { index: from, dropIndex: to } = drag.value
+  let shift = 0
+  if (from < to && i > from && i <= to) shift = -ITEM_H
+  else if (from > to && i >= to && i < from) shift = ITEM_H
+  return shift ? { transform: `translateY(${shift}px)`, transition: 'transform 0.2s ease' } : {}
+}
 
 // 响应式窗口宽度，监听 resize
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 375)
@@ -968,6 +1034,8 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   padding: 28rpx 40rpx;
   cursor: pointer;
   transition: background 0.12s ease;
+  position: relative;        // 拖拽时 z-index 生效
+  will-change: transform;    // 提示浏览器做合成层优化
 
   &:active { background: $color-bg-hover; }
 
@@ -975,9 +1043,46 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   &:hover { background: $color-bg-hover; }
   // #endif
 
+  &--dragging {
+    background: $white;
+    border-radius: 12rpx;
+    @media (min-width: 1024px) { border-radius: 8px; }
+  }
+
   @media (min-width: 1024px) {
     padding: 16px 24px;
   }
+}
+
+// 拖拽手柄
+.cs-drag-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  min-height: 56rpx;
+  margin-right: 4rpx;
+  flex-shrink: 0;
+  touch-action: none;   // 阻止浏览器默认 touch 行为，保证拖拽流畅
+
+  // #ifdef H5
+  cursor: grab;
+  &:active { cursor: grabbing; }
+  // #endif
+
+  @media (min-width: 1024px) {
+    width: 28px;
+    min-height: 28px;
+  }
+}
+
+.cs-drag-icon {
+  font-size: 30rpx;
+  color: $color-text-tertiary;
+  user-select: none;
+  line-height: 1;
+
+  @media (min-width: 1024px) { font-size: 15px; }
 }
 
 .cs-item-info {

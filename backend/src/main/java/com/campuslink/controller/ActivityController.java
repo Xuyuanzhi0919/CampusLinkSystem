@@ -44,9 +44,10 @@ public class ActivityController {
             @RequestParam(required = false) Integer status,
             @RequestParam(required = false) String sortBy,
             @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String activityType,
             @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
-        PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId, status, sortBy, keyword);
+        PageResult<ActivityResponse> result = activityService.getActivityList(userId, page, pageSize, clubId, status, sortBy, keyword, activityType);
         return Result.success(result);
     }
 
@@ -106,9 +107,10 @@ public class ActivityController {
     public Result<PageResult<ActivityResponse>> getMyActivities(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(required = false) Integer status,
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        PageResult<ActivityResponse> result = activityService.getMyActivities(userId, page, pageSize);
+        PageResult<ActivityResponse> result = activityService.getMyActivities(userId, page, pageSize, status);
         return Result.success(result);
     }
 }

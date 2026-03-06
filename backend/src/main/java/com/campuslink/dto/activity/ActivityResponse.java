@@ -15,14 +15,24 @@ public class ActivityResponse {
     private Long activityId;
 
     /**
-     * 社团ID
+     * 社团ID（社团活动有值，其他类型为null）
      */
     private Long clubId;
 
     /**
-     * 社团名称
+     * 社团名称（社团活动有值，其他类型为null）
      */
     private String clubName;
+
+    /**
+     * 活动类型：club-社团活动, campus-校园活动, official-官方活动
+     */
+    private String activityType;
+
+    /**
+     * 组织者名称（非社团活动时显示，如"校学生会"、"教务处"）
+     */
+    private String organizerName;
 
     /**
      * 活动标题

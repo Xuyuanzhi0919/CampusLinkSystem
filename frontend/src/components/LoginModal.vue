@@ -3,7 +3,7 @@
     <view class="login-modal-container" :class="{ 'modal-show': showAnimation }" @tap.stop>
       <!-- 关闭按钮 -->
       <view class="close-btn" @tap.stop="handleClose">
-        <text class="close-icon">✕</text>
+        <Icon name="x" :size="16" class="close-icon" />
       </view>
 
       <!-- 品牌头部 -->
@@ -25,7 +25,7 @@
         <!-- 邮箱输入 -->
         <view class="input-group" :class="{ 'input-focus': emailFocused, 'input-error': emailError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">✉</text>
+            <Icon name="user" :size="16" class="field-icon gradient-icon" />
           </view>
           <input
             class="form-input"
@@ -40,7 +40,7 @@
         <!-- 密码输入 -->
         <view class="input-group" :class="{ 'input-focus': passwordFocused, 'input-error': passwordError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon lock-icon">🔒</text>
+            <Icon name="lock" :size="16" class="field-icon gradient-icon lock-icon" />
           </view>
           <input
             class="form-input"
@@ -50,16 +50,16 @@
             @focus="passwordFocused = true"
             @blur="passwordFocused = false"
           />
-          <text class="password-toggle" @tap="showPassword = !showPassword">
-            {{ showPassword ? '👁' : '👁‍🗨' }}
-          </text>
+          <view class="password-toggle" @tap="showPassword = !showPassword">
+            <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="16" />
+          </view>
         </view>
 
         <!-- 记住账号和忘记密码 -->
         <view class="form-options">
           <view class="remember-me" @tap="formData.rememberMe = !formData.rememberMe">
             <view class="checkbox" :class="{ 'checkbox-checked': formData.rememberMe }">
-              <text v-if="formData.rememberMe" class="checkbox-icon">✓</text>
+              <Icon v-if="formData.rememberMe" name="check" :size="12" class="checkbox-icon" />
             </view>
             <text class="option-text">记住账号</text>
           </view>
@@ -67,10 +67,10 @@
         </view>
 
         <!-- 登录按钮 -->
-        <button class="login-btn" :class="{ 'btn-loading': loading }" @tap="handleLogin">
-          <text v-if="!loading">登录</text>
-          <text v-else class="loading-text">登录中...</text>
-        </button>
+        <view class="login-btn" :class="{ 'btn-loading': loading }" @tap="handleLogin">
+          <view v-if="loading" class="btn-spinner" />
+          <text class="btn-text">{{ loading ? '登录中...' : '登录' }}</text>
+        </view>
 
         <!-- 分隔线 -->
         <view class="divider">
@@ -82,11 +82,15 @@
         <!-- 第三方登录 -->
         <view class="social-login">
           <view class="social-btn wechat-btn" @tap="handleWechatLogin">
-            <text class="social-icon">💬</text>
+            <view class="social-badge wechat-badge">
+              <text class="social-badge-text">微</text>
+            </view>
             <text class="social-text">微信登录</text>
           </view>
           <view class="social-btn qq-btn" @tap="handleQQLogin">
-            <text class="social-icon">🐧</text>
+            <view class="social-badge qq-badge">
+              <text class="social-badge-text">Q</text>
+            </view>
             <text class="social-text">QQ登录</text>
           </view>
         </view>
@@ -104,7 +108,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { login, type LoginRequest, type AuthResponse } from '@/services/auth'
+import { useUserStore } from '@/stores/user'
 import config from '@/config'
+import Icon from '@/components/icons/index.vue'
 
 const props = defineProps({
   visible: {
@@ -114,6 +120,9 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['update:visible', 'login-success', 'register', 'forgot-password'])
+
+// 获取用户 store
+const userStore = useUserStore()
 
 // 表单数据
 const formData = ref({
@@ -338,10 +347,12 @@ const handleLogin = async () => {
 
     const response: AuthResponse = await login(loginData)
 
-    // 存储Token
-    uni.setStorageSync(config.tokenKey, response.token)
-    uni.setStorageSync(config.refreshTokenKey, response.refreshToken)
-    uni.setStorageSync(config.userInfoKey, JSON.stringify(response.user))
+    // 更新 Pinia store（同时也会存储到 localStorage）
+    userStore.login({
+      token: response.token,
+      refreshToken: response.refreshToken,
+      userInfo: response.user
+    })
 
     // 如果选择记住账号，存储账号信息
     if (formData.value.rememberMe) {
@@ -385,22 +396,6 @@ const handleLogin = async () => {
   }
 }
 
-// 微信登录
-const handleWechatLogin = () => {
-  // #ifdef MP-WEIXIN
-  uni.showToast({
-    title: '微信登录',
-    icon: 'none'
-  })
-  // #endif
-
-  // #ifndef MP-WEIXIN
-  uni.showToast({
-    title: '请在微信中打开',
-    icon: 'none'
-  })
-  // #endif
-}
 
 // QQ登录
 const handleQQLogin = () => {
@@ -478,11 +473,13 @@ const handleRegister = () => {
     opacity: 1;
   }
 
+  /* #ifdef H5 */
   /* 优化：隐藏滚动条 */
   &::-webkit-scrollbar {
     display: none;
   }
   scrollbar-width: none;
+  /* #endif */
 }
 
 /* ========== 关闭按钮 ========== */
@@ -514,16 +511,13 @@ const handleRegister = () => {
   }
 
   .close-icon {
-    font-size: 36rpx; /* 18px */
     color: #64748B;
-    font-weight: 300;
-    transition: color 0.2s ease;
-    /* 优化：禁用指针事件，让点击穿透到父元素 */
     pointer-events: none;
+    transition: color 0.2s ease;
   }
 
   &:hover .close-icon {
-    color: #2563EB; /* 优化：hover 时图标变蓝 */
+    color: #2563EB;
   }
 }
 
@@ -633,59 +627,26 @@ const handleRegister = () => {
   75% { transform: translateX(6rpx); } /* 优化：从 8rpx 减少到 6rpx */
 }
 
-/* 优化：图标容器 - 支持渐变和动效 */
 .input-icon-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 16rpx; /* 图标和文字间距 8px */
-  position: relative;
+  margin-right: 16rpx;
+  flex-shrink: 0;
 }
 
-.input-icon {
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，提升视觉权重 */
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.field-icon {
+  color: #94A3B8;
+  transition: color 0.25s ease, transform 0.25s ease;
 }
 
-/* 优化：渐变图标效果 */
 .gradient-icon {
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加轻微发光效果 */
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0));
+  color: #94A3B8;
 }
 
-/* 优化：聚焦时图标渐变变蓝 + 发光 */
 .input-group.input-focus .gradient-icon {
-  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加蓝色发光 */
-  filter: drop-shadow(0 0 8rpx rgba(59, 130, 246, 0.4));
-  /* 优化：轻微放大 */
-  transform: scale(1.08);
-}
-
-/* 优化：锁图标特殊动效 - 聚焦时轻微上弹 */
-.input-group.input-focus .lock-icon {
-  animation: lockBounce 0.4s cubic-bezier(0.36, 0, 0.66, -0.56);
-}
-
-@keyframes lockBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-4rpx) scale(1.08);
-  }
-  100% {
-    transform: translateY(0) scale(1.08);
-  }
+  color: #2563EB;
+  transform: scale(1.1);
 }
 
 .form-input {
@@ -705,30 +666,20 @@ const handleRegister = () => {
 }
 
 .password-toggle {
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，与图标一致 */
+  display: flex;
+  align-items: center;
   cursor: pointer;
-  /* 优化：改为渐变文字 */
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  /* 优化：添加旋转过渡效果 */
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0)) brightness(1);
+  color: #94A3B8;
+  transition: color 0.2s ease, transform 0.2s ease;
+  padding: 4rpx;
 
   &:hover {
-    /* 优化：hover 时变蓝色渐变 */
-    background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    /* 优化：hover 时旋转 10° + 发光 + 亮度提升 */
-    transform: rotate(10deg) scale(1.08);
-    filter: drop-shadow(0 0 6rpx rgba(59, 130, 246, 0.4)) brightness(1.2);
+    color: #2563EB;
+    transform: scale(1.1);
   }
 
   &:active {
-    transform: rotate(-5deg) scale(0.95);
+    transform: scale(0.95);
   }
 }
 
@@ -764,8 +715,6 @@ const handleRegister = () => {
 
   .checkbox-icon {
     color: #fff;
-    font-size: 20rpx;
-    font-weight: 600;
   }
 }
 
@@ -798,93 +747,52 @@ const handleRegister = () => {
 .login-btn {
   width: 100%;
   height: 84rpx;
-  /* 优化：清新校园感渐变（蓝 → 青） */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
   background: linear-gradient(135deg, #2563EB 0%, #38BDF8 100%);
-  border: none;
   border-radius: 22rpx;
-  color: #fff;
-  font-size: 32rpx; /* 优化：从 30rpx 增加到 32rpx (16px)，按钮应是视觉焦点 */
-  font-weight: 600; /* 优化：保持 600 字重，让主操作更有力量 */
-  /* 优化：文字添加轻微阴影，增强可点击感 */
-  text-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.1);
-  /* 优化：增强阴影，营造"亮区"感 */
-  box-shadow: 0 8rpx 28rpx rgba(37, 99, 235, 0.35),
-              0 4rpx 12rpx rgba(37, 99, 235, 0.2);
+  box-shadow: 0 8rpx 28rpx rgba(37, 99, 235, 0.35), 0 4rpx 12rpx rgba(37, 99, 235, 0.2);
   cursor: pointer;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-bottom: 40rpx; /* 优化：从 28rpx 增加到 40rpx (20px)，与社交登录拉开距离 */
-
-  /* 优化：中心光晕效果（呼吸感）*/
-  &::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 200rpx;
-    height: 200rpx;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  /* 优化：涟漪扩散效果 */
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s ease, height 0.6s ease;
-  }
+  transition: all 0.25s ease;
+  margin-bottom: 40rpx;
 
   &:hover {
-    /* 优化：hover 时渐变更亮 + 中心光晕显现 */
-    background: linear-gradient(135deg, #1D4ED8 0%, #38BDF8 100%);
-    filter: brightness(1.1);
-    box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.5),
-                0 4rpx 16rpx rgba(37, 99, 235, 0.3),
-                0 0 0 8rpx rgba(56, 189, 248, 0.2); /* 优化：青色发光边 */
-    transform: translateY(-4rpx) scale(1.02);
-
-    &::before {
-      opacity: 1; /* 显示中心光晕 */
-    }
+    filter: brightness(1.08);
+    transform: translateY(-2rpx);
+    box-shadow: 0 12rpx 36rpx rgba(37, 99, 235, 0.45);
   }
 
   &:active {
-    /* 优化：点击时变深 */
-    background: linear-gradient(135deg, #1E40AF 0%, #2563EB 100%);
-    filter: brightness(0.95);
-    transform: translateY(-2rpx) scale(0.98);
-
-    /* 优化：点击时触发涟漪扩散 */
-    &::after {
-      width: 600rpx;
-      height: 600rpx;
-      opacity: 0;
-    }
+    filter: brightness(0.96);
+    transform: translateY(0) scale(0.99);
   }
 
   &.btn-loading {
-    opacity: 0.7;
+    opacity: 0.75;
     cursor: not-allowed;
   }
 
-  .loading-text {
-    animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  .btn-text {
+    font-size: 32rpx;
+    font-weight: 600;
+    color: #fff;
   }
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+.btn-spinner {
+  width: 32rpx;
+  height: 32rpx;
+  border: 3rpx solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 /* 分隔线 */
@@ -931,57 +839,35 @@ const handleRegister = () => {
 
   &.wechat-btn {
     &:hover {
-      /* 优化：hover 时淡彩渐变 + 轻微上浮 */
       background: linear-gradient(135deg, rgba(7, 193, 96, 0.08), rgba(7, 193, 96, 0.12));
-      transform: translateY(-3rpx) scale(1.02); /* 优化：添加轻微放大 */
+      transform: translateY(-3rpx) scale(1.02);
       box-shadow: 0 8rpx 24rpx rgba(7, 193, 96, 0.25);
 
-      /* 优化：hover 时文字和图标亮度上升 */
       .social-text {
         color: #05A850;
-      }
-
-      .social-icon {
-        /* 优化：添加呼吸动画 */
-        animation: breathe 1.5s ease-in-out infinite;
       }
     }
 
     .social-text {
       color: #07C160;
       transition: color 0.2s ease;
-    }
-
-    .social-icon {
-      color: #07C160;
     }
   }
 
   &.qq-btn {
     &:hover {
-      /* 优化：hover 时淡彩渐变 + 轻微上浮 */
       background: linear-gradient(135deg, rgba(18, 183, 245, 0.08), rgba(18, 183, 245, 0.12));
-      transform: translateY(-3rpx) scale(1.02); /* 优化：添加轻微放大 */
+      transform: translateY(-3rpx) scale(1.02);
       box-shadow: 0 8rpx 24rpx rgba(18, 183, 245, 0.25);
 
-      /* 优化：hover 时文字和图标亮度上升 */
       .social-text {
         color: #0E9DD8;
-      }
-
-      .social-icon {
-        /* 优化：添加呼吸动画 */
-        animation: breathe 1.5s ease-in-out infinite;
       }
     }
 
     .social-text {
       color: #12B7F5;
       transition: color 0.2s ease;
-    }
-
-    .social-icon {
-      color: #12B7F5;
     }
   }
 }
@@ -998,9 +884,29 @@ const handleRegister = () => {
   }
 }
 
-.social-icon {
-  font-size: 28rpx; /* 14px */
-  transition: transform 0.2s ease, opacity 0.2s ease;
+.social-badge {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.wechat-badge {
+    background: #07C160;
+  }
+
+  &.qq-badge {
+    background: #12B7F5;
+  }
+
+  .social-badge-text {
+    font-size: 20rpx;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1;
+  }
 }
 
 .social-text {

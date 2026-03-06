@@ -48,12 +48,15 @@ onHide(() => {
 </script>
 
 <style lang="scss">
-/* ========== 全局样式 ========== */
+/* ========== CampusLink 企业级设计系统 ========== */
+
+/* 导入 Design Tokens（企业级设计变量） */
+@import '@/styles/design-tokens.scss';
 
 /* ========== 全局基调 Design Tokens（符合 uiDesign/index.md）========== */
 :root {
-  /* 品牌主色 - #2563EB（比现有蓝更稳）*/
-  --cl-primary: #2563EB;
+  /* 品牌主色 - #377DFF（CampusLink 专属蓝）*/
+  --cl-primary: #377DFF;
   --cl-primary-50: #EFF6FF;
   --cl-primary-100: #DBEAFE;
   --cl-primary-200: #BFDBFE;
@@ -164,30 +167,81 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* 修复H5端页面滚动问题 - #app不应该限制高度 */
+/* #ifdef H5 */
+#app {
+  height: auto !important;
+  min-height: 100vh;
+}
+/* #endif */
+
 /* 标题层级 */
 .h1 { font-size: var(--fz-20); font-weight: 700; line-height: 1.3; }
 .h2 { font-size: var(--fz-18); font-weight: 600; line-height: 1.4; }
 .h3 { font-size: var(--fz-16); font-weight: 500; line-height: 1.5; }
 .p  { font-size: var(--fz-14); line-height: 1.6; color: var(--cl-text-sub); }
 
-/* 隐藏原生 tabBar，使用自定义 tabBar */
+/* ========== 多端 TabBar 适配 ========== */
+
+/* #ifdef H5 */
+/* H5 端：确保 uni-view / uni-scroll-view 以块级渲染，防止行内默认值导致的顶部空白 */
+uni-view, uni-scroll-view {
+  display: block;
+  box-sizing: border-box;
+}
+
+/* H5 端：隐藏原生 uni-tabbar,使用自定义 TabBar */
 uni-tabbar {
   display: none !important;
 }
 
-/* 移除页面底部的 padding（tabBar 占位） */
+/* 移除页面底部的 padding（自定义 tabBar 占位） */
 uni-page-body {
   padding-bottom: 56px !important; /* 自定义 tabBar 高度 */
 }
 
-/* PC端隐藏自定义 tabBar（使用悬浮导航） */
-@media (min-width: 751px) {
-  .custom-tabbar {
-    display: none !important;
-  }
-
+/* PC 端（桌面端 >= 1024px）：移除底部 padding */
+@media (min-width: 1024px) {
   uni-page-body {
     padding-bottom: 0 !important;
   }
 }
+
+/* H5 端页面切换动画（slide-in-right 风格）*/
+.uni-page-wrapper {
+  animation: page-enter 220ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+/* #endif */
+
+/* ========== 底部安全区适配优化 ========== */
+
+/* H5 端：隐藏 uni-page-wrapper 的底部伪元素占位，避免与自定义 TabBar 双重占位 */
+/* #ifdef H5 */
+uni-app--showtabbar uni-page-wrapper::after {
+  display: none !important;
+}
+/* #endif */
+
+/* 非 H5 端：优化底部安全区适配 */
+/* #ifndef H5 */
+uni-app--showtabbar uni-page-wrapper::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: var(--tab-bar-height, 50px);
+  height: calc(var(--tab-bar-height, 50px) + constant(safe-area-inset-bottom));
+  height: calc(var(--tab-bar-height, 50px) + env(safe-area-inset-bottom));
+}
+/* #endif */
 </style>

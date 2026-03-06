@@ -35,7 +35,8 @@ export const useQuestionStore = defineStore('question', () => {
   // Getters
   // ===================================
 
-  const hasMore = computed(() => questions.value.length < total.value)
+  // 判断是否还有更多数据：当前页数小于总页数
+  const hasMore = computed(() => page.value < totalPages.value)
 
   const totalPages = computed(() => Math.ceil(total.value / pageSize.value))
 

@@ -1,15 +1,18 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import Icon from '@/components/icons/index.vue'
 import { onLoad } from '@dcloudio/uni-app'
 import config from '@/config'
-import { getUploadSignature, createResource } from '@/services/resource'
+import { createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
+import { chooseFile as chooseFileUtil, uploadFile as uploadFileUtil, formatFileSize, getFileExtension } from '@/utils/file'
+import type { FileInfo } from '@/utils/file'
 
 /**
  * 🎯 文件状态
  */
-const file = ref<File | null>(null)
+const file = ref<FileInfo | null>(null)
 const fileUrl = ref('')
 const fileSize = ref(0)
 const fileType = ref('')
@@ -37,12 +40,12 @@ const submitting = ref(false)
  * 🎯 分类选项
  */
 const categories = [
-  { label: '📚 课件', value: '课件' },
-  { label: '📝 试题', value: '试卷' },
-  { label: '✍️ 笔记', value: '笔记' },
-  { label: '📖 教材', value: '教材' },
-  { label: '🔬 实验报告', value: '实验报告' },
-  { label: '📊 其他', value: '其他' }
+  { label: '📚 课件讲义', value: '课件', desc: '老师PPT、课堂讲义' },
+  { label: '📝 试题试卷', value: '试卷', desc: '期中/期末/模拟题' },
+  { label: '✍️ 学习笔记', value: '笔记', desc: '课堂笔记、知识总结' },
+  { label: '📖 教材资料', value: '教材', desc: '电子教材、参考书' },
+  { label: '🔬 实验报告', value: '实验报告', desc: '含代码和文档' },
+  { label: '📊 其他资料', value: '其他', desc: '其他学习资料' }
 ]
 
 /**
@@ -74,27 +77,9 @@ const canSubmit = computed(() => {
 })
 
 /**
- * 🎯 格式化文件大小
- */
-const formatFileSize = (bytes: number) => {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
-
-/**
- * 🎯 获取文件扩展名
- */
-const getFileExtension = (filename: string) => {
-  return filename.slice(((filename.lastIndexOf('.') - 1) >>> 0) + 2).toLowerCase()
-}
-
-/**
  * 🎯 验证文件
  */
-const validateFile = (file: File) => {
+const validateFile = (file: FileInfo) => {
   const extension = getFileExtension(file.name)
 
   // 验证格式
@@ -116,47 +101,31 @@ const validateFile = (file: File) => {
 /**
  * 🎯 选择文件
  */
-const chooseFile = () => {
-  // #ifdef H5
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = ALLOWED_EXTENSIONS.map(ext => `.${ext}`).join(',')
+const chooseFile = async () => {
+  try {
+    const files = await chooseFileUtil({
+      extensions: ALLOWED_EXTENSIONS,
+      maxSize: MAX_FILE_SIZE,
+      multiple: false
+    })
 
-  input.onchange = (e: any) => {
-    const selectedFile = e.target.files[0]
-    if (selectedFile) {
-      handleFileSelected(selectedFile)
+    if (files.length > 0) {
+      await handleFileSelected(files[0])
     }
+  } catch (error: any) {
+    console.error('[Upload] 选择文件失败:', error)
+    uni.showToast({
+      title: error.message || '选择文件失败',
+      icon: 'none',
+      duration: 2000
+    })
   }
-
-  input.click()
-  // #endif
-
-  // #ifndef H5
-  uni.chooseMessageFile({
-    count: 1,
-    type: 'file',
-    extension: ALLOWED_EXTENSIONS,
-    success: (res) => {
-      const tempFile = res.tempFiles[0]
-      // 创建类似File对象的结构
-      handleFileSelected({
-        name: tempFile.name,
-        size: tempFile.size,
-        path: tempFile.path
-      } as any)
-    },
-    fail: (err) => {
-      console.error('[Upload] 选择文件失败:', err)
-    }
-  })
-  // #endif
 }
 
 /**
  * 🎯 处理文件选择
  */
-const handleFileSelected = async (selectedFile: File) => {
+const handleFileSelected = async (selectedFile: FileInfo) => {
   try {
     // 验证文件
     validateFile(selectedFile)
@@ -170,6 +139,12 @@ const handleFileSelected = async (selectedFile: File) => {
     if (!form.value.title) {
       const nameWithoutExt = selectedFile.name.replace(/\.[^/.]+$/, '')
       form.value.title = nameWithoutExt
+    }
+
+    // 🎯 智能推荐分类
+    const recommended = recommendCategory(selectedFile.name)
+    if (recommended && !form.value.category) {
+      form.value.category = recommended
     }
 
     // 开始上传
@@ -186,47 +161,20 @@ const handleFileSelected = async (selectedFile: File) => {
 /**
  * 🎯 上传文件到OSS
  */
-const uploadFile = async (fileToUpload: File) => {
+const uploadFile = async (fileToUpload: FileInfo) => {
   try {
     uploading.value = true
     uploadProgress.value = 0
 
-    // 1. 获取OSS签名
-    const signature = await getUploadSignature(fileName.value)
-
-    // 2. 构造表单数据 (注意: file 必须是最后一个字段)
-    const formData = new FormData()
-    formData.append('key', signature.key)
-    formData.append('policy', signature.policy)
-    formData.append('OSSAccessKeyId', signature.accessId)
-    formData.append('signature', signature.signature)
-    formData.append('success_action_status', '200')  // 添加成功状态码
-    formData.append('file', fileToUpload)  // file 必须在最后
-
-    // 3. 上传到OSS
-    await new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest()
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          uploadProgress.value = Math.round((e.loaded / e.total) * 100)
-        }
+    // 使用统一的文件上传 API
+    const url = await uploadFileUtil({
+      file: fileToUpload,
+      onProgress: (progress) => {
+        uploadProgress.value = progress
       }
-
-      xhr.onload = () => {
-        if (xhr.status === 200 || xhr.status === 204) {
-          fileUrl.value = `${signature.host}/${signature.key}`
-          resolve(fileUrl.value)
-        } else {
-          reject(new Error('上传失败'))
-        }
-      }
-
-      xhr.onerror = () => reject(new Error('网络错误'))
-
-      xhr.open('POST', signature.host)
-      xhr.send(formData)
     })
+
+    fileUrl.value = url
 
     uni.showToast({
       title: '上传成功',
@@ -257,6 +205,55 @@ const reUpload = () => {
   fileUrl.value = ''
   uploadProgress.value = 0
   chooseFile()
+}
+
+/**
+ * 🎯 智能推荐分类(基于文件名)
+ */
+const recommendedCategory = ref('')
+
+const recommendCategory = (filename: string) => {
+  const lowerName = filename.toLowerCase()
+
+  if (lowerName.includes('ppt') || lowerName.includes('课件') || lowerName.includes('讲义')) {
+    recommendedCategory.value = '课件讲义'
+    return '课件'
+  }
+  if (lowerName.includes('试卷') || lowerName.includes('试题') || lowerName.includes('考试') || lowerName.includes('真题')) {
+    recommendedCategory.value = '试题试卷'
+    return '试卷'
+  }
+  if (lowerName.includes('笔记') || lowerName.includes('总结') || lowerName.includes('整理')) {
+    recommendedCategory.value = '学习笔记'
+    return '笔记'
+  }
+  if (lowerName.includes('实验') || lowerName.includes('报告')) {
+    recommendedCategory.value = '实验报告'
+    return '实验报告'
+  }
+  if (lowerName.includes('教材') || lowerName.includes('电子书')) {
+    recommendedCategory.value = '教材资料'
+    return '教材'
+  }
+
+  recommendedCategory.value = ''
+  return null
+}
+
+/**
+ * 🎯 获取分类显示文本
+ */
+const getCategoryDisplay = (value: string) => {
+  const category = categories.find(c => c.value === value)
+  return category ? category.label : ''
+}
+
+/**
+ * 🎯 获取分类说明
+ */
+const getCategoryDesc = (value: string) => {
+  const category = categories.find(c => c.value === value)
+  return category ? category.desc : ''
 }
 
 /**
@@ -438,6 +435,14 @@ const handleSubmit = async () => {
 }
 
 /**
+ * 🎯 描述框获得焦点时的处理
+ */
+const handleDescriptionFocus = () => {
+  // 可以在这里添加焦点提示逻辑
+  console.log('Description field focused')
+}
+
+/**
  * 🎯 取消上传，返回资源广场
  */
 const handleCancel = () => {
@@ -494,18 +499,23 @@ onLoad(() => {
 
 <template>
   <view class="upload-page">
-    <!-- 顶部导航栏 -->
-    <view class="navbar">
-      <view class="nav-left" @click="handleCancel">
-        <text class="back-icon">←</text>
-        <text class="back-text">返回</text>
+
+    <!-- 统一渐变头部 -->
+    <view class="page-header">
+      <view class="header-nav">
+        <view class="nav-back" @click="handleCancel">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">上传资源</text>
+        <view class="nav-placeholder" />
       </view>
-      <view class="nav-title">上传资源</view>
-      <view class="nav-right"></view>
     </view>
 
-    <!-- 主内容区域 -->
-    <view class="upload-container">
+    <!-- 内容区（双栏布局） -->
+    <scroll-view class="content-area" scroll-y>
+      <view class="main-container">
+        <!-- 左侧：表单区 -->
+        <view class="form-section">
       <!-- 📁 文件上传区域 -->
       <view class="section">
         <view class="section-title">选择文件</view>
@@ -564,39 +574,66 @@ onLoad(() => {
           <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
         </view>
 
-        <!-- 资源描述 -->
+        <!-- 资源描述(结构化引导) -->
         <view class="form-item">
           <view class="form-label">
             <text>资源描述</text>
             <text class="required">*</text>
             <text class="char-count">{{ form.description.length }}/500</text>
           </view>
+
+          <!-- 结构化填写提示 -->
+          <view v-if="!form.description || form.description.length < 10" class="description-guide">
+            <text class="guide-title">💡 可参考以下结构填写:</text>
+            <view class="guide-items">
+              <text class="guide-item">1️⃣ 适用课程/年级: 如"大二数据结构课程"</text>
+              <text class="guide-item">2️⃣ 包含内容: 如"含答案+解析+思维导图"</text>
+              <text class="guide-item">3️⃣ 使用建议: 如"适合期末复习,覆盖90%考点"</text>
+            </view>
+          </view>
+
           <textarea
             v-model="form.description"
             class="form-textarea"
-            placeholder="简单说明资料内容、适用年级/课程、是否含答案、重点章节等信息，帮助其他同学快速了解资源价值（10-500字）"
+            :class="{ 'has-guide': !form.description || form.description.length < 10 }"
+            placeholder="按上方提示结构填写,帮助同学快速了解资源价值..."
             maxlength="500"
             @blur="validateField('description')"
+            @focus="handleDescriptionFocus"
           />
           <text v-if="errors.description" class="error-text">{{ errors.description }}</text>
         </view>
 
-        <!-- 资源分类 -->
+        <!-- 资源分类(带智能推荐) -->
         <view class="form-item">
           <view class="form-label">
             <text>资源分类</text>
             <text class="required">*</text>
+            <text v-if="recommendedCategory" class="label-hint">
+              💡 推荐:{{ recommendedCategory }}
+            </text>
           </view>
+
+          <!-- 分类选择器 -->
           <picker
             :range="categories"
             range-key="label"
             @change="handleCategoryChange"
           >
-            <view class="picker-input">
-              {{ form.category || '请选择分类' }}
+            <view class="picker-input" :class="{ 'has-value': form.category }">
+              <text class="picker-value">
+                {{ getCategoryDisplay(form.category) || '请选择最匹配的分类' }}
+              </text>
               <text class="picker-arrow">▼</text>
             </view>
           </picker>
+
+          <!-- 已选分类说明 -->
+          <view v-if="form.category" class="category-hint">
+            <Icon name="info" :size="14" />
+            <text>{{ getCategoryDesc(form.category) }}</text>
+          </view>
+
           <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
         </view>
 
@@ -635,10 +672,13 @@ onLoad(() => {
           :loading="submitting"
           @click="handleSubmit"
         >
-          提交审核
+          {{ canSubmit ? '提交并参与资源共享' : '请完善资源信息后提交' }}
         </CButton>
       </view>
     </view>
+    <!-- /左侧：表单区 -->
+  </view>
+</scroll-view>
   </view>
 </template>
 
@@ -647,65 +687,83 @@ onLoad(() => {
 
 .upload-page {
   min-height: 100vh;
-  background: $bg-page;
+  background: #F1F5F9;
+  display: flex;
+  flex-direction: column;
 }
 
-// 顶部导航栏
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: $z-dropdown;
-  @include flex-between;
-  height: 44px;
-  padding: 0 $sp-4;
-  background: $white;
-  border-bottom: 1px solid $gray-200;
+// ── 统一渐变头部 ──
+.page-header {
+  flex-shrink: 0;
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
+}
 
-  .nav-left {
-    display: flex;
-    align-items: center;
-    gap: $sp-1;
-    cursor: pointer;
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px 0 12px;
+}
 
-    .back-icon {
-      font-size: $font-size-xl;
-      color: $gray-800;
-    }
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
 
-    .back-text {
-      font-size: $font-size-lg;
-      color: $gray-800;
-    }
-  }
+.nav-title {
+  flex: 1;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
+}
 
-  .nav-title {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-medium;
-    color: $gray-800;
-  }
+.nav-placeholder { width: 36px; }
 
-  .nav-right {
-    width: 60px;
+// 内容区域
+.content-area {
+  flex: 1;
+
+  @include mobile {
+    height: auto;
   }
 }
 
-// 主容器
-.upload-container {
-  padding: $sp-5;
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: $sp-5 $sp-5;
+  display: flex;
+  gap: $sp-6;
+
+  @include mobile {
+    flex-direction: column;
+    gap: $sp-4;
+    padding: $sp-4 $sp-4;
+  }
 
   @include desktop {
-    max-width: 800px;
-    margin: $sp-6 auto;
-    border-radius: $radius-md;
-    background: $white;
-    padding: $sp-10;
-    box-shadow: $shadow-md;
-  }
-
-  @media (min-width: 1024px) {
-    max-width: 900px;
+    padding: $sp-8 $sp-6;
   }
 }
+
+// 表单区(居中布局)
+.form-section {
+  flex: 1;
+  min-width: 0;
+  max-width: 800px;
+  margin: 0 auto; // 居中显示
+}
+
+// 右侧辅助栏已删除
 
 // 区块
 .section {
@@ -879,16 +937,92 @@ onLoad(() => {
     border-radius: $radius-base;
     font-size: $font-size-base;
     background: $white;
+    @include flex-between;
+    cursor: pointer;
+    transition: all 0.2s;
 
-    &:focus {
-      border-color: $accent;
-      outline: none;
+    &:hover {
+      border-color: $primary;
     }
+
+    &.has-value {
+      border-color: $primary;
+      background: rgba(37, 99, 235, 0.02);
+
+      .picker-value {
+        color: $gray-900;
+      }
+    }
+
+    .picker-value {
+      flex: 1;
+      color: $gray-500;
+    }
+
+    .picker-arrow {
+      font-size: $font-size-xs;
+      color: $gray-400;
+      margin-left: $sp-2;
+    }
+  }
+
+  // 🎯 分类提示信息
+  .label-hint {
+    margin-left: $sp-2;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-normal;
+    color: $primary;
+  }
+
+  .category-hint {
+    display: flex;
+    align-items: center;
+    gap: $sp-1;
+    margin-top: $sp-2;
+    padding: $sp-2;
+    background: $gray-50;
+    border-radius: $radius-sm;
+    font-size: $font-size-xs;
+    color: $gray-600;
   }
 
   .form-textarea {
     min-height: 120px;
     line-height: $line-height-relaxed;
+
+    &.has-guide {
+      min-height: 150px;
+    }
+  }
+
+  // 🎯 描述字段结构化引导
+  .description-guide {
+    margin-bottom: $sp-3;
+    padding: $sp-3;
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.06) 0%, rgba(37, 99, 235, 0.03) 100%);
+    border: 1px solid rgba(37, 99, 235, 0.15);
+    border-radius: $radius-base;
+
+    .guide-title {
+      display: block;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-semibold;
+      color: $primary;
+      margin-bottom: $sp-2;
+    }
+
+    .guide-items {
+      display: flex;
+      flex-direction: column;
+      gap: $sp-1;
+    }
+
+    .guide-item {
+      font-size: $font-size-xs;
+      color: $gray-700;
+      line-height: $line-height-relaxed;
+      padding-left: $sp-1;
+    }
   }
 
   .picker-input {

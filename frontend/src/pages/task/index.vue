@@ -358,9 +358,11 @@ defineExpose({
 .filter-scroll {
   white-space: nowrap;
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .filter-tabs {
@@ -422,9 +424,11 @@ defineExpose({
   overflow-x: auto;
   white-space: nowrap;
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .status-tab {
@@ -461,9 +465,11 @@ defineExpose({
 .content-scroll {
   height: calc(100vh - 240rpx);
 
+  /* #ifdef H5 */
   &::-webkit-scrollbar {
     display: none;
   }
+  /* #endif */
 }
 
 .task-list {
@@ -702,6 +708,7 @@ page {
   overflow: hidden;
 }
 
+/* #ifdef H5 */
 /* H5端隐藏所有滚动条 */
 ::-webkit-scrollbar {
   display: none;
@@ -712,4 +719,5 @@ uni-page-body {
   height: 100%;
   overflow: hidden;
 }
+/* #endif */
 </style>

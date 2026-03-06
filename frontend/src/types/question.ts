@@ -14,6 +14,7 @@ export interface QuestionItem {
   askerNickname: string    // 后端返回 askerNickname
   askerName?: string       // 兼容字段
   askerAvatar?: string
+  askerLevel?: number      // 提问者等级
   category: QuestionCategory
   tags?: string[]
   views: number
@@ -51,7 +52,7 @@ export interface AnswerItem {
 // 问题列表查询参数
 export interface QuestionListParams {
   category?: QuestionCategory | string | null
-  status?: number | null
+  isSolved?: number | null  // 0=未解决，1=已解决
   keyword?: string
   page?: number
   pageSize?: number

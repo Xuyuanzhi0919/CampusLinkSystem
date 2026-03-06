@@ -1,5 +1,6 @@
 package com.campuslink.dto;
 
+import com.campuslink.validation.ValidNickname;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -32,6 +33,7 @@ public class RegisterRequest {
      */
     @NotBlank(message = "昵称不能为空")
     @Size(max = 20, message = "昵称最多20个字符")
+    @ValidNickname
     private String nickname;
 
     /**

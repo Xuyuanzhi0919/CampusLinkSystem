@@ -4,8 +4,9 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.ChangePasswordRequest;
 import com.campuslink.dto.CheckInResponse;
+import com.campuslink.dto.LikedItemVO;
 import com.campuslink.dto.PointsLogVO;
-import com.campuslink.dto.UpdateProfileRequest;
+import com.campuslink.dto.user.UpdateProfileRequest;
 import com.campuslink.dto.UserStatsVO;
 import com.campuslink.dto.UserVO;
 import com.campuslink.service.UserService;
@@ -101,6 +102,16 @@ public class UserController {
             @Valid @RequestBody ChangePasswordRequest request) {
         userService.changePassword(userId, request);
         return Result.success("密码修改成功");
+    }
+
+    @Operation(summary = "获取我的获赞内容列表", description = "分页返回当前用户上传的资源和回答中被点赞的内容，按点赞数降序")
+    @GetMapping("/likes/received")
+    public Result<PageResult<LikedItemVO>> getLikedItems(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize) {
+        PageResult<LikedItemVO> result = userService.getLikedItems(userId, page, pageSize);
+        return Result.success(result);
     }
 
     @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")

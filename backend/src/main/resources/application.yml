@@ -13,9 +13,9 @@ spring:
 
   # 数据库配置
   datasource:
-    url: jdbc:mysql://localhost:3306/campuslink?serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:mysql://localhost:3306/campuslink?serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    password: root
+    password: 155062862Xyz.
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 20
@@ -84,6 +84,14 @@ jwt:
   expiration: 7200
   refresh-expiration: 604800
 
+# 微信小程序配置
+# 注意: 实际密钥请配置在 application-local.yml 中 (该文件已被 .gitignore 忽略)
+wechat:
+  miniapp:
+    appid: ${WECHAT_APPID:your-wechat-appid}
+    secret: ${WECHAT_SECRET:your-wechat-secret}
+    auth-url: https://api.weixin.qq.com/sns/jscode2session
+
 # 阿里云 OSS 配置
 # 注意: 实际密钥请配置在 application-local.yml 中 (该文件已被 .gitignore 忽略)
 aliyun:
@@ -93,6 +101,16 @@ aliyun:
     access-key-secret: your-access-key-secret
     bucket-name: campuslink-resources
     upload-dir: uploads/
+
+# DeepSeek AI 配置
+# 注意: API Key 请配置在 application-local.yml 中 (该文件已被 .gitignore 忽略)
+deepseek:
+  api:
+    key: ${DEEPSEEK_API_KEY:}
+    url: https://api.deepseek.com/v1/chat/completions
+  model: deepseek-chat
+  max-tokens: 2000
+  temperature: 0.7
 
 # 日志配置
 logging:

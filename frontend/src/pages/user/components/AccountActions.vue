@@ -1,153 +1,92 @@
 <template>
-  <CCard title="账户管理" class="account-actions" :no-padding="true">
-    <view class="actions-list">
-      <view
-        v-for="action in actionItems"
-        :key="action.id"
-        class="action-item"
-        :class="{ danger: action.danger }"
-        @click="handleActionClick(action)"
-      >
-        <!-- 左侧图标和标签 -->
-        <view class="action-left">
-          <text class="action-icon">{{ action.icon }}</text>
-          <text class="action-label">{{ action.label }}</text>
-        </view>
-
-        <!-- 右侧箭头 -->
-        <text class="action-arrow">›</text>
-      </view>
+  <!-- ========== 退出登录 ========== -->
+  <view class="logout-wrap">
+    <view class="logout-btn" @click="handleLogout">
+      <Icon name="log-out" :size="17" class="logout-icon" />
+      <text class="logout-text">退出登录</text>
     </view>
-  </CCard>
+  </view>
 </template>
 
 <script setup lang="ts">
-import CCard from '@/components/ui/CCard.vue'
+import Icon from '@/components/icons/index.vue'
 
-interface ActionItem {
-  id: string
-  icon: string
-  label: string
-  danger?: boolean
-}
+const emit = defineEmits<{ logout: [] }>()
 
-const emit = defineEmits<{
-  editProfile: []
-  changePassword: []
-  logout: []
-}>()
-
-/**
- * 操作项配置
- */
-const actionItems: ActionItem[] = [
-  {
-    id: 'edit-profile',
-    icon: '✏️',
-    label: '编辑资料'
-  },
-  {
-    id: 'change-password',
-    icon: '🔒',
-    label: '修改密码'
-  },
-  {
-    id: 'logout',
-    icon: '🚪',
-    label: '退出登录',
-    danger: true
-  }
-]
-
-/**
- * 处理操作项点击
- */
-const handleActionClick = (action: ActionItem) => {
-  switch (action.id) {
-    case 'edit-profile':
-      emit('editProfile')
-      break
-    case 'change-password':
-      emit('changePassword')
-      break
-    case 'logout':
-      // 退出登录需要二次确认
-      uni.showModal({
-        title: '退出登录',
-        content: '确定要退出登录吗?',
-        confirmText: '退出',
-        confirmColor: '#EF4444',
-        success: (res) => {
-          if (res.confirm) {
-            emit('logout')
-          }
-        }
-      })
-      break
-  }
+const handleLogout = () => {
+  uni.showModal({
+    title: '退出登录',
+    content: '确定要退出登录吗？',
+    confirmText: '退出',
+    confirmColor: '#EF4444',
+    cancelText: '取消',
+    success: (res) => { if (res.confirm) emit('logout') }
+  })
 }
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+@import '@/styles/design-tokens.scss';
 
-.account-actions {
-  margin: $sp-6;
+.logout-wrap {
+  padding: 0;
 }
 
-.actions-list {
-  padding: 0 $sp-8;
+.logout-btn {
   display: flex;
-  flex-direction: column;
-}
-
-.action-item {
-  @include flex-between;
-  padding: $sp-7 0;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  height: 88rpx;
+  background: $color-bg-card;
+  border-radius: 24rpx;
+  border: 1rpx solid $color-border-light;
+  box-shadow: $shadow-sm;
   cursor: pointer;
-  transition: $transition-base;
-  border-radius: $radius-md;
+  transition: all 0.2s ease;
 
-  &:not(:last-child) {
-    border-bottom: 1rpx solid $gray-100;
+  @media (min-width: 1024px) {
+    height: 52px;
+    border-radius: 16px;
+    gap: 8px;
   }
 
   &:active {
-    background: $gray-50;
-  }
+    background: #FEF2F2;
+    border-color: rgba($color-danger, 0.2);
+    transform: scale(0.98);
 
-  // 危险操作(退出登录)
-  &.danger {
-    .action-label {
-      color: $error;
-    }
-
-    .action-icon {
-      filter: grayscale(0);
+    .logout-icon, .logout-text {
+      color: $color-danger;
     }
   }
+
+  // #ifdef H5
+  &:hover {
+    background: #FEF2F2;
+    border-color: rgba($color-danger, 0.15);
+
+    .logout-icon, .logout-text {
+      color: $color-danger;
+    }
+  }
+  // #endif
 }
 
-.action-left {
-  display: flex;
-  align-items: center;
-  gap: $sp-4;
+.logout-icon {
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
 }
 
-.action-icon {
-  font-size: 40rpx;
-}
+.logout-text {
+  font-size: 28rpx;
+  font-weight: 500;
+  color: $color-text-tertiary;
+  transition: color 0.2s ease;
 
-.action-label {
-  font-size: $font-size-base;
-  color: $gray-800;
-  font-weight: $font-weight-medium;
-}
-
-.action-arrow {
-  font-size: 48rpx;
-  color: $gray-300;
-  line-height: 1;
-  transform: translateY(-2rpx);
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 </style>

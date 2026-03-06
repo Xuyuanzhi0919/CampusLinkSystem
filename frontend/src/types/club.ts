@@ -10,7 +10,13 @@ export interface ClubItem {
   logoUrl?: string
   schoolName: string
   memberCount: number
+  activityCount?: number // 社团历史活动总数
+  isOfficial?: boolean // 是否官方/校级社团
+  category?: string // 社团分类: 技术/学习/体育/艺术/公益/兴趣
+  lastActivityAt?: string // 最近活动时间
   createdAt: string
+  isMember?: boolean // P1优化: 用户是否已加入该社团
+  isPending?: boolean // MVP-4: 加入申请是否审核中
 }
 
 // 社团详情
@@ -19,6 +25,11 @@ export interface ClubDetail extends ClubItem {
   founderId: number
   founderName: string
   isMember: boolean
+  isPending?: boolean // 申请是否审核中
+  userRole?: string // 当前用户在社团中的角色: founder/admin/member
+  joinPosition?: number // 用户加入位置(第几位成员)
+  status?: number // 社团状态: 0-已解散, 1-正常
+  updatedAt?: string // 更新时间
 }
 
 // 社团成员
@@ -98,7 +109,8 @@ export interface ActivityCreateParams {
   startTime: string
   endTime: string
   maxParticipants: number
-  signupDeadline: string
-  checkInPoints: number
+    signupDeadline: string
+    checkInPoints: number
+    rewardPoints?: number // 添加奖励积分字段
 }
 

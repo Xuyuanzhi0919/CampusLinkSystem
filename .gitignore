@@ -104,7 +104,6 @@ unpackage/
 .hbuilderx/
 
 # 微信小程序
-.DS_Store
 
 # ============================================
 # 数据库相关
@@ -170,7 +169,6 @@ config/local.js
 *.draft.md
 TODO.md
 
-# 测试文件
+# 测试文件（前端构建产物，非源码）
 *.test.js
 *.spec.js
-nul

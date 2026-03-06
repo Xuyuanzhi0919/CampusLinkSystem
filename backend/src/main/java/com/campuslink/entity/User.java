@@ -108,6 +108,18 @@ public class User {
     private Integer isVerified;
 
     /**
+     * 微信 OpenID（小程序用户唯一标识）
+     */
+    @TableField("wechat_openid")
+    private String wechatOpenid;
+
+    /**
+     * 微信 UnionID（同一开放平台下多应用统一标识）
+     */
+    @TableField("wechat_unionid")
+    private String wechatUnionid;
+
+    /**
      * 最后登录时间
      */
     @TableField("last_login_time")

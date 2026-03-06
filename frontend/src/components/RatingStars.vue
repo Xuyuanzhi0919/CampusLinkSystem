@@ -10,9 +10,13 @@
         @mouseenter="!readonly && handleStarHover(star)"
         @mouseleave="!readonly && handleStarLeave()"
       >
-        <text class="star-icon" :class="getStarClass(star)">
-          {{ getStarIcon(star) }}
-        </text>
+        <Icon
+          name="star"
+          :size="starSize"
+          :stroke-width="1.5"
+          class="star-icon"
+          :class="getStarClass(star)"
+        />
       </view>
     </view>
 
@@ -28,6 +32,7 @@
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import Icon from '@/components/icons/index.vue'
 
 const props = withDefaults(
   defineProps<{
@@ -69,38 +74,24 @@ const displayScore = computed(() => {
   return score > 0 ? score.toFixed(1) : '未评分'
 })
 
-// 获取星星图标
-const getStarIcon = (star: number): string => {
-  const value = displayValue.value
-  if (value >= star) {
-    return '★' // 实心星
-  } else if (props.allowHalf && value >= star - 0.5) {
-    return '⯨' // 半星（暂不支持，显示为实心）
-    return '★'
-  } else {
-    return '☆' // 空心星
-  }
-}
+// 图标尺寸映射
+const starSize = computed(() => {
+  const sizeMap = { small: 16, medium: 20, large: 28 }
+  return sizeMap[props.size]
+})
 
 // 获取星星样式类
 const getStarClass = (star: number): string => {
   const value = displayValue.value
-  if (value >= star) {
-    return 'star-filled'
-  } else if (props.allowHalf && value >= star - 0.5) {
-    return 'star-half'
-  } else {
-    return 'star-empty'
-  }
+  if (value >= star) return 'star-filled'
+  if (props.allowHalf && value >= star - 0.5) return 'star-half'
+  return 'star-empty'
 }
 
 // 点击星星
 const handleStarClick = (star: number) => {
   if (props.readonly) return
-
-  // 如果点击已选中的星星，则取消评分
   const newValue = props.modelValue === star ? 0 : star
-
   emit('update:modelValue', newValue)
   emit('change', newValue)
 }
@@ -117,17 +108,15 @@ const handleStarLeave = () => {
 
 // 格式化人数
 const formatCount = (count: number): string => {
-  if (count >= 10000) {
-    return (count / 10000).toFixed(1) + '万'
-  } else if (count >= 1000) {
-    return (count / 1000).toFixed(1) + 'k'
-  } else {
-    return count.toString()
-  }
+  if (count >= 10000) return (count / 10000).toFixed(1) + '万'
+  if (count >= 1000) return (count / 1000).toFixed(1) + 'k'
+  return count.toString()
 }
 </script>
 
 <style lang="scss" scoped>
+@import '@/styles/variables.scss';
+
 .rating-stars {
   display: inline-flex;
   align-items: center;
@@ -136,10 +125,10 @@ const formatCount = (count: number): string => {
   &.interactive {
     .star-item {
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: transform 0.2s ease;
 
       &:hover {
-        transform: scale(1.1);
+        transform: scale(1.15);
       }
 
       &:active {
@@ -163,31 +152,26 @@ const formatCount = (count: number): string => {
 }
 
 .star-icon {
-  font-size: 32rpx; // medium尺寸
-  line-height: 1;
   transition: all 0.2s ease;
 
   &.star-filled {
-    color: #fbbf24; // 金色
-    text-shadow: 0 2rpx 4rpx rgba(251, 191, 36, 0.3);
+    color: #fbbf24;
+    fill: #fbbf24; // 实心填充
+    filter: drop-shadow(0 1rpx 3rpx rgba(251, 191, 36, 0.4));
   }
 
   &.star-half {
     color: #fbbf24;
+    fill: #fbbf24;
   }
 
   &.star-empty {
-    color: #d1d5db; // 灰色
-  }
+    color: #d1d5db;
 
-  // 小尺寸
-  .rating-stars[data-size='small'] & {
-    font-size: 24rpx;
-  }
-
-  // 大尺寸
-  .rating-stars[data-size='large'] & {
-    font-size: 40rpx;
+    // 只读时更浅
+    .rating-stars.readonly & {
+      color: #e5e7eb;
+    }
   }
 }
 
@@ -207,16 +191,5 @@ const formatCount = (count: number): string => {
 .rating-count {
   font-size: 24rpx;
   color: #999999;
-}
-
-// 只读模式样式调整
-.rating-stars.readonly {
-  .star-item {
-    cursor: default;
-  }
-
-  .star-icon.star-empty {
-    color: #e5e7eb; // 更浅的灰色
-  }
 }
 </style>

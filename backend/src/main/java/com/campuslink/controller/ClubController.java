@@ -39,9 +39,12 @@ public class ClubController {
     public Result<PageResult<ClubResponse>> getClubList(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
-            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String category,
+            @RequestParam(defaultValue = "recommended") String sortBy,
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
-        PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize);
+        PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize, keyword, category, sortBy);
         return Result.success(result);
     }
 
@@ -49,7 +52,7 @@ public class ClubController {
     @GetMapping("/{clubId}")
     public Result<ClubResponse> getClubDetail(
             @PathVariable Long clubId,
-            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
     ) {
         ClubResponse clubResponse = clubService.getClubDetail(clubId, userId);
         return Result.success(clubResponse);

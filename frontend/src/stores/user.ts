@@ -120,10 +120,15 @@ export const useUserStore = defineStore('user', () => {
   const login = (loginData: {
     token: string
     refreshToken: string
-    userInfo: UserInfo
+    userInfo?: UserInfo  // Web 登录使用 userInfo
+    user?: UserInfo      // 微信登录使用 user
   }) => {
     setToken(loginData.token, loginData.refreshToken)
-    setUserInfo(loginData.userInfo)
+    // 兼容两种字段名：userInfo（Web登录）和 user（微信登录）
+    const userData = loginData.userInfo || loginData.user
+    if (userData) {
+      setUserInfo(userData)
+    }
   }
 
   /**

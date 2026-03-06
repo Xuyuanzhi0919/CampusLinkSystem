@@ -1,64 +1,88 @@
 <template>
-  <view class="home-new">
-    <!-- 顶部聚焦区 -->
-    <TopFocusBar
-      ref="topFocusBarRef"
+  <view class="home-page">
+    <!-- 1. 顶部导航栏（全局固定） -->
+    <!-- #ifdef H5 -->
+    <WebHeader
+      v-if="isDesktop"
       @search="handleSearch"
       @upload="handleUpload"
-      @ai-answer="handleAIAnswer"
       @login="showLoginModal = true"
     />
+    <MobileHeader v-else @search="handleSearch" />
+    <!-- #endif -->
 
-    <!-- 核心功能区 -->
-    <FunctionCards @navigate="handleNavigate" />
+    <!-- 2. Hero 主视觉区（桌面端和移动端自适应） -->
+    <!-- #ifdef H5 -->
+    <HeroSection
+      @upload="handleUpload"
+      @ask="handleAsk"
+      @task="handleTask"
+      @tag-click="handleTagClick"
+    />
+    <!-- #endif -->
 
-    <!-- 个性化内容区 -->
-    <view class="content-section">
-      <view class="content-container">
-        <!-- 左侧：为你推荐 -->
-        <RecommendSection
-          ref="recommendSectionRef"
-          class="recommend-area"
-          @item-click="handleRecommendClick"
-        />
+    <!-- 移动端金刚区导航（Hero 之后，内容之前：吸引 → 引导 → 消费） -->
+    <!-- #ifdef H5 -->
+    <GridNavigation v-if="!isDesktop" />
+    <!-- #endif -->
 
-        <!-- 右侧：热门榜单 -->
-        <HotRankingPanel
-          ref="hotRankingPanelRef"
-          class="ranking-area"
-          @item-click="handleRankingClick"
-        />
+    <!-- 3. 页面主体（8:4 栅格布局） -->
+    <view class="main-content">
+      <view class="content-wrapper">
+        <!-- 左侧：内容主流区（8栅格） -->
+        <view class="main-area">
+          <!-- 精选推荐（企业级卡片） -->
+          <FeaturedSectionV2
+            ref="featuredRef"
+            @item-click="handleFeaturedClick"
+            @view-more="handleViewMoreFeatured"
+          />
+
+          <!-- 最新问答（企业级卡片） -->
+          <LatestQuestionsV2
+            ref="questionsRef"
+            @question-click="handleQuestionClick"
+            @view-more="handleViewMoreQuestions"
+          />
+
+          <!-- 精选资料（企业级卡片） -->
+          <FeaturedResourcesV2
+            ref="resourcesRef"
+            @resource-click="handleResourceClick"
+            @view-more="handleViewMoreResources"
+          />
+
+          <!-- 社团活动推荐（企业级卡片） -->
+          <ActivityRecommendV2
+            ref="activitiesRef"
+            @activity-click="handleActivityClick"
+            @view-more="handleViewMoreActivities"
+          />
+        </view>
+
+        <!-- 右侧：辅助侧栏（4栅格） - 仅桌面端显示 -->
+        <view v-if="isDesktop" class="sidebar-area">
+          <HomeSidebar
+            ref="sidebarRef"
+            @question-click="handleHotQuestionClick"
+            @tag-click="handleTagClick"
+            @ai-click="handleAIClick"
+            @quick-link="handleQuickLink"
+          />
+        </view>
       </view>
     </view>
 
-    <!-- 辅助信息区 -->
-    <view class="auxiliary-section">
-      <view class="auxiliary-container">
-        <!-- 积分中心 -->
-        <PointsCenter class="auxiliary-card" @task-click="handleTaskClick" />
+    <!-- 4. 底部区块 - 仅桌面端显示 -->
+    <HomeFooter v-if="isDesktop" @navigate="handleNavigate" />
 
-        <!-- 校园公告 -->
-        <CampusNotice class="auxiliary-card" @notice-click="handleNoticeClick" />
-
-        <!-- 社团动态 -->
-        <ClubActivity class="auxiliary-card" @activity-click="handleActivityClick" />
-      </view>
-
-      <!-- 优化：版权栏作为视觉收尾 -->
-      <view class="footer-copyright">
-        <text class="copyright-text">CampusLink ©2025</text>
-        <text class="footer-divider">|</text>
-        <text class="footer-link" @click="handleHelpCenter">帮助中心</text>
-        <text class="footer-divider">|</text>
-        <text class="footer-link" @click="handleFeedback">意见反馈</text>
-      </view>
-    </view>
-
-    <!-- PC端悬浮导航 -->
-    <PCFloatingNav />
+    <!-- PC端悬浮导航（仅桌面端） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav v-if="isDesktop" />
+    <!-- #endif -->
 
     <!-- 移动端自定义底部导航 -->
-    <CustomTabBar />
+    <CustomTabBar v-if="!isDesktop" />
 
     <!-- 登录弹窗 -->
     <LoginModal
@@ -77,692 +101,449 @@
       @go-to-login="handleSwitchToLogin"
     />
 
-    <!-- 快速返回顶部按钮 -->
-    <CButton
-      v-if="showBackToTop"
-      type="primary"
-      round
-      class="back-to-top-btn"
-      @click="scrollToTop"
-    >
-      <text class="back-to-top-icon">↑</text>
-    </CButton>
+    <!-- 登录引导弹窗（需要登录时显示） -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuideModal"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+      @cancel="handleLoginGuideCancel"
+    />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
-import type { ComponentPublicInstance } from 'vue'
-import { onPullDownRefresh, onReachBottom } from '@dcloudio/uni-app'
-import TopFocusBar from './components/TopFocusBar.vue'
-import FunctionCards from './components/FunctionCards.vue'
-import RecommendSection from './components/RecommendSection.vue'
-import HotRankingPanel from './components/HotRankingPanel.vue'
-import PointsCenter from './components/PointsCenter.vue'
-import CampusNotice from './components/CampusNotice.vue'
-import ClubActivity from './components/ClubActivity.vue'
-import PCFloatingNav from '@/components/PCFloatingNav.vue'
-import CustomTabBar from '@/components/CustomTabBar.vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { onPullDownRefresh, onShow } from '@dcloudio/uni-app'
+import { useNavigationStore } from '@/stores/navigation'
+
+// 移动端组件
+import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { WebHeader, PCFloatingNav } from '@/components/desktop'
+// #endif
+
+// 首页组件
+import HeroSection from './components/HeroSection.vue'
+// 企业级卡片组件（新版）
+import FeaturedSectionV2 from './components/FeaturedSectionV2.vue'
+import LatestQuestionsV2 from './components/LatestQuestionsV2.vue'
+import FeaturedResourcesV2 from './components/FeaturedResourcesV2.vue'
+import ActivityRecommendV2 from './components/ActivityRecommendV2.vue'
+// 旧组件（备份）
+// import FeaturedSection from './components/FeaturedSection.vue'
+// import LatestQuestions from './components/LatestQuestions.vue'
+// import FeaturedResources from './components/FeaturedResources.vue'
+// import ActivityRecommend from './components/ActivityRecommend.vue'
+import HomeSidebar from './components/HomeSidebar.vue'
+import HomeFooter from './components/HomeFooter.vue'
+
+// 通用组件
 import LoginModal from '@/components/LoginModal.vue'
 import RegisterModal from '@/components/RegisterModal.vue'
-import CButton from '@/components/ui/CButton.vue'
+import { ClLoginGuideModal } from '@/components/cl'
 
-// 登录弹窗状态
+// 组合式函数
+import { useNavigation } from '@/composables/useNavigation'
+
+// 统一导航
+const nav = useNavigation()
+const navigationStore = useNavigationStore()
+
+// 平台判断 - 统一使用 1024px 作为桌面端断点
+const isDesktop = computed(() => {
+  // #ifdef H5
+  return window.innerWidth >= 1024
+  // #endif
+  // #ifndef H5
+  return false
+  // #endif
+})
+
+// 弹窗状态
 const showLoginModal = ref(false)
-
-// 注册弹窗状态
 const showRegisterModal = ref(false)
 
-// TopFocusBar 引用 - 添加类型声明
-type TopFocusBarInstance = ComponentPublicInstance & {
-  checkLoginStatus: () => void
-}
-const topFocusBarRef = ref<TopFocusBarInstance | null>(null)
+// 登录引导弹窗状态
+const showLoginGuideModal = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+let loginGuideCallback: (() => void) | null = null
 
-// 返回顶部按钮状态
-const showBackToTop = ref(false)
-let scrollTimer: any = null
+// 组件引用
+const featuredRef = ref<any>(null)
+const questionsRef = ref<any>(null)
+const resourcesRef = ref<any>(null)
+const activitiesRef = ref<any>(null)
+const sidebarRef = ref<any>(null)
 
-// 推荐区域和榜单区域引用
-const recommendSectionRef = ref<any>(null)
-const hotRankingPanelRef = ref<any>(null)
+// ===================== 导航事件处理（使用 useNavigation）=====================
 
-// 加载更多状态
-const isLoadingMore = ref(false)
-const hasMoreData = ref(true)
+const handleSearch = (keyword: string) => nav.toSearchResult(keyword)
 
-// 显示欢迎提示（产品级轻量气泡 - CampusLink品牌调性）
+// 🎯 统一发布入口：所有发布行为都跳转到选择页
+const handlePublish = () => nav.toPublish()
+const handleUpload = () => nav.toPublish() // 保持接口兼容,内部跳转到统一入口
+const handleAsk = () => nav.toPublish()
+const handleTask = () => nav.toPublish()
+
+const handleTagClick = (tag: any) => nav.toSearchResult(tag.name)
+const handleNavigate = (_path: string) => { /* Footer 导航由组件内部处理 */ }
+
+// ===================== 内容点击处理 =====================
+
+const handleFeaturedClick = (item: any) => nav.toDetailByType(item.type, item.id)
+const handleQuestionClick = (item: any) => nav.toQuestionDetail(item.id)
+const handleAnswerClick = (item: any) => nav.toQuestionDetail(item.id, 'answer')
+const handleResourceClick = (item: any) => nav.toResourceDetail(item.id)
+const handleActivityClick = (item: any) => nav.toActivityDetail(item.id)
+const handleHotQuestionClick = (item: any) => nav.toQuestionDetail(item.id)
+const handleAIClick = () => nav.toAIChat()
+const handleQuickLink = (type: string) => nav.toQuickLink(type)
+
+// ===================== 查看更多 =====================
+
+const handleViewMoreFeatured = () => nav.toQuestionList()
+const handleViewMoreQuestions = () => nav.toQuestionList()
+const handleViewMoreResources = () => nav.toResourceList()
+const handleViewMoreActivities = () => nav.toActivityList()
+
+// ===================== 登录相关 =====================
+
 const showWelcomeToast = (message: string) => {
   // #ifdef H5
   const toastDiv = document.createElement('div')
-
-  // 精细化配色：更轻盈的背景 + 品牌蓝灰调和 + 精美图标
-  const cfg = {
-    bg: 'rgba(209, 250, 229, 0.55)', // 优化：降低不透明度到55%
-    textColor: '#14532d', // 优化：更深的绿色文字
-    icon: '🎉', // 优化：改用庆祝图标，更欢迎
-    glowColor: 'rgba(34, 197, 94, 0.25)' // 柔和绿光
-  }
-
-  // 轻量化结构：单个图标 + 文字（移除重复图标）
   toastDiv.innerHTML = `
     <div style="display: flex; align-items: center; gap: 8px;">
-      <span class="toast-icon" style="
-        font-size: 16px;
-        line-height: 1;
-        flex-shrink: 0;
-        animation: iconPulse 1.5s ease-in-out infinite;
-        filter: drop-shadow(0 0 4px ${cfg.glowColor});
-      ">${cfg.icon}</span>
-      <span style="
-        font-size: 14px;
-        font-weight: 500;
-        color: ${cfg.textColor};
-        line-height: 1.4;
-        letter-spacing: 0.3px;
-      ">${message}</span>
+      <span style="font-size: 16px;">🎉</span>
+      <span style="font-size: 14px; font-weight: 500; color: #14532d;">${message}</span>
     </div>
   `
-
-  // 优化：更轻盈的样式 - 减小padding，降低阴影，提高位置（远离弹窗）
   toastDiv.style.cssText = `
     position: fixed;
     top: 60px;
     left: 50%;
-    transform: translate(-50%, -10px) scale(0.98);
-    background: ${cfg.bg};
+    transform: translate(-50%, -10px);
+    background: rgba(209, 250, 229, 0.9);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    padding: 8px 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    padding: 12px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
     z-index: 10000;
     opacity: 0;
-    transition: all 0.35s ease-out;
-    pointer-events: none;
+    transition: all 0.3s ease-out;
   `
-
-  // 添加图标脉动动画样式
-  const style = document.createElement('style')
-  style.textContent = `
-    @keyframes iconPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.1); opacity: 0.85; }
-    }
-  `
-  document.head.appendChild(style)
-
   document.body.appendChild(toastDiv)
 
-  // 入场动画：柔和淡入 + 微缩放 + 光晕显现
   requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      toastDiv.style.opacity = '1'
-      toastDiv.style.transform = 'translate(-50%, 0) scale(1)'
-      toastDiv.style.boxShadow = `0 4px 12px rgba(0, 0, 0, 0.08), 0 0 12px ${cfg.glowColor}`
-    })
+    toastDiv.style.opacity = '1'
+    toastDiv.style.transform = 'translate(-50%, 0)'
   })
 
-  // 停留2.5秒后上滑淡出
   setTimeout(() => {
     toastDiv.style.opacity = '0'
-    toastDiv.style.transform = 'translate(-50%, -8px) scale(0.98)'
-    toastDiv.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)'
-
-    setTimeout(() => {
-      if (document.body.contains(toastDiv)) {
-        document.body.removeChild(toastDiv)
-      }
-      if (document.head.contains(style)) {
-        document.head.removeChild(style)
-      }
-    }, 300)
+    toastDiv.style.transform = 'translate(-50%, -10px)'
+    setTimeout(() => document.body.removeChild(toastDiv), 300)
   }, 2500)
   // #endif
 
   // #ifndef H5
-  uni.showToast({
-    title: message,
-    icon: 'none',
-    duration: 2500
-  })
+  uni.showToast({ title: message, icon: 'none', duration: 2500 })
   // #endif
 }
 
-/**
- * 搜索处理
- */
-const handleSearch = (keyword: string) => {
-  uni.navigateTo({
-    url: `/pages/search/result?keyword=${encodeURIComponent(keyword)}`,
-  })
-}
-
-/**
- * 上传资料
- */
-const handleUpload = () => {
-  uni.navigateTo({
-    url: '/pages/resource/upload',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * AI 智能答疑
- */
-const handleAIAnswer = () => {
-  uni.navigateTo({
-    url: '/pages/question/ai',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * 功能导航
- */
-const handleNavigate = (path: string) => {
-  // 检查是否是 tabBar 页面
-  const tabBarPages = [
-    'pages/home/index',
-    'pages/resource/index',
-    'pages/question/index'
-  ]
-
-  const isTabBarPage = tabBarPages.some(tabPath => path.includes(tabPath))
-
-  if (isTabBarPage) {
-    // tabBar 页面使用 switchTab
-    uni.switchTab({
-      url: path,
-      fail: () => {
-        uni.showToast({ title: '功能开发中', icon: 'none' })
-      },
-    })
-  } else {
-    // 非 tabBar 页面使用 navigateTo
-    uni.navigateTo({
-      url: path,
-      fail: () => {
-        uni.showToast({ title: '功能开发中', icon: 'none' })
-      },
-    })
-  }
-}
-
-/**
- * 推荐内容点击
- */
-const handleRecommendClick = (item: any) => {
-  // 暂时只支持任务详情页跳转
-  if (item.type === 'task') {
-    if (!item.id) {
-      console.error('任务ID为空:', item)
-      uni.showToast({
-        title: '任务信息错误',
-        icon: 'none'
-      })
-      return
-    }
-
-    uni.navigateTo({
-      url: `/pages/task/detail?taskId=${item.id}`,
-    })
-  } else {
-    // 其他类型暂时提示功能开发中
-    uni.showToast({
-      title: `${item.type === 'resource' ? '资源' : '问答'}详情页开发中`,
-      icon: 'none'
-    })
-  }
-}
-
-/**
- * 榜单内容点击
- */
-const handleRankingClick = (item: any) => {
-  handleRecommendClick(item)
-}
-
-/**
- * 积分任务点击
- */
-const handleTaskClick = (task: any) => {
-  uni.showToast({ title: '功能开发中', icon: 'none' })
-}
-
-/**
- * 公告点击
- */
-const handleNoticeClick = (notice: any) => {
-  uni.navigateTo({
-    url: `/pages/notice/detail?id=${notice.id}`,
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * 活动点击
- */
-const handleActivityClick = (activity: any) => {
-  uni.navigateTo({
-    url: `/pages/activity/detail?id=${activity.id}`,
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * 帮助中心
- */
-const handleHelpCenter = () => {
-  uni.navigateTo({
-    url: '/pages/help/index',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * 意见反馈
- */
-const handleFeedback = () => {
-  uni.navigateTo({
-    url: '/pages/feedback/index',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
-  })
-}
-
-/**
- * 登录成功处理
- */
 const handleLoginSuccess = (response: any) => {
-  // 显示欢迎提示（品牌化设计）- 移除图标,配置中已有
-  showWelcomeToast(`欢迎回来,${response.user.nickname}!`)
-
-  // 刷新 TopFocusBar 状态
-  setTimeout(() => {
-    if (topFocusBarRef.value && topFocusBarRef.value.checkLoginStatus) {
-      topFocusBarRef.value.checkLoginStatus()
-    }
-  }, 100)
+  // 通知 Header 组件刷新登录状态
+  uni.$emit('user-login')
+  showWelcomeToast(`欢迎回来, ${response.user.nickname}!`)
 }
 
-/**
- * 打开注册弹窗
- */
 const handleRegister = () => {
-  showLoginModal.value = false  // 关闭登录弹窗
-  showRegisterModal.value = true  // 打开注册弹窗
+  showLoginModal.value = false
+  showRegisterModal.value = true
 }
 
-/**
- * 注册成功处理（与登录成功相同）
- */
 const handleRegisterSuccess = (response: any) => {
-  // 显示欢迎提示（品牌化设计）- 移除图标,配置中已有
-  showWelcomeToast(`欢迎加入 CampusLink,${response.user.nickname}!`)
-
-  // 刷新 TopFocusBar 状态
-  setTimeout(() => {
-    if (topFocusBarRef.value && topFocusBarRef.value.checkLoginStatus) {
-      topFocusBarRef.value.checkLoginStatus()
-    }
-  }, 100)
+  // 通知 Header 组件刷新登录状态
+  uni.$emit('user-login')
+  showWelcomeToast(`欢迎加入 CampusLink, ${response.user.nickname}!`)
 }
 
-/**
- * 从注册弹窗切换到登录弹窗
- */
 const handleSwitchToLogin = () => {
-  showRegisterModal.value = false  // 关闭注册弹窗
-  showLoginModal.value = true  // 打开登录弹窗
+  showRegisterModal.value = false
+  showLoginModal.value = true
 }
 
-/**
- * 跳转忘记密码页面
- */
 const handleForgotPassword = () => {
   uni.navigateTo({
     url: '/pages/auth/forgot-password',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    },
+    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
 
-/**
- * 处理页面滚动（监听显示返回顶部按钮）
- */
-const handlePageScroll = () => {
-  // #ifdef H5
-  if (scrollTimer) clearTimeout(scrollTimer)
+// ===================== 登录引导弹窗处理 =====================
 
-  scrollTimer = setTimeout(() => {
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop
-    showBackToTop.value = scrollTop > 300
-  }, 100)
-  // #endif
-
-  // #ifndef H5
-  uni.createSelectorQuery().selectViewport().scrollOffset((res: any) => {
-    showBackToTop.value = res.scrollTop > 300
-  }).exec()
-  // #endif
+const handleLoginGuideConfirm = () => {
+  // 打开登录弹窗
+  showLoginModal.value = true
 }
 
-/**
- * 返回顶部
- */
-const scrollToTop = () => {
-  // #ifdef H5
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth'
-  })
-  // #endif
-
-  // #ifndef H5
-  uni.pageScrollTo({
-    scrollTop: 0,
-    duration: 300
-  })
-  // #endif
+const handleLoginGuideCancel = () => {
+  loginGuideCallback = null
 }
 
-// 组件挂载时监听滚动事件
+// ===================== 下拉刷新 =====================
+
+onPullDownRefresh(() => {
+  Promise.all([
+    featuredRef.value?.loadData?.(),
+    questionsRef.value?.loadData?.(),
+    resourcesRef.value?.loadData?.(),
+    activitiesRef.value?.loadData?.(),
+    sidebarRef.value?.loadData?.()
+  ]).finally(() => {
+    uni.stopPullDownRefresh()
+    uni.showToast({ title: '刷新成功', icon: 'success', duration: 1500 })
+  })
+})
+
+// ===================== 生命周期 =====================
+
 onMounted(() => {
-  // #ifdef H5
-  window.addEventListener('scroll', handlePageScroll)
-  // #endif
-
-  // #ifndef H5
-  // uni-app 中使用 onPageScroll 生命周期
-  // #endif
-
-  // 🎯 监听卡片触发的登录事件
+  // 监听直接打开登录弹窗事件
   uni.$on('show-login-modal', () => {
-    console.log('[Home] 收到登录弹窗请求')
     showLoginModal.value = true
   })
+
+  // 监听登录引导弹窗事件（带操作类型和文案）
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+    loginGuideCallback = data?.onSuccess || null
+    showLoginGuideModal.value = true
+  })
 })
 
-// 组件卸载时移除监听
+onShow(() => {
+  // 每次页面显示时同步 TabBar 激活状态（从子页面返回时也会触发）
+  navigationStore.syncActivePath()
+  // 确保 TabBar 可见
+  navigationStore.showNav()
+})
+
 onUnmounted(() => {
-  // #ifdef H5
-  window.removeEventListener('scroll', handlePageScroll)
-  if (scrollTimer) clearTimeout(scrollTimer)
-  // #endif
-
-  // 🎯 清理登录事件监听
   uni.$off('show-login-modal')
-})
-
-/**
- * 下拉刷新
- */
-onPullDownRefresh(() => {
-  console.log('下拉刷新触发')
-
-  // 刷新推荐区域数据
-  if (recommendSectionRef.value && typeof recommendSectionRef.value.loadRecommendData === 'function') {
-    recommendSectionRef.value.loadRecommendData()
-  }
-
-  // 刷新榜单数据
-  if (hotRankingPanelRef.value && typeof hotRankingPanelRef.value.loadData === 'function') {
-    hotRankingPanelRef.value.loadData()
-  }
-
-  // 延迟停止下拉刷新动画
-  setTimeout(() => {
-    uni.stopPullDownRefresh()
-    uni.showToast({
-      title: '刷新成功',
-      icon: 'success',
-      duration: 1500
-    })
-  }, 1000)
-})
-
-/**
- * 上滑加载更多
- */
-onReachBottom(() => {
-  if (isLoadingMore.value || !hasMoreData.value) {
-    return
-  }
-
-  console.log('触底加载更多')
-  isLoadingMore.value = true
-
-  // 模拟加载更多数据
-  setTimeout(() => {
-    // TODO: 实际项目中这里应该调用接口加载更多数据
-    isLoadingMore.value = false
-
-    // 模拟：假设加载3次后没有更多数据
-    const loadCount = parseInt(uni.getStorageSync('loadMoreCount') || '0')
-    if (loadCount >= 2) {
-      hasMoreData.value = false
-      uni.showToast({
-        title: '没有更多内容了',
-        icon: 'none',
-        duration: 1500
-      })
-    } else {
-      uni.setStorageSync('loadMoreCount', String(loadCount + 1))
-      uni.showToast({
-        title: '加载成功',
-        icon: 'success',
-        duration: 1500
-      })
-    }
-  }, 1000)
+  uni.$off('show-login-guide')
 })
 </script>
 
-<style scoped lang="scss">
-// 变量已通过 uni.scss 全局注入
-
-/* Phase 4：页面容器 - 简洁 */
-.home-new {
+<style lang="scss" scoped>
+.home-page {
   min-height: 100vh;
-  background: $bg-page;
   position: relative;
+
+  // 🎨 方案 B：分区背景体系 - 统一蓝绿色系，亮度递进
+  // 顶部（Hero+金刚区）→ 内容区 → 底部：#F6FAFF → #F9FBFE → #F3F6FA
+  background: linear-gradient(180deg,
+    #F6FAFF 0%,           // 顶部最亮（Hero 区域）
+    #F8FBFE 35%,          // 过渡
+    #F9FBFE 50%,          // 内容区（中等亮度）
+    #F7F9FC 75%,          // 过渡
+    #F3F6FA 100%          // 底部（略深，与 Footer 衔接）
+  );
+
+  // 全页统一纹理层：微噪点 + 网格
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-image:
+      // 微网格纹理（统一品牌感）
+      linear-gradient(rgba(37, 99, 235, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(37, 99, 235, 0.02) 1px, transparent 1px),
+      // 噪点纹理（增加质感）
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 40px 40px, 40px 40px, auto;
+    background-position: -1px -1px, -1px -1px, 0 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.8;
+  }
+
+  // 顶部区域强化光斑（Hero + 金刚区）
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 800px;
+    background:
+      // 左上角主光斑（蓝色系）
+      radial-gradient(ellipse 60% 50% at 10% 15%, rgba(37, 99, 235, 0.08) 0%, transparent 55%),
+      // 右上角辅助光斑（青绿色系）
+      radial-gradient(ellipse 50% 40% at 90% 20%, rgba(16, 185, 129, 0.06) 0%, transparent 50%),
+      // 中部柔和光斑
+      radial-gradient(ellipse 70% 30% at 50% 40%, rgba(59, 130, 246, 0.04) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+    mask-image: linear-gradient(180deg, black 0%, transparent 90%);
+    -webkit-mask-image: linear-gradient(180deg, black 0%, transparent 90%);
+  }
 }
 
-/* Phase 4：主内容区 - 紧凑间距 */
-.content-section {
-  padding: $sp-8 0 $sp-16;
+// 主内容区
+.main-content {
   position: relative;
-  z-index: auto;
+  z-index: 1;
+  // 🎨 透明背景，继承全页渐变体系
   background: transparent;
+  // 顶部间距
+  padding-top: 48px;
+  // 左右安全边距 80px - 专业级呼吸感
+  padding-left: 80px;
+  padding-right: 80px;
 
-  @include mobile {
-    padding: $sp-4 0 $sp-12;
+  // 中等屏幕适配
+  @media (max-width: 1600px) {
+    padding-left: 64px;
+    padding-right: 64px;
   }
-}
-
-/* Phase 4：内容容器 - 响应式布局 */
-.content-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 $sp-16;
-  display: flex;
-  gap: $sp-8;
 
   @media (max-width: 1440px) {
-    padding: 0 $sp-12;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+
+  @media (max-width: 1200px) {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+
+  /* #ifdef H5 */
+  @include mobile {
+    padding: 6px 12px 0;
+  }
+  /* #endif */
+}
+
+.content-wrapper {
+  // 内容区最大宽度限制 - 保持专业布局
+  max-width: 1280px;
+  margin: 0 auto;
+  display: flex;
+  // 左右栏间距 40px - 视觉平衡的关键
+  gap: 40px;
+
+  @media (max-width: 1400px) {
+    gap: 36px;
+  }
+
+  @media (max-width: 1200px) {
+    gap: 32px;
   }
 
   @include mobile {
     flex-direction: column;
-    padding: 0 $sp-4;
-    gap: $sp-4;
+    gap: 16px;
   }
 }
 
-/* Phase 4：左侧推荐区 - 70% */
-.recommend-area {
-  flex: 70;
+// 左侧主内容区（8栅格 = 66.67%）
+// 🎯 左对齐信息流 - 与Hero风格统一
+.main-area {
+  flex: 8;
   min-width: 0;
+  max-width: 880px; // 与Hero左侧内容宽度接近(680px + padding)
+  overflow: visible;
+  padding-bottom: 32px;
+
+  // 模块之间统一 48px 间距（8pt 设计系统）
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
 
   @include mobile {
     flex: 1;
+    max-width: 100%;
+    padding-bottom: 24px;
+    gap: 20px;
   }
 }
 
-/* Phase 4：右侧榜单区 - 30% */
-.ranking-area {
-  flex: 30;
-  min-width: 0;
-  background: $bg-surface;
-  border-radius: $radius-md;
-  padding: $sp-6;
-  border: 1px solid $border-light;
-
-  @include mobile {
-    flex: 1;
-    order: 2;
-    background: transparent;
-    padding: 0;
-    border: none;
-  }
-}
-
-/* Phase 4：辅助信息区 - 紧凑 */
-.auxiliary-section {
-  padding: $sp-12 0 $sp-16;
+// 右侧栏（固定320px宽度）- 毛玻璃容器效果
+.sidebar-area {
+  width: 320px;
+  flex-shrink: 0;
   position: relative;
-  z-index: auto;
-  background: $bg-surface;
-  border-top: 1px solid $border-light;
 
-  @include mobile {
-    padding: $sp-8 0 $sp-12;
+  // 毛玻璃容器背景
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  // 边框与圆角
+  border: 1px solid #F2F4F8;
+  border-radius: 20px;
+
+  // 柔和阴影
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+
+  // 内边距 - 增加到 24px 保持呼吸感
+  padding: 24px;
+
+  // 高度自适应
+  height: fit-content;
+  align-self: flex-start;
+  // 添加 sticky 定位，滚动时保持可见
+  position: sticky;
+  top: 100px;
+
+  // 🔧 修复: 平滑过渡高度变化,防止数据加载后突然跳跃
+  transition: height 0.3s ease-out;
+
+  // 左侧分割线（使用伪元素）
+  &::before {
+    content: '';
+    position: absolute;
+    left: -20px; // 在容器左侧间隙中
+    top: 24px;
+    bottom: 24px;
+    width: 1px;
+    background: linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(226, 232, 240, 0.6) 10%,
+      rgba(226, 232, 240, 0.8) 50%,
+      rgba(226, 232, 240, 0.6) 90%,
+      transparent 100%
+    );
   }
-}
 
-.auxiliary-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 $sp-16;
-  display: flex;
-  gap: $sp-8;
+  @media (max-width: 1200px) {
+    width: 300px;
+    padding: 20px;
 
-  @media (max-width: 1440px) {
-    padding: 0 $sp-12;
-  }
-
-  @include mobile {
-    flex-direction: column;
-    padding: 0 $sp-4;
-    gap: $sp-4;
-  }
-}
-
-/* Phase 4：辅助卡片 */
-.auxiliary-card {
-  flex: 1;
-  min-width: 0;
-  min-height: 360rpx;
-
-  @include mobile {
-    min-height: 280rpx;
-  }
-}
-
-/* Phase 4：版权栏 - 简洁 */
-.footer-copyright {
-  max-width: 1400px;
-  margin: $sp-12 auto 0;
-  padding: $sp-8 $sp-16;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: $sp-4;
-  border-top: 1px solid $border-light;
-
-  @include mobile {
-    padding: $sp-6 $sp-4;
-    flex-wrap: wrap;
-  }
-}
-
-.copyright-text {
-  font-size: $font-size-xs;
-  color: $text-quaternary;
-  line-height: $line-height-normal;
-}
-
-.footer-divider {
-  font-size: $font-size-xs;
-  color: $border-color;
-}
-
-.footer-link {
-  font-size: $font-size-xs;
-  color: $text-tertiary;
-  line-height: $line-height-normal;
-  cursor: pointer;
-  transition: $transition-fast;
-
-  &:hover {
-    color: $primary;
-  }
-}
-
-/* Phase 4：返回顶部按钮 - 简洁 */
-.back-to-top-btn {
-  position: fixed;
-  right: $sp-8;
-  bottom: $sp-16;
-  z-index: $z-fixed;
-
-  :deep(.c-button) {
-    width: 80rpx;
-    height: 80rpx;
-    min-width: 80rpx;
-    padding: 0;
-    box-shadow: $shadow-sm;
-
-    &:hover {
-      box-shadow: $shadow-md;
+    &::before {
+      left: -16px;
     }
   }
 
-  @include mobile {
-    right: $sp-4;
-    bottom: 140rpx;
+  @media (max-width: 1024px) {
+    display: none;
+  }
 
-    :deep(.c-button) {
-      width: 72rpx;
-      height: 72rpx;
-      min-width: 72rpx;
-    }
+  @include mobile {
+    display: none;
   }
 }
 
-.back-to-top-icon {
-  font-size: $font-size-2xl;
-  font-weight: $font-weight-semibold;
-  color: $text-inverse;
-  line-height: 1;
-
-  @include mobile {
-    font-size: $font-size-xl;
-  }
-}
 </style>
-

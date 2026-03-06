@@ -1,11 +1,23 @@
 // 全局配置文件
 const isProd = import.meta.env.PROD
 
+// 获取 API 基础地址
+const getBaseURL = (): string => {
+  if (isProd) {
+    return 'https://api.campuslink.com/api/v1'
+  }
+  // #ifdef H5
+  // H5开发环境：通过Vite代理转发
+  return '/api/v1'
+  // #endif
+  // #ifdef APP-PLUS
+  return 'http://localhost:8080/api/v1'
+  // #endif
+}
+
 export const config = {
   // API 基础地址
-  baseURL: isProd
-    ? 'https://api.campuslink.com/api/v1'
-    : '/api/v1',  // 开发环境使用相对路径，通过Vite代理转发
+  baseURL: getBaseURL(),
 
   // WebSocket 地址
   WS_URL: isProd
@@ -13,7 +25,7 @@ export const config = {
     : 'ws://localhost:8080',  // 开发环境 WebSocket 地址
 
   // 文件上传地址
-  uploadURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',
+  uploadURL: 'https://campuslink01.oss-cn-hangzhou.aliyuncs.com',
 
   // Token 存储 key
   tokenKey: 'campuslink_token',
@@ -27,7 +39,7 @@ export const config = {
   defaultPageSize: 20,
 
   // 图片域名
-  imageBaseURL: 'https://campuslink.oss-cn-hangzhou.aliyuncs.com',
+  imageBaseURL: 'https://campuslink01.oss-cn-hangzhou.aliyuncs.com',
 
   // 色彩系统（根据 UI 设计文档）
   colors: {

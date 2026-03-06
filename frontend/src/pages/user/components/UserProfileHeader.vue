@@ -1,65 +1,52 @@
 <template>
-  <view class="profile-header">
-    <!-- 用户基本信息 -->
-    <view class="user-info">
+  <!-- ========== A层:身份与成长(全宽,高度160-180px) ========== -->
+  <view class="identity-growth-layer">
+    <!-- 🎯 第一段:身份信息 -->
+    <view class="identity-section">
       <!-- 头像 -->
       <image
         class="avatar"
         :src="profile?.avatarUrl || defaultAvatar"
         mode="aspectFill"
         @click="handleAvatarClick"
-        @longpress="handleEditProfile"
       />
 
-      <!-- 用户资料 -->
-      <view class="info-content">
-        <view class="name-row">
+      <!-- 身份信息 -->
+      <view class="identity-info">
+        <view class="name-line">
           <text class="nickname">{{ profile?.nickname || '未设置昵称' }}</text>
           <LevelBadge :level="profile?.level || 1" />
         </view>
-
-        <view class="meta-row">
-          <text class="student-id">{{ studentIdText }}</text>
-          <text class="school-name">{{ profile?.schoolName || '未设置学校' }}</text>
+        <view class="title-line">
+          <text class="user-title">{{ userTitle }}</text>
+          <view class="ranking-badge">
+            <Icon name="trending-up" :size="12" class="ranking-icon" />
+            <text class="ranking-text">{{ rankingFullText }}</text>
+          </view>
         </view>
+        <text class="user-meta">{{ studentIdText }} · {{ profile?.schoolName || '未设置学校' }}</text>
+      </view>
+    </view>
 
-        <view class="points-row" @click="handlePointsClick">
-          <text class="points-label">积分</text>
+    <!-- 🎯 第二段:积分进度条(横向) -->
+    <view class="growth-status" @click="handlePointsClick">
+      <view class="status-header">
+        <view class="points-info">
+          <text class="points-label">当前积分</text>
           <text class="points-value">{{ profile?.points || 0 }}</text>
-          <text class="points-arrow">›</text>
+        </view>
+        <view class="level-progress-info">
+          <text class="progress-text">{{ levelProgressText }}</text>
+          <Icon name="chevron-right" :size="14" class="status-arrow" />
         </view>
       </view>
-    </view>
-
-    <!-- 统计数据 -->
-    <view class="stats-grid">
-      <view
-        v-for="stat in statsData"
-        :key="stat.key"
-        class="stat-item"
-        @click="handleStatClick(stat.key)"
-      >
-        <text class="stat-value">{{ stat.value }}</text>
-        <text class="stat-label">{{ stat.label }}</text>
+      <!-- 🎯 进度条 -->
+      <view class="progress-bar-container">
+        <view class="progress-bar">
+          <view class="progress-fill" :style="{ width: levelProgress + '%' }"></view>
+        </view>
+        <text class="progress-label">{{ levelProgressPercent }}</text>
       </view>
-    </view>
-
-    <!-- 操作按钮 - 使用 CButton 组件 -->
-    <view class="action-buttons">
-      <CButton type="secondary" size="md" @click="handleEditProfile">
-        <template #icon><text>✏️</text></template>
-        编辑资料
-      </CButton>
-
-      <CButton
-        type="primary"
-        size="md"
-        :disabled="isCheckedIn"
-        @click="handleCheckIn"
-      >
-        <template #icon><text>📅</text></template>
-        {{ checkInButtonText }}
-      </CButton>
     </view>
   </view>
 </template>
@@ -68,7 +55,7 @@
 import { computed } from 'vue'
 import type { UserProfileData, UserStatsData } from '@/types/user'
 import LevelBadge from './LevelBadge.vue'
-import CButton from '@/components/ui/CButton.vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   profile: UserProfileData | null
@@ -80,8 +67,6 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   editProfile: []
-  checkIn: []
-  statClick: [key: string]
   pointsClick: []
 }>()
 
@@ -93,50 +78,50 @@ const studentIdText = computed(() => {
   return props.profile?.studentId || '未设置学号'
 })
 
-// 签到按钮文本
-const checkInButtonText = computed(() => {
-  return props.isCheckedIn ? '已签到' : '每日签到'
+// 🎯 用户称号(根据积分/等级)
+const userTitle = computed(() => {
+  const points = props.profile?.points || 0
+  if (points > 5000) return '资深贡献者'
+  if (points > 2000) return '活跃贡献者'
+  if (points > 1000) return '热心助人者'
+  if (points > 500) return '积极参与者'
+  return '新手成员'
 })
 
-// 统计数据配置
-const statsData = computed(() => [
-  {
-    key: 'resources',
-    label: '资源',
-    value: props.stats?.resourceCount || 0
-  },
-  {
-    key: 'questions',
-    label: '问答',
-    value: props.stats?.questionCount || 0
-  },
-  {
-    key: 'tasks',
-    label: '任务',
-    value: (props.stats?.taskPublishCount || 0) + (props.stats?.taskAcceptedCount || 0)
-  },
-  {
-    key: 'favorites',
-    label: '收藏',
-    value: props.stats?.favoriteCount || 0
-  }
-])
+// 🎯 排名完整文本(全站前X%)
+const rankingFullText = computed(() => {
+  const points = props.profile?.points || 0
+  if (points > 5000) return '全站前 5%'
+  if (points > 2000) return '全站前 15%'
+  if (points > 1000) return '全站前 30%'
+  if (points > 500) return '全站前 50%'
+  return '全站前 80%'
+})
 
-/**
- * 处理编辑资料
- */
-const handleEditProfile = () => {
-  emit('editProfile')
-}
+// 🎯 等级进度(距离下一级)
+const levelProgress = computed(() => {
+  // TODO: 后端提供真实等级规则
+  // 这里简化:每500积分升1级
+  const points = props.profile?.points || 0
+  const currentLevelPoints = Math.floor(points / 500) * 500
+  const nextLevelPoints = currentLevelPoints + 500
+  const progressPoints = points - currentLevelPoints
+  return Math.floor((progressPoints / 500) * 100)
+})
 
-/**
- * 处理签到
- */
-const handleCheckIn = () => {
-  if (!props.isCheckedIn) {
-    emit('checkIn')
-  }
-}
+// 等级进度文本
+const levelProgressText = computed(() => {
+  const points = props.profile?.points || 0
+  const currentLevelPoints = Math.floor(points / 500) * 500
+  const nextLevelPoints = currentLevelPoints + 500
+  const remainingPoints = nextLevelPoints - points
+  return `距离下一级还差 ${remainingPoints} 分`
+})
+
+// 等级进度百分比
+const levelProgressPercent = computed(() => {
+  return `${levelProgress.value}%`
+})
 
 /**
  * 🎯 处理头像点击 - 预览头像
@@ -166,13 +151,6 @@ const handleAvatarClick = () => {
 }
 
 /**
- * 处理统计项点击
- */
-const handleStatClick = (key: string) => {
-  emit('statClick', key)
-}
-
-/**
  * 处理积分点击
  */
 const handlePointsClick = () => {
@@ -183,155 +161,192 @@ const handlePointsClick = () => {
 <style lang="scss" scoped>
 // 变量已通过 uni.scss 全局注入
 
-.profile-header {
-  background: $white;
-  border-radius: $radius-2xl;
-  padding: $sp-8;
-  margin: $sp-6;
-  box-shadow: $shadow-card;
+/* ========== A层:身份与成长(全宽,高度160-180px) ========== */
+.identity-growth-layer {
+  // 🎯 浅蓝灰背景:轻盈、校园气质
+  background: #EEF2FF;
+  padding: 40rpx 32rpx 32rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
 }
 
-// 用户基本信息
-.user-info {
+/* 🎯 第一段:身份信息 */
+.identity-section {
   display: flex;
-  gap: $sp-6;
-  margin-bottom: $sp-8;
+  align-items: flex-start;
+  gap: 24rpx;
 }
 
 .avatar {
-  width: 120rpx;
-  height: 120rpx;
-  border-radius: $radius-full;
-  background: $gray-100;
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: 50%;
+  border: 4rpx solid $white; // 🎯 白色边框(从浅蓝灰中跳出)
+  background: $white;
   flex-shrink: 0;
-  cursor: pointer;
-  transition: $transition-base;
+  box-shadow: 0 4rpx 12rpx rgba(37, 99, 235, 0.12); // 淡蓝色阴影
+  transition: transform 0.2s ease;
 
   &:active {
     transform: scale(0.95);
   }
 }
 
-.info-content {
+.identity-info {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  min-width: 0;
+  gap: 8rpx;
 }
 
-.name-row {
+.name-line {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 12rpx;
 }
 
 .nickname {
   font-size: 36rpx;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
+  font-weight: 700;
+  color: #111827; // 🎯 深灰文字(浅背景上)
   @include text-ellipsis(1);
 }
 
-.meta-row {
+.title-line {
   display: flex;
   align-items: center;
-  gap: $sp-4;
-  margin-top: $sp-2;
+  gap: 12rpx;
+  flex-wrap: wrap;
 }
 
-.student-id,
-.school-name {
-  font-size: $font-size-sm;
-  color: $gray-500;
+.user-title {
+  font-size: 24rpx;
+  color: #9CA3AF; // 🎯 中性灰
+  font-weight: 500;
+  padding: 4rpx 12rpx;
+  background: #F3F4F6; // 浅灰背景
+  border-radius: 8rpx;
+  white-space: nowrap;
 }
 
-.school-name {
-  &::before {
-    content: '•';
-    margin-right: $sp-2;
-  }
-}
-
-.points-row {
+.ranking-badge {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  margin-top: $sp-3;
-  padding: $sp-2 $sp-3 $sp-2 0;
+  gap: 4rpx;
+  padding: 4rpx 10rpx;
+  background: #DBEAFE; // 浅蓝背景
+  border-radius: 8rpx;
+}
+
+.ranking-icon {
+  color: #2563EB; // 🎯 品牌蓝
+}
+
+.ranking-text {
+  font-size: 22rpx;
+  color: #2563EB; // 🎯 品牌蓝
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.user-meta {
+  font-size: 24rpx;
+  color: #6B7280; // 🎯 中性灰
+  @include text-ellipsis(1);
+  margin-top: 2rpx;
+}
+
+/* 🎯 第二段:积分进度条 */
+.growth-status {
+  // 🎯 白色卡片浮层
+  background: $white;
+  border-radius: 16rpx;
+  padding: 20rpx 24rpx; // 🎯 收窄高度
   cursor: pointer;
-  transition: $transition-base;
-  border-radius: $radius-base;
-  margin-left: -$sp-3;
-  padding-left: $sp-3;
+  transition: all 0.2s ease;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 
   &:active {
-    background: $accent-100;
+    background: #F9FAFB;
     transform: scale(0.98);
   }
 }
 
+.status-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12rpx; // 🎯 缩小间距
+}
+
+.points-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+}
+
 .points-label {
-  font-size: $font-size-sm;
-  color: $gray-500;
+  font-size: 24rpx;
+  color: #6B7280; // 🎯 中性灰
+  font-weight: 500;
 }
 
 .points-value {
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
-  color: $accent;
+  font-size: 40rpx;
+  font-weight: 700;
+  color: #111827; // 🎯 深灰(白卡片上)
 }
 
-.points-arrow {
-  font-size: $font-size-lg;
-  color: $accent-600;
-  font-weight: $font-weight-bold;
-  margin-left: $sp-1;
-}
-
-// 统计数据
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: $sp-6;
-  padding: $sp-6 0;
-  border-top: 1rpx solid $gray-100;
-  border-bottom: 1rpx solid $gray-100;
-}
-
-.stat-item {
+.level-progress-info {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: $sp-2;
-  cursor: pointer;
-  transition: $transition-base;
-
-  &:active {
-    transform: scale(0.95);
-  }
+  gap: 4rpx;
 }
 
-.stat-value {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $primary;
+.progress-text {
+  font-size: 22rpx;
+  color: #6B7280; // 🎯 中性灰
+  font-weight: 500;
 }
 
-.stat-label {
-  font-size: $font-size-sm;
-  color: $gray-500;
+.status-arrow {
+  color: #9CA3AF; // 🎯 浅灰
+  flex-shrink: 0;
 }
 
-// 操作按钮
-.action-buttons {
+/* 🎯 进度条(核心视觉元素) */
+.progress-bar-container {
   display: flex;
-  gap: $sp-4;
-  margin-top: $sp-6;
+  align-items: center;
+  gap: 12rpx;
+}
 
-  // CButton 组件样式覆盖 - 让按钮等宽
-  :deep(.c-button) {
-    flex: 1;
-  }
+.progress-bar {
+  flex: 1;
+  height: 8rpx;
+  background: #E5E7EB; // 🎯 中性灰背景
+  border-radius: 4rpx;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: #2563EB; // 🎯 品牌蓝(唯一强调色)
+  border-radius: 4rpx;
+  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none; // 🎯 移除发光
+  position: relative;
+}
+
+.progress-label {
+  font-size: 22rpx;
+  color: #6B7280; // 🎯 中性灰
+  font-weight: 600;
+  white-space: nowrap;
+  min-width: 60rpx;
+  text-align: right;
 }
 </style>

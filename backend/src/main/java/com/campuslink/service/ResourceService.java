@@ -86,6 +86,8 @@ public class ResourceService {
             Integer pageSize,
             String sortBy,
             String sortOrder,
+            Integer scoreMin,
+            Integer scoreMax,
             Long currentUserId
     ) {
         // 构建分页对象
@@ -108,6 +110,12 @@ public class ResourceService {
                     .like(Resource::getDescription, keyword)
             );
         }
+        if (scoreMin != null) {
+            queryWrapper.ge(Resource::getScore, scoreMin);
+        }
+        if (scoreMax != null) {
+            queryWrapper.le(Resource::getScore, scoreMax);
+        }
 
         // 排序
         if ("downloads".equals(sortBy)) {
@@ -128,7 +136,7 @@ public class ResourceService {
                 .map(this::convertToListResponse)
                 .collect(Collectors.toList());
 
-        // 填充已下载状态和已点赞状态
+        // 填充已下载状态、已点赞状态和已收藏状态
         if (currentUserId != null && !resourceList.isEmpty()) {
             // 提取所有资源ID
             Set<Long> resourceIds = resourceList.stream()
@@ -141,16 +149,21 @@ public class ResourceService {
             // 批量查询已点赞的资源ID
             Set<Long> likedIds = resourceLikeService.getLikedResourceIds(currentUserId, resourceIds);
 
-            // 填充isDownloaded和isLiked字段
+            // 批量查询已收藏的资源ID
+            Set<Long> favoritedIds = favoriteService.getFavoritedResourceIds(currentUserId, resourceIds);
+
+            // 填充isDownloaded、isLiked、isFavorited字段
             resourceList.forEach(vo -> {
                 vo.setIsDownloaded(downloadedIds.contains(vo.getResourceId()));
                 vo.setIsLiked(likedIds.contains(vo.getResourceId()));
+                vo.setIsFavorited(favoritedIds.contains(vo.getResourceId()));
             });
         } else {
             // 未登录用户，全部设置为false
             resourceList.forEach(vo -> {
                 vo.setIsDownloaded(false);
                 vo.setIsLiked(false);
+                vo.setIsFavorited(false);
             });
         }
 
@@ -402,6 +415,19 @@ public class ResourceService {
         response.setDownloads(resource.getDownloads());
         response.setLikes(resource.getLikes());
         response.setCreatedAt(resource.getCreatedAt());
+
+        // 设置浏览次数（临时使用下载次数的估算值，与详情页一致）
+        response.setViews(resource.getDownloads() != null ? resource.getDownloads() * 3 : 0);
+
+        // 统计收藏数
+        Long favoriteCount = favoriteService.getFavoriteCount("resource", resource.getRid());
+        response.setFavorites(favoriteCount != null ? favoriteCount.intValue() : 0);
+
+        // 填充评分相关字段（从ResourceRatingService获取真实数据）
+        ResourceRatingService.RatingResult ratingResult =
+            resourceRatingService.calculateRatingStatistics(resource.getRid(), null);
+        response.setAverageRating(ratingResult.getAverageRating());
+        response.setTotalRatings(ratingResult.getTotalRatings());
 
         // 查询上传者信息
         User uploader = userMapper.selectById(resource.getUploaderId());

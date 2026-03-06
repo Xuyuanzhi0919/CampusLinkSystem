@@ -4,800 +4,202 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-CampusLink 是一个多端统一的高校资源互助与问答平台，支持微信小程序、H5、App 等多端。技术栈：Spring Boot 3.4 (后端) + uni-app (前端) + MySQL + Redis。
+CampusLink 是一个基于 H5 技术的高校资源共享与问答社区平台，采用前后端分离架构。
 
-**当前状态**：项目核心功能已实现，包含完整的用户认证、资源管理、问答系统、任务系统、社团活动等模块，共 144+ Java 类。前端已实现语音搜索、多端适配等特性。
+**核心功能**：资源共享、问答社区、任务大厅、社团活动、积分系统
 
-## 常用开发命令
+## 技术栈
 
-### 后端 (Spring Boot)
+### 后端 (Spring Boot 3.4.0)
+- JDK 17+, Spring Boot 3.4.0, MyBatisPlus 3.5.9, JPA
+- MySQL 8.0+, Redis 7.0+
+- JWT 认证 (io.jsonwebtoken 0.12.6)，双令牌机制（Access Token 2小时 + Refresh Token 7天）
+- WebSocket 实时通信（私信、通知推送）
+- Knife4j (Swagger 3) API 文档
+- 阿里云 OSS 对象存储
+- DeepSeek API（AI 助手功能）
 
-**工作目录**：项目根目录
+### 前端 (uni-app + Vue 3)
+- TypeScript + Vite 5.2.8，路径别名 `@/` → `src/`
+- Pinia 状态管理（user、question、navigation 三个 Store）
+- uni-ui 组件库（Easycom 自动导入，含 z-paging 虚拟列表、gp-skeleton 骨架屏）
+- Markdown 支持 (markdown-it + KaTeX)
+- PDF 预览 (pdfjs-dist，运行时加载，非预构建)
 
+## 开发命令
+
+### 后端
 ```bash
-# 启动开发服务器（默认端口 8080）
-mvn spring-boot:run
-
-# 编译打包（跳过测试）
-mvn clean package -DskipTests
-
-# 编译（不打包）
-mvn clean compile
-
-# 运行测试
-mvn test
-
-# 运行单个测试类
-mvn test -Dtest=UserServiceTest
-
-# 生成 Docker 镜像
-docker build -t campuslink-backend:latest ./backend
+cd backend
+mvn clean install              # 构建项目
+mvn spring-boot:run           # 启动开发服务器
+mvn test                      # 运行所有测试
+mvn test -Dtest=ClassName     # 运行单个测试类
 ```
 
-### 前端 (uni-app)
-
-**工作目录**：`frontend/` 目录
-
+### 前端
 ```bash
-# 安装依赖
 cd frontend
-npm install
-
-# 开发模式 - H5（默认端口 5173）
-npm run dev:h5
-
-# 开发模式 - 微信小程序
-npm run dev:mp-weixin
-
-# 构建生产版本 - H5
-npm run build:h5
-
-# 构建生产版本 - 微信小程序
-npm run build:mp-weixin
-
-# TypeScript 类型检查
-npm run type-check
+npm install                   # 安装依赖
+npm run dev:h5               # H5 开发模式（推荐，启用 Vite Proxy）
+npm run build:h5             # H5 构建生产版本
+npm run type-check           # TypeScript 类型检查（无 lint 工具）
 ```
 
-### 数据库操作
+### 服务地址
+- 前端 H5：http://localhost:5173
+- 后端 API：http://localhost:8080（context-path: `/api/v1`）
+- API 文档：http://localhost:8080/doc.html
 
+### 数据库初始化
 ```bash
-# 初始化数据库（首次）
-mysql -u root -p < sql/schema.sql
-mysql -u root -p < sql/init-data.sql
-
-# 数据库备份
-mysqldump -u root -p campuslink > backup_$(date +%Y%m%d).sql
-
-# 连接数据库
-mysql -u root -p campuslink
+mysql -u root -p campuslink < sql/campuslink.sql
 ```
 
-### Docker 操作
-
-```bash
-# 启动本地开发环境（MySQL + Redis）
-docker-compose up -d
-
-# 查看日志
-docker-compose logs -f
-
-# 停止所有容器
-docker-compose down
-```
-
-## 架构设计要点
-
-### 1. 后端架构 (Spring Boot)
-
-**分层结构**：
-- `controller/` - REST API 端点，负责请求响应
-- `service/` - 业务逻辑层，核心业务规则
-- `mapper/` - 数据访问层 (MyBatisPlus)
-- `entity/` - JPA 实体类，对应数据库表
-- `dto/` - 数据传输对象，用于 API 请求/响应
-- `config/` - Spring 配置类（Swagger、跨域、MyBatis 等）
-- `middleware/` - 中间件（JWT 认证、限流器）
-- `exception/` - 自定义异常和全局异常处理
-
-**关键设计模式**：
-- 统一响应格式：`Result<T>` 封装所有 API 响应
-- 分页响应：`PageResult<T>` 用于列表查询
-- 全局异常处理：`GlobalExceptionHandler` 统一处理异常
-- JWT 认证：Token 有效期 2 小时，RefreshToken 7 天
-
-### 2. 前端架构 (uni-app)
-
-**目录结构**：
-- `pages/` - 页面组件（auth、home、resource、question、task、club、message、user）
-- `components/` - 可复用组件
-- `stores/` - Pinia 状态管理
-- `services/` - API 服务层
-- `utils/request.ts` - HTTP 请求封装（拦截器、Token 自动刷新）
-- `config.ts` - 全局配置（API 地址、常量）
-
-**关键特性**：
-- 多端适配：微信小程序、H5、App
-- 统一请求：`utils/request.ts` 处理 Token、错误、重试
-- 状态管理：Pinia 管理用户信息、缓存数据
-- 图片上传：直传阿里云 OSS（获取签名后客户端直传）
-- 语音搜索：支持 H5 (Web Speech API) 和微信小程序（RecorderManager），详见 [VOICE_SEARCH_OPTIMIZATION.md](frontend/VOICE_SEARCH_OPTIMIZATION.md)
-
-### 3. 数据库设计 (17 张表)
-
-**核心表结构**：
-- `user` - 用户表（关联 `school`）
-- `resource` - 资源表（课件、试题、笔记），带审核流程
-- `question` / `answer` - 问答模块，支持采纳
-- `task` - 任务表，支持接单状态流转
-- `club` / `activity` - 社团与活动
-- `message` - 私信表
-- `notification` - 系统通知
-- `points_log` - 积分变动日志
-- `comment` / `report` - 评论与举报
-
-**重要约束**：
-- 所有表使用 `InnoDB` 引擎，UTF-8mb4 编码
-- 外键约束：`ON DELETE CASCADE` 或 `ON DELETE SET NULL`
-- 索引策略：为常用查询字段建立索引（如 `idx_user_id`、`idx_created_at`）
-
-### 4. API 设计规范
-
-**统一响应格式**：
-```json
-{
-  "code": 200,
-  "message": "success",
-  "data": {...},
-  "timestamp": 1704067200000
-}
-```
-
-**HTTP 状态码使用**：
-- `200` - 成功（查询、更新）
-- `201` - 创建成功
-- `204` - 删除成功
-- `400` - 参数错误
-- `401` - 未授权（Token 过期或无效）
-- `403` - 禁止访问（权限不足）
-- `404` - 资源不存在
-- `409` - 冲突（如任务已被接单）
-- `429` - 请求过于频繁（触发限流）
-- `500` - 服务器内部错误
-
-**业务错误码范围**：
-- `10001-10008` - 认证用户相关
-- `20001-20005` - 资源文件相关
-- `30001-30003` - 问答模块相关
-- `40001-40004` - 任务模块相关
-- `50001-50004` - 活动社团相关
-
-详细 API 文档参见：`docs/api-design.md` (56 个端点)
-
-### 5. 关键业务流程
-
-**资源审核流程**：
-```
-用户上传 → 待审核(status=0) → 管理员审核 → 已通过(1) / 已拒绝(2)
-```
-
-**任务状态流转**：
-```
-发布 → 待接单(0) → 进行中(1) → 已完成(2)
-                  ↘ 已取消(3)
-```
-**注意**：接单操作需事务保护，防止多人同时接单；禁止接单者接受自己的任务。
-
-**问题解决流程**：
-```
-提问(is_solved=0) → 用户回答 → 采纳最佳答案 → 已解决(1)
-                               ↘ AI 自动答复（异步）
-```
-
-### 6. 积分系统规则
-
-| 操作 | 积分变动 |
-|------|---------|
-| 注册奖励 | +100 |
-| 上传资源 | +10 |
-| 下载资源 | -5 |
-| 提问 | -2 |
-| 回答问题 | +5 |
-| 回答被采纳 | +20 |
-| 完成任务 | +任务悬赏(1-100) |
-| 活动签到 | +10 |
-
-所有积分变动需记录到 `points_log` 表，更新 `user.points` 字段需使用事务。
-
-### 7. 安全设计
-
-**认证机制**：
-- JWT Token：有效期 2 小时，存储在请求头 `Authorization: Bearer {token}`
-- RefreshToken：有效期 7 天，用于刷新 Token
-- 客户端自动刷新：Token 即将过期时自动调用 `/auth/refresh`
-
-**限流规则**（基于 Redis 计数）：
-- 登录/注册：10 次/分钟/IP
-- 发送验证码：1 次/分钟/手机号
-- 上传资源：5 次/小时/用户
-- 提问：10 次/小时/用户
-- 发布任务：10 次/小时/用户
-
-**幂等性设计**：
-- 关键操作（接单、支付等）需在请求头携带 `Idempotency-Key`
-- 服务端缓存 Key 5 分钟，重复请求返回缓存结果
-
-### 8. 第三方服务集成
-
-**必需服务**：
-- 阿里云 OSS：文件存储（`application.yml` 配置 endpoint、accessKey、bucketName）
-- 短信服务：验证码发送（配置 signName、templateCode）
-- 微信小程序：登录接口（配置 appid、secret）
-- Redis：缓存、Session、限流（配置 host、port、password）
-
-**可选服务**：
-- OpenAI API：AI 智能答复（MVP 后期集成）
-- Elasticsearch：全文搜索（数据量 >100W 时启用）
-
-**配置方式**：
-- 本地开发：使用 `.env` 文件或 `application-dev.yml`
-- 生产环境：使用环境变量或配置中心（如 Spring Cloud Config）
-
-## 环境准备
-
-### 首次运行前的准备
-
-1. **数据库配置**：
-   - 确保 MySQL 已安装并运行（推荐 8.0+）
-   - 创建数据库：`CREATE DATABASE campuslink CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`
-   - 初始化表结构：`mysql -u root -p campuslink < sql/schema.sql`
-   - 导入初始数据：`mysql -u root -p campuslink < sql/init-data.sql`
-
-2. **Redis 配置**：
-   - 确保 Redis 已安装并运行（推荐 7.0+）
-   - 或使用 Docker：`docker run -d -p 6379:6379 redis:7-alpine`
-
-3. **后端配置**：
-   - 修改 `backend/src/main/resources/application.yml` 中的数据库连接信息
-   - 配置 Redis 连接信息
-   - 配置阿里云 OSS 凭证（文件上传必需）
-   - 配置微信小程序 appid 和 secret（可选）
-
-4. **前端配置**：
-   - 修改 `frontend/src/config.ts` 中的 API 地址
-   - 如需微信小程序开发，配置小程序 appid
-
-## 开发注意事项
-
-### 代码规范
-
-1. **命名规范**：
-   - Java：驼峰命名（类 PascalCase，方法/变量 camelCase）
-   - 数据库：下划线命名（表、字段均小写）
-   - 前端：驼峰命名（组件 PascalCase，变量 camelCase）
-
-2. **注释要求**：
-   - 所有 Controller 方法必须添加 Swagger 注解（`@Operation`、`@Parameter`）
-   - 复杂业务逻辑需添加中文注释说明
-   - Service 层公共方法需添加 JavaDoc
-
-3. **异常处理**：
-   - 使用 `BusinessException` 抛出业务异常
-   - 统一由 `GlobalExceptionHandler` 处理
-   - 避免在 Controller 层使用 try-catch
-
-4. **数据校验**：
-   - 使用 Bean Validation（`@NotNull`、`@NotEmpty`、`@Email` 等）
-   - DTO 类必须添加校验注解
-   - 自定义校验逻辑放在 Service 层
-
-### 数据库操作
-
-1. **事务管理**：
-   - 涉及多表操作或积分变动的方法需添加 `@Transactional`
-   - 只读操作可使用 `@Transactional(readOnly = true)` 优化性能
-
-2. **分页查询**：
-   - 使用 MyBatisPlus 的 `Page<T>` 进行分页
-   - 前端传参：`page`（页码，从 1 开始）、`pageSize`（每页条数，默认 20）
-
-3. **软删除**：
-   - 用户、资源等核心表使用软删除（`deleted` 字段，0=正常，1=已删除）
-   - MyBatisPlus 配置逻辑删除：`@TableLogic`
-
-### 前端开发
-
-1. **API 调用**：
-   - 统一使用 `services/` 目录下的 API 方法
-   - 不要在组件中直接使用 `uni.request`
-
-2. **错误处理**：
-   - 所有 API 调用需使用 `try-catch` 捕获错误
-   - 使用 `uni.showToast` 显示错误提示
-
-3. **图片上传流程**：
-   ```javascript
-   // 1. 获取 OSS 签名
-   const signature = await getUploadSignature()
-
-   // 2. 客户端直传
-   uni.uploadFile({
-     url: signature.host,
-     formData: { key, policy, signature, ... },
-     success: (res) => { /* 获取文件 URL */ }
-   })
-   ```
-
-4. **多端兼容**：
-   - 使用 uni-app 提供的条件编译（`#ifdef MP-WEIXIN` 等）
-   - 避免使用平台特定 API，优先使用 uni-app 封装的方法
-
-## 测试要求
-
-### 后端测试
-
-1. **单元测试**：
-   - Service 层核心方法需编写单元测试
-   - 使用 JUnit 5 + Mockito
-   - 覆盖率目标：>60%
-
-2. **集成测试**：
-   - 关键 API 端点需编写集成测试
-   - 使用 `@SpringBootTest` + MockMvc
-
-### 前端测试
-
-1. **工具组件测试**：
-   - utils、services 等工具函数需编写单元测试
-   - 使用 Vitest
-
-## 常见问题
-
-### Q1: 如何添加新的 API 端点？
-
-1. 在 `controller/` 下创建或修改控制器
-2. 添加 Swagger 注解：`@Operation`、`@Tag`
-3. 在 `service/` 实现业务逻辑
-4. 更新 `docs/api-design.md` 文档
-5. 前端在 `services/` 添加对应的 API 方法
-
-### Q2: 如何添加新的数据库表？
-
-1. 在 `sql/schema.sql` 添加建表语句
-2. 在 `entity/` 创建对应的实体类
-3. 在 `mapper/` 创建 Mapper 接口
-4. 更新 `docs/database-design.md` 文档
-
-### Q3: 如何处理文件上传？
-
-**方式 1**：客户端直传 OSS（推荐）
-- 调用 `/resource/upload/signature` 获取签名
-- 客户端直接上传到阿里云 OSS
-- 将 OSS 文件 URL 保存到数据库
-
-**方式 2**：通过后端中转
-- 前端上传文件到后端
-- 后端转存到 OSS
-- 返回文件 URL
-
-### Q4: 如何测试微信小程序登录？
-
-在微信开发者工具中：
-1. 获取 `code`：`wx.login()`
-2. 调用 `/auth/wechat/login` 传递 `code`
-3. 后端调用微信接口换取 `openid`
-4. 返回 JWT Token
-
-### Q5: 如何调试 WebSocket 私信功能？
-
-1. 后端启动 WebSocket 服务（端口 8080）
-2. 客户端连接：`wss://localhost:8080/ws?token={jwt}&type=chat`
-3. 使用工具测试：Postman、wscat、或浏览器 WebSocket API
-
-## 特色功能实现说明
-
-### 1. 语音搜索功能
-
-前端已实现完整的语音搜索功能，包含专业的 SVG 图标、动画效果和多平台支持：
-
-**H5 端**：
-- 使用 Web Speech API 实现实时语音识别
-- 支持主流浏览器（Chrome、Edge、Safari）
-- 识别结果自动填充搜索框并执行搜索
-
-**微信小程序端**：
-- 使用 RecorderManager 录制音频
-- 需要后端提供语音识别 API（推荐：百度/腾讯云/阿里云语音识别服务）
-- 支持最长 60 秒录音
-
-**视觉效果**：
-- 默认状态：橙色渐变背景 + 白色麦克风图标
-- 激活状态：红色渐变 + 脉冲动画 + 波纹扩散效果
-- 响应式适配：PC 端和移动端有不同的尺寸
-
-详细实现文档：[frontend/VOICE_SEARCH_OPTIMIZATION.md](frontend/VOICE_SEARCH_OPTIMIZATION.md)
-
-### 2. 任务状态管理
-
-任务状态使用枚举类 `TaskStatus` 管理，支持状态流转和验证逻辑。关键实现点：
-- 接单操作需要事务保护，防止并发问题
-- 用户不能接自己发布的任务
-- 状态变更时需要记录到 `task_log` 表
-
-### 3. 前端状态管理最佳实践 (Pinia)
-
-项目使用 Pinia 进行状态管理，主要 Store 包括：
-
-**用户状态 (`stores/user.ts`)**：
-- **持久化存储**：Token、RefreshToken、用户信息同步到 `uni.storage`
-- **字段统一化**：自动处理后端字段差异（`uid` → `userId`，`avatarUrl` → `avatar`）
-- **权限计算**：提供 `isLoggedIn`、`isAdmin`、`isModerator` 计算属性
-- **关键方法**：
-  - `init()` - 应用启动时调用，从本地存储恢复状态
-  - `login()` - 登录后设置 Token 和用户信息
-  - `logout()` - 清除所有认证信息并重定向到首页
-  - `updatePoints()` - 积分变动后更新用户积分
-  - `updateUserInfo()` - 部分更新用户信息（如头像、昵称）
-
-**问答状态 (`stores/question.ts`)**：
-- **智能缓存**：第一页数据缓存 5 分钟（通过 `cache.ts`）
-- **分页管理**：自动处理列表追加和分页状态
-- **乐观更新**：支持本地立即更新列表项，无需重新请求
-- **筛选条件**：分类、状态、排序、关键词等条件持久化
-- **关键方法**：
-  - `loadQuestions()` - 加载问题列表（支持缓存控制）
-  - `refreshQuestions()` - 下拉刷新，重置到第一页
-  - `loadMoreQuestions()` - 上拉加载更多
-  - `updateQuestion()` - 乐观更新单个问题（如点赞、收藏）
-  - `addQuestion()` - 发布新问题后添加到列表顶部
-
-**使用规范**：
-```typescript
-// 在页面中使用 Store
-import { useUserStore } from '@/stores/user'
-import { useQuestionStore } from '@/stores/question'
-
-const userStore = useUserStore()
-const questionStore = useQuestionStore()
-
-// 应用启动时初始化（main.ts 或 App.vue）
-userStore.init()
-
-// 发布问题后乐观更新
-await publishQuestion(data)
-questionStore.addQuestion(newQuestion)
-
-// 点赞问题后乐观更新
-await likeQuestion(qid)
-questionStore.updateQuestion(qid, { likes: question.likes + 1 })
-```
-
-### 4. 评论系统实现
-
-项目支持两种评论系统架构：
-
-**架构 1：通用评论表 (`comment`)**：
-- 使用 `target_type` 和 `target_id` 区分评论对象（resource/question/answer/activity）
-- 适用于需要跨模块统一管理评论的场景
-- 实体类：`entity/Comment.java`
-
-**架构 2：专用评论表 (`resource_comment`)**：
-- 为特定模块单独设计评论表（如资源评论）
-- 更好的性能和灵活性，适合评论量大的模块
-- 实体类：`entity/ResourceComment.java`
-
-**评论层级设计**：
-- **两级结构**：一级评论（顶级）+ 二级回复（reply）
-- **禁止三级嵌套**：后端会拦截对回复的再回复（`ResourceCommentService:41`）
-- **级联删除**：删除一级评论时，自动删除所有回复（`ResourceCommentService:95-99`）
-
-**前端实现要点**：
-```typescript
-// 1. 调用评论 API（services/comment.ts）
-import { getResourceComments, addComment, deleteComment } from '@/services/comment'
-
-// 2. 获取评论列表（分页）
-const comments = await getResourceComments(resourceId, { page: 1, pageSize: 20 })
-
-// 3. 添加评论或回复
-await addComment(resourceId, {
-  content: '评论内容',
-  parentId: null  // 一级评论设为 null，回复时传父评论 ID
-})
-
-// 4. 删除评论（需要权限校验）
-await deleteComment(commentId)
-```
-
-**后端实现要点**：
-- 添加回复时验证 `parentId` 的合法性（`ResourceCommentService:33-44`）
-- 查询一级评论时自动加载所有回复（`ResourceCommentService:126-136`）
-- 删除评论时检查权限（仅评论者本人）
-
-### 5. 性能优化策略
-
-项目实现了完整的前端性能优化方案：
-
-#### 5.1 骨架屏加载 (`components/SkeletonScreen.vue`)
-
-**支持类型**：
-- `banner` - 轮播图骨架屏
-- `function` - 功能入口网格骨架屏
-- `card` - 卡片列表骨架屏（2 列网格）
-- `list` - 列表项骨架屏
-
-**使用方式**：
+### 后端 API 测试
+`backend/` 目录下有各模块 `.http` 文件（需 IntelliJ HTTP Client 或类似工具执行）：
+`api-test.http`, `user-test.http`, `question-test.http`, `resource-test.http` 等。
+
+## 架构要点
+
+### 后端分层
+- `controller/` → `service/` (接口+实现类) → `mapper/` (MyBatisPlus BaseMapper) → MySQL
+- `dto/` 按功能模块分子包（18个），每个模块有 Request 和 VO 对象
+- `entity/` 为 JPA 实体，`mapper/` 用 MyBatisPlus；两套 ORM 共存，实体类两者共用
+- MyBatisMetaObjectHandler 自动填充 `created_at`、`updated_at`；所有表有逻辑删除字段 `deleted`
+- `event/` + `listener/` 实现 Spring 事件驱动；`scheduler/` 处理定时任务；`enums/` 存放枚举（如 `TaskStatus`）
+
+### 认证架构（两层拦截器）
+`WebConfig` 注册了两个拦截器，顺序重要：
+1. **OptionalJwtAuthInterceptor**：先执行，识别当前用户但允许游客访问（用于 `/resource/list`、`/question/list`、`/task/list`、`/activity/list`、`/notification/list`）
+2. **JwtAuthInterceptor**：后执行，强制登录；排除 `/auth/**`、`/health`、`/api/pdf/**` 等
+
+前端 `utils/request.ts` 的 `Request` 类实现：Token 剩余 < 15 分钟时提前刷新；`isRefreshing` 标志位 + `requestQueue` 数组防止并发刷新竞争。后端 `AsyncConfig` 配置专用通知线程池（core=4, max=8, queue=200, CallerRunsPolicy），`WebSocketConfig` 使用 `@Conditional` 避免测试环境启动失败。
+
+### 前端路由（uni-app pages.json）
+uni-app 采用文件系统式路由，路由配置在 `frontend/src/pages.json`，共 43 个路由条目。TabBar 使用 `custom: true` 自定义实现（`components/layout/CustomTabBar.vue`），5个入口：首页、资源、发布（中心按钮）、问答（`pages/question/index`）、我的。注意：`pages/community/index` 是独立的社区门户页（含社团/活动/问答聚合），通过首页入口跳转，不在 TabBar 内。H5 模式下有路由守卫（`router/index.ts`）。
+
+### 前端状态管理
+- `stores/user.ts`：Token、RefreshToken、userInfo 持久化到 `uni.setStorageSync`；处理后端字段差异（`uid`↔`userId`，`avatarUrl`↔`avatar`）
+- `stores/question.ts`：问答相关状态管理
+- `stores/navigation.ts`：导航状态管理
+- **主题切换**：无独立 Store，通过 `App.vue` 中 CSS 自定义属性（`:root` 变量）实现；`document.documentElement` 切换 `dark-mode` 类，`uni.$emit('theme-change')` 广播全局事件
+
+### 前端工具层
+- `utils/request.ts`：核心 HTTP 客户端，Token < 15 分钟提前刷新，`isRefreshing` + `requestQueue` 防并发竞争；401 区分"已登录 token 过期"（弹窗）与"游客访问需登录接口"（静默 reject）
+- `utils/cache.ts`：TTL 缓存管理，`CACHE_KEYS` 统一常量，`CACHE_TTL` 分级（SHORT 2分钟、MEDIUM 5分钟、LONG 10分钟）
+- `utils/auth.ts`：登录引导机制，支持 12+ 种操作类型（answer、like、collect、download 等），触发 `uni.$emit('show-login-guide')`
+- `utils/upload.ts`：文件上传；`utils/errorHandler.ts`：全局错误处理；`utils/logger.ts`：日志；`utils/draft.ts`：草稿管理；`utils/searchHistory.ts`：搜索历史
+
+### 前端组合函数（composables/）
+- `useRequest.ts`：请求状态封装（loading、error）
+- `useWebSocket.ts`：WebSocket 连接管理
+- `usePaging.ts`：分页逻辑封装
+- `useHeaderLogic.ts`：导航栏逻辑
+- `useNavigation.ts`：页面跳转封装
+
+### 前端组件组织
+- `components/ui/`：基础 UI 组件（CButton、CCard、CTag、CSearchInput）
+- `components/layout/`：布局组件（CNavBar 含主题切换、PageContainer、CustomTabBar）
+- `components/cl/`：业务定制组件（ClIcon、ClAvatar、ClResourceCard、ClFeedQAItem 等）
+- `components/mobile/` 和 `components/desktop/`：端适配组件（通过 `windowWidth > 768px` 判断）
+- `pages/home/components/`：首页专用复杂组件（HeroSection 及其 hero/ 子组件）
+
+### 样式系统
+- `styles/design-tokens.scss`：企业级设计变量（色彩、间距、字体，符合 WCAG AA 无障碍标准）
+- `styles/variables.scss`：SCSS 变量（Sass 弃用警告已在 vite.config.ts 中通过 `silenceDeprecations` 静默）
+- `config/icons.ts`、`config/emoji.ts`、`config/images.ts`：图标/表情/图片资源配置
+- 图标库：`@iconify/vue`（大量图标集）+ `lucide-vue-next`（线性图标），通过 `ClIcon` 组件统一封装
+
+### 跨平台条件编译
+uni-app 使用 `#ifdef` / `#endif` 指令区分平台：
 ```vue
-<template>
-  <!-- 加载状态显示骨架屏 -->
-  <SkeletonScreen v-if="loading" type="card" :count="6" />
+<!-- 仅在 H5 端执行 -->
+// #ifdef H5
+import { useRouter } from 'vue-router'
+// #endif
+```
+桌面端与移动端组件通过 `windowWidth > 768px` 在运行时判断。
 
-  <!-- 数据加载完成显示实际内容 -->
-  <view v-else class="content">
-    <!-- 实际内容 -->
-  </view>
-</template>
+### API 层
+- 前端 `services/` 下 15 个业务服务文件：`activity`、`ai`、`auth`、`club`、`comment`、`favorite`、`message`、`notification`、`question`、`resource`、`search`、`stats`、`tag`、`task`、`user`，均调用 `utils/request.ts`
+- AI 助手页面：`pages/ai/chat`，调用后端 DeepSeek API；社区门户页 `pages/community/index`；推荐页 `pages/recommend/index`；关于页 `pages/about/`（index/privacy/terms）
+- H5 开发时 Vite Proxy 将 `/api` 转发到 `http://localhost:8080`（配置在 `vite.config.ts`，**不重写路径**，因后端 context-path 已是 `/api/v1`）
+- 生产环境 baseURL：`https://api.campuslink.com/api/v1`
+- `PdfProxyController`：后端代理 PDF 文件请求，绕过浏览器跨域限制
+
+### 多环境配置
+- 后端：`application.yml` 为生产占位配置，`application-local.yml` 为本地敏感配置（已 `.gitignore`）；激活方式：`spring.profiles.active: local`
+- 前端：`config.ts` 中 `getBaseURL()` 根据 `import.meta.env.DEV` 和平台（H5/APP）动态切换
+
+### 数据库设计
+17 张核心表，关键表：`users`（uid、role 字段）、`questions`、`answers`（is_adopted）、`tasks`（状态：0待接单→1进行中→2已完成/3已取消）、`resources`、`clubs`、`activities`（activity_signups 报名表）、`messages`（私信）、`notifications`、`points_history`（积分流水）。
+
+### 积分规则
+注册+100、签到+10、上传资源+10、下载资源-5、提问-2、回答+5、回答被采纳+20、完成任务+任务悬赏、活动签到+10。
+
+## 目录结构
+
+```
+CampusLink/
+├── backend/
+│   ├── src/main/java/com/campuslink/
+│   │   ├── config/            # 11个配置类（WebConfig 注册拦截器和 CORS）
+│   │   ├── controller/        # 22个 REST 控制器
+│   │   ├── service/           # 业务逻辑（接口 + Impl 实现类）
+│   │   ├── mapper/            # 27个 MyBatisPlus Mapper
+│   │   ├── entity/            # JPA + MyBatisPlus 共用实体
+│   │   ├── dto/               # 18个子包，按模块组织 Request/VO
+│   │   ├── common/            # Result<T>、PageResult<T>、ResultCode
+│   │   ├── middleware/        # JwtAuthInterceptor、OptionalJwtAuthInterceptor
+│   │   ├── websocket/         # WebSocket 处理器
+│   │   ├── event/             # Spring 事件类
+│   │   ├── listener/          # 事件监听器
+│   │   ├── scheduler/         # 定时任务
+│   │   ├── enums/             # 枚举（TaskStatus 等）
+│   │   ├── util/              # 工具类
+│   │   ├── validation/        # 自定义参数验证
+│   │   └── exception/         # 全局异常处理
+│   └── *.http                 # IntelliJ HTTP Client 接口测试文件
+├── frontend/
+│   └── src/
+│       ├── pages/             # 43 个路由（文件系统路由，见 pages.json）
+│       ├── components/        # 分 ui/layout/cl/mobile/desktop/ 组织
+│       ├── composables/       # Vue 组合函数（useRequest、useWebSocket、usePaging 等）
+│       ├── stores/            # user、question、navigation
+│       ├── services/          # 15 个业务 API 服务（含 ai.ts）
+│       ├── utils/             # 工具函数（request、cache、auth、upload 等 15 个）
+│       ├── types/             # TypeScript 类型定义
+│       ├── styles/            # design-tokens.scss、variables.scss
+│       ├── config/            # icons.ts、emoji.ts、images.ts
+│       ├── router/            # H5 路由守卫（index.ts）
+│       └── uni_modules/       # gp-skeleton 骨架屏库
+├── sql/                       # 数据库建表脚本
+└── docs/                      # 文档（api-design.md、database-design.md、deployment.md）
 ```
 
-**视觉效果**：
-- 渐变动画：模拟内容加载中的闪烁效果（1.4s 循环）
-- 颜色方案：#f0f2f5 → #e6e8eb → #f0f2f5
+## Git Commit 规范
 
-#### 5.2 图片懒加载 (`components/LazyImage.vue`)
-
-**核心特性**：
-- 占位符显示：加载前显示灰色渐变占位符
-- 淡入动画：图片加载完成后 0.3s 淡入
-- 错误处理：加载失败显示友好的错误提示
-- 多种模式：支持 `aspectFill`、`aspectFit`、`widthFix` 等
-
-**使用方式**：
-```vue
-<LazyImage
-  :src="imageUrl"
-  mode="aspectFill"
-  width="200rpx"
-  height="200rpx"
-  radius="12rpx"
-  :lazy="true"
-  placeholder="/static/default.png"
-/>
+```
+feat: 新功能
+fix: 修复 Bug
+docs: 文档更新
+style: 代码格式调整
+refactor: 代码重构
+perf: 性能优化
+test: 测试相关
+chore: 构建/工具链相关
 ```
 
-#### 5.3 请求防重复 (`composables/useRequest.ts`)
+## 注意事项
 
-**功能特性**：
-- **防重复请求**：自动拦截处理中的重复请求（`useRequest.ts:92-95`）
-- **防抖支持**：可配置防抖延迟，避免频繁触发（`useRequest.ts:98-109`）
-- **加载状态管理**：自动管理 `loading`、`error`、`data` 状态
-- **错误处理**：统一处理错误并显示友好提示
+- `pages/home/components/hero/` 下存在 `_backup.vue` 和 `_new_styles.scss` 等备份文件，勿编辑，以当前活跃文件（无后缀 `_backup`）为准
+- `sql/campuslink.sql` 是单一初始化脚本（含建表和初始数据），README 中的 `schema.sql` / `init-data.sql` 描述已过时
+- `backend/src/main/resources/application-local.yml` 包含本地敏感配置，已在 `.gitignore` 中排除，不应提交
 
-**使用方式**：
-```typescript
-import { useRequest } from '@/composables/useRequest'
-import { submitForm } from '@/services/xxx'
+## 代码规范
 
-// 基础用法
-const { loading, data, error, run } = useRequest(submitForm)
-await run(formData)
-
-// 高级配置
-const { run } = useRequest(submitForm, {
-  showLoading: true,           // 显示 uni.showLoading
-  loadingText: '提交中...',
-  showError: true,             // 自动显示错误提示
-  debounce: 500,               // 500ms 防抖
-  onSuccess: (data) => {
-    uni.showToast({ title: '提交成功', icon: 'success' })
-  }
-})
-
-// 分页请求
-const { list, loadMore, refresh, hasMore } = usePagination(getTaskList, {
-  pageSize: 20,
-  immediate: true  // 立即加载第一页
-})
-```
-
-#### 5.4 Token 自动刷新 (`utils/request.ts`)
-
-**刷新策略**：
-- **预刷新**：Token 剩余时间 < 15 分钟时自动刷新（`request.ts:76-86`）
-- **失败重试**：401 响应时尝试刷新 Token 并重试原请求（`request.ts:165-203`）
-- **请求队列**：刷新期间的请求加入队列，刷新完成后批量执行（`request.ts:168-186`）
-
-**工作流程**：
-```
-1. 发起请求前检查 Token 是否即将过期
-   ↓
-2. 即将过期 → 调用 /auth/refresh 刷新 Token
-   ↓
-3. 使用新 Token 发起请求
-   ↓
-4. 如果响应 401 → 再次尝试刷新并重试
-   ↓
-5. 刷新失败 → 清除登录信息，跳转到首页
-```
-
-#### 5.5 缓存机制 (`utils/cache.ts`)
-
-**缓存策略**：
-- **短期缓存**（1 分钟）：实时性要求高的数据
-- **中期缓存**（5 分钟）：问题列表、资源列表等
-- **长期缓存**（30 分钟）：学校列表、分类数据等
-
-**使用方式**：
-```typescript
-import { cache, CACHE_KEYS, CACHE_TTL } from '@/utils/cache'
-
-// 写入缓存
-cache.set(CACHE_KEYS.QUESTION_LIST, data, CACHE_TTL.MEDIUM)
-
-// 读取缓存
-const cached = cache.get<QuestionList>(CACHE_KEYS.QUESTION_LIST)
-if (cached) {
-  return cached  // 使用缓存数据
-}
-
-// 清除缓存
-cache.remove(CACHE_KEYS.QUESTION_LIST)
-cache.clear()  // 清除所有缓存
-```
-
-**性能优化建议**：
-1. 列表页首次加载优先使用缓存，用户下拉刷新时绕过缓存
-2. 详情页根据更新频率决定缓存时长
-3. 用户操作（点赞、收藏）后使用乐观更新 + 缓存失效
-4. 图片资源使用 CDN + 懒加载，减少首屏加载时间
-
-## 6. UI 设计系统
-
-### 6.1 设计规范概述
-
-项目已建立统一的 UI 设计系统，包含全局变量、基础组件、布局组件三个层次。
-
-**设计原则**：
-- **主色调**：`#2563EB`（品牌蓝）为全站唯一主色
-- **强调色**：`#F59E0B`（橙色）仅用于积分、资源等强调场景
-- **间距系统**：8px 栅格，使用 `$sp-*` 变量
-- **响应式断点**：750px（移动端）/ 1024px（平板）/ 1280px（桌面）
-
-### 6.2 全局变量文件
-
-**文件路径**：`frontend/src/styles/variables.scss`
-
-**变量分类**：
-
-| 类别 | 变量前缀 | 示例 |
-|------|---------|------|
-| 主色系 | `$primary-*` | `$primary: #2563EB`、`$primary-50: #EFF6FF` |
-| 强调色 | `$accent-*` | `$accent: #F59E0B`、`$accent-50: #FFFBEB` |
-| 功能色 | `$success/$warning/$error/$info` | `$success: #16A34A` |
-| 中性色 | `$gray-*` | `$gray-900: #0F172A`（主文本）、`$gray-50: #F8FAFC`（背景） |
-| 语义色 | `$text-*/$bg-*/$border-*` | `$text-primary`、`$bg-page`、`$border-color` |
-| 间距 | `$sp-*` | `$sp-8: 32rpx`（16px）、`$sp-16: 64rpx`（32px） |
-| 字号 | `$font-size-*` | `$font-size-base: 28rpx`（14px） |
-| 圆角 | `$radius-*` | `$radius-card: 16rpx`、`$radius-button: 44rpx` |
-| 阴影 | `$shadow-*` | `$shadow-card`、`$shadow-modal` |
-| 层级 | `$z-*` | `$z-modal: 500`、`$z-toast: 800` |
-
-**常用 Mixin**：
-```scss
-@include text-ellipsis($lines)     // 文本截断（支持多行）
-@include flex-center               // Flex 居中
-@include flex-between              // Flex 两端对齐
-@include gradient-primary          // 主色渐变背景
-@include focus-ring                // 焦点环样式
-@include card-base                 // 卡片基础样式
-@include input-base                // 输入框基础样式
-@include mobile / @include desktop // 响应式断点
-```
-
-### 6.3 基础 UI 组件
-
-**文件路径**：`frontend/src/components/ui/`
-
-| 组件 | 文件 | 功能 |
-|------|------|------|
-| **CButton** | `CButton.vue` | 统一按钮，8 种类型（primary/secondary/accent/success/warning/danger/text/ghost），5 种尺寸（xs/sm/md/lg/xl），支持 loading/disabled/block/round/plain |
-| **CCard** | `CCard.vue` | 统一卡片，4 种变体（default/elevated/outlined/flat），支持 header/footer 插槽，hoverable/clickable 交互 |
-| **CSearchInput** | `CSearchInput.vue` | 统一搜索框，3 种尺寸，支持清除/语音按钮/搜索按钮，焦点样式 |
-| **CTag** | `CTag.vue` | 统一标签，7 种类型（default/primary/accent/success/warning/danger/info），3 种尺寸，支持 closable/clickable |
-
-**使用示例**：
-```vue
-<script setup>
-import { CButton, CCard, CSearchInput, CTag } from '@/components/ui'
-</script>
-
-<template>
-  <!-- 主要按钮 -->
-  <CButton type="primary" size="lg" @click="handleSubmit">提交</CButton>
-
-  <!-- 强调按钮（橙色，用于积分相关） -->
-  <CButton type="accent">兑换积分</CButton>
-
-  <!-- 卡片 -->
-  <CCard title="资源详情" hoverable>
-    <template #extra><CButton type="text" size="sm">更多</CButton></template>
-    卡片内容
-  </CCard>
-
-  <!-- 搜索框 -->
-  <CSearchInput v-model="keyword" placeholder="搜索资源" show-voice />
-
-  <!-- 标签 -->
-  <CTag type="success">已完成</CTag>
-  <CTag type="warning">进行中</CTag>
-</template>
-```
-
-### 6.4 布局组件
-
-**文件路径**：`frontend/src/components/layout/`
-
-| 组件 | 文件 | 功能 |
-|------|------|------|
-| **PageContainer** | `PageContainer.vue` | 页面容器，集成导航栏/scroll-view/下拉刷新/安全区适配，支持 float 插槽（FAB/返回顶部） |
-| **CNavBar** | `CNavBar.vue` | 导航栏，自动适配状态栏高度，支持自定义左/中/右区域，透明背景模式 |
-
-**使用示例**：
-```vue
-<script setup>
-import { PageContainer } from '@/components/layout'
-import { CButton } from '@/components/ui'
-</script>
-
-<template>
-  <PageContainer
-    nav-title="资源广场"
-    :show-back="false"
-    show-tabbar
-    refresher-enabled
-    :refresher-triggered="isRefreshing"
-    @refresh="handleRefresh"
-    @scroll-to-lower="handleLoadMore"
-  >
-    <!-- 导航栏右侧 -->
-    <template #navbar-right>
-      <CButton type="text" size="sm">筛选</CButton>
-    </template>
-
-    <!-- 页面内容 -->
-    <view class="content">
-      ...
-    </view>
-
-    <!-- 浮动按钮 -->
-    <template #float>
-      <CButton type="primary" round>+</CButton>
-    </template>
-
-    <!-- 底部 TabBar -->
-    <template #tabbar>
-      <CustomTabBar />
-    </template>
-  </PageContainer>
-</template>
-```
-
-### 6.5 页面重构进度
-
-**重构顺序**：Home → Resource → Question → Task → Club/Message/User
-
-**重构要点**：
-1. 替换硬编码色值为 `$primary`、`$accent` 等变量
-2. 使用 `CButton`、`CCard`、`CTag` 替换自定义按钮/卡片/标签
-3. 使用 `PageContainer` 统一页面结构
-4. 统一间距为 `$sp-*` 变量
-5. 统一响应式断点为 750px / 1024px
-
-**当前状态**：基础设施已完成，页面重构待进行
-
-## 参考文档
-
-- [API 接口设计文档](docs/api-design.md) - 完整的 56 个 API 端点说明
-- [数据库设计文档](docs/database-design.md) - 17 张表的详细设计
-- [第三方服务配置](docs/third-party-services.md) - 阿里云、微信等服务申请与配置
-- [SQL 初始化脚本](sql/README.md) - 数据库建表与初始化数据
-- [语音搜索优化文档](frontend/VOICE_SEARCH_OPTIMIZATION.md) - 语音搜索功能实现详情
+- **Java**：遵循阿里巴巴 Java 开发手册，Service 层接口+实现类分离
+- **TypeScript**：驼峰命名，公共方法必须注释
+- 命名：类 PascalCase，方法 camelCase
+- RESTful API 风格设计，统一响应格式：`Result<T>` 和 `PageResult<T>`

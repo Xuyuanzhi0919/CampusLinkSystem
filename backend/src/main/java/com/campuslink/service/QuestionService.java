@@ -78,10 +78,44 @@ public class QuestionService {
     }
 
     /**
+     * 更新问题
+     */
+    public void updateQuestion(Long userId, Long questionId, AskQuestionRequest request) {
+        // 查询问题
+        Question question = questionMapper.selectById(questionId);
+        if (question == null) {
+            throw new BusinessException(ResultCode.QUESTION_NOT_FOUND);
+        }
+
+        // 检查权限：只有提问者本人可以编辑
+        if (!question.getAskerId().equals(userId)) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        // 检查问题状态：已解决的问题不能编辑
+        if (question.getIsSolved() == 1) {
+            throw new BusinessException(ResultCode.QUESTION_ALREADY_SOLVED, "已解决的问题不能编辑");
+        }
+
+        // 更新问题信息
+        question.setTitle(request.getTitle());
+        question.setContent(request.getContent());
+        question.setCategory(request.getCategory());
+        question.setTags(convertListToJson(request.getTags()));
+        question.setImages(convertListToJson(request.getImages()));
+        question.setUpdatedAt(LocalDateTime.now());
+
+        // 注意：悬赏积分在编辑时不允许修改，因为可能已经有人回答了
+        // 如果需要支持修改悬赏，需要额外的业务逻辑处理
+
+        questionMapper.updateById(question);
+    }
+
+    /**
      * 获取问题列表
      */
     public PageResult<QuestionListResponse> getQuestionList(
-            String category, Long schoolId, String keyword,
+            String category, Long schoolId, String keyword, Integer isSolved,
             Integer page, Integer pageSize, String sortBy, String sortOrder
     ) {
         // 构建查询条件
@@ -95,6 +129,9 @@ public class QuestionService {
             wrapper.and(w -> w.like(Question::getTitle, keyword)
                     .or()
                     .like(Question::getContent, keyword));
+        }
+        if (isSolved != null) {
+            wrapper.eq(Question::getIsSolved, isSolved);
         }
 
         // 排序
@@ -125,10 +162,17 @@ public class QuestionService {
             response.setStatus(question.getIsSolved()); // 使用isSolved作为status
             response.setCreatedAt(question.getCreatedAt());
 
-            // 获取提问者昵称
+            // 获取提问者信息（昵称、头像和等级）
             User asker = userMapper.selectById(question.getAskerId());
             if (asker != null) {
                 response.setAskerNickname(asker.getNickname());
+                response.setAskerAvatar(asker.getAvatarUrl());
+                response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
+            } else {
+                // 用户不存在时的容错处理
+                response.setAskerNickname("用户已注销");
+                response.setAskerAvatar(null);
+                response.setAskerLevel(0);
             }
 
             responses.add(response);
@@ -184,6 +228,12 @@ public class QuestionService {
         if (asker != null) {
             response.setAskerNickname(asker.getNickname());
             response.setAskerAvatar(asker.getAvatarUrl());
+            response.setAskerLevel(asker.getLevel() != null ? asker.getLevel() : 1); // 默认等级1
+        } else {
+            // 用户不存在时的容错处理
+            response.setAskerNickname("用户已注销");
+            response.setAskerAvatar(null);
+            response.setAskerLevel(0);
         }
 
         return response;
@@ -636,5 +686,200 @@ public class QuestionService {
             answer.setUpdatedAt(LocalDateTime.now());
             answerMapper.updateById(answer);
         }
+    }
+
+    /**
+     * 获取热门标签
+     */
+    public List<HotTagResponse> getHotTags(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 8;
+        }
+
+        // 查询最近30天的问题（正常状态）
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Question::getStatus, 1)
+                .ge(Question::getCreatedAt, LocalDateTime.now().minusDays(30))
+                .isNotNull(Question::getTags);
+
+        List<Question> questions = questionMapper.selectList(wrapper);
+
+        // 统计标签出现次数
+        java.util.Map<String, Integer> tagCountMap = new java.util.HashMap<>();
+        for (Question question : questions) {
+            String tagsJson = question.getTags();
+            if (tagsJson != null && !tagsJson.isEmpty()) {
+                // 解析JSON数组格式的标签字符串: ["标签1","标签2"]
+                String[] tags = tagsJson
+                        .replace("[", "")
+                        .replace("]", "")
+                        .replace("\"", "")
+                        .split(",");
+
+                for (String tag : tags) {
+                    String trimmedTag = tag.trim();
+                    if (!trimmedTag.isEmpty()) {
+                        tagCountMap.put(trimmedTag, tagCountMap.getOrDefault(trimmedTag, 0) + 1);
+                    }
+                }
+            }
+        }
+
+        // 按出现次数排序并取前N个
+        return tagCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(limit)
+                .map(entry -> HotTagResponse.builder()
+                        .name(entry.getKey())
+                        .count(entry.getValue())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * 获取活跃答主
+     */
+    public List<ActiveUserResponse> getActiveUsers(Integer limit, String period) {
+        if (limit == null || limit <= 0) {
+            limit = 4;
+        }
+
+        // 计算时间范围（默认最近7天）
+        LocalDateTime startTime;
+        if ("30d".equals(period)) {
+            startTime = LocalDateTime.now().minusDays(30);
+        } else {
+            startTime = LocalDateTime.now().minusDays(7);
+        }
+
+        // 查询最近活跃的答案（正常状态）
+        LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Answer::getStatus, 1)
+                .ge(Answer::getCreatedAt, startTime);
+
+        List<Answer> answers = answerMapper.selectList(wrapper);
+
+        // 统计每个用户的回答数量
+        java.util.Map<Long, Integer> userAnswerCountMap = new java.util.HashMap<>();
+        for (Answer answer : answers) {
+            Long userId = answer.getResponderId();
+            userAnswerCountMap.put(userId, userAnswerCountMap.getOrDefault(userId, 0) + 1);
+        }
+
+        // 按回答数排序并取前N个用户
+        List<Long> topUserIds = userAnswerCountMap.entrySet().stream()
+                .sorted((e1, e2) -> e2.getValue().compareTo(e1.getValue()))
+                .limit(limit)
+                .map(java.util.Map.Entry::getKey)
+                .collect(java.util.stream.Collectors.toList());
+
+        // 查询用户信息并构建响应
+        List<ActiveUserResponse> responses = new ArrayList<>();
+        for (Long userId : topUserIds) {
+            User user = userMapper.selectById(userId);
+            if (user != null) {
+                Integer answerCount = userAnswerCountMap.get(userId);
+
+                // 根据回答数量设置徽章
+                String badge = null;
+                if (answerCount >= 50) {
+                    badge = "优质答主";
+                } else if (answerCount >= 20) {
+                    badge = "热心答主";
+                } else if (answerCount >= 10) {
+                    badge = "活跃答主";
+                }
+
+                responses.add(ActiveUserResponse.builder()
+                        .userId(user.getUId())
+                        .nickname(user.getNickname())
+                        .avatar(user.getAvatarUrl())
+                        .answerCount(answerCount)
+                        .badge(badge)
+                        .build());
+            }
+        }
+
+        return responses;
+    }
+
+    /**
+     * 获取精选问题列表（用于首页推荐位轮播）
+     * 筛选规则：
+     * 1. 至少3个回答
+     * 2. 发布时间在7天内
+     * 3. 未被删除、正常状态
+     * 4. 按综合质量分数排序
+     *
+     * 质量分数 = 回答数 * 3 + 浏览数 * 0.002 + 悬赏积分 * 0.5 + 时间衰减
+     *
+     * @param limit 返回数量，默认5条
+     * @return 精选问题列表
+     */
+    public List<FeaturedQuestionResponse> getFeaturedQuestions(Integer limit) {
+        if (limit == null || limit <= 0) {
+            limit = 5;  // 默认返回5条
+        }
+
+        // 查询7天内的问题
+        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+
+        LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Question::getStatus, 1)  // status=1 表示正常
+                .eq(Question::getIsSolved, 0)  // 优先未解决的问题
+                .ge(Question::getCreatedAt, sevenDaysAgo)
+                .orderByDesc(Question::getCreatedAt);
+
+        List<Question> questions = questionMapper.selectList(wrapper);
+
+        // 计算每个问题的质量分数
+        List<FeaturedQuestionResponse> featuredList = new ArrayList<>();
+
+        for (Question question : questions) {
+            // 获取回答数
+            LambdaQueryWrapper<Answer> answerWrapper = new LambdaQueryWrapper<>();
+            answerWrapper.eq(Answer::getQuestionId, question.getQid())
+                    .eq(Answer::getStatus, 1);
+            long answerCount = answerMapper.selectCount(answerWrapper);
+
+            // 至少3个回答才能入选
+            if (answerCount < 3) {
+                continue;
+            }
+
+            // 计算天数衰减（天数越少，分数越高）
+            long daysOld = java.time.Duration.between(question.getCreatedAt(), LocalDateTime.now()).toDays();
+            double timeDecay = Math.max(0, 7 - daysOld);  // 7天内线性衰减
+
+            // 计算质量分数
+            double score = answerCount * 3.0  // 回答数权重最高
+                    + question.getViews() * 0.002  // 浏览数权重
+                    + (question.getRewardPoints() != null ? question.getRewardPoints() * 0.5 : 0)  // 悬赏积分
+                    + timeDecay;  // 时间衰减
+
+            // 查询提问者信息
+            User user = userMapper.selectById(question.getAskerId());
+            if (user != null) {
+                FeaturedQuestionResponse response = FeaturedQuestionResponse.builder()
+                        .qid(question.getQid())
+                        .title(question.getTitle())
+                        .username(user.getNickname())
+                        .avatar(user.getAvatarUrl())
+                        .category(question.getCategory())
+                        .answerCount((int) answerCount)
+                        .views(question.getViews())
+                        .likes(0)  // Question表没有likes字段，默认为0
+                        .createdAt(question.getCreatedAt())
+                        .qualityScore(score)
+                        .build();
+                featuredList.add(response);
+            }
+        }
+
+        // 按质量分数降序排序，取前N条
+        return featuredList.stream()
+                .sorted((q1, q2) -> Double.compare(q2.getQualityScore(), q1.getQualityScore()))
+                .limit(limit)
+                .collect(java.util.stream.Collectors.toList());
     }
 }

@@ -94,20 +94,5 @@ const handleClick = () => {
   transform: translateX(12rpx); /* 6px 右移 */
 }
 
-/* 深色模式 */
-.dark-mode .view-more-btn {
-  background: linear-gradient(135deg, rgba(46, 124, 246, 0.1), rgba(108, 92, 231, 0.1));
-  border-color: rgba(46, 124, 246, 0.3);
-  
-  &:hover {
-    background: linear-gradient(135deg, rgba(46, 124, 246, 0.15), rgba(108, 92, 231, 0.15));
-    border-color: #60A5FA;
-  }
-}
-
-.dark-mode .btn-text,
-.dark-mode .btn-icon {
-  color: #60A5FA;
-}
 </style>
 

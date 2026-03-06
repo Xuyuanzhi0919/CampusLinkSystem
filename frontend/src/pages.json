@@ -11,10 +11,27 @@
 			}
 		},
 		{
+			"path": "pages/community/index",
+			"style": {
+				"navigationBarTitleText": "社区",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/search/result",
+			"style": {
+				"navigationBarTitleText": "搜索",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/resource/index",
 			"style": {
 				"navigationBarTitleText": "资源库",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
 			}
 		},
 		{
@@ -32,10 +49,41 @@
 			}
 		},
 		{
+			"path": "pages/resource/my",
+			"style": {
+				"navigationBarTitleText": "我的资源",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
+			}
+		},
+		{
+			"path": "pages/publish/index",
+			"style": {
+				"navigationBarTitleText": "选择发布类型",
+				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/auth/login",
+			"style": {
+				"navigationBarTitleText": "登录",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/auth/register",
+			"style": {
+				"navigationBarTitleText": "注册",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{
@@ -86,16 +134,14 @@
 		{
 			"path": "pages/club/activity-list",
 			"style": {
-				"navigationBarTitleText": "社团活动",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"enablePullDownRefresh": true
+				"navigationStyle": "custom",
+				"disableScroll": true
 			}
 		},
 		{
 			"path": "pages/club/list",
 			"style": {
-				"navigationBarTitleText": "社团列表",
-				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": true
 			}
 		},
@@ -116,11 +162,32 @@
 			}
 		},
 		{
+			"path": "pages/club/create",
+			"style": {
+				"navigationBarTitleText": "创建社团",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/publish-activity",
+			"style": {
+				"navigationBarTitleText": "发布活动",
+				"navigationBarBackgroundColor": "#FFFFFF"
+			}
+		},
+		{
+			"path": "pages/club/my-activities",
+			"style": {
+				"navigationStyle": "custom",
+				"disableScroll": true
+			}
+		},
+		{
 			"path": "pages/user/index",
 			"style": {
 				"navigationBarTitleText": "我的",
-				"navigationBarBackgroundColor": "#F9FAFB",
-				"enablePullDownRefresh": true,
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
 				"backgroundTextStyle": "dark"
 			}
 		},
@@ -142,12 +209,26 @@
 			}
 		},
 		{
+			"path": "pages/user/liked-list",
+			"style": {
+				"navigationBarTitleText": "获赞",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/user/points-history",
 			"style": {
-				"navigationBarTitleText": "积分明细",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark",
+				"navigationStyle": "custom",
+				"disableScroll": true
+			}
+		},
+		{
+			"path": "pages/user/points-mall",
+			"style": {
+				"navigationBarTitleText": "积分商城",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false,
 				"disableScroll": true
 			}
 		},
@@ -193,10 +274,8 @@
 		{
 			"path": "pages/notification/index",
 			"style": {
-				"navigationBarTitleText": "通知中心",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
+				"navigationStyle": "custom",
+				"navigationBarTitleText": "通知中心"
 			}
 		},
 		{
@@ -217,10 +296,42 @@
 			}
 		},
 		{
+			"path": "pages/ai/chat",
+			"style": {
+				"navigationBarTitleText": "AI 智能助手",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/error/404",
 			"style": {
 				"navigationBarTitleText": "页面不存在",
 				"navigationStyle": "custom"
+			}
+		},
+		{
+			"path": "pages/about/index",
+			"style": {
+				"navigationBarTitleText": "关于我们",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/about/privacy",
+			"style": {
+				"navigationBarTitleText": "隐私政策",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/about/terms",
+			"style": {
+				"navigationBarTitleText": "用户协议",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
 			}
 		}
 	],
@@ -235,6 +346,10 @@
 	"easycom": {
 		"autoscan": true,
 		"custom": {
+			"^uni-(.*)": "@dcloudio/uni-ui/lib/uni-$1/uni-$1.vue",
+			"^gp-skeleton$": "@/uni_modules/gp-skeleton/components/gp-skeleton/gp-skeleton.vue",
+			"^z-paging$": "z-paging/components/z-paging/z-paging.vue",
+			"^z-paging-(.*)$": "z-paging/components/z-paging-$1/z-paging-$1.vue",
 			"^LazyImage$": "@/components/LazyImage.vue",
 			"^SkeletonScreen$": "@/components/SkeletonScreen.vue",
 			"^SkeletonCard$": "@/components/SkeletonCard.vue",
@@ -248,7 +363,8 @@
 		"backgroundColor": "#F5F5F5"
 	},
 	"tabBar": {
-		"color": "#666666",
+		"custom": true,
+		"color": "#999999",
 		"selectedColor": "#2563EB",
 		"backgroundColor": "#FFFFFF",
 		"borderStyle": "black",
@@ -258,18 +374,32 @@
 		"list": [
 			{
 				"pagePath": "pages/home/index",
+				"iconPath": "static/tabbar/home.png",
+				"selectedIconPath": "static/tabbar/home-active.png",
 				"text": "首页"
 			},
 			{
 				"pagePath": "pages/resource/index",
+				"iconPath": "static/tabbar/resource.png",
+				"selectedIconPath": "static/tabbar/resource-active.png",
 				"text": "资源"
 			},
 			{
+				"pagePath": "pages/publish/index",
+				"iconPath": "static/tabbar/publish.png",
+				"selectedIconPath": "static/tabbar/publish-active.png",
+				"text": "发布"
+			},
+			{
 				"pagePath": "pages/question/index",
+				"iconPath": "static/tabbar/community.png",
+				"selectedIconPath": "static/tabbar/community-active.png",
 				"text": "问答"
 			},
 			{
 				"pagePath": "pages/user/index",
+				"iconPath": "static/tabbar/user.png",
+				"selectedIconPath": "static/tabbar/user-active.png",
 				"text": "我的"
 			}
 		]

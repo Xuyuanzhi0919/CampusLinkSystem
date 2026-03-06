@@ -533,30 +533,41 @@ Authorization: Bearer {refreshToken}
 ```json
 {
   "code": 200,
-  "message": "success",
+  "message": "操作成功",
   "data": {
     "list": [
       {
-        "questionId": 1,
+        "qid": 1,
         "title": "如何学习数据结构？",
-        "content": "我是计算机专业的大一新生...",
         "category": "学习交流",
-        "tags": ["数据结构", "学习方法"],
-        "viewCount": 100,
+        "bounty": 10,
+        "views": 100,
         "answerCount": 5,
-        "likes": 10,
-        "isSolved": false,
-        "askerName": "李四",
+        "status": 0,
+        "askerNickname": "李四",
         "createdAt": "2024-01-01T10:00:00"
       }
     ],
     "total": 50,
-    "page":1,
-    "pageSize":20,
-    "totalPages":3
+    "page": 1,
+    "pageSize": 20,
+    "totalPages": 3
   }
 }
 ```
+
+**响应字段说明**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| qid | Long | 问题ID |
+| title | String | 问题标题 |
+| category | String | 问题分类 |
+| bounty | Integer | 悬赏积分 |
+| views | Integer | 浏览次数 |
+| answerCount | Integer | 回答数量 |
+| status | Integer | 状态：0-未解决，1-已解决 |
+| askerNickname | String | 提问者昵称 |
+| createdAt | DateTime | 创建时间 |
 
 ### 5.3 获取问题详情
 
@@ -567,26 +578,49 @@ Authorization: Bearer {refreshToken}
 ```json
 {
   "code": 200,
-  "message": "success",
+  "message": "操作成功",
   "data": {
-    "questionId": 1,
+    "qid": 1,
+    "askerId": 3,
+    "askerNickname": "李四",
+    "askerAvatar": "https://example.com/avatar.jpg",
     "title": "如何学习数据结构？",
     "content": "我是计算机专业的大一新生，想学习数据结构...",
     "category": "学习交流",
     "tags": ["数据结构", "学习方法"],
-    "viewCount": 100,
+    "images": [],
+    "aiAnswer": null,
+    "aiGeneratedAt": null,
+    "bounty": 10,
+    "views": 100,
     "answerCount": 5,
-    "likes": 10,
-    "isSolved": false,
-    "bestAnswerId": null,
-    "askerId": 3,
-    "askerName": "李四",
-    "askerAvatar": "https://example.com/avatar.jpg",
-    "schoolName": "清华大学",
-    "createdAt": "2024-01-01T10:00:00"
+    "status": 0,
+    "createdAt": "2024-01-01T10:00:00",
+    "updatedAt": "2024-01-01T10:00:00"
   }
 }
 ```
+
+**响应字段说明**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| qid | Long | 问题ID |
+| askerId | Long | 提问者ID |
+| askerNickname | String | 提问者昵称 |
+| askerAvatar | String | 提问者头像URL |
+| title | String | 问题标题 |
+| content | String | 问题内容（详细描述） |
+| category | String | 问题分类 |
+| tags | Array | 标签列表 |
+| images | Array | 图片URL列表 |
+| aiAnswer | String | AI智能答复（可能为null） |
+| aiGeneratedAt | DateTime | AI答复生成时间 |
+| bounty | Integer | 悬赏积分 |
+| views | Integer | 浏览次数 |
+| answerCount | Integer | 回答数量 |
+| status | Integer | 状态：0-未解决，1-已解决 |
+| createdAt | DateTime | 创建时间 |
+| updatedAt | DateTime | 更新时间 |
 
 ### 5.4 回答问题
 
@@ -620,22 +654,41 @@ Authorization: Bearer {refreshToken}
 ```json
 {
   "code": 200,
-  "message": "success",
+  "message": "操作成功",
   "data": [
     {
       "answerId": 1,
       "questionId": 1,
+      "responderId": 4,
+      "responderName": "王五",
+      "responderAvatar": "https://example.com/avatar.jpg",
       "content": "我的建议是先看《数据结构与算法分析》这本书...",
+      "images": [],
       "likes": 20,
       "isAccepted": false,
-      "answererId": 4,
-      "answererName": "王五",
-      "answererAvatar": "https://example.com/avatar.jpg",
-      "createdAt": "2024-01-01T11:00:00"
+      "isLiked": false,
+      "createdAt": "2024-01-01T11:00:00",
+      "updatedAt": "2024-01-01T11:00:00"
     }
   ]
 }
 ```
+
+**响应字段说明**:
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| answerId | Long | 答案ID |
+| questionId | Long | 问题ID |
+| responderId | Long | 回答者ID |
+| responderName | String | 回答者昵称 |
+| responderAvatar | String | 回答者头像URL |
+| content | String | 答案内容 |
+| images | Array | 图片URL列表 |
+| likes | Integer | 点赞数 |
+| isAccepted | Boolean | 是否被采纳 |
+| isLiked | Boolean | 当前用户是否已点赞 |
+| createdAt | DateTime | 创建时间 |
+| updatedAt | DateTime | 更新时间 |
 
 ### 5.6 采纳答案
 

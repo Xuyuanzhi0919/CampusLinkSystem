@@ -1,15 +1,7 @@
 <template>
   <view class="ranking-page">
     <!-- 顶部导航 -->
-    <view class="navbar">
-      <view class="nav-content">
-        <view class="nav-left" @click="goBack">
-          <text class="back-icon">←</text>
-        </view>
-        <text class="nav-title">贡献榜</text>
-        <view class="nav-right"></view>
-      </view>
-    </view>
+    <CNavBar title="贡献榜" />
 
     <!-- 内容区 -->
     <view class="content-container">
@@ -69,6 +61,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { CNavBar } from '@/components/layout'
 import { getUserRanking } from '@/services/user'
 import { formatNumber } from '@/utils/formatters'
 import EmptyState from '@/components/EmptyState.vue'
@@ -126,42 +119,6 @@ onMounted(() => {
   min-height: 100vh;
   background: $bg-page;
   padding-bottom: 120rpx;
-}
-
-// ===================================
-// 导航栏
-// ===================================
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: $z-dropdown;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
-}
-
-.nav-content {
-  @include flex-between;
-  height: 88rpx;
-  padding: 0 $sp-6;
-}
-
-.nav-left {
-  width: 80rpx;
-}
-
-.back-icon {
-  font-size: 36rpx;
-  color: $gray-900;
-}
-
-.nav-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-900;
-}
-
-.nav-right {
-  width: 80rpx;
 }
 
 // ===================================

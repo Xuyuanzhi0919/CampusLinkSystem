@@ -29,6 +29,7 @@ public class TagService {
 
     /**
      * 获取热门标签列表
+     * 使用综合热度排序：use_count + (recent_7d_count * 5)
      *
      * @param limit 返回数量，默认20
      * @return 热门标签列表
@@ -41,9 +42,10 @@ public class TagService {
             limit = 50; // 最多返回50个
         }
 
-        List<Tag> tags = tagMapper.selectHotTags(limit);
+        // 使用综合热度排序查询
+        List<Tag> tags = tagMapper.selectHotTagsWithTrend(limit);
         return tags.stream()
-                .map(this::convertToResponse)
+                .map(this::convertToResponseWithStats)
                 .collect(Collectors.toList());
     }
 
@@ -244,6 +246,59 @@ public class TagService {
         response.setUseCount(tag.getUseCount());
         response.setCategory(tag.getCategory());
         response.setDescription(tag.getDescription());
+        return response;
+    }
+
+    /**
+     * 将Tag实体转换为TagResponse DTO（包含统计数据和趋势）
+     *
+     * @param tag 标签实体
+     * @return 标签响应DTO（带统计）
+     */
+    private TagResponse convertToResponseWithStats(Tag tag) {
+        TagResponse response = convertToResponse(tag);
+
+        // 统计关联数量
+        Integer questionCount = tagMapper.countQuestionsByTagId(tag.getTagId());
+        Integer resourceCount = tagMapper.countResourcesByTagId(tag.getTagId());
+        response.setQuestionCount(questionCount != null ? questionCount : 0);
+        response.setResourceCount(resourceCount != null ? resourceCount : 0);
+
+        // 计算趋势（基于最近7天新增数量）
+        Integer recentCount = tagMapper.countRecentRelations(tag.getTagId());
+        int totalCount = (tag.getUseCount() != null ? tag.getUseCount() : 0);
+
+        if (recentCount != null && recentCount > 0 && totalCount > 0) {
+            // 最近7天新增占比
+            double recentRatio = (double) recentCount / totalCount;
+
+            if (recentRatio > 0.3) {
+                // 30%以上是最近新增，说明上升趋势
+                response.setTrend("up");
+                response.setTrendPercent((int) (recentRatio * 100));
+            } else if (recentRatio > 0.1) {
+                // 10%-30%，稳定
+                response.setTrend("stable");
+                response.setTrendPercent(0);
+            } else {
+                // 低于10%，下降趋势
+                response.setTrend("down");
+                response.setTrendPercent((int) (-recentRatio * 50));
+            }
+        } else {
+            // 没有最近数据，按热度判断
+            if (totalCount > 50) {
+                response.setTrend("stable");
+                response.setTrendPercent(0);
+            } else if (totalCount > 10) {
+                response.setTrend("up");
+                response.setTrendPercent(15);
+            } else {
+                response.setTrend("stable");
+                response.setTrendPercent(0);
+            }
+        }
+
         return response;
     }
 }

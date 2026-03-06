@@ -1,453 +1,438 @@
 <template>
-  <view class="points-history-page">
-    <!-- 顶部积分概览 -->
-    <view class="points-overview">
-      <view class="overview-card">
-        <text class="overview-title">我的积分</text>
-        <text class="overview-points">{{ userStore.userInfo?.points || 0 }}</text>
-        <text class="overview-desc">可用于下载资源、发布悬赏等</text>
+  <view class="page">
+
+    <!-- ── 统一头部（导航 + 积分卡共享渐变背景）── -->
+    <view class="page-header">
+
+      <!-- 导航行 -->
+      <view class="header-nav">
+        <view class="nav-back" @click="goBack">
+          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+        </view>
+        <text class="nav-title">积分明细</text>
+        <view class="nav-placeholder" />
       </view>
-    </view>
 
-    <!-- 积分记录列表 -->
-    <scroll-view
-      class="content-scroll"
-      scroll-y
-      @scrolltolower="handleLoadMore"
-      @refresherrefresh="handleRefresh"
-      :refresher-enabled="true"
-      :refresher-triggered="refreshing"
-    >
-      <!-- 列表内容 -->
-      <view v-if="!loading && pointsList.length > 0" class="points-list">
-        <view
-          v-for="item in pointsList"
-          :key="item.logId"
-          class="points-card"
-          @click="handleCardClick(item)"
-        >
-          <!-- 左侧：图标和原因 -->
-          <view class="card-left">
-            <text class="reason-icon">{{ getReasonIcon(item.reason) }}</text>
-            <view class="card-content">
-              <text class="card-reason">{{ item.reason }}</text>
-              <text class="card-after">变化后积分: {{ item.pointsAfter }}</text>
-              <text class="card-time">{{ formatTime(item.createdAt) }}</text>
-            </view>
+      <!-- 积分卡 -->
+      <view class="banner-wrap">
+        <view class="banner-card">
+          <view class="banner-glow" />
+          <view class="banner-star">
+            <Icon name="star" :size="36" color="#FBBF24" />
           </view>
-
-          <!-- 右侧：积分变化 -->
-          <view class="card-right">
-            <text
-              class="points-change"
-              :style="{ color: getPointsColor(item.pointsChange) }"
-            >
-              {{ getPointsText(item.pointsChange) }}
-            </text>
+          <view class="banner-info">
+            <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
+            <text class="banner-desc">可用于下载资源、发布悬赏</text>
+          </view>
+          <view class="banner-mall-btn" @click="uni.navigateTo({ url: '/pages/user/points-mall' })">
+            <text class="banner-mall-text">去商城</text>
+            <Icon name="chevron-right" :size="13" color="#FFFFFF" />
           </view>
         </view>
       </view>
 
+    </view>
+
+    <!-- ── 列表滚动区 ── -->
+    <scroll-view
+      class="content-scroll"
+      scroll-y
+      @scrolltolower="handleLoadMore"
+    >
+      <!-- 骨架屏 -->
+      <view v-if="loading && pointsList.length === 0" class="list">
+        <view v-for="i in 8" :key="i" class="record-card record-card--skeleton">
+          <view class="skeleton-icon" />
+          <view class="skeleton-body">
+            <view class="skeleton-line skeleton-line--long" />
+            <view class="skeleton-line skeleton-line--short" />
+          </view>
+          <view class="skeleton-amount" />
+        </view>
+      </view>
+
+      <!-- 记录列表 -->
+      <view v-else-if="pointsList.length > 0" class="list">
+        <view
+          v-for="item in pointsList"
+          :key="item.logId"
+          class="record-card"
+          @click="handleCardClick(item)"
+        >
+          <view class="record-icon" :style="{ background: getReasonStyle(item.reason).bg }">
+            <Icon :name="getReasonIcon(item.reason)" :size="18" :color="getReasonStyle(item.reason).color" />
+          </view>
+          <view class="record-body">
+            <text class="record-reason">{{ item.reason }}</text>
+            <text class="record-meta">余额 {{ item.pointsAfter }} · {{ formatTime(item.createdAt) }}</text>
+          </view>
+          <text class="record-amount" :class="item.pointsChange > 0 ? 'record-amount--plus' : 'record-amount--minus'">
+            {{ item.pointsChange > 0 ? '+' : '' }}{{ item.pointsChange }}
+          </text>
+        </view>
+        <view class="footer-tip">
+          <text class="footer-text">{{ loadingMore ? '加载中…' : hasMore ? '上拉加载更多' : '已显示全部记录' }}</text>
+        </view>
+      </view>
+
       <!-- 空状态 -->
-      <view v-if="!loading && pointsList.length === 0" class="empty-state">
-        <text class="empty-icon">💰</text>
+      <view v-else class="empty-state">
+        <Icon name="award" :size="44" color="#D1D5DB" />
         <text class="empty-text">暂无积分记录</text>
-        <text class="empty-tip">完成任务、上传资源等可以获得积分哦~</text>
+        <text class="empty-tip">完成任务、上传资源等可获得积分</text>
       </view>
-
-      <!-- 加载状态 -->
-      <view v-if="loading && pointsList.length === 0" class="loading-state">
-        <text class="loading-text">加载中...</text>
-      </view>
-
-      <!-- 加载更多 -->
-      <view v-if="pointsList.length > 0" class="load-more">
-        <text v-if="loadingMore" class="load-more-text">加载中...</text>
-        <text v-else-if="!hasMore" class="load-more-text">没有更多了</text>
-      </view>
-
-      <!-- 底部安全距离 -->
-      <view class="safe-area-bottom" />
     </scroll-view>
+
   </view>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import Icon from '@/components/icons/index.vue'
 import { getPointsLog } from '@/services/user'
 import type { PointsLogItem } from '@/types/user'
 import { useUserStore } from '@/stores/user'
 
-// Store
+// ── 模块级常量，不随组件重建 ──────────────────
+const REASON_ICON_MAP: Record<string, string> = {
+  注册奖励:   'gift',
+  上传资源:   'file-plus',
+  下载资源:   'download',
+  提问:       'help-circle',
+  回答问题:   'message-circle',
+  回答被采纳: 'badge-check',
+  发布任务:   'file-text',
+  完成任务:   'target',
+  接受任务:   'thumbs-up',
+  活动签到:   'calendar-check',
+  每日签到:   'calendar',
+}
+
+const REASON_STYLE_MAP: Record<string, { bg: string; color: string }> = {
+  注册奖励:   { bg: '#FEF3C7', color: '#D97706' },
+  上传资源:   { bg: '#EFF6FF', color: '#2563EB' },
+  下载资源:   { bg: '#F0FDF4', color: '#16A34A' },
+  提问:       { bg: '#FFF7ED', color: '#EA580C' },
+  回答问题:   { bg: '#EFF6FF', color: '#3B82F6' },
+  回答被采纳: { bg: '#ECFDF5', color: '#059669' },
+  发布任务:   { bg: '#F5F3FF', color: '#7C3AED' },
+  完成任务:   { bg: '#FFF1F2', color: '#E11D48' },
+  接受任务:   { bg: '#FFFBEB', color: '#D97706' },
+  活动签到:   { bg: '#DCFCE7', color: '#16A34A' },
+  每日签到:   { bg: '#DCFCE7', color: '#16A34A' },
+}
+
+const getReasonIcon = (reason: string) =>
+  reason.startsWith('积分兑换') ? 'zap' : (REASON_ICON_MAP[reason] ?? 'zap')
+
+const getReasonStyle = (reason: string) =>
+  reason.startsWith('积分兑换')
+    ? { bg: '#FEE2E2', color: '#F43F5E' }
+    : (REASON_STYLE_MAP[reason] ?? { bg: '#F3F4F6', color: '#6B7280' })
+
+const formatTime = (dateStr: string): string => {
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diff = now.getTime() - d.getTime()
+  const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  if (diff < 86400000)  return `今天 ${hm}`
+  if (diff < 172800000) return `昨天 ${hm}`
+  if (d.getFullYear() === now.getFullYear())
+    return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${hm}`
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+// ── 响应式状态 ────────────────────────────────
 const userStore = useUserStore()
+const pointsList   = ref<PointsLogItem[]>([])
+const loading      = ref(false)
+const loadingMore  = ref(false)
+const hasMore      = ref(true)
+const page         = ref(1)
+const PAGE_SIZE    = 20
 
-// 状态
-const pointsList = ref<PointsLogItem[]>([])
-const loading = ref(false)
-const refreshing = ref(false)
-const loadingMore = ref(false)
-const hasMore = ref(true)
+// ── 交互 ──────────────────────────────────────
+const goBack = () =>
+  uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/home/index' }) })
 
-// 分页参数
-const page = ref(1)
-const pageSize = 20
-
-/**
- * 加载积分记录
- */
-const loadPoints = async (isRefresh = false) => {
-  if (isRefresh) {
-    page.value = 1
-    hasMore.value = true
+const handleCardClick = (item: PointsLogItem) => {
+  if (!item.relatedType || !item.relatedId) return
+  const routeMap: Record<string, string> = {
+    resource: '/pages/resource/detail',
+    question: '/pages/question/detail',
+    task:     '/pages/task/detail',
   }
+  const url = routeMap[item.relatedType]
+  if (url) uni.navigateTo({ url: `${url}?id=${item.relatedId}` })
+}
 
-  if (!hasMore.value && !isRefresh) return
-
+// ── 数据加载 ──────────────────────────────────
+const loadPoints = async (isMore = false) => {
+  if (!isMore) {
+    loading.value = true
+    page.value    = 1
+    hasMore.value = true
+  } else {
+    if (!hasMore.value || loadingMore.value) return
+    loadingMore.value = true
+  }
   try {
-    if (isRefresh) {
-      refreshing.value = true
-    } else if (page.value === 1) {
-      loading.value = true
-    } else {
-      loadingMore.value = true
-    }
-
-    const result = await getPointsLog(page.value, pageSize)
-
-    if (isRefresh || page.value === 1) {
-      pointsList.value = result.list
-    } else {
-      pointsList.value = [...pointsList.value, ...result.list]
-    }
-
-    // 判断是否还有更多数据
+    const result = await getPointsLog(page.value, PAGE_SIZE)
+    pointsList.value = isMore
+      ? [...pointsList.value, ...result.list]
+      : result.list
     hasMore.value = page.value < result.totalPages
-
-    // 如果是刷新，同时刷新用户信息（更新顶部积分）
-    if (isRefresh) {
-      await userStore.fetchUserInfo()
-    }
-  } catch (error: any) {
-    console.error('加载积分记录失败:', error)
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+    page.value++
+  } catch (e: any) {
+    uni.showToast({ title: e.message || '加载失败', icon: 'none' })
   } finally {
-    loading.value = false
-    refreshing.value = false
+    loading.value     = false
     loadingMore.value = false
   }
 }
 
-/**
- * 下拉刷新
- */
-const handleRefresh = () => {
-  loadPoints(true)
-}
+const handleLoadMore = () => loadPoints(true)
 
-/**
- * 加载更多
- */
-const handleLoadMore = () => {
-  if (loadingMore.value || !hasMore.value) return
-
-  page.value++
-  loadPoints()
-}
-
-/**
- * 卡片点击 - 跳转到关联对象详情
- */
-const handleCardClick = (item: PointsLogItem) => {
-  if (!item.relatedType || !item.relatedId) return
-
-  const routeMap: Record<string, string> = {
-    resource: '/pages/resource/detail',
-    question: '/pages/question/detail',
-    task: '/pages/task/detail'
-  }
-
-  const url = routeMap[item.relatedType]
-  if (url) {
-    uni.navigateTo({
-      url: `${url}?id=${item.relatedId}`,
-      fail: (err) => {
-        console.error('跳转失败:', err)
-        uni.showToast({
-          title: '页面开发中...',
-          icon: 'none'
-        })
-      }
-    })
-  }
-}
-
-/**
- * 获取原因图标
- */
-const getReasonIcon = (reason: string): string => {
-  const iconMap: Record<string, string> = {
-    注册奖励: '🎁',
-    上传资源: '📤',
-    下载资源: '📥',
-    提问: '❓',
-    回答问题: '💬',
-    回答被采纳: '✅',
-    发布任务: '📝',
-    完成任务: '🎯',
-    接受任务: '👍',
-    活动签到: '✔️',
-    每日签到: '📅'
-  }
-  return iconMap[reason] || '💰'
-}
-
-/**
- * 获取积分变化颜色
- */
-const getPointsColor = (change: number): string => {
-  return change > 0 ? '#10B981' : '#EF4444'
-}
-
-/**
- * 获取积分变化文本
- */
-const getPointsText = (change: number): string => {
-  return change > 0 ? `+${change}` : `${change}`
-}
-
-/**
- * 格式化时间
- */
-const formatTime = (dateStr: string): string => {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // 今天
-  if (diff < 86400000) {
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    return `今天 ${hours}:${minutes}`
-  }
-
-  // 昨天
-  if (diff < 172800000) {
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    return `昨天 ${hours}:${minutes}`
-  }
-
-  // 本年
-  if (date.getFullYear() === now.getFullYear()) {
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const day = date.getDate().toString().padStart(2, '0')
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
-    return `${month}-${day} ${hours}:${minutes}`
-  }
-
-  // 往年
-  const year = date.getFullYear()
-  const month = (date.getMonth() + 1).toString().padStart(2, '0')
-  const day = date.getDate().toString().padStart(2, '0')
-  return `${year}-${month}-${day}`
-}
-
-// 页面加载时获取数据
-onMounted(() => {
-  loadPoints()
-})
-
-// 下拉刷新回调
-defineExpose({
-  onPullDownRefresh: () => {
-    handleRefresh()
-    setTimeout(() => {
-      uni.stopPullDownRefresh()
-    }, 1000)
-  }
-})
+onMounted(() => loadPoints())
 </script>
 
-<style lang="scss">
-/* H5 端禁用页面滚动 */
-page {
-  height: 100%;
-  overflow: hidden;
-}
-</style>
-
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
 
-.points-history-page {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: $gray-50;
-  overflow: hidden;
+// ── 页面容器 ──────────────────────────────────
+.page {
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  background: #F1F5F9;
+  overflow: hidden;
 }
 
-// 顶部积分概览
-.points-overview {
-  padding: $sp-8;
+// ── 统一头部 ──────────────────────────────────
+.page-header {
   flex-shrink: 0;
+  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
+  border-radius: 0 0 24px 24px;
 }
 
-.overview-card {
-  @include gradient-primary;
-  border-radius: $radius-card;
-  padding: $sp-12 $sp-8;
+.header-nav {
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px 0 12px;
+}
+
+.nav-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.nav-title {
+  flex: 1;
   text-align: center;
-  box-shadow: 0 8rpx 24rpx rgba($primary, 0.2);
+  font-size: 17px;
+  font-weight: 700;
+  color: #FFFFFF;
 }
 
-.overview-title {
-  display: block;
-  font-size: $font-size-base;
-  color: rgba($white, 0.9);
-  margin-bottom: $sp-4;
+.nav-placeholder { width: 36px; flex-shrink: 0; }
+
+// ── 积分卡 ────────────────────────────────────
+.banner-wrap {
+  padding: 0 16px 16px;
 }
 
-.overview-points {
-  display: block;
-  font-size: 64rpx;
-  font-weight: $font-weight-bold;
-  color: $white;
-  margin-bottom: $sp-3;
+// ── 积分卡 ────────────────────────────────────
+.banner-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(29, 78, 216, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.overview-desc {
-  display: block;
-  font-size: $font-size-sm;
-  color: rgba($white, 0.7);
+.banner-glow {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background: rgba(96, 165, 250, 0.22);
+  border-radius: 50%;
+  filter: blur(28px);
+  pointer-events: none;
 }
 
-// 滚动区域
+.banner-star {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
+  border: 1.5px solid rgba(251, 191, 36, 0.4);
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.28);
+}
+
+.banner-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.banner-value {
+  font-size: 32px;
+  font-weight: 800;
+  color: #1E293B;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.banner-desc {
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.banner-mall-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 9px 15px;
+  background: #2563EB;
+  border-radius: 22px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  cursor: pointer;
+  &:active { opacity: 0.82; }
+}
+
+.banner-mall-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #FFFFFF;
+}
+
+// ── 列表区 ────────────────────────────────────
 .content-scroll {
   flex: 1;
+  height: 0;
   overflow-y: auto;
 }
 
-// 积分记录列表
-.points-list {
-  padding: 0 $sp-8 $sp-6;
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 16px;
 }
 
-// 积分卡片
-.points-card {
-  background: $white;
-  border-radius: $radius-md;
-  padding: $sp-8;
-  margin-bottom: $sp-5;
-  @include flex-between;
-  box-shadow: $shadow-card;
+// ── 记录卡片 ──────────────────────────────────
+.record-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  &:active { background: #F8FAFF; }
 
-  &:active {
-    opacity: 0.8;
+  &--skeleton {
+    min-height: 60px;
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
   }
 }
 
-.card-left {
-  flex: 1;
+.record-icon {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
   display: flex;
-  align-items: flex-start;
-  gap: $sp-5;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
 }
 
-.reason-icon {
-  font-size: 48rpx;
-  line-height: 48rpx;
-}
-
-.card-content {
+.record-body {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
+  gap: 4px;
 }
 
-.card-reason {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
+.record-reason {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1E293B;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.card-after {
-  font-size: 26rpx;
-  color: $gray-500;
+.record-meta {
+  font-size: 11px;
+  color: #94A3B8;
 }
 
-.card-time {
-  font-size: $font-size-sm;
-  color: $gray-400;
-}
-
-.card-right {
+.record-amount {
   flex-shrink: 0;
-  margin-left: $sp-5;
+  font-size: 17px;
+  font-weight: 800;
+  &--plus  { color: #10B981; }
+  &--minus { color: #EF4444; }
 }
 
-.points-change {
-  font-size: 36rpx;
-  font-weight: $font-weight-bold;
+// ── 骨架屏 ────────────────────────────────────
+.skeleton-icon   { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #E5E7EB; }
+.skeleton-body   { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.skeleton-amount { width: 40px; height: 18px; flex-shrink: 0; border-radius: 6px; background: #E5E7EB; }
+
+.skeleton-line {
+  height: 11px;
+  border-radius: 6px;
+  background: #E5E7EB;
+  &--long  { width: 60%; }
+  &--short { width: 40%; }
 }
 
-// 空状态
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+// ── 底部 & 空状态 ─────────────────────────────
+.footer-tip  { display: flex; justify-content: center; padding: 14px; }
+.footer-text { font-size: 12px; color: #CBD5E1; }
+
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 160rpx $sp-8;
+  gap: 10px;
+  padding: 80px 20px;
 }
 
-.empty-icon {
-  font-size: 120rpx;
-  margin-bottom: $sp-8;
-}
+.empty-text { font-size: 14px; font-weight: 500; color: #9CA3AF; }
+.empty-tip  { font-size: 12px; color: #D1D5DB; }
 
-.empty-text {
-  font-size: $font-size-lg;
-  color: $gray-500;
-  margin-bottom: $sp-4;
-}
-
-.empty-tip {
-  font-size: 26rpx;
-  color: $gray-400;
-}
-
-// 加载状态
-.loading-state {
-  @include flex-center;
-  padding: 160rpx $sp-8;
-}
-
-.loading-text {
-  font-size: $font-size-base;
-  color: $gray-400;
-}
-
-// 加载更多
-.load-more {
-  @include flex-center;
-  padding: $sp-8;
-}
-
-.load-more-text {
-  font-size: 26rpx;
-  color: $gray-400;
-}
-
-.safe-area-bottom {
-  height: $sp-8;
-}
 </style>

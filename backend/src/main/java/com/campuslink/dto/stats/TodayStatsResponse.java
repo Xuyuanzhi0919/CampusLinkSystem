@@ -35,4 +35,9 @@ public class TodayStatsResponse {
      * 今日活动参与数
      */
     private Integer activityParticipants;
+
+    /**
+     * 回答总数
+     */
+    private Integer totalAnswers;
 }

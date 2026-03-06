@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.*;
+import com.campuslink.dto.user.UpdateProfileRequest;
 import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.School;
 import com.campuslink.entity.User;
@@ -259,8 +260,22 @@ public class UserService {
         favoriteQuery.eq(com.campuslink.entity.Favorite::getUserId, userId);
         int favoriteCount = Math.toIntExact(favoriteMapper.selectCount(favoriteQuery));
 
-        // 查询获赞数 (暂时返回0,需要评论/点赞表)
-        int likeCount = 0;
+        // 查询获赞数：资源点赞总和 + 回答点赞总和
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resourceLikeQuery = new LambdaQueryWrapper<>();
+        resourceLikeQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .select(com.campuslink.entity.Resource::getLikes);
+        List<com.campuslink.entity.Resource> myResources = resourceMapper.selectList(resourceLikeQuery);
+        int resourceLikes = myResources.stream()
+                .mapToInt(r -> r.getLikes() == null ? 0 : r.getLikes()).sum();
+
+        LambdaQueryWrapper<com.campuslink.entity.Answer> answerLikeQuery = new LambdaQueryWrapper<>();
+        answerLikeQuery.eq(com.campuslink.entity.Answer::getResponderId, userId)
+                .select(com.campuslink.entity.Answer::getLikes);
+        List<com.campuslink.entity.Answer> myAnswerLikes = answerMapper.selectList(answerLikeQuery);
+        int answerLikes = myAnswerLikes.stream()
+                .mapToInt(a -> a.getLikes() == null ? 0 : a.getLikes()).sum();
+
+        int likeCount = resourceLikes + answerLikes;
 
         // 计算连续签到天数
         int checkInDays = calculateConsecutiveDays(userId);
@@ -450,6 +465,67 @@ public class UserService {
     }
 
     /**
+     * 获取用户内容被点赞列表（资源 + 回答，按点赞数降序，分页）
+     */
+    public PageResult<com.campuslink.dto.LikedItemVO> getLikedItems(Long userId, int page, int pageSize) {
+        List<com.campuslink.dto.LikedItemVO> all = new ArrayList<>();
+
+        // 资源（likes > 0）
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resQuery = new LambdaQueryWrapper<>();
+        resQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .gt(com.campuslink.entity.Resource::getLikes, 0)
+                .orderByDesc(com.campuslink.entity.Resource::getLikes);
+        List<com.campuslink.entity.Resource> resources = resourceMapper.selectList(resQuery);
+        for (com.campuslink.entity.Resource r : resources) {
+            all.add(com.campuslink.dto.LikedItemVO.builder()
+                    .type("resource")
+                    .targetId(r.getRid())
+                    .title(r.getTitle())
+                    .likes(r.getLikes() == null ? 0 : r.getLikes())
+                    .createdAt(r.getCreatedAt())
+                    .build());
+        }
+
+        // 回答（likes > 0），同时查关联问题标题
+        LambdaQueryWrapper<com.campuslink.entity.Answer> ansQuery = new LambdaQueryWrapper<>();
+        ansQuery.eq(com.campuslink.entity.Answer::getResponderId, userId)
+                .gt(com.campuslink.entity.Answer::getLikes, 0)
+                .orderByDesc(com.campuslink.entity.Answer::getLikes);
+        List<com.campuslink.entity.Answer> answers = answerMapper.selectList(ansQuery);
+        for (com.campuslink.entity.Answer a : answers) {
+            String questionTitle = null;
+            if (a.getQuestionId() != null) {
+                com.campuslink.entity.Question q = questionMapper.selectById(a.getQuestionId());
+                if (q != null) questionTitle = q.getTitle();
+            }
+            // 回答内容摘要：取前60字
+            String excerpt = a.getContent() == null ? "" :
+                    (a.getContent().length() > 60 ? a.getContent().substring(0, 60) + "…" : a.getContent());
+            all.add(com.campuslink.dto.LikedItemVO.builder()
+                    .type("answer")
+                    .targetId(a.getAid())
+                    .title(excerpt)
+                    .questionId(a.getQuestionId())
+                    .questionTitle(questionTitle)
+                    .likes(a.getLikes() == null ? 0 : a.getLikes())
+                    .createdAt(a.getCreatedAt())
+                    .build());
+        }
+
+        // 按点赞数降序整体排序
+        all.sort((a1, a2) -> Integer.compare(a2.getLikes(), a1.getLikes()));
+
+        long total = all.size();
+        int fromIdx = (page - 1) * pageSize;
+        int toIdx = (int) Math.min(fromIdx + pageSize, total);
+        List<com.campuslink.dto.LikedItemVO> pageData =
+                fromIdx >= total ? new ArrayList<>() : all.subList(fromIdx, toIdx);
+        long totalPages = (total + pageSize - 1) / pageSize;
+
+        return new PageResult<>(pageData, total, (long) page, (long) pageSize, totalPages);
+    }
+
+    /**
      * 计算连续签到天数
      */
     private int calculateConsecutiveDays(Long userId) {
@@ -572,5 +648,107 @@ public class UserService {
         }
 
         return userVO;
+    }
+
+    /**
+     * 根据微信 OpenID 查询用户
+     */
+    public User findByWechatOpenid(String openid) {
+        return userMapper.selectOne(
+            new LambdaQueryWrapper<User>()
+                .eq(User::getWechatOpenid, openid)
+        );
+    }
+
+    /**
+     * 根据微信 UnionID 查询用户
+     */
+    public User findByWechatUnionid(String unionid) {
+        if (unionid == null || unionid.isEmpty()) {
+            return null;
+        }
+        return userMapper.selectOne(
+            new LambdaQueryWrapper<User>()
+                .eq(User::getWechatUnionid, unionid)
+        );
+    }
+
+    /**
+     * 创建微信小程序用户（自动注册）
+     */
+    @Transactional
+    public User createWechatUser(String openid, String unionid, String nickname, String avatarUrl) {
+        User user = new User();
+        user.setWechatOpenid(openid);
+        user.setWechatUnionid(unionid);
+
+        // 设置昵称（如果未提供则使用默认值）
+        if (nickname != null && !nickname.isEmpty()) {
+            user.setNickname(nickname);
+        } else {
+            user.setNickname("微信用户_" + generateRandomString(6));
+        }
+
+        // 设置用户名（使用 wx_ + openid前8位）
+        user.setUsername("wx_" + openid.substring(0, Math.min(8, openid.length())));
+
+        // 设置头像
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            user.setAvatarUrl(avatarUrl);
+        }
+
+        // 设置默认值
+        user.setRole("student");
+        user.setPoints(100);  // 注册赠送 100 积分
+        user.setLevel(1);
+        user.setStatus(1);  // 正常状态
+        user.setIsVerified(0);  // 未实名认证
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+        user.setLastLoginTime(LocalDateTime.now());
+
+        // 保存用户
+        userMapper.insert(user);
+
+        // 记录积分日志（注册赠送）
+        addPointsLog(user.getUId(), 100, "register", "注册奖励");
+
+        log.info("微信用户自动注册成功: userId={}, openid={}, username={}",
+                user.getUId(), openid, user.getUsername());
+
+        return user;
+    }
+
+    /**
+     * 记录积分变化日志（私有方法）
+     */
+    private void addPointsLog(Long userId, Integer points, String relatedType, String reason) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            return;
+        }
+
+        PointsLog pointsLog = new PointsLog();
+        pointsLog.setUserId(userId);
+        pointsLog.setPointsChange(points);
+        pointsLog.setPointsAfter(user.getPoints());
+        pointsLog.setReason(reason);
+        pointsLog.setRelatedType(relatedType);
+        pointsLog.setRelatedId(userId);
+        pointsLog.setCreatedAt(LocalDateTime.now());
+        pointsLogMapper.insert(pointsLog);
+    }
+
+    /**
+     * 生成随机字符串
+     */
+    private String generateRandomString(int length) {
+        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder();
+        java.util.Random random = new java.util.Random();
+        for (int i = 0; i < length; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

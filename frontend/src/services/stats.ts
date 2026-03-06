@@ -13,6 +13,7 @@ export interface TodayStatsResponse {
   newResources: number        // 今日资源上传数
   newTasks?: number           // 今日新增任务数（可选）
   activityParticipants?: number // 今日活动参与数（可选）
+  totalAnswers?: number       // 回答总数（仅 /stats/total 返回）
 }
 
 /**

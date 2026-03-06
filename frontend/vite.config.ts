@@ -17,6 +17,18 @@ export default defineConfig({
     }
   },
 
+  // CSS 预处理器配置
+  css: {
+    preprocessorOptions: {
+      scss: {
+        // 静默 Sass 弃用警告（Dart Sass 3.0 之前的过渡期）
+        // 'import' - @import 规则将被移除
+        // 'global-builtin' - 全局内置模块将被移除
+        silenceDeprecations: ['import', 'global-builtin'],
+      }
+    }
+  },
+
   // 优化配置
   optimizeDeps: {
     // 排除pdfjs-dist，让其在运行时加载

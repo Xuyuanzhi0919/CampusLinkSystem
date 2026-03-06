@@ -26,6 +26,7 @@ export interface ResourceItem {
   resourceId: number
   title: string
   description: string
+  uploaderId?: number      // 上传者ID（可选，列表接口可能不返回）
   uploaderName: string
   uploaderAvatar: string
   fileType: ResourceFileType
@@ -33,6 +34,7 @@ export interface ResourceItem {
   category: ResourceCategory
   courseName?: string
   score: number            // 积分要求
+  views?: number           // 浏览次数
   downloads: number
   likes: number
   favorites?: number       // 收藏数（可选）
@@ -40,6 +42,7 @@ export interface ResourceItem {
   totalRatings?: number    // 总评分人数
   createdAt: string
   status?: ResourceStatus  // 审核状态（可选，管理员视图会有）
+  rejectReason?: string    // 审核拒绝原因（status=2 时后端可能返回）
   isDownloaded?: boolean   // 是否已下载（可选，登录用户会有）
   isLiked?: boolean        // 是否已点赞（可选，登录用户会有）
   isFavorited?: boolean    // 是否已收藏（可选，登录用户会有）
@@ -67,13 +70,15 @@ export interface ResourceDetail extends ResourceItem {
 
 // 资源列表查询参数
 export interface ResourceListParams {
-  category?: number  // 资源分类: 0=课件, 1=试题, 2=笔记
+  category?: string  // 资源分类（字符串枚举：课件/试卷/笔记/教材/实验报告）
   schoolId?: number
   keyword?: string
   page?: number
   pageSize?: number
-  sortBy?: 'download_count' | 'created_at' | 'score'
+  sortBy?: 'downloads' | 'created_at' | 'score' | 'likes'
   sortOrder?: 'asc' | 'desc'
+  scoreMin?: number  // 最低积分（含），对应高级筛选积分范围
+  scoreMax?: number  // 最高积分（含），不传表示无上限
 }
 
 // 资源上传参数

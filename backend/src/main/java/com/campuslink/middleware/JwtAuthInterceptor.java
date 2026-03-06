@@ -25,6 +25,34 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             return true;
         }
 
+        // 放行详情 GET 请求（游客可浏览，写操作仍需认证）
+        String method = request.getMethod();
+        String uri = request.getRequestURI();
+        // 匹配 GET /api/v1/question/{id}，排除 /question/list、/question/hot-tags 等已在 excludePathPatterns 处理的路径
+        if ("GET".equals(method) && uri.matches(".*/question/\\d+$")) {
+            return true;
+        }
+        // 匹配 GET /api/v1/resource/{id}，游客可浏览资源详情，下载/点赞等写操作仍需认证
+        if ("GET".equals(method) && uri.matches(".*/resource/\\d+$")) {
+            return true;
+        }
+        // 匹配 GET /api/v1/resource/{id}/comments，游客可查看评论列表
+        if ("GET".equals(method) && uri.matches(".*/resource/\\d+/comments$")) {
+            return true;
+        }
+        // 匹配 GET /api/v1/club/{id}，游客可浏览社团详情；join/leave 等 POST 操作仍需认证
+        if ("GET".equals(method) && uri.matches(".*/club/\\d+$")) {
+            return true;
+        }
+        // 匹配 GET /api/v1/club/{id}/members，游客可查看社团成员列表
+        if ("GET".equals(method) && uri.matches(".*/club/\\d+/members$")) {
+            return true;
+        }
+        // 匹配 GET /api/v1/activity/{id}，游客可浏览活动详情；报名/签到等 POST 操作仍需认证
+        if ("GET".equals(method) && uri.matches(".*/activity/\\d+$")) {
+            return true;
+        }
+
         // 获取 Token
         String token = getTokenFromRequest(request);
 

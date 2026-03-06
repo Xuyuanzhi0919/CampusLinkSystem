@@ -15,6 +15,7 @@
         <CNavBar
           :title="navTitle"
           :show-back="showBack"
+          :back-text="backText"
           :background="navBackground"
           :text-color="navTextColor"
           @back="handleBack"
@@ -72,9 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import type { CSSProperties } from 'vue'
 import CNavBar from './CNavBar.vue'
+import { useNavigationStore } from '@/stores/navigation'
 
 /**
  * PageContainer - 页面容器组件
@@ -113,6 +115,8 @@ interface Props {
   navTitle?: string
   /** 是否显示返回按钮 */
   showBack?: boolean
+  /** 返回按钮文字 */
+  backText?: string
   /** 导航栏背景色 */
   navBackground?: string
   /** 导航栏文字颜色 */
@@ -137,7 +141,16 @@ interface Props {
   background?: string
   /** 内容区内边距 */
   padding?: string
+  /** 是否由页面自定义返回逻辑（传 true 时 PageContainer 不自动 navigateBack） */
+  customBack?: boolean
+  /**
+   * 滚动时自动隐藏/显示底部 TabBar
+   * 设为 false 可在特定页面禁用此行为
+   */
+  autoHideTabBar?: boolean
 }
+
+const navigationStore = useNavigationStore()
 
 const props = withDefaults(defineProps<Props>(), {
   showNavbar: true,
@@ -154,7 +167,9 @@ const props = withDefaults(defineProps<Props>(), {
   refresherTriggered: false,
   safeBottom: true,
   background: '',
-  padding: ''
+  padding: '',
+  customBack: false,
+  autoHideTabBar: true
 })
 
 const emit = defineEmits<{
@@ -177,15 +192,20 @@ const contentStyle = computed<CSSProperties>(() => {
 
 const handleBack = () => {
   emit('back')
-  uni.navigateBack({
-    fail: () => {
-      // 如果无法返回，跳转到首页
-      uni.switchTab({ url: '/pages/home/index' })
-    }
-  })
+  if (!props.customBack) {
+    uni.navigateBack({
+      fail: () => {
+        uni.switchTab({ url: '/pages/home/index' })
+      }
+    })
+  }
 }
 
 const handleScroll = (event: any) => {
+  if (props.autoHideTabBar) {
+    const scrollTop = event.detail?.scrollTop ?? 0
+    navigationStore.handleScroll(scrollTop)
+  }
   emit('scroll', event)
 }
 

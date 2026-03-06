@@ -40,13 +40,14 @@ public class QuestionController {
             @Parameter(description = "问题分类") @RequestParam(required = false) String category,
             @Parameter(description = "学校ID") @RequestParam(required = false) Long schoolId,
             @Parameter(description = "搜索关键词") @RequestParam(required = false) String keyword,
+            @Parameter(description = "是否已解决（0=未解决，1=已解决）") @RequestParam(required = false) Integer isSolved,
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "排序字段") @RequestParam(defaultValue = "created_at") String sortBy,
             @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder
     ) {
         PageResult<QuestionListResponse> result = questionService.getQuestionList(
-                category, schoolId, keyword, page, pageSize, sortBy, sortOrder
+                category, schoolId, keyword, isSolved, page, pageSize, sortBy, sortOrder
         );
         return Result.success(result);
     }
@@ -70,6 +71,17 @@ public class QuestionController {
     ) {
         QuestionResponse question = questionService.getQuestionById(id);
         return Result.success(question);
+    }
+
+    @Operation(summary = "更新问题")
+    @PutMapping("/{id}")
+    public Result<Map<String, Long>> updateQuestion(
+            @Parameter(description = "问题ID") @PathVariable Long id,
+            @Valid @RequestBody AskQuestionRequest request,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        questionService.updateQuestion(userId, id, request);
+        return Result.success("更新成功", Map.of("questionId", id));
     }
 
     @Operation(summary = "回答问题")
@@ -130,5 +142,33 @@ public class QuestionController {
     ) {
         questionService.deleteQuestion(userId, id);
         return Result.success("删除成功", null);
+    }
+
+    @Operation(summary = "获取热门标签")
+    @GetMapping("/hot-tags")
+    public Result<List<HotTagResponse>> getHotTags(
+            @Parameter(description = "返回数量") @RequestParam(defaultValue = "8") Integer limit
+    ) {
+        List<HotTagResponse> tags = questionService.getHotTags(limit);
+        return Result.success(tags);
+    }
+
+    @Operation(summary = "获取活跃答主")
+    @GetMapping("/active-users")
+    public Result<List<ActiveUserResponse>> getActiveUsers(
+            @Parameter(description = "返回数量") @RequestParam(defaultValue = "4") Integer limit,
+            @Parameter(description = "时间范围（7d/30d）") @RequestParam(defaultValue = "7d") String period
+    ) {
+        List<ActiveUserResponse> users = questionService.getActiveUsers(limit, period);
+        return Result.success(users);
+    }
+
+    @Operation(summary = "获取精选问题列表", description = "用于首页推荐位轮播，返回多条综合质量最高的问题")
+    @GetMapping("/featured")
+    public Result<List<FeaturedQuestionResponse>> getFeaturedQuestions(
+            @Parameter(description = "返回数量，默认5条") @RequestParam(defaultValue = "5") Integer limit
+    ) {
+        List<FeaturedQuestionResponse> questions = questionService.getFeaturedQuestions(limit);
+        return Result.success(questions);
     }
 }

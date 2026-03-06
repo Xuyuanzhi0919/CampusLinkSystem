@@ -38,6 +38,15 @@ export const createQuestion = (data: QuestionCreateParams) => {
 }
 
 /**
+ * 更新问题
+ * @param id 问题ID
+ * @param data 问题数据
+ */
+export const updateQuestion = (id: number, data: QuestionCreateParams) => {
+  return request.put<{ questionId: number }>(`/question/${id}`, data)
+}
+
+/**
  * 回答问题
  * @param questionId 问题ID
  * @param data 回答数据
@@ -122,3 +131,43 @@ export const getMyAnswers = (params: {
   return request.get<PageResult<AnswerItem & { question: QuestionItem }>>('/answer/my', params)
 }
 
+/**
+ * 获取热门标签
+ * @param limit 返回数量，默认8个
+ */
+export const getHotTags = (limit: number = 8) => {
+  return request.get<Array<{ name: string; count: number }>>('/question/hot-tags', { limit })
+}
+
+/**
+ * 获取活跃答主
+ * @param limit 返回数量，默认4个
+ * @param period 时间范围，7d或30d，默认7d
+ */
+export const getActiveUsers = (limit: number = 4, period: '7d' | '30d' = '7d') => {
+  return request.get<Array<{
+    userId: number
+    nickname: string
+    avatar: string
+    answerCount: number
+    badge: string | null
+  }>>('/question/active-users', { limit, period })
+}
+
+/**
+ * 获取精选问题列表（用于首页推荐位轮播）
+ * @param limit 返回数量，默认5条
+ */
+export const getFeaturedQuestions = (limit: number = 5) => {
+  return request.get<Array<{
+    qid: number
+    title: string
+    username: string
+    avatar: string
+    category: string
+    answerCount: number
+    views: number
+    likes: number
+    createdAt: string
+  }>>('/question/featured', { limit })
+}

@@ -1,181 +1,111 @@
 <template>
   <view
     class="c-navbar"
-    :style="{
-      background: background,
-      color: textColor
-    }"
+    :style="{ background, color: textColor }"
   >
-    <!-- 状态栏占位 -->
-    <view class="c-navbar__status" :style="{ height: statusBarHeight + 'px' }"></view>
-
-    <!-- 导航栏主体 -->
     <view class="c-navbar__content">
-      <!-- 左侧区域 -->
+      <!-- 左侧 -->
       <view class="c-navbar__left">
         <slot name="left">
           <view
             v-if="showBack"
             class="c-navbar__back"
-            hover-class="c-navbar__back--hover"
             @click="handleBack"
           >
-            <text class="c-navbar__back-icon">←</text>
-            <text v-if="backText" class="c-navbar__back-text">{{ backText }}</text>
+            <ArrowLeft :size="20" :stroke-width="2" />
           </view>
         </slot>
       </view>
 
-      <!-- 中间标题区域 -->
-      <view class="c-navbar__center">
+      <!-- 中间标题 -->
+      <view class="c-navbar__center" :class="{ 'c-navbar__center--left': titleAlign === 'left' }">
         <slot name="title">
-          <text class="c-navbar__title" :class="{ 'c-navbar__title--left': titleAlign === 'left' }">
-            {{ title }}
-          </text>
+          <text class="c-navbar__title">{{ title }}</text>
         </slot>
       </view>
 
-      <!-- 右侧区域 -->
+      <!-- 右侧 -->
       <view class="c-navbar__right">
-        <slot name="right"></slot>
+        <slot name="right" />
       </view>
     </view>
 
-    <!-- 底部边框 -->
-    <view v-if="border" class="c-navbar__border"></view>
+    <view v-if="border" class="c-navbar__border" />
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-
-/**
- * CNavBar - 统一导航栏组件
- *
- * @description 提供统一的顶部导航栏样式，支持自定义左中右区域
- *
- * @example
- * <!-- 基础导航栏 -->
- * <CNavBar title="页面标题" />
- *
- * <!-- 带返回按钮 -->
- * <CNavBar title="详情页" show-back @back="handleBack" />
- *
- * <!-- 自定义右侧 -->
- * <CNavBar title="列表页">
- *   <template #right>
- *     <CButton type="text" size="sm">筛选</CButton>
- *   </template>
- * </CNavBar>
- *
- * <!-- 透明导航栏 -->
- * <CNavBar
- *   title="个人中心"
- *   background="transparent"
- *   text-color="#FFFFFF"
- * />
- */
+import { ArrowLeft } from 'lucide-vue-next'
 
 interface Props {
-  /** 标题 */
   title?: string
-  /** 标题对齐方式 */
   titleAlign?: 'center' | 'left'
-  /** 是否显示返回按钮 */
   showBack?: boolean
-  /** 返回按钮文字 */
-  backText?: string
-  /** 背景色 */
   background?: string
-  /** 文字颜色 */
   textColor?: string
-  /** 是否显示底部边框 */
   border?: boolean
-  /** 是否固定在顶部 */
-  fixed?: boolean
-  /** 固定时的 z-index */
-  zIndex?: number
+  autoBack?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: '',
   titleAlign: 'center',
   showBack: true,
-  backText: '',
   background: '#FFFFFF',
-  textColor: '#0F172A',
+  textColor: '#1A1918',
   border: true,
-  fixed: false,
-  zIndex: 200
+  autoBack: true,
 })
 
-const emit = defineEmits<{
-  back: []
-}>()
-
-// 状态栏高度
-const statusBarHeight = ref(20)
-
-onMounted(() => {
-  // 获取系统信息
-  const systemInfo = uni.getSystemInfoSync()
-  statusBarHeight.value = systemInfo.statusBarHeight || 20
-})
+const emit = defineEmits<{ back: [] }>()
 
 const handleBack = () => {
   emit('back')
+  if (props.autoBack) {
+    uni.navigateBack({
+      fail: () => uni.switchTab({ url: '/pages/home/index' }),
+    })
+  }
 }
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
-
 .c-navbar {
-  position: relative;
+  position: sticky;
+  top: 0;
+  z-index: 100;
   width: 100%;
-  background: $bg-surface;
-
-  // ============ 子元素 ============
-
-  &__status {
-    width: 100%;
-  }
+  background: #FFFFFF;
 
   &__content {
     display: flex;
     align-items: center;
-    height: 88rpx;
-    padding: 0 $sp-6;
+    height: 56px;
+    padding: 0 16px 0 12px;
+    gap: 8px;
   }
 
   &__left {
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    min-width: 120rpx;
   }
 
   &__back {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #F0EFEC;
     display: flex;
     align-items: center;
-    padding: $sp-4 $sp-6;
-    margin-left: -$sp-6;
-    border-radius: $radius-base;
-    transition: $transition-fast;
-  }
-
-  &__back--hover {
-    background: $bg-hover;
-  }
-
-  &__back-icon {
-    font-size: $font-size-xl;
-    font-weight: $font-weight-medium;
-  }
-
-  &__back-text {
-    margin-left: $sp-2;
-    font-size: $font-size-base;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+    transition: opacity 0.12s;
+    &:active { opacity: 0.6; }
+    // #ifdef H5
+    &:hover { opacity: 0.8; }
+    // #endif
   }
 
   &__center {
@@ -184,18 +114,20 @@ const handleBack = () => {
     align-items: center;
     justify-content: center;
     min-width: 0;
-    padding: 0 $sp-6;
+    overflow: hidden;
+
+    &--left {
+      justify-content: flex-start;
+    }
   }
 
   &__title {
-    font-size: $font-size-lg;
-    font-weight: $font-weight-semibold;
+    font-size: 18px;
+    font-weight: 700;
     color: inherit;
-    @include text-ellipsis;
-
-    &--left {
-      margin-right: auto;
-    }
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   &__right {
@@ -203,16 +135,12 @@ const handleBack = () => {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    min-width: 120rpx;
+    min-width: 36px;
   }
 
   &__border {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2rpx;
-    background: $border-light;
+    height: 1px;
+    background: #EDEDEB;
   }
 }
 </style>

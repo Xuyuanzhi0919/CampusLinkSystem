@@ -3,15 +3,23 @@
     <!-- 顶部导航栏 -->
     <view class="nav-bar">
       <view class="nav-back" @click="handleGoBack">
-        <text class="back-icon">←</text>
+        <!-- Lucide: ChevronLeft -->
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 18l-6-6 6-6"/>
+        </svg>
       </view>
-      <view class="nav-center">
-        <image
-          v-if="otherUserAvatar"
-          class="nav-avatar"
-          :src="otherUserAvatar"
-          mode="aspectFill"
-        />
+      <view class="nav-user">
+        <view class="nav-avatar-wrap">
+          <image
+            v-if="otherUserAvatar"
+            class="nav-avatar"
+            :src="otherUserAvatar"
+            mode="aspectFill"
+          />
+          <view v-else class="nav-avatar-fallback">
+            <text class="nav-avatar-initial">{{ otherUserNickname.charAt(0) }}</text>
+          </view>
+        </view>
         <view class="nav-info">
           <text class="nav-title">{{ otherUserNickname }}</text>
           <!-- WebSocket 连接状态 / 输入状态 -->
@@ -24,12 +32,17 @@
             <text class="status-text">正在输入...</text>
           </view>
           <view v-else class="ws-status" :class="wsConnected ? 'connected' : 'disconnected'">
-            <text class="status-dot"></text>
+            <view class="status-dot"></view>
             <text class="status-text">{{ wsConnected ? '在线' : '离线' }}</text>
           </view>
         </view>
       </view>
-      <view class="nav-placeholder" />
+      <!-- 更多按钮 -->
+      <view class="nav-more">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>
+        </svg>
+      </view>
     </view>
 
     <!-- 消息列表 -->
@@ -85,23 +98,30 @@
 
               <!-- 文件消息 -->
               <view v-else-if="message.msgType === MessageType.FILE" class="message-file" @click="handleDownloadFile(message.content)">
-                <view class="file-icon">📄</view>
+                <view class="file-icon-box">
+                  <!-- Lucide: FileText -->
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                </view>
                 <view class="file-info">
                   <text class="file-name">{{ parseFileInfo(message.content).name }}</text>
                   <text class="file-size">{{ formatFileSize(parseFileInfo(message.content).size) }}</text>
                 </view>
               </view>
-            </view>
-            <view class="message-meta">
-              <text class="message-time">{{ formatTime(message.createdAt) }}</text>
-              <!-- 已读状态（仅显示自己发送的消息） -->
-              <text
-                v-if="message.senderId === currentUserId"
-                class="read-status"
-                :class="message.isRead ? 'is-read' : 'is-unread'"
-              >
-                {{ message.isRead ? '已读' : '未读' }}
-              </text>
+
+              <!-- 气泡内底部：时间 + 已读状态 -->
+              <view class="bubble-meta" :class="message.senderId === currentUserId ? 'meta-mine' : 'meta-other'">
+                <text class="bubble-time">{{ formatTime(message.createdAt) }}</text>
+                <text
+                  v-if="message.senderId === currentUserId"
+                  class="bubble-read"
+                  :class="message.isRead ? 'is-read' : 'is-unread'"
+                >{{ message.isRead ? '✓✓' : '✓' }}</text>
+              </view>
             </view>
           </view>
         </view>
@@ -115,44 +135,64 @@
       </view>
     </scroll-view>
 
-    <!-- 输入框 -->
+    <!-- 输入栏 -->
     <view class="input-bar">
-      <!-- 表情按钮 -->
-      <view class="emoji-btn" @click="handleToggleEmoji">
-        <text class="emoji-icon">{{ showEmojiPicker ? '⌨️' : '😀' }}</text>
+      <!-- 左侧工具区 -->
+      <view class="input-tools">
+        <!-- 表情 Lucide: Smile / Keyboard -->
+        <view class="tool-btn" @click="handleToggleEmoji">
+          <svg v-if="!showEmojiPicker" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+            <line x1="9" y1="9" x2="9.01" y2="9"/>
+            <line x1="15" y1="9" x2="15.01" y2="9"/>
+          </svg>
+          <svg v-else width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="16" rx="2"/>
+            <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h.01M12 12h.01M16 12h.01M7 16h10"/>
+          </svg>
+        </view>
+
+        <!-- 图片 Lucide: Image -->
+        <view class="tool-btn" @click="handleChooseImage">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </view>
+
+        <!-- 文件 Lucide: Paperclip -->
+        <view class="tool-btn" @click="handleChooseFile">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </view>
       </view>
 
-      <!-- 图片按钮 -->
-      <view class="action-btn" @click="handleChooseImage">
-        <text class="action-icon">📷</text>
+      <!-- 输入框 + 发送按钮 -->
+      <view class="input-row">
+        <textarea
+          class="input-area"
+          v-model="inputContent"
+          placeholder="发送消息..."
+          :auto-height="true"
+          :maxlength="500"
+          :show-confirm-bar="false"
+          @focus="handleInputFocus"
+        />
+        <!-- 发送：Lucide SendHorizontal -->
+        <view
+          class="send-btn"
+          :class="{ 'send-btn--active': canSend }"
+          @click="handleSendMessage"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 2L11 13"/>
+            <path d="M22 2L15 22 11 13 2 9l20-7z"/>
+          </svg>
+        </view>
       </view>
-
-      <!-- 文件按钮 -->
-      <view class="action-btn" @click="handleChooseFile">
-        <text class="action-icon">📎</text>
-      </view>
-
-      <!-- 输入框 -->
-      <textarea
-        class="input-area"
-        v-model="inputContent"
-        placeholder="输入消息..."
-        :auto-height="true"
-        :maxlength="500"
-        :show-confirm-bar="false"
-        @focus="handleInputFocus"
-      />
-
-      <!-- 发送按钮 -->
-      <CButton
-        type="primary"
-        size="sm"
-        class="send-btn"
-        :disabled="!canSend"
-        @click="handleSendMessage"
-      >
-        发送
-      </CButton>
     </view>
 
     <!-- 表情选择器 -->
@@ -175,7 +215,6 @@ import type { Message } from '@/types/message'
 import { MessageType } from '@/types/message'
 import type { WebSocketMessage } from '@/composables/useWebSocket'
 import EmojiPicker from '@/components/EmojiPicker.vue'
-import CButton from '@/components/ui/CButton.vue'
 
 // 路由参数
 const otherUserId = ref<number>(0)
@@ -272,29 +311,47 @@ function handleWebSocketMessage(message: WebSocketMessage) {
       break
 
     case 'send_success':
-      // 消息发送成功
-      addMessageToList({
-        mId: message.messageId || Date.now(),
-        senderId: currentUserId.value,
-        senderName: userStore.userInfo?.nickname || '',
-        senderAvatar: userStore.userInfo?.avatar || '',
-        receiverId: message.toUserId ?? otherUserId.value,
-        receiverName: otherUserNickname.value,
-        receiverAvatar: otherUserAvatar.value,
-        content: message.content,
-        msgType: message.msgType || MessageType.TEXT,
-        isRead: false,
-        createdAt: new Date(message.timestamp).toISOString()
-      })
-
-      // 滚动到底部
-      nextTick(() => {
-        scrollToBottom()
-      })
+      // 消息发送成功：用服务端返回的真实 messageId 更新乐观消息
+      // 找到最后一条发自自己的临时消息（mId < 0）并替换 ID
+      if (message.messageId) {
+        // 从尾部向前找最近一条内容匹配的临时乐观消息
+        let tempIdx = -1
+        for (let i = messageList.value.length - 1; i >= 0; i--) {
+          const m = messageList.value[i]
+          if (m.mId < 0 && m.senderId === currentUserId.value && m.content === message.content) {
+            tempIdx = i
+            break
+          }
+        }
+        if (tempIdx !== -1) {
+          messageList.value[tempIdx].mId = message.messageId
+        } else {
+          // 如果找不到乐观消息（极少数情况），兜底插入
+          addMessageToList({
+            mId: message.messageId,
+            senderId: currentUserId.value,
+            senderName: userStore.userInfo?.nickname || '',
+            senderAvatar: userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '',
+            receiverId: message.toUserId ?? otherUserId.value,
+            receiverName: otherUserNickname.value,
+            receiverAvatar: otherUserAvatar.value,
+            content: message.content,
+            msgType: message.msgType || MessageType.TEXT,
+            isRead: false,
+            createdAt: new Date(message.timestamp).toISOString()
+          })
+        }
+      }
       break
 
     case 'send_error':
-      // 消息发送失败
+      // 消息发送失败：移除最后一条临时乐观消息
+      for (let i = messageList.value.length - 1; i >= 0; i--) {
+        if (messageList.value[i].mId < 0) {
+          messageList.value.splice(i, 1)
+          break
+        }
+      }
       uni.showToast({
         title: message.message || '发送失败',
         icon: 'none'
@@ -440,32 +497,53 @@ const handleLoadMore = () => {
 
 /**
  * 发送消息（使用 WebSocket）
+ * 采用乐观更新：先立即将消息插入列表，再通过 WebSocket 发出
+ * send_success 回调收到服务端确认的 messageId 后，更新本地临时消息的 mId
  */
 const handleSendMessage = async () => {
   if (!canSend.value) return
 
   const content = inputContent.value.trim()
 
+  // 检查 WebSocket 连接状态
+  if (!wsConnected.value) {
+    uni.showToast({
+      title: 'WebSocket 未连接',
+      icon: 'none'
+    })
+    return
+  }
+
+  // 生成临时 ID（负数，避免与服务端 ID 冲突）
+  const tempId = -Date.now()
+
+  // 乐观更新：立即将消息插入列表
+  const optimisticMsg: Message = {
+    mId: tempId,
+    senderId: currentUserId.value,
+    senderName: userStore.userInfo?.nickname || '',
+    senderAvatar: userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '',
+    receiverId: otherUserId.value,
+    receiverName: otherUserNickname.value,
+    receiverAvatar: otherUserAvatar.value,
+    content,
+    msgType: MessageType.TEXT,
+    isRead: false,
+    createdAt: new Date().toISOString()
+  }
+  messageList.value.push(optimisticMsg)
+
+  // 清空输入框并滚动到底部
+  inputContent.value = ''
+  await nextTick()
+  scrollToBottom()
+
   try {
-    // 检查 WebSocket 连接状态
-    if (!wsConnected.value) {
-      uni.showToast({
-        title: 'WebSocket 未连接',
-        icon: 'none'
-      })
-      return
-    }
-
-    // 通过 WebSocket 发送消息
     await sendChatMessage(otherUserId.value, content, MessageType.TEXT)
-
-    // 清空输入框
-    inputContent.value = ''
-
-    // 消息会通过 WebSocket 的 send_success 回调添加到列表
-    // 不需要重新加载整个列表
-
   } catch (error: any) {
+    // 发送失败：移除乐观消息
+    const idx = messageList.value.findIndex(m => m.mId === tempId)
+    if (idx !== -1) messageList.value.splice(idx, 1)
     uni.showToast({
       title: error.message || '发送失败',
       icon: 'none'
@@ -773,8 +851,11 @@ const handleRecallMessage = async (message: Message) => {
 
 /**
  * 滚动到底部
+ * 通过先减 1 再设回最大值，强制 Vue 响应式重新触发 scroll-view 滚动
  */
-const scrollToBottom = () => {
+const scrollToBottom = async () => {
+  scrollTop.value = Math.max(0, scrollTop.value - 1)
+  await nextTick()
   scrollTop.value = 999999
 }
 
@@ -782,17 +863,47 @@ const scrollToBottom = () => {
  * 返回上一页
  */
 const handleGoBack = () => {
-  uni.navigateBack()
+  const pages = getCurrentPages()
+  if (pages.length > 1) {
+    uni.navigateBack()
+  } else {
+    // 没有上一页（直接打开或刷新），跳回私信列表
+    uni.switchTab({ url: '/pages/message/index' })
+  }
 }
 
 /**
- * 格式化时间
+ * 格式化时间：今天只显示 HH:MM，昨天显示"昨天 HH:MM"，
+ * 同年显示"M月D日 HH:MM"，跨年显示"YYYY/M/D HH:MM"
  */
 const formatTime = (dateStr: string): string => {
   const date = new Date(dateStr)
-  const hours = date.getHours().toString().padStart(2, '0')
-  const minutes = date.getMinutes().toString().padStart(2, '0')
-  return `${hours}:${minutes}`
+  const now = new Date()
+  const hh = date.getHours().toString().padStart(2, '0')
+  const mm = date.getMinutes().toString().padStart(2, '0')
+  const timeStr = `${hh}:${mm}`
+
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+
+  if (isToday) return timeStr
+
+  const yesterday = new Date(now)
+  yesterday.setDate(now.getDate() - 1)
+  const isYesterday =
+    date.getFullYear() === yesterday.getFullYear() &&
+    date.getMonth() === yesterday.getMonth() &&
+    date.getDate() === yesterday.getDate()
+
+  if (isYesterday) return `昨天 ${timeStr}`
+
+  if (date.getFullYear() === now.getFullYear()) {
+    return `${date.getMonth() + 1}月${date.getDate()}日 ${timeStr}`
+  }
+
+  return `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()} ${timeStr}`
 }
 
 /**
@@ -940,141 +1051,209 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
+// ─── 色系（与整站一致）────────────────────────────────────────────────────────
+$primary:        #2563EB;
+$primary-dark:   #1D4ED8;
+$primary-light:  rgba(37, 99, 235, 0.1);
+$teal:           #14B8A6;
+$chat-bg:        #EEF2FF;   // 聊天区背景（淡蓝紫，来自设计稿）
+$gray-50:        #F8FAFC;
+$gray-100:       #F1F5F9;
+$gray-200:       #E2E8F0;
+$gray-300:       #CBD5E1;
+$gray-400:       #94A3B8;
+$gray-500:       #64748B;
+$gray-600:       #475569;
+$gray-700:       #334155;
+$gray-800:       #1E293B;
+$gray-900:       #0F172A;
+$white:          #FFFFFF;
+$success:        #10B981;
+$accent:         #FF6B35;
+
+// ─── 页面容器 ─────────────────────────────────────────────────────────────────
 
 .chat-page {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: $gray-100;
+  background: $chat-bg;
 }
+
+// ─── 顶部导航栏 ───────────────────────────────────────────────────────────────
 
 .nav-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: $sp-5 $sp-8;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
+  height: 56px;
+  padding: 0 4px 0 0;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid $gray-200;
   flex-shrink: 0;
+  gap: 4px;
 }
 
 .nav-back {
-  width: 80rpx;
-  height: 60rpx;
-  display: flex;
-  align-items: center;
-}
-
-.back-icon {
-  font-size: 40rpx;
-  color: $gray-700;
-}
-
-.nav-center {
-  flex: 1;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: $sp-4;
+  border-radius: 12px;
+  cursor: pointer;
+  color: $gray-700;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: $gray-100;
+    color: $primary;
+  }
+}
+
+// 用户信息区（头像 + 姓名/状态），左对齐，占满中间空间
+.nav-user {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.nav-avatar-wrap {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid $gray-100;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
 
 .nav-avatar {
-  width: 56rpx;
-  height: 56rpx;
-  border-radius: $radius-full;
-  background: $gray-200;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.nav-avatar-fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, $primary, $primary-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-avatar-initial {
+  font-size: 16px;
+  font-weight: 700;
+  color: $white;
+  line-height: 1;
 }
 
 .nav-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: $sp-1;
+  align-items: flex-start;
+  gap: 3px;
+  min-width: 0;
 }
 
 .nav-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
+  font-size: 16px;
+  font-weight: 700;
+  color: $gray-900;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }
+
+// 右侧更多按钮
+.nav-more {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: $gray-100;
+  cursor: pointer;
+  color: $gray-500;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: $gray-200;
+    color: $primary;
+  }
+}
+
+// ─── 连接状态 ─────────────────────────────────────────────────────────────────
 
 .ws-status {
   display: flex;
   align-items: center;
-  gap: $sp-2;
+  gap: 4px;
 }
 
 .status-dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: $radius-full;
-  animation: pulse 2s infinite;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .ws-status.connected .status-dot {
   background: $success;
+  box-shadow: 0 0 0 2px rgba($success, 0.2);
+  animation: pulse 2s infinite;
 }
 
 .ws-status.disconnected .status-dot {
   background: $gray-400;
-  animation: none;
 }
 
-// 输入状态样式
 .ws-status.typing {
-  color: $accent;
+  .status-text { color: $accent; font-weight: 500; }
+}
+
+.status-text {
+  font-size: 11px;
+  color: $gray-400;
+  line-height: 1;
 }
 
 .typing-dots-mini {
   display: flex;
   align-items: center;
-  gap: $sp-1;
-  height: 12rpx;
+  gap: 2px;
+  height: 8px;
 }
 
 .dot-mini {
-  width: 6rpx;
-  height: 6rpx;
-  border-radius: $radius-full;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
   background: $accent;
   animation: typingBounce 1.4s infinite ease-in-out;
-}
 
-.dot-mini:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.dot-mini:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot-mini:nth-child(3) {
-  animation-delay: 0.4s;
-}
-
-.ws-status.typing .status-text {
-  color: $accent;
-  font-weight: $font-weight-medium;
-}
-
-.status-text {
-  font-size: $font-size-xs;
-  color: $gray-500;
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
 }
 
-.nav-placeholder {
-  width: 80rpx;
-}
+// ─── 消息滚动区 ───────────────────────────────────────────────────────────────
 
 .message-scroll {
   flex: 1;
@@ -1082,271 +1261,266 @@ onMounted(async () => {
 }
 
 .load-more-tip {
-  @include flex-center;
-  padding: $sp-6 $sp-8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
 }
 
 .tip-text {
-  font-size: $font-size-sm;
+  font-size: 12px;
   color: $gray-400;
+  background: $gray-100;
+  padding: 4px 12px;
+  border-radius: 10px;
 }
+
+// ─── 消息列表 ─────────────────────────────────────────────────────────────────
 
 .message-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-8;
-  padding: $sp-6 $sp-8;
+  gap: 16px;
+  padding: 16px 12px;
 }
 
 .message-item {
   display: flex;
-  align-items: flex-start;
-  gap: $sp-4;
+  align-items: flex-end;
+  gap: 8px;
   width: 100%;
 
-  // 对方的消息 - 左对齐
   &:not(.is-mine) {
     flex-direction: row;
     justify-content: flex-start;
-
-    .message-avatar {
-      order: 1;
-    }
-
-    .message-content {
-      order: 2;
-      align-items: flex-start;
-    }
+    .message-content { align-items: flex-start; }
   }
 
-  // 我的消息 - 右对齐
   &.is-mine {
     flex-direction: row-reverse;
     justify-content: flex-start;
-
-    .message-avatar {
-      order: 1;
-    }
-
-    .message-content {
-      order: 2;
-      align-items: flex-end;
-    }
+    .message-content { align-items: flex-end; }
   }
 }
 
+// ─── 消息头像 ─────────────────────────────────────────────────────────────────
+
 .message-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: $radius-full;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
+  border: 2px solid $white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
 }
+
+// ─── 消息内容 ─────────────────────────────────────────────────────────────────
 
 .message-content {
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
-  max-width: 480rpx;
+  gap: 4px;
+  max-width: 72%;
   min-width: 0;
-  flex: 1;
 }
 
 .message-bubble {
-  padding: $sp-6 28rpx;
-  border-radius: $radius-card;
+  padding: 10px 14px;
+  border-radius: 18px;
   word-wrap: break-word;
   word-break: break-all;
   max-width: 100%;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
-  transition: $transition-base;
-}
-
-// 对方的消息气泡 - 白色背景
-.other-bubble {
-  background: $white;
-  border-top-left-radius: $radius-xs;
-  border: 1rpx solid $gray-200;
-
-  .message-text {
-    color: $gray-800;
-  }
-}
-
-// 我的消息气泡 - 蓝色渐变背景
-.mine-bubble {
-  @include gradient-primary;
-  border-top-right-radius: $radius-xs;
-
-  .message-text {
-    color: $white;
-  }
-}
-
-.message-text {
-  font-size: $font-size-base;
-  line-height: $line-height-relaxed;
-  white-space: pre-wrap;
-}
-
-// 图片消息
-.message-image {
-  max-width: 400rpx;
-  max-height: 400rpx;
-  min-width: 200rpx;
-  min-height: 200rpx;
-  border-radius: $radius-md;
-  display: block;
-  cursor: pointer;
-  transition: $transition-base;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.1s ease;
 
   &:active {
-    opacity: 0.8;
-  }
-}
-
-// 文件消息
-.message-file {
-  display: flex;
-  align-items: center;
-  gap: $sp-5;
-  padding: $sp-6;
-  background: rgba($white, 0.1);
-  border-radius: $radius-md;
-  min-width: 300rpx;
-  cursor: pointer;
-  transition: $transition-base;
-
-  &:active {
-    opacity: 0.8;
     transform: scale(0.98);
   }
 }
 
-.file-icon {
-  font-size: 48rpx;
+// 对方消息：白色气泡，左上角直角（与头像相接）
+.other-bubble {
+  background: $white;
+  border: 1px solid rgba($gray-200, 0.8);
+  border-top-left-radius: 4px;    // 左上角接近直角
+
+  .message-text { color: $gray-800; }
+
+  .bubble-time { color: $gray-400; }
+}
+
+// 我的消息：主色渐变，右上角直角（与边缘相接）
+.mine-bubble {
+  background: linear-gradient(135deg, $primary 0%, $primary-dark 100%);
+  border-top-right-radius: 4px;   // 右上角接近直角
+  box-shadow: 0 4px 12px rgba($primary, 0.28);
+
+  .message-text { color: $white; }
+
+  .bubble-time { color: rgba($white, 0.65); }
+}
+
+.message-text {
+  font-size: 15px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+// ─── 气泡内底部元信息（时间 + 已读）──────────────────────────────────────────
+
+.bubble-meta {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 5px;
+}
+
+.meta-other {
+  justify-content: flex-start;
+}
+
+.meta-mine {
+  justify-content: flex-end;
+}
+
+.bubble-time {
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bubble-read {
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+  letter-spacing: -1px;
+
+  &.is-read   { color: rgba($white, 0.9); }
+  &.is-unread { color: rgba($white, 0.5); }
+}
+
+// ─── 图片消息 ─────────────────────────────────────────────────────────────────
+
+.message-image {
+  max-width: 200px;
+  max-height: 200px;
+  min-width: 100px;
+  min-height: 100px;
+  border-radius: 14px;
+  display: block;
+  cursor: pointer;
+
+  &:active { opacity: 0.85; }
+}
+
+// ─── 文件消息 ─────────────────────────────────────────────────────────────────
+
+.message-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 160px;
+  cursor: pointer;
+  margin-bottom: 2px;
+
+  &:active { opacity: 0.8; transform: scale(0.98); }
+}
+
+// 文件图标方框
+.file-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+
+  .other-bubble & {
+    background: rgba($primary, 0.1);
+    color: $primary;
+  }
+
+  .mine-bubble & {
+    background: rgba($white, 0.2);
+    color: rgba($white, 0.95);
+  }
 }
 
 .file-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
+  gap: 3px;
   min-width: 0;
 }
 
 .file-name {
-  font-size: 26rpx;
-  color: inherit;
-  font-weight: $font-weight-medium;
-  @include text-ellipsis(1);
+  font-size: 13px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .other-bubble & { color: $gray-800; }
+  .mine-bubble &  { color: $white; }
 }
 
 .file-size {
-  font-size: $font-size-xs;
-  opacity: 0.7;
+  font-size: 11px;
+
+  .other-bubble & { color: $gray-400; }
+  .mine-bubble &  { color: rgba($white, 0.6); }
 }
 
-.message-meta {
-  display: flex;
-  align-items: center;
-  gap: $sp-3;
-  padding: 0 $sp-2;
-}
+// ─── 正在输入指示 ─────────────────────────────────────────────────────────────
 
-.message-time {
-  font-size: $font-size-xs;
-  color: $gray-400;
-  white-space: nowrap;
-}
-
-.read-status {
-  font-size: 20rpx;
-  padding: $sp-1 $sp-2;
-  border-radius: $radius-xs;
-  white-space: nowrap;
-  transition: $transition-slow;
-}
-
-.read-status.is-read {
-  color: $success;
-  background: rgba($success, 0.1);
-}
-
-.read-status.is-unread {
-  color: $gray-400;
-  background: rgba($gray-400, 0.1);
-}
-
-// 输入状态提示
 .typing-indicator,
 .typing-indicator-fixed {
   display: flex;
-  align-items: flex-start;
-  gap: $sp-4;
-  width: 100%;
-  flex-direction: row;
-  justify-content: flex-start;
-  padding: $sp-4 $sp-8;
-  animation: fadeIn 0.3s ease-in-out;
-}
-
-.typing-indicator-fixed {
-  position: relative;
-  background: $gray-50;
-  border-top: 1rpx solid $gray-200;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 4px 12px;
+  animation: fadeIn 0.25s ease;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10rpx);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.typing-avatar-wrapper {
-  order: 1;
-}
+.typing-avatar-wrapper { order: 1; }
 
 .typing-avatar {
-  width: 72rpx;
-  height: 72rpx;
-  border-radius: $radius-full;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   background: $gray-200;
   flex-shrink: 0;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.08);
 }
 
 .typing-content {
   order: 2;
   display: flex;
   flex-direction: column;
-  gap: $sp-2;
-  max-width: 480rpx;
-  min-width: 0;
-  flex: 1;
+  gap: 4px;
 }
 
 .typing-bubble {
   display: flex;
   align-items: center;
-  gap: $sp-4;
-  padding: $sp-5 $sp-6;
-  border-radius: $radius-card;
-  border-top-left-radius: $radius-xs;
-  background: $gray-100;
-  border: 1rpx solid $gray-200;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.06);
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 18px;
+  border-bottom-left-radius: 4px;
+  background: $white;
+  border: 1px solid $gray-200;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .typing-text {
-  font-size: 26rpx;
+  font-size: 13px;
   color: $gray-500;
   flex-shrink: 0;
 }
@@ -1354,111 +1528,152 @@ onMounted(async () => {
 .typing-dots {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  height: 20rpx;
+  gap: 3px;
+  height: 10px;
 }
 
 .typing-dots .dot {
-  width: 12rpx;
-  height: 12rpx;
-  border-radius: $radius-full;
-  background: $gray-400;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: $gray-300;
   animation: typingBounce 1.4s infinite ease-in-out;
-}
 
-.typing-dots .dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.typing-dots .dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.typing-dots .dot:nth-child(3) {
-  animation-delay: 0.4s;
+  &:nth-child(1) { animation-delay: 0s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.4s; }
 }
 
 @keyframes typingBounce {
-  0%, 60%, 100% {
-    transform: translateY(0);
-    opacity: 0.6;
-  }
-  30% {
-    transform: translateY(-8rpx);
-    opacity: 1;
-  }
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+  30%           { transform: translateY(-5px); opacity: 1; }
 }
+
+// ─── 空状态 ───────────────────────────────────────────────────────────────────
 
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 120rpx $sp-8 $sp-8 $sp-8;
+  padding: 60px 24px;
+  gap: 10px;
 }
 
 .empty-icon {
-  font-size: 120rpx;
-  margin-bottom: $sp-8;
+  font-size: 56px;
+  margin-bottom: 6px;
+  opacity: 0.5;
 }
 
 .empty-text {
-  font-size: $font-size-lg;
-  color: $gray-500;
-  margin-bottom: $sp-4;
+  font-size: 16px;
+  font-weight: 600;
+  color: $gray-600;
 }
 
 .empty-tip {
-  font-size: 26rpx;
+  font-size: 13px;
   color: $gray-400;
+  text-align: center;
 }
+
+// ─── 输入栏 ───────────────────────────────────────────────────────────────────
 
 .input-bar {
   display: flex;
-  align-items: flex-end;
-  gap: $sp-4;
-  padding: $sp-6 $sp-8;
-  background: $white;
-  border-top: 1rpx solid $gray-200;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid $gray-200;
   flex-shrink: 0;
 }
 
-.emoji-btn,
-.action-btn {
-  width: 72rpx;
-  height: 72rpx;
-  @include flex-center;
-  background: $gray-50;
-  border-radius: $radius-full;
-  flex-shrink: 0;
+// 工具栏（表情 / 图片 / 文件）
+.input-tools {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tool-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;           // 设计稿：圆形
   cursor: pointer;
-  transition: $transition-base;
+  color: $gray-500;
+  background: $gray-100;        // 设计稿：填充灰色背景
+  transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
 
   &:active {
-    opacity: 0.7;
-    transform: scale(0.95);
-    background: $gray-100;
+    background: rgba($primary, 0.1);
+    color: $primary;
+    transform: scale(0.9);
   }
 }
 
-.emoji-icon,
-.action-icon {
-  font-size: 40rpx;
+// 输入框 + 发送按钮横排
+.input-row {
+  display: flex;
+  align-items: center;  // 始终垂直居中，单行/多行都对齐
+  gap: 8px;
 }
 
 .input-area {
   flex: 1;
-  min-height: 72rpx;
-  max-height: 200rpx;
-  padding: $sp-4 $sp-6;
-  background: $gray-50;
-  border-radius: $radius-button;
-  font-size: $font-size-base;
+  // 单行高度 = send-btn 40px，padding 上下各 9px，内容高 22px
+  min-height: 40px;
+  max-height: 120px;
+  padding: 9px 14px;
+  background: $gray-100;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  font-size: 15px;
   color: $gray-800;
-  line-height: $line-height-normal;
+  line-height: 22px;  // 固定行高，配合 padding 使单行刚好 40px
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  vertical-align: middle;
+
+  &:focus {
+    border-color: rgba($primary, 0.35);
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.06);
+    outline: none;
+  }
 }
 
+// 发送按钮：圆形图标，固定 40px 与输入框单行等高
 .send-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  cursor: pointer;
+  background: $gray-200;
+  color: $gray-400;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+
+  // 有内容时激活
+  &--active {
+    background: linear-gradient(135deg, $primary, #1D4ED8);
+    color: $white;
+    box-shadow: 0 4px 12px rgba($primary, 0.35);
+
+    &:active {
+      transform: scale(0.9);
+      box-shadow: 0 2px 6px rgba($primary, 0.25);
+    }
+  }
 }
 </style>

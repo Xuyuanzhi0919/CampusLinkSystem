@@ -84,8 +84,8 @@ export const createActivity = (data: ActivityCreateParams) => {
  * 报名活动
  * @param id 活动ID
  */
-export const signupActivity = (id: number) => {
-  return request.post(`/activity/${id}/signup`)
+export const joinActivity = (id: number) => {
+  return request.post(`/activity/${id}/join`)
 }
 
 /**
@@ -101,7 +101,7 @@ export const cancelSignup = (id: number) => {
  * @param id 活动ID
  */
 export const checkInActivity = (id: number) => {
-  return request.post(`/activity/${id}/checkin`)
+  return request.post(`/activity/${id}/signin`)
 }
 
 /**
@@ -116,7 +116,7 @@ export const getMyClubs = (params: { page?: number; pageSize?: number } = {}) =>
  * 获取我报名的活动
  * @param params 查询参数
  */
-export const getMyActivities = (params: { page?: number; pageSize?: number } = {}) => {
+export const getMyActivities = (params: { page?: number; pageSize?: number; status?: number } = {}) => {
   return request.get<PageResult<ActivityItem>>('/activity/my', params)
 }
 

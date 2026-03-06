@@ -176,7 +176,10 @@ export const CACHE_KEYS = {
   SEARCH_HISTORY: 'question:search_history',
 
   // 资源模块
-  RESOURCE_SEARCH_HISTORY: 'resource:search_history'
+  RESOURCE_SEARCH_HISTORY: 'resource:search_history',
+
+  // 社团模块
+  CLUB_SEARCH_HISTORY: 'club:search_history'
 }
 
 /**

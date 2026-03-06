@@ -63,13 +63,15 @@ public class ResourceController {
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
             @Parameter(description = "排序字段") @RequestParam(defaultValue = "created_at") String sortBy,
             @Parameter(description = "排序方式") @RequestParam(defaultValue = "desc") String sortOrder,
+            @Parameter(description = "最低积分（含）") @RequestParam(required = false) Integer scoreMin,
+            @Parameter(description = "最高积分（含），不传表示无上限") @RequestParam(required = false) Integer scoreMax,
             HttpServletRequest httpRequest
     ) {
         // 获取当前用户ID（可能为null，表示未登录）
         Long currentUserId = (Long) httpRequest.getAttribute("userId");
 
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, keyword, page, pageSize, sortBy, sortOrder, currentUserId
+                category, schoolId, keyword, page, pageSize, sortBy, sortOrder, scoreMin, scoreMax, currentUserId
         );
         return Result.success(result);
     }
@@ -132,7 +134,7 @@ public class ResourceController {
         Long currentUserId = (Long) httpRequest.getAttribute("userId");
 
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, q, page, pageSize, "created_at", "desc", currentUserId
+                category, schoolId, q, page, pageSize, "created_at", "desc", null, null, currentUserId
         );
         return Result.success(result);
     }

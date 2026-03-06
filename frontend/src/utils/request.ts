@@ -187,18 +187,20 @@ class Request {
 
         return this.request<T>(originalOptions)
       } else {
-        // Token刷新失败，清除登录信息并跳转首页
+        // 判断是「已登录 token 真正过期」还是「游客请求了需登录的接口」
+        const hadRefreshToken = !!this.getRefreshToken()
         this.clearToken()
-        const friendlyMessage = getFriendlyErrorMessage({ code: 401 })
-        uni.showToast({
-          title: friendlyMessage,
-          icon: 'none',
-        })
-        setTimeout(() => {
-          uni.reLaunch({
-            url: '/pages/home/index',
+
+        if (hadRefreshToken) {
+          // 已登录用户 token 过期且刷新失败，在当前页直接弹引导弹窗
+          uni.$emit('show-login-guide', {
+            actionType: 'default',
+            title: '登录已过期',
+            content: '登录信息已过期，请重新登录后继续操作'
           })
-        }, 1500)
+        }
+        // 游客访问需登录接口：静默 reject，由操作层的 requireLogin() 负责弹引导
+
         return Promise.reject(new Error(res.message))
       }
     }
@@ -254,12 +256,13 @@ class Request {
   }
 
   // POST 请求
-  post<T = any>(url: string, data?: any, options?: { header?: any }): Promise<T> {
+  post<T = any>(url: string, data?: any, options?: { header?: any; timeout?: number }): Promise<T> {
     return this.request<T>({
       url,
       method: 'POST',
       data,
       header: options?.header,
+      timeout: options?.timeout,
     })
   }
 

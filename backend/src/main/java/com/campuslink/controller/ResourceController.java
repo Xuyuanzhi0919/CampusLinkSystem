@@ -135,7 +135,7 @@ public class ResourceController {
         Long currentUserId = (Long) httpRequest.getAttribute("userId");
 
         PageResult<ResourceListResponse> result = resourceService.getResourceList(
-                category, schoolId, q, page, pageSize, "created_at", "desc", null, null, currentUserId
+                category, schoolId, q, page, pageSize, "created_at", "desc", null, null, currentUserId, null
         );
         return Result.success(result);
     }

@@ -1127,12 +1127,9 @@ const handleResourceClick = (resource: ResourceItem) => {
  */
 const handleContributorClick = (user: { userId: number; username: string }) => {
   if (contributorFilter.value?.userId === user.userId) {
-    // 再次点击：取消筛选
     contributorFilter.value = null
-    uni.showToast({ title: '已清除筛选', icon: 'none', duration: 1200 })
   } else {
     contributorFilter.value = { userId: user.userId, username: user.username }
-    uni.showToast({ title: `查看 ${user.username} 的资源`, icon: 'none', duration: 1200 })
   }
   scrollToTop()
   loadResourceList(true)

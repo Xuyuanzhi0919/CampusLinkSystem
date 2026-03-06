@@ -524,9 +524,23 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   gap: 10rpx;
   padding-left: 4rpx;
 
+  // 向右延伸的淡色分割线
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1rpx;
+    background: $color-divider;
+    margin-left: 4rpx;
+  }
+
   @media (min-width: 1024px) {
     gap: 8px;
     padding-left: 2px;
+
+    &::after {
+      height: 1px;
+      margin-left: 4px;
+    }
   }
 }
 

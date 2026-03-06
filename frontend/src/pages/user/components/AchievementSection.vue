@@ -2,44 +2,56 @@
   <!-- ========== 成就展示区 ========== -->
   <view class="achievement-section">
 
-    <!-- ① 数据统计 -->
-    <view class="stats-row">
-      <view
-        v-for="(stat, i) in stats"
-        :key="stat.key"
-        class="stat-cell"
-        :style="{ animationDelay: `${i * 0.07}s` }"
-        @click="$emit('statClick', stat.key)"
-      >
-        <text class="stat-num">{{ formatNum(stat.value) }}</text>
-        <text class="stat-lbl">{{ stat.label }}</text>
-      </view>
-    </view>
+    <!-- ①② 数据统计 + 等级进度：合并为「个人数据概览」单张卡片，减少信息割裂感 -->
+    <view class="data-overview-card" :class="{ 'data-overview-card--maxed': isMaxed }">
 
-    <!-- ② 等级进度 -->
-    <view class="level-card">
-      <view class="level-head">
-        <view class="level-lhs">
-          <view class="level-icon">
-            <text class="level-icon-label">Lv</text>
-            <text class="level-icon-num">{{ level }}</text>
-          </view>
-          <view class="level-text">
-            <text class="level-name">{{ levelName }}</text>
-            <text class="level-hint">{{ isMaxed ? '已达最高等级 🎉' : `还差 ${expToNextLevel.toLocaleString()} 积分升级` }}</text>
-          </view>
-        </view>
-        <view class="level-pct-wrap">
-          <text class="level-pct">{{ progressPercent }}</text>
-          <text class="level-pct-sign">%</text>
+      <!-- 上半：4 项统计数据 -->
+      <view class="stats-row">
+        <view
+          v-for="(stat, i) in stats"
+          :key="stat.key"
+          class="stat-cell"
+          :style="{ animationDelay: `${i * 0.07}s` }"
+          @click="$emit('statClick', stat.key)"
+        >
+          <text class="stat-num">{{ formatNum(stat.value) }}</text>
+          <text class="stat-lbl">{{ stat.label }}</text>
         </view>
       </view>
-      <view class="prog-track">
-        <view class="prog-fill" :style="{ width: progressPercent + '%' }" />
-      </view>
-      <view class="prog-labels">
-        <text class="prog-cur">{{ currentExp.toLocaleString() }} / {{ nextLevelExp.toLocaleString() }}</text>
-        <text class="prog-max">下一级 Lv.{{ level + 1 }}</text>
+
+      <!-- 内部分隔线 -->
+      <view class="overview-divider" />
+
+      <!-- 下半：等级 + 进度条 -->
+      <view class="level-section">
+        <view class="level-head">
+          <view class="level-lhs">
+            <view class="level-icon">
+              <text class="level-icon-label">Lv</text>
+              <text class="level-icon-num">{{ level }}</text>
+            </view>
+            <view class="level-text">
+              <text class="level-name">{{ levelName }}</text>
+              <text class="level-hint">{{ isMaxed ? '已达最高等级 🎉' : `还差 ${expToNextLevel.toLocaleString()} 积分升级` }}</text>
+            </view>
+          </view>
+          <view class="level-pct-wrap">
+            <text class="level-pct" :class="{ 'level-pct--maxed': isMaxed }">{{ progressPercent }}</text>
+            <text class="level-pct-sign" :class="{ 'level-pct--maxed': isMaxed }">%</text>
+          </view>
+        </view>
+        <view class="prog-track">
+          <view
+            class="prog-fill"
+            :class="{ 'prog-fill--maxed': isMaxed }"
+            :style="{ width: progressPercent + '%' }"
+          />
+        </view>
+        <view class="prog-labels">
+          <text class="prog-cur">{{ currentExp.toLocaleString() }} / {{ nextLevelExp.toLocaleString() }}</text>
+          <text v-if="!isMaxed" class="prog-max">下一级 Lv.{{ level + 1 }}</text>
+          <text v-else class="prog-max prog-max--maxed">已满级 ✦</text>
+        </view>
       </view>
     </view>
 
@@ -61,12 +73,10 @@
           :style="{ animationDelay: `${i * 0.05}s` }"
           @click="$emit('badgeClick', badge)"
         >
-          <!-- 统一圆形图标容器，与 CapabilityPanel 保持系统感 -->
           <view class="badge-icon-wrap" :class="badge.unlocked ? `badge-icon-wrap--${badgeColors[i % badgeColors.length]}` : 'badge-icon-wrap--locked'">
             <Icon :name="badge.icon" :size="20" class="badge-icon" :stroke-width="1.6" />
           </view>
           <text class="badge-name">{{ badge.name }}</text>
-          <!-- 已解锁角标 -->
           <view v-if="badge.unlocked" class="badge-unlocked-dot" />
         </view>
       </view>
@@ -117,7 +127,6 @@ defineEmits<{
   viewAllBadges: []
 }>()
 
-// 徽章颜色轮换 — 与 CapabilityPanel 色彩系统一致
 const badgeColors = ['blue', 'teal', 'violet', 'amber', 'rose']
 
 const progressPercent = computed(() =>
@@ -148,20 +157,35 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 }
 
-/* ─── ① 数据统计 ─── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+/* ─── 个人数据概览卡片（统计 + 等级合并） ─── */
+.data-overview-card {
   background: $color-bg-card;
   border-radius: 20rpx;
   box-shadow: $shadow-sm;
   border: 1rpx solid $color-border-light;
   overflow: hidden;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+
+  /* 满级时：金色边框光晕 */
+  &--maxed {
+    border-color: rgba(251, 191, 36, 0.35);
+    box-shadow: $shadow-sm, 0 0 0 1px rgba(251, 191, 36, 0.12);
+  }
 
   @media (min-width: 1024px) {
     border-radius: 14px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
+
+    &--maxed {
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07), 0 0 0 1px rgba(251, 191, 36, 0.18);
+    }
   }
+}
+
+/* ─── 上半：统计行（去除独立卡片外观，融入 overview-card） ─── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .stat-cell {
@@ -190,7 +214,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   // #endif
 
   @media (min-width: 1024px) {
-    padding: 22px 8px 18px;
+    padding: 20px 8px 16px;
   }
 }
 
@@ -203,7 +227,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
   @media (min-width: 1024px) {
     font-size: 21px;
-    color: $campus-blue; // PC 端数字加蓝色强调，形成视觉焦点
+    color: $campus-blue;
   }
 }
 
@@ -219,17 +243,24 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 }
 
-/* ─── ② 等级进度 ─── */
-.level-card {
-  background: $color-bg-card;
-  border-radius: 20rpx;
-  padding: 30rpx 28rpx 26rpx;
-  box-shadow: $shadow-sm;
-  border: 1rpx solid $color-border-light;
+/* ─── 卡片内分隔线 ─── */
+.overview-divider {
+  height: 1rpx;
+  background: $color-divider;
+  margin: 0 24rpx;
 
   @media (min-width: 1024px) {
-    border-radius: 14px;
-    padding: 22px 24px 20px;
+    height: 1px;
+    margin: 0 20px;
+  }
+}
+
+/* ─── 下半：等级 section ─── */
+.level-section {
+  padding: 24rpx 28rpx 22rpx;
+
+  @media (min-width: 1024px) {
+    padding: 18px 24px 16px;
   }
 }
 
@@ -237,10 +268,10 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22rpx;
+  margin-bottom: 18rpx;
 
   @media (min-width: 1024px) {
-    margin-bottom: 16px;
+    margin-bottom: 12px;
   }
 }
 
@@ -268,8 +299,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   box-shadow: 0 4rpx 12rpx rgba($campus-blue, 0.28);
 
   @media (min-width: 1024px) {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 11px;
   }
 }
@@ -314,7 +345,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   line-height: 1;
 
   @media (min-width: 1024px) {
-    font-size: 15px;
+    font-size: 14px;
   }
 }
 
@@ -324,11 +355,10 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   font-weight: 400;
 
   @media (min-width: 1024px) {
-    font-size: 12px;
+    font-size: 11px;
   }
 }
 
-/* 百分比 — baseline 对齐，数字大字号 */
 .level-pct-wrap {
   display: flex;
   align-items: baseline;
@@ -340,6 +370,9 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   font-weight: 700;
   color: $campus-blue;
   line-height: 1;
+  transition: color 0.3s;
+
+  &--maxed { color: #f59e0b; }
 
   @media (min-width: 1024px) {
     font-size: 18px;
@@ -350,6 +383,9 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   font-size: 18rpx;
   font-weight: 600;
   color: rgba($campus-blue, 0.7);
+  transition: color 0.3s;
+
+  &.level-pct--maxed { color: rgba(#f59e0b, 0.8); }
 
   @media (min-width: 1024px) {
     font-size: 11px;
@@ -375,6 +411,12 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   background: linear-gradient(90deg, $campus-blue 0%, $campus-blue-light 100%);
   border-radius: 100rpx;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* 满级：金色渐变 + 光晕 */
+  &--maxed {
+    background: linear-gradient(90deg, #f59e0b 0%, #fcd34d 50%, #fbbf24 100%);
+    box-shadow: 0 0 8px rgba(251, 191, 36, 0.45);
+  }
 }
 
 .prog-labels {
@@ -383,7 +425,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   margin-top: 12rpx;
 
   @media (min-width: 1024px) {
-    margin-top: 8px;
+    margin-top: 7px;
   }
 }
 
@@ -402,6 +444,11 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   color: $campus-blue;
   font-weight: 500;
 
+  &--maxed {
+    color: #f59e0b;
+    font-weight: 600;
+  }
+
   @media (min-width: 1024px) {
     font-size: 11px;
   }
@@ -417,7 +464,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
 
   @media (min-width: 1024px) {
     border-radius: 14px;
-    padding: 20px 20px 16px;
+    padding: 18px 20px 14px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07), 0 1px 3px rgba(0, 0, 0, 0.04);
   }
 }
 
@@ -425,10 +473,10 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 22rpx;
+  margin-bottom: 18rpx;
 
   @media (min-width: 1024px) {
-    margin-bottom: 16px;
+    margin-bottom: 14px;
   }
 }
 
@@ -438,7 +486,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   color: $color-text-primary;
 
   @media (min-width: 1024px) {
-    font-size: 15px;
+    font-size: 14px;
   }
 }
 
@@ -498,7 +546,11 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   &:hover { background: $color-bg-hover; }
   // #endif
 
-  &--locked { opacity: 0.32; }
+  /* 未解锁：灰度 + 低透明度，已解锁保持完全可见 */
+  &--locked {
+    opacity: 0.28;
+    filter: grayscale(40%);
+  }
 
   @media (min-width: 1024px) {
     padding: 12px 4px 10px;
@@ -507,7 +559,6 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 }
 
-/* 图标容器 — 统一圆角方形，与 CapabilityPanel 保持一致的系统感 */
 .badge-icon-wrap {
   width: 64rpx;
   height: 64rpx;
@@ -522,7 +573,6 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
     .badge-icon { color: $color-text-placeholder; }
   }
 
-  /* 与 QuickActions / CapabilityPanel 保持同一色彩体系 */
   &--blue   { background: #EBF3FF; .badge-icon { color: #3B82F6; } }
   &--teal   { background: #ECFDF5; .badge-icon { color: #0D9488; } }
   &--violet { background: #F5F3FF; .badge-icon { color: #7C3AED; } }
@@ -530,14 +580,10 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   &--rose   { background: #FFF1F2; .badge-icon { color: #E11D48; } }
 
   @media (min-width: 1024px) {
-    width: 42px;
-    height: 42px;
+    width: 40px;
+    height: 40px;
     border-radius: 11px;
   }
-}
-
-.badge-icon {
-  // 颜色由 badge-icon-wrap 变体控制
 }
 
 .badge-name {
@@ -557,7 +603,6 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 }
 
-/* 解锁绿点 — 位置微调，更精致 */
 .badge-unlocked-dot {
   position: absolute;
   top: 12rpx;

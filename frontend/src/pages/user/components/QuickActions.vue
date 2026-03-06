@@ -6,6 +6,7 @@
         v-for="(action, i) in actions"
         :key="action.key"
         class="action-item"
+        :class="{ 'action-item--group-end': action.groupEnd, 'action-item--engage': action.engage }"
         :style="{ animationDelay: `${i * 0.06}s` }"
         @click="action.handler"
       >
@@ -30,13 +31,13 @@ const emit = defineEmits<{
   goToMall: []
 }>()
 
-// 所有操作优先级平等，去掉 featured 差异化；图标统一线性风格
+// 创作类（前3）+ 互动类（后2），groupEnd 标记分组边界，engage 标记互动区
 const actions = [
-  { key: 'resource', label: '发资源', icon: 'file-plus',    color: 'blue',   handler: () => emit('publishResource') },
+  { key: 'resource', label: '发资源', icon: 'file-plus',     color: 'blue',   handler: () => emit('publishResource') },
   { key: 'question', label: '提问题', icon: 'message-circle', color: 'indigo', handler: () => emit('askQuestion') },
-  { key: 'task',     label: '发任务', icon: 'clipboard',    color: 'teal',   handler: () => emit('publishTask') },
-  { key: 'activity', label: '看活动', icon: 'calendar',     color: 'violet', handler: () => emit('joinActivity') },
-  { key: 'mall',     label: '积分兑', icon: 'gift',         color: 'amber',  handler: () => emit('goToMall') }
+  { key: 'task',     label: '发任务', icon: 'clipboard',     color: 'teal',   groupEnd: true, handler: () => emit('publishTask') },
+  { key: 'activity', label: '看活动', icon: 'calendar',      color: 'violet', engage: true,   handler: () => emit('joinActivity') },
+  { key: 'mall',     label: '积分兑', icon: 'gift',          color: 'amber',  engage: true,   handler: () => emit('goToMall') }
 ]
 </script>
 
@@ -78,7 +79,7 @@ const actions = [
   position: relative;
   transition: background 0.18s ease;
 
-  // 分隔线
+  // 普通分隔线
   &:not(:last-child)::after {
     content: '';
     position: absolute;
@@ -89,15 +90,33 @@ const actions = [
     background: $color-divider;
   }
 
+  // 分组边界：加粗加深，做出明显的"块间隔"
+  &--group-end::after {
+    width: 2rpx;
+    top: 10%;
+    bottom: 10%;
+    background: $color-border;
+  }
+
+  // 互动类区域：极轻底色，与创作类形成轻柔区分
+  &--engage {
+    background: rgba(124, 58, 237, 0.028);
+  }
+
   &:active { background: $color-bg-hover; }
 
   // #ifdef H5
   &:hover { background: $color-bg-hover; }
+  .action-item--engage:hover { background: rgba(124, 58, 237, 0.06); }
   // #endif
 
   @media (min-width: 1024px) {
     padding: 24px 0 20px;
     gap: 9px;
+
+    &--group-end::after {
+      width: 1.5px;
+    }
   }
 }
 

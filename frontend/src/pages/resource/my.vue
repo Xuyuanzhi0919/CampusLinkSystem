@@ -72,7 +72,7 @@
           <MyResourceCard
             v-for="item in list"
             :key="item.resourceId"
-            :resource="item"
+            :resource="toResourceItem(item)"
             :show-status="false"
             @click="handleResourceClick(item.resourceId)"
           />
@@ -155,6 +155,13 @@ const loadMoreText = computed(() => {
   if (loading.value && list.value.length > 0) return '加载中...'
   if (hasMore.value) return '上拉加载更多'
   return '没有更多了'
+})
+
+// 下载历史字段适配（后端 DownloadLogResponse 字段名与 ResourceItem 不同）
+const toResourceItem = (item: any) => ({
+  ...item,
+  title: item.resourceTitle ?? item.title ?? '',
+  score: item.pointsCost  ?? item.score  ?? 0,
 })
 
 // 空状态配置

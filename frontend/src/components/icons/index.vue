@@ -13,6 +13,7 @@ import { computed } from 'vue'
 import {
   Activity,
   AlertCircle,
+  Upload,
   AlertTriangle,
   ArrowDown,
   ArrowDownUp,
@@ -223,6 +224,7 @@ const iconMap: Record<string, any> = {
   'trash-2':            Trash2,
   'trending-up':        TrendingUp,
   'trophy':             Trophy,
+  'upload':             Upload,
   'user':               User,
   'user-check':         UserCheck,
   'user-plus':          UserPlus,

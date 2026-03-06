@@ -21,7 +21,7 @@
     <view class="card-body">
       <!-- 左侧：类型图标徽章 -->
       <view class="type-badge" :class="`type-${getCategoryClass(resource.category)}`">
-        <ClIcon :name="getTypeIconName(resource.category)" size="base" color="#FFFFFF" />
+        <Icon :name="getTypeIconName(resource.category)" :size="20" color="#FFFFFF" />
       </view>
 
       <!-- 右侧：信息区 -->
@@ -33,7 +33,7 @@
 
           <!-- 积分 chip（需要积分时显示） -->
           <view v-if="resource.score && resource.score > 0" class="score-chip">
-            <ClIcon name="icon-coin" size="xs" color="#D97706" />
+            <Icon name="zap" :size="11" color="#FFFFFF" />
             <text class="score-text">{{ resource.score }}</text>
           </view>
           <!-- 免费标签 -->
@@ -45,7 +45,7 @@
         <!-- 元信息行：学校 · 时间 -->
         <view class="meta-row">
           <view v-if="resource.uploaderSchool" class="meta-item">
-            <ClIcon name="icon-location" size="xs" color="#9CA3AF" />
+            <Icon name="map-pin" :size="12" color="#9CA3AF" />
             <text class="meta-text">{{ resource.uploaderSchool }}</text>
           </view>
           <text v-if="resource.uploaderSchool" class="meta-dot">·</text>
@@ -72,15 +72,15 @@
       <!-- 左侧：统计数据 -->
       <view class="stats-group">
         <view class="stat-item">
-          <ClIcon name="icon-download" size="xs" color="#9CA3AF" />
+          <Icon name="download" :size="13" color="#9CA3AF" />
           <text class="stat-value">{{ formatNumber(resource.downloads) }}</text>
         </view>
         <view class="stat-item">
-          <ClIcon name="icon-heart" size="xs" color="#9CA3AF" />
+          <Icon name="heart" :size="13" color="#9CA3AF" />
           <text class="stat-value">{{ formatNumber(resource.likes) }}</text>
         </view>
         <view v-if="resource.favorites && resource.favorites > 0" class="stat-item">
-          <ClIcon name="icon-star" size="xs" color="#9CA3AF" />
+          <Icon name="star" :size="13" color="#9CA3AF" />
           <text class="stat-value">{{ formatNumber(resource.favorites) }}</text>
         </view>
       </view>
@@ -93,9 +93,9 @@
           :class="{ 'is-favorited': resource.isFavorited }"
           @click.stop="handleFavorite"
         >
-          <ClIcon
-            :name="resource.isFavorited ? 'icon-star' : 'icon-bookmark'"
-            size="sm"
+          <Icon
+            :name="resource.isFavorited ? 'star' : 'bookmark'"
+            :size="16"
             :color="resource.isFavorited ? '#F59E0B' : '#6B7280'"
           />
         </view>
@@ -106,9 +106,9 @@
           :class="{ 'is-downloaded': resource.isDownloaded }"
           @click.stop="handleDownload"
         >
-          <ClIcon
-            name="icon-download"
-            size="sm"
+          <Icon
+            name="download"
+            :size="16"
             :color="resource.isDownloaded ? '#10B981' : '#FFFFFF'"
           />
           <text class="download-text">{{ resource.isDownloaded ? '已下载' : '下载' }}</text>
@@ -123,7 +123,7 @@ import { ref, onMounted } from 'vue'
 import type { ResourceItem } from '@/types/resource'
 import { ResourceCategory, ResourceStatus } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
-import ClIcon from '@/components/cl/ClIcon.vue'
+import Icon from '@/components/icons/index.vue'
 
 // Props
 interface Props {
@@ -182,22 +182,23 @@ const getCategoryClass = (category: number | string | undefined): string => {
 const getTypeIconName = (category: number | string | undefined): string => {
   if (typeof category === 'string') {
     const stringIconMap: Record<string, string> = {
-      '课件': 'icon-file-ppt',
-      '试卷': 'icon-file-text',
-      '笔记': 'icon-edit',
-      '教材': 'icon-book',
-      '实验报告': 'icon-file-text',
-      '视频': 'icon-play-circle'
+      '课件': 'book-open',
+      '试卷': 'file-text',
+      '笔记': 'edit-3',
+      '教材': 'book',
+      '实验报告': 'code',
+      '视频': 'layers',
+      '其他': 'folder'
     }
-    return stringIconMap[category] || 'icon-file'
+    return stringIconMap[category] || 'file-text'
   }
   const categoryNum = category || 0
   const iconMap: Record<number, string> = {
-    [ResourceCategory.COURSEWARE]: 'icon-file-ppt',
-    [ResourceCategory.PAPER]: 'icon-file-text',
-    [ResourceCategory.NOTE]: 'icon-edit'
+    [ResourceCategory.COURSEWARE]: 'book-open',
+    [ResourceCategory.PAPER]: 'file-text',
+    [ResourceCategory.NOTE]: 'edit-3'
   }
-  return iconMap[categoryNum] || 'icon-file'
+  return iconMap[categoryNum] || 'file-text'
 }
 
 /**
@@ -300,15 +301,16 @@ const handleFavorite = () => { emit('favorite', props.resource) }
   border: 1.5px solid #E4E4E7;
   position: relative;
   cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
 
   &:hover,
   &.is-active {
     border-color: #2563EB;
-    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.10);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12);
+    transform: translateY(-2px);
   }
 
-  // 移动端：保留圆角和间隔
+  // 移动端：保留圆角和间隔，不做 translateY
   &.is-mobile {
     margin-bottom: 10px;
 
@@ -316,6 +318,7 @@ const handleFavorite = () => { emit('favorite', props.resource) }
     &.is-active {
       box-shadow: none;
       background: #F9FAFB;
+      transform: none;
     }
   }
 }
@@ -426,7 +429,7 @@ const handleFavorite = () => { emit('favorite', props.resource) }
   word-break: break-word;
 }
 
-// 积分 chip
+// 积分 chip - 实心橙色，更显眼
 .score-chip {
   flex-shrink: 0;
   display: inline-flex;
@@ -434,13 +437,13 @@ const handleFavorite = () => { emit('favorite', props.resource) }
   gap: 3px;
   padding: 2px 8px;
   border-radius: 20px;
-  background: rgba(245, 158, 11, 0.10);
-  border: 1px solid rgba(245, 158, 11, 0.20);
+  background: #F59E0B;
+  border: none;
 
   .score-text {
     font-size: 11px;
     font-weight: 600;
-    color: #D97706;
+    color: #FFFFFF;
   }
 }
 

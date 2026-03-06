@@ -219,6 +219,10 @@
             <Icon name="inbox" :size="64" class="empty-icon" />
             <text class="empty-text">{{ emptyTitle }}</text>
             <text class="empty-hint">{{ emptyDescription }}</text>
+            <view class="empty-upload-btn" @click="handleUploadClick">
+              <Icon name="upload" :size="15" color="#FFFFFF" />
+              <text class="empty-upload-text">上传资源</text>
+            </view>
           </view>
         </view>
 
@@ -2377,11 +2381,26 @@ onUnmounted(() => {
   transition: all 0.2s;
   white-space: nowrap;
   flex-shrink: 0;
+  position: relative;
 
   .tab-icon {
     color: $gray-600;
     flex-shrink: 0;
     transition: color 0.2s;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 30%;
+    right: 30%;
+    height: 2px;
+    background: $primary;
+    border-radius: 1px;
+    opacity: 0;
+    transform: scaleX(0);
+    transition: opacity 0.2s, transform 0.2s;
   }
 
   &:hover {
@@ -2393,19 +2412,24 @@ onUnmounted(() => {
     }
   }
 
-  // 激活状态 - pill 蓝色背景
+  // 激活状态 - 下划线蓝色 + 浅蓝背景
   &.category-tab--active {
-    background: $primary;
-    color: $white;
+    background: rgba($primary, 0.08);
+    color: $primary;
     font-weight: 600;
 
+    &::after {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+
     .tab-icon {
-      color: $white;
+      color: $primary;
     }
 
     text,
     .tab-label {
-      color: $white;
+      color: $primary;
       font-weight: 600;
     }
   }
@@ -2707,7 +2731,7 @@ onUnmounted(() => {
 // 🎯 右侧边栏 (采用问答社区样式 - 整体显示,不滚动)
 // =============================================
 .sidebar {
-  width: 320px;  // 固定宽度
+  width: 280px;  // 固定宽度（从320px缩窄）
   flex-shrink: 0;  // 不缩小
   position: sticky;  // 粘性定位
   top: 224rpx;  // 120rpx (top-nav) + 80rpx (sticky-nav) + 24rpx (gap)
@@ -2720,7 +2744,7 @@ onUnmounted(() => {
   }
 
   @media (max-width: 1200px) {
-    width: 280px;
+    width: 256px;
     top: 216rpx;
   }
 
@@ -2976,19 +3000,20 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: $sp-4;
-  padding: $sp-8 0;
+  padding: $sp-6 0;
   margin-top: $sp-4;
 
   .end-line {
     flex: 1;
     height: 1rpx;
-    background: $gray-200;
+    background: $gray-100;
   }
 
   .end-text {
-    font-size: $font-size-xs;
-    color: $gray-500;
+    font-size: 11px;
+    color: $gray-400;
     white-space: nowrap;
+    letter-spacing: 0.5px;
   }
 }
 
@@ -3021,6 +3046,34 @@ onUnmounted(() => {
   .empty-hint {
     font-size: $font-size-sm;
     color: $gray-500;
+    margin-bottom: 24px;
+  }
+}
+
+.empty-upload-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 24px;
+  background: $primary;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $primary-light;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba($primary, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .empty-upload-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: $white;
   }
 }
 

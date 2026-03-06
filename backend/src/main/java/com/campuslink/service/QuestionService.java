@@ -509,6 +509,51 @@ public class QuestionService {
     }
 
     /**
+     * 获取我的回答列表
+     */
+    public PageResult<MyAnswerResponse> getMyAnswers(Long userId, Integer page, Integer pageSize) {
+        LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Answer::getResponderId, userId)
+                .eq(Answer::getStatus, 1)
+                .orderByDesc(Answer::getCreatedAt);
+
+        Page<Answer> pageObj = new Page<>(page, pageSize);
+        Page<Answer> result = answerMapper.selectPage(pageObj, wrapper);
+
+        List<MyAnswerResponse> responses = new ArrayList<>();
+        for (Answer answer : result.getRecords()) {
+            MyAnswerResponse response = new MyAnswerResponse();
+            response.setAid(answer.getAid());
+            response.setQuestionId(answer.getQuestionId());
+            response.setAnswererId(answer.getResponderId());
+            response.setContent(answer.getContent());
+            response.setLikes(answer.getLikes() != null ? answer.getLikes() : 0);
+            response.setIsAccepted(answer.getIsAccepted() != null && answer.getIsAccepted() == 1);
+            response.setCreatedAt(answer.getCreatedAt());
+
+            // 填充问题摘要
+            Question question = questionMapper.selectById(answer.getQuestionId());
+            if (question != null) {
+                MyAnswerResponse.QuestionBrief brief = new MyAnswerResponse.QuestionBrief();
+                brief.setQid(question.getQid());
+                brief.setTitle(question.getTitle());
+                response.setQuestion(brief);
+            }
+
+            responses.add(response);
+        }
+
+        PageResult<MyAnswerResponse> pageResult = new PageResult<>();
+        pageResult.setList(responses);
+        pageResult.setTotal(result.getTotal());
+        pageResult.setPage((long) page);
+        pageResult.setPageSize((long) pageSize);
+        pageResult.setTotalPages((result.getTotal() + pageSize - 1) / pageSize);
+
+        return pageResult;
+    }
+
+    /**
      * 点赞问题（暂不实现,数据库没有likes字段）
      */
     @Transactional(rollbackFor = Exception.class)

@@ -1,6 +1,8 @@
 package com.campuslink.controller;
 
+import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
+import com.campuslink.dto.question.MyAnswerResponse;
 import com.campuslink.service.QuestionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,6 +21,16 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AnswerController {
     private final QuestionService questionService;
+
+    @Operation(summary = "获取我的回答列表")
+    @GetMapping("/my")
+    public Result<PageResult<MyAnswerResponse>> getMyAnswers(
+            @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer page,
+            @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        return Result.success(questionService.getMyAnswers(userId, page, pageSize));
+    }
 
     @Operation(summary = "点赞答案")
     @PostMapping("/{id}/like")

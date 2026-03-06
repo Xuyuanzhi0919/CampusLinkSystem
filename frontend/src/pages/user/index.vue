@@ -53,7 +53,13 @@
           @stat-click="handleStatClick"
         />
         <view class="page-body">
+          <!-- 个性化入口 -->
+          <view class="customize-entry" @click="openCustomizeSheet">
+            <text class="customize-entry__icon">⊞</text>
+            <text class="customize-entry__label">自定义</text>
+          </view>
           <QuickActions
+            v-if="layoutConfig.showQuickActions"
             @publish-resource="handlePublishResource"
             @ask-question="handleAskQuestion"
             @publish-task="handlePublishTask"
@@ -61,7 +67,7 @@
             @go-to-mall="handleGoToMall"
           />
           <AchievementSection
-            v-if="userProfile"
+            v-if="userProfile && layoutConfig.showAchievement"
             :level="userProfile.level || 1"
             :level-name="levelName"
             :current-exp="userProfile.points || 0"
@@ -105,20 +111,27 @@
         />
         <!-- PC 内容主体 — 居中双列布局 -->
         <view class="pc-body">
-          <!-- 快速操作：横跨全宽 -->
-          <QuickActions
-            @publish-resource="handlePublishResource"
-            @ask-question="handleAskQuestion"
-            @publish-task="handlePublishTask"
-            @join-activity="handleJoinActivity"
-            @go-to-mall="handleGoToMall"
-          />
+          <!-- 快速操作行：快捷操作 + 自定义入口 -->
+          <view class="pc-actions-row">
+            <QuickActions
+              v-if="layoutConfig.showQuickActions"
+              @publish-resource="handlePublishResource"
+              @ask-question="handleAskQuestion"
+              @publish-task="handlePublishTask"
+              @join-activity="handleJoinActivity"
+              @go-to-mall="handleGoToMall"
+            />
+            <view class="customize-entry customize-entry--pc" @click="openCustomizeSheet">
+              <text class="customize-entry__icon">⊞</text>
+              <text class="customize-entry__label">自定义</text>
+            </view>
+          </view>
           <!-- 双列区域：左=成就信息，右=功能入口+设置 -->
           <view class="pc-two-col">
             <!-- 左栏：成就展示 -->
             <view class="pc-col-left">
               <AchievementSection
-                v-if="userProfile"
+                v-if="userProfile && layoutConfig.showAchievement"
                 :level="userProfile.level || 1"
                 :level-name="levelName"
                 :current-exp="userProfile.points || 0"
@@ -168,6 +181,49 @@
       </view>
     </view>
 
+    <!-- ===== 自定义布局面板（底部弹窗，移动端底部滑入，PC端居中弹窗）===== -->
+    <view
+      v-if="showCustomizeSheet"
+      class="cs-overlay"
+      :class="{ 'cs-overlay--dim': csSheetUp }"
+      @click="closeCustomizeSheet"
+    >
+      <view class="cs-sheet" :class="{ 'cs-sheet--up': csSheetUp }" @click.stop>
+        <!-- 拖拽条（移动端可见，PC隐藏） -->
+        <view class="cs-bar" />
+        <!-- 面板头部 -->
+        <view class="cs-header">
+          <view class="cs-header-left">
+            <text class="cs-title">页面卡片</text>
+            <text class="cs-subtitle">选择你想展示的内容</text>
+          </view>
+          <view class="cs-reset" @click="resetLayout">
+            <text class="cs-reset-text">恢复默认</text>
+          </view>
+        </view>
+        <view class="cs-divider" />
+        <!-- 配置项列表 -->
+        <view class="cs-list">
+          <view
+            v-for="mod in layoutModules"
+            :key="mod.key"
+            class="cs-item"
+            @click="toggleModule(mod.key)"
+          >
+            <view class="cs-item-info">
+              <text class="cs-item-name">{{ mod.name }}</text>
+              <text class="cs-item-desc">{{ mod.desc }}</text>
+            </view>
+            <!-- iOS 风格开关 -->
+            <view class="cs-switch" :class="{ 'cs-switch--on': layoutConfig[mod.key] }">
+              <view class="cs-switch-thumb" />
+            </view>
+          </view>
+        </view>
+        <view class="cs-bottom-safe" />
+      </view>
+    </view>
+
     <!-- PC端悬浮导航（仅桌面端） -->
     <!-- #ifdef H5 -->
     <PCFloatingNav v-if="isDesktop" />
@@ -186,7 +242,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, nextTick } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
@@ -211,6 +267,52 @@ import { PCFloatingNav } from '@/components/desktop'
 
 const userStore = useUserStore()
 const navigationStore = useNavigationStore()
+
+// ========== 个人页布局自定义（Phase 1）==========
+const LAYOUT_KEY = 'cl_profile_layout'
+interface ProfileLayout {
+  showQuickActions: boolean
+  showAchievement: boolean
+}
+const DEFAULT_LAYOUT: ProfileLayout = { showQuickActions: true, showAchievement: true }
+
+const loadLayout = (): ProfileLayout => {
+  try {
+    const raw = uni.getStorageSync(LAYOUT_KEY)
+    return raw ? { ...DEFAULT_LAYOUT, ...JSON.parse(raw) } : { ...DEFAULT_LAYOUT }
+  } catch { return { ...DEFAULT_LAYOUT } }
+}
+const layoutConfig = ref<ProfileLayout>(loadLayout())
+
+const saveLayout = () => {
+  uni.setStorageSync(LAYOUT_KEY, JSON.stringify(layoutConfig.value))
+}
+const toggleModule = (key: keyof ProfileLayout) => {
+  layoutConfig.value = { ...layoutConfig.value, [key]: !layoutConfig.value[key] }
+  saveLayout()
+}
+const resetLayout = () => {
+  layoutConfig.value = { ...DEFAULT_LAYOUT }
+  saveLayout()
+}
+
+// 自定义面板弹窗
+const showCustomizeSheet = ref(false)
+const csSheetUp = ref(false)
+const openCustomizeSheet = () => {
+  showCustomizeSheet.value = true
+  nextTick(() => { csSheetUp.value = true })
+}
+const closeCustomizeSheet = () => {
+  csSheetUp.value = false
+  setTimeout(() => { showCustomizeSheet.value = false }, 300)
+}
+
+// 面板配置项定义
+const layoutModules = [
+  { key: 'showQuickActions' as keyof ProfileLayout, name: '快捷操作', desc: '发资源、提问题、发任务等快速入口' },
+  { key: 'showAchievement' as keyof ProfileLayout,  name: '成就卡片', desc: '等级进度、数据统计、徽章收集' },
+]
 
 // 响应式窗口宽度，监听 resize
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 375)
@@ -678,6 +780,280 @@ defineExpose({ onPullDownRefresh: handleRefresh })
       color: #fff;
     }
   }
+}
+
+/* ========== 自定义布局入口按钮 ========== */
+.customize-entry {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  align-self: flex-end;   // 右对齐（page-body 是 flex-col）
+  padding: 10rpx 22rpx;
+  border-radius: 40rpx;
+  background: rgba($campus-blue, 0.06);
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active { background: rgba($campus-blue, 0.12); }
+
+  // #ifdef H5
+  &:hover { background: rgba($campus-blue, 0.1); }
+  // #endif
+
+  &__icon {
+    font-size: 26rpx;
+    color: $campus-blue;
+    line-height: 1;
+  }
+
+  &__label {
+    font-size: 24rpx;
+    font-weight: 500;
+    color: $campus-blue;
+  }
+
+  // PC 端变体：absolute 定位在 pc-actions-row 右端
+  &--pc {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 16px;
+    gap: 6px;
+
+    .customize-entry__icon { font-size: 14px; }
+    .customize-entry__label { font-size: 13px; }
+  }
+}
+
+// PC 快速操作行容器（含相对定位，给 customize-entry--pc 做 anchor）
+.pc-actions-row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ========== 自定义布局面板 ========== */
+.cs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  pointer-events: none;
+
+  &--dim {
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: auto;
+  }
+}
+
+.cs-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $white;
+  border-radius: 28rpx 28rpx 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: auto;
+
+  &--up { transform: translateY(0); }
+
+  @media (min-width: 1024px) {
+    position: fixed;
+    left: 50%;
+    right: auto;
+    bottom: auto;
+    top: 50%;
+    width: 400px;
+    border-radius: 16px;
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    transform: translate(-50%, -50%) scale(0.94);
+    opacity: 0;
+    transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease;
+
+    &--up {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+    }
+  }
+}
+
+// 拖拽条（PC端隐藏）
+.cs-bar {
+  width: 60rpx;
+  height: 6rpx;
+  border-radius: 3rpx;
+  background: $color-border;
+  margin: 18rpx auto 0;
+
+  @media (min-width: 1024px) { display: none; }
+}
+
+.cs-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 28rpx 40rpx 20rpx;
+
+  @media (min-width: 1024px) {
+    padding: 22px 24px 16px;
+  }
+}
+
+.cs-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+
+  @media (min-width: 1024px) { gap: 3px; }
+}
+
+.cs-title {
+  font-size: 34rpx;
+  font-weight: 700;
+  color: $color-text-primary;
+  line-height: 1.2;
+
+  @media (min-width: 1024px) { font-size: 17px; }
+}
+
+.cs-subtitle {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+
+  @media (min-width: 1024px) { font-size: 13px; }
+}
+
+.cs-reset {
+  padding: 8rpx 0 8rpx 24rpx;
+  cursor: pointer;
+
+  @media (min-width: 1024px) { padding: 4px 0 4px 16px; }
+}
+
+.cs-reset-text {
+  font-size: 26rpx;
+  color: $campus-blue;
+  font-weight: 500;
+
+  @media (min-width: 1024px) { font-size: 13px; }
+}
+
+.cs-divider {
+  height: 1rpx;
+  background: $color-divider;
+  margin: 0 40rpx;
+
+  @media (min-width: 1024px) {
+    height: 1px;
+    margin: 0 24px;
+  }
+}
+
+.cs-list {
+  padding: 8rpx 0;
+
+  @media (min-width: 1024px) { padding: 4px 0; }
+}
+
+.cs-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 40rpx;
+  cursor: pointer;
+  transition: background 0.12s ease;
+
+  &:active { background: $color-bg-secondary; }
+
+  // #ifdef H5
+  &:hover { background: $color-bg-secondary; }
+  // #endif
+
+  @media (min-width: 1024px) {
+    padding: 16px 24px;
+  }
+}
+
+.cs-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+  flex: 1;
+
+  @media (min-width: 1024px) { gap: 3px; }
+}
+
+.cs-item-name {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+
+  @media (min-width: 1024px) { font-size: 15px; }
+}
+
+.cs-item-desc {
+  font-size: 24rpx;
+  color: $color-text-tertiary;
+  line-height: 1.4;
+
+  @media (min-width: 1024px) { font-size: 13px; }
+}
+
+// iOS 风格开关
+.cs-switch {
+  flex-shrink: 0;
+  width: 96rpx;
+  height: 56rpx;
+  border-radius: 28rpx;
+  background: $color-border;
+  position: relative;
+  transition: background 0.25s ease;
+  margin-left: 24rpx;
+
+  &--on { background: $campus-blue; }
+
+  @media (min-width: 1024px) {
+    width: 44px;
+    height: 26px;
+    border-radius: 13px;
+    margin-left: 16px;
+  }
+}
+
+.cs-switch-thumb {
+  position: absolute;
+  top: 4rpx;
+  left: 4rpx;
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 50%;
+  background: $white;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.18);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  .cs-switch--on & { transform: translateX(40rpx); }
+
+  @media (min-width: 1024px) {
+    top: 2px;
+    left: 2px;
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+
+    .cs-switch--on & { transform: translateX(18px); }
+  }
+}
+
+.cs-bottom-safe {
+  height: 60rpx;   // 移动端底部安全区
+
+  @media (min-width: 1024px) { height: 8px; }
 }
 
 /* ========== 骨架屏 ========== */

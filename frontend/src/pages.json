@@ -120,7 +120,7 @@
 			"path": "pages/question/my",
 			"style": {
 				"navigationBarTitleText": "我的问答",
-				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": true
 			}
 		},

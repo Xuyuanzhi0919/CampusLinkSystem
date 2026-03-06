@@ -15,82 +15,95 @@
       </template>
     </CNavBar>
 
-    <!-- 内容区域 -->
+    <!-- 内容滚动区 -->
     <scroll-view class="content-scroll" scroll-y>
-      <!-- 头像区域 -->
-      <view class="avatar-section">
-        <view class="section-title">头像</view>
-        <view class="avatar-container" @click="handleChooseAvatar">
-          <image
-            v-if="formData.avatarUrl"
-            :src="formData.avatarUrl"
-            class="avatar-image"
-            mode="aspectFill"
-          />
-          <view v-else class="avatar-placeholder">
-            <text class="placeholder-text">👤</text>
-          </view>
-          <view v-if="uploading" class="upload-mask">
-            <text class="upload-text">上传中...</text>
-          </view>
-          <view class="avatar-tip">
-            <text class="tip-text">点击更换头像</text>
-          </view>
-        </view>
-      </view>
+      <view class="page-inner">
 
-      <!-- 基本信息 -->
-      <view class="form-section">
-        <view class="section-title">基本信息</view>
-
-        <!-- 昵称 -->
-        <view class="form-item" :class="{ error: errors.nickname }">
-          <view class="item-label">
-            <text class="label-text">昵称</text>
-            <text class="required-mark">*</text>
+        <!-- ── 头像卡片 ── -->
+        <view class="card avatar-card" @click="handleChooseAvatar">
+          <view class="avatar-ring">
+            <image
+              v-if="formData.avatarUrl"
+              :src="formData.avatarUrl"
+              class="avatar-img"
+              mode="aspectFill"
+            />
+            <view v-else class="avatar-fallback">
+              <text class="fallback-text">👤</text>
+            </view>
+            <!-- 上传遮罩 -->
+            <view v-if="uploading" class="avatar-mask">
+              <text class="mask-text">上传中…</text>
+            </view>
+            <!-- 相机角标 -->
+            <view v-else class="avatar-cam">
+              <text class="cam-label">换</text>
+            </view>
           </view>
-          <input
-            v-model="formData.nickname"
-            class="item-input"
-            placeholder="请输入昵称 (2-20字符)"
-            maxlength="20"
-            @blur="validateField('nickname')"
-          />
-          <text v-if="errors.nickname" class="error-text">{{ errors.nickname }}</text>
+          <text class="avatar-hint">点击更换头像</text>
         </view>
 
-        <!-- 学号/工号 -->
-        <view class="form-item" :class="{ error: errors.studentId }">
-          <view class="item-label">
-            <text class="label-text">学号/工号</text>
+        <!-- ── 基本信息卡片 ── -->
+        <view class="card form-card">
+          <!-- 卡片标题行 -->
+          <view class="card-header">
+            <text class="card-title">基本信息</text>
+            <text class="required-note">
+              <text class="note-star">*</text> 为必填项
+            </text>
           </view>
-          <input
-            v-model="formData.studentId"
-            class="item-input"
-            placeholder="请输入学号或工号"
-            @blur="validateField('studentId')"
-          />
-          <text v-if="errors.studentId" class="error-text">{{ errors.studentId }}</text>
-        </view>
 
-        <!-- 专业 -->
-        <view class="form-item">
-          <view class="item-label">
-            <text class="label-text">专业</text>
+          <!-- 昵称 -->
+          <view class="form-row" :class="{ 'form-row--error': errors.nickname }">
+            <view class="label-wrap">
+              <text class="row-label">昵称</text>
+              <text class="req-dot">*</text>
+            </view>
+            <input
+              v-model="formData.nickname"
+              class="row-input"
+              placeholder="2–20 个字符"
+              maxlength="20"
+              @blur="validateField('nickname')"
+            />
+            <text class="char-count">{{ charCount }}/20</text>
           </view>
-          <input
-            v-model="formData.major"
-            class="item-input"
-            placeholder="请输入专业"
-            maxlength="50"
-          />
-        </view>
+          <text v-if="errors.nickname" class="error-tip">{{ errors.nickname }}</text>
 
-        <!-- 年级 -->
-        <view class="form-item">
-          <view class="item-label">
-            <text class="label-text">年级</text>
+          <view class="row-sep" />
+
+          <!-- 学号/工号 -->
+          <view class="form-row" :class="{ 'form-row--error': errors.studentId }">
+            <view class="label-wrap">
+              <text class="row-label">学号/工号</text>
+            </view>
+            <input
+              v-model="formData.studentId"
+              class="row-input"
+              placeholder="选填"
+              @blur="validateField('studentId')"
+            />
           </view>
+          <text v-if="errors.studentId" class="error-tip">{{ errors.studentId }}</text>
+
+          <view class="row-sep" />
+
+          <!-- 专业 -->
+          <view class="form-row">
+            <view class="label-wrap">
+              <text class="row-label">专业</text>
+            </view>
+            <input
+              v-model="formData.major"
+              class="row-input"
+              placeholder="选填"
+              maxlength="50"
+            />
+          </view>
+
+          <view class="row-sep" />
+
+          <!-- 年级 -->
           <picker
             mode="selector"
             :range="gradeOptions"
@@ -98,33 +111,37 @@
             :value="gradePickerIndex"
             @change="handleGradeChange"
           >
-            <view class="picker-input">
-              <text :class="formData.grade ? 'picker-text' : 'picker-placeholder'">
-                {{ gradeLabel || '请选择年级' }}
+            <view class="form-row form-row--picker">
+              <view class="label-wrap">
+                <text class="row-label">年级</text>
+              </view>
+              <text :class="formData.grade ? 'row-value' : 'row-placeholder'">
+                {{ gradeLabel || '请选择' }}
               </text>
-              <text class="picker-arrow">›</text>
+              <text class="picker-chevron">›</text>
             </view>
           </picker>
-        </view>
 
-        <!-- 手机号 -->
-        <view class="form-item" :class="{ error: errors.phone }">
-          <view class="item-label">
-            <text class="label-text">手机号</text>
+          <view class="row-sep" />
+
+          <!-- 手机号 -->
+          <view class="form-row" :class="{ 'form-row--error': errors.phone }">
+            <view class="label-wrap">
+              <text class="row-label">手机号</text>
+            </view>
+            <input
+              v-model="formData.phone"
+              class="row-input"
+              type="text"
+              placeholder="选填"
+              maxlength="11"
+              @blur="validateField('phone')"
+            />
           </view>
-          <input
-            v-model="formData.phone"
-            class="item-input"
-            type="text"
-            placeholder="请输入手机号（如需修改请清空后重新输入）"
-            maxlength="11"
-            @blur="validateField('phone')"
-          />
-          <text v-if="errors.phone" class="error-text">{{ errors.phone }}</text>
+          <text v-if="errors.phone" class="error-tip">{{ errors.phone }}</text>
         </view>
-      </view>
 
-      <!-- 底部安全距离 -->
+      </view>
       <view class="safe-area-bottom" />
     </scroll-view>
   </view>
@@ -184,6 +201,9 @@ const gradeLabel = computed(() => {
   const option = gradeOptions.find(item => item.value === formData.value.grade)
   return option?.label || ''
 })
+
+// 昵称字符数
+const charCount = computed(() => formData.value.nickname?.length || 0)
 
 // 是否可以保存
 const canSave = computed(() => {
@@ -466,165 +486,362 @@ onMounted(() => {
 <style lang="scss" scoped>
 // 变量已通过 uni.scss 全局注入
 
+// ─── 页面容器 ──────────────────────────────────────────────
 .edit-profile-page {
   min-height: 100vh;
   background: $gray-50;
 }
 
-// 内容区域
 .content-scroll {
   height: calc(100vh - 56px);
-  overflow-y: auto;
 }
 
-// 头像区域
-.avatar-section {
-  padding: $sp-12 $sp-8;
+// ─── 页面内层（PC 居中约束）────────────────────────────────
+.page-inner {
+  padding: 24rpx 0;
+
+  @media (min-width: 1024px) {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 24px 0;
+  }
+}
+
+// ─── 通用卡片 ──────────────────────────────────────────────
+.card {
   background: $white;
-  margin-bottom: $sp-5;
+  margin: 0 24rpx 16rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06), 0 0 0 0.5px rgba(0, 0, 0, 0.04);
+
+  @media (min-width: 1024px) {
+    margin: 0 0 14px;
+    border-radius: 14px;
+  }
 }
 
-.section-title {
-  font-size: $font-size-base;
-  font-weight: $font-weight-semibold;
-  color: $gray-800;
-  margin-bottom: $sp-8;
-}
-
-.avatar-container {
+// ─── 头像卡片 ──────────────────────────────────────────────
+.avatar-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
+  padding: 40rpx 0 32rpx;
+  cursor: pointer;
+
+  @media (min-width: 1024px) {
+    padding: 28px 0 22px;
+  }
 }
 
-.avatar-image {
+.avatar-ring {
+  position: relative;
+  width: 160rpx;
+  height: 160rpx;
+
+  @media (min-width: 1024px) {
+    width: 96px;
+    height: 96px;
+  }
+}
+
+.avatar-img {
   width: 160rpx;
   height: 160rpx;
   border-radius: $radius-full;
   background: $gray-100;
+
+  @media (min-width: 1024px) {
+    width: 96px;
+    height: 96px;
+  }
 }
 
-.avatar-placeholder {
+.avatar-fallback {
   width: 160rpx;
   height: 160rpx;
   border-radius: $radius-full;
   background: $gray-100;
   @include flex-center;
+
+  @media (min-width: 1024px) {
+    width: 96px;
+    height: 96px;
+  }
 }
 
-.placeholder-text {
-  font-size: 80rpx;
+.fallback-text {
+  font-size: 76rpx;
+
+  @media (min-width: 1024px) {
+    font-size: 44px;
+  }
 }
 
-.upload-mask {
+// 上传中遮罩（全覆盖）
+.avatar-mask {
   position: absolute;
   top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 160rpx;
-  height: 160rpx;
+  left: 0;
+  right: 0;
+  bottom: 0;
   border-radius: $radius-full;
-  background: rgba($gray-900, 0.5);
+  background: rgba(0, 0, 0, 0.46);
   @include flex-center;
 }
 
-.upload-text {
-  font-size: $font-size-sm;
+.mask-text {
+  font-size: 24rpx;
   color: $white;
+  font-weight: $font-weight-medium;
+
+  @media (min-width: 1024px) {
+    font-size: 13px;
+  }
 }
 
-.avatar-tip {
-  margin-top: $sp-4;
+// 相机角标（右下角）
+.avatar-cam {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: $radius-full;
+  background: $primary;
+  border: 4rpx solid $white;
+  @include flex-center;
+
+  @media (min-width: 1024px) {
+    width: 30px;
+    height: 30px;
+    border-width: 2px;
+  }
 }
 
-.tip-text {
-  font-size: $font-size-sm;
+.cam-label {
+  font-size: 20rpx;
+  color: $white;
+  font-weight: $font-weight-semibold;
+
+  @media (min-width: 1024px) {
+    font-size: 11px;
+  }
+}
+
+.avatar-hint {
+  margin-top: 20rpx;
+  font-size: 26rpx;
   color: $primary;
-}
+  font-weight: $font-weight-medium;
 
-// 表单区域
-.form-section {
-  background: $white;
-  padding: $sp-8;
-}
-
-.form-item {
-  margin-bottom: $sp-10;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  &.error {
-    .item-input,
-    .picker-input {
-      border-color: $error;
-    }
+  @media (min-width: 1024px) {
+    margin-top: 12px;
+    font-size: 14px;
   }
 }
 
-.item-label {
+// ─── 卡片标题行 ────────────────────────────────────────────
+.card-header {
   display: flex;
   align-items: center;
-  margin-bottom: $sp-4;
+  justify-content: space-between;
+  padding: 28rpx 32rpx 22rpx;
+  border-bottom: 1rpx solid $gray-100;
+
+  @media (min-width: 1024px) {
+    padding: 18px 24px 14px;
+    border-bottom-width: 1px;
+  }
 }
 
-.label-text {
-  font-size: $font-size-base;
+.card-title {
+  font-size: 30rpx;
+  font-weight: $font-weight-semibold;
   color: $gray-800;
+  letter-spacing: -0.01em;
+
+  @media (min-width: 1024px) {
+    font-size: 15px;
+  }
+}
+
+.required-note {
+  font-size: 22rpx;
+  color: $gray-400;
+
+  @media (min-width: 1024px) {
+    font-size: 12px;
+  }
+}
+
+.note-star {
+  color: $error;
+}
+
+// ─── 表单行（水平布局）────────────────────────────────────
+.form-row {
+  display: flex;
+  align-items: center;
+  min-height: 96rpx;
+  padding: 0 32rpx;
+
+  // 错误状态：极浅红色背景提示
+  &--error {
+    background: rgba(239, 68, 68, 0.025);
+  }
+
+  // picker 行
+  &--picker {
+    cursor: pointer;
+  }
+
+  @media (min-width: 1024px) {
+    min-height: 52px;
+    padding: 0 24px;
+  }
+}
+
+// 左侧标签包裹（含必填星号）
+.label-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  width: 5.5em;
+  gap: 2rpx;
+
+  @media (min-width: 1024px) {
+    gap: 2px;
+  }
+}
+
+.row-label {
+  font-size: 28rpx;
   font-weight: $font-weight-medium;
+  color: $gray-800;
+  white-space: nowrap;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 
-.required-mark {
+.req-dot {
+  font-size: 24rpx;
   color: $error;
-  margin-left: $sp-2;
+  line-height: 1;
+
+  @media (min-width: 1024px) {
+    font-size: 13px;
+  }
 }
 
-.item-input {
-  width: 100%;
-  height: 80rpx;
-  padding: 0 $sp-6;
-  background: $gray-50;
-  border: 1rpx solid $gray-200;
-  border-radius: $radius-base;
-  font-size: $font-size-base;
+// 右侧输入框（右对齐）
+.row-input {
+  flex: 1;
+  font-size: 28rpx;
   color: $gray-800;
+  text-align: right;
+  caret-color: $primary;
+  min-width: 0;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 
-.picker-input {
-  @include flex-between;
-  height: 80rpx;
-  padding: 0 $sp-6;
-  background: $gray-50;
-  border: 1rpx solid $gray-200;
-  border-radius: $radius-base;
+// #ifdef H5
+.row-input::placeholder {
+  color: $gray-400;
+  font-weight: normal;
 }
+// #endif
 
-.picker-text {
-  font-size: $font-size-base;
+// picker 已选值
+.row-value {
+  flex: 1;
+  font-size: 28rpx;
   color: $gray-800;
+  text-align: right;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 
-.picker-placeholder {
-  font-size: $font-size-base;
+// picker 未选占位
+.row-placeholder {
+  flex: 1;
+  font-size: 28rpx;
   color: $gray-400;
+  text-align: right;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+  }
 }
 
-.picker-arrow {
-  font-size: 48rpx;
+// picker 箭头（旋转指向下方）
+.picker-chevron {
+  flex-shrink: 0;
+  display: inline-block;
+  font-size: 44rpx;
   color: $gray-400;
+  line-height: 1;
+  margin-left: 4rpx;
   transform: rotate(90deg);
+
+  @media (min-width: 1024px) {
+    font-size: 24px;
+    margin-left: 4px;
+  }
 }
 
-.error-text {
+// 字符计数
+.char-count {
+  flex-shrink: 0;
+  margin-left: 12rpx;
+  font-size: 22rpx;
+  color: $gray-400;
+  font-variant-numeric: tabular-nums;
+
+  @media (min-width: 1024px) {
+    font-size: 12px;
+    margin-left: 8px;
+  }
+}
+
+// ─── 行间分隔线 ────────────────────────────────────────────
+.row-sep {
+  margin: 0 32rpx;
+  height: 1rpx;
+  background: $gray-100;
+
+  @media (min-width: 1024px) {
+    margin: 0 24px;
+    height: 1px;
+  }
+}
+
+// ─── 错误提示 ─────────────────────────────────────────────
+.error-tip {
   display: block;
-  margin-top: $sp-3;
-  font-size: $font-size-sm;
+  padding: 6rpx 32rpx 14rpx;
+  font-size: 22rpx;
   color: $error;
+
+  @media (min-width: 1024px) {
+    padding: 3px 24px 10px;
+    font-size: 12px;
+  }
 }
 
+// ─── 底部安全距离 ─────────────────────────────────────────
 .safe-area-bottom {
-  height: $sp-8;
+  height: 48rpx;
+
+  @media (min-width: 1024px) {
+    height: 32px;
+  }
 }
 </style>

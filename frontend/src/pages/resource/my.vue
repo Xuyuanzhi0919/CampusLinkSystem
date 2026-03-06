@@ -84,7 +84,10 @@
           <Icon :name="emptyIconName" :size="64" color="#D1D5DB" />
         </view>
         <text class="empty-text">{{ emptyText }}</text>
-        <text class="empty-hint" @click="handleEmptyAction">{{ emptyHint }}</text>
+        <view class="empty-action" @click="handleEmptyAction">
+          <Icon name="plus-circle" :size="14" color="#FFFFFF" />
+          <text class="empty-action-text">{{ emptyHint }}</text>
+        </view>
       </view>
     </scroll-view>
 
@@ -473,11 +476,20 @@ loadData()
   margin-bottom: 16rpx;
 }
 
-.empty-hint {
-  font-size: 28rpx;
-  color: #377DFF;
-  padding: 16rpx 32rpx;
-  background: rgba(55, 125, 255, 0.1);
-  border-radius: 32rpx;
+.empty-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  padding: 22rpx 48rpx;
+  background: #377DFF;
+  border-radius: 40rpx;
+  box-shadow: 0 4rpx 16rpx rgba(55, 125, 255, 0.3);
+
+  .empty-action-text {
+    font-size: 28rpx;
+    font-weight: 500;
+    color: #FFFFFF;
+  }
 }
 </style>

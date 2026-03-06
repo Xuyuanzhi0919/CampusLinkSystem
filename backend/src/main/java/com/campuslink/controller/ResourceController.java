@@ -191,10 +191,11 @@ public class ResourceController {
     public Result<PageResult<ResourceListResponse>> getMyResources(
             @Parameter(description = "当前页") @RequestParam(defaultValue = "1") Integer page,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize,
+            @Parameter(description = "审核状态：0=待审核 1=已通过 2=已拒绝，不传返回全部") @RequestParam(required = false) Integer status,
             HttpServletRequest httpRequest
     ) {
         Long userId = (Long) httpRequest.getAttribute("userId");
-        PageResult<ResourceListResponse> result = resourceService.getMyResources(userId, page, pageSize);
+        PageResult<ResourceListResponse> result = resourceService.getMyResources(userId, page, pageSize, status);
         return Result.success(result);
     }
 

@@ -107,11 +107,12 @@ export const searchResources = (params: {
 
 /**
  * 获取我上传的资源
- * @param params 分页参数
+ * @param params 分页参数（status: 0=待审核 1=已通过 2=已拒绝，不传返回全部）
  */
 export const getMyResources = (params: {
   page?: number
   pageSize?: number
+  status?: number
 } = {}) => {
   return request.get<PageResult<ResourceItem>>('/resource/my', params)
 }

@@ -370,12 +370,15 @@ public class ResourceService {
 
     /**
      * 获取我上传的资源列表
+     *
+     * @param status 审核状态筛选（0=待审核 1=已通过 2=已拒绝），null 时返回全部
      */
-    public PageResult<ResourceListResponse> getMyResources(Long userId, Integer page, Integer pageSize) {
+    public PageResult<ResourceListResponse> getMyResources(Long userId, Integer page, Integer pageSize, Integer status) {
         Page<Resource> pageObj = new Page<>(page, pageSize);
 
         LambdaQueryWrapper<Resource> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Resource::getUploaderId, userId)
+                .eq(status != null, Resource::getStatus, status)
                 .orderByDesc(Resource::getCreatedAt);
 
         IPage<Resource> resourcePage = resourceMapper.selectPage(pageObj, queryWrapper);

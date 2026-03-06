@@ -139,37 +139,41 @@
         <text v-if="hasActiveFilters" class="popover-reset" @click="handleResetFilters">重置</text>
       </view>
       <view class="popover-content">
+        <!-- 积分范围 -->
         <view class="filter-group">
-          <view class="filter-group-title">积分范围</view>
-          <view class="filter-options">
-            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === null }" @click="handleScoreRangeChange(null)">
+          <text class="group-title">积分范围</text>
+          <view class="group-options">
+            <view class="option-item" :class="{ selected: advancedFilters.scoreRange === null }" @click="handleScoreRangeChange(null)">
               <text class="option-label">全部</text>
             </view>
-            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'free' }" @click="handleScoreRangeChange('free')">
+            <view class="option-item" :class="{ selected: advancedFilters.scoreRange === 'free' }" @click="handleScoreRangeChange('free')">
               <text class="option-label">免费</text>
-              <text class="option-desc">(0分)</text>
+              <text class="option-desc">0分</text>
             </view>
-            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'low' }" @click="handleScoreRangeChange('low')">
+            <view class="option-item" :class="{ selected: advancedFilters.scoreRange === 'low' }" @click="handleScoreRangeChange('low')">
               <text class="option-label">低积分</text>
-              <text class="option-desc">(1-5分)</text>
+              <text class="option-desc">1-5分</text>
             </view>
-            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'medium' }" @click="handleScoreRangeChange('medium')">
+            <view class="option-item" :class="{ selected: advancedFilters.scoreRange === 'medium' }" @click="handleScoreRangeChange('medium')">
               <text class="option-label">中积分</text>
-              <text class="option-desc">(6-10分)</text>
+              <text class="option-desc">6-10分</text>
             </view>
-            <view class="filter-option" :class="{ active: advancedFilters.scoreRange === 'high' }" @click="handleScoreRangeChange('high')">
+            <view class="option-item" :class="{ selected: advancedFilters.scoreRange === 'high' }" @click="handleScoreRangeChange('high')">
               <text class="option-label">高积分</text>
-              <text class="option-desc">(10分以上)</text>
+              <text class="option-desc">10分+</text>
             </view>
           </view>
         </view>
+        <!-- 学校资源 -->
         <view class="filter-group">
-          <view class="filter-group-title">学校资源</view>
-          <view class="filter-switch-row">
-            <text class="switch-label">只看本校资源</text>
-            <switch :checked="advancedFilters.onlyMySchool" @change="handleMySchoolChange" color="#FF6B35" />
+          <text class="group-title">学校资源</text>
+          <view class="popover-switch-row">
+            <view class="popover-switch-info">
+              <text class="popover-switch-label">只看本校资源</text>
+              <text class="popover-switch-hint">仅显示您所在学校的资源</text>
+            </view>
+            <switch :checked="advancedFilters.onlyMySchool" @change="handleMySchoolChange" color="#377DFF" />
           </view>
-          <text class="filter-hint">开启后只显示来自您所在学校的资源</text>
         </view>
       </view>
       <view class="popover-footer">
@@ -3493,20 +3497,21 @@ onUnmounted(() => {
 // 🎯 PC端 Popover（fixed 定位，位置由 JS 动态计算）
 .filter-popover {
   position: fixed;
-  width: 320px;
+  width: 340px;
   background: $white;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 1px solid $gray-100;
   z-index: $z-modal;
   animation: popoverIn 0.15s ease-out;
+  overflow: hidden;
 
   // 小三角
   &::before {
     content: '';
     position: absolute;
     top: -6px;
-    right: 20px;
+    right: 24px;
     width: 12px;
     height: 12px;
     background: $white;
@@ -3517,56 +3522,128 @@ onUnmounted(() => {
 
   .popover-header {
     @include flex-between;
-    padding: 14px 16px 12px;
+    padding: 14px 18px 12px;
     border-bottom: 1px solid $gray-100;
+    background: $gray-50;
 
     .popover-title {
       font-size: 14px;
-      font-weight: $font-weight-bold;
+      font-weight: 600;
       color: $gray-900;
     }
 
     .popover-reset {
       font-size: 12px;
-      color: $accent;
+      color: $primary;
       cursor: pointer;
-      transition: opacity $duration-base;
+      padding: 3px 8px;
+      border-radius: 6px;
+      transition: background 0.2s;
 
       &:hover {
-        opacity: 0.75;
+        background: rgba($primary, 0.08);
       }
     }
   }
 
   .popover-content {
-    padding: 14px 16px;
+    padding: 16px 18px;
+
+    // Popover 内筛选组间距收紧
+    .filter-group {
+      margin-bottom: 18px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .group-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: $gray-500;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .group-options {
+      gap: 6px;
+    }
+
+    .option-item {
+      padding: 5px 12px;
+
+      .option-label {
+        font-size: 13px;
+      }
+
+      .option-desc {
+        font-size: 11px;
+      }
+    }
   }
 
   .popover-footer {
     @include flex-between;
-    padding: 10px 16px 14px;
+    padding: 10px 18px 14px;
     border-top: 1px solid $gray-100;
+    background: $gray-50;
 
     .popover-result {
       font-size: 12px;
-      color: $text-secondary;
+      color: $gray-500;
     }
 
     .popover-apply-btn {
-      padding: 6px 14px;
-      background: $accent;
+      padding: 6px 16px;
+      background: $primary;
       color: $white;
-      border-radius: 6px;
+      border-radius: 20px;
       font-size: 13px;
-      font-weight: $font-weight-semibold;
+      font-weight: 500;
       cursor: pointer;
-      transition: opacity $duration-base;
+      transition: all 0.2s;
 
       &:hover {
-        opacity: 0.88;
+        background: $primary-light;
+        transform: translateY(-1px);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
   }
+}
+
+// Popover switch 行
+.popover-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 12px;
+  background: $gray-50;
+  border-radius: 10px;
+  border: 1px solid $gray-100;
+}
+
+.popover-switch-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popover-switch-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: $gray-800;
+}
+
+.popover-switch-hint {
+  font-size: 11px;
+  color: $gray-400;
 }
 
 @keyframes popoverIn {
@@ -3727,21 +3804,25 @@ onUnmounted(() => {
 .option-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
+  gap: 5px;
+  padding: 7px 14px;
   background: $gray-100;
   border-radius: 20px;
   cursor: pointer;
-  transition: all 0.2s;
-  border: 2px solid transparent;
+  transition: all 0.18s;
+  border: 1.5px solid transparent;
 
   &:hover {
     background: $gray-200;
   }
 
+  &:active {
+    transform: scale(0.97);
+  }
+
   &.selected {
     background: rgba($primary, 0.08);
-    border-color: $primary;
+    border-color: rgba($primary, 0.35);
 
     .option-label {
       color: $primary;
@@ -3749,7 +3830,7 @@ onUnmounted(() => {
     }
 
     .option-desc {
-      color: $primary;
+      color: rgba($primary, 0.7);
     }
 
     .option-icon {
@@ -3758,14 +3839,16 @@ onUnmounted(() => {
   }
 
   .option-label {
-    font-size: 14px;
+    font-size: 13px;
     color: $gray-700;
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .option-desc {
-    font-size: 12px;
-    color: $gray-500;
+    font-size: 11px;
+    color: $gray-400;
+    white-space: nowrap;
   }
 
   .option-icon {
@@ -3773,14 +3856,16 @@ onUnmounted(() => {
     flex-shrink: 0;
   }
 
-  // 开关型选项
+  // 开关型选项（全宽）
   &--toggle {
     width: 100%;
+    border-radius: 12px;
     justify-content: flex-start;
-    padding-right: 16px;
+    padding: 10px 14px;
 
     .option-label {
       flex: 1;
+      font-size: 14px;
     }
   }
 }
@@ -3797,20 +3882,7 @@ onUnmounted(() => {
   flex-shrink: 0;
 }
 
-// Popover 内筛选项适配
-.filter-popover {
-  .group-options {
-    gap: 6px;
-  }
-
-  .option-item {
-    padding: 6px 12px;
-
-    .option-label {
-      font-size: 13px;
-    }
-  }
-}
+// Popover 内筛选项适配（样式已内联在 .filter-popover .popover-content 中）
 
 // 🎯 内容区域
 .content-section {

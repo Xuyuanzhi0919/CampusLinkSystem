@@ -133,6 +133,7 @@ const handleEdit   = () => emit('edit',   props.resource)
   box-shadow: 0 4rpx 24rpx rgba(0, 0, 0, 0.04);
   overflow: hidden;
   margin-bottom: 24rpx;
+  transition: transform 0.2s, box-shadow 0.2s;
 
   &:active { opacity: 0.92; }
 
@@ -309,16 +310,17 @@ const handleEdit   = () => emit('edit',   props.resource)
   // ---- 操作按钮 ----
   .card-actions {
     display: flex;
+    justify-content: flex-end;
     gap: 20rpx;
     padding: 20rpx 32rpx;
 
     .action-btn {
-      flex: 1;
+      flex: 0 0 auto;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 12rpx;
-      padding: 20rpx;
+      padding: 20rpx 40rpx;
       border-radius: 20rpx;
       font-size: 26rpx;
       font-weight: 500;
@@ -327,13 +329,13 @@ const handleEdit   = () => emit('edit',   props.resource)
         background: #F8FAFC;
         border: 1rpx solid #E2E8F0;
         color: #64748B;
-        &:active { background: #F1F5F9; }
+        &:active { background: #FEF2F2; color: #DC2626; border-color: #FECACA; }
       }
 
       &.btn-edit {
-        background: #1E293B;
+        background: #377DFF;
         color: #FFFFFF;
-        &:active { background: #0F172A; }
+        &:active { background: #2563EB; }
       }
     }
   }
@@ -344,7 +346,32 @@ const handleEdit   = () => emit('edit',   props.resource)
   .my-resource-card {
     .card-body { padding: 40rpx; }
     .title { font-size: 34rpx; }
-    .card-actions .action-btn { padding: 24rpx 32rpx; }
+    .card-actions .action-btn { padding: 24rpx 48rpx; }
   }
 }
+
+/* #ifdef H5 */
+.my-resource-card {
+  cursor: pointer;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.1);
+  }
+
+  .card-actions .action-btn {
+    transition: background 0.18s, color 0.18s, border-color 0.18s;
+
+    &.btn-delete:hover {
+      background: #FEF2F2;
+      border-color: #FECACA;
+      color: #DC2626;
+    }
+
+    &.btn-edit:hover {
+      background: #2563EB;
+    }
+  }
+}
+/* #endif */
 </style>

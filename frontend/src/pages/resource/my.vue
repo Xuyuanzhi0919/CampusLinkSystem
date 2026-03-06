@@ -24,6 +24,7 @@
         :key="filter.label"
         class="filter-item"
         :class="{ active: statusFilter === filter.value }"
+        :style="{ '--filter-color': filter.color, '--filter-bg': filter.bg }"
         @click="handleStatusFilter(filter.value)"
       >
         <text class="filter-label">{{ filter.label }}</text>
@@ -34,10 +35,12 @@
     <scroll-view
       class="content-container"
       scroll-y
+      ref="contentScrollRef"
       @scrolltolower="handleLoadMore"
       :refresher-enabled="true"
       :refresher-triggered="refreshing"
       @refresherrefresh="handleRefresh"
+      @mousedown="onScrollMouseDown"
     >
       <!-- 骨架屏 -->
       <template v-if="loading && list.length === 0">
@@ -132,12 +135,12 @@ const tabs = computed(() => [
   { label: '下载历史', value: 'downloads' as const, count: downloadCount.value }
 ])
 
-// 状态筛选配置
+// 状态筛选配置（含语义化颜色）
 const statusFilters = [
-  { label: '全部', value: null },
-  { label: '待审核', value: 0 },
-  { label: '已通过', value: 1 },
-  { label: '已拒绝', value: 2 }
+  { label: '全部',  value: null, color: '#377DFF', bg: 'rgba(55,125,255,0.1)'   },
+  { label: '待审核', value: 0,   color: '#F59E0B', bg: 'rgba(245,158,11,0.1)'  },
+  { label: '已通过', value: 1,   color: '#10B981', bg: 'rgba(16,185,129,0.1)'  },
+  { label: '已拒绝', value: 2,   color: '#EF4444', bg: 'rgba(239,68,68,0.1)'   },
 ]
 
 // 加载更多提示文字（合并三条 v-if）
@@ -277,6 +280,29 @@ const handleBack = () => {
   uni.navigateBack()
 }
 
+// H5 鼠标拖拽滚动
+const contentScrollRef = ref()
+const onScrollMouseDown = (e: Event) => {
+  // #ifdef H5
+  const el = (contentScrollRef.value as any)?.$el as HTMLElement | null
+  if (!el) return
+  const me = e as MouseEvent
+  const startY = me.clientY, startTop = el.scrollTop
+  let moved = false
+  const handleMove = (ev: MouseEvent) => {
+    const diff = ev.clientY - startY
+    if (!moved && Math.abs(diff) < 4) return
+    moved = true; el.scrollTop = startTop - diff; ev.preventDefault()
+  }
+  const handleUp = () => {
+    window.removeEventListener('mousemove', handleMove)
+    window.removeEventListener('mouseup', handleUp)
+  }
+  window.addEventListener('mousemove', handleMove)
+  window.addEventListener('mouseup', handleUp)
+  // #endif
+}
+
 loadData()
 </script>
 
@@ -308,7 +334,7 @@ loadData()
 
   &.active {
     .tab-label {
-      color: #6366f1;
+      color: #377DFF;
       font-weight: 600;
     }
 
@@ -320,7 +346,7 @@ loadData()
       transform: translateX(-50%);
       width: 48rpx;
       height: 6rpx;
-      background: #6366f1;
+      background: #377DFF;
       border-radius: 3rpx;
     }
   }
@@ -347,15 +373,19 @@ loadData()
 }
 
 .filter-item {
+  --filter-color: #377DFF;
+  --filter-bg: rgba(55, 125, 255, 0.1);
   padding: 12rpx 24rpx;
   border-radius: 32rpx;
   background: #f5f5f5;
+  transition: background 0.18s;
 
   &.active {
-    background: rgba(99, 102, 241, 0.1);
+    background: var(--filter-bg);
 
     .filter-label {
-      color: #6366f1;
+      color: var(--filter-color);
+      font-weight: 500;
     }
   }
 }
@@ -368,10 +398,18 @@ loadData()
 // scroll-view 占满剩余高度，不需要手动计算
 .content-container {
   flex: 1;
+  min-height: 0;
   overflow: hidden;
   padding: 24rpx 32rpx;
   box-sizing: border-box;
 }
+
+/* #ifdef H5 */
+.content-container {
+  cursor: grab;
+  &:active { cursor: grabbing; }
+}
+/* #endif */
 
 .skeleton-card {
   background: #fff;
@@ -437,9 +475,9 @@ loadData()
 
 .empty-hint {
   font-size: 28rpx;
-  color: #6366f1;
+  color: #377DFF;
   padding: 16rpx 32rpx;
-  background: rgba(99, 102, 241, 0.1);
+  background: rgba(55, 125, 255, 0.1);
   border-radius: 32rpx;
 }
 </style>

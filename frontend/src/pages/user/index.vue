@@ -101,8 +101,9 @@
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"
         />
-        <!-- PC 内容主体 — 居中窄列 -->
+        <!-- PC 内容主体 — 居中双列布局 -->
         <view class="pc-body">
+          <!-- 快速操作：横跨全宽 -->
           <QuickActions
             @publish-resource="handlePublishResource"
             @ask-question="handleAskQuestion"
@@ -110,34 +111,42 @@
             @join-activity="handleJoinActivity"
             @go-to-mall="handleGoToMall"
           />
-          <AchievementSection
-            v-if="userProfile"
-            :level="userProfile.level || 1"
-            :level-name="levelName"
-            :current-exp="userProfile.points || 0"
-            :next-level-exp="nextLevelExp"
-            :stats="achievementStats"
-            :badges="userBadges"
-            @stat-click="handleStatClick"
-            @badge-click="handleBadgeClick"
-            @view-all-badges="handleViewAllBadges"
-          />
-          <view class="section-block">
-            <view class="section-label">
-              <view class="section-label-dot" />
-              <text class="section-label-text">我的内容</text>
+          <!-- 双列区域：左=成就信息，右=功能入口+设置 -->
+          <view class="pc-two-col">
+            <!-- 左栏：成就展示 -->
+            <view class="pc-col-left">
+              <AchievementSection
+                v-if="userProfile"
+                :level="userProfile.level || 1"
+                :level-name="levelName"
+                :current-exp="userProfile.points || 0"
+                :next-level-exp="nextLevelExp"
+                :stats="achievementStats"
+                :badges="userBadges"
+                @stat-click="handleStatClick"
+                @badge-click="handleBadgeClick"
+                @view-all-badges="handleViewAllBadges"
+              />
             </view>
-            <CapabilityPanel :badges="capabilityBadges" @item-click="handleCapabilityClick" />
-          </view>
-          <view class="section-block">
-            <view class="section-label">
-              <view class="section-label-dot section-label-dot--gray" />
-              <text class="section-label-text">账号与系统</text>
+            <!-- 右栏：功能入口 + 账号设置 -->
+            <view class="pc-col-right">
+              <view class="section-block">
+                <view class="section-label">
+                  <view class="section-label-dot" />
+                  <text class="section-label-text">我的内容</text>
+                </view>
+                <CapabilityPanel :badges="capabilityBadges" @item-click="handleCapabilityClick" />
+              </view>
+              <view class="section-block">
+                <view class="section-label">
+                  <view class="section-label-dot section-label-dot--gray" />
+                  <text class="section-label-text">账号与系统</text>
+                </view>
+                <SettingsSection @item-click="handleSettingsClick" />
+              </view>
+              <AccountActions @logout="handleLogout" />
             </view>
-            <SettingsSection @item-click="handleSettingsClick" />
           </view>
-          <AccountActions @logout="handleLogout" />
-          <view class="safe-bottom safe-bottom--pc" />
         </view>
       </view>
     </template>
@@ -417,16 +426,31 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   box-sizing: border-box;
 }
 
-/* PC 端内容主体 — 居中单列 */
+/* PC 端内容主体 — 居中，最大宽 1080px */
 .pc-body {
   width: 100%;
-  max-width: 860px;
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 16px 0 48px;
+  padding: 20px 24px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-sizing: border-box;
+}
+
+/* PC 双列布局：左=成就区(固定宽)，右=功能+设置(弹性) */
+.pc-two-col {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.pc-col-left,
+.pc-col-right {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  box-sizing: border-box;
 }
 
 /* ========== 下拉刷新（移动端） ========== */

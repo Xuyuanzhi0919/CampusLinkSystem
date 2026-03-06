@@ -196,9 +196,10 @@ const quickStats = computed(() => [
   padding: 0 32rpx;
 
   @media (min-width: 1024px) {
-    max-width: 860px;
+    max-width: 1080px;
     margin: 0 auto;
-    padding: 0;
+    padding: 0 24px;
+    box-sizing: border-box;
   }
 }
 

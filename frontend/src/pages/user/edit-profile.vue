@@ -104,23 +104,15 @@
           <view class="row-sep" />
 
           <!-- 年级 -->
-          <picker
-            mode="selector"
-            :range="gradeOptions"
-            range-key="label"
-            :value="gradePickerIndex"
-            @change="handleGradeChange"
-          >
-            <view class="form-row form-row--picker">
-              <view class="label-wrap">
-                <text class="row-label">年级</text>
-              </view>
-              <text :class="formData.grade ? 'row-value' : 'row-placeholder'">
-                {{ gradeLabel || '请选择' }}
-              </text>
-              <text class="picker-chevron">›</text>
+          <view class="form-row form-row--picker" @click="openGradePicker">
+            <view class="label-wrap">
+              <text class="row-label">年级</text>
             </view>
-          </picker>
+            <text :class="formData.grade ? 'row-value' : 'row-placeholder'">
+              {{ gradeLabel || '请选择' }}
+            </text>
+            <text class="picker-chevron">›</text>
+          </view>
 
           <view class="row-sep" />
 
@@ -144,11 +136,54 @@
       </view>
       <view class="safe-area-bottom" />
     </scroll-view>
+
+    <!-- ── 年级选择底部弹窗 ── -->
+    <view
+      v-if="showGradePicker"
+      class="grade-overlay"
+      :class="{ 'grade-overlay--dim': gradeSheetUp }"
+      @click="closeGradePicker"
+    >
+      <view
+        class="grade-sheet"
+        :class="{ 'grade-sheet--up': gradeSheetUp }"
+        @click.stop
+      >
+        <!-- 拖拽条 -->
+        <view class="sheet-bar" />
+
+        <!-- 标题行 -->
+        <view class="sheet-header">
+          <text class="sheet-cancel" @click="closeGradePicker">取消</text>
+          <text class="sheet-title">选择年级</text>
+          <!-- 占位，让标题居中 -->
+          <text class="sheet-cancel sheet-cancel--ghost">取消</text>
+        </view>
+
+        <!-- 选项列表 -->
+        <view class="sheet-list">
+          <view
+            v-for="item in gradeOptions"
+            :key="item.value"
+            class="sheet-item"
+            :class="{ 'sheet-item--active': formData.grade === item.value }"
+            @click="selectGrade(item.value)"
+          >
+            <text class="sheet-item-label">{{ item.label }}</text>
+            <view v-if="formData.grade === item.value" class="sheet-check">
+              <text class="check-icon">✓</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="sheet-bottom" />
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { CNavBar } from '@/components/layout'
 import { useUserStore } from '@/stores/user'
 import type { UpdateProfileRequest } from '@/types/user'
@@ -189,12 +224,6 @@ const gradeOptions = [
   { value: 7, label: '研三' }
 ]
 
-// 年级选择器索引
-const gradePickerIndex = computed(() => {
-  if (!formData.value.grade) return 0
-  return gradeOptions.findIndex(item => item.value === formData.value.grade)
-})
-
 // 年级显示文本
 const gradeLabel = computed(() => {
   if (!formData.value.grade) return ''
@@ -204,6 +233,29 @@ const gradeLabel = computed(() => {
 
 // 昵称字符数
 const charCount = computed(() => formData.value.nickname?.length || 0)
+
+// 年级底部弹窗控制
+const showGradePicker = ref(false)
+const gradeSheetUp = ref(false)
+
+const openGradePicker = () => {
+  showGradePicker.value = true
+  nextTick(() => {
+    gradeSheetUp.value = true
+  })
+}
+
+const closeGradePicker = () => {
+  gradeSheetUp.value = false
+  setTimeout(() => {
+    showGradePicker.value = false
+  }, 300)
+}
+
+const selectGrade = (value: number) => {
+  formData.value.grade = value
+  closeGradePicker()
+}
 
 // 是否可以保存
 const canSave = computed(() => {
@@ -374,14 +426,6 @@ const uploadAvatar = async (filePath: string) => {
       icon: 'none'
     })
   }
-}
-
-/**
- * 年级变更
- */
-const handleGradeChange = (e: any) => {
-  const index = e.detail.value
-  formData.value.grade = gradeOptions[index].value
 }
 
 /**
@@ -842,6 +886,190 @@ onMounted(() => {
 
   @media (min-width: 1024px) {
     height: 32px;
+  }
+}
+
+// ─── 年级底部弹窗 ─────────────────────────────────────────
+
+// 遮罩层（全屏覆盖，点击关闭）
+.grade-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s;
+
+  &--dim {
+    background: rgba(0, 0, 0, 0.46);
+  }
+}
+
+// 弹出面板（从底部滑入）
+.grade-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: $white;
+  border-radius: 24rpx 24rpx 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+
+  &--up {
+    transform: translateY(0);
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 600px;
+    left: 50%;
+    right: auto;
+    width: 100%;
+    transform: translateX(-50%) translateY(100%);
+    border-radius: 14px 14px 0 0;
+
+    &--up {
+      transform: translateX(-50%) translateY(0);
+    }
+  }
+}
+
+// 顶部拖拽条
+.sheet-bar {
+  width: 64rpx;
+  height: 8rpx;
+  border-radius: 4rpx;
+  background: $gray-200;
+  margin: 18rpx auto 0;
+
+  @media (min-width: 1024px) {
+    width: 40px;
+    height: 5px;
+    margin-top: 12px;
+  }
+}
+
+// 标题行
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 40rpx 16rpx;
+
+  @media (min-width: 1024px) {
+    padding: 14px 28px 12px;
+  }
+}
+
+.sheet-cancel {
+  font-size: 28rpx;
+  color: $gray-400;
+  padding: 8rpx 0;
+  cursor: pointer;
+
+  &--ghost {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
+    padding: 4px 0;
+  }
+}
+
+.sheet-title {
+  font-size: 30rpx;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+
+  @media (min-width: 1024px) {
+    font-size: 15px;
+  }
+}
+
+// 选项列表
+.sheet-list {
+  padding: 8rpx 0 12rpx;
+
+  @media (min-width: 1024px) {
+    padding: 4px 0 8px;
+  }
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100rpx;
+  padding: 0 40rpx;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &--active {
+    .sheet-item-label {
+      color: $primary;
+      font-weight: $font-weight-semibold;
+    }
+  }
+
+  // #ifdef H5
+  &:hover {
+    background: $gray-50;
+  }
+  // #endif
+
+  @media (min-width: 1024px) {
+    height: 52px;
+    padding: 0 28px;
+  }
+}
+
+.sheet-item-label {
+  font-size: 30rpx;
+  color: $gray-800;
+  transition: color 0.15s;
+
+  @media (min-width: 1024px) {
+    font-size: 15px;
+  }
+}
+
+// 选中勾选标记
+.sheet-check {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: $radius-full;
+  background: $primary;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 1024px) {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.check-icon {
+  font-size: 24rpx;
+  color: $white;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+
+  @media (min-width: 1024px) {
+    font-size: 13px;
+  }
+}
+
+// 弹窗底部安全距离
+.sheet-bottom {
+  height: 48rpx;
+
+  @media (min-width: 1024px) {
+    height: 24px;
   }
 }
 </style>

@@ -1,5 +1,82 @@
 <template>
-  <view class="hero">
+  <!-- ====== PC 端：紧凑横向 Profile Header ====== -->
+  <view v-if="isDesktop" class="hero hero--pc">
+    <view class="hero-bg" />
+    <view class="hero-pc-inner">
+      <!-- 头像 -->
+      <view class="hero-avatar-wrap" @click="$emit('editProfile')">
+        <image
+          class="hero-avatar"
+          :src="profile?.avatarUrl || defaultAvatar"
+          mode="aspectFill"
+        />
+        <view class="hero-online" />
+        <view class="hero-lv">
+          <text class="hero-lv-text">Lv.{{ profile?.level || 1 }}</text>
+        </view>
+      </view>
+
+      <!-- 文字信息 -->
+      <view class="hero-pc-info">
+        <text class="hero-pc-greeting">{{ timeLabel }}</text>
+        <text class="hero-pc-name">{{ profile?.nickname || '未设置昵称' }}</text>
+        <view class="hero-tags">
+          <view v-if="profile?.schoolName" class="hero-tag">
+            <Icon name="map-pin" :size="9" class="hero-tag-icon" />
+            <text class="hero-tag-text">{{ profile.schoolName }}</text>
+          </view>
+          <view v-if="profile?.major" class="hero-tag hero-tag--dim">
+            <text class="hero-tag-text">{{ profile.major }}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 竖向分隔线 -->
+      <view class="hero-pc-sep" />
+
+      <!-- 统计数据 -->
+      <view class="hero-pc-stats">
+        <view
+          v-for="s in quickStats"
+          :key="s.key"
+          class="hero-pc-stat"
+          @click="$emit('statClick', s.key)"
+        >
+          <text class="hero-pc-stat-num">{{ s.val }}</text>
+          <text class="hero-pc-stat-lbl">{{ s.label }}</text>
+        </view>
+      </view>
+
+      <!-- 竖向分隔线 -->
+      <view class="hero-pc-sep" />
+
+      <!-- 积分 + 进度条 -->
+      <view class="hero-pc-pts">
+        <view class="hero-pc-pts-top">
+          <view class="hero-pc-pts-left" @click="$emit('pointsClick')">
+            <text class="hero-pc-pts-star">✦</text>
+            <text class="hero-pc-pts-num">{{ profile?.points?.toLocaleString() || '0' }}</text>
+            <text class="hero-pc-pts-unit">积分</text>
+          </view>
+          <text class="hero-pc-pts-meta">{{ levelName }}</text>
+        </view>
+        <view class="hero-pc-bar-row">
+          <view class="hero-pc-bar-track">
+            <view class="hero-pc-bar-fill" :style="{ width: progressPct + '%' }" />
+          </view>
+          <text class="hero-pc-pct">{{ progressPct }}%</text>
+        </view>
+      </view>
+
+      <!-- 编辑按钮 -->
+      <view class="hero-pc-edit-btn" @click="$emit('editProfile')">
+        <Icon name="edit-2" :size="14" />
+      </view>
+    </view>
+  </view>
+
+  <!-- ====== 移动端：全宽沉浸式 Banner ====== -->
+  <view v-else class="hero">
     <!-- 背景层 -->
     <view class="hero-bg" />
     <view class="hero-bg-shine" />
@@ -92,6 +169,7 @@ import type { UserProfileData } from '@/types/user'
 interface Props {
   profile: UserProfileData | null
   stats?: { resourceCount?: number; answerCount?: number; likeCount?: number }
+  isDesktop?: boolean
 }
 
 const props = defineProps<Props>()
@@ -152,8 +230,11 @@ const quickStats = computed(() => [
 <style lang="scss" scoped>
 @import '@/styles/design-tokens.scss';
 
+/* ================================================================
+   移动端：全宽沉浸式 Banner
+   ================================================================ */
+
 /* ─── 容器 ─── */
-/* display: block 显式声明：防止 uni-app H5 将 uni-view 渲染为 inline 时容器高度塌陷 */
 .hero {
   display: block;
   position: relative;
@@ -169,7 +250,7 @@ const quickStats = computed(() => [
   background: linear-gradient(135deg, #2d3fa0 0%, #3a5bbf 40%, #5579d4 75%, #7a9ae0 100%);
 }
 
-/* 右上角高光球 */
+/* 右上角高光球（仅移动端） */
 .hero-bg-shine {
   position: absolute;
   top: -80rpx;
@@ -179,13 +260,6 @@ const quickStats = computed(() => [
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255,255,255,0.13) 0%, transparent 65%);
   pointer-events: none;
-
-  @media (min-width: 1024px) {
-    width: 240px;
-    height: 240px;
-    top: -60px;
-    right: -40px;
-  }
 }
 
 /* ─── 内容包裹 ─── */
@@ -194,13 +268,6 @@ const quickStats = computed(() => [
   position: relative;
   z-index: 2;
   padding: 0 32rpx;
-
-  @media (min-width: 1024px) {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 0 24px;
-    box-sizing: border-box;
-  }
 }
 
 /* ─── 顶栏 ─── */
@@ -208,17 +275,11 @@ const quickStats = computed(() => [
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  /* H5 custom 导航：页面从 y=0 开始，给固定顶部留白（与首页 HeroSection 一致） */
   padding-top: 56px;
   padding-bottom: 22rpx;
 
   @media (max-width: 375px) {
     padding-top: 48px;
-  }
-
-  @media (min-width: 1024px) {
-    padding-top: 36px;
-    padding-bottom: 16px;
   }
 }
 
@@ -226,8 +287,6 @@ const quickStats = computed(() => [
   display: flex;
   flex-direction: column;
   gap: 4rpx;
-
-  @media (min-width: 1024px) { gap: 3px; }
 }
 
 .hero-hi {
@@ -236,16 +295,12 @@ const quickStats = computed(() => [
   color: rgba(255,255,255,0.9);
   letter-spacing: 0.01em;
   line-height: 1;
-
-  @media (min-width: 1024px) { font-size: 15px; }
 }
 
 .hero-hello {
   font-size: 20rpx;
   color: rgba(255,255,255,0.5);
   font-weight: 400;
-
-  @media (min-width: 1024px) { font-size: 13px; }
 }
 
 .hero-edit-icon {
@@ -267,11 +322,6 @@ const quickStats = computed(() => [
   // #ifdef H5
   &:hover { background: rgba(255,255,255,0.2); }
   // #endif
-
-  @media (min-width: 1024px) {
-    width: 36px;
-    height: 36px;
-  }
 }
 
 /* ─── 身份区 ─── */
@@ -280,14 +330,8 @@ const quickStats = computed(() => [
   align-items: flex-end;
   gap: 22rpx;
   padding-bottom: 26rpx;
-
-  @media (min-width: 1024px) {
-    gap: 18px;
-    padding-bottom: 20px;
-  }
 }
 
-/* 头像 */
 .hero-avatar-wrap {
   position: relative;
   flex-shrink: 0;
@@ -305,15 +349,8 @@ const quickStats = computed(() => [
   transition: opacity 0.2s;
 
   &:active { opacity: 0.85; }
-
-  @media (min-width: 1024px) {
-    width: 96px;
-    height: 96px;
-    border-width: 2.5px;
-  }
 }
 
-/* 在线绿点 */
 .hero-online {
   position: absolute;
   top: 8rpx;
@@ -324,16 +361,8 @@ const quickStats = computed(() => [
   border-radius: 50%;
   border: 2.5px solid #3a5bbf;
   box-shadow: 0 0 0 2px rgba(74,222,128,0.28);
-
-  @media (min-width: 1024px) {
-    width: 12px;
-    height: 12px;
-    top: 5px;
-    right: 3px;
-  }
 }
 
-/* 等级 */
 .hero-lv {
   position: absolute;
   bottom: -4rpx;
@@ -343,12 +372,6 @@ const quickStats = computed(() => [
   border-radius: 100rpx;
   border: 2px solid rgba(255,255,255,0.4);
   box-shadow: 0 2rpx 10rpx rgba(249,115,22,0.4);
-
-  @media (min-width: 1024px) {
-    padding: 2px 8px;
-    bottom: -2px;
-    right: -2px;
-  }
 }
 
 .hero-lv-text {
@@ -357,11 +380,8 @@ const quickStats = computed(() => [
   color: #fff;
   line-height: 1;
   letter-spacing: 0.02em;
-
-  @media (min-width: 1024px) { font-size: 11px; }
 }
 
-/* 右侧信息 */
 .hero-info {
   flex: 1;
   min-width: 0;
@@ -369,11 +389,6 @@ const quickStats = computed(() => [
   flex-direction: column;
   gap: 14rpx;
   padding-bottom: 8rpx;
-
-  @media (min-width: 1024px) {
-    gap: 10px;
-    padding-bottom: 4px;
-  }
 }
 
 .hero-name {
@@ -385,8 +400,6 @@ const quickStats = computed(() => [
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-
-  @media (min-width: 1024px) { font-size: 28px; }
 }
 
 /* 标签行 */
@@ -394,8 +407,6 @@ const quickStats = computed(() => [
   display: flex;
   flex-wrap: wrap;
   gap: 7rpx;
-
-  @media (min-width: 1024px) { gap: 5px; }
 }
 
 .hero-tag {
@@ -411,12 +422,6 @@ const quickStats = computed(() => [
     background: rgba(255,255,255,0.07);
     border-color: rgba(255,255,255,0.1);
   }
-
-  @media (min-width: 1024px) {
-    padding: 3px 9px;
-    gap: 3px;
-    border-radius: 100px;
-  }
 }
 
 .hero-tag-icon { color: rgba(255,255,255,0.6); flex-shrink: 0; }
@@ -425,16 +430,12 @@ const quickStats = computed(() => [
   font-size: 19rpx;
   color: rgba(255,255,255,0.78);
   line-height: 1;
-
-  @media (min-width: 1024px) { font-size: 11px; }
 }
 
 /* inline 数据 */
 .hero-stats {
   display: flex;
   gap: 24rpx;
-
-  @media (min-width: 1024px) { gap: 18px; }
 }
 
 .hero-stat {
@@ -442,8 +443,6 @@ const quickStats = computed(() => [
   align-items: baseline;
   gap: 4rpx;
   cursor: pointer;
-
-  @media (min-width: 1024px) { gap: 3px; }
 }
 
 .hero-stat-num {
@@ -452,16 +451,12 @@ const quickStats = computed(() => [
   color: #fff;
   letter-spacing: -0.02em;
   line-height: 1;
-
-  @media (min-width: 1024px) { font-size: 19px; }
 }
 
 .hero-stat-lbl {
   font-size: 19rpx;
   color: rgba(255,255,255,0.48);
   font-weight: 400;
-
-  @media (min-width: 1024px) { font-size: 11px; }
 }
 
 /* ─── 积分 footer ─── */
@@ -471,10 +466,6 @@ const quickStats = computed(() => [
   justify-content: space-between;
   padding: 16rpx 0 10rpx;
   border-top: 1px solid rgba(255,255,255,0.12);
-
-  @media (min-width: 1024px) {
-    padding: 12px 0 8px;
-  }
 }
 
 .hero-pts {
@@ -489,16 +480,12 @@ const quickStats = computed(() => [
   // #ifdef H5
   &:hover { opacity: 0.82; }
   // #endif
-
-  @media (min-width: 1024px) { gap: 5px; }
 }
 
 .hero-pts-star {
   font-size: 14rpx;
   color: #fbbf24;
   line-height: 1;
-
-  @media (min-width: 1024px) { font-size: 11px; }
 }
 
 .hero-pts-num {
@@ -507,24 +494,18 @@ const quickStats = computed(() => [
   color: #fbbf24;
   letter-spacing: -0.01em;
   line-height: 1;
-
-  @media (min-width: 1024px) { font-size: 20px; }
 }
 
 .hero-pts-unit {
   font-size: 19rpx;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
-
-  @media (min-width: 1024px) { font-size: 12px; }
 }
 
 .hero-pts-meta {
   font-size: 19rpx;
   color: rgba(255,255,255,0.38);
   font-weight: 400;
-
-  @media (min-width: 1024px) { font-size: 12px; }
 }
 
 /* ─── 积分进度条 ─── */
@@ -535,12 +516,6 @@ const quickStats = computed(() => [
   border-radius: 100rpx;
   overflow: hidden;
   margin-bottom: 50rpx;
-
-  @media (min-width: 1024px) {
-    height: 4px;
-    border-radius: 100px;
-    margin-bottom: 38px;
-  }
 }
 
 .hero-bar-fill {
@@ -558,13 +533,266 @@ const quickStats = computed(() => [
   height: 52rpx;
   background: $color-bg-page;
   border-radius: 52rpx 52rpx 0 0;
-  /* 用 margin-top 负值让波浪"嵌入"蓝色区，增强过渡感 */
   margin-top: -16rpx;
+}
 
-  @media (min-width: 1024px) {
-    height: 36px;
-    border-radius: 36px 36px 0 0;
-    margin-top: -10px;
+
+/* ================================================================
+   PC 端：紧凑横向 Profile Header
+   ================================================================ */
+
+.hero--pc {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.14);
+}
+
+/* 内容行：max-width 居中，水平 flex */
+.hero-pc-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* PC 头像 —— 覆盖移动端 rpx 尺寸 */
+.hero--pc .hero-avatar-wrap {
+  flex-shrink: 0;
+}
+
+.hero--pc .hero-avatar {
+  width: 72px;
+  height: 72px;
+  border-width: 2.5px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+
+.hero--pc .hero-online {
+  width: 12px;
+  height: 12px;
+  top: 4px;
+  right: 2px;
+  border-width: 2px;
+}
+
+.hero--pc .hero-lv {
+  padding: 2px 8px;
+  bottom: -3px;
+  right: -3px;
+  border-radius: 100px;
+}
+
+.hero--pc .hero-lv-text {
+  font-size: 11px;
+}
+
+/* PC 文字信息列 */
+.hero-pc-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hero-pc-greeting {
+  font-size: 12px;
+  color: rgba(255,255,255,0.52);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.hero-pc-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* PC 标签继承移动端样式，仅覆盖尺寸 */
+.hero--pc .hero-tags {
+  gap: 5px;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.hero--pc .hero-tag {
+  padding: 3px 9px;
+  gap: 3px;
+  border-radius: 100px;
+  flex-shrink: 0;
+}
+
+.hero--pc .hero-tag-text {
+  font-size: 11px;
+}
+
+/* 竖向分隔线 */
+.hero-pc-sep {
+  width: 1px;
+  height: 44px;
+  background: rgba(255,255,255,0.15);
+  flex-shrink: 0;
+}
+
+/* PC 统计数据 */
+.hero-pc-stats {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+}
+
+.hero-pc-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+  padding: 6px 22px;
+  border-radius: 8px;
+  transition: background 0.18s;
+
+  &:not(:last-child) {
+    border-right: 1px solid rgba(255,255,255,0.1);
   }
+
+  &:active { background: rgba(255,255,255,0.1); }
+
+  // #ifdef H5
+  &:hover { background: rgba(255,255,255,0.08); }
+  // #endif
+}
+
+.hero-pc-stat-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.hero-pc-stat-lbl {
+  font-size: 11px;
+  color: rgba(255,255,255,0.48);
+  font-weight: 400;
+}
+
+/* PC 积分区 */
+.hero-pc-pts {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  flex-shrink: 0;
+  min-width: 168px;
+}
+
+.hero-pc-pts-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hero-pc-pts-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: opacity 0.18s;
+
+  &:active { opacity: 0.75; }
+
+  // #ifdef H5
+  &:hover { opacity: 0.82; }
+  // #endif
+}
+
+.hero-pc-pts-star {
+  font-size: 11px;
+  color: #fbbf24;
+  line-height: 1;
+}
+
+.hero-pc-pts-num {
+  font-size: 19px;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+
+.hero-pc-pts-unit {
+  font-size: 12px;
+  color: rgba(255,255,255,0.38);
+  font-weight: 400;
+}
+
+.hero-pc-pts-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,0.42);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.hero-pc-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-pc-bar-track {
+  flex: 1;
+  height: 4px;
+  background: rgba(255,255,255,0.14);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.hero-pc-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #fbbf24, #f97316);
+  border-radius: 100px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1);
+}
+
+.hero-pc-pct {
+  font-size: 11px;
+  color: rgba(255,255,255,0.42);
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+/* PC 编辑按钮 */
+.hero-pc-edit-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: background 0.18s;
+  flex-shrink: 0;
+
+  &:active { background: rgba(255,255,255,0.22); }
+
+  // #ifdef H5
+  &:hover { background: rgba(255,255,255,0.2); }
+  // #endif
 }
 </style>

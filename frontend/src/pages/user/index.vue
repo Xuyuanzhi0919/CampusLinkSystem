@@ -47,6 +47,7 @@
           v-if="userProfile"
           :profile="userProfile"
           :stats="heroStats"
+          :is-desktop="false"
           @edit-profile="handleEditProfile"
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"
@@ -92,11 +93,12 @@
 
       <!-- PC 端：普通文档流，window 级别滚动 -->
       <view v-else class="pc-content">
-        <!-- PC Hero — 全宽显示 -->
+        <!-- PC Hero — 紧凑横向 Profile Header -->
         <HeroSection
           v-if="userProfile"
           :profile="userProfile"
           :stats="heroStats"
+          :is-desktop="true"
           @edit-profile="handleEditProfile"
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"

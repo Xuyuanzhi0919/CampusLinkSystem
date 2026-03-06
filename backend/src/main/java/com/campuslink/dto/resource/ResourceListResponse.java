@@ -13,6 +13,7 @@ public class ResourceListResponse {
     private Long resourceId;
     private String title;
     private String description;
+    private Long uploaderId;
     private String uploaderName;
     private String uploaderAvatar;
     private String fileType;

@@ -436,6 +436,9 @@ public class ResourceService {
         response.setAverageRating(ratingResult.getAverageRating());
         response.setTotalRatings(ratingResult.getTotalRatings());
 
+        // 填充上传者ID（用于前端按贡献者筛选）
+        response.setUploaderId(resource.getUploaderId());
+
         // 查询上传者信息
         User uploader = userMapper.selectById(resource.getUploaderId());
         if (uploader != null) {

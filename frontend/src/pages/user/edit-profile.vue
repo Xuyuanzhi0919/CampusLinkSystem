@@ -121,14 +121,25 @@
             <view class="label-wrap">
               <text class="row-label">手机号</text>
             </view>
-            <input
-              v-model="formData.phone"
-              class="row-input"
-              type="text"
-              placeholder="选填"
-              maxlength="11"
-              @blur="validateField('phone')"
-            />
+            <!-- 已绑定：脱敏展示 + 换绑入口 -->
+            <template v-if="isPhoneMasked && !editingPhone">
+              <text class="row-value">{{ formData.phone }}</text>
+              <view class="rebind-btn" @click="startEditPhone">
+                <text class="rebind-text">换绑</text>
+              </view>
+            </template>
+            <!-- 未绑定 / 换绑编辑态 -->
+            <template v-else>
+              <input
+                v-model="formData.phone"
+                class="row-input"
+                type="text"
+                :placeholder="editingPhone ? '请输入新手机号' : '选填'"
+                maxlength="11"
+                @blur="validateField('phone')"
+              />
+              <text v-if="editingPhone" class="cancel-edit" @click="cancelEditPhone">取消</text>
+            </template>
           </view>
           <text v-if="errors.phone" class="error-tip">{{ errors.phone }}</text>
         </view>
@@ -263,6 +274,22 @@ const closeGradePicker = () => {
 const selectGrade = (value: number) => {
   formData.value.grade = value
   closeGradePicker()
+}
+
+// 手机号换绑状态
+const editingPhone = ref(false)
+const originalMaskedPhone = ref('')
+const isPhoneMasked = computed(() => (formData.value.phone || '').includes('*'))
+
+const startEditPhone = () => {
+  originalMaskedPhone.value = formData.value.phone || ''
+  formData.value.phone = ''
+  editingPhone.value = true
+}
+
+const cancelEditPhone = () => {
+  formData.value.phone = originalMaskedPhone.value
+  editingPhone.value = false
 }
 
 // 是否可以保存
@@ -860,6 +887,53 @@ onMounted(() => {
   @media (min-width: 1024px) {
     font-size: 12px;
     margin-left: 8px;
+  }
+}
+
+// 手机号换绑按钮
+.rebind-btn {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  height: 48rpx;
+  padding: 0 20rpx;
+  border: 2rpx solid $primary;
+  border-radius: 24rpx;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+
+  @media (min-width: 1024px) {
+    margin-left: 10px;
+    height: 26px;
+    padding: 0 10px;
+    border-width: 1px;
+    border-radius: 13px;
+  }
+}
+
+.rebind-text {
+  font-size: 22rpx;
+  color: $primary;
+  font-weight: $font-weight-medium;
+
+  @media (min-width: 1024px) {
+    font-size: 12px;
+  }
+}
+
+// 换绑态取消按钮
+.cancel-edit {
+  flex-shrink: 0;
+  margin-left: 16rpx;
+  font-size: 24rpx;
+  color: $gray-400;
+  cursor: pointer;
+  padding: 8rpx 0;
+
+  @media (min-width: 1024px) {
+    margin-left: 10px;
+    font-size: 13px;
+    padding: 4px 0;
   }
 }
 

@@ -2,28 +2,32 @@
   <view class="my-question-page">
     <!-- Tab切换 -->
     <view class="tab-bar">
-      <view
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab-item"
-        :class="{ active: currentTab === tab.value }"
-        @click="handleTabChange(tab.value)"
-      >
-        <text class="tab-label">{{ tab.label }}</text>
-        <text v-if="tab.count !== undefined" class="tab-count">({{ tab.count }})</text>
+      <view class="page-inner tab-inner">
+        <view
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="tab-item"
+          :class="{ active: currentTab === tab.value }"
+          @click="handleTabChange(tab.value)"
+        >
+          <text class="tab-label">{{ tab.label }}</text>
+          <text v-if="tab.count !== undefined" class="tab-count">({{ tab.count }})</text>
+        </view>
       </view>
     </view>
 
     <!-- 状态筛选 (仅我的提问) -->
     <view v-if="currentTab === 'questions'" class="filter-bar">
-      <view
-        v-for="filter in statusFilters"
-        :key="filter.label"
-        class="filter-item"
-        :class="{ active: statusFilter === filter.value }"
-        @click="handleStatusFilter(filter.value)"
-      >
-        <text class="filter-label">{{ filter.label }}</text>
+      <view class="page-inner filter-inner">
+        <view
+          v-for="filter in statusFilters"
+          :key="filter.label"
+          class="filter-item"
+          :class="{ active: statusFilter === filter.value }"
+          @click="handleStatusFilter(filter.value)"
+        >
+          <text class="filter-label">{{ filter.label }}</text>
+        </view>
       </view>
     </view>
 
@@ -36,68 +40,70 @@
       :refresher-triggered="refreshing"
       @refresherrefresh="handleRefresh"
     >
-      <!-- 骨架屏 -->
-      <template v-if="loading && list.length === 0">
-        <view v-for="i in 3" :key="i" class="skeleton-card">
-          <view class="skeleton-title" />
-          <view class="skeleton-content" />
-          <view class="skeleton-footer" />
-        </view>
-      </template>
-
-      <!-- 我的提问列表 -->
-      <template v-else-if="currentTab === 'questions' && list.length > 0">
-        <QuestionCard
-          v-for="item in list"
-          :key="item.qid"
-          :question="item"
-          @click="handleQuestionClick(item.qid)"
-        />
-
-        <!-- 加载更多提示 -->
-        <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
-        <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
-        <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
-      </template>
-
-      <!-- 我的回答列表 -->
-      <template v-else-if="currentTab === 'answers' && list.length > 0">
-        <view
-          v-for="item in list"
-          :key="item.answerId"
-          class="answer-card"
-          @click="handleAnswerClick(item)"
-        >
-          <!-- 问题标题 -->
-          <view class="answer-question">
-            <text class="question-icon">Q</text>
-            <text class="question-title">{{ item.question.title }}</text>
+      <view class="page-inner content-inner">
+        <!-- 骨架屏 -->
+        <template v-if="loading && list.length === 0">
+          <view v-for="i in 3" :key="i" class="skeleton-card">
+            <view class="skeleton-title" />
+            <view class="skeleton-content" />
+            <view class="skeleton-footer" />
           </view>
+        </template>
 
-          <!-- 回答内容 -->
-          <view class="answer-content">{{ item.content }}</view>
+        <!-- 我的提问列表 -->
+        <template v-else-if="currentTab === 'questions' && list.length > 0">
+          <QuestionCard
+            v-for="item in list"
+            :key="item.qid"
+            :question="item"
+            @click="handleQuestionClick(item.qid)"
+          />
 
-          <!-- 底部信息 -->
-          <view class="answer-footer">
-            <text class="answer-time">{{ formatTime(item.createdAt) }}</text>
-            <view class="answer-stats">
-              <text class="stat-item">👍 {{ item.likes }}</text>
-              <text v-if="item.isAccepted" class="stat-accepted">✓ 已采纳</text>
+          <!-- 加载更多提示 -->
+          <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
+          <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
+          <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
+        </template>
+
+        <!-- 我的回答列表 -->
+        <template v-else-if="currentTab === 'answers' && list.length > 0">
+          <view
+            v-for="item in list"
+            :key="item.answerId"
+            class="answer-card"
+            @click="handleAnswerClick(item)"
+          >
+            <!-- 问题标题 -->
+            <view class="answer-question">
+              <text class="question-icon">Q</text>
+              <text class="question-title">{{ item.question.title }}</text>
+            </view>
+
+            <!-- 回答内容 -->
+            <view class="answer-content">{{ item.content }}</view>
+
+            <!-- 底部信息 -->
+            <view class="answer-footer">
+              <text class="answer-time">{{ formatTime(item.createdAt) }}</text>
+              <view class="answer-stats">
+                <text class="stat-item">👍 {{ item.likes }}</text>
+                <text v-if="item.isAccepted" class="stat-accepted">✓ 已采纳</text>
+              </view>
             </view>
           </view>
+
+          <!-- 加载更多提示 -->
+          <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
+          <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
+          <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
+        </template>
+
+        <!-- 空状态 -->
+        <view v-else class="empty-state">
+          <text class="empty-icon">{{ emptyIcon }}</text>
+          <text class="empty-text">{{ emptyText }}</text>
+          <text class="empty-hint" @click="handleEmptyAction">{{ emptyHint }}</text>
         </view>
-
-        <!-- 加载更多提示 -->
-        <view v-if="hasMore && !loading" class="load-more">上拉加载更多</view>
-        <view v-if="loading && list.length > 0" class="load-more">加载中...</view>
-        <view v-if="!hasMore && list.length > 0" class="load-more">没有更多了</view>
-      </template>
-
-      <!-- 空状态 -->
-      <view v-else class="empty-state">
-        <text class="empty-icon">{{ emptyIcon }}</text>
-        <text class="empty-text">{{ emptyText }}</text>
-        <text class="empty-hint" @click="handleEmptyAction">{{ emptyHint }}</text>
       </view>
     </scroll-view>
 
@@ -314,15 +320,31 @@ onMounted(() => {
 }
 
 // ===================================
+// 居中包裹层（PC 端）
+// ===================================
+.page-inner {
+  width: 100%;
+  box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+// ===================================
 // Tab栏
 // ===================================
 .tab-bar {
-  display: flex;
   background: $white;
   border-bottom: 1rpx solid $gray-200;
   position: sticky;
   top: 0;
   z-index: $z-dropdown;
+}
+
+.tab-inner {
+  display: flex;
 }
 
 .tab-item {
@@ -376,11 +398,14 @@ onMounted(() => {
 // 筛选栏
 // ===================================
 .filter-bar {
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+}
+
+.filter-inner {
   display: flex;
   gap: $sp-3;
   padding: $sp-4 $sp-6;
-  background: $white;
-  border-bottom: 1rpx solid $gray-200;
 }
 
 .filter-item {
@@ -411,6 +436,9 @@ onMounted(() => {
 // ===================================
 .content-container {
   flex: 1;
+}
+
+.content-inner {
   padding: $sp-3 $sp-6;
 }
 

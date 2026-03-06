@@ -101,9 +101,11 @@
             <text v-else-if="badge.unlocked" class="bc-date">已解锁</text>
             <text v-else class="bc-hint">去解锁 ›</text>
 
-            <!-- 首页展示标签 -->
-            <view v-if="badge.unlocked && isPinned(badge.id)" class="bc-pinned-tag">
-              <text class="bc-pinned-text">首页展示</text>
+            <!-- 首页展示标签（正常流，不遮内容） -->
+            <view class="bc-pinned-row">
+              <view v-if="badge.unlocked && isPinned(badge.id)" class="bc-pinned-tag">
+                <text class="bc-pinned-text">首页展示</text>
+              </view>
             </view>
           </view>
         </view>
@@ -441,9 +443,24 @@ const nextTitle = computed(() => {
   return ''
 })
 
+// 排序：已解锁（最新解锁在前）→ 未解锁
+const sortedBadges = computed(() => {
+  const unlocked = allBadges
+    .filter(b => b.unlocked)
+    .sort((a, b) => {
+      if (a.unlockedAt && b.unlockedAt) return b.unlockedAt.localeCompare(a.unlockedAt)
+      if (a.unlockedAt) return -1
+      if (b.unlockedAt) return 1
+      return 0
+    })
+  const locked = allBadges.filter(b => !b.unlocked)
+  return [...unlocked, ...locked]
+})
+
 const filteredBadges = computed(() => {
-  if (activeTab.value === 'all') return allBadges
-  return allBadges.filter(b => b.category === activeTab.value)
+  const base = sortedBadges.value
+  if (activeTab.value === 'all') return base
+  return base.filter(b => b.category === activeTab.value)
 })
 
 const tabCount = (key: string) => {
@@ -734,7 +751,7 @@ const handleGoTask = () => {
 .ov-progress-pct {
   font-size: 24rpx;
   font-weight: 700;
-  color: $campus-blue;
+  color: #F97316;
 
   @media (min-width: 1024px) { font-size: 14px; }
 }
@@ -754,7 +771,8 @@ const handleGoTask = () => {
 
 .ov-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, $campus-blue 0%, $campus-blue-light 100%);
+  /* 橙色渐变：与积分体系视觉统一 */
+  background: linear-gradient(90deg, #F97316 0%, #FFB766 100%);
   border-radius: 100rpx;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -906,14 +924,26 @@ const handleGoTask = () => {
 
   // #ifdef H5
   &:hover {
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09), 0 2px 8px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05),
+                0 0 0 2px rgba(55, 125, 255, 0.18);
+    transform: translateY(-3px);
   }
   // #endif
 
+  /* 未解锁：灰度 + 弱化阴影，hover 保持静止 */
   &--locked {
-    background: #FAFAFA;
-    opacity: 0.7;
+    background: #F9F9F9;
+    opacity: 0.62;
+    filter: grayscale(55%);
+
+    &:active { transform: none; }
+
+    // #ifdef H5
+    &:hover {
+      box-shadow: $shadow-xs;
+      transform: none;
+    }
+    // #endif
   }
 
   @media (min-width: 1024px) {
@@ -1016,16 +1046,20 @@ const handleGoTask = () => {
   @media (min-width: 1024px) { font-size: 11px; }
 }
 
-/* 首页展示小标签 */
-.bc-pinned-tag {
-  position: absolute;
-  bottom: 12rpx;
-  left: 0;
-  right: 0;
+/* 首页展示行 — 占位容器保持网格高度一致 */
+.bc-pinned-row {
+  height: 36rpx;
   display: flex;
+  align-items: center;
   justify-content: center;
 
-  @media (min-width: 1024px) { bottom: 8px; }
+  @media (min-width: 1024px) { height: 22px; }
+}
+
+.bc-pinned-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bc-pinned-text {
@@ -1033,12 +1067,12 @@ const handleGoTask = () => {
   color: $campus-blue;
   background: $campus-blue-lighter;
   border-radius: 100rpx;
-  padding: 3rpx 12rpx;
+  padding: 3rpx 14rpx;
   font-weight: 500;
 
   @media (min-width: 1024px) {
     font-size: 10px;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 100px;
   }
 }

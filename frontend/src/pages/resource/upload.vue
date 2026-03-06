@@ -41,13 +41,30 @@ const submitting = ref(false)
  * 🎯 分类选项
  */
 const categories = [
-  { label: '📚 课件讲义', value: '课件', desc: '老师PPT、课堂讲义' },
-  { label: '📝 试题试卷', value: '试卷', desc: '期中/期末/模拟题' },
-  { label: '✍️ 学习笔记', value: '笔记', desc: '课堂笔记、知识总结' },
-  { label: '📖 教材资料', value: '教材', desc: '电子教材、参考书' },
-  { label: '🔬 实验报告', value: '实验报告', desc: '含代码和文档' },
-  { label: '📊 其他资料', value: '其他', desc: '其他学习资料' }
+  { label: '课件讲义', value: '课件',     desc: '老师PPT、课堂讲义',  icon: 'book-open', color: '#377DFF', bg: '#EFF5FF' },
+  { label: '试题试卷', value: '试卷',     desc: '期中/期末/模拟题',   icon: 'file-text', color: '#F59E0B', bg: '#FEF3C7' },
+  { label: '学习笔记', value: '笔记',     desc: '课堂笔记、知识总结', icon: 'edit-3',    color: '#10B981', bg: '#D1FAE5' },
+  { label: '教材资料', value: '教材',     desc: '电子教材、参考书',   icon: 'book',      color: '#8B5CF6', bg: '#EDE9FE' },
+  { label: '实验报告', value: '实验报告', desc: '含代码和文档',       icon: 'code',      color: '#EF4444', bg: '#FEE2E2' },
+  { label: '其他资料', value: '其他',     desc: '其他学习资料',       icon: 'folder',    color: '#64748B', bg: '#F1F5F9' },
 ]
+
+/**
+ * 🎯 分类选择弹窗
+ */
+const showCategoryModal = ref(false)
+const openCategoryModal = () => { showCategoryModal.value = true }
+const closeCategoryModal = () => { showCategoryModal.value = false }
+const selectCategory = (value: string) => {
+  form.value.category = value
+  validateField('category')
+  closeCategoryModal()
+}
+
+const getCategoryIcon  = (v: string) => categories.find(c => c.value === v)?.icon  ?? 'folder'
+const getCategoryColor = (v: string) => categories.find(c => c.value === v)?.color ?? '#94A3B8'
+const getCategoryBg    = (v: string) => categories.find(c => c.value === v)?.bg    ?? '#F1F5F9'
+const getCategoryLabel = (v: string) => categories.find(c => c.value === v)?.label ?? ''
 
 /**
  * 🎯 允许的文件格式
@@ -615,23 +632,20 @@ onLoad(() => {
               <text v-if="recommendedCategory" class="label-hint">💡 推荐：{{ recommendedCategory }}</text>
             </view>
 
-            <picker
-              :range="categories"
-              range-key="label"
-              @change="handleCategoryChange"
+            <!-- 分类选择触发器 -->
+            <view
+              class="picker-input"
+              :class="{ 'has-value': form.category }"
+              @click="openCategoryModal"
             >
-              <view class="picker-input" :class="{ 'has-value': form.category }">
-                <text class="picker-value">
-                  {{ getCategoryDisplay(form.category) || '请选择最匹配的分类' }}
-                </text>
-                <Icon name="chevron-down" :size="14" :color="form.category ? '#377DFF' : '#94A3B8'" />
+              <view v-if="form.category" class="picker-selected">
+                <view class="picker-cat-icon" :style="{ background: getCategoryBg(form.category) }">
+                  <Icon :name="getCategoryIcon(form.category)" :size="14" :color="getCategoryColor(form.category)" />
+                </view>
+                <text class="picker-value picker-value--filled">{{ getCategoryLabel(form.category) }}</text>
               </view>
-            </picker>
-
-            <!-- 已选分类说明 -->
-            <view v-if="form.category" class="category-hint">
-              <Icon name="info" :size="12" color="#94A3B8" />
-              <text class="category-hint-text">{{ getCategoryDesc(form.category) }}</text>
+              <text v-else class="picker-value">请选择最匹配的分类</text>
+              <Icon name="chevron-down" :size="14" :color="form.category ? '#377DFF' : '#94A3B8'" />
             </view>
 
             <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
@@ -670,6 +684,41 @@ onLoad(() => {
 
       </view>
     </scroll-view>
+
+    <!-- 分类选择底部弹窗 -->
+    <view v-if="showCategoryModal" class="cat-overlay" @click.self="closeCategoryModal">
+      <view class="cat-sheet">
+        <!-- 弹窗头部 -->
+        <view class="sheet-header">
+          <text class="sheet-title">选择资源分类</text>
+          <view class="sheet-close" @click="closeCategoryModal">
+            <Icon name="x" :size="18" color="#94A3B8" />
+          </view>
+        </view>
+
+        <!-- 分类网格 -->
+        <view class="cat-grid">
+          <view
+            v-for="cat in categories"
+            :key="cat.value"
+            class="cat-item"
+            :class="{ 'cat-item--selected': form.category === cat.value }"
+            @click="selectCategory(cat.value)"
+          >
+            <view class="cat-icon-wrap" :style="{ background: cat.bg }">
+              <Icon :name="cat.icon" :size="22" :color="cat.color" />
+            </view>
+            <view class="cat-info">
+              <text class="cat-name">{{ cat.label }}</text>
+              <text class="cat-desc">{{ cat.desc }}</text>
+            </view>
+            <view v-if="form.category === cat.value" class="cat-check">
+              <Icon name="check-circle-2" :size="16" color="#377DFF" />
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
 
     <!-- 底部操作栏 -->
     <view class="submit-bar">
@@ -982,15 +1031,33 @@ onLoad(() => {
   &.has-value {
     border-color: $campus-blue;
     background: rgba($campus-blue, 0.02);
-
-    .picker-value { color: $color-text-primary; }
   }
 
   .picker-value {
     flex: 1;
     font-size: $font-size-base;
     color: $color-text-quaternary;
+
+    &--filled { color: $color-text-primary; }
   }
+}
+
+// 已选分类：图标 + 文字
+.picker-selected {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  flex: 1;
+}
+
+.picker-cat-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 // 分类说明
@@ -1100,5 +1167,126 @@ onLoad(() => {
     color: $campus-blue !important;
     opacity: 0.6;
   }
+}
+
+// ── 分类选择弹窗 ──
+.cat-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 200;
+  display: flex;
+  align-items: flex-end;
+}
+
+.cat-sheet {
+  width: 100%;
+  background: $color-bg-card;
+  border-radius: 20px 20px 0 0;
+  padding: $sp-6 $sp-6 $sp-8;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-4;
+  border-bottom: 1px solid $color-border-light;
+}
+
+.sheet-title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sheet-close {
+  width: 32px;
+  height: 32px;
+  border-radius: $radius-full;
+  background: $color-bg-page;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+
+  /* #ifdef H5 */
+  &:hover { background: $color-border-light; }
+  /* #endif */
+  &:active { opacity: 0.6; }
+}
+
+// 分类 2 列网格
+.cat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: $sp-4;
+}
+
+.cat-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+  padding: $sp-5;
+  border-radius: $radius-card;
+  border: 1.5px solid $color-border-light;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+
+  /* #ifdef H5 */
+  &:hover {
+    border-color: $campus-blue;
+    background: $campus-blue-lighter;
+  }
+  /* #endif */
+
+  &:active { opacity: 0.8; }
+
+  &--selected {
+    border-color: $campus-blue;
+    background: $campus-blue-lighter;
+  }
+}
+
+.cat-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: $radius-lg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cat-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cat-name {
+  display: block;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 2rpx;
+}
+
+.cat-desc {
+  display: block;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-check {
+  position: absolute;
+  top: $sp-3;
+  right: $sp-3;
 }
 </style>

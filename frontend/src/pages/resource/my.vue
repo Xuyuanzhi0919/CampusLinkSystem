@@ -17,20 +17,6 @@
       </view>
     </view>
 
-    <!-- 状态筛选 (仅我的上传) -->
-    <view v-if="currentTab === 'uploads'" class="filter-bar">
-      <view
-        v-for="filter in statusFilters"
-        :key="filter.label"
-        class="filter-item"
-        :class="{ active: statusFilter === filter.value }"
-        :style="{ '--filter-color': filter.color, '--filter-bg': filter.bg }"
-        @click="handleStatusFilter(filter.value)"
-      >
-        <text class="filter-label">{{ filter.label }}</text>
-      </view>
-    </view>
-
     <!-- 内容区：flex:1 自动占满剩余高度，不依赖硬编码 calc -->
     <scroll-view
       class="content-container"
@@ -43,6 +29,20 @@
       @mousedown="onScrollMouseDown"
     >
       <view class="page-inner">
+        <!-- 状态筛选（仅我的上传，sticky 吸顶） -->
+        <view v-if="currentTab === 'uploads'" class="filter-bar">
+          <view
+            v-for="filter in statusFilters"
+            :key="filter.label"
+            class="filter-item"
+            :class="{ active: statusFilter === filter.value }"
+            :style="{ '--filter-color': filter.color, '--filter-bg': filter.bg }"
+            @click="handleStatusFilter(filter.value)"
+          >
+            <text class="filter-label">{{ filter.label }}</text>
+          </view>
+        </view>
+
         <!-- 骨架屏 -->
         <template v-if="loading && list.length === 0">
           <view v-for="i in 3" :key="i" class="skeleton-card">
@@ -380,12 +380,13 @@ loadData()
 }
 
 .filter-bar {
-  flex-shrink: 0;
   display: flex;
   gap: 16rpx;
-  padding: 20rpx 32rpx;
-  background: #fff;
-  border-bottom: 1rpx solid #eee;
+  padding: 4rpx 0 20rpx;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #EEF2FF;
 }
 
 .filter-item {

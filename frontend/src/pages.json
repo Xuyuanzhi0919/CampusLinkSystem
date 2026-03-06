@@ -203,9 +203,8 @@
 			"path": "pages/user/favorites",
 			"style": {
 				"navigationBarTitleText": "我的收藏",
-				"navigationBarBackgroundColor": "#FFFFFF",
-				"enablePullDownRefresh": true,
-				"backgroundTextStyle": "dark"
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": true
 			}
 		},
 		{

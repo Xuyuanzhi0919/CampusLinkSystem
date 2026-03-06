@@ -838,7 +838,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 .cs-overlay {
   position: fixed;
   inset: 0;
-  z-index: $z-modal;
+  z-index: $z-max;  // 需高于 CustomTabBar (1100)
   background: rgba(0, 0, 0, 0);
   transition: background 0.3s ease;
   pointer-events: none;
@@ -1051,7 +1051,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 }
 
 .cs-bottom-safe {
-  height: 60rpx;   // 移动端底部安全区
+  height: 120rpx;  // 移动端：TabBar 高度(~100rpx) + 系统安全区留白
 
   @media (min-width: 1024px) { height: 8px; }
 }

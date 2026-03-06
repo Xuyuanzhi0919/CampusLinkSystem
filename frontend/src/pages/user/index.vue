@@ -419,12 +419,12 @@ defineExpose({ onPullDownRefresh: handleRefresh })
 }
 
 /* ========== PC 端：普通文档流 ========== */
+/* 不加 padding-top：Hero Banner 从 y=0 开始填充渐变背景，
+   固定 WebHeader 以 z-index 浮在上层，header 留白由 hero-pc-inner 内部处理 */
 .pc-content {
   width: 100%;
   min-height: 100vh;
   background: $color-bg-page;
-  // 预留 WebHeader 固定区域高度（fixed 76px = 60px 内容 + 16px padding）
-  padding-top: 76px;
   box-sizing: border-box;
 }
 

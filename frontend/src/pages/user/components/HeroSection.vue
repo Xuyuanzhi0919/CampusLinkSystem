@@ -549,13 +549,15 @@ const quickStats = computed(() => [
   box-shadow: 0 2px 16px rgba(0, 0, 0, 0.14);
 }
 
-/* 内容行：max-width 居中，水平 flex */
+/* 内容行：max-width 居中，水平 flex
+   padding-top: 80px = 76px WebHeader 高度 + 4px 喘息空间
+   渐变背景从 y=0 填充（覆盖 header 底层区域），内容从 header 下方开始 */
 .hero-pc-inner {
   position: relative;
   z-index: 2;
   max-width: 1080px;
   margin: 0 auto;
-  padding: 20px 24px;
+  padding: 80px 24px 18px;
   box-sizing: border-box;
   display: flex;
   align-items: center;

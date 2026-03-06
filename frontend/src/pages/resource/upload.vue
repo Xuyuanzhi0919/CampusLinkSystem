@@ -6,6 +6,7 @@ import config from '@/config'
 import { createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
 import { chooseFile as chooseFileUtil, uploadFile as uploadFileUtil, formatFileSize, getFileExtension } from '@/utils/file'
 import type { FileInfo } from '@/utils/file'
 
@@ -499,16 +500,8 @@ onLoad(() => {
 <template>
   <view class="upload-page">
 
-    <!-- 统一渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleCancel">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
-        </view>
-        <text class="nav-title">上传资源</text>
-        <view class="nav-placeholder" />
-      </view>
-    </view>
+    <!-- 统一导航栏 -->
+    <CNavBar title="上传资源" />
 
     <!-- 主内容滚动区 -->
     <scroll-view class="content-area" scroll-y>
@@ -707,47 +700,6 @@ onLoad(() => {
   display: flex;
   flex-direction: column;
 }
-
-// ── 渐变头部（与 badges.vue 一致）──
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(135deg, $campus-blue 0%, $campus-blue-light 100%);
-  border-radius: 0 0 24rpx 24rpx;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: background $transition-fast $transition-ease-in-out;
-  &:active { background: rgba(255, 255, 255, 0.2); }
-
-  /* #ifdef H5 */
-  &:hover { background: rgba(255, 255, 255, 0.2); }
-  /* #endif */
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; }
 
 // ── 内容滚动区 ──
 .content-area {

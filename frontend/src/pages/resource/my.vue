@@ -42,52 +42,56 @@
       @refresherrefresh="handleRefresh"
       @mousedown="onScrollMouseDown"
     >
-      <!-- 骨架屏 -->
-      <template v-if="loading && list.length === 0">
-        <view v-for="i in 3" :key="i" class="skeleton-card">
-          <view class="skeleton-title" />
-          <view class="skeleton-content" />
-          <view class="skeleton-footer" />
-        </view>
-      </template>
+      <view class="page-inner">
+        <!-- 骨架屏 -->
+        <template v-if="loading && list.length === 0">
+          <view v-for="i in 3" :key="i" class="skeleton-card">
+            <view class="skeleton-title" />
+            <view class="skeleton-content" />
+            <view class="skeleton-footer" />
+          </view>
+        </template>
 
-      <!-- 我的上传列表 -->
-      <template v-else-if="currentTab === 'uploads' && list.length > 0">
-        <MyResourceCard
-          v-for="item in list"
-          :key="item.resourceId"
-          :resource="item"
-          :show-status="true"
-          :show-actions="true"
-          @click="handleResourceClick(item.resourceId)"
-          @delete="handleDeleteResource"
-          @edit="handleEditResource"
-        />
-        <view class="load-more">{{ loadMoreText }}</view>
-      </template>
+        <!-- 我的上传列表 -->
+        <template v-else-if="currentTab === 'uploads' && list.length > 0">
+          <MyResourceCard
+            v-for="item in list"
+            :key="item.resourceId"
+            :resource="item"
+            :show-status="true"
+            :show-actions="true"
+            @click="handleResourceClick(item.resourceId)"
+            @delete="handleDeleteResource"
+            @edit="handleEditResource"
+          />
+          <view class="load-more">{{ loadMoreText }}</view>
+        </template>
 
-      <!-- 我的下载列表 -->
-      <template v-else-if="currentTab === 'downloads' && list.length > 0">
-        <MyResourceCard
-          v-for="item in list"
-          :key="item.resourceId"
-          :resource="item"
-          :show-status="false"
-          @click="handleResourceClick(item.resourceId)"
-        />
-        <view class="load-more">{{ loadMoreText }}</view>
-      </template>
+        <!-- 我的下载列表 -->
+        <template v-else-if="currentTab === 'downloads' && list.length > 0">
+          <MyResourceCard
+            v-for="item in list"
+            :key="item.resourceId"
+            :resource="item"
+            :show-status="false"
+            @click="handleResourceClick(item.resourceId)"
+          />
+          <view class="load-more">{{ loadMoreText }}</view>
+        </template>
 
-      <!-- 空状态 -->
-      <view v-else class="empty-state">
-        <view class="empty-icon-wrap">
-          <Icon :name="emptyIconName" :size="64" color="#D1D5DB" />
+        <!-- 空状态 -->
+        <view v-else class="empty-state">
+          <view class="empty-icon-wrap">
+            <Icon :name="emptyIconName" :size="64" color="#D1D5DB" />
+          </view>
+          <text class="empty-text">{{ emptyText }}</text>
+          <view class="empty-action" @click="handleEmptyAction">
+            <Icon name="plus-circle" :size="14" color="#FFFFFF" />
+            <text class="empty-action-text">{{ emptyHint }}</text>
+          </view>
         </view>
-        <text class="empty-text">{{ emptyText }}</text>
-        <view class="empty-action" @click="handleEmptyAction">
-          <Icon name="plus-circle" :size="14" color="#FFFFFF" />
-          <text class="empty-action-text">{{ emptyHint }}</text>
-        </view>
+
+        <view class="page-bottom-safe" />
       </view>
     </scroll-view>
 
@@ -403,8 +407,26 @@ loadData()
   flex: 1;
   min-height: 0;
   overflow: hidden;
-  padding: 24rpx 32rpx;
-  box-sizing: border-box;
+}
+
+// 内容区内部包裹层：移动端有内边距，桌面端居中限宽
+.page-inner {
+  padding: 24rpx 32rpx 0;
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 1024px) {
+    padding: 20px 0;
+    max-width: 960px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+.page-bottom-safe {
+  height: 80rpx;
+
+  @media (min-width: 1024px) { height: 32px; }
 }
 
 /* #ifdef H5 */

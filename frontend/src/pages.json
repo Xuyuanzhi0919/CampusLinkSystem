@@ -240,6 +240,14 @@
 			}
 		},
 		{
+			"path": "pages/user/badges",
+			"style": {
+				"navigationBarTitleText": "我的徽章",
+				"navigationStyle": "custom",
+				"disableScroll": true
+			}
+		},
+		{
 			"path": "pages/task/index",
 			"style": {
 				"navigationBarTitleText": "任务大厅",

@@ -329,7 +329,7 @@ loadData()
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background: #EEF2FF;
+  background: #F8FAFC;
 }
 
 .tab-bar {
@@ -386,7 +386,7 @@ loadData()
   position: sticky;
   top: 0;
   z-index: 10;
-  background: #EEF2FF;
+  background: #F8FAFC;
 }
 
 .filter-item {
@@ -394,7 +394,7 @@ loadData()
   --filter-bg: rgba(55, 125, 255, 0.1);
   padding: 12rpx 24rpx;
   border-radius: 32rpx;
-  background: #f5f5f5;
+  background: #E8EDF3;
   transition: background 0.18s;
 
   &.active {

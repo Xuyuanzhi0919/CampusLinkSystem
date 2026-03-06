@@ -183,6 +183,7 @@ const {
   toFavorites,
   toEditProfile,
   toMessages,
+  toNotifications,
   navigateTo
 } = useNavigation()
 
@@ -512,7 +513,7 @@ const handleNotificationClick = async (notification: any) => {
  * 查看所有通知 - 使用 useNavigation 统一导航
  */
 const handleViewAllNotifications = () => {
-  toMessages()
+  toNotifications()
 }
 
 /**

@@ -277,23 +277,44 @@
 
           <!-- 👤 3. 活跃贡献者 (最后,社交元素) -->
           <view class="sidebar-card">
-            <view class="card-header">
+            <view class="card-header contributor-header">
               <Icon name="users" :size="16" class="header-icon" />
               <text class="card-title">活跃贡献者</text>
+              <!-- 强化入口：可点击的"查看全部"，引导发现更多 -->
+              <view class="contributor-more" @click="showAllContributors = !showAllContributors">
+                <text class="contributor-more-text">{{ showAllContributors ? '收起' : '查看全部' }}</text>
+                <Icon
+                  name="chevron-down"
+                  :size="12"
+                  class="contributor-more-icon"
+                  :style="{ transform: showAllContributors ? 'rotate(180deg)' : 'rotate(0deg)' }"
+                />
+              </view>
             </view>
             <view class="contributors-list">
               <view
-                v-for="user in activeContributors"
+                v-for="(user, index) in (showAllContributors ? activeContributors : activeContributors.slice(0, 3))"
                 :key="user.userId"
                 class="contributor-item"
+                @click="handleContributorClick(user)"
               >
+                <!-- 排名数字（前三名高亮） -->
+                <view class="contributor-rank" :class="`contributor-rank--${index + 1}`">
+                  <text class="rank-num">{{ index + 1 }}</text>
+                </view>
                 <image class="contributor-avatar" :src="user.avatar || defaultAvatar" mode="aspectFill" />
                 <view class="contributor-info">
                   <text class="contributor-name">{{ user.username }}</text>
                   <text class="contributor-stats">{{ user.uploadCount }} 份资源</text>
                 </view>
-                <view class="contributor-badge">
-                  <Icon name="award" :size="12" class="badge-icon" />
+                <!-- 右侧：徽章 + 查看箭头（hover时出现） -->
+                <view class="contributor-action">
+                  <view class="contributor-badge" :class="`contributor-badge--rank${index + 1}`">
+                    <Icon name="award" :size="12" class="badge-icon" />
+                  </view>
+                  <view class="contributor-arrow">
+                    <Icon name="chevron-right" :size="13" color="#9CA3AF" />
+                  </view>
                 </view>
               </view>
             </view>
@@ -563,6 +584,9 @@ const likedResourceIds = ref<Set<number>>(new Set())
 // 🎯 本地已收藏资源ID集合 - P1新增
 const FAVORITED_RESOURCES_KEY = 'favorited_resources'
 const favoritedResourceIds = ref<Set<number>>(new Set())
+
+// 🎯 活跃贡献者"查看全部"展开状态
+const showAllContributors = ref(false)
 
 // 🎯 登录引导弹窗状态
 const showLoginGuide = ref(false)
@@ -1075,6 +1099,21 @@ const handleResourceClick = (resource: ResourceItem) => {
   // 跳转到资源详情页
   uni.navigateTo({
     url: `/pages/resource/detail?id=${resource.resourceId}`
+  })
+}
+
+/**
+ * 🎯 点击贡献者：以该上传者名称为关键词筛选资源
+ */
+const handleContributorClick = (user: { userId: number; username: string }) => {
+  searchKeyword.value = user.username
+  // 滚动到顶部并重新加载
+  scrollToTop()
+  loadResourceList(true)
+  uni.showToast({
+    title: `查看 ${user.username} 的资源`,
+    icon: 'none',
+    duration: 1500
   })
 }
 
@@ -2901,40 +2940,110 @@ onUnmounted(() => {
   }
 }
 
+// 👤 活跃贡献者：标题行
+.contributor-header {
+  cursor: default; // 标题本身不可点，入口在 more 链接
+}
+
+.contributor-more {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 6px;
+  transition: background 0.18s;
+
+  &:hover {
+    background: rgba($primary, 0.07);
+
+    .contributor-more-text {
+      color: darken($primary, 6%);
+    }
+  }
+
+  .contributor-more-text {
+    font-size: 22rpx;
+    color: $primary;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .contributor-more-icon {
+    color: $primary;
+    transition: transform 0.2s;
+  }
+}
+
 // 👤 活跃贡献者列表
 .contributors-list {
   display: flex;
   flex-direction: column;
-  gap: 12rpx;
+  gap: 4rpx;
 }
 
 .contributor-item {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 10rpx;
+  gap: 14rpx;
+  padding: 10rpx 8rpx;
   border-radius: 12rpx;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.18s;
+  position: relative;
 
   &:hover {
-    background: $gray-50;
+    background: rgba($primary, 0.04);
+
+    .contributor-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    .contributor-badge {
+      opacity: 0; // hover 时隐藏徽章，显示箭头
+    }
   }
 }
 
+// 排名数字
+.contributor-rank {
+  flex-shrink: 0;
+  width: 32rpx;
+  text-align: center;
+
+  .rank-num {
+    font-size: 22rpx;
+    font-weight: 700;
+    color: $gray-300;
+    line-height: 1;
+  }
+
+  // 前三名高亮
+  &--1 .rank-num { color: #F59E0B; }
+  &--2 .rank-num { color: #9CA3AF; }
+  &--3 .rank-num { color: #CD7F32; }
+}
+
 .contributor-avatar {
-  width: 56rpx;
-  height: 56rpx;
+  width: 52rpx;
+  height: 52rpx;
   border-radius: 50%;
   background: $gray-200;
   flex-shrink: 0;
+  border: 2px solid transparent;
+  transition: border-color 0.18s;
+
+  .contributor-item:hover & {
+    border-color: rgba($primary, 0.2);
+  }
 }
 
 .contributor-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4rpx;
+  gap: 3rpx;
   min-width: 0;
 }
 
@@ -2949,22 +3058,59 @@ onUnmounted(() => {
 
 .contributor-stats {
   font-size: 20rpx;
-  color: $gray-500;
+  color: $gray-400;
+}
+
+// 右侧操作区：徽章 + 箭头叠加
+.contributor-action {
+  flex-shrink: 0;
+  width: 36rpx;
+  height: 36rpx;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .contributor-badge {
-  flex-shrink: 0;
+  position: absolute;
   width: 32rpx;
   height: 32rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, $warning 0%, $accent 100%);
   border-radius: 50%;
+  transition: opacity 0.18s;
+
+  // 前三名用不同颜色徽章（视觉统一）
+  &--rank1 {
+    background: linear-gradient(135deg, #F59E0B 0%, #EF4444 100%);
+  }
+  &--rank2 {
+    background: linear-gradient(135deg, #9CA3AF 0%, #6B7280 100%);
+  }
+  &--rank3 {
+    background: linear-gradient(135deg, #CD7F32 0%, #92400E 100%);
+  }
+  // 4-5 名
+  &--rank4,
+  &--rank5 {
+    background: $gray-200;
+
+    .badge-icon { color: $gray-500; }
+  }
 
   .badge-icon {
     color: $white;
   }
+}
+
+// hover 时出现的箭头（平台判断：仅 PC 有意义）
+.contributor-arrow {
+  position: absolute;
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 0.18s, transform 0.18s;
 }
 
 // =============================================

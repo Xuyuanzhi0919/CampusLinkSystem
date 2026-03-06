@@ -504,9 +504,9 @@ loadData()
 
 .load-more {
   text-align: center;
-  padding: 32rpx;
-  font-size: 26rpx;
-  color: #999;
+  padding: 16rpx 32rpx 32rpx;
+  font-size: 24rpx;
+  color: #C0C4CC;
 }
 
 .empty-state {

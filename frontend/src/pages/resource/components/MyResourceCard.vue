@@ -48,10 +48,10 @@
 
         <!-- 下层：图标操作按钮（仅 showActions 时） -->
         <view v-if="showActions" class="icon-actions">
-          <view class="icon-btn btn-edit" @click.stop="handleEdit">
+          <view class="icon-btn btn-edit" title="编辑资源" @click.stop="handleEdit">
             <Icon name="pencil" :size="16" color="#377DFF" />
           </view>
-          <view class="icon-btn btn-delete" @click.stop="handleDelete">
+          <view class="icon-btn btn-delete" title="删除资源" @click.stop="handleDelete">
             <Icon name="trash-2" :size="16" color="#94A3B8" />
           </view>
         </view>
@@ -263,21 +263,21 @@ const handleEdit   = () => emit('edit',   props.resource)
   }
 }
 
-// ---- 积分徽章 ----
+// ---- 积分徽章（实心色 + 白字，突出价值感） ----
 .points-badge {
   padding: 6rpx 16rpx;
   border-radius: 100rpx;
-  background: #FEF3C7;
+  background: #F59E0B;
 
   .points-text {
     font-size: 22rpx;
     font-weight: 600;
-    color: #B45309;
+    color: #FFFFFF;
   }
 
   &.free {
-    background: #F0FDF4;
-    .points-text { color: #16A34A; }
+    background: #10B981;
+    .points-text { color: #FFFFFF; }
   }
 }
 

@@ -159,8 +159,17 @@ const loadMoreText = computed(() => {
 
 // 空状态配置
 const emptyIconName = computed(() => currentTab.value === 'uploads' ? 'folder' : 'download')
-const emptyText = computed(() => currentTab.value === 'uploads' ? '暂无上传的资源' : '暂无下载记录')
-const emptyHint = computed(() => currentTab.value === 'uploads' ? '去上传资源' : '去浏览资源')
+const emptyText = computed(() => {
+  if (currentTab.value === 'uploads') {
+    if (statusFilter.value !== null) {
+      const label = statusFilters.find(f => f.value === statusFilter.value)?.label
+      return `暂无「${label}」资源`
+    }
+    return '暂无上传的资源'
+  }
+  return '暂无下载记录'
+})
+const emptyHint = computed(() => currentTab.value === 'uploads' ? '去上传资源' : '去资源广场')
 
 // Tab切换
 const handleTabChange = (tab: 'uploads' | 'downloads') => {

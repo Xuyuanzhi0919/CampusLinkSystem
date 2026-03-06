@@ -40,9 +40,10 @@
             <view class="ov-progress-track">
               <view class="ov-progress-fill" :style="{ width: progressPercent + '%' }" />
             </view>
-            <text v-if="remainCount > 0" class="ov-progress-hint">
-              再解锁 {{ remainCount }} 枚，升级为「{{ nextTitle }}」，解锁 +{{ nextReward }} 积分
-            </text>
+            <view v-if="remainCount > 0" class="ov-hint-row">
+              <text class="ov-progress-hint">再解锁 {{ remainCount }} 枚，升级为「{{ nextTitle }}」，解锁</text>
+              <text class="ov-reward-highlight"> +{{ nextReward }} 积分</text>
+            </view>
             <text v-else class="ov-progress-hint ov-progress-hint--maxed">
               已解锁全部徽章 🎉
             </text>
@@ -58,6 +59,7 @@
                 :key="tab.key"
                 class="tab-item"
                 :class="{ 'tab-item--active': activeTab === tab.key }"
+                :style="{ '--tab-color': CATEGORY_COLORS[tab.key] ?? '#377DFF' }"
                 @click="activeTab = tab.key"
               >
                 <text class="tab-label">{{ tab.label }}</text>
@@ -75,6 +77,9 @@
             :key="badge.id"
             class="badge-card"
             :class="{ 'badge-card--locked': !badge.unlocked }"
+            :style="badge.unlocked
+              ? { '--bc-bg': BADGE_BG_MAP[badge.color] ?? '#F0F6FF', '--bc-border': BADGE_BORDER_MAP[badge.color] ?? 'rgba(55,125,255,0.2)' }
+              : {}"
             @click="openDetailModal(badge)"
           >
             <!-- 图标区 -->
@@ -99,7 +104,7 @@
             <!-- 解锁时间 / 去解锁 -->
             <text v-if="badge.unlocked && badge.unlockedAt" class="bc-date">{{ badge.unlockedAt }}</text>
             <text v-else-if="badge.unlocked" class="bc-date">已解锁</text>
-            <text v-else class="bc-hint">去解锁 ›</text>
+            <text v-else class="bc-hint" :style="{ color: badgeCategoryColor(badge.category) }">去解锁 ›</text>
 
             <!-- 首页展示标签（正常流，不遮内容） -->
             <view class="bc-pinned-row">
@@ -342,6 +347,37 @@ const TABS = [
   { key: 'interaction',  label: '互动类' },
   { key: 'limited',      label: '限定类' },
 ]
+
+/** 各分类主题色：Tab 选中/hover + 「去解锁」文字 */
+const CATEGORY_COLORS: Record<string, string> = {
+  all:          '#377DFF',  // 主蓝（全部 Tab）
+  growth:       '#377DFF',  // 蓝 — 成长类
+  contribution: '#10B981',  // 绿 — 贡献类
+  interaction:  '#A78BFA',  // 紫 — 互动类
+  limited:      '#F97316',  // 橙 — 限定类
+}
+
+/** 已解锁卡片浅色背景（按徽章色系） */
+const BADGE_BG_MAP: Record<string, string> = {
+  blue:   '#EFF6FF',
+  teal:   '#ECFDF5',
+  violet: '#F5F3FF',
+  amber:  '#FFFBEB',
+  rose:   '#FFF1F2',
+}
+
+/** 已解锁卡片彩色描边 */
+const BADGE_BORDER_MAP: Record<string, string> = {
+  blue:   'rgba(59,130,246,0.25)',
+  teal:   'rgba(16,185,129,0.25)',
+  violet: 'rgba(139,92,246,0.25)',
+  amber:  'rgba(245,158,11,0.22)',
+  rose:   'rgba(244,63,94,0.22)',
+}
+
+/** 根据徽章分类返回对应主题色 */
+const badgeCategoryColor = (category: string): string =>
+  CATEGORY_COLORS[category] ?? CATEGORY_COLORS.all
 
 const ACHIEVEMENT_TITLES = [
   { min: 0,  title: '探索者',    next: '初学者',   nextReward: 20  },
@@ -667,7 +703,7 @@ const handleGoTask = () => {
 .ov-count {
   font-size: 56rpx;
   font-weight: 800;
-  color: $campus-blue;
+  color: #F97316;          // 橙色：与积分/进度条统一
   line-height: 1;
   letter-spacing: -0.02em;
 
@@ -691,25 +727,27 @@ const handleGoTask = () => {
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
-  background: $campus-blue-lighter;
+  background: $campus-blue;    // 实心蓝：仪式感更强
   border-radius: 100rpx;
   padding: 6rpx 16rpx 6rpx 10rpx;
+  box-shadow: 0 2rpx 8rpx rgba($campus-blue, 0.30);
 
   @media (min-width: 1024px) {
     gap: 4px;
     padding: 4px 12px 4px 8px;
     border-radius: 100px;
+    box-shadow: 0 2px 6px rgba(55, 125, 255, 0.28);
   }
 }
 
 .ov-badge-icon {
-  color: $campus-blue;
+  color: rgba(255, 255, 255, 0.85);  // 白色图标
 }
 
 .ov-badge-label {
   font-size: 20rpx;
   font-weight: 600;
-  color: $campus-blue;
+  color: #fff;               // 白色文字
 
   @media (min-width: 1024px) { font-size: 12px; }
 }
@@ -785,6 +823,13 @@ const handleGoTask = () => {
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.ov-hint-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0;
+}
+
 .ov-progress-hint {
   font-size: 19rpx;
   color: $color-text-tertiary;
@@ -794,6 +839,14 @@ const handleGoTask = () => {
     color: #f59e0b;
     font-weight: 500;
   }
+
+  @media (min-width: 1024px) { font-size: 11px; }
+}
+
+.ov-reward-highlight {
+  font-size: 19rpx;
+  font-weight: 700;
+  color: #F97316;            // 橙色高亮：积分奖励一眼可见
 
   @media (min-width: 1024px) { font-size: 11px; }
 }
@@ -825,6 +878,7 @@ const handleGoTask = () => {
 }
 
 .tab-item {
+  --tab-color: #377DFF; // fallback：覆盖 JS 未注入时
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
@@ -841,7 +895,7 @@ const handleGoTask = () => {
     left: 24rpx;
     right: 24rpx;
     height: 3rpx;
-    background: $campus-blue;
+    background: var(--tab-color);   // 随分类变色
     border-radius: 100rpx;
     transform: scaleX(0);
     transition: transform 0.2s $transition-ease-in-out;
@@ -850,13 +904,13 @@ const handleGoTask = () => {
   &--active {
     &::after { transform: scaleX(1); }
 
-    .tab-label { color: $campus-blue; font-weight: 600; }
-    .tab-count { color: $campus-blue; }
+    .tab-label { color: var(--tab-color); font-weight: 600; }
+    .tab-count { color: var(--tab-color); opacity: 0.75; }
   }
 
   // #ifdef H5
   &:not(.tab-item--active):hover {
-    .tab-label { color: $campus-blue; }
+    .tab-label { color: var(--tab-color); }
   }
   // #endif
 
@@ -918,9 +972,11 @@ const handleGoTask = () => {
 
 /* ─── 单张徽章卡片 ─── */
 .badge-card {
-  background: $color-bg-card;
+  --bc-bg:     #{$color-bg-card};
+  --bc-border: #{$color-border-light};
+  background: var(--bc-bg);
   border-radius: 20rpx;
-  border: 1rpx solid $color-border-light;
+  border: 1.5rpx solid var(--bc-border);
   box-shadow: $shadow-xs;
   padding: 28rpx 16rpx 22rpx;
   display: flex;
@@ -998,16 +1054,16 @@ const handleGoTask = () => {
   }
 }
 
-/* 图标颜色系统 */
+/* 图标颜色系统（已解锁：更饱和的背景 + 更鲜明的前景色） */
 .bc-color {
-  &--blue   { background: #EBF3FF; .bc-icon { color: #3B82F6; } }
-  &--teal   { background: #ECFDF5; .bc-icon { color: #0D9488; } }
-  &--violet { background: #F5F3FF; .bc-icon { color: #7C3AED; } }
-  &--amber  { background: #FFFBEB; .bc-icon { color: #B45309; } }
-  &--rose   { background: #FFF1F2; .bc-icon { color: #E11D48; } }
+  &--blue   { background: #DBEAFE; .bc-icon { color: #2563EB; } }
+  &--teal   { background: #D1FAE5; .bc-icon { color: #0D9488; } }
+  &--violet { background: #EDE9FE; .bc-icon { color: #7C3AED; } }
+  &--amber  { background: #FEF3C7; .bc-icon { color: #D97706; } }
+  &--rose   { background: #FFE4E6; .bc-icon { color: #E11D48; } }
   &--locked {
-    background: $color-bg-hover;
-    .bc-icon { color: $color-text-placeholder; }
+    background: #EFEFEF;
+    .bc-icon { color: #C4C4C4; }
   }
 }
 

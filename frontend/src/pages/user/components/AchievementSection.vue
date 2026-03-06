@@ -64,22 +64,24 @@
           <Icon name="chevron-right" :size="13" class="badges-more-icon" />
         </view>
       </view>
-      <view class="badges-list">
-        <view
-          v-for="(badge, i) in displayBadges"
-          :key="badge.id"
-          class="badge-item"
-          :class="{ 'badge-item--locked': !badge.unlocked }"
-          :style="{ animationDelay: `${i * 0.05}s` }"
-          @click="$emit('badgeClick', badge)"
-        >
-          <view class="badge-icon-wrap" :class="badge.unlocked ? `badge-icon-wrap--${badgeColors[i % badgeColors.length]}` : 'badge-icon-wrap--locked'">
-            <Icon :name="badge.icon" :size="20" class="badge-icon" :stroke-width="1.6" />
+      <scroll-view class="badges-scroll" scroll-x :show-scrollbar="false">
+        <view class="badges-list">
+          <view
+            v-for="(badge, i) in displayBadges"
+            :key="badge.id"
+            class="badge-item"
+            :class="{ 'badge-item--locked': !badge.unlocked }"
+            :style="{ animationDelay: `${i * 0.05}s` }"
+            @click="$emit('badgeClick', badge)"
+          >
+            <view class="badge-icon-wrap" :class="badge.unlocked ? `badge-icon-wrap--${badgeColors[i % badgeColors.length]}` : 'badge-icon-wrap--locked'">
+              <Icon :name="badge.icon" :size="20" class="badge-icon" :stroke-width="1.6" />
+            </view>
+            <text class="badge-name">{{ badge.name }}</text>
+            <view v-if="badge.unlocked" class="badge-unlocked-dot" />
           </view>
-          <text class="badge-name">{{ badge.name }}</text>
-          <view v-if="badge.unlocked" class="badge-unlocked-dot" />
         </view>
-      </view>
+      </scroll-view>
     </view>
 
   </view>
@@ -137,7 +139,7 @@ const expToNextLevel = computed(() => Math.max(props.nextLevelExp - props.curren
 
 const isMaxed = computed(() => props.currentExp >= props.nextLevelExp)
 
-const displayBadges = computed(() => props.badges.slice(0, 5))
+const displayBadges = computed(() => props.badges)
 
 const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(n)
 </script>
@@ -519,10 +521,18 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   color: $color-text-tertiary;
 }
 
+/* 横向滚动容器 */
+.badges-scroll {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* 单行 flex，不换行，靠滚动容器撑开水平方向 */
 .badges-list {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 4rpx;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6rpx;
 
   @media (min-width: 1024px) {
     gap: 4px;
@@ -533,6 +543,8 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
+  width: 110rpx;   /* 固定宽：横向滚动时每格等宽 */
   gap: 10rpx;
   padding: 16rpx 4rpx 14rpx;
   border-radius: 14rpx;
@@ -553,6 +565,7 @@ const formatNum = (n: number) => n >= 1000 ? (n / 1000).toFixed(1) + 'k' : Strin
   }
 
   @media (min-width: 1024px) {
+    width: 72px;
     padding: 12px 4px 10px;
     border-radius: 10px;
     gap: 7px;

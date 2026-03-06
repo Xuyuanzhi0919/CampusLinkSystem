@@ -632,14 +632,14 @@ const quickStats = computed(() => [
 }
 
 .hero-pc-greeting {
-  font-size: 12px;
-  color: rgba(255,255,255,0.52);
+  font-size: 11px;
+  color: rgba(255,255,255,0.36);
   font-weight: 400;
   line-height: 1;
 }
 
 .hero-pc-name {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: #fff;
   letter-spacing: -0.02em;
@@ -665,6 +665,15 @@ const quickStats = computed(() => [
 
 .hero--pc .hero-tag-text {
   font-size: 11px;
+}
+
+/* 专业/院系标签在 PC 端进一步弱化：字号更小，整体降低对比度 */
+.hero--pc .hero-tag--dim {
+  opacity: 0.65;
+
+  .hero-tag-text {
+    font-size: 10px;
+  }
 }
 
 /* 竖向分隔线 */
@@ -749,15 +758,15 @@ const quickStats = computed(() => [
 }
 
 .hero-pc-pts-star {
-  font-size: 11px;
-  color: #fbbf24;
+  font-size: 12px;
+  color: #f97316;
   line-height: 1;
 }
 
 .hero-pc-pts-num {
-  font-size: 19px;
+  font-size: 21px;
   font-weight: 700;
-  color: #fbbf24;
+  color: #f97316;
   letter-spacing: -0.01em;
   line-height: 1;
 }

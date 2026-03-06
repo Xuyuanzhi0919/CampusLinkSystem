@@ -442,12 +442,20 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   box-sizing: border-box;
 }
 
-/* PC 双列布局：左=成就区(固定宽)，右=功能+设置(弹性) */
+/* PC 双列布局：
+   1024-1199px → 单列堆叠（平板横屏/小笔记本空间紧张）
+   1200px+     → 双列网格（标准桌面）                         */
 .pc-two-col {
-  display: grid;
-  grid-template-columns: 360px 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 16px;
-  align-items: start;
+  align-items: stretch;
+
+  @media (min-width: 1200px) {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    align-items: start;
+  }
 }
 
 .pc-col-left,
@@ -455,6 +463,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   display: flex;
   flex-direction: column;
   gap: 14px;
+  width: 100%;
 }
 
 /* ========== 下拉刷新（移动端） ========== */

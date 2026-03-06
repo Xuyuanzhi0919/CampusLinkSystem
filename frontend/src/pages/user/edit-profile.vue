@@ -646,11 +646,11 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28rpx 32rpx 22rpx;
+  padding: 28rpx 40rpx 22rpx;
   border-bottom: 1rpx solid $gray-100;
 
   @media (min-width: 1024px) {
-    padding: 18px 24px 14px;
+    padding: 18px 28px 14px;
     border-bottom-width: 1px;
   }
 }
@@ -684,7 +684,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   min-height: 96rpx;
-  padding: 0 32rpx;
+  padding: 0 40rpx;
 
   // 错误状态：极浅红色背景提示
   &--error {
@@ -698,7 +698,7 @@ onMounted(() => {
 
   @media (min-width: 1024px) {
     min-height: 52px;
-    padding: 0 24px;
+    padding: 0 28px;
   }
 }
 
@@ -717,7 +717,7 @@ onMounted(() => {
 
 .row-label {
   font-size: 28rpx;
-  font-weight: $font-weight-medium;
+  font-weight: $font-weight-semibold;
   color: $gray-800;
   white-space: nowrap;
 
@@ -813,12 +813,12 @@ onMounted(() => {
 
 // ─── 行间分隔线 ────────────────────────────────────────────
 .row-sep {
-  margin: 0 32rpx;
+  margin: 0 40rpx;
   height: 1rpx;
   background: $gray-100;
 
   @media (min-width: 1024px) {
-    margin: 0 24px;
+    margin: 0 28px;
     height: 1px;
   }
 }
@@ -826,12 +826,12 @@ onMounted(() => {
 // ─── 错误提示 ─────────────────────────────────────────────
 .error-tip {
   display: block;
-  padding: 6rpx 32rpx 14rpx;
+  padding: 6rpx 40rpx 14rpx;
   font-size: 22rpx;
   color: $error;
 
   @media (min-width: 1024px) {
-    padding: 3px 24px 10px;
+    padding: 3px 28px 10px;
     font-size: 12px;
   }
 }

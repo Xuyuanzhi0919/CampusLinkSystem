@@ -1,37 +1,64 @@
 <template>
   <view class="notification-page">
     <!-- 顶部导航栏 -->
-    <CNavBar title="通知中心" :auto-back="false" @back="handleBack">
-      <template #right>
-        <view class="mark-all-btn" :class="{ 'mark-all-btn--disabled': !hasUnread }" @click="handleMarkAllRead">
-          <Icon name="check-check" :size="14" :color="hasUnread ? '#2563EB' : '#C7D2FE'" />
-          <text class="mark-text" :class="{ 'mark-text--disabled': !hasUnread }">全部已读</text>
-        </view>
-      </template>
-    </CNavBar>
+    <CNavBar title="通知中心" :auto-back="false" @back="handleBack" />
 
-    <!-- 分类 Tab 栏 -->
-    <view class="tab-bar">
-      <view class="tab-bar-inner">
-        <view
-          v-for="tab in tabs"
-          :key="tab.value"
-          class="tab-item"
-          :class="{ active: currentTab === tab.value }"
-          @click="handleTabChange(tab.value)"
-        >
-          <view class="tab-content">
-            <text class="tab-label">{{ tab.label }}</text>
-            <view v-if="tab.badge > 0" class="tab-badge">
-              <text class="tab-badge-text">{{ tab.badge > 99 ? '99+' : tab.badge }}</text>
+    <!-- 筛选栏：Tab（左）+ 操作区（右） -->
+    <view class="filter-bar">
+      <view class="filter-bar-inner">
+
+        <!-- 左侧：分类 Tab -->
+        <view class="tabs-group">
+          <view
+            v-for="tab in tabs"
+            :key="tab.value"
+            class="tab-item"
+            :class="{ active: currentTab === tab.value }"
+            @click="handleTabChange(tab.value)"
+          >
+            <view class="tab-content">
+              <text class="tab-label">{{ tab.label }}</text>
+              <view v-if="tab.badge > 0" class="tab-badge">
+                <text class="tab-badge-text">{{ tab.badge > 99 ? '99+' : tab.badge }}</text>
+              </view>
             </view>
+            <view v-if="currentTab === tab.value" class="tab-indicator" />
           </view>
-          <view v-if="currentTab === tab.value" class="tab-indicator" />
         </view>
+
+        <!-- 分割线 -->
+        <view class="filter-divider" />
+
+        <!-- 右侧：操作按钮组 -->
+        <view class="actions-group">
+          <!-- 普通模式：批量 + 全部已读 -->
+          <template v-if="!batchMode">
+            <view class="action-btn" @click="enterBatchMode">
+              <Icon name="check-square" :size="13" color="#6B7280" />
+              <text class="action-btn-text">批量</text>
+            </view>
+            <view
+              class="action-btn action-btn--primary"
+              :class="{ 'action-btn--disabled': !hasUnread }"
+              @click="confirmMarkAllRead"
+            >
+              <Icon name="check-check" :size="13" :color="hasUnread ? '#2563EB' : '#C7D2FE'" />
+              <text class="action-btn-text" :class="{ 'action-btn-text--disabled': !hasUnread }">全部已读</text>
+            </view>
+          </template>
+          <!-- 批量模式：取消 -->
+          <template v-else>
+            <view class="action-btn action-btn--cancel" @click="exitBatchMode">
+              <Icon name="x" :size="13" color="#6B7280" />
+              <text class="action-btn-text">取消</text>
+            </view>
+          </template>
+        </view>
+
       </view>
     </view>
 
-    <!-- 操作菜单遮罩（点击关闭菜单） -->
+    <!-- 操作菜单遮罩 -->
     <view v-if="activeActionId !== null" class="action-overlay" @click="activeActionId = null" />
 
     <!-- 通知列表 -->
@@ -41,14 +68,14 @@
       @scrolltolower="handleLoadMore"
     >
       <view class="page-inner">
-        <!-- 骨架屏：初始加载 -->
+
+        <!-- 骨架屏 -->
         <template v-if="loading">
           <view v-for="(w, i) in skeletonWidths" :key="i" class="skeleton-card">
             <view class="skeleton-icon skeleton-shine" />
             <view class="skeleton-body">
               <view class="skeleton-header skeleton-shine" :style="{ width: w.title }" />
               <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
-              <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
             </view>
           </view>
         </template>
@@ -65,13 +92,25 @@
               v-for="(notification, idx) in todayNotifications"
               :key="notification.notificationId"
               class="notification-card card-enter"
-              :class="{ 'is-unread': !notification.isRead }"
+              :class="{
+                'is-unread': !notification.isRead,
+                'is-selected': isSelected(notification.notificationId),
+                'batch-active': batchMode
+              }"
               :style="{ animationDelay: `${idx * 0.04}s` }"
-              @click="handleNotificationClick(notification)"
+              @click="handleCardClick(notification)"
             >
+              <!-- 批量模式复选框 -->
+              <view v-if="batchMode" class="card-checkbox">
+                <view class="checkbox" :class="{ checked: isSelected(notification.notificationId) }">
+                  <Icon v-if="isSelected(notification.notificationId)" name="check" :size="11" color="#fff" />
+                </view>
+              </view>
+
               <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
                 <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
               </view>
+
               <view class="card-body">
                 <view class="card-header-row">
                   <text class="card-title" :class="{ 'card-title--read': notification.isRead }">{{ notification.title }}</text>
@@ -82,7 +121,9 @@
                   <text class="point-text">{{ getPointReward(notification) }}</text>
                 </view>
               </view>
-              <view class="card-right">
+
+              <!-- 非批量模式右侧操作 -->
+              <view v-if="!batchMode" class="card-right">
                 <view v-if="!notification.isRead" class="unread-dot" />
                 <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
                   <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
@@ -110,10 +151,19 @@
               v-for="(notification, idx) in yesterdayNotifications"
               :key="notification.notificationId"
               class="notification-card card-enter"
-              :class="{ 'is-unread': !notification.isRead }"
+              :class="{
+                'is-unread': !notification.isRead,
+                'is-selected': isSelected(notification.notificationId),
+                'batch-active': batchMode
+              }"
               :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
-              @click="handleNotificationClick(notification)"
+              @click="handleCardClick(notification)"
             >
+              <view v-if="batchMode" class="card-checkbox">
+                <view class="checkbox" :class="{ checked: isSelected(notification.notificationId) }">
+                  <Icon v-if="isSelected(notification.notificationId)" name="check" :size="11" color="#fff" />
+                </view>
+              </view>
               <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
                 <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
               </view>
@@ -127,7 +177,7 @@
                   <text class="point-text">{{ getPointReward(notification) }}</text>
                 </view>
               </view>
-              <view class="card-right">
+              <view v-if="!batchMode" class="card-right">
                 <view v-if="!notification.isRead" class="unread-dot" />
                 <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
                   <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
@@ -155,10 +205,19 @@
               v-for="(notification, idx) in earlierNotifications"
               :key="notification.notificationId"
               class="notification-card card-enter"
-              :class="{ 'is-unread': !notification.isRead }"
+              :class="{
+                'is-unread': !notification.isRead,
+                'is-selected': isSelected(notification.notificationId),
+                'batch-active': batchMode
+              }"
               :style="{ animationDelay: `${(todayNotifications.length + yesterdayNotifications.length + idx) * 0.04}s` }"
-              @click="handleNotificationClick(notification)"
+              @click="handleCardClick(notification)"
             >
+              <view v-if="batchMode" class="card-checkbox">
+                <view class="checkbox" :class="{ checked: isSelected(notification.notificationId) }">
+                  <Icon v-if="isSelected(notification.notificationId)" name="check" :size="11" color="#fff" />
+                </view>
+              </view>
               <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
                 <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
               </view>
@@ -169,7 +228,7 @@
                 </view>
                 <text class="card-desc" :class="{ 'card-desc--read': notification.isRead }">{{ notification.content }}</text>
               </view>
-              <view class="card-right">
+              <view v-if="!batchMode" class="card-right">
                 <view v-if="!notification.isRead" class="unread-dot" />
                 <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
                   <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
@@ -217,9 +276,42 @@
           <view class="no-more-line" />
         </view>
 
-        <view class="safe-bottom" />
+        <!-- 批量模式底部安全占位 -->
+        <view :style="{ height: batchMode ? '80px' : '32px' }" />
       </view>
     </scroll-view>
+
+    <!-- 批量操作底部栏 -->
+    <view v-if="batchMode" class="batch-bar">
+      <view class="batch-info">
+        <view class="batch-select-all" @click="toggleSelectAll">
+          <view class="checkbox" :class="{ checked: isAllSelected }">
+            <Icon v-if="isAllSelected" name="check" :size="11" color="#fff" />
+          </view>
+          <text class="batch-select-text">{{ isAllSelected ? '取消全选' : '全选' }}</text>
+        </view>
+        <text class="batch-count">已选 <text class="batch-count-num">{{ selectedIds.length }}</text> 条</text>
+      </view>
+      <view class="batch-actions">
+        <view
+          class="batch-btn"
+          :class="{ 'batch-btn--disabled': selectedIds.length === 0 }"
+          @click="handleBatchMarkRead"
+        >
+          <Icon name="check-circle" :size="15" :color="selectedIds.length > 0 ? '#2563EB' : '#C7D2FE'" />
+          <text class="batch-btn-text" :class="{ 'batch-btn-text--disabled': selectedIds.length === 0 }">标记已读</text>
+        </view>
+        <view
+          class="batch-btn batch-btn--danger"
+          :class="{ 'batch-btn--disabled': selectedIds.length === 0 }"
+          @click="handleBatchDelete"
+        >
+          <Icon name="trash-2" :size="15" :color="selectedIds.length > 0 ? '#EF4444' : '#FCA5A5'" />
+          <text class="batch-btn-text batch-btn-text--danger" :class="{ 'batch-btn-text--disabled': selectedIds.length === 0 }">删除</text>
+        </view>
+      </view>
+    </view>
+
   </view>
 </template>
 
@@ -236,15 +328,17 @@ import {
 } from '@/services/notification'
 import Icon from '@/components/icons/index.vue'
 
-// 分类 Tab 定义
+// ===================== Tab 定义 =====================
 const tabs = ref([
-  { value: 'all', label: '全部', badge: 0 },
-  { value: 'ANSWER', label: '回答', badge: 0 },
+  { value: 'all',     label: '全部', badge: 0 },
+  { value: 'ANSWER',  label: '回答', badge: 0 },
   { value: 'COMMENT', label: '评论', badge: 0 },
-  { value: 'SYSTEM', label: '系统', badge: 0 }
+  { value: 'SYSTEM',  label: '系统', badge: 0 }
 ])
 
 const currentTab = ref('all')
+
+// ===================== 列表状态 =====================
 const notificationList = ref<any[]>([])
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -252,53 +346,127 @@ const hasMore = ref(true)
 const page = ref(1)
 const pageSize = 20
 
-// 当前展开操作菜单的通知 ID
+// 单条操作菜单
 const activeActionId = ref<number | null>(null)
 
-// 骨架屏宽度随机池
+// ===================== 批量操作 =====================
+const batchMode = ref(false)
+const selectedIds = ref<number[]>([])
+
+const isSelected = (id: number) => selectedIds.value.includes(id)
+
+const isAllSelected = computed(() =>
+  notificationList.value.length > 0 &&
+  notificationList.value.every(n => isSelected(n.notificationId))
+)
+
+const toggleSelect = (id: number) => {
+  const idx = selectedIds.value.indexOf(id)
+  if (idx > -1) {
+    selectedIds.value.splice(idx, 1)
+  } else {
+    selectedIds.value.push(id)
+  }
+}
+
+const toggleSelectAll = () => {
+  if (isAllSelected.value) {
+    selectedIds.value = []
+  } else {
+    selectedIds.value = notificationList.value.map(n => n.notificationId)
+  }
+}
+
+const enterBatchMode = () => {
+  batchMode.value = true
+  selectedIds.value = []
+  activeActionId.value = null
+}
+
+const exitBatchMode = () => {
+  batchMode.value = false
+  selectedIds.value = []
+}
+
+// 批量标记已读
+const handleBatchMarkRead = async () => {
+  if (selectedIds.value.length === 0) return
+  const ids = [...selectedIds.value]
+  try {
+    await Promise.all(ids.map(id => markNotificationRead(id)))
+    notificationList.value.forEach(n => {
+      if (ids.includes(n.notificationId)) n.isRead = true
+    })
+    updateTabBadges()
+    loadUnreadCount()
+    uni.showToast({ title: `已标记 ${ids.length} 条为已读`, icon: 'success' })
+    exitBatchMode()
+  } catch {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
+}
+
+// 批量删除
+const handleBatchDelete = () => {
+  if (selectedIds.value.length === 0) return
+  const ids = [...selectedIds.value]
+  uni.showModal({
+    title: '批量删除',
+    content: `确定要删除选中的 ${ids.length} 条通知吗？`,
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await Promise.all(ids.map(id => deleteNotification(id)))
+          notificationList.value = notificationList.value.filter(
+            n => !ids.includes(n.notificationId)
+          )
+          updateTabBadges()
+          loadUnreadCount()
+          uni.showToast({ title: `已删除 ${ids.length} 条通知`, icon: 'success' })
+          exitBatchMode()
+        } catch {
+          uni.showToast({ title: '删除失败', icon: 'none' })
+        }
+      }
+    }
+  })
+}
+
+// ===================== 骨架屏 =====================
 const skeletonWidths = [
-  { title: '58%', desc: '88%', time: '28%' },
-  { title: '65%', desc: '92%', time: '32%' },
-  { title: '50%', desc: '80%', time: '24%' },
-  { title: '72%', desc: '95%', time: '36%' },
-  { title: '55%', desc: '85%', time: '26%' }
+  { title: '58%', desc: '88%' },
+  { title: '65%', desc: '92%' },
+  { title: '50%', desc: '80%' },
+  { title: '72%', desc: '95%' },
+  { title: '55%', desc: '85%' }
 ]
 
-// 是否有未读通知
+// ===================== 计算属性 =====================
 const hasUnread = computed(() => notificationList.value.some(n => !n.isRead))
 
-// 今天的通知
 const todayNotifications = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
   return notificationList.value.filter(n => new Date(n.createdAt) >= today)
 })
 
-// 昨天的通知
 const yesterdayNotifications = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
   return notificationList.value.filter(n => {
     const d = new Date(n.createdAt)
     return d >= yesterday && d < today
   })
 })
 
-// 更早的通知（昨天之前）
 const earlierNotifications = computed(() => {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
   return notificationList.value.filter(n => new Date(n.createdAt) < yesterday)
 })
 
-// 各 Tab 空状态文案
 const emptyInfo = computed(() => {
   const map: Record<string, { title: string; desc: string }> = {
-    all:     { title: '暂无通知', desc: '有新消息时会在这里提醒你' },
+    all:     { title: '暂无通知',     desc: '有新消息时会在这里提醒你' },
     ANSWER:  { title: '暂无回答通知', desc: '有人回答了你的问题，会在这里提醒你' },
     COMMENT: { title: '暂无评论通知', desc: '有人评论了你的内容，会在这里提醒你' },
     SYSTEM:  { title: '暂无系统通知', desc: '系统消息和公告会在这里显示' }
@@ -306,61 +474,38 @@ const emptyInfo = computed(() => {
   return map[currentTab.value] || map.all
 })
 
-// 通知类型 -> lucide 图标名
+// ===================== 类型映射 =====================
 const getTypeIcon = (type: string): string => {
   const map: Record<string, string> = {
-    ANSWER: 'message-circle',
-    COMMENT: 'message-square',
-    LIKE: 'heart',
-    FAVORITE: 'bookmark',
-    SYSTEM: 'megaphone',
-    TASK: 'check-circle-2',
-    RESOURCE: 'download',
-    QUESTION: 'help-circle',
-    ACTIVITY: 'calendar',
-    MESSAGE: 'mail',
-    FOLLOW: 'user-plus'
+    ANSWER: 'message-circle', COMMENT: 'message-square',
+    LIKE: 'heart', FAVORITE: 'bookmark', SYSTEM: 'megaphone',
+    TASK: 'check-circle-2', RESOURCE: 'download',
+    QUESTION: 'help-circle', ACTIVITY: 'calendar',
+    MESSAGE: 'mail', FOLLOW: 'user-plus'
   }
   return map[type?.toUpperCase()] || 'bell'
 }
 
-// 通知类型 -> 图标背景色
 const getTypeBg = (type: string): string => {
   const map: Record<string, string> = {
-    ANSWER: '#EFF6FF',
-    COMMENT: '#EFF6FF',
-    LIKE: '#F0FDF4',
-    FAVORITE: '#F0FDF4',
-    SYSTEM: '#F3F4F6',
-    TASK: '#FEF3C7',
-    RESOURCE: '#F3F4F6',
-    QUESTION: '#EFF6FF',
-    ACTIVITY: '#F5F3FF',
-    MESSAGE: '#EFF6FF',
-    FOLLOW: '#F0FDF4'
+    ANSWER: '#EFF6FF', COMMENT: '#EFF6FF', LIKE: '#F0FDF4',
+    FAVORITE: '#F0FDF4', SYSTEM: '#F3F4F6', TASK: '#FEF3C7',
+    RESOURCE: '#F3F4F6', QUESTION: '#EFF6FF', ACTIVITY: '#F5F3FF',
+    MESSAGE: '#EFF6FF', FOLLOW: '#F0FDF4'
   }
   return map[type?.toUpperCase()] || '#F3F4F6'
 }
 
-// 通知类型 -> 图标颜色
 const getTypeColor = (type: string): string => {
   const map: Record<string, string> = {
-    ANSWER: '#2563EB',
-    COMMENT: '#2563EB',
-    LIKE: '#22C55E',
-    FAVORITE: '#22C55E',
-    SYSTEM: '#9CA3AF',
-    TASK: '#D97706',
-    RESOURCE: '#9CA3AF',
-    QUESTION: '#2563EB',
-    ACTIVITY: '#7C3AED',
-    MESSAGE: '#2563EB',
-    FOLLOW: '#22C55E'
+    ANSWER: '#2563EB', COMMENT: '#2563EB', LIKE: '#22C55E',
+    FAVORITE: '#22C55E', SYSTEM: '#9CA3AF', TASK: '#D97706',
+    RESOURCE: '#9CA3AF', QUESTION: '#2563EB', ACTIVITY: '#7C3AED',
+    MESSAGE: '#2563EB', FOLLOW: '#22C55E'
   }
   return map[type?.toUpperCase()] || '#9CA3AF'
 }
 
-// 积分奖励提取（仅回答被采纳时显示）
 const getPointReward = (notification: any): string => {
   if (notification.notifyType?.toUpperCase() === 'ANSWER' && notification.content?.includes('采纳')) {
     return '+20 积分'
@@ -368,12 +513,11 @@ const getPointReward = (notification: any): string => {
   return ''
 }
 
-// 操作菜单切换
+// ===================== 操作函数 =====================
 const toggleActionMenu = (id: number) => {
   activeActionId.value = activeActionId.value === id ? null : id
 }
 
-// 单条标记已读
 const handleMarkSingleRead = async (notification: any) => {
   activeActionId.value = null
   if (notification.isRead) return
@@ -388,143 +532,29 @@ const handleMarkSingleRead = async (notification: any) => {
   }
 }
 
-// 更新各 Tab 未读 badge
-const updateTabBadges = () => {
-  const typeCount: Record<string, number> = { ANSWER: 0, COMMENT: 0, SYSTEM: 0 }
-  notificationList.value.forEach(n => {
-    if (!n.isRead) {
-      const t = n.notifyType?.toUpperCase()
-      if (t in typeCount) typeCount[t]++
+// 全部已读 — 带二次确认
+const confirmMarkAllRead = () => {
+  if (!hasUnread.value) return
+  uni.showModal({
+    title: '全部标记已读',
+    content: '确定将所有通知标记为已读吗？',
+    confirmText: '确定',
+    cancelText: '取消',
+    success: async (res) => {
+      if (res.confirm) {
+        try {
+          await markAllNotificationsRead()
+          notificationList.value.forEach(item => { item.isRead = true })
+          tabs.value.forEach(t => { t.badge = 0 })
+          uni.showToast({ title: '所有通知已标记为已读', icon: 'success' })
+        } catch (error: any) {
+          uni.showToast({ title: error.message || '操作失败', icon: 'none' })
+        }
+      }
     }
   })
-  tabs.value[1].badge = typeCount.ANSWER
-  tabs.value[2].badge = typeCount.COMMENT
-  tabs.value[3].badge = typeCount.SYSTEM
 }
 
-// 加载通知列表
-const loadNotifications = async (isRefresh = false) => {
-  if (isRefresh) {
-    page.value = 1
-    hasMore.value = true
-    notificationList.value = []
-  }
-  if (!hasMore.value && !isRefresh) return
-
-  try {
-    if (page.value === 1) {
-      loading.value = true
-    } else {
-      loadingMore.value = true
-    }
-
-    const params: any = { page: page.value, pageSize }
-    if (currentTab.value !== 'all') {
-      params.type = currentTab.value
-    }
-
-    const result = await getMyNotifications(params)
-
-    if (isRefresh || page.value === 1) {
-      notificationList.value = result.list
-    } else {
-      notificationList.value = [...notificationList.value, ...result.list]
-    }
-
-    hasMore.value = page.value < result.totalPages
-    updateTabBadges()
-  } catch (error: any) {
-    uni.showToast({ title: error.message || '加载失败', icon: 'none' })
-  } finally {
-    loading.value = false
-    loadingMore.value = false
-  }
-}
-
-// 加载未读数
-const loadUnreadCount = async () => {
-  try {
-    const count = await getUnreadCount()
-    tabs.value[0].badge = count ?? 0
-  } catch {}
-}
-
-// Tab 切换
-const handleTabChange = (tab: string) => {
-  if (currentTab.value === tab) return
-  currentTab.value = tab
-  activeActionId.value = null
-  page.value = 1
-  notificationList.value = []
-  hasMore.value = true
-  loadNotifications()
-}
-
-// 加载更多
-const handleLoadMore = () => {
-  if (loadingMore.value || !hasMore.value) return
-  page.value++
-  loadNotifications()
-}
-
-// 点击通知卡片
-const handleNotificationClick = async (notification: any) => {
-  // 若菜单打开，关闭菜单而非跳转
-  if (activeActionId.value !== null) {
-    activeActionId.value = null
-    return
-  }
-
-  if (!notification.isRead) {
-    try {
-      await markNotificationRead(notification.notificationId)
-      notification.isRead = true
-      updateTabBadges()
-      loadUnreadCount()
-    } catch {}
-  }
-
-  const url = getTargetUrl(notification)
-  if (url) {
-    uni.navigateTo({
-      url,
-      fail: () => uni.showToast({ title: '页面跳转失败', icon: 'none' })
-    })
-  }
-}
-
-// 构建跳转链接
-const getTargetUrl = (notification: any): string => {
-  const { relatedType, relatedId, linkUrl } = notification
-  if (linkUrl) return linkUrl
-  if (!relatedType || !relatedId) return ''
-
-  const urlMap: Record<string, string> = {
-    question: `/pages/question/detail?id=${relatedId}`,
-    answer: `/pages/question/detail?id=${relatedId}`,
-    resource: `/pages/resource/detail?id=${relatedId}`,
-    task: `/pages/task/detail?id=${relatedId}`,
-    activity: `/pages/club/activity-detail?id=${relatedId}`,
-    club: `/pages/club/detail?id=${relatedId}`,
-    user: `/pages/user/index?userId=${relatedId}`,
-    message: `/pages/message/chat?userId=${relatedId}`
-  }
-  return urlMap[relatedType?.toLowerCase()] || ''
-}
-
-// 全部已读
-const handleMarkAllRead = async () => {
-  try {
-    await markAllNotificationsRead()
-    notificationList.value.forEach(item => { item.isRead = true })
-    tabs.value.forEach(t => { t.badge = 0 })
-    uni.showToast({ title: '已全部标记为已读', icon: 'success' })
-  } catch (error: any) {
-    uni.showToast({ title: error.message || '操作失败', icon: 'none' })
-  }
-}
-
-// 删除通知
 const handleDelete = (notification: any) => {
   activeActionId.value = null
   uni.showModal({
@@ -549,26 +579,121 @@ const handleDelete = (notification: any) => {
   })
 }
 
-// 返回
-const handleBack = () => {
-  const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack()
-  } else {
-    uni.switchTab({ url: '/pages/home/index' })
+// 卡片点击（区分批量模式/普通模式）
+const handleCardClick = async (notification: any) => {
+  if (batchMode.value) {
+    toggleSelect(notification.notificationId)
+    return
+  }
+  if (activeActionId.value !== null) {
+    activeActionId.value = null
+    return
+  }
+  if (!notification.isRead) {
+    try {
+      await markNotificationRead(notification.notificationId)
+      notification.isRead = true
+      updateTabBadges()
+      loadUnreadCount()
+    } catch {}
+  }
+  const url = getTargetUrl(notification)
+  if (url) {
+    uni.navigateTo({ url, fail: () => uni.showToast({ title: '页面跳转失败', icon: 'none' }) })
   }
 }
 
-// 格式化时间
+const getTargetUrl = (notification: any): string => {
+  const { relatedType, relatedId, linkUrl } = notification
+  if (linkUrl) return linkUrl
+  if (!relatedType || !relatedId) return ''
+  const urlMap: Record<string, string> = {
+    question: `/pages/question/detail?id=${relatedId}`,
+    answer:   `/pages/question/detail?id=${relatedId}`,
+    resource: `/pages/resource/detail?id=${relatedId}`,
+    task:     `/pages/task/detail?id=${relatedId}`,
+    activity: `/pages/club/activity-detail?id=${relatedId}`,
+    club:     `/pages/club/detail?id=${relatedId}`,
+    user:     `/pages/user/index?userId=${relatedId}`,
+    message:  `/pages/message/chat?userId=${relatedId}`
+  }
+  return urlMap[relatedType?.toLowerCase()] || ''
+}
+
+// ===================== 数据加载 =====================
+const updateTabBadges = () => {
+  const typeCount: Record<string, number> = { ANSWER: 0, COMMENT: 0, SYSTEM: 0 }
+  notificationList.value.forEach(n => {
+    if (!n.isRead) {
+      const t = n.notifyType?.toUpperCase()
+      if (t in typeCount) typeCount[t]++
+    }
+  })
+  tabs.value[1].badge = typeCount.ANSWER
+  tabs.value[2].badge = typeCount.COMMENT
+  tabs.value[3].badge = typeCount.SYSTEM
+}
+
+const loadNotifications = async (isRefresh = false) => {
+  if (isRefresh) { page.value = 1; hasMore.value = true; notificationList.value = [] }
+  if (!hasMore.value && !isRefresh) return
+  try {
+    page.value === 1 ? (loading.value = true) : (loadingMore.value = true)
+    const params: any = { page: page.value, pageSize }
+    if (currentTab.value !== 'all') params.type = currentTab.value
+    const result = await getMyNotifications(params)
+    if (isRefresh || page.value === 1) {
+      notificationList.value = result.list
+    } else {
+      notificationList.value = [...notificationList.value, ...result.list]
+    }
+    hasMore.value = page.value < result.totalPages
+    updateTabBadges()
+  } catch (error: any) {
+    uni.showToast({ title: error.message || '加载失败', icon: 'none' })
+  } finally {
+    loading.value = false
+    loadingMore.value = false
+  }
+}
+
+const loadUnreadCount = async () => {
+  try {
+    const count = await getUnreadCount()
+    tabs.value[0].badge = count ?? 0
+  } catch {}
+}
+
+const handleTabChange = (tab: string) => {
+  if (currentTab.value === tab) return
+  currentTab.value = tab
+  activeActionId.value = null
+  exitBatchMode()
+  page.value = 1
+  notificationList.value = []
+  hasMore.value = true
+  loadNotifications()
+}
+
+const handleLoadMore = () => {
+  if (loadingMore.value || !hasMore.value) return
+  page.value++
+  loadNotifications()
+}
+
+const handleBack = () => {
+  const pages = getCurrentPages()
+  if (pages.length > 1) uni.navigateBack()
+  else uni.switchTab({ url: '/pages/home/index' })
+}
+
 const formatTime = (dateStr: string): string => {
   const date = new Date(dateStr)
   const now = new Date()
   const diff = now.getTime() - date.getTime()
-
   if (diff < 60000) return '刚刚'
   if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-
   const hh = date.getHours().toString().padStart(2, '0')
   const mm = date.getMinutes().toString().padStart(2, '0')
   const mo = (date.getMonth() + 1).toString().padStart(2, '0')
@@ -577,15 +702,8 @@ const formatTime = (dateStr: string): string => {
   return `${date.getFullYear()}-${mo}-${dd}`
 }
 
-onMounted(() => {
-  loadNotifications()
-  loadUnreadCount()
-})
-
-onShow(() => {
-  loadUnreadCount()
-})
-
+onMounted(() => { loadNotifications(); loadUnreadCount() })
+onShow(() => { loadUnreadCount() })
 defineExpose({})
 </script>
 
@@ -599,68 +717,42 @@ defineExpose({})
   flex-direction: column;
 }
 
-/* ===== 右上角全部已读按钮 ===== */
-.mark-all-btn {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 6px 12px;
-  background: #EFF6FF;
-  border-radius: 14px;
-  cursor: pointer;
-  transition: background 0.15s;
-
-  &:active {
-    background: #DBEAFE;
-  }
-
-  // #ifdef H5
-  &:hover {
-    background: #DBEAFE;
-  }
-  // #endif
-}
-
-.mark-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: #2563EB;
-}
-
-.mark-text--disabled {
-  color: #C7D2FE;
-}
-
-.mark-all-btn--disabled {
-  background: #F5F5F5;
-  pointer-events: none;
-}
-
-/* ===== Tab 栏 ===== */
-.tab-bar {
+/* ===================== 筛选栏 ===================== */
+.filter-bar {
   background: $white;
   border-bottom: 1px solid #E4E4E7;
   position: sticky;
   top: 56px;
   z-index: 99;
+  flex-shrink: 0;
 }
 
-.tab-bar-inner {
+.filter-bar-inner {
   display: flex;
+  align-items: stretch;
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+  height: 48px;
+}
+
+/* 左侧 Tab 组 */
+.tabs-group {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+  min-width: 0;
 }
 
 .tab-item {
-  flex: 1;
   position: relative;
-  padding: 12px 0 0;
+  padding: 0 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding-bottom: 0;
+  flex: 1;
 
   // #ifdef H5
   &:hover .tab-label {
@@ -673,7 +765,6 @@ defineExpose({})
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-bottom: 10px;
 }
 
 .tab-label {
@@ -717,20 +808,86 @@ defineExpose({})
   border-radius: 2px;
 }
 
-/* ===== 操作菜单遮罩 ===== */
+/* 分割线 */
+.filter-divider {
+  width: 1px;
+  background: #E4E4E7;
+  margin: 10px 0;
+  flex-shrink: 0;
+}
+
+/* 右侧操作组 */
+.actions-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: #F3F4F6; }
+
+  // #ifdef H5
+  &:hover { background: #F3F4F6; }
+  // #endif
+}
+
+.action-btn--primary {
+  background: #EFF6FF;
+
+  &:active { background: #DBEAFE; }
+
+  // #ifdef H5
+  &:hover { background: #DBEAFE; }
+  // #endif
+}
+
+.action-btn--cancel {
+  &:active { background: #F3F4F6; }
+}
+
+.action-btn--disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.action-btn-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  white-space: nowrap;
+}
+
+.action-btn--primary .action-btn-text {
+  color: #2563EB;
+}
+
+.action-btn-text--disabled {
+  color: #C7D2FE;
+}
+
+/* ===================== 操作菜单遮罩 ===================== */
 .action-overlay {
   position: fixed;
   inset: 0;
   z-index: 200;
 }
 
-/* ===== 内容滚动区 ===== */
+/* ===================== 内容区 ===================== */
 .content-scroll {
   flex: 1;
   height: calc(100vh - 104px);
 }
 
-/* ===== 内容居中容器 ===== */
 .page-inner {
   max-width: 800px;
   margin: 0 auto;
@@ -738,7 +895,7 @@ defineExpose({})
   padding-top: 8px;
 }
 
-/* ===== 日期分隔线 ===== */
+/* ===================== 日期分隔 ===================== */
 .date-divider {
   padding: 8px 16px 4px;
   display: flex;
@@ -751,15 +908,10 @@ defineExpose({})
   color: #2563EB;
 }
 
-.date-divider-text-gray {
-  color: #9CA3AF;
-}
+.date-divider-text-gray { color: #9CA3AF; }
+.date-divider-gap { margin-top: 4px; }
 
-.date-divider-gap {
-  margin-top: 4px;
-}
-
-/* ===== 通知卡片 ===== */
+/* ===================== 通知卡片 ===================== */
 .notification-card {
   display: flex;
   align-items: flex-start;
@@ -773,9 +925,7 @@ defineExpose({})
   cursor: pointer;
   position: relative;
 
-  &:active {
-    background: #F5F7FF;
-  }
+  &:active { background: #F5F7FF; }
 
   // #ifdef H5
   &:hover {
@@ -785,7 +935,6 @@ defineExpose({})
   // #endif
 }
 
-/* 未读卡片 */
 .notification-card.is-unread {
   background: #FAFBFF;
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.1);
@@ -793,13 +942,28 @@ defineExpose({})
   padding-left: 13px;
 
   // #ifdef H5
+  &:hover { box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15); }
+  // #endif
+}
+
+/* 选中态 */
+.notification-card.is-selected {
+  background: #EFF6FF;
+  border-left: 3px solid #2563EB;
+  padding-left: 13px;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.12);
+}
+
+/* 批量模式悬浮 */
+.notification-card.batch-active {
+  // #ifdef H5
   &:hover {
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    transform: none;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, 0.1);
   }
   // #endif
 }
 
-/* 入场动画 */
 .card-enter {
   animation: card-fade-up 0.3s ease both;
 }
@@ -809,7 +973,32 @@ defineExpose({})
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ===== 图标区 ===== */
+/* 复选框 */
+.card-checkbox {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+
+.checkbox {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 2px solid #D1D5DB;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, background 0.15s;
+  background: $white;
+
+  &.checked {
+    background: #2563EB;
+    border-color: #2563EB;
+  }
+}
+
+/* 图标 */
 .card-icon-wrap {
   width: 44px;
   height: 44px;
@@ -821,7 +1010,7 @@ defineExpose({})
   margin-top: 2px;
 }
 
-/* ===== 卡片内容区 ===== */
+/* 内容区 */
 .card-body {
   flex: 1;
   min-width: 0;
@@ -830,7 +1019,6 @@ defineExpose({})
   gap: 4px;
 }
 
-/* 标题 + 时间同行 */
 .card-header-row {
   display: flex;
   align-items: baseline;
@@ -873,11 +1061,9 @@ defineExpose({})
   text-overflow: ellipsis;
 }
 
-.card-desc--read {
-  color: #B0B7C3;
-}
+.card-desc--read { color: #B0B7C3; }
 
-/* ===== 右侧操作区 ===== */
+/* 右侧操作 */
 .card-right {
   display: flex;
   flex-direction: column;
@@ -905,18 +1091,14 @@ defineExpose({})
   justify-content: center;
   transition: background 0.15s;
 
-  &:active {
-    background: #F3F4F6;
-  }
+  &:active { background: #F3F4F6; }
 
   // #ifdef H5
-  &:hover {
-    background: #F3F4F6;
-  }
+  &:hover { background: #F3F4F6; }
   // #endif
 }
 
-/* ===== 操作菜单弹出层 ===== */
+/* 单条操作菜单 */
 .action-menu {
   position: absolute;
   top: calc(100% + 4px);
@@ -944,19 +1126,13 @@ defineExpose({})
   cursor: pointer;
   transition: background 0.12s;
 
-  &:active {
-    background: #F3F4F6;
-  }
+  &:active { background: #F3F4F6; }
 
   // #ifdef H5
-  &:hover {
-    background: #F3F4F6;
-  }
+  &:hover { background: #F3F4F6; }
   // #endif
 
-  & + & {
-    border-top: 1px solid #F3F4F6;
-  }
+  & + & { border-top: 1px solid #F3F4F6; }
 }
 
 .action-item--danger {
@@ -973,11 +1149,9 @@ defineExpose({})
   color: #374151;
 }
 
-.action-text--danger {
-  color: #EF4444;
-}
+.action-text--danger { color: #EF4444; }
 
-/* ===== 积分标签 ===== */
+/* ===================== 积分标签 ===================== */
 .point-tag {
   align-self: flex-start;
   padding: 3px 8px;
@@ -991,7 +1165,105 @@ defineExpose({})
   color: #D97706;
 }
 
-/* ===== 骨架屏 ===== */
+/* ===================== 批量底部操作栏 ===================== */
+.batch-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  background: $white;
+  border-top: 1px solid #E4E4E7;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 300;
+  animation: bar-slide-up 0.2s ease;
+}
+
+@keyframes bar-slide-up {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.batch-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.batch-select-all {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.batch-select-text {
+  font-size: 13px;
+  color: #6B7280;
+}
+
+.batch-count {
+  font-size: 13px;
+  color: #9CA3AF;
+}
+
+.batch-count-num {
+  font-weight: 600;
+  color: #2563EB;
+}
+
+.batch-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.batch-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  background: #EFF6FF;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: #DBEAFE; }
+
+  // #ifdef H5
+  &:hover { background: #DBEAFE; }
+  // #endif
+}
+
+.batch-btn--danger {
+  background: #FEF2F2;
+
+  &:active { background: #FEE2E2; }
+
+  // #ifdef H5
+  &:hover { background: #FEE2E2; }
+  // #endif
+}
+
+.batch-btn--disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.batch-btn-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563EB;
+}
+
+.batch-btn-text--danger { color: #EF4444; }
+.batch-btn-text--disabled { color: #93C5FD; }
+
+/* ===================== 骨架屏 ===================== */
 .skeleton-card {
   display: flex;
   align-items: flex-start;
@@ -1017,20 +1289,8 @@ defineExpose({})
   gap: 8px;
 }
 
-.skeleton-header {
-  height: 14px;
-  border-radius: 6px;
-}
-
-.skeleton-desc {
-  height: 13px;
-  border-radius: 6px;
-}
-
-.skeleton-time {
-  height: 12px;
-  border-radius: 6px;
-}
+.skeleton-header { height: 14px; border-radius: 6px; }
+.skeleton-desc   { height: 13px; border-radius: 6px; }
 
 .skeleton-shine {
   background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
@@ -1043,7 +1303,7 @@ defineExpose({})
   100% { background-position: -200% 0; }
 }
 
-/* ===== 空状态 ===== */
+/* ===================== 空状态 ===================== */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -1077,7 +1337,7 @@ defineExpose({})
   text-align: center;
 }
 
-/* ===== 没有更多 ===== */
+/* ===================== 没有更多 ===================== */
 .load-more {
   display: flex;
   align-items: center;
@@ -1096,9 +1356,5 @@ defineExpose({})
   font-size: 12px;
   color: #D1D5DB;
   white-space: nowrap;
-}
-
-.safe-bottom {
-  height: 32px;
 }
 </style>

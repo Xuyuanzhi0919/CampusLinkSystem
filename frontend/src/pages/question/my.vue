@@ -413,57 +413,39 @@ loadData()
 }
 
 // ===================================
-// 筛选栏（sticky 吸顶，下划线选中态）
+// 筛选栏（sticky 吸顶，胶囊选中态）
 // ===================================
 .filter-bar {
   display: flex;
-  align-items: stretch;
-  padding: 0;
-  margin-bottom: 8rpx;
+  gap: 16rpx;
+  padding: 4rpx 0 20rpx;
   position: sticky;
   top: 0;
   z-index: 10;
   background: #F8FAFC;
-  border-bottom: 1rpx solid #EAECF0;
 }
 
 .filter-item {
   --filter-color: #377DFF;
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  padding: 18rpx 20rpx 16rpx;
-  transition: color 0.18s;
-
-  // 下划线（选中态）
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: -1rpx;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 4rpx;
-    border-radius: 2rpx;
-    background: var(--filter-color);
-    transition: width 0.2s ease;
-  }
+  --filter-bg: rgba(55, 125, 255, 0.1);
+  padding: 12rpx 24rpx;
+  border-radius: 32rpx;
+  background: #E8EDF3;
+  transition: background 0.18s;
 
   &.active {
-    &::after { width: 36rpx; }
+    background: var(--filter-bg);
 
     .filter-label {
       color: var(--filter-color);
-      font-weight: 600;
+      font-weight: 500;
     }
   }
 }
 
 .filter-label {
   font-size: 26rpx;
-  color: #6B7280;
-  transition: color 0.18s;
+  color: #666;
 }
 
 /* #ifdef H5 */
@@ -483,8 +465,11 @@ loadData()
 .filter-item {
   cursor: pointer;
   &:not(.active):hover {
-    .filter-label { color: var(--filter-color); }
-    &::after { width: 24rpx; }
+    background: var(--filter-bg);
+    .filter-label {
+      color: var(--filter-color);
+      transition: color 0.18s;
+    }
   }
 }
 

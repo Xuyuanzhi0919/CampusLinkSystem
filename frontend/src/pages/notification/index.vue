@@ -31,6 +31,9 @@
       </view>
     </view>
 
+    <!-- 操作菜单遮罩（点击关闭菜单） -->
+    <view v-if="activeActionId !== null" class="action-overlay" @click="activeActionId = null" />
+
     <!-- 通知列表 -->
     <scroll-view
       class="content-scroll"
@@ -40,14 +43,10 @@
       <view class="page-inner">
         <!-- 骨架屏：初始加载 -->
         <template v-if="loading">
-          <view
-            v-for="(w, i) in skeletonWidths"
-            :key="i"
-            class="skeleton-card"
-          >
+          <view v-for="(w, i) in skeletonWidths" :key="i" class="skeleton-card">
             <view class="skeleton-icon skeleton-shine" />
             <view class="skeleton-body">
-              <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
+              <view class="skeleton-header skeleton-shine" :style="{ width: w.title }" />
               <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
               <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
             </view>
@@ -56,6 +55,7 @@
 
         <!-- 通知列表 -->
         <template v-if="!loading && notificationList.length > 0">
+
           <!-- 今天 -->
           <template v-if="todayNotifications.length > 0">
             <view class="date-divider">
@@ -73,19 +73,74 @@
                 <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
               </view>
               <view class="card-body">
-                <text class="card-title">{{ notification.title }}</text>
-                <text class="card-desc">{{ notification.content }}</text>
-                <view class="card-footer">
+                <view class="card-header-row">
+                  <text class="card-title" :class="{ 'card-title--read': notification.isRead }">{{ notification.title }}</text>
                   <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
-                  <view v-if="getPointReward(notification)" class="point-tag">
-                    <text class="point-text">{{ getPointReward(notification) }}</text>
-                  </view>
+                </view>
+                <text class="card-desc" :class="{ 'card-desc--read': notification.isRead }">{{ notification.content }}</text>
+                <view v-if="getPointReward(notification)" class="point-tag">
+                  <text class="point-text">{{ getPointReward(notification) }}</text>
                 </view>
               </view>
               <view class="card-right">
                 <view v-if="!notification.isRead" class="unread-dot" />
-                <view class="delete-btn" @click.stop="handleDelete(notification)">
-                  <Icon name="trash-2" :size="15" color="#D1D5DB" />
+                <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
+                  <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
+                </view>
+                <view v-if="activeActionId === notification.notificationId" class="action-menu">
+                  <view v-if="!notification.isRead" class="action-item" @click.stop="handleMarkSingleRead(notification)">
+                    <Icon name="check" :size="14" color="#2563EB" />
+                    <text class="action-text">标记已读</text>
+                  </view>
+                  <view class="action-item action-item--danger" @click.stop="handleDelete(notification)">
+                    <Icon name="trash-2" :size="14" color="#EF4444" />
+                    <text class="action-text action-text--danger">删除</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </template>
+
+          <!-- 昨天 -->
+          <template v-if="yesterdayNotifications.length > 0">
+            <view class="date-divider date-divider-gap">
+              <text class="date-divider-text date-divider-text-gray">昨天</text>
+            </view>
+            <view
+              v-for="(notification, idx) in yesterdayNotifications"
+              :key="notification.notificationId"
+              class="notification-card card-enter"
+              :class="{ 'is-unread': !notification.isRead }"
+              :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
+              @click="handleNotificationClick(notification)"
+            >
+              <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
+                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
+              </view>
+              <view class="card-body">
+                <view class="card-header-row">
+                  <text class="card-title" :class="{ 'card-title--read': notification.isRead }">{{ notification.title }}</text>
+                  <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
+                </view>
+                <text class="card-desc" :class="{ 'card-desc--read': notification.isRead }">{{ notification.content }}</text>
+                <view v-if="getPointReward(notification)" class="point-tag">
+                  <text class="point-text">{{ getPointReward(notification) }}</text>
+                </view>
+              </view>
+              <view class="card-right">
+                <view v-if="!notification.isRead" class="unread-dot" />
+                <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
+                  <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
+                </view>
+                <view v-if="activeActionId === notification.notificationId" class="action-menu">
+                  <view v-if="!notification.isRead" class="action-item" @click.stop="handleMarkSingleRead(notification)">
+                    <Icon name="check" :size="14" color="#2563EB" />
+                    <text class="action-text">标记已读</text>
+                  </view>
+                  <view class="action-item action-item--danger" @click.stop="handleDelete(notification)">
+                    <Icon name="trash-2" :size="14" color="#EF4444" />
+                    <text class="action-text action-text--danger">删除</text>
+                  </view>
                 </view>
               </view>
             </view>
@@ -99,25 +154,40 @@
             <view
               v-for="(notification, idx) in earlierNotifications"
               :key="notification.notificationId"
-              class="notification-card is-read card-enter"
-              :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
+              class="notification-card card-enter"
+              :class="{ 'is-unread': !notification.isRead }"
+              :style="{ animationDelay: `${(todayNotifications.length + yesterdayNotifications.length + idx) * 0.04}s` }"
               @click="handleNotificationClick(notification)"
             >
-              <view class="card-icon-wrap" style="background: #F3F4F6;">
-                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
+              <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
+                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
               </view>
               <view class="card-body">
-                <text class="card-title card-title-read">{{ notification.title }}</text>
-                <text class="card-desc card-desc-read">{{ notification.content }}</text>
-                <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
+                <view class="card-header-row">
+                  <text class="card-title" :class="{ 'card-title--read': notification.isRead }">{{ notification.title }}</text>
+                  <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
+                </view>
+                <text class="card-desc" :class="{ 'card-desc--read': notification.isRead }">{{ notification.content }}</text>
               </view>
               <view class="card-right">
-                <view class="delete-btn" @click.stop="handleDelete(notification)">
-                  <Icon name="trash-2" :size="15" color="#D1D5DB" />
+                <view v-if="!notification.isRead" class="unread-dot" />
+                <view class="more-btn" @click.stop="toggleActionMenu(notification.notificationId)">
+                  <Icon name="more-horizontal" :size="16" color="#9CA3AF" />
+                </view>
+                <view v-if="activeActionId === notification.notificationId" class="action-menu">
+                  <view v-if="!notification.isRead" class="action-item" @click.stop="handleMarkSingleRead(notification)">
+                    <Icon name="check" :size="14" color="#2563EB" />
+                    <text class="action-text">标记已读</text>
+                  </view>
+                  <view class="action-item action-item--danger" @click.stop="handleDelete(notification)">
+                    <Icon name="trash-2" :size="14" color="#EF4444" />
+                    <text class="action-text action-text--danger">删除</text>
+                  </view>
                 </view>
               </view>
             </view>
           </template>
+
         </template>
 
         <!-- 空状态 -->
@@ -125,8 +195,8 @@
           <view class="empty-icon-wrap">
             <Icon name="bell-off" :size="36" color="#9CA3AF" />
           </view>
-          <text class="empty-title">暂无通知</text>
-          <text class="empty-desc">有新消息时会在这里提醒你</text>
+          <text class="empty-title">{{ emptyInfo.title }}</text>
+          <text class="empty-desc">{{ emptyInfo.desc }}</text>
         </view>
 
         <!-- 加载更多骨架 -->
@@ -134,9 +204,8 @@
           <view v-for="(w, i) in skeletonWidths.slice(0, 2)" :key="`more-${i}`" class="skeleton-card">
             <view class="skeleton-icon skeleton-shine" />
             <view class="skeleton-body">
-              <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
+              <view class="skeleton-header skeleton-shine" :style="{ width: w.title }" />
               <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
-              <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
             </view>
           </view>
         </template>
@@ -183,7 +252,10 @@ const hasMore = ref(true)
 const page = ref(1)
 const pageSize = 20
 
-// 骨架屏宽度随机池（5条，避免完全一样）
+// 当前展开操作菜单的通知 ID
+const activeActionId = ref<number | null>(null)
+
+// 骨架屏宽度随机池
 const skeletonWidths = [
   { title: '58%', desc: '88%', time: '28%' },
   { title: '65%', desc: '92%', time: '32%' },
@@ -202,11 +274,36 @@ const todayNotifications = computed(() => {
   return notificationList.value.filter(n => new Date(n.createdAt) >= today)
 })
 
-// 更早的通知
+// 昨天的通知
+const yesterdayNotifications = computed(() => {
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  return notificationList.value.filter(n => {
+    const d = new Date(n.createdAt)
+    return d >= yesterday && d < today
+  })
+})
+
+// 更早的通知（昨天之前）
 const earlierNotifications = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  return notificationList.value.filter(n => new Date(n.createdAt) < today)
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  return notificationList.value.filter(n => new Date(n.createdAt) < yesterday)
+})
+
+// 各 Tab 空状态文案
+const emptyInfo = computed(() => {
+  const map: Record<string, { title: string; desc: string }> = {
+    all:     { title: '暂无通知', desc: '有新消息时会在这里提醒你' },
+    ANSWER:  { title: '暂无回答通知', desc: '有人回答了你的问题，会在这里提醒你' },
+    COMMENT: { title: '暂无评论通知', desc: '有人评论了你的内容，会在这里提醒你' },
+    SYSTEM:  { title: '暂无系统通知', desc: '系统消息和公告会在这里显示' }
+  }
+  return map[currentTab.value] || map.all
 })
 
 // 通知类型 -> lucide 图标名
@@ -271,7 +368,27 @@ const getPointReward = (notification: any): string => {
   return ''
 }
 
-// 更新各 Tab 未读 badge（从当前列表统计）
+// 操作菜单切换
+const toggleActionMenu = (id: number) => {
+  activeActionId.value = activeActionId.value === id ? null : id
+}
+
+// 单条标记已读
+const handleMarkSingleRead = async (notification: any) => {
+  activeActionId.value = null
+  if (notification.isRead) return
+  try {
+    await markNotificationRead(notification.notificationId)
+    notification.isRead = true
+    updateTabBadges()
+    loadUnreadCount()
+    uni.showToast({ title: '已标记已读', icon: 'success' })
+  } catch {
+    uni.showToast({ title: '操作失败', icon: 'none' })
+  }
+}
+
+// 更新各 Tab 未读 badge
 const updateTabBadges = () => {
   const typeCount: Record<string, number> = { ANSWER: 0, COMMENT: 0, SYSTEM: 0 }
   notificationList.value.forEach(n => {
@@ -336,6 +453,7 @@ const loadUnreadCount = async () => {
 const handleTabChange = (tab: string) => {
   if (currentTab.value === tab) return
   currentTab.value = tab
+  activeActionId.value = null
   page.value = 1
   notificationList.value = []
   hasMore.value = true
@@ -349,8 +467,14 @@ const handleLoadMore = () => {
   loadNotifications()
 }
 
-// 点击通知
+// 点击通知卡片
 const handleNotificationClick = async (notification: any) => {
+  // 若菜单打开，关闭菜单而非跳转
+  if (activeActionId.value !== null) {
+    activeActionId.value = null
+    return
+  }
+
   if (!notification.isRead) {
     try {
       await markNotificationRead(notification.notificationId)
@@ -402,6 +526,7 @@ const handleMarkAllRead = async () => {
 
 // 删除通知
 const handleDelete = (notification: any) => {
+  activeActionId.value = null
   uni.showModal({
     title: '删除通知',
     content: '确定要删除这条通知吗？',
@@ -443,12 +568,13 @@ const formatTime = (dateStr: string): string => {
   if (diff < 60000) return '刚刚'
   if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
   if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
-  if (diff < 172800000) return '昨天'
-  if (diff < 604800000) return `${Math.floor(diff / 86400000)}天前`
 
-  const m = (date.getMonth() + 1).toString().padStart(2, '0')
-  const d = date.getDate().toString().padStart(2, '0')
-  return `${date.getFullYear()}-${m}-${d}`
+  const hh = date.getHours().toString().padStart(2, '0')
+  const mm = date.getMinutes().toString().padStart(2, '0')
+  const mo = (date.getMonth() + 1).toString().padStart(2, '0')
+  const dd = date.getDate().toString().padStart(2, '0')
+  if (date.getFullYear() === now.getFullYear()) return `${mo}-${dd} ${hh}:${mm}`
+  return `${date.getFullYear()}-${mo}-${dd}`
 }
 
 onMounted(() => {
@@ -473,6 +599,7 @@ defineExpose({})
   flex-direction: column;
 }
 
+/* ===== 右上角全部已读按钮 ===== */
 .mark-all-btn {
   display: flex;
   align-items: center;
@@ -486,13 +613,18 @@ defineExpose({})
   &:active {
     background: #DBEAFE;
   }
+
+  // #ifdef H5
+  &:hover {
+    background: #DBEAFE;
+  }
+  // #endif
 }
 
 .mark-text {
   font-size: 12px;
   font-weight: 600;
   color: #2563EB;
-  font-family: 'DM Sans', sans-serif;
 }
 
 .mark-text--disabled {
@@ -529,14 +661,12 @@ defineExpose({})
   align-items: center;
   cursor: pointer;
   padding-bottom: 0;
-}
 
-/* ===== 内容居中容器 ===== */
-.page-inner {
-  max-width: 800px;
-  margin: 0 auto;
-  width: 100%;
-  padding-top: 8px;
+  // #ifdef H5
+  &:hover .tab-label {
+    color: #2563EB;
+  }
+  // #endif
 }
 
 .tab-content {
@@ -548,7 +678,6 @@ defineExpose({})
 
 .tab-label {
   font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
   font-weight: 500;
   color: #9CA3AF;
   transition: color 0.2s;
@@ -582,10 +711,17 @@ defineExpose({})
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 20px;
+  width: 24px;
   height: 3px;
   background: #2563EB;
   border-radius: 2px;
+}
+
+/* ===== 操作菜单遮罩 ===== */
+.action-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
 }
 
 /* ===== 内容滚动区 ===== */
@@ -594,19 +730,25 @@ defineExpose({})
   height: calc(100vh - 104px);
 }
 
+/* ===== 内容居中容器 ===== */
+.page-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 8px;
+}
+
 /* ===== 日期分隔线 ===== */
 .date-divider {
   padding: 8px 16px 4px;
   display: flex;
   align-items: center;
-  background: #F8FAFC;
 }
 
 .date-divider-text {
   font-size: 12px;
   font-weight: 600;
   color: #2563EB;
-  font-family: 'DM Sans', sans-serif;
 }
 
 .date-divider-text-gray {
@@ -627,27 +769,34 @@ defineExpose({})
   border-radius: 12px;
   margin: 0 12px 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transition: background 0.15s;
+  transition: background 0.15s, box-shadow 0.2s, transform 0.2s;
   cursor: pointer;
+  position: relative;
 
   &:active {
     background: #F5F7FF;
   }
+
+  // #ifdef H5
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  // #endif
 }
 
-/* 未读卡片：左侧蓝色色条 + 淡蓝背景 */
+/* 未读卡片 */
 .notification-card.is-unread {
   background: #FAFBFF;
   box-shadow: 0 1px 4px rgba(37, 99, 235, 0.1);
   border-left: 3px solid #2563EB;
   padding-left: 13px;
-}
 
-/* 已读卡片 */
-.notification-card.is-read {
-  background: #F9FAFB;
-  box-shadow: none;
-  opacity: 0.85;
+  // #ifdef H5
+  &:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+  }
+  // #endif
 }
 
 /* 入场动画 */
@@ -669,9 +818,10 @@ defineExpose({})
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-top: 2px;
 }
 
-/* ===== 卡片内容 ===== */
+/* ===== 卡片内容区 ===== */
 .card-body {
   flex: 1;
   min-width: 0;
@@ -680,24 +830,41 @@ defineExpose({})
   gap: 4px;
 }
 
+/* 标题 + 时间同行 */
+.card-header-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .card-title {
   font-size: 14px;
   font-weight: 600;
   color: #1A1A1A;
-  font-family: 'DM Sans', sans-serif;
   line-height: 1.4;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.card-title-read {
-  color: #9CA3AF;
+.card-title--read {
+  color: #6B7280;
   font-weight: 500;
+}
+
+.card-time {
+  font-size: 11px;
+  color: #9CA3AF;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-desc {
   font-size: 13px;
-  font-weight: 400;
   color: #6B7280;
-  font-family: 'DM Sans', sans-serif;
   line-height: 1.5;
   overflow: hidden;
   display: -webkit-box;
@@ -706,46 +873,19 @@ defineExpose({})
   text-overflow: ellipsis;
 }
 
-.card-desc-read {
+.card-desc--read {
   color: #B0B7C3;
 }
 
-.card-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-time {
-  font-size: 12px;
-  color: #9CA3AF;
-  font-family: 'DM Sans', sans-serif;
-}
-
-.card-time-read {
-  color: #D1D5DB;
-}
-
-.point-tag {
-  padding: 3px 8px;
-  background: #FEF3C7;
-  border-radius: 10px;
-}
-
-.point-text {
-  font-size: 11px;
-  font-weight: 600;
-  color: #D97706;
-}
-
-/* ===== 右侧区域 ===== */
+/* ===== 右侧操作区 ===== */
 .card-right {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
   padding-top: 2px;
+  position: relative;
 }
 
 .unread-dot {
@@ -756,9 +896,9 @@ defineExpose({})
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
-.delete-btn {
-  width: 32px;
-  height: 32px;
+.more-btn {
+  width: 28px;
+  height: 28px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -766,12 +906,89 @@ defineExpose({})
   transition: background 0.15s;
 
   &:active {
-    background: #FEE2E2;
+    background: #F3F4F6;
+  }
+
+  // #ifdef H5
+  &:hover {
+    background: #F3F4F6;
+  }
+  // #endif
+}
+
+/* ===== 操作菜单弹出层 ===== */
+.action-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: $white;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border: 1px solid #E4E4E7;
+  z-index: 201;
+  min-width: 120px;
+  overflow: hidden;
+  animation: menu-pop 0.15s ease;
+}
+
+@keyframes menu-pop {
+  from { opacity: 0; transform: scale(0.92) translateY(-4px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.action-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:active {
+    background: #F3F4F6;
+  }
+
+  // #ifdef H5
+  &:hover {
+    background: #F3F4F6;
+  }
+  // #endif
+
+  & + & {
+    border-top: 1px solid #F3F4F6;
   }
 }
 
-.delete-btn:active {
-  background: #FEE2E2;
+.action-item--danger {
+  &:active { background: #FEF2F2; }
+
+  // #ifdef H5
+  &:hover { background: #FEF2F2; }
+  // #endif
+}
+
+.action-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.action-text--danger {
+  color: #EF4444;
+}
+
+/* ===== 积分标签 ===== */
+.point-tag {
+  align-self: flex-start;
+  padding: 3px 8px;
+  background: #FEF3C7;
+  border-radius: 10px;
+}
+
+.point-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #D97706;
 }
 
 /* ===== 骨架屏 ===== */
@@ -800,8 +1017,8 @@ defineExpose({})
   gap: 8px;
 }
 
-.skeleton-title {
-  height: 16px;
+.skeleton-header {
+  height: 14px;
   border-radius: 6px;
 }
 
@@ -852,13 +1069,12 @@ defineExpose({})
   font-size: 16px;
   font-weight: 600;
   color: #6B7280;
-  font-family: 'DM Sans', sans-serif;
 }
 
 .empty-desc {
   font-size: 13px;
   color: #9CA3AF;
-  font-family: 'DM Sans', sans-serif;
+  text-align: center;
 }
 
 /* ===== 没有更多 ===== */

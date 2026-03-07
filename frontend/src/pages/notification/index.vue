@@ -12,20 +12,22 @@
 
     <!-- 分类 Tab 栏 -->
     <view class="tab-bar">
-      <view
-        v-for="tab in tabs"
-        :key="tab.value"
-        class="tab-item"
-        :class="{ active: currentTab === tab.value }"
-        @click="handleTabChange(tab.value)"
-      >
-        <view class="tab-content">
-          <text class="tab-label">{{ tab.label }}</text>
-          <view v-if="tab.badge > 0" class="tab-badge">
-            <text class="tab-badge-text">{{ tab.badge > 99 ? '99+' : tab.badge }}</text>
+      <view class="tab-bar-inner">
+        <view
+          v-for="tab in tabs"
+          :key="tab.value"
+          class="tab-item"
+          :class="{ active: currentTab === tab.value }"
+          @click="handleTabChange(tab.value)"
+        >
+          <view class="tab-content">
+            <text class="tab-label">{{ tab.label }}</text>
+            <view v-if="tab.badge > 0" class="tab-badge">
+              <text class="tab-badge-text">{{ tab.badge > 99 ? '99+' : tab.badge }}</text>
+            </view>
           </view>
+          <view v-if="currentTab === tab.value" class="tab-indicator" />
         </view>
-        <view v-if="currentTab === tab.value" class="tab-indicator" />
       </view>
     </view>
 
@@ -35,117 +37,119 @@
       scroll-y
       @scrolltolower="handleLoadMore"
     >
-      <!-- 骨架屏：初始加载 -->
-      <template v-if="loading">
-        <view
-          v-for="(w, i) in skeletonWidths"
-          :key="i"
-          class="skeleton-card"
-        >
-          <view class="skeleton-icon skeleton-shine" />
-          <view class="skeleton-body">
-            <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
-            <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
-            <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
-          </view>
-        </view>
-      </template>
-
-      <!-- 通知列表 -->
-      <template v-if="!loading && notificationList.length > 0">
-        <!-- 今天 -->
-        <template v-if="todayNotifications.length > 0">
-          <view class="date-divider">
-            <text class="date-divider-text">今天</text>
-          </view>
+      <view class="page-inner">
+        <!-- 骨架屏：初始加载 -->
+        <template v-if="loading">
           <view
-            v-for="(notification, idx) in todayNotifications"
-            :key="notification.notificationId"
-            class="notification-card card-enter"
-            :class="{ 'is-unread': !notification.isRead }"
-            :style="{ animationDelay: `${idx * 0.04}s` }"
-            @click="handleNotificationClick(notification)"
+            v-for="(w, i) in skeletonWidths"
+            :key="i"
+            class="skeleton-card"
           >
-            <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
+            <view class="skeleton-icon skeleton-shine" />
+            <view class="skeleton-body">
+              <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
+              <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
+              <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
             </view>
-            <view class="card-body">
-              <text class="card-title">{{ notification.title }}</text>
-              <text class="card-desc">{{ notification.content }}</text>
-              <view class="card-footer">
-                <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
-                <view v-if="getPointReward(notification)" class="point-tag">
-                  <text class="point-text">{{ getPointReward(notification) }}</text>
+          </view>
+        </template>
+
+        <!-- 通知列表 -->
+        <template v-if="!loading && notificationList.length > 0">
+          <!-- 今天 -->
+          <template v-if="todayNotifications.length > 0">
+            <view class="date-divider">
+              <text class="date-divider-text">今天</text>
+            </view>
+            <view
+              v-for="(notification, idx) in todayNotifications"
+              :key="notification.notificationId"
+              class="notification-card card-enter"
+              :class="{ 'is-unread': !notification.isRead }"
+              :style="{ animationDelay: `${idx * 0.04}s` }"
+              @click="handleNotificationClick(notification)"
+            >
+              <view class="card-icon-wrap" :style="{ background: getTypeBg(notification.notifyType) }">
+                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" :color="getTypeColor(notification.notifyType)" />
+              </view>
+              <view class="card-body">
+                <text class="card-title">{{ notification.title }}</text>
+                <text class="card-desc">{{ notification.content }}</text>
+                <view class="card-footer">
+                  <text class="card-time">{{ formatTime(notification.createdAt) }}</text>
+                  <view v-if="getPointReward(notification)" class="point-tag">
+                    <text class="point-text">{{ getPointReward(notification) }}</text>
+                  </view>
+                </view>
+              </view>
+              <view class="card-right">
+                <view v-if="!notification.isRead" class="unread-dot" />
+                <view class="delete-btn" @click.stop="handleDelete(notification)">
+                  <Icon name="trash-2" :size="15" color="#D1D5DB" />
                 </view>
               </view>
             </view>
-            <view class="card-right">
-              <view v-if="!notification.isRead" class="unread-dot" />
-              <view class="delete-btn" @click.stop="handleDelete(notification)">
-                <Icon name="trash-2" :size="15" color="#D1D5DB" />
+          </template>
+
+          <!-- 更早 -->
+          <template v-if="earlierNotifications.length > 0">
+            <view class="date-divider date-divider-gap">
+              <text class="date-divider-text date-divider-text-gray">更早</text>
+            </view>
+            <view
+              v-for="(notification, idx) in earlierNotifications"
+              :key="notification.notificationId"
+              class="notification-card is-read card-enter"
+              :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
+              @click="handleNotificationClick(notification)"
+            >
+              <view class="card-icon-wrap" style="background: #F3F4F6;">
+                <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
               </view>
+              <view class="card-body">
+                <text class="card-title card-title-read">{{ notification.title }}</text>
+                <text class="card-desc card-desc-read">{{ notification.content }}</text>
+                <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
+              </view>
+              <view class="card-right">
+                <view class="delete-btn" @click.stop="handleDelete(notification)">
+                  <Icon name="trash-2" :size="15" color="#D1D5DB" />
+                </view>
+              </view>
+            </view>
+          </template>
+        </template>
+
+        <!-- 空状态 -->
+        <view v-if="!loading && notificationList.length === 0" class="empty-state">
+          <view class="empty-icon-wrap">
+            <Icon name="bell-off" :size="36" color="#9CA3AF" />
+          </view>
+          <text class="empty-title">暂无通知</text>
+          <text class="empty-desc">有新消息时会在这里提醒你</text>
+        </view>
+
+        <!-- 加载更多骨架 -->
+        <template v-if="loadingMore">
+          <view v-for="(w, i) in skeletonWidths.slice(0, 2)" :key="`more-${i}`" class="skeleton-card">
+            <view class="skeleton-icon skeleton-shine" />
+            <view class="skeleton-body">
+              <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
+              <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
+              <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
             </view>
           </view>
         </template>
 
-        <!-- 更早 -->
-        <template v-if="earlierNotifications.length > 0">
-          <view class="date-divider date-divider-gap">
-            <text class="date-divider-text date-divider-text-gray">更早</text>
-          </view>
-          <view
-            v-for="(notification, idx) in earlierNotifications"
-            :key="notification.notificationId"
-            class="notification-card is-read card-enter"
-            :style="{ animationDelay: `${(todayNotifications.length + idx) * 0.04}s` }"
-            @click="handleNotificationClick(notification)"
-          >
-            <view class="card-icon-wrap" style="background: #F3F4F6;">
-              <Icon :name="getTypeIcon(notification.notifyType)" :size="20" color="#9CA3AF" />
-            </view>
-            <view class="card-body">
-              <text class="card-title card-title-read">{{ notification.title }}</text>
-              <text class="card-desc card-desc-read">{{ notification.content }}</text>
-              <text class="card-time card-time-read">{{ formatTime(notification.createdAt) }}</text>
-            </view>
-            <view class="card-right">
-              <view class="delete-btn" @click.stop="handleDelete(notification)">
-                <Icon name="trash-2" :size="15" color="#D1D5DB" />
-              </view>
-            </view>
-          </view>
-        </template>
-      </template>
-
-      <!-- 空状态 -->
-      <view v-if="!loading && notificationList.length === 0" class="empty-state">
-        <view class="empty-icon-wrap">
-          <Icon name="bell-off" :size="36" color="#9CA3AF" />
+        <!-- 没有更多 -->
+        <view v-if="!loadingMore && notificationList.length > 0 && !hasMore" class="load-more">
+          <view class="no-more-line" />
+          <text class="no-more-text">已经到底了</text>
+          <view class="no-more-line" />
         </view>
-        <text class="empty-title">暂无通知</text>
-        <text class="empty-desc">有新消息时会在这里提醒你</text>
+
+        <view class="safe-bottom" />
       </view>
-
-      <!-- 加载更多骨架 -->
-      <template v-if="loadingMore">
-        <view v-for="(w, i) in skeletonWidths.slice(0, 2)" :key="`more-${i}`" class="skeleton-card">
-          <view class="skeleton-icon skeleton-shine" />
-          <view class="skeleton-body">
-            <view class="skeleton-title skeleton-shine" :style="{ width: w.title }" />
-            <view class="skeleton-desc skeleton-shine" :style="{ width: w.desc }" />
-            <view class="skeleton-time skeleton-shine" :style="{ width: w.time }" />
-          </view>
-        </view>
-      </template>
-
-      <!-- 没有更多 -->
-      <view v-if="!loadingMore && notificationList.length > 0 && !hasMore" class="load-more">
-        <view class="no-more-line" />
-        <text class="no-more-text">已经到底了</text>
-        <view class="no-more-line" />
-      </view>
-
-      <view class="safe-bottom" />
     </scroll-view>
   </view>
 </template>
@@ -502,12 +506,18 @@ defineExpose({})
 
 /* ===== Tab 栏 ===== */
 .tab-bar {
-  display: flex;
   background: $white;
   border-bottom: 1px solid #E4E4E7;
   position: sticky;
   top: 56px;
   z-index: 99;
+}
+
+.tab-bar-inner {
+  display: flex;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .tab-item {
@@ -519,6 +529,14 @@ defineExpose({})
   align-items: center;
   cursor: pointer;
   padding-bottom: 0;
+}
+
+/* ===== 内容居中容器 ===== */
+.page-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  padding-top: 8px;
 }
 
 .tab-content {

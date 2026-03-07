@@ -84,7 +84,7 @@ const capabilityItems = computed<CapabilityItem[]>(() => [
     description: '点赞、评论、私信',
     icon: 'bell',
     color: 'rose',
-    path: '/pages/user/favorites',
+    path: '/pages/notification/index',
     badge: (props.badges?.notifications || 0) + (props.badges?.messages || 0)
   },
   {

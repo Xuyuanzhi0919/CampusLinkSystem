@@ -52,29 +52,24 @@
                 </view>
               </view>
 
-              <!-- 任务类型 -->
+              <!-- 任务类型 - 内联卡片选择 -->
               <view class="form-item" style="margin-bottom: 0">
                 <view class="item-label">
                   <text class="label-text">任务类型</text>
                   <text class="label-required">*</text>
                 </view>
-                <picker
-                  mode="selector"
-                  :range="taskTypes"
-                  range-key="label"
-                  :value="currentTypeIndex"
-                  @change="handleTypeChange"
-                >
-                  <view class="picker-trigger" :class="{ 'picker-trigger--error': errors.taskType }">
-                    <view class="picker-left">
-                      <Icon name="tag" :size="16" class="picker-icon" />
-                      <text :class="{ 'picker-placeholder': currentTypeIndex === -1 }">
-                        {{ currentTypeIndex === -1 ? '请选择任务类型' : taskTypes[currentTypeIndex].label }}
-                      </text>
-                    </view>
-                    <Icon name="chevron-down" :size="16" class="picker-arrow" />
+                <view class="type-grid" :class="{ 'type-grid--error': errors.taskType }">
+                  <view
+                    v-for="(type, index) in taskTypes"
+                    :key="type.value"
+                    class="type-card"
+                    :class="{ 'type-card--active': currentTypeIndex === index }"
+                    @click="handleTypeSelect(index)"
+                  >
+                    <text class="type-emoji">{{ type.icon }}</text>
+                    <text class="type-label">{{ type.label }}</text>
                   </view>
-                </picker>
+                </view>
                 <text v-if="errors.taskType" class="field-error-block">{{ errors.taskType }}</text>
               </view>
 
@@ -149,6 +144,19 @@
                   <text class="label-text">截止时间</text>
                   <text class="label-required">*</text>
                 </view>
+                <!-- 快捷预设 -->
+                <view class="deadline-presets">
+                  <view
+                    v-for="preset in deadlinePresets"
+                    :key="preset.label"
+                    class="deadline-preset-btn"
+                    :class="{ 'deadline-preset-btn--active': activePreset === preset.label }"
+                    @click="handleDeadlinePreset(preset)"
+                  >
+                    <text>{{ preset.label }}</text>
+                  </view>
+                </view>
+                <!-- 自定义时间选择器 -->
                 <picker
                   mode="multiSelector"
                   :range="[dateRange, timeRange]"
@@ -157,9 +165,9 @@
                 >
                   <view class="picker-trigger" :class="{ 'picker-trigger--error': errors.deadline }">
                     <view class="picker-left">
-                      <Icon name="clock" :size="16" class="picker-icon" />
+                      <Icon name="calendar" :size="16" class="picker-icon" />
                       <text :class="{ 'picker-placeholder': !formData.deadline }">
-                        {{ formData.deadline ? formatDeadline(formData.deadline) : '请选择截止时间' }}
+                        {{ formData.deadline ? formatDeadline(formData.deadline) : '自定义时间...' }}
                       </text>
                     </view>
                     <Icon name="chevron-down" :size="16" class="picker-arrow" />
@@ -387,6 +395,15 @@ const timeRange = ref<string[]>([])
 const currentDateIndex = ref(0)
 const currentTimeIndex = ref(0)
 
+// 截止时间快捷预设
+const activePreset = ref('')
+const deadlinePresets = [
+  { label: '明天', hours: 24 },
+  { label: '后天', hours: 48 },
+  { label: '3天后', hours: 72 },
+  { label: '1周后', hours: 168 }
+]
+
 // 初始化日期时间范围
 const initDateTimeRange = () => {
   const dates: string[] = []
@@ -586,21 +603,50 @@ const handleGetLocation = () => {
 }
 
 /**
- * 任务类型改变
+ * 直接点击选择任务类型
  */
-const handleTypeChange = (e: any) => {
-  currentTypeIndex.value = e.detail.value
-  formData.value.taskType = taskTypes[currentTypeIndex.value].value as TaskType
+const handleTypeSelect = (index: number) => {
+  currentTypeIndex.value = index
+  formData.value.taskType = taskTypes[index].value as TaskType
   errors.value.taskType = ''
 }
 
 /**
- * 日期时间改变
+ * 将 Date 对象写入 formData.deadline
+ */
+const applyDeadline = (target: Date) => {
+  const year = target.getFullYear()
+  const month = (target.getMonth() + 1).toString().padStart(2, '0')
+  const day = target.getDate().toString().padStart(2, '0')
+  const hour = target.getHours().toString().padStart(2, '0')
+  const minute = target.getMinutes().toString().padStart(2, '0')
+  formData.value.deadline = `${year}-${month}-${day}T${hour}:${minute}:00`
+  errors.value.deadline = ''
+}
+
+/**
+ * 快捷预设截止时间
+ */
+const handleDeadlinePreset = (preset: { label: string, hours: number }) => {
+  const now = new Date()
+  const target = new Date(now.getTime() + preset.hours * 60 * 60 * 1000)
+  // 向上取整到下一个整点或半点
+  const m = target.getMinutes()
+  if (m > 0 && m <= 30) target.setMinutes(30, 0, 0)
+  else if (m > 30) { target.setHours(target.getHours() + 1, 0, 0, 0) }
+
+  activePreset.value = preset.label
+  applyDeadline(target)
+}
+
+/**
+ * 日期时间改变（手动滚动选择）
  */
 const handleDateTimeChange = (e: any) => {
   const [dateIdx, timeIdx] = e.detail.value
   currentDateIndex.value = dateIdx
   currentTimeIndex.value = timeIdx
+  activePreset.value = '' // 清除预设高亮
 
   const now = new Date()
   const targetDate = new Date(now)
@@ -620,14 +666,7 @@ const handleDateTimeChange = (e: any) => {
     return
   }
 
-  const year = targetDate.getFullYear()
-  const month = (targetDate.getMonth() + 1).toString().padStart(2, '0')
-  const day = targetDate.getDate().toString().padStart(2, '0')
-  const hour = targetDate.getHours().toString().padStart(2, '0')
-  const minute = targetDate.getMinutes().toString().padStart(2, '0')
-  const second = targetDate.getSeconds().toString().padStart(2, '0')
-
-  formData.value.deadline = `${year}-${month}-${day}T${hour}:${minute}:${second}`
+  applyDeadline(targetDate)
 }
 
 /**
@@ -1055,6 +1094,120 @@ const formatDeadline = (dateStr: string): string => {
   &.char-count--warn {
     color: $warning;
     font-weight: 600;
+  }
+}
+
+// ===================================
+// 任务类型内联卡片
+// ===================================
+.type-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+
+  @include mobile {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  &.type-grid--error .type-card {
+    border-color: rgba($error, 0.4);
+  }
+}
+
+.type-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 14px 8px 12px;
+  background: $gray-50;
+  border: 2px solid $gray-200;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &:hover {
+    border-color: rgba($primary, 0.4);
+    background: rgba($primary, 0.03);
+  }
+
+  &.type-card--active {
+    border-color: $primary;
+    background: rgba($primary, 0.06);
+    box-shadow: 0 2px 10px rgba($primary, 0.12);
+
+    .type-label {
+      color: $primary;
+      font-weight: 700;
+    }
+  }
+}
+
+.type-emoji {
+  font-size: 26px;
+  line-height: 1;
+}
+
+.type-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-700;
+  transition: color 0.18s;
+}
+
+// ===================================
+// 截止时间快捷预设
+// ===================================
+.deadline-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.deadline-preset-btn {
+  height: 30px;
+  padding: 0 13px;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: 15px;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  text {
+    font-size: 12px;
+    font-weight: 500;
+    color: $gray-600;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+
+  &:hover {
+    border-color: $primary;
+    background: rgba($primary, 0.04);
+
+    text {
+      color: $primary;
+    }
+  }
+
+  &.deadline-preset-btn--active {
+    background: rgba($primary, 0.08);
+    border-color: $primary;
+
+    text {
+      color: $primary;
+      font-weight: 600;
+    }
   }
 }
 

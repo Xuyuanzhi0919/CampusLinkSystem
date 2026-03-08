@@ -194,6 +194,14 @@
                 <text class="stat-label">已完成</text>
               </view>
             </view>
+            <!-- 成就文案 -->
+            <view v-if="totalTaskDone > 0 || (userStore.userInfo?.points ?? 0) > 0" class="achievement-banner">
+              <Icon name="award" :size="14" class="achievement-icon" />
+              <text class="achievement-text">
+                累计完成 <text class="achievement-highlight">{{ totalTaskDone }}</text> 个任务，持有 <text class="achievement-highlight">{{ userStore.userInfo?.points ?? 0 }}</text> 积分
+              </text>
+            </view>
+
             <view class="sidebar-link-row">
               <view class="sidebar-link" @click="goMyPublished">
                 <text class="sidebar-link-text">我的发布</text>
@@ -272,6 +280,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
 import { getTodayStats } from '@/services/stats'
+import { getUserStats } from '@/services/user'
 import { useUserStore } from '@/stores/user'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
@@ -304,8 +313,10 @@ const getAvatarBg = (name: string) => {
   return { background: AVATAR_COLORS[idx] }
 }
 
-const currentStatus = ref<string>('')
-const currentType = ref<string>('')
+const FILTER_PREF_KEY = 'task_hall_filter'
+const savedPref = (() => { try { return JSON.parse(uni.getStorageSync(FILTER_PREF_KEY) || '{}') } catch { return {} } })()
+const currentStatus = ref<string>(savedPref.status ?? '')
+const currentType = ref<string>(savedPref.type ?? '')
 const taskList = ref<TaskListItem[]>([])
 const loading = ref(false)
 const loadingMore = ref(false)
@@ -381,9 +392,14 @@ const loadTasks = async (isRefresh = false) => {
   }
 }
 
+const saveFilterPref = () => {
+  try { uni.setStorageSync(FILTER_PREF_KEY, JSON.stringify({ status: currentStatus.value, type: currentType.value })) } catch {}
+}
+
 const handleStatusChange = (status: string) => {
   if (currentStatus.value === status) return
   currentStatus.value = status
+  saveFilterPref()
   taskList.value = []
   loadTasks(true)
 }
@@ -391,6 +407,7 @@ const handleStatusChange = (status: string) => {
 const handleTypeChange = (type: string) => {
   if (currentType.value === type) return
   currentType.value = type
+  saveFilterPref()
   taskList.value = []
   loadTasks(true)
 }
@@ -486,14 +503,16 @@ const myStats = ref<MyTaskStats>({ pending: 0, ongoing: 0, done: 0 })
 const hotTasks = ref<TaskListItem[]>([])
 const todayPublished = ref<number>(0)
 const todayDone = ref<number>(0)
+const totalTaskDone = ref<number>(0)  // 累计完成任务数
 
 const loadSidebarData = async () => {
   try {
-    const [pubResult, accResult, statsResult, hotResult] = await Promise.allSettled([
+    const [pubResult, accResult, statsResult, hotResult, userStatsResult] = await Promise.allSettled([
       userStore.isLoggedIn ? getMyPublishedTasks({ pageSize: 100 }) : Promise.resolve(null),
       userStore.isLoggedIn ? getMyAcceptedTasks({ pageSize: 100 }) : Promise.resolve(null),
       getTodayStats(),
-      getTaskList({ sortBy: 'reward_points', sortOrder: 'desc', pageSize: 3, status: 0 })
+      getTaskList({ sortBy: 'reward_points', sortOrder: 'desc', pageSize: 3, status: 0 }),
+      userStore.isLoggedIn ? getUserStats() : Promise.resolve(null)
     ])
 
     // 我的发布统计
@@ -514,6 +533,10 @@ const loadSidebarData = async () => {
     // 热门高积分任务
     if (hotResult.status === 'fulfilled') {
       hotTasks.value = hotResult.value.list?.slice(0, 3) || []
+    }
+    // 累计任务完成数
+    if (userStatsResult.status === 'fulfilled' && userStatsResult.value) {
+      totalTaskDone.value = userStatsResult.value.taskCompleteCount || 0
     }
   } catch (e) {
     // 侧边栏数据加载失败不影响主列表
@@ -1301,6 +1324,30 @@ defineExpose({
   font-size: $font-size-sm;
   font-weight: $font-weight-semibold;
   margin-top: $sp-3;
+}
+
+// 成就文案
+.achievement-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  background: rgba($primary, 0.05);
+  border-radius: $radius-lg;
+  padding: $sp-4 $sp-5;
+  margin-bottom: $sp-5;
+}
+
+.achievement-icon { color: $primary; flex-shrink: 0; margin-top: 2rpx; }
+
+.achievement-text {
+  font-size: $font-size-xs;
+  color: $gray-500;
+  line-height: 1.6;
+}
+
+.achievement-highlight {
+  font-weight: $font-weight-bold;
+  color: $primary;
 }
 </style>
 

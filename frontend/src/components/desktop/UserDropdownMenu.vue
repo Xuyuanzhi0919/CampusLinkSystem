@@ -40,8 +40,8 @@
           </view>
         </view>
 
-        <view class="edit-profile-btn" @click="handleMenuClick({ id: 'edit-profile', icon: 'pencil', text: '编辑资料' })">
-          <Icon name="pencil" :size="12" />
+        <view class="edit-profile-btn" @click="handleMenuClick({ id: 'edit-profile', icon: 'edit-2', text: '编辑资料' })">
+          <Icon name="edit-2" :size="12" />
         </view>
       </view>
 

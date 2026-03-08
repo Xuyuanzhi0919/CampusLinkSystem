@@ -44,27 +44,18 @@
           v-for="(user, index) in activeUsers"
           :key="user.userId"
           class="user-item"
-          :class="getUserRankClass(index)"
           @click="handleUserClick(user.userId)"
         >
-          <view class="avatar-wrapper">
-            <image :src="user.avatar" class="user-avatar" mode="aspectFill" />
-            <view v-if="index < 3" class="rank-crown" :class="`crown-${index + 1}`">
-              <Icon :name="getCrownIcon(index)" :size="12" />
-            </view>
-          </view>
+          <text class="rank-num" :class="getRankNumClass(index)">{{ index + 1 }}</text>
+          <image :src="user.avatar || '/static/default-avatar.png'" class="user-avatar" mode="aspectFill" />
           <view class="user-info">
-            <view class="name-line">
-              <text class="user-name">{{ user.nickname }}</text>
-              <view v-if="index === 0" class="top-badge">TOP1</view>
-            </view>
+            <text class="user-name">{{ user.nickname }}</text>
             <view class="stats-line">
               <Icon name="message-circle" :size="11" class="stat-icon" />
               <text class="user-answers">{{ user.answerCount }} 回答</text>
             </view>
           </view>
           <view v-if="user.badge" class="user-badge" :class="getBadgeClass(user.badge)">
-            <Icon :name="getBadgeIcon(user.badge)" :size="11" />
             <text class="badge-text">{{ user.badge }}</text>
           </view>
         </view>
@@ -155,19 +146,12 @@ const hotTagsEmptyText = '暂无热门标签，提问时记得添加标签哦'
 
 // 排名徽章样式已移至 HotQuestions 组件内部
 
-// 用户排名样式
-const getUserRankClass = (index: number) => {
-  if (index === 0) return 'user-rank-1'
-  if (index === 1) return 'user-rank-2'
-  if (index === 2) return 'user-rank-3'
-  return ''
-}
-
-// 皇冠图标
-const getCrownIcon = (index: number) => {
-  if (index === 0) return 'award'  // 金色皇冠
-  if (index === 1) return 'award'  // 银色皇冠
-  return 'award'  // 铜色皇冠
+// 排名数字样式
+const getRankNumClass = (index: number) => {
+  if (index === 0) return 'rank-1'
+  if (index === 1) return 'rank-2'
+  if (index === 2) return 'rank-3'
+  return 'rank-other'
 }
 
 // 徽章样式类
@@ -176,14 +160,6 @@ const getBadgeClass = (badge: string) => {
   if (badge === '热心答主') return 'badge-active'
   if (badge === '活跃答主') return 'badge-regular'
   return ''
-}
-
-// 徽章图标
-const getBadgeIcon = (badge: string) => {
-  if (badge === '优质答主') return 'star'
-  if (badge === '热心答主') return 'heart'
-  if (badge === '活跃答主') return 'zap'
-  return 'award'
 }
 
 // Emits
@@ -469,136 +445,51 @@ onMounted(() => {
 .active-users {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 2px;
 }
 
 .user-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: $white;
-  border: 1px solid transparent;
+  transition: background 0.15s ease;
 
   &:hover {
-    transform: translateX(4px) scale(1.02);
-    background: linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%);
-    border-color: $gray-200;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    background: $gray-50;
 
-    .user-avatar {
-      transform: scale(1.1);
-      box-shadow: 0 4px 16px rgba($primary, 0.25);
+    .user-name {
+      color: $primary;
     }
   }
 
-  // 第1名特殊样式 - 金色
-  &.user-rank-1 {
-    background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 50%, #FEF3C7 100%);
-    border: 2px solid #F59E0B;
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.25);
-
-    &:hover {
-      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
-      transform: translateY(-2px);
-    }
-
-    .user-name {
-      color: #92400E;  // 深金色文字
-      font-weight: 700;
-    }
-  }
-
-  // 第2名特殊样式 - 银色(增强对比度)
-  &.user-rank-2 {
-    background: linear-gradient(135deg, #E5E7EB 0%, #D1D5DB 50%, #E5E7EB 100%);
-    border: 2px solid #9CA3AF;
-    box-shadow: 0 3px 10px rgba(107, 114, 128, 0.2);
-
-    &:hover {
-      box-shadow: 0 5px 16px rgba(107, 114, 128, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .user-name {
-      color: #374151;  // 深灰色文字
-      font-weight: 600;
-    }
-  }
-
-  // 第3名特殊样式 - 铜色(增强对比度)
-  &.user-rank-3 {
-    background: linear-gradient(135deg, #FED7AA 0%, #FDBA74 50%, #FED7AA 100%);
-    border: 2px solid #F97316;
-    box-shadow: 0 3px 10px rgba(249, 115, 22, 0.2);
-
-    &:hover {
-      box-shadow: 0 5px 16px rgba(249, 115, 22, 0.3);
-      transform: translateY(-2px);
-    }
-
-    .user-name {
-      color: #9A3412;  // 深橙色文字
-      font-weight: 600;
-    }
+  &:active {
+    background: $gray-100;
   }
 }
 
-.avatar-wrapper {
-  position: relative;
+// 排名序号
+.rank-num {
+  width: 18px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
   flex-shrink: 0;
+
+  &.rank-1 { color: #F59E0B; }
+  &.rank-2 { color: #9CA3AF; }
+  &.rank-3 { color: #F97316; }
+  &.rank-other { color: $gray-300; font-weight: 500; }
 }
 
 .user-avatar {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  border: 3px solid $white;
-  transition: all 0.3s;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.rank-crown {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 2px solid $white;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-
-  &.crown-1 {
-    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
-    color: $white;
-    animation: pulse-gold 2s infinite;
-  }
-
-  &.crown-2 {
-    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);
-    color: $white;
-  }
-
-  &.crown-3 {
-    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
-    color: $white;
-  }
-}
-
-@keyframes pulse-gold {
-  0%, 100% {
-    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.6);
-    transform: scale(1.1);
-  }
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .user-info {
@@ -606,80 +497,52 @@ onMounted(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.name-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  gap: 3px;
 }
 
 .user-name {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
   color: $gray-800;
   @include text-ellipsis(1);
-  transition: color 0.2s;
-
-  .user-item:hover & {
-    color: $primary;
-  }
-}
-
-.top-badge {
-  padding: 2px 8px;
-  background: linear-gradient(135deg, #DC2626 0%, #EF4444 100%);
-  color: $white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 10px;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
+  transition: color 0.15s;
 }
 
 .stats-line {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
 }
 
 .stat-icon {
-  color: $primary;  // 改为主色,更醒目
+  color: $gray-400;
 }
 
 .user-answers {
-  font-size: 13px;  // 从12px增加
-  color: $gray-700;  // 从600加深到700
-  font-weight: 600;  // 从500加粗到600
+  font-size: 12px;
+  color: $gray-500;
 }
 
 .user-badge {
   flex-shrink: 0;
-  padding: 6px 12px;
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-weight: 600;
-  transition: all 0.2s;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 500;
 
   &.badge-premium {
-    background: linear-gradient(135deg, #8B5CF6 0%, #A78BFA 100%);
-    color: $white;
-    box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
+    background: rgba(139, 92, 246, 0.1);
+    color: #7C3AED;
   }
 
   &.badge-active {
-    background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
-    color: $white;
-    box-shadow: 0 2px 6px rgba(236, 72, 153, 0.3);
+    background: rgba(236, 72, 153, 0.1);
+    color: #DB2777;
   }
 
   &.badge-regular {
-    background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
-    color: $white;
-    box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
   }
 
   .badge-text {
@@ -755,25 +618,4 @@ onMounted(() => {
   }
 }
 
-// ===================================
-// 动画效果
-// ===================================
-@keyframes pulse-gold {
-  0%, 100% {
-    box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
-  }
-  50% {
-    box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
-    transform: scale(1.05);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% center;
-  }
-  100% {
-    background-position: 200% center;
-  }
-}
 </style>

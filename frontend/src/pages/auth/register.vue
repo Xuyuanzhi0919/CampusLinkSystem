@@ -84,6 +84,18 @@
           </view>
         </view>
 
+        <!-- 所属学校 -->
+        <view class="form-item">
+          <text class="field-label">所属学校 <text class="optional">（选填）</text></text>
+          <view class="input-wrap" :class="{ focused: schoolFocused }" @click="showSchoolPicker = true">
+            <view class="input-icon"><Icon name="building" :size="18" color="#9CA3AF" /></view>
+            <text class="input school-value" :class="{ placeholder: !formData.schoolName }">
+              {{ formData.schoolName || '选择您的学校' }}
+            </text>
+            <view class="input-icon"><Icon name="chevron-right" :size="16" color="#9CA3AF" /></view>
+          </view>
+        </view>
+
         <!-- 密码 -->
         <view class="form-item">
           <text class="field-label">设置密码</text>
@@ -189,15 +201,55 @@
 
       <view class="page-bottom" />
     </view>
+
+    <!-- 学校选择弹窗 -->
+    <view v-if="showSchoolPicker" class="picker-mask" @click.self="showSchoolPicker = false">
+      <view class="picker-sheet">
+        <view class="picker-header">
+          <text class="picker-title">选择学校</text>
+          <view class="picker-close" @click="showSchoolPicker = false">
+            <Icon name="x" :size="20" color="#6B7280" />
+          </view>
+        </view>
+        <!-- 搜索框 -->
+        <view class="picker-search">
+          <view class="input-icon"><Icon name="search" :size="16" color="#9CA3AF" /></view>
+          <input
+            v-model="schoolSearchKeyword"
+            class="picker-search-input"
+            placeholder="搜索学校名称"
+            @focus="schoolFocused = true"
+            @blur="schoolFocused = false"
+          />
+        </view>
+        <!-- 学校列表 -->
+        <scroll-view class="picker-list" scroll-y>
+          <view v-if="filteredSchools.length === 0" class="picker-empty">
+            <text class="picker-empty-text">暂无匹配学校</text>
+          </view>
+          <view
+            v-for="school in filteredSchools"
+            :key="school.schoolId"
+            class="picker-item"
+            :class="{ active: formData.schoolId === school.schoolId }"
+            @click="selectSchool(school)"
+          >
+            <text class="picker-item-text">{{ school.schoolName }}</text>
+            <Icon v-if="formData.schoolId === school.schoolId" name="check" :size="16" color="#2563EB" />
+          </view>
+        </scroll-view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useUserStore } from '@/stores/user'
 import { register, sendCode, type RegisterRequest, type AuthResponse } from '@/services/auth'
 import Icon from '@/components/icons/index.vue'
 import config from '@/config'
+import request from '@/utils/request'
 
 const userStore = useUserStore()
 
@@ -207,8 +259,41 @@ const formData = ref({
   nickname: '',
   password: '',
   confirmPassword: '',
-  code: ''
+  code: '',
+  schoolId: 0,
+  schoolName: ''
 })
+
+// 学校相关
+interface SchoolOption { schoolId: number; schoolName: string }
+const schools = ref<SchoolOption[]>([])
+const showSchoolPicker = ref(false)
+const schoolSearchKeyword = ref('')
+const schoolFocused = ref(false)
+
+const filteredSchools = computed(() => {
+  const kw = schoolSearchKeyword.value.trim()
+  if (!kw) return schools.value
+  return schools.value.filter(s => s.schoolName.includes(kw))
+})
+
+const loadSchools = async () => {
+  try {
+    const res = await request.get<SchoolOption[]>('/school/all')
+    schools.value = res
+  } catch (e) {
+    // 加载失败不影响注册流程
+  }
+}
+
+const selectSchool = (school: SchoolOption) => {
+  formData.value.schoolId = school.schoolId
+  formData.value.schoolName = school.schoolName
+  showSchoolPicker.value = false
+  schoolSearchKeyword.value = ''
+}
+
+onMounted(() => { loadSchools() })
 
 const accountFocused = ref(false)
 const usernameFocused = ref(false)
@@ -380,7 +465,7 @@ const handleRegister = async () => {
       email: isEmail ? formData.value.account : undefined,
       phone: !isEmail ? formData.value.account : undefined,
       nickname: formData.value.nickname.trim() || formData.value.username.trim(),
-      schoolId: 1,
+      schoolId: formData.value.schoolId || undefined,
       code: formData.value.code || '000000'
     }
     const response: AuthResponse = await register(registerData)
@@ -833,5 +918,124 @@ onUnmounted(() => {
 
 .page-bottom {
   height: 80rpx;
+}
+
+// =============================================
+// 学校选择器 - 只读样式
+// =============================================
+
+.school-value {
+  flex: 1;
+  font-size: 26rpx;
+  color: #111827;
+  line-height: 88rpx;
+
+  &.placeholder { color: #9CA3AF; }
+}
+
+// =============================================
+// 底部弹窗（学校选择器）
+// =============================================
+
+.picker-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.picker-sheet {
+  width: 100%;
+  max-height: 72vh;
+  background: #FFFFFF;
+  border-radius: 40rpx 40rpx 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 36rpx 40rpx 20rpx;
+  flex-shrink: 0;
+
+  .picker-title {
+    font-size: 30rpx;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .picker-close {
+    width: 56rpx;
+    height: 56rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F3F4F6;
+    border-radius: 50%;
+    cursor: pointer;
+
+    &:active { background: #E5E7EB; }
+  }
+}
+
+.picker-search {
+  display: flex;
+  align-items: center;
+  margin: 0 32rpx 20rpx;
+  padding: 0 20rpx;
+  height: 76rpx;
+  background: #F8FAFF;
+  border: 2rpx solid #E8EEFF;
+  border-radius: 16rpx;
+  gap: 12rpx;
+  flex-shrink: 0;
+
+  .picker-search-input {
+    flex: 1;
+    font-size: 26rpx;
+    color: #111827;
+  }
+}
+
+.picker-list {
+  flex: 1;
+  padding: 0 16rpx 40rpx;
+}
+
+.picker-empty {
+  padding: 60rpx 0;
+  text-align: center;
+
+  .picker-empty-text {
+    font-size: 26rpx;
+    color: #9CA3AF;
+  }
+}
+
+.picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28rpx 24rpx;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: #F3F4F6; }
+
+  &.active {
+    background: #EEF2FF;
+    .picker-item-text { color: #2563EB; font-weight: 600; }
+  }
+
+  .picker-item-text {
+    font-size: 28rpx;
+    color: #374151;
+  }
 }
 </style>

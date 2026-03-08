@@ -3,7 +3,7 @@
     <view class="register-modal-container" :class="{ 'modal-show': showAnimation }" @tap.stop>
       <!-- 关闭按钮 -->
       <view class="close-btn" @tap.stop="handleClose">
-        <text class="close-icon">✕</text>
+        <Icon name="x" :size="18" class="close-icon" />
       </view>
 
       <!-- 品牌头部 -->
@@ -23,7 +23,7 @@
         <!-- 邮箱或手机号 -->
         <view class="input-group" :class="{ 'input-focus': accountFocused, 'input-error': accountError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">✉</text>
+            <Icon name="mail" :size="16" class="field-icon" />
           </view>
           <input
             class="form-input"
@@ -38,7 +38,7 @@
         <!-- 用户名 -->
         <view class="input-group" :class="{ 'input-focus': usernameFocused, 'input-error': usernameError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">👤</text>
+            <Icon name="user" :size="16" class="field-icon" />
           </view>
           <input
             class="form-input"
@@ -48,9 +48,9 @@
             @focus="usernameFocused = true"
             @blur="handleUsernameBlur"
           />
-          <text v-if="usernameChecking" class="checking-icon">⏳</text>
-          <text v-else-if="usernameAvailable === true" class="success-icon">✓</text>
-          <text v-else-if="usernameAvailable === false" class="error-icon">✕</text>
+          <view v-if="usernameChecking" class="status-spin" />
+          <Icon v-else-if="usernameAvailable === true" name="check" :size="16" class="success-icon" />
+          <Icon v-else-if="usernameAvailable === false" name="x" :size="16" class="error-icon" />
         </view>
         <view v-if="usernameHint" class="hint-text" :class="{ 'hint-error': usernameAvailable === false }">
           {{ usernameHint }}
@@ -59,7 +59,7 @@
         <!-- 昵称 -->
         <view class="input-group" :class="{ 'input-focus': nicknameFocused, 'input-error': nicknameError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">😊</text>
+            <Icon name="smile" :size="16" class="field-icon" />
           </view>
           <input
             class="form-input"
@@ -79,12 +79,12 @@
             @tap="showSchoolDropdown = !showSchoolDropdown"
           >
             <view class="input-icon-wrapper">
-              <text class="input-icon gradient-icon">🏫</text>
+              <Icon name="building" :size="16" class="field-icon" />
             </view>
             <text class="form-input school-display" :class="{ placeholder: !formData.schoolName }">
               {{ formData.schoolName || '所在学校（选填）' }}
             </text>
-            <text class="dropdown-arrow" :class="{ open: showSchoolDropdown }">▾</text>
+            <Icon name="chevron-down" :size="16" class="dropdown-arrow" :class="{ open: showSchoolDropdown }" />
           </view>
           <!-- 学校下拉列表 -->
           <view v-if="showSchoolDropdown" class="school-dropdown">
@@ -106,7 +106,7 @@
                 @tap.stop="selectSchool(s)"
               >
                 <text class="school-item-name">{{ s.schoolName }}</text>
-                <text v-if="formData.schoolId === s.schoolId" class="school-item-check">✓</text>
+                <Icon v-if="formData.schoolId === s.schoolId" name="check" :size="14" class="school-item-check" />
               </view>
             </scroll-view>
           </view>
@@ -115,7 +115,7 @@
         <!-- 设置密码 -->
         <view class="input-group" :class="{ 'input-focus': passwordFocused, 'input-error': passwordError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon lock-icon">🔒</text>
+            <Icon name="lock" :size="16" class="field-icon lock-icon" />
           </view>
           <input
             class="form-input"
@@ -126,9 +126,9 @@
             @blur="passwordFocused = false"
             @input="handlePasswordInput"
           />
-          <text class="password-toggle" @tap="showPassword = !showPassword">
-            {{ showPassword ? '👁' : '👁' }}
-          </text>
+          <view class="password-toggle" @tap="showPassword = !showPassword">
+            <Icon :name="showPassword ? 'eye' : 'eye-off'" :size="16" />
+          </view>
         </view>
 
         <!-- 密码强度条 -->
@@ -148,7 +148,7 @@
         <!-- 确认密码 -->
         <view class="input-group" :class="{ 'input-focus': confirmPasswordFocused, 'input-error': confirmPasswordError }">
           <view class="input-icon-wrapper">
-            <text class="input-icon gradient-icon">🔒</text>
+            <Icon name="lock" :size="16" class="field-icon" />
           </view>
           <input
             class="form-input"
@@ -158,16 +158,16 @@
             @focus="confirmPasswordFocused = true"
             @blur="confirmPasswordFocused = false"
           />
-          <text class="password-toggle" @tap="showConfirmPassword = !showConfirmPassword">
-            {{ showConfirmPassword ? '👁' : '👁' }}
-          </text>
+          <view class="password-toggle" @tap="showConfirmPassword = !showConfirmPassword">
+            <Icon :name="showConfirmPassword ? 'eye' : 'eye-off'" :size="16" />
+          </view>
         </view>
 
         <!-- 验证码 -->
         <view class="verification-group">
           <view class="input-group verification-input" :class="{ 'input-focus': codeFocused, 'input-error': codeError }">
             <view class="input-icon-wrapper">
-              <text class="input-icon gradient-icon">⚡</text>
+              <Icon name="shield-check" :size="16" class="field-icon" />
             </view>
             <input
               class="form-input"
@@ -222,6 +222,7 @@ import { ref, watch, computed, onUnmounted } from 'vue'
 import { register, sendCode, type RegisterRequest, type AuthResponse, type SendCodeRequest } from '@/services/auth'
 import config from '@/config'
 import request from '@/utils/request'
+import Icon from '@/components/icons/index.vue'
 
 const props = defineProps({
   visible: {
@@ -868,9 +869,7 @@ onUnmounted(() => {
   }
 
   .close-icon {
-    font-size: 36rpx;
     color: #64748B;
-    font-weight: 300;
     transition: color 0.2s ease;
     pointer-events: none;
   }
@@ -986,27 +985,14 @@ onUnmounted(() => {
   position: relative;
 }
 
-.input-icon {
-  font-size: 32rpx;
-  position: relative;
-  z-index: 1;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+.field-icon {
+  color: #94A3B8;
+  transition: color 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
 }
 
-.gradient-icon {
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0));
-}
-
-.input-group.input-focus .gradient-icon {
-  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0 0 8rpx rgba(59, 130, 246, 0.4));
+.input-group.input-focus .field-icon {
+  color: #2563EB;
   transform: scale(1.08);
 }
 
@@ -1015,15 +1001,9 @@ onUnmounted(() => {
 }
 
 @keyframes lockBounce {
-  0% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-4rpx) scale(1.08);
-  }
-  100% {
-    transform: translateY(0) scale(1.08);
-  }
+  0%   { transform: translateY(0) scale(1); }
+  50%  { transform: translateY(-4rpx) scale(1.08); }
+  100% { transform: translateY(0) scale(1.08); }
 }
 
 .form-input {
@@ -1043,26 +1023,21 @@ onUnmounted(() => {
 }
 
 .password-toggle {
-  font-size: 32rpx;
+  display: flex;
+  align-items: center;
+  color: #94A3B8;
   cursor: pointer;
-  background: linear-gradient(135deg, #64748B 0%, #94A3B8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  filter: drop-shadow(0 0 0rpx rgba(100, 116, 139, 0)) brightness(1);
+  padding: 4rpx;
+  border-radius: 8rpx;
+  transition: color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    transform: rotate(10deg) scale(1.08);
-    filter: drop-shadow(0 0 6rpx rgba(59, 130, 246, 0.4)) brightness(1.2);
+    color: #2563EB;
+    transform: scale(1.08);
   }
 
   &:active {
-    transform: rotate(-5deg) scale(0.95);
+    transform: scale(0.95);
   }
 }
 
@@ -1326,31 +1301,29 @@ onUnmounted(() => {
 }
 
 /* ========== 用户名检查图标 ========== */
-.checking-icon {
-  font-size: 28rpx;
-  animation: rotate 1s linear infinite;
+.status-spin {
+  width: 28rpx;
+  height: 28rpx;
+  border: 2rpx solid rgba(37, 99, 235, 0.2);
+  border-top-color: #2563EB;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
 }
 
-@keyframes rotate {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .success-icon {
-  font-size: 32rpx;
   color: #10B981;
-  font-weight: bold;
+  flex-shrink: 0;
   animation: scaleIn 0.3s ease;
 }
 
 .error-icon {
-  font-size: 32rpx;
   color: #EF4444;
-  font-weight: bold;
+  flex-shrink: 0;
   animation: scaleIn 0.3s ease;
 }
 
@@ -1386,7 +1359,6 @@ onUnmounted(() => {
 }
 
 .dropdown-arrow {
-  font-size: 24rpx;
   color: #9CA3AF;
   transition: transform 0.2s ease;
   flex-shrink: 0;
@@ -1466,9 +1438,8 @@ onUnmounted(() => {
   }
 
   .school-item-check {
-    font-size: 28rpx;
     color: #2563EB;
-    font-weight: bold;
+    flex-shrink: 0;
     margin-left: 12rpx;
   }
 }

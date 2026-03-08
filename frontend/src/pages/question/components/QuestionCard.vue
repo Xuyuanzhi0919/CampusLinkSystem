@@ -1,42 +1,41 @@
 <template>
   <view class="question-card" :class="{ 'is-solved': question.status === 1, 'is-read': isRead }" @click="handleClick">
-    <!-- 悬赏条（有悬赏时顶部高亮bar） -->
-    <view v-if="question.bounty > 0" class="bounty-bar">
-      <Icon name="award" :size="13" class="bounty-bar-icon" />
-      <text class="bounty-bar-text">悬赏 {{ question.bounty }} 积分</text>
-    </view>
-
-    <!-- 顶部：用户信息 + 分类标签 -->
-    <view class="card-header">
-      <view class="user-info">
-        <image
-          class="avatar"
-          :src="question.askerAvatar || '/static/default-avatar.png'"
-          mode="aspectFill"
-          :lazy-load="true"
-        />
-        <view class="user-meta">
-          <text class="user-name">{{ question.askerNickname }}</text>
-          <text class="user-time">{{ formatTime(question.createdAt) }}</text>
+    <!-- 顶部标签行：悬赏 + 分类（左）/ 解决状态（右） -->
+    <view class="card-top-row">
+      <view class="top-tags">
+        <view v-if="question.bounty > 0" class="bounty-tag">
+          <Icon name="award" :size="12" class="bounty-tag-icon" />
+          <text class="bounty-tag-text">悬赏 {{ question.bounty }}</text>
         </view>
-      </view>
-      <view class="header-tags">
         <view class="category-tag" :class="`category-${getCategoryType(question.category)}`">
           <text class="tag-label">{{ question.category }}</text>
         </view>
-        <!-- 已解决/未解决徽章 -->
-        <view v-if="question.status === 1" class="status-badge solved">
-          <Icon name="check-circle" :size="13" />
-          <text class="badge-text">已解决</text>
-        </view>
-        <view v-else class="status-badge unsolved">
-          <Icon name="help-circle" :size="13" />
-          <text class="badge-text">待解决</text>
-        </view>
+      </view>
+      <view v-if="question.status === 1" class="status-badge solved">
+        <Icon name="check-circle" :size="12" />
+        <text class="badge-text">已解决</text>
+      </view>
+      <view v-else class="status-badge unsolved">
+        <Icon name="help-circle" :size="12" />
+        <text class="badge-text">待解决</text>
       </view>
     </view>
 
-    <!-- 问题标题（加粗、大号） -->
+    <!-- 用户信息行 -->
+    <view class="user-info">
+      <image
+        class="avatar"
+        :src="question.askerAvatar || '/static/default-avatar.png'"
+        mode="aspectFill"
+        :lazy-load="true"
+      />
+      <view class="user-meta">
+        <text class="user-name">{{ question.askerNickname }}</text>
+        <text class="user-time">{{ formatTime(question.createdAt) }}</text>
+      </view>
+    </view>
+
+    <!-- 问题标题（加粗、大号，视觉焦点） -->
     <view class="card-title">
       <rich-text v-if="keyword" :nodes="highlightText(question.title, keyword)" />
       <text v-else>{{ question.title }}</text>
@@ -143,17 +142,6 @@ const getCategoryType = (category: string): string => {
   return categoryMap[category] || 'other'
 }
 
-// 获取分类图标
-const getCategoryIcon = (category: string): string => {
-  const iconMap: Record<string, string> = {
-    '学习': '📚',
-    '生活': '🏠',
-    '技术': '💻',
-    '其他': '📌'
-  }
-  return iconMap[category] || '📌'
-}
-
 // 高亮关键词
 const highlightText = (text: string, keyword: string): string => {
   if (!keyword || !text) return text
@@ -185,20 +173,21 @@ const handleClick = () => {
 .question-card {
   background: $white;
   border-radius: 12px;
-  padding: 16px;
+  padding: 14px 16px;
   margin-bottom: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
   border: 1px solid $gray-200;
   transition: all 0.2s ease-out;
   cursor: pointer;
-  overflow: hidden; // 配合 bounty-bar 圆角裁切
+  position: relative;
 
   // 已读状态：标题变灰，降低视觉权重
   &.is-read {
+    background: $gray-50;
+
     .card-title {
       color: $gray-500;
     }
-    background: $gray-50;
   }
 
   // 已解决：左侧绿色边框指示
@@ -214,97 +203,70 @@ const handleClick = () => {
   }
 
   &:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    border-color: $gray-300;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+    border-color: rgba($primary, 0.25);
+
+    .card-title {
+      color: $primary;
+    }
   }
 }
 
-// 悬赏顶部 bar
-.bounty-bar {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin: -16px -16px 12px -16px; // 撑满卡片宽度
-  padding: 6px 14px;
-  background: linear-gradient(90deg, rgba($accent, 0.12) 0%, rgba($accent, 0.05) 100%);
-  border-bottom: 1px solid rgba($accent, 0.2);
-
-  .bounty-bar-icon {
-    color: $accent;
-    flex-shrink: 0;
-  }
-
-  .bounty-bar-text {
-    font-size: 12px;
-    font-weight: 600;
-    color: $accent;
-    letter-spacing: 0.2px;
-  }
-}
-
-// 顶部：用户信息 + 分类标签
-.card-header {
+// ===================================
+// 顶部标签行：悬赏 + 分类 / 解决状态
+// ===================================
+.card-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 10px;  // 减少间距
+  margin-bottom: 10px;
 }
 
-.user-info {
+.top-tags {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   flex: 1;
   min-width: 0;
 }
 
-.avatar {
-  width: 28px;  // 从32px减少到28px
-  height: 28px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.user-meta {
-  display: flex;
+// 悬赏积分 pill（橙色）
+.bounty-tag {
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-width: 0;
-}
+  gap: 3px;
+  padding: 3px 8px;
+  background: rgba($accent, 0.1);
+  border: 1px solid rgba($accent, 0.2);
+  border-radius: 20px;
+  flex-shrink: 0;
 
-.user-name {
-  font-size: 13px;
-  font-weight: 500;
-  color: $gray-700;
-  @include text-ellipsis(1);
-}
+  .bounty-tag-icon {
+    color: $accent;
+    flex-shrink: 0;
+  }
 
-.user-time {
-  font-size: 12px;
-  color: $gray-500;
-
-  &::before {
-    content: '·';
-    margin-right: 4px;
+  .bounty-tag-text {
+    font-size: 11px;
+    font-weight: 600;
+    color: $accent;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
   }
 }
 
-.header-tags {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
+// 分类标签 pill
 .category-tag {
-  padding: $sp-1 $sp-3;
-  border-radius: $radius-sm;
-  font-size: $font-size-xs;
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
 
   .tag-label {
-    font-size: $font-size-xs;
-    font-weight: $font-weight-medium;
+    font-size: 11px;
+    font-weight: 500;
   }
 
   &.category-study {
@@ -328,16 +290,18 @@ const handleClick = () => {
   }
 }
 
+// 解决状态徽章（右上角）
 .status-badge {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: $sp-1;
-  padding: $sp-1 $sp-2;
-  border-radius: $radius-sm;
-  font-size: $font-size-xs;
+  gap: 3px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
 
   .badge-text {
-    font-weight: $font-weight-medium;
+    font-size: 11px;
+    font-weight: 500;
   }
 
   &.solved {
@@ -346,37 +310,77 @@ const handleClick = () => {
   }
 
   &.unsolved {
-    background: rgba($gray-400, 0.1);
+    background: rgba($gray-400, 0.08);
     color: $gray-500;
   }
 }
 
-.card-tags-placeholder {
-  flex: 1;
+// ===================================
+// 用户信息行（独立一行，在标签行下方）
+// ===================================
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  min-width: 0;
+}
+
+.avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.user-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.user-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: $gray-600;
+  @include text-ellipsis(1);
+}
+
+.user-time {
+  font-size: 12px;
+  color: $gray-400;
+  flex-shrink: 0;
+
+  &::before {
+    content: '·';
+    margin-right: 3px;
+  }
 }
 
 // ===================================
-// 问题标题（加粗、突出）
+// 问题标题（视觉焦点，最大字重）
 // ===================================
 .card-title {
-  font-size: 16px;  // 统一使用px
-  font-weight: $font-weight-semibold;  // 600，适度加粗
+  font-size: 16px;
+  font-weight: 600;
   color: $gray-900;
   line-height: 1.4;
   @include text-ellipsis(2);
-  margin-bottom: 8px;  // 减少间距
+  margin-bottom: 8px;
   letter-spacing: -0.01em;
+  transition: color 0.2s ease-out;
 }
 
 // ===================================
 // 内容摘要（两行截断）
 // ===================================
 .card-content {
-  font-size: 14px;  // 统一使用px
+  font-size: 14px;
   color: $gray-600;
   line-height: 1.5;
-  @include text-ellipsis(2);  // 改为两行，增加信息量
-  margin-bottom: 12px;  // 减少间距
+  @include text-ellipsis(2);
+  margin-bottom: 12px;
 }
 
 // ===================================
@@ -386,48 +390,51 @@ const handleClick = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;  // 统一使用px
-  padding-top: 10px;  // 减少padding
-  border-top: 1px solid $gray-100;  // 加深分隔线
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid $gray-100;
 }
 
 // 标签列表（左侧）
 .card-tags {
   display: flex;
-  gap: 6px;  // 统一使用px
+  gap: 6px;
   flex-wrap: wrap;
   flex: 1;
   min-width: 0;
 
   .tag {
-    padding: 3px 8px;  // 统一使用px
+    padding: 3px 8px;
     background: rgba($primary, 0.06);
     color: $primary;
-    font-size: 12px;  // 统一使用px
-    border-radius: 4px;  // 统一使用px
+    font-size: 12px;
+    border-radius: 4px;
     line-height: 1;
     white-space: nowrap;
 
     &.tag-more {
       background: rgba($gray-500, 0.08);
       color: $gray-500;
-      font-weight: $font-weight-semibold;
+      font-weight: 600;
     }
   }
 }
 
-// 数据统计（右侧）- 统一灰色调
+.card-tags-placeholder {
+  flex: 1;
+}
+
+// 数据统计（右侧）
 .card-stats {
   display: flex;
   align-items: center;
-  gap: 16px;  // 统一间距为16px
+  gap: 14px;
   flex-shrink: 0;
 
   .stat-item {
     display: flex;
     align-items: center;
-    gap: 4px;  // 统一使用px
-    color: $gray-500;
+    gap: 4px;
 
     .stat-icon {
       color: $gray-400;
@@ -435,21 +442,9 @@ const handleClick = () => {
     }
 
     .stat-value {
-      font-size: 13px;  // 统一使用px
-      color: $gray-600;
-      font-weight: $font-weight-medium;
-    }
-
-    // 悬赏积分特殊样式（橙色强调）
-    &.reward {
-      .stat-icon {
-        color: $accent;
-      }
-
-      .stat-value {
-        color: $accent;
-        font-weight: $font-weight-semibold;
-      }
+      font-size: 13px;
+      color: $gray-500;
+      font-weight: 500;
     }
   }
 }

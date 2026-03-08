@@ -40,4 +40,9 @@ public class UpdateProfileRequest {
      * 手机号
      */
     private String phone;
+
+    /**
+     * 所属学校ID（注册后绑定或修改学校）
+     */
+    private Long schoolId;
 }

@@ -336,6 +336,14 @@ public class UserService {
         if (request.getPhone() != null && !request.getPhone().isEmpty()) {
             user.setPhone(request.getPhone());
         }
+        if (request.getSchoolId() != null) {
+            // 验证学校存在
+            School school = schoolMapper.selectById(request.getSchoolId());
+            if (school == null) {
+                throw new BusinessException(400, "学校不存在");
+            }
+            user.setSchoolId(request.getSchoolId());
+        }
 
         user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);

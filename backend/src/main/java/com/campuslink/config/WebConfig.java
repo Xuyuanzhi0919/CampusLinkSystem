@@ -67,6 +67,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/reward/items",       // 积分商品列表（游客可浏览）
                         "/activity/list",      // 活动列表（使用可选认证）
                         "/club/list",          // 社团列表（使用可选认证）
+                        "/school/all",         // 学校列表（注册/绑定学校时公开访问）
+                        "/school/list",        // 学校分页列表（公开访问）
                         "/notification/list",  // 校园公告列表（使用可选认证）
                         "/doc.html",           // Swagger UI
                         "/swagger-resources/**",

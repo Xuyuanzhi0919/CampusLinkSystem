@@ -23,12 +23,18 @@
 
     <!-- 用户信息行 -->
     <view class="user-info">
-      <image
-        class="avatar"
-        :src="question.askerAvatar || '/static/default-avatar.png'"
-        mode="aspectFill"
-        :lazy-load="true"
-      />
+      <view class="avatar-wrap">
+        <view class="avatar-placeholder" :style="getAvatarBg(question.askerNickname)">
+          <text class="avatar-char">{{ question.askerNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+        </view>
+        <image
+          v-if="question.askerAvatar"
+          class="avatar"
+          :src="question.askerAvatar"
+          mode="aspectFill"
+          :lazy-load="true"
+        />
+      </view>
       <view class="user-meta">
         <text class="user-name">{{ question.askerNickname }}</text>
         <text class="user-time">{{ formatTime(question.createdAt) }}</text>
@@ -130,6 +136,13 @@ const remainingTagsCount = computed(() => {
   if (!props.question.tags) return 0
   return Math.max(0, props.question.tags.length - 3)
 })
+
+// 头像背景色（基于昵称首字符 hash）
+const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getAvatarBg = (nickname: string) => {
+  const idx = nickname ? nickname.charCodeAt(0) % AVATAR_COLORS.length : 0
+  return { background: AVATAR_COLORS[idx] }
+}
 
 // 获取分类类型
 const getCategoryType = (category: string): string => {
@@ -326,11 +339,35 @@ const handleClick = () => {
   min-width: 0;
 }
 
+.avatar-wrap {
+  position: relative;
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-char {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
 .avatar {
+  position: absolute;
+  inset: 0;
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  flex-shrink: 0;
 }
 
 .user-meta {

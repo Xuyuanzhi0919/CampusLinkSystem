@@ -1784,17 +1784,18 @@ const handleSubmit = async () => {
 }
 
 .action-bar-content {
-  max-width: 1280px;  // 与新布局一致
+  max-width: 1280px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: space-between;  // 改为两端对齐
+  justify-content: space-between;
   gap: $sp-4;
   padding: $sp-5 $sp-8;
 
   @include mobile {
-    padding: $sp-4 $sp-4;
+    padding: $sp-4 $sp-5;
     gap: $sp-3;
+    justify-content: flex-end;
   }
 }
 
@@ -1846,7 +1847,17 @@ const handleSubmit = async () => {
   gap: $sp-4;
 
   @include mobile {
+    flex: 1;
     gap: $sp-3;
+
+    // 取消按钮固定宽度，发布按钮撑满剩余空间（与 upload.vue 一致）
+    :deep(.c-button:first-child) {
+      flex: 0 0 auto;
+    }
+
+    :deep(.c-button:last-child) {
+      flex: 1;
+    }
   }
 }
 

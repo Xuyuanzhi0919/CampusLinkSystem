@@ -1,12 +1,12 @@
 <template>
   <view class="ask-page">
-    <!-- 渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleCancel">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
-        </view>
-        <text class="nav-title">{{ editMode ? '编辑问题' : '提问' }}</text>
+    <!-- 统一导航栏 -->
+    <CNavBar
+      :title="editMode ? '编辑问题' : '提问'"
+      :auto-back="false"
+      @back="handleCancel"
+    >
+      <template #right>
         <view
           class="nav-publish"
           :class="{ 'is-disabled': !canSubmit || loading || submitting }"
@@ -14,12 +14,8 @@
         >
           <text class="nav-publish-text">{{ submitting ? '提交中' : (editMode ? '保存' : '发布') }}</text>
         </view>
-      </view>
-      <view class="header-hero">
-        <text class="hero-title">{{ editMode ? '修改你的问题' : '遇到了什么问题？' }}</text>
-        <text class="hero-sub">{{ editMode ? '更新问题帮助更多人找到答案' : '描述得越清楚，越快获得优质答案' }}</text>
-      </view>
-    </view>
+      </template>
+    </CNavBar>
 
     <!-- 内容区 -->
     <scroll-view class="content-area" scroll-y>
@@ -317,6 +313,7 @@ import { saveDraft, getDraft, deleteDraft } from '@/utils/draft'
 import type { QuestionCategory } from '@/types/question'
 import { CCard, CButton, CTag } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
 
 // Store
 const userStore = useUserStore()
@@ -876,64 +873,13 @@ const handleSubmit = async () => {
 
 <style lang="scss" scoped>
 // ===================================
-// 渐变头部 — 移动端 + PC 全响应式
+// 导航栏右侧发布按钮
 // ===================================
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
-  // 移动端状态栏安全区
-  padding-top: constant(safe-area-inset-top);
-  padding-top: env(safe-area-inset-top);
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 12px;
-
-  @media (min-width: 769px) {
-    height: 64px;
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 80px;
-  }
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: opacity 0.2s;
-
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-
-  @media (min-width: 769px) {
-    font-size: 18px;
-  }
-}
-
-// 头部发布按钮（右侧）
 .nav-publish {
-  height: 34px;
-  padding: 0 16px;
-  background: rgba(255, 255, 255, 0.92);
-  border-radius: 17px;
+  height: 32px;
+  padding: 0 14px;
+  background: $primary;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -942,65 +888,19 @@ const handleSubmit = async () => {
   transition: all 0.2s;
 
   &:active:not(.is-disabled) {
+    opacity: 0.85;
     transform: scale(0.97);
-    background: rgba(255, 255, 255, 0.75);
   }
 
   &.is-disabled {
-    opacity: 0.45;
-  }
-
-  @media (min-width: 769px) {
-    height: 38px;
-    padding: 0 22px;
-    border-radius: 19px;
+    opacity: 0.4;
   }
 }
 
 .nav-publish-text {
   font-size: 14px;
   font-weight: 600;
-  color: #3B82F6;
-
-  @media (min-width: 769px) {
-    font-size: 15px;
-  }
-}
-
-.header-hero {
-  padding: 2px 16px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-
-  @media (min-width: 769px) {
-    max-width: 1280px;
-    margin: 0 auto;
-    width: 100%;
-    box-sizing: border-box;
-    padding: 6px 80px 28px;
-  }
-}
-
-.hero-title {
-  font-size: 22px;
-  font-weight: 800;
   color: #FFFFFF;
-  line-height: 1.3;
-
-  @media (min-width: 769px) {
-    font-size: 28px;
-  }
-}
-
-.hero-sub {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.85);
-
-  @media (min-width: 769px) {
-    font-size: 15px;
-    margin-top: 2px;
-  }
 }
 
 // ===================================

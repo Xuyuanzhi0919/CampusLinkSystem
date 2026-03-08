@@ -181,7 +181,7 @@
             >
               <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
               <text class="btn-text">
-                {{ resource.isDownloaded ? '重新下载（免费）' : '立即下载 -5积分' }}
+                {{ resource.isDownloaded ? '重新下载（免费）' : (resource.score && resource.score > 0 ? `立即下载（-${resource.score}积分）` : '立即下载（免费）') }}
               </text>
             </view>
 
@@ -324,7 +324,7 @@
       >
         <Icon name="download" :size="20" :stroke-width="1.5" class="btn-icon" />
         <text class="btn-text">
-          {{ resource.isDownloaded ? '重新下载（免费）' : '下载 (-5积分)' }}
+          {{ resource.isDownloaded ? '重新下载（免费）' : (resource.score && resource.score > 0 ? `下载（-${resource.score}积分）` : '下载（免费）') }}
         </text>
       </view>
     </view>

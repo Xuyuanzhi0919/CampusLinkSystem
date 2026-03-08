@@ -3,7 +3,9 @@
     <view class="dialog-container" @click.stop>
       <!-- 对话框标题 -->
       <view class="dialog-header">
-        <text class="dialog-title">确认下载</text>
+        <text class="dialog-title">
+          {{ resource?.score && resource.score > 0 ? `消耗 ${resource.score} 积分下载此资源？` : '免费下载此资源？' }}
+        </text>
         <view class="close-btn" @click="handleCancel">
           <text class="close-icon">×</text>
         </view>
@@ -28,8 +30,10 @@
           <view class="points-item required">
             <text class="points-label">所需积分：</text>
             <view class="points-value-wrapper">
-              <text class="points-icon">●</text>
-              <text class="points-value">{{ resource?.score }}</text>
+              <text v-if="resource?.score && resource.score > 0" class="points-icon">●</text>
+              <text class="points-value" :class="{ 'free-label': !resource?.score || resource.score === 0 }">
+                {{ resource?.score && resource.score > 0 ? resource.score : '免费' }}
+              </text>
             </view>
           </view>
           <view class="points-item balance">
@@ -295,6 +299,10 @@ const handleConfirm = () => {
 
   &.insufficient {
     color: #EF4444;
+  }
+
+  &.free-label {
+    color: #16A34A;
   }
 }
 

@@ -1,5 +1,12 @@
 <template>
   <view class="activity-detail-page">
+    <!-- 顶部导航栏 -->
+    <CNavBar
+      :title="activity.title || '活动详情'"
+      :show-back="true"
+      :border="true"
+    />
+
     <!-- 🎯 加载中状态 -->
     <view v-if="loading" class="loading-container">
       <view class="skeleton-banner"></view>
@@ -151,6 +158,7 @@ import { addFavorite, removeFavorite } from '@/services/favorite'
 import { cache, CACHE_KEYS } from '@/utils/cache'
 import config from '@/config'
 import Icon from '@/components/icons/index.vue'
+import { CNavBar } from '@/components/layout'
 
 // 🎯 路由参数
 const activityId = ref<number>(0)

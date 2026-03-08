@@ -127,8 +127,7 @@
 		{
 			"path": "pages/club/activity-detail",
 			"style": {
-				"navigationBarTitleText": "活动详情",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

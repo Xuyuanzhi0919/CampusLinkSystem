@@ -20,7 +20,12 @@
 
       <!-- 作者信息 -->
       <view class="meta">
-        <image :src="question.avatar" class="avatar" mode="aspectFill" />
+        <view class="avatar-wrap">
+          <view class="avatar-placeholder" :style="getAvatarBg(question.username)">
+            <text class="avatar-char">{{ question.username?.charAt(0)?.toUpperCase() || '?' }}</text>
+          </view>
+          <image v-if="question.avatar" :src="question.avatar" class="avatar" mode="aspectFill" />
+        </view>
         <text class="author">{{ question.username }}</text>
         <CTag type="primary" size="sm">{{ question.category }}</CTag>
       </view>
@@ -69,6 +74,12 @@ const emit = defineEmits<{
   click: [qid: number]
   refresh: []
 }>()
+
+const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getAvatarBg = (name: string) => {
+  const idx = name ? name.charCodeAt(0) % AVATAR_COLORS.length : 0
+  return { background: AVATAR_COLORS[idx] }
+}
 
 // 格式化浏览量（1000+ 显示为 1k）
 const formatViews = (views: number): string => {
@@ -192,11 +203,36 @@ const handleRefresh = () => {
     align-items: center;
     gap: 8px;
 
-    .avatar {
+    .avatar-wrap {
+      position: relative;
       width: 20px;
       height: 20px;
       border-radius: 50%;
       flex-shrink: 0;
+    }
+
+    .avatar-placeholder {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .avatar-char {
+      font-size: 10px;
+      font-weight: 600;
+      color: #fff;
+      line-height: 1;
+    }
+
+    .avatar {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
       border: 1px solid $gray-200;
     }
 

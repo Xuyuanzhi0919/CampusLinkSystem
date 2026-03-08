@@ -256,17 +256,6 @@
             </view>
           </view>
 
-          <!-- 模块4：发布引导 -->
-          <view class="sidebar-publish-card" @click="handlePublish">
-            <Icon name="rocket" :size="22" class="publish-card-icon" />
-            <text class="publish-card-title">发布任务</text>
-            <text class="publish-card-desc">有需求？让同学帮你解决</text>
-            <view class="publish-card-btn">
-              <Icon name="plus" :size="14" />
-              <text>立即发布</text>
-            </view>
-          </view>
-
         </view><!-- end task-sidebar -->
 
       </view>
@@ -1278,54 +1267,6 @@ defineExpose({
 }
 
 // 发布引导卡片
-.sidebar-publish-card {
-  background: linear-gradient(135deg, $primary 0%, #4096FF 100%);
-  border-radius: $radius-card;
-  padding: $sp-8 $sp-7;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: $sp-4;
-  cursor: pointer;
-  transition: all 0.2s ease;
-
-  &:active { opacity: 0.9; }
-
-  /* #ifdef H5 */
-  &:hover {
-    transform: translateY(-4rpx);
-    box-shadow: 0 12rpx 32rpx rgba($primary, 0.3);
-  }
-  /* #endif */
-}
-
-.publish-card-icon { color: rgba($white, 0.9); }
-
-.publish-card-title {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-bold;
-  color: $white;
-}
-
-.publish-card-desc {
-  font-size: $font-size-sm;
-  color: rgba($white, 0.8);
-  text-align: center;
-}
-
-.publish-card-btn {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-  background: $white;
-  color: $primary;
-  padding: $sp-3 $sp-7;
-  border-radius: $radius-2xl;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  margin-top: $sp-3;
-}
-
 // 成就文案
 .achievement-banner {
   display: flex;

@@ -47,7 +47,12 @@
           @click="handleUserClick(user.userId)"
         >
           <text class="rank-num" :class="getRankNumClass(index)">{{ index + 1 }}</text>
-          <image :src="user.avatar || '/static/default-avatar.png'" class="user-avatar" mode="aspectFill" />
+          <view class="avatar-wrap">
+            <view class="avatar-placeholder" :style="getAvatarBg(user.nickname)">
+              <text class="avatar-char">{{ user.nickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+            </view>
+            <image v-if="user.avatar" :src="user.avatar" class="user-avatar" mode="aspectFill" />
+          </view>
           <view class="user-info">
             <text class="user-name">{{ user.nickname }}</text>
             <view class="stats-line">
@@ -145,6 +150,13 @@ const hotTagsEmptyText = '暂无热门标签，提问时记得添加标签哦'
 
 
 // 排名徽章样式已移至 HotQuestions 组件内部
+
+// 头像背景色（基于昵称首字符 hash）
+const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getAvatarBg = (nickname: string) => {
+  const idx = nickname ? nickname.charCodeAt(0) % AVATAR_COLORS.length : 0
+  return { background: AVATAR_COLORS[idx] }
+}
 
 // 排名数字样式
 const getRankNumClass = (index: number) => {
@@ -484,12 +496,35 @@ onMounted(() => {
   &.rank-other { color: $gray-300; font-weight: 500; }
 }
 
+.avatar-wrap {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-char {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
 .user-avatar {
+  position: absolute;
+  inset: 0;
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  flex-shrink: 0;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .user-info {

@@ -250,7 +250,7 @@
 			"path": "pages/task/index",
 			"style": {
 				"navigationBarTitleText": "任务大厅",
-				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}
@@ -273,7 +273,7 @@
 			"path": "pages/task/my",
 			"style": {
 				"navigationBarTitleText": "我的任务",
-				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationStyle": "custom",
 				"enablePullDownRefresh": true,
 				"backgroundTextStyle": "dark"
 			}

@@ -1,7 +1,21 @@
 <template>
   <view class="my-task-page">
 
-    <!-- ========== Sticky 顶部区（标签栏 + 状态筛选） ========== -->
+    <!-- ========== 固定页头（返回 + 标题） ========== -->
+    <view class="page-header">
+      <view class="page-header-container">
+        <view class="back-btn" @click="handleBack">
+          <Icon name="arrow-left" :size="20" class="back-icon" />
+        </view>
+        <text class="page-title">我的任务</text>
+        <view class="header-placeholder" />
+      </view>
+    </view>
+
+    <!-- 固定页头占位 -->
+    <view class="header-spacer" />
+
+    <!-- ========== Sticky 筛选区（标签 + 状态） ========== -->
     <view class="sticky-header">
       <!-- 我发布的 / 我接受的 标签 -->
       <view class="tab-bar">
@@ -121,6 +135,7 @@ import { ref, onMounted } from 'vue'
 import { getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
 import { TaskStatus, type TaskListItem, type TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
+import Icon from '@/components/icons/index.vue'
 
 const tabs = [
   { value: 'published' as const, label: '我发布的' },
@@ -202,6 +217,10 @@ const handleStatusChange = (status: number) => {
   loadTasks(true)
 }
 
+const handleBack = () => {
+  uni.navigateBack()
+}
+
 const handleTaskClick = (task: TaskListItem) => {
   uni.navigateTo({ url: `/pages/task/detail?id=${task.tid}` })
 }
@@ -280,11 +299,64 @@ defineExpose({
 }
 
 // ===================================
-// Sticky 顶部区（标签 + 状态筛选）
+// 固定页头
+// ===================================
+.page-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: $z-dropdown + 10;
+  background: $white;
+  border-bottom: 1rpx solid $gray-200;
+  box-shadow: 0 2rpx 6rpx rgba($gray-900, 0.06);
+}
+
+.page-header-container {
+  display: flex;
+  align-items: center;
+  height: 112rpx;
+  padding: 0 $sp-5;
+}
+
+.back-btn {
+  width: 72rpx;
+  height: 72rpx;
+  @include flex-center;
+  border-radius: 50%;
+  transition: $transition-slow;
+
+  &:active {
+    background: $gray-100;
+  }
+}
+
+.back-icon {
+  color: $gray-700;
+}
+
+.page-title {
+  flex: 1;
+  text-align: center;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+}
+
+.header-placeholder {
+  width: 72rpx;
+}
+
+.header-spacer {
+  height: 112rpx;
+}
+
+// ===================================
+// Sticky 筛选区（标签 + 状态）
 // ===================================
 .sticky-header {
   position: sticky;
-  top: 0;
+  top: 112rpx;
   z-index: $z-dropdown;
   background: $white;
   border-bottom: 1rpx solid $gray-200;

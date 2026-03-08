@@ -76,6 +76,12 @@
             </template>
           </div>
 
+          <!-- AI 助手按钮 -->
+          <button class="ai-btn" aria-label="AI 助手" @click="toAIChat">
+            <Icon name="sparkles" :size="18" />
+            <span class="ai-btn-label">AI</span>
+          </button>
+
           <!-- 通知按钮 -->
           <div class="notification-wrapper" ref="notificationContainer">
             <button
@@ -213,26 +219,28 @@ const {
   toEditProfile,
   toMessages,
   toNotifications,
+  toAIChat,
   navigateTo,
   switchTab
 } = useNavigation()
 
 // 导航跳转函数
 const toQuestions = () => {
-  switchTab('/pages/question/index') // question/index 是 TabBar 页，必须用 switchTab
+  switchTab('/pages/question/index') // TabBar 页，必须用 switchTab
 }
 
 const toTasks = () => {
   navigateTo('/pages/task/index')
 }
 
-// 导航配置 - 新增问答和任务
+// 导航配置
+// isTab: true = TabBar 页面（switchTab），false = 普通页面（navigateTo）
 const navItems = [
-  { label: '首页', path: '/pages/home/index', isTab: true, handler: toHome },
-  { label: '资源', path: '/pages/resource/index', isTab: true, handler: toResourceList },
-  { label: '问答', path: '/pages/question/index', isTab: false, handler: toQuestions },
-  { label: '任务', path: '/pages/task/index', isTab: false, handler: toTasks },
-  { label: '社区', path: '/pages/community/index', isTab: true, handler: toCommunity },
+  { label: '首页', path: '/pages/home/index',      isTab: true,  handler: toHome },
+  { label: '资源', path: '/pages/resource/index',  isTab: true,  handler: toResourceList },
+  { label: '问答', path: '/pages/question/index',  isTab: true,  handler: toQuestions },
+  { label: '任务', path: '/pages/task/index',      isTab: false, handler: toTasks },
+  { label: '社区', path: '/pages/community/index', isTab: false, handler: toCommunity },
 ]
 
 interface DisplayNotification {
@@ -388,7 +396,7 @@ const showPublishMenu = ref(false)
 const publishContainer = ref<HTMLElement | null>(null)
 const publishMenuPosition = ref({ top: 0, left: 0 })
 
-// 发布类型配置
+// 发布类型配置（与移动端 CustomTabBar 保持一致，共 4 种）
 const publishTypes = [
   {
     type: 'question',
@@ -409,11 +417,20 @@ const publishTypes = [
     iconBg: 'rgba(14,165,233,0.1)',
   },
   {
+    type: 'activity',
+    title: '发布活动',
+    desc: '组织社团活动，召集同学参与',
+    route: '/pages/club/publish-activity',
+    iconName: 'calendar',
+    iconColor: '#7C3AED',
+    iconBg: 'rgba(124,58,237,0.1)',
+  },
+  {
     type: 'task',
     title: '发布任务',
     desc: '互助跑腿、组队协作',
     route: '/pages/task/publish',
-    iconName: 'check-circle',
+    iconName: 'zap',
     iconColor: '#F59E0B',
     iconBg: 'rgba(245,158,11,0.1)',
   },
@@ -844,6 +861,43 @@ defineExpose({
 .notification-wrapper,
 .user-wrapper {
   position: relative;
+}
+
+// AI 助手按钮
+.ai-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 32px;
+  padding: 0 12px;
+  background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  &:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+  }
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 1;
+  }
+
+  :deep(.icon) {
+    color: #fff;
+  }
+}
+
+.ai-btn-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.3px;
 }
 
 // 图标按钮

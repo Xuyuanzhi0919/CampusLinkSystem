@@ -62,14 +62,16 @@
                 <!-- 底部：统计数据 + 加入按钮 -->
                 <view class="banner-stats">
                   <view class="banner-stat">
-                    <text class="banner-stat-num">{{ club.memberCount || 0 }}</text>
+                    <text class="banner-stat-num">{{ formatMemberCount(club.memberCount) }}</text>
                     <text class="banner-stat-label">成员</text>
                   </view>
-                  <view class="banner-stat-divider"></view>
-                  <view class="banner-stat">
-                    <text class="banner-stat-num">{{ club.activityCount || 0 }}</text>
-                    <text class="banner-stat-label">活动</text>
-                  </view>
+                  <template v-if="club.activityCount">
+                    <view class="banner-stat-divider"></view>
+                    <view class="banner-stat">
+                      <text class="banner-stat-num">{{ club.activityCount }}</text>
+                      <text class="banner-stat-label">活动</text>
+                    </view>
+                  </template>
                   <view class="banner-stat-spacer"></view>
                   <view
                     class="banner-btn"
@@ -138,9 +140,18 @@
             <!-- 底部信息 -->
             <view class="hot-card__bottom">
               <text class="hot-card__name">{{ item.clubName }}</text>
-              <view class="hot-card__meta">
-                <Icon name="users" :size="10" class="hot-card__meta-icon" />
-                <text class="hot-card__count">{{ formatMemberCount(item.memberCount) }}人</text>
+              <view class="hot-card__footer">
+                <view class="hot-card__meta">
+                  <Icon name="users" :size="10" class="hot-card__meta-icon" />
+                  <text class="hot-card__count">{{ formatMemberCount(item.memberCount) }}人</text>
+                </view>
+                <view
+                  class="hot-card__join"
+                  :class="{ 'hot-card__join--joined': item.isMember, 'hot-card__join--loading': joiningIds.has(item.clubId) }"
+                  @click.stop="handleJoinClub(item)"
+                >
+                  <text class="hot-card__join-text">{{ joiningIds.has(item.clubId) ? '···' : (item.isMember ? '✓' : '+') }}</text>
+                </view>
               </view>
               <!-- 主题色光条 -->
               <view class="hot-card__glow-bar"></view>
@@ -234,10 +245,12 @@
             <view class="club-card__footer">
               <view class="club-card__meta">
                 <Icon name="users" :size="10" class="club-meta-icon" />
-                <text class="club-meta-val">{{ formatMemberCount(item.memberCount) }}</text>
-                <view class="club-meta-dot"></view>
-                <Icon name="zap" :size="10" class="club-meta-icon" />
-                <text class="club-meta-val">{{ item.activityCount || 0 }}场</text>
+                <text class="club-meta-val">{{ formatMemberCount(item.memberCount) }}人</text>
+                <template v-if="item.activityCount">
+                  <view class="club-meta-dot"></view>
+                  <Icon name="zap" :size="10" class="club-meta-icon" />
+                  <text class="club-meta-val">{{ item.activityCount }}场</text>
+                </template>
               </view>
               <view
                 class="club-card__btn"
@@ -1073,6 +1086,50 @@ const handleJoinClub = async (club: any) => {
   letter-spacing: -0.2px;
 }
 
+.hot-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.hot-card__join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  flex-shrink: 0;
+  transition: opacity 0.15s, transform 0.15s;
+
+  &:active { opacity: 0.7; transform: scale(0.88); }
+
+  &--joined {
+    background: transparent;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  &--loading {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+}
+
+.hot-card__join-text {
+  font-size: 12px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.95);
+  line-height: 1;
+
+  .hot-card__join--joined & {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+}
+
 .hot-card__meta {
   display: flex;
   align-items: center;
@@ -1338,7 +1395,7 @@ const handleJoinClub = async (club: any) => {
   height: 26px;
   padding: 0 13px;
   border-radius: 8px;
-  background: var(--cat-color, #377DFF);
+  background: #377DFF;
   transition: opacity 0.15s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.2s ease;
 
   &:active {

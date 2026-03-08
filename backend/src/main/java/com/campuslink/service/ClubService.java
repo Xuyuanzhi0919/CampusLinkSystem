@@ -57,7 +57,8 @@ public class ClubService {
         // 创建社团
         Club club = new Club();
         BeanUtils.copyProperties(request, club);
-        club.setSchoolId(user.getSchoolId());
+        // 优先使用用户所属学校，若用户未绑定学校则默认使用第一所学校
+        club.setSchoolId(user.getSchoolId() != null ? user.getSchoolId() : 1L);
         club.setFounderId(userId);
         club.setMemberCount(1);
         club.setStatus(1);

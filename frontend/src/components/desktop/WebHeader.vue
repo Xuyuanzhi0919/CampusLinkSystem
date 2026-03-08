@@ -1000,9 +1000,9 @@ defineExpose({
 .popover-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 12px 12px 10px;
   border-bottom: 1px solid #F1F5F9;
+  position: relative;
 }
 
 .popover-header-left {
@@ -1022,6 +1022,10 @@ defineExpose({
 }
 
 .popover-close-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 22px;
   height: 22px;
   border: none;

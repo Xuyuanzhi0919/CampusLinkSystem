@@ -1035,10 +1035,9 @@ onLoad(() => {
   }
 
   :deep(.uni-input-placeholder) {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    line-height: normal;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    line-height: normal !important;
   }
 }
 

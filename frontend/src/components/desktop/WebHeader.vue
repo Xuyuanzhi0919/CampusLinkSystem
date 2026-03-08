@@ -113,30 +113,55 @@
               <span>发布</span>
             </button>
 
-            <!-- Popover 下拉菜单 -->
+            <!-- 发布弹窗 -->
             <div v-if="showPublishMenu" class="publish-popover-overlay" @click="showPublishMenu = false">
               <div class="publish-popover" @click.stop :style="{ top: publishMenuPosition.top + 'px', left: publishMenuPosition.left + 'px' }">
+
+                <!-- 标题栏 -->
                 <div class="popover-header">
-                  <span class="popover-title">发布内容</span>
+                  <div class="popover-header-left">
+                    <Icon name="plus-circle" :size="15" class="popover-header-icon" />
+                    <span class="popover-title">发布内容</span>
+                  </div>
+                  <button class="popover-close-btn" @click="showPublishMenu = false">
+                    <Icon name="x" :size="14" />
+                  </button>
                 </div>
-                <div class="popover-list">
+
+                <!-- 未登录提示 -->
+                <div v-if="!isLoggedIn" class="popover-login-tip">
+                  <Icon name="lock" :size="28" class="login-tip-icon" />
+                  <span class="login-tip-text">请先登录后发布</span>
+                  <button class="login-tip-btn" @click="emit('login'); showPublishMenu = false">立即登录</button>
+                </div>
+
+                <!-- 发布类型列表 -->
+                <div v-else class="popover-list">
                   <div
                     v-for="item in publishTypes"
                     :key="item.type"
                     class="popover-item"
                     @click="handlePublishSelect(item)"
                   >
-                    <div class="item-icon" :style="{ background: item.color }">
-                      <svg viewBox="0 0 24 24" fill="none">
-                        <path :d="item.icon" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
+                    <div class="item-icon" :style="{ background: item.iconBg }">
+                      <Icon :name="item.iconName" :size="18" :color="item.iconColor" />
                     </div>
                     <div class="item-content">
                       <span class="item-title">{{ item.title }}</span>
                       <span class="item-desc">{{ item.desc }}</span>
                     </div>
+                    <Icon name="chevron-right" :size="13" class="item-arrow" />
                   </div>
                 </div>
+
+                <!-- 底部：查看我的发布 -->
+                <div v-if="isLoggedIn" class="popover-footer">
+                  <button class="my-publish-btn" @click="navigateTo('/pages/user/index'); showPublishMenu = false">
+                    <Icon name="user" :size="13" />
+                    <span>查看我的发布</span>
+                  </button>
+                </div>
+
               </div>
             </div>
           </div>
@@ -169,6 +194,7 @@ import { logout } from '@/services/auth'
 import { markNotificationRead, markAllNotificationsRead, getNotificationIcon, formatRelativeTime, buildNotificationLink } from '@/services/notification'
 import type { NotificationResponse } from '@/services/notification'
 import type { UserStatsData } from '@/types/user'
+import Icon from '@/components/icons/index.vue'
 import { useHeaderLogic } from '@/composables/useHeaderLogic'
 import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
@@ -368,25 +394,28 @@ const publishTypes = [
     title: '提出问题',
     desc: '向同学求助，快速解答',
     route: '/pages/question/ask',
-    icon: 'M8.228 9C8.228 7.89543 9.12343 7 10.228 7H13.772C14.8766 7 15.772 7.89543 15.772 9C15.772 9.99001 15.0851 10.8186 14.1556 10.9724L13 11.1644V13M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12ZM12 17H12.01V17.01H12V17Z',
-    color: 'linear-gradient(135deg, #2563EB 0%, #3B82F6 100%)'
+    iconName: 'help-circle',
+    iconColor: '#6366F1',
+    iconBg: 'rgba(99,102,241,0.1)',
   },
   {
     type: 'resource',
     title: '发布资源',
     desc: '上传资料、课件、笔记',
     route: '/pages/resource/upload',
-    icon: 'M7 16C7 13.2386 9.23858 11 12 11C14.7614 11 17 13.2386 17 16M15 7C15 8.65685 13.6569 10 12 10C10.3431 10 9 8.65685 9 7C9 5.34315 10.3431 4 12 4C13.6569 4 15 5.34315 15 7ZM21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z',
-    color: 'linear-gradient(135deg, #14B8A6 0%, #22D3EE 100%)'
+    iconName: 'upload',
+    iconColor: '#0EA5E9',
+    iconBg: 'rgba(14,165,233,0.1)',
   },
   {
     type: 'task',
     title: '发布任务',
     desc: '互助跑腿、组队协作',
     route: '/pages/task/publish',
-    icon: 'M9 5H7C5.89543 5 5 5.89543 5 7V19C5 20.1046 5.89543 21 7 21H17C18.1046 21 19 20.1046 19 19V7C19 5.89543 18.1046 5 17 5H15M9 5C9 6.10457 9.89543 7 11 7H13C14.1046 7 15 6.10457 15 5M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 3.89543M9 12L11 14L15 10',
-    color: 'linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%)'
-  }
+    iconName: 'check-circle',
+    iconColor: '#F59E0B',
+    iconBg: 'rgba(245,158,11,0.1)',
+  },
 ]
 
 const handlePublish = () => {
@@ -947,106 +976,188 @@ defineExpose({
 // Popover 下拉菜单
 .publish-popover-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   z-index: $z-popover;
   background: transparent;
 }
 
 .publish-popover {
   position: fixed;
-  width: 260px;
-  background: $white;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  border: 1px solid $border-light;
+  width: 256px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.13), 0 3px 10px rgba(0,0,0,0.06);
+  border: 1px solid #F1F5F9;
   overflow: hidden;
-  animation: popoverSlideDown 0.2s ease;
+  animation: popoverSlideDown 0.2s cubic-bezier(0.34, 1.26, 0.64, 1);
 }
 
 @keyframes popoverSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .popover-header {
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid $border-light;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.popover-header-left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.popover-header-icon {
+  color: #6366F1;
 }
 
 .popover-title {
-  font-size: 15px;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.popover-close-btn {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: #F1F5F9;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #94A3B8;
+  transition: all 0.15s;
+  padding: 0;
+
+  &:hover { background: #E2E8F0; color: #475569; }
+}
+
+// 未登录提示
+.popover-login-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 16px 20px;
+  gap: 8px;
+}
+
+.login-tip-icon {
+  color: #CBD5E1;
+  margin-bottom: 4px;
+}
+
+.login-tip-text {
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 500;
+}
+
+.login-tip-btn {
+  margin-top: 4px;
+  height: 32px;
+  padding: 0 20px;
+  background: #6366F1;
+  border: none;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #4F46E5; }
 }
 
 .popover-list {
-  padding: 8px 0;
+  padding: 6px 8px;
 }
 
 .popover-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
+  gap: 10px;
+  padding: 9px 8px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: all 0.15s;
 
   &:hover {
-    background: $bg-hover;
+    background: #F5F7FF;
+    transform: translateX(2px);
 
-    .item-title {
-      color: $primary;
-    }
+    .item-title { color: #6366F1; }
+    .item-arrow { opacity: 1; }
   }
 
-  &:active {
-    background: $bg-active;
-  }
+  &:active { transform: translateX(0); background: #EEF2FF; }
 }
 
 .item-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  svg {
-    width: 22px;
-    height: 22px;
-    color: $white;
-  }
 }
 
 .item-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .item-title {
-  font-size: 15px;
-  font-weight: $font-weight-medium;
-  color: $text-primary;
-  transition: color 0.15s ease;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1E293B;
+  transition: color 0.15s;
 }
 
 .item-desc {
-  font-size: 13px;
-  color: $text-tertiary;
-  line-height: 1.4;
+  font-size: 11px;
+  color: #94A3B8;
+}
+
+.item-arrow {
+  color: #CBD5E1;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+// 底部入口
+.popover-footer {
+  padding: 0 8px 8px;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 6px;
+}
+
+.my-publish-btn {
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  color: #64748B;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: #F8FAFC; border-color: #CBD5E1; color: #475569; }
 }
 
 // 底部强调线

@@ -152,18 +152,55 @@
         </view>
       </scroll-view>
 
+      <!-- ── 搜索 + 分类筛选 ── -->
+      <view class="filter-wrap">
+        <view class="club-search">
+          <Icon name="search" :size="13" class="club-search__icon" />
+          <input
+            v-model="searchKeyword"
+            class="club-search__input"
+            placeholder="搜索社团名称或简介..."
+          />
+          <view v-if="searchKeyword" class="club-search__clear" @click="searchKeyword = ''">
+            <Icon name="x" :size="12" />
+          </view>
+        </view>
+        <scroll-view class="cat-scroll" scroll-x :show-scrollbar="false">
+          <view class="cat-tabs">
+            <view
+              v-for="cat in categories"
+              :key="cat.value"
+              class="cat-tab"
+              :class="{ active: activeCategory === cat.value }"
+              @click="activeCategory = cat.value"
+            >
+              <text class="cat-tab-label">{{ cat.label }}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
       <!-- ── 全部社团 ── -->
       <view class="section-header" style="margin-top: 8px;">
         <view class="section-title-wrap">
           <view class="section-title-bar" style="background: #6C5CE7;"></view>
           <text class="section-title">全部社团</text>
         </view>
-        <text class="section-count">{{ list.length }} 个</text>
+        <text class="section-count">{{ filteredList.length }} 个</text>
       </view>
 
-      <view class="club-items">
+      <!-- 过滤无结果 -->
+      <view v-if="filteredList.length === 0" class="filter-empty">
+        <Icon name="search" :size="32" class="filter-empty__icon" />
+        <text class="filter-empty__text">没有找到匹配的社团</text>
+        <view class="filter-empty__reset" @click="searchKeyword = ''; activeCategory = ''">
+          <text>清除筛选</text>
+        </view>
+      </view>
+
+      <view v-else class="club-items">
         <view
-          v-for="(item, idx) in list"
+          v-for="(item, idx) in filteredList"
           :key="item.clubId"
           class="club-card"
           :style="{
@@ -327,6 +364,33 @@ const getCategoryColor = (cat?: string) =>
   categoryColorMap[cat || ''] || '#FDCB6E'
 const getCategoryColorDim = (cat?: string) =>
   categoryColorDimMap[cat || ''] || '#7A5A00'
+
+const searchKeyword = ref('')
+const activeCategory = ref('')
+
+const categories = [
+  { value: '', label: '全部' },
+  { value: '学术', label: '学术' },
+  { value: '体育', label: '体育' },
+  { value: '文艺', label: '文艺' },
+  { value: '志愿', label: '志愿' },
+  { value: '科技', label: '科技' },
+  { value: '综合', label: '综合' },
+]
+
+const filteredList = computed(() => {
+  let result = props.list
+  if (activeCategory.value) {
+    result = result.filter((c: any) => c.category === activeCategory.value)
+  }
+  if (searchKeyword.value.trim()) {
+    const kw = searchKeyword.value.trim().toLowerCase()
+    result = result.filter((c: any) =>
+      c.clubName?.toLowerCase().includes(kw) || c.description?.toLowerCase().includes(kw)
+    )
+  }
+  return result
+})
 
 const formatMemberCount = (count: number) => {
   if (!count) return '0'
@@ -692,6 +756,118 @@ const handleJoinClub = async (club: any) => {
   font-size: 11px;
   font-weight: 500;
   color: rgba(0, 0, 0, 0.3);
+}
+
+/* ========== 搜索 + 分类筛选 ========== */
+.filter-wrap {
+  padding: 0 16px;
+  margin: 4px 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.club-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #F9FAFB;
+  border: 1px solid #E5E7EB;
+  border-radius: 24px;
+  padding: 8px 14px;
+  transition: border-color 0.15s;
+
+  &:focus-within {
+    border-color: #377DFF;
+    background: #fff;
+  }
+}
+
+.club-search__icon { color: #9CA3AF; flex-shrink: 0; }
+
+.club-search__input {
+  flex: 1;
+  font-size: 13px;
+  color: #374151;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  min-width: 0;
+
+  &::placeholder { color: #D1D5DB; }
+}
+
+.club-search__clear {
+  color: #9CA3AF;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  &:active { opacity: 0.6; }
+}
+
+.cat-scroll {
+  white-space: nowrap;
+  /* #ifdef H5 */
+  &::-webkit-scrollbar { display: none; }
+  /* #endif */
+}
+
+.cat-tabs {
+  display: inline-flex;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+.cat-tab {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: #F3F4F6;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+
+  &.active {
+    background: #377DFF;
+    .cat-tab-label { color: #fff; }
+  }
+
+  &:active { transform: scale(0.95); }
+}
+
+.cat-tab-label {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+}
+
+/* 过滤空状态 */
+.filter-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 16px;
+  gap: 12px;
+}
+
+.filter-empty__icon { color: #D1D5DB; }
+
+.filter-empty__text {
+  font-size: 14px;
+  color: #9CA3AF;
+}
+
+.filter-empty__reset {
+  padding: 6px 20px;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  font-size: 13px;
+  color: #6B7280;
+  cursor: pointer;
+  &:active { background: #F3F4F6; }
 }
 
 /* ========== Section Header ========== */

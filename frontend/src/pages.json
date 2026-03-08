@@ -148,8 +148,7 @@
 		{
 			"path": "pages/club/detail",
 			"style": {
-				"navigationBarTitleText": "社团详情",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

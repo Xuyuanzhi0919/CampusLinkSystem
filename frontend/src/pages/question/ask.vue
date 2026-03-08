@@ -262,6 +262,92 @@
         </CCard>
 
         </view>
+
+      <!-- 右侧边栏（PC 端显示） -->
+      <view class="page-sidebar">
+
+        <!-- 提问规范 -->
+        <view class="sidebar-panel sidebar-panel--guide">
+          <view class="panel-header">
+            <view class="panel-accent"></view>
+            <Icon name="help-circle" :size="15" class="panel-icon" />
+            <text class="panel-title">提问规范</text>
+          </view>
+          <view class="panel-body">
+            <view class="guide-item">
+              <Icon name="check-circle" :size="13" class="guide-check" />
+              <text class="guide-text">标题简洁明确，直接描述问题</text>
+            </view>
+            <view class="guide-item">
+              <Icon name="check-circle" :size="13" class="guide-check" />
+              <text class="guide-text">详细描述问题背景和已尝试方案</text>
+            </view>
+            <view class="guide-item">
+              <Icon name="check-circle" :size="13" class="guide-check" />
+              <text class="guide-text">选择合适分类，添加相关标签</text>
+            </view>
+            <view class="guide-item">
+              <Icon name="check-circle" :size="13" class="guide-check" />
+              <text class="guide-text">可附上截图帮助他人理解</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 积分规则 -->
+        <view class="sidebar-panel sidebar-panel--points">
+          <view class="panel-header">
+            <view class="panel-accent"></view>
+            <Icon name="gift" :size="15" class="panel-icon" />
+            <text class="panel-title">积分规则</text>
+          </view>
+          <view class="panel-body">
+            <view class="points-row">
+              <text class="points-action">发布问题</text>
+              <text class="points-value points-cost">-2 积分</text>
+            </view>
+            <view class="points-row">
+              <text class="points-action">回答被采纳</text>
+              <text class="points-value points-earn">+20 积分</text>
+            </view>
+            <view class="points-row">
+              <text class="points-action">获得回答</text>
+              <text class="points-value points-earn">+5 积分</text>
+            </view>
+            <view class="points-row">
+              <text class="points-action">悬赏奖励</text>
+              <text class="points-value points-earn">即时发放</text>
+            </view>
+            <view class="points-current">
+              <Icon name="zap" :size="12" class="points-zap" />
+              <text class="points-current-text">当前积分：{{ userPoints }}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 常见问题 -->
+        <view class="sidebar-panel sidebar-panel--faq">
+          <view class="panel-header">
+            <view class="panel-accent"></view>
+            <Icon name="message-circle" :size="15" class="panel-icon" />
+            <text class="panel-title">常见问题</text>
+          </view>
+          <view class="panel-body">
+            <view class="faq-item">
+              <text class="faq-q">Q：问题多久能获得回答？</text>
+              <text class="faq-a">通常 30 分钟内即可获得首条回答，设置悬赏可加速。</text>
+            </view>
+            <view class="faq-item">
+              <text class="faq-q">Q：可以修改已发布的问题吗？</text>
+              <text class="faq-a">可以，在问题详情页点击编辑按钮即可修改。</text>
+            </view>
+            <view class="faq-item">
+              <text class="faq-q">Q：如何选择最佳回答？</text>
+              <text class="faq-a">在问题详情页，点击满意回答右下角"采纳"即可。</text>
+            </view>
+          </view>
+        </view>
+
+      </view>
       </view>
     </scroll-view>
 
@@ -951,16 +1037,175 @@ const handleSubmit = async () => {
   }
 }
 
-// 表单区（主内容 - 居中显示）
+// 表单区（主内容）
 .form-section {
   flex: 1;
   min-width: 0;
-  max-width: 800px;
-  margin: 0 auto; // 居中显示
 
   @include mobile {
     max-width: 100%;
   }
+}
+
+// ===================================
+// 右侧侧栏（PC 端 260px 固定宽度）
+// ===================================
+.page-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+// 侧栏卡片通用
+.sidebar-panel {
+  background: $white;
+  border-radius: 12px;
+  border: 1px solid $gray-100;
+  box-shadow: 0 2px 6px rgba($black, 0.03);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-bottom: 1px solid $gray-100;
+  position: relative;
+}
+
+.panel-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  border-radius: 0 2px 2px 0;
+
+  .sidebar-panel--guide & { background: #6366F1; }
+  .sidebar-panel--points & { background: #F59E0B; }
+  .sidebar-panel--faq & { background: #0EA5E9; }
+}
+
+.panel-icon {
+  .sidebar-panel--guide & { color: #6366F1; }
+  .sidebar-panel--points & { color: #F59E0B; }
+  .sidebar-panel--faq & { color: #0EA5E9; }
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $gray-800;
+}
+
+.panel-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// 提问规范
+.guide-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.guide-check {
+  color: #22C55E;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.guide-text {
+  font-size: 12px;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+// 积分规则
+.points-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 0;
+  border-bottom: 1px dashed $gray-100;
+
+  &:last-of-type {
+    border-bottom: none;
+  }
+}
+
+.points-action {
+  font-size: 12px;
+  color: $gray-600;
+}
+
+.points-value {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.points-cost {
+  color: #EF4444;
+}
+
+.points-earn {
+  color: #22C55E;
+}
+
+.points-current {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  padding: 6px 10px;
+  background: rgba(245, 158, 11, 0.06);
+  border-radius: 8px;
+}
+
+.points-zap {
+  color: #F59E0B;
+}
+
+.points-current-text {
+  font-size: 12px;
+  color: #D97706;
+  font-weight: 600;
+}
+
+// 常见问题
+.faq-item {
+  padding-bottom: 10px;
+  border-bottom: 1px dashed $gray-100;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.faq-q {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0EA5E9;
+  margin-bottom: 4px;
+}
+
+.faq-a {
+  display: block;
+  font-size: 12px;
+  color: $gray-500;
+  line-height: 1.55;
 }
 
 // ===================================

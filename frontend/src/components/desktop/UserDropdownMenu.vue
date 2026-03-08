@@ -2,7 +2,7 @@
   <view v-if="visible" class="dropdown-mask" @click="handleMaskClick">
     <view class="menu-final" :class="{ 'menu-show': showAnimation }" :style="menuStyle" @tap.stop>
 
-      <!-- ① 用户信息头部 -->
+      <!-- ① 用户头部 -->
       <view class="user-header">
         <view class="user-avatar-wrapper">
           <view class="user-avatar-large">
@@ -18,87 +18,69 @@
           <view class="user-name-row">
             <text class="user-nickname">{{ userInfo.nickname || '用户' }}</text>
             <view class="user-role-tag" :class="roleTagClass">{{ roleDisplayName }}</view>
-          </view>
-          <text class="user-email">{{ contactDisplay }}</text>
-          <!-- 积分行：可点击跳转积分历史 -->
-          <view class="user-bottom-row">
-            <view class="user-points-row" @click="handlePointsClick">
-              <Icon name="sparkles" :size="12" class="points-icon" />
-              <text class="points-value">{{ userInfo.points || 0 }}</text>
-              <text class="points-label">积分</text>
-              <Icon name="chevron-right" :size="10" class="points-arrow" />
-            </view>
             <view class="user-level-badge">
-              <Icon name="zap" :size="10" class="level-icon" />
+              <Icon name="zap" :size="9" class="level-icon" />
               <text class="level-text">Lv.{{ userInfo.level || 1 }}</text>
             </view>
           </view>
-        </view>
-
-        <!-- 编辑资料快捷按钮 -->
-        <view class="edit-profile-btn" @click="handleMenuClick({ id: 'edit-profile', icon: 'pencil', text: '编辑资料' })">
-          <Icon name="pencil" :size="13" />
-        </view>
-      </view>
-
-      <!-- ② 签到条 -->
-      <view
-        class="check-in-bar"
-        :class="{ 'checked-in': isCheckedIn }"
-        @click="handleCheckIn"
-      >
-        <view class="check-in-left">
-          <Icon :name="isCheckedIn ? 'check-circle' : 'calendar-check'" :size="15" class="check-in-icon" />
-          <text class="check-in-title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
-        </view>
-        <view class="check-in-right">
-          <text class="check-in-reward">{{ isCheckedIn ? '已获 +10' : '签到 +10' }}</text>
-          <Icon v-if="!isCheckedIn" name="chevron-right" :size="12" class="check-in-arrow" />
-        </view>
-      </view>
-
-      <!-- ③ 数据统计 2×2 -->
-      <view class="stats-section">
-        <view class="stats-grid">
-          <view
-            v-for="stat in statItems"
-            :key="stat.key"
-            class="stat-card"
-            @click="handleStatClick(stat.key)"
-          >
-            <view class="stat-icon-wrap" :class="`stat-icon-${stat.key}`">
-              <Icon :name="stat.icon" :size="14" />
+          <text class="user-email">{{ contactDisplay }}</text>
+          <!-- 积分行：签到状态内联 -->
+          <view class="user-points-row" @click="handlePointsClick">
+            <Icon name="sparkles" :size="11" class="points-icon" />
+            <text class="points-value">{{ userInfo.points || 0 }}</text>
+            <text class="points-label">积分</text>
+            <view v-if="isCheckedIn" class="checkin-inline-badge checkin-done">
+              <Icon name="check" :size="9" />
+              <text>已签</text>
             </view>
-            <text class="stat-value">{{ stat.value }}</text>
-            <text class="stat-label">{{ stat.label }}</text>
+            <view v-else class="checkin-inline-badge checkin-todo" @click.stop="handleCheckIn">
+              <Icon name="plus" :size="9" />
+              <text>签到</text>
+            </view>
           </view>
         </view>
+
+        <view class="edit-profile-btn" @click="handleMenuClick({ id: 'edit-profile', icon: 'pencil', text: '编辑资料' })">
+          <Icon name="pencil" :size="12" />
+        </view>
       </view>
 
-      <!-- ④ 功能入口 -->
-      <view class="section-divider"></view>
-      <view class="menu-items">
+      <!-- ② 数据统计 - 单行四列 -->
+      <view class="stats-row">
+        <view
+          v-for="stat in statItems"
+          :key="stat.key"
+          class="stat-item"
+          @click="handleStatClick(stat.key)"
+        >
+          <view class="stat-icon-wrap" :class="`stat-icon-${stat.key}`">
+            <Icon :name="stat.icon" :size="12" />
+          </view>
+          <text class="stat-value">{{ stat.value }}</text>
+          <text class="stat-label">{{ stat.label }}</text>
+        </view>
+      </view>
+
+      <!-- ③ 功能入口 - 图标横排 -->
+      <view class="nav-row">
         <view
           v-for="item in normalMenuItems"
           :key="item.id"
-          class="menu-item"
+          class="nav-item"
           @click="handleMenuClick(item)"
         >
-          <view class="menu-icon-wrap">
-            <Icon :name="item.icon" :size="15" />
+          <view class="nav-icon-wrap">
+            <Icon :name="item.icon" :size="16" />
           </view>
-          <text class="menu-text">{{ item.text }}</text>
-          <Icon name="chevron-right" :size="13" class="menu-arrow" />
+          <text class="nav-label">{{ item.text }}</text>
         </view>
       </view>
 
-      <!-- ⑤ 退出登录 -->
+      <!-- ④ 退出登录 -->
       <view class="logout-section">
-        <view class="menu-item menu-item-logout" @click="handleMenuClick(logoutItem)">
-          <view class="menu-icon-wrap logout-icon-wrap">
-            <Icon name="log-out" :size="15" />
-          </view>
-          <text class="menu-text logout-text">退出登录</text>
+        <view class="logout-btn" @click="handleMenuClick(logoutItem)">
+          <Icon name="log-out" :size="13" class="logout-icon" />
+          <text class="logout-text">退出登录</text>
         </view>
       </view>
 
@@ -157,14 +139,9 @@ const showAnimation = ref(false)
 const menuStyle = computed(() => {
   const windowWidth = window.innerWidth || document.documentElement.clientWidth
   const rightOffset = windowWidth - props.position.left - 20
-  return {
-    top: `${props.position.top}px`,
-    right: `${rightOffset}px`,
-    left: 'auto',
-  }
+  return { top: `${props.position.top}px`, right: `${rightOffset}px`, left: 'auto' }
 })
 
-// 统计卡片配置
 const statItems = computed(() => [
   { key: 'answers',   icon: 'message-circle', label: '回答', value: props.userStats?.answerCount   ?? 0 },
   { key: 'resources', icon: 'file-text',       label: '资源', value: props.userStats?.resourceCount ?? 0 },
@@ -206,21 +183,17 @@ watch(() => props.visible, (val) => {
 })
 
 const handleMaskClick = () => emit('update:visible', false)
-
 const handleMenuClick = (item: MenuItem) => {
   emit('menu-click', item.id)
   emit('update:visible', false)
 }
-
 const handleCheckIn = () => {
   if (!props.isCheckedIn) emit('check-in')
 }
-
 const handleStatClick = (type: string) => {
   emit('stat-click', type)
   emit('update:visible', false)
 }
-
 const handlePointsClick = () => {
   emit('menu-click', 'points-history')
   emit('update:visible', false)
@@ -228,27 +201,25 @@ const handlePointsClick = () => {
 </script>
 
 <style scoped lang="scss">
-/* ========== 遮罩 ========== */
 .dropdown-mask {
   position: fixed;
   inset: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.06);
   backdrop-filter: blur(2px);
 }
 
-/* ========== 容器 ========== */
 .menu-final {
   position: absolute;
-  width: 300px;
+  width: 280px;
   background: #FFFFFF;
-  border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.13), 0 3px 10px rgba(0, 0, 0, 0.06);
   z-index: 9999;
   opacity: 0;
-  transform: translateY(-8px) scale(0.97);
+  transform: translateY(-6px) scale(0.97);
   transform-origin: top right;
-  transition: all 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
+  transition: all 0.2s cubic-bezier(0.34, 1.26, 0.64, 1);
   overflow: hidden;
 
   &.menu-show {
@@ -257,14 +228,14 @@ const handlePointsClick = () => {
   }
 }
 
-/* ========== ① 用户头部 ========== */
+/* ========== ① 头部 ========== */
 .user-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   padding: 12px 12px 10px;
-  background: linear-gradient(135deg, #F8FAFF 0%, #F0F4FF 100%);
-  border-bottom: 1px solid rgba(59, 130, 246, 0.06);
+  background: linear-gradient(135deg, #F8FAFF 0%, #EEF2FF 100%);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.07);
   position: relative;
 }
 
@@ -274,45 +245,37 @@ const handlePointsClick = () => {
 }
 
 .user-avatar-large {
-  width: 42px;
-  height: 42px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2.5px solid #FFFFFF;
-  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.2);
+  border: 2px solid #FFFFFF;
+  box-shadow: 0 3px 10px rgba(99, 102, 241, 0.2);
 }
 
 .avatar-online-dot {
   position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 10px;
-  height: 10px;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
   background: #22C55E;
   border: 2px solid #FFFFFF;
   border-radius: 50%;
 }
 
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
+.avatar-img { width: 100%; height: 100%; object-fit: cover; }
 
 .avatar-default {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #3B82F6, #818CF8);
+  background: linear-gradient(135deg, #6366F1, #818CF8);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.avatar-text {
-  font-size: 18px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
+.avatar-text { font-size: 16px; font-weight: 700; color: #FFFFFF; }
 
 .user-details {
   flex: 1;
@@ -325,125 +288,107 @@ const handlePointsClick = () => {
 .user-name-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .user-nickname {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #1E293B;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  max-width: 100px;
 }
 
 .user-role-tag {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
   flex-shrink: 0;
 
-  &.role-student, &.role-user {
-    color: #16A34A;
-    background: rgba(22, 163, 74, 0.1);
-  }
-  &.role-teacher {
-    color: #7C3AED;
-    background: rgba(124, 58, 237, 0.1);
-  }
-  &.role-admin {
-    color: #EA580C;
-    background: rgba(234, 88, 12, 0.1);
-  }
+  &.role-student, &.role-user { color: #16A34A; background: rgba(22, 163, 74, 0.1); }
+  &.role-teacher { color: #7C3AED; background: rgba(124, 58, 237, 0.1); }
+  &.role-admin   { color: #EA580C; background: rgba(234, 88, 12, 0.1); }
+}
+
+.user-level-badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: linear-gradient(135deg, #6366F1, #818CF8);
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+
+  .level-icon { color: #FFFFFF; }
+  .level-text { font-size: 9px; font-weight: 700; color: #FFFFFF; }
 }
 
 .user-email {
-  font-size: 11px;
+  font-size: 10px;
   color: #94A3B8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.user-bottom-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 2px;
-}
-
+/* 积分行 */
 .user-points-row {
   display: flex;
   align-items: center;
   gap: 3px;
   cursor: pointer;
-  padding: 2px 6px 2px 0;
-  border-radius: 6px;
+  width: fit-content;
+  padding: 1px 4px 1px 0;
+  border-radius: 5px;
   transition: background 0.15s;
 
-  &:hover {
-    background: rgba(245, 158, 11, 0.08);
+  &:hover { background: rgba(245, 158, 11, 0.07); }
+}
 
-    .points-arrow {
-      opacity: 1;
-      transform: translateX(2px);
-    }
+.points-icon { color: #F59E0B; flex-shrink: 0; }
+.points-value { font-size: 12px; font-weight: 700; color: #F59E0B; }
+.points-label { font-size: 10px; color: #CBD5E1; }
+
+/* 签到内联标签 */
+.checkin-inline-badge {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  margin-left: 3px;
+  font-size: 9px;
+  font-weight: 600;
+  flex-shrink: 0;
+
+  &.checkin-done {
+    color: #22C55E;
+    background: rgba(34, 197, 94, 0.1);
+    cursor: default;
+  }
+
+  &.checkin-todo {
+    color: #3B82F6;
+    background: rgba(59, 130, 246, 0.1);
+    cursor: pointer;
+
+    &:hover { background: rgba(59, 130, 246, 0.18); }
   }
 }
 
-.points-icon {
-  color: #F59E0B;
-  flex-shrink: 0;
-}
-
-.points-value {
-  font-size: 13px;
-  font-weight: 700;
-  color: #F59E0B;
-}
-
-.points-label {
-  font-size: 11px;
-  color: #CBD5E1;
-}
-
-.points-arrow {
-  color: #F59E0B;
-  opacity: 0;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-
-.user-level-badge {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  background: linear-gradient(135deg, #3B82F6, #818CF8);
-  padding: 2px 7px;
-  border-radius: 10px;
-}
-
-.level-icon {
-  color: #FFFFFF;
-}
-
-.level-text {
-  font-size: 10px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-/* 编辑快捷按钮 */
+/* 编辑按钮 */
 .edit-profile-btn {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 26px;
-  height: 26px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(59, 130, 246, 0.12);
+  top: 10px;
+  right: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(99, 102, 241, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -453,115 +398,41 @@ const handlePointsClick = () => {
 
   &:hover {
     background: #FFFFFF;
-    color: #3B82F6;
-    border-color: rgba(59, 130, 246, 0.3);
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+    color: #6366F1;
+    border-color: rgba(99, 102, 241, 0.3);
   }
 }
 
-/* ========== ② 签到条 ========== */
-.check-in-bar {
+/* ========== ② 统计 - 单行 ========== */
+.stats-row {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 7px 12px;
-  margin: 8px 10px 0;
-  background: rgba(59, 130, 246, 0.04);
-  border: 1px solid rgba(59, 130, 246, 0.1);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.18s;
-
-  &:hover {
-    background: rgba(59, 130, 246, 0.08);
-    border-color: rgba(59, 130, 246, 0.2);
-  }
-
-  &:active {
-    transform: scale(0.99);
-  }
-
-  &.checked-in {
-    background: rgba(34, 197, 94, 0.04);
-    border-color: rgba(34, 197, 94, 0.1);
-    cursor: default;
-
-    .check-in-icon { color: #22C55E; }
-    .check-in-reward { color: #22C55E; }
-    &:hover { background: rgba(34, 197, 94, 0.04); }
-  }
+  padding: 8px 10px;
+  gap: 4px;
+  border-bottom: 1px solid #F1F5F9;
 }
 
-.check-in-left {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.check-in-icon {
-  color: #3B82F6;
-  flex-shrink: 0;
-}
-
-.check-in-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: #475569;
-}
-
-.check-in-right {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.check-in-reward {
-  font-size: 11px;
-  font-weight: 600;
-  color: #3B82F6;
-}
-
-.check-in-arrow {
-  color: #3B82F6;
-}
-
-/* ========== ③ 数据统计 2×2 ========== */
-.stats-section {
-  padding: 8px 10px 10px;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
-}
-
-.stat-card {
+.stat-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 8px 6px 7px;
-  background: #F8FAFC;
-  border-radius: 10px;
+  gap: 3px;
+  padding: 6px 4px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
-  gap: 3px;
 
   &:hover {
-    background: #EFF6FF;
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(59, 130, 246, 0.1);
-
-    .stat-value { color: #3B82F6; }
+    background: #F0F4FF;
+    .stat-value { color: #6366F1; }
   }
-
-  &:active { transform: scale(0.97); }
+  &:active { transform: scale(0.95); }
 }
 
 .stat-icon-wrap {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -573,7 +444,7 @@ const handlePointsClick = () => {
 }
 
 .stat-value {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: #1E293B;
   line-height: 1;
@@ -581,94 +452,85 @@ const handlePointsClick = () => {
 }
 
 .stat-label {
-  font-size: 10px;
+  font-size: 9px;
   color: #94A3B8;
 }
 
-/* ========== 分割线 ========== */
-.section-divider {
-  height: 1px;
-  background: #F1F5F9;
-  margin: 0 12px;
+/* ========== ③ 图标横排导航 ========== */
+.nav-row {
+  display: flex;
+  padding: 8px 10px 6px;
+  gap: 4px;
 }
 
-/* ========== ④ 菜单项 ========== */
-.menu-items {
-  padding: 4px 8px;
+.nav-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover {
+    background: #F0F4FF;
+    .nav-icon-wrap { background: #E0E7FF; color: #6366F1; }
+    .nav-label { color: #6366F1; }
+  }
+
+  &:active { transform: scale(0.95); }
 }
 
-.menu-item {
+.nav-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: #F1F5F9;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 8px;
+  justify-content: center;
+  color: #64748B;
+  transition: all 0.15s;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #64748B;
+  transition: color 0.15s;
+}
+
+/* ========== ④ 退出登录 ========== */
+.logout-section {
+  padding: 0 10px 10px;
+  border-top: 1px solid #F1F5F9;
+  padding-top: 6px;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
 
   &:hover {
-    background: #F8FAFC;
-
-    .menu-icon-wrap { background: #EFF6FF; color: #3B82F6; }
-    .menu-arrow { opacity: 1; transform: translateX(2px); }
+    background: rgba(254, 242, 242, 0.8);
+    .logout-icon { color: #EF4444; }
+    .logout-text { color: #EF4444; }
   }
-
-  &:active { background: #F1F5F9; }
 }
 
-.menu-icon-wrap {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #F1F5F9;
-  color: #64748B;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-
-.menu-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: #334155;
-  flex: 1;
-}
-
-.menu-arrow {
-  color: #CBD5E1;
-  opacity: 0;
-  flex-shrink: 0;
-  transition: all 0.15s;
-}
-
-/* ========== ⑤ 退出登录 ========== */
-.logout-section {
-  border-top: 1px solid #F1F5F9;
-  padding: 4px 8px 8px;
-}
-
-.logout-icon-wrap {
-  background: #FEF2F2;
-  color: #CBD5E1;
-  transition: all 0.15s;
-}
-
+.logout-icon { color: #CBD5E1; transition: color 0.15s; }
 .logout-text {
-  color: #94A3B8 !important;
-  font-weight: 400 !important;
-}
-
-.menu-item-logout {
-  &:hover {
-    background: rgba(254, 242, 242, 0.8) !important;
-
-    .logout-icon-wrap { background: #FEE2E2; color: #EF4444; }
-    .logout-text { color: #EF4444 !important; }
-  }
+  font-size: 12px;
+  color: #94A3B8;
+  font-weight: 400;
+  transition: color 0.15s;
 }
 </style>

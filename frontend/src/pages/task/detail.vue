@@ -4,8 +4,27 @@
     <!-- 顶部导航栏 -->
     <CNavBar title="任务详情" :auto-back="false" @back="goBack">
       <template #right>
-        <view class="nav-right" @click="showMoreMenu">
-          <MoreHorizontal :size="22" :stroke-width="1.5" class="nav-icon" />
+        <!-- PC 端：下拉菜单 -->
+        <view class="nav-right nav-dropdown-wrap">
+          <view class="nav-right-btn" @click="showMoreMenu">
+            <MoreHorizontal :size="22" :stroke-width="1.5" class="nav-icon" />
+          </view>
+          <!-- PC 下拉菜单 -->
+          <view v-if="moreMenuVisible" class="dropdown-menu">
+            <view class="dropdown-item" @click="onMenuShare">
+              <Share2 :size="15" class="dropdown-icon" />
+              <text>分享任务</text>
+            </view>
+            <view class="dropdown-item" @click="onMenuFavorite">
+              <component :is="task?.isFavorited ? BookmarkCheck : Bookmark" :size="15" class="dropdown-icon" />
+              <text>{{ task?.isFavorited ? '取消收藏' : '收藏任务' }}</text>
+            </view>
+            <view class="dropdown-divider" />
+            <view class="dropdown-item dropdown-item--danger" @click="onMenuReport">
+              <Flag :size="15" class="dropdown-icon" />
+              <text>举报</text>
+            </view>
+          </view>
         </view>
       </template>
     </CNavBar>
@@ -287,9 +306,9 @@
       </view>
     </view>
 
-    <!-- 自定义更多菜单弹窗 -->
-    <view v-if="moreMenuVisible" class="sheet-mask" @click="moreMenuVisible = false" />
-    <view class="sheet-panel" :class="{ 'sheet-panel--visible': moreMenuVisible }">
+    <!-- 移动端底部弹窗 -->
+    <view v-if="moreMenuVisible" class="sheet-mask mobile-only" @click="moreMenuVisible = false" />
+    <view class="sheet-panel mobile-only" :class="{ 'sheet-panel--visible': moreMenuVisible }">
       <view class="sheet-handle" />
       <view class="sheet-title">更多操作</view>
       <view class="sheet-items">
@@ -741,6 +760,77 @@ onMounted(() => {
 .nav-icon {
   color: $gray-600;
   &--active { color: $primary; }
+}
+
+// PC 下拉菜单
+.nav-dropdown-wrap {
+  position: relative;
+  width: auto;
+  height: auto;
+}
+.nav-right-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 8rpx;
+  cursor: pointer;
+  &:hover { background: $gray-100; }
+}
+.dropdown-menu {
+  // 移动端不显示
+  display: none;
+
+  // #ifdef H5
+  @include desktop {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    min-width: 160px;
+    background: $white;
+    border: 1rpx solid $gray-100;
+    border-radius: 12rpx;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10);
+    padding: 6px 0;
+    z-index: 200;
+    animation: dropdown-in 0.15s ease;
+  }
+  // #endif
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  color: $gray-700;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  &:hover { background: $gray-50; }
+  &--danger { color: $error; }
+}
+.dropdown-icon { flex-shrink: 0; }
+.dropdown-divider {
+  height: 1px;
+  background: $gray-100;
+  margin: 4px 0;
+}
+
+// 移动端专属元素，PC 隐藏
+.mobile-only {
+  // #ifdef H5
+  @include desktop { display: none !important; }
+  // #endif
 }
 
 // ===================================

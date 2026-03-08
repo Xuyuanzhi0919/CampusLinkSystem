@@ -225,7 +225,8 @@
                   <Icon name="message-circle" :size="40" class="empty-icon" />
                 </view>
                 <text class="empty-text">暂无动态</text>
-                <text class="empty-hint">成员发布的动态将在这里展示</text>
+                <text class="empty-hint">{{ isMember ? '发布第一条动态，和成员们分享吧' : '成员发布的动态将在这里展示' }}</text>
+                <CButton v-if="isMember" type="primary" size="sm" @click="handlePublishFeed">发布动态</CButton>
               </view>
             </view>
 
@@ -279,7 +280,8 @@
                   <Icon name="calendar" :size="40" class="empty-icon" />
                 </view>
                 <text class="empty-text">暂无活动</text>
-                <text class="empty-hint">社团活动将在这里展示</text>
+                <text class="empty-hint">{{ isAdmin ? '发起一个活动，吸引更多成员参与' : '社团活动将在这里展示' }}</text>
+                <CButton v-if="isAdmin" type="primary" size="sm" @click="handlePublishActivity">发起活动</CButton>
               </view>
             </view>
 
@@ -301,7 +303,8 @@
                     <Icon name="folder" :size="40" class="empty-icon" />
                   </view>
                   <text class="empty-text">暂无资料</text>
-                  <text class="empty-hint">社团资料将在这里展示</text>
+                  <text class="empty-hint">上传学习资料，与成员共享</text>
+                  <CButton type="primary" size="sm" @click="handleUploadResource">上传资料</CButton>
                 </view>
               </view>
               <!-- 未加入提示 -->
@@ -412,7 +415,10 @@
                 <Icon name="message-circle" :size="14" class="contact-icon" @click="handleContact(admin.userId)" />
               </view>
             </view>
-            <view v-else class="empty-hint">暂无管理员</view>
+            <view v-else class="admin-empty">
+              <Icon name="user" :size="20" class="admin-empty-icon" />
+              <text class="admin-empty-text">暂无管理员信息</text>
+            </view>
           </view>
 
           <!-- ③ 相关推荐社团（可选）-->
@@ -435,7 +441,9 @@
                 </view>
               </view>
             </view>
-            <view v-else class="empty-hint">暂无推荐</view>
+            <view v-else class="admin-empty">
+              <text class="admin-empty-text">暂无同类型社团推荐</text>
+            </view>
           </view>
         </view>
       </view>
@@ -714,6 +722,19 @@ const handleEnter = () => {
   uni.showToast({
     title: '进入讨论区',
     icon: 'none'
+  })
+}
+
+// 发布动态（成员）
+const handlePublishFeed = () => {
+  uni.showToast({ title: '动态发布功能开发中', icon: 'none' })
+}
+
+// 上传资料（成员）
+const handleUploadResource = () => {
+  uni.navigateTo({
+    url: '/pages/resource/upload',
+    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
 
@@ -1184,7 +1205,7 @@ onUnmounted(() => {
   color: $gray-600;
   line-height: 1.6;
   margin-bottom: $sp-6;
-  @include text-ellipsis(2); // 最多2行
+  @include text-ellipsis(1); // 最多1行
 
   @include mobile {
     font-size: 26rpx;
@@ -1828,6 +1849,23 @@ onUnmounted(() => {
 .empty-hint {
   font-size: 24rpx;
   color: $gray-500;
+}
+
+.admin-empty {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx 0;
+}
+
+.admin-empty-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.admin-empty-text {
+  font-size: 24rpx;
+  color: $gray-400;
 }
 
 // =============================================

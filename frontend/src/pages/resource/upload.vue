@@ -1006,7 +1006,7 @@ onLoad(() => {
 .form-textarea,
 .picker-input {
   width: 100%;
-  padding: $sp-4 $sp-5;
+  padding: $sp-5 $sp-5;
   border: 1px solid $color-border-light;
   border-radius: $radius-lg;
   font-size: $font-size-base;
@@ -1014,6 +1014,26 @@ onLoad(() => {
   background: $color-bg-page;
   transition: border-color 0.2s, box-shadow 0.2s;
   box-sizing: border-box;
+}
+
+// uni-input 内部元素高度控制（H5 uni-app 需要）
+.form-input {
+  min-height: 88rpx;
+
+  :deep(.uni-input-wrapper) {
+    min-height: 88rpx;
+    display: flex;
+    align-items: center;
+  }
+
+  :deep(.uni-input-input) {
+    min-height: 88rpx;
+    line-height: 88rpx;
+  }
+
+  :deep(.uni-input-placeholder) {
+    line-height: 88rpx;
+  }
 }
 
 .form-textarea {

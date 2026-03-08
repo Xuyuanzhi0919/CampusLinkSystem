@@ -759,7 +759,7 @@ defineExpose({
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 0;
   flex-shrink: 0;
 }
 
@@ -784,6 +784,7 @@ defineExpose({
   background: $border-light;
   border-radius: 1px;
   flex-shrink: 0;
+  margin: 0 12px;
 }
 
 // 搜索框

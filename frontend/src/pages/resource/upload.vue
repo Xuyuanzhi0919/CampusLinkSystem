@@ -1018,16 +1018,17 @@ onLoad(() => {
 
 // uni-input 内部元素高度控制（H5 uni-app 需要）
 .form-input {
-  min-height: 88rpx;
+  height: 88rpx;
 
   :deep(.uni-input-wrapper) {
-    min-height: 88rpx;
+    height: 88rpx;
     display: flex;
     align-items: center;
+    position: relative;
   }
 
   :deep(.uni-input-input) {
-    min-height: 88rpx;
+    height: 88rpx;
     line-height: 88rpx;
   }
 

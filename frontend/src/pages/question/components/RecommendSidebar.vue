@@ -109,7 +109,7 @@ import { CCard } from '@/components/ui'
 import FeaturedCarousel from '@/components/FeaturedCarousel.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
-import { getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
+import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
 import { getTotalStats } from '@/services/stats'
 
 interface ActiveUser {

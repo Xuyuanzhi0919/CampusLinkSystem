@@ -1,16 +1,23 @@
 <template>
   <view class="publish-activity-page">
 
-    <!-- 统一渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleCancel">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+    <!-- 统一导航栏 -->
+    <CNavBar title="发布活动" :auto-back="false" @back="handleCancel">
+      <template #right>
+        <!-- PC 端右上角发布按钮（移动端隐藏） -->
+        <view class="navbar-publish">
+          <CButton
+            type="primary"
+            size="sm"
+            :disabled="!isFormValid"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
+            {{ submitting ? '发布中...' : '发布活动' }}
+          </CButton>
         </view>
-        <text class="nav-title">发布活动</text>
-        <view class="nav-placeholder" />
-      </view>
-    </view>
+      </template>
+    </CNavBar>
 
     <scroll-view class="content-area" scroll-y>
       <view class="form-container">
@@ -245,22 +252,25 @@
           </view>
         </CCard>
 
-        <!-- 提交按钮 -->
-        <view class="submit-section">
-          <CButton
-            type="primary"
-            size="lg"
-            block
-            :disabled="!isFormValid"
-            :loading="submitting"
-            @click="handleSubmit"
-          >
-            发布活动
-          </CButton>
-          <text class="submit-hint">发布后可在活动详情页进行管理</text>
-        </view>
       </view>
     </scroll-view>
+
+    <!-- 底部操作栏（移动端固定，PC 端隐藏） -->
+    <view class="bottom-bar">
+      <view class="bottom-bar-inner">
+        <CButton type="ghost" size="lg" class="btn-cancel" @click="handleCancel">取消</CButton>
+        <CButton
+          type="primary"
+          size="lg"
+          class="btn-submit"
+          :disabled="!isFormValid"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
+          {{ submitting ? '发布中...' : '发布活动' }}
+        </CButton>
+      </view>
+    </view>
 
     <!-- 社团选择弹窗 -->
     <view v-if="showClubPicker" class="picker-mask" @click="showClubPicker = false">
@@ -674,41 +684,12 @@ onLoad((options) => {
   overflow: hidden;
 }
 
-// ── 统一渐变头部 ──
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
+// ── 导航栏发布按钮（PC 端显示，移动端隐藏）──
+.navbar-publish {
+  @media (max-width: 749px) {
+    display: none;
+  }
 }
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; }
 
 .content-area {
   flex: 1;
@@ -717,7 +698,10 @@ onLoad((options) => {
 
 .form-container {
   padding: $sp-4;
-  padding-bottom: 100rpx;
+
+  @media (max-width: 749px) {
+    padding-bottom: 80px; // 留出移动端底部操作栏空间
+  }
 }
 
 // 表单卡片
@@ -993,20 +977,36 @@ onLoad((options) => {
 .upload-text { font-size: $font-size-base; color: $gray-600; margin-bottom: $sp-1; }
 .upload-hint { font-size: $font-size-xs; color: $gray-400; }
 
-// 提交区域
-.submit-section {
-  margin-top: $sp-6;
-  padding: $sp-4;
+// ── 底部操作栏（移动端固定，PC 端隐藏）──
+.bottom-bar {
+  @media (min-width: 750px) {
+    display: none;
+  }
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   background: $white;
-  border-radius: $radius-lg;
+  border-top: 1px solid $gray-200;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
-.submit-hint {
-  display: block;
-  text-align: center;
-  font-size: $font-size-xs;
-  color: $gray-400;
-  margin-top: $sp-2;
+.bottom-bar-inner {
+  display: flex;
+  gap: $sp-3;
+  padding: $sp-4 $sp-5;
+}
+
+.btn-cancel {
+  flex: 0 0 auto;
+}
+
+.btn-submit {
+  flex: 1;
 }
 
 // 社团选择弹窗

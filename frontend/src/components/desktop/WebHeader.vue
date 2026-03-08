@@ -171,8 +171,10 @@ import type { UserStatsData } from '@/types/user'
 import { useHeaderLogic } from '@/composables/useHeaderLogic'
 import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
+import { useUserStore } from '@/stores/user'
 // 使用导航状态管理
 const navigationStore = useNavigationStore()
+const userStore = useUserStore()
 
 // 使用统一导航 composable
 const {
@@ -544,8 +546,7 @@ const handleLogoutConfirm = async () => {
   } catch (e) {
     console.error('Logout API调用失败', e)
   }
-  uni.removeStorageSync(config.tokenKey)
-  uni.removeStorageSync(config.userInfoKey)
+  userStore.logout()          // 清除 Pinia 状态 + localStorage
   uni.$emit('user-logout')
   showLogoutModal.value = false
   uni.showToast({ title: '已安全退出', icon: 'none' })

@@ -19,7 +19,7 @@
           </view>
           <text class="user-email">{{ contactDisplay }}</text>
           <view class="user-points-row">
-            <text class="points-icon">✨</text>
+            <Icon name="sparkles" :size="12" class="points-icon" />
             <text class="points-value">{{ userInfo.points || 0 }}</text>
             <text class="points-label">积分</text>
           </view>
@@ -33,7 +33,7 @@
         @click="handleCheckIn"
       >
         <view class="check-in-content">
-          <text class="check-in-icon">{{ isCheckedIn ? '✅' : '📅' }}</text>
+          <Icon :name="isCheckedIn ? 'check-circle' : 'calendar'" :size="16" class="check-in-icon" />
           <text class="check-in-title">{{ isCheckedIn ? '今日已签到' : '每日签到' }}</text>
         </view>
         <text class="check-in-badge">{{ isCheckedIn ? '+10' : '去签到' }}</text>
@@ -72,16 +72,16 @@
           class="menu-item"
           @click="handleMenuClick(item)"
         >
-          <text class="menu-icon">{{ item.icon }}</text>
+          <Icon :name="item.icon" :size="15" class="menu-icon" />
           <text class="menu-text">{{ item.text }}</text>
-          <text class="menu-arrow">›</text>
+          <Icon name="chevron-right" :size="14" class="menu-arrow" />
         </view>
       </view>
 
       <!-- 退出登录 - 优化：独立区域，灰色文字，降低存在感 -->
       <view class="logout-section">
         <view class="menu-item menu-item-logout" @click="handleMenuClick(logoutItem)">
-          <text class="menu-icon menu-icon-logout">🚪</text>
+          <Icon name="log-out" :size="15" class="menu-icon menu-icon-logout" />
           <text class="menu-text">退出登录</text>
         </view>
       </view>
@@ -91,6 +91,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
+import Icon from '@/components/icons/index.vue'
 
 interface UserInfo {
   nickname?: string
@@ -149,13 +150,13 @@ const menuStyle = computed(() => {
 
 // 普通菜单项（不含退出登录）
 const normalMenuItems: MenuItem[] = [
-  { id: 'profile', icon: '👤', text: '我的主页' },
-  { id: 'favorites', icon: '⭐', text: '我的收藏' },
-  { id: 'settings', icon: '⚙️', text: '账号设置' },
+  { id: 'profile', icon: 'user', text: '我的主页' },
+  { id: 'favorites', icon: 'star', text: '我的收藏' },
+  { id: 'settings', icon: 'settings', text: '账号设置' },
 ]
 
 // 退出登录单独处理
-const logoutItem: MenuItem = { id: 'logout', icon: '🚪', text: '退出登录', danger: true }
+const logoutItem: MenuItem = { id: 'logout', icon: 'log-out', text: '退出登录', danger: true }
 
 // 显示文字(昵称首字母)
 const displayText = computed(() => {
@@ -412,8 +413,8 @@ const handleStatClick = (type: string) => {
 }
 
 .points-icon {
-  font-size: 12px;
-  line-height: 1;
+  color: #F59E0B;
+  flex-shrink: 0;
 }
 
 .points-value {
@@ -472,8 +473,12 @@ const handleStatClick = (type: string) => {
 }
 
 .check-in-icon {
-  font-size: 16px;
-  line-height: 1;
+  color: #3B82F6;
+  flex-shrink: 0;
+
+  .checked-in & {
+    color: #22C55E;
+  }
 }
 
 .check-in-title {
@@ -579,11 +584,12 @@ const handleStatClick = (type: string) => {
 }
 
 .menu-icon {
-  font-size: 15px;
-  line-height: 1;
   width: 20px;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
+  color: #64748B;
 }
 
 .menu-text {
@@ -594,10 +600,10 @@ const handleStatClick = (type: string) => {
 }
 
 .menu-arrow {
-  font-size: 14px;
   color: #CBD5E1;
   opacity: 0;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 /* ========== 退出登录区域 - 优化：降低存在感 ========== */
@@ -609,7 +615,7 @@ const handleStatClick = (type: string) => {
 
 .menu-item-logout {
   .menu-icon-logout {
-    filter: grayscale(1) opacity(0.5);
+    color: #CBD5E1;
   }
 
   .menu-text {
@@ -621,7 +627,7 @@ const handleStatClick = (type: string) => {
     background: rgba(254, 242, 242, 0.6);
 
     .menu-icon-logout {
-      filter: grayscale(0) opacity(1);
+      color: #EF4444;
     }
 
     .menu-text {

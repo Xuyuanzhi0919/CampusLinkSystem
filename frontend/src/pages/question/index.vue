@@ -85,57 +85,69 @@
       </view>
     </view>
 
-    <!-- ========== Sticky 导航区（分类+排序） ========== -->
+    <!-- ========== Sticky 导航区（分类 + 快捷筛选合并） ========== -->
     <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
       <view class="sticky-nav-container">
-        <!-- 左侧：分类Tabs（包裹一层加右侧渐变提示） -->
+        <!-- 左侧：分类Tabs -->
         <view class="category-tabs-wrap">
-        <view class="category-tabs">
+          <view class="category-tabs">
+            <view
+              v-for="item in categories"
+              :key="item.value || 'all'"
+              class="category-tab"
+              :class="{ active: category === item.value }"
+              @click="handleCategoryChange(item.value)"
+            >
+              <Icon :name="item.iconName" :size="14" class="tab-icon" />
+              <text class="tab-label">{{ item.label }}</text>
+            </view>
+          </view>
+        </view><!-- /category-tabs-wrap -->
+
+        <!-- 分隔线（PC端） -->
+        <view class="nav-sep"></view>
+
+        <!-- 快捷筛选 Chips（PC端，移动端隐藏） -->
+        <view class="quick-chips">
           <view
-            v-for="item in categories"
-            :key="item.value || 'all'"
-            class="category-tab"
-            :class="{ active: category === item.value }"
-            @click="handleCategoryChange(item.value)"
+            class="quick-chip"
+            :class="{ active: sortBy === 'created_at' && status === null }"
+            @click="handleQuickFilter('latest')"
           >
-            <Icon :name="item.iconName" :size="14" class="tab-icon" />
-            <text class="tab-label">{{ item.label }}</text>
+            <Icon name="clock" :size="13" class="chip-icon" />
+            <text class="chip-label">最新</text>
+          </view>
+          <view
+            class="quick-chip"
+            :class="{ active: sortBy === 'bounty' && status === null }"
+            @click="handleQuickFilter('bounty')"
+          >
+            <Icon name="award" :size="13" class="chip-icon" />
+            <text class="chip-label">悬赏</text>
+          </view>
+          <view
+            class="quick-chip"
+            :class="{ active: sortBy === 'views' && status === null }"
+            @click="handleQuickFilter('hot')"
+          >
+            <Icon name="trending-up" :size="13" class="chip-icon" />
+            <text class="chip-label">热门</text>
+          </view>
+          <view
+            class="quick-chip"
+            :class="{ active: status === 0 }"
+            @click="handleQuickFilter('unsolved')"
+          >
+            <Icon name="help-circle" :size="13" class="chip-icon" />
+            <text class="chip-label">待解决</text>
           </view>
         </view>
 
-        </view><!-- /category-tabs-wrap -->
-
-        <!-- 右侧：排序+筛选（PC端） -->
-        <view class="sort-controls">
-          <!-- 排序下拉（相对定位容器） -->
-          <view class="sort-dropdown-wrapper">
-            <view class="sort-dropdown" @click="toggleSortMenu">
-              <Icon name="arrow-down-up" :size="14" class="sort-icon" />
-              <text class="sort-label">{{ currentSortLabel }}</text>
-              <Icon name="chevron-down" :size="14" class="dropdown-icon" />
-            </view>
-
-            <!-- 排序菜单（出现在按钮下方） -->
-            <view v-if="showSortMenu" class="sort-menu-content" @click.stop>
-              <view
-                v-for="item in sortOptions"
-                :key="item.value"
-                class="sort-menu-item"
-                :class="{ active: sortBy === item.value }"
-                @click="handleSortChange(item.value)"
-              >
-                <text class="sort-item-label">{{ item.label }}</text>
-                <Icon v-if="sortBy === item.value" name="check" :size="16" class="check-icon" />
-              </view>
-            </view>
-          </view>
-
-          <!-- 筛选按钮 -->
-          <view class="filter-btn" @click="showFilterModal = true">
-            <Icon name="sliders" :size="14" class="filter-icon" />
-            <text class="filter-label">筛选</text>
-            <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
-          </view>
+        <!-- 筛选按钮（PC端） -->
+        <view class="filter-btn" @click="showFilterModal = true">
+          <Icon name="sliders" :size="14" class="filter-icon" />
+          <text class="filter-label">筛选</text>
+          <view v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</view>
         </view>
 
         <!-- 移动端专用筛选图标按钮 -->
@@ -144,9 +156,6 @@
           <view v-if="hasActiveFilters" class="mobile-filter-badge"></view>
         </view>
       </view>
-
-      <!-- 遮罩层（点击关闭菜单） -->
-      <view v-if="showSortMenu" class="sort-menu-mask" @click="showSortMenu = false"></view>
     </view>
 
     <!-- ========== 主内容区（整页滚动） ========== -->
@@ -154,48 +163,6 @@
       <view class="content-container">
         <!-- 左侧：问题列表 -->
         <view class="question-list">
-          <!-- 快捷筛选卡片 -->
-          <view class="quick-filter-card">
-            <view class="quick-filter-header">
-              <Icon name="trending-up" :size="16" class="header-icon" />
-              <text class="header-title">快捷筛选</text>
-            </view>
-            <view class="quick-filter-tabs">
-              <view
-                class="filter-tab"
-                :class="{ active: sortBy === 'created_at' && status === null }"
-                @click="handleQuickFilter('latest')"
-              >
-                <Icon name="clock" :size="14" class="tab-icon" />
-                <text class="tab-label">最新</text>
-              </view>
-              <view
-                class="filter-tab"
-                :class="{ active: sortBy === 'bounty' && status === null }"
-                @click="handleQuickFilter('bounty')"
-              >
-                <Icon name="award" :size="14" class="tab-icon" />
-                <text class="tab-label">悬赏</text>
-              </view>
-              <view
-                class="filter-tab"
-                :class="{ active: sortBy === 'views' && status === null }"
-                @click="handleQuickFilter('hot')"
-              >
-                <Icon name="trending-up" :size="14" class="tab-icon" />
-                <text class="tab-label">热门</text>
-              </view>
-              <view
-                class="filter-tab"
-                :class="{ active: status === 0 }"
-                @click="handleQuickFilter('unsolved')"
-              >
-                <Icon name="help-circle" :size="14" class="tab-icon" />
-                <text class="tab-label">待解决</text>
-              </view>
-            </view>
-          </view>
-
           <!-- 骨架屏（结构还原真实卡片：头像行+标题+摘要+底部统计） -->
           <template v-if="loading && questions.length === 0">
             <view v-for="i in 5" :key="i" class="skeleton-card">
@@ -293,6 +260,17 @@
                 <text>去提问</text>
               </view>
             </view>
+          </view>
+
+          <!-- 底部引导 CTA（有问题且加载完毕时显示） -->
+          <view
+            v-if="questions.length > 0 && !hasMore && !loading"
+            class="bottom-ask-cta"
+            @click="handleAskQuestion"
+          >
+            <Icon name="message-circle" :size="16" class="cta-icon" />
+            <text class="cta-text">没有找到想要的答案？立即提问</text>
+            <Icon name="arrow-right" :size="14" class="cta-arrow" />
           </view>
         </view>
 
@@ -537,9 +515,6 @@ const tempStatus = ref<number | null>(null)
 const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
 const tempHasBounty = ref(false)
 
-// 排序菜单
-const showSortMenu = ref(false)
-
 // 顶部导航折叠状态
 const isHeaderCollapsed = ref(false)
 const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
@@ -558,25 +533,6 @@ const activeFilterCount = computed(() => {
   if (hasBounty.value) count++
   return count
 })
-
-// 当前排序标签
-const currentSortLabel = computed(() => {
-  const option = sortOptions.find(item => item.value === sortBy.value)
-  if (option) return option.label
-
-  // 快捷筛选的排序显示对应标签
-  switch (sortBy.value) {
-    case 'created_at': return '最新'
-    case 'views': return '热门'
-    case 'bounty': return '悬赏'
-    default: return '综合排序'
-  }
-})
-
-// 切换排序菜单
-const toggleSortMenu = () => {
-  showSortMenu.value = !showSortMenu.value
-}
 
 // 分页（直接使用 store 状态）
 const totalPages = computed(() => storeTotalPages.value)
@@ -825,13 +781,6 @@ const debouncedLoadQuestions = () => {
 // 分类切换
 const handleCategoryChange = (value: string | null) => {
   category.value = value
-  debouncedLoadQuestions()
-}
-
-// 排序切换
-const handleSortChange = (value: 'created_at' | 'views' | 'bounty' | 'answerCount') => {
-  sortBy.value = value
-  showSortMenu.value = false // 关闭排序菜单
   debouncedLoadQuestions()
 }
 
@@ -1585,17 +1534,16 @@ defineExpose({
   z-index: 99;
   width: 100%;
   background: $white;
-  border-bottom: 1px solid $gray-100; // 更浅的分割线
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02); // 轻微阴影
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0); // 平滑过渡
+  border-bottom: 1px solid $gray-100;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
-  // 当顶部导航折叠时,sticky-nav的top值同步调整
   &.header-collapsed {
-    top: 48px; // 折叠后的顶部导航高度
+    top: 48px;
   }
 
   @include mobile {
-    top: 56px; // 移动端与顶部导航同步
+    top: 56px;
   }
 }
 
@@ -1603,11 +1551,10 @@ defineExpose({
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 80px;
-  height: 40px; // 进一步减小到40px
+  height: 48px; // 合并快捷筛选后增高到48px
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px; // 从24px减小到20px
+  gap: 0; // 间距由各子元素自身 margin 控制
 
   @media (max-width: 1600px) {
     padding: 0 64px;
@@ -1624,7 +1571,7 @@ defineExpose({
   @include mobile {
     padding: 0 16px;
     height: 44px;
-    gap: 12px;
+    gap: 0;
   }
 }
 
@@ -1715,16 +1662,81 @@ defineExpose({
   }
 }
 
-// 排序控制（PC端）
-.sort-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+// 分隔线（分类标签 ↔ 快捷筛选 之间）
+.nav-sep {
+  width: 1px;
+  height: 20px;
+  background: $gray-200;
   flex-shrink: 0;
+  margin: 0 12px;
 
-  // 移动端隐藏排序和筛选按钮
   @include mobile {
     display: none;
+  }
+}
+
+// 快捷筛选 chips 容器（PC端）
+.quick-chips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-right: 10px;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+// 单个快捷筛选 chip
+.quick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  background: $gray-50;
+  border: 1px solid $gray-200;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+
+  .chip-icon {
+    color: $gray-500;
+    flex-shrink: 0;
+    transition: color 0.18s;
+  }
+
+  .chip-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: $gray-700;
+    transition: color 0.18s;
+  }
+
+  &:hover {
+    background: $gray-100;
+    border-color: $gray-300;
+  }
+
+  &.active {
+    background: $primary;
+    border-color: $primary;
+    box-shadow: 0 2px 6px rgba($primary, 0.25);
+
+    .chip-icon {
+      color: $white;
+    }
+
+    .chip-label {
+      color: $white;
+      font-weight: 600;
+    }
+  }
+
+  &:active {
+    transform: scale(0.96);
   }
 }
 
@@ -1859,21 +1871,21 @@ defineExpose({
   z-index: 1;
   width: 100%;
   background: $bg-page;
-  padding-top: 124px;  // 顶部导航60px + 二级导航40px + 间距24px = 124px
+  padding-top: 132px;  // 顶部导航60px + 二级导航48px + 间距24px = 132px
   padding-bottom: 64px;
 
   @media (max-width: 1440px) {
-    padding-top: 116px;  // 60 + 40 + 16
+    padding-top: 124px;  // 60 + 48 + 16
     padding-bottom: 56px;
   }
 
   @media (max-width: 1200px) {
-    padding-top: 112px;  // 60 + 40 + 12
+    padding-top: 120px;  // 60 + 48 + 12
     padding-bottom: 48px;
   }
 
   @include mobile {
-    padding-top: 100px;  // 移动端顶部导航56px + 二级导航44px
+    padding-top: 104px;  // 移动端顶部导航56px + 二级导航44px + 4px
     padding-bottom: 24px;
   }
 }
@@ -1922,129 +1934,56 @@ defineExpose({
 }
 
 // 快捷筛选卡片（PC端保持卡片样式，移动端改为轻量Tab行）
-.quick-filter-card {
-  background: $white;
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-
-  @include mobile {
-    background: $white;
-    border-radius: 12px;
-    padding: 12px 16px;
-    margin-bottom: 8px;
-    box-shadow: none;
-    border: 1px solid $gray-200;
-  }
-}
-
-.quick-filter-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-
-  .header-icon {
-    color: $primary;
-  }
-
-  .header-title {
-    font-size: 15px;
-    font-weight: 600;
-    color: $gray-900;
-  }
-
-  @include mobile {
-    display: none;
-  }
-}
-
-.quick-filter-tabs {
-  display: flex;
-  gap: 8px;
-
-  @include mobile {
-    gap: 6px;
-    overflow-x: auto;
-    padding-bottom: 2px;
-
-    /* #ifdef H5 */
-    &::-webkit-scrollbar {
-      display: none;
-    }
-    /* #endif */
-  }
-}
-
-.filter-tab {
-  flex: 1;
+// 底部引导 CTA
+.bottom-ask-cta {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  background: $gray-50;
-  border: 1px solid transparent;
+  gap: 8px;
+  padding: 14px 20px;
+  margin-top: 20px;
+  border-radius: 12px;
+  background: $white;
+  border: 1px dashed $gray-300;
   cursor: pointer;
   transition: all 0.2s;
 
-  .tab-icon {
+  .cta-icon {
+    color: $primary;
+    flex-shrink: 0;
+  }
+
+  .cta-text {
+    font-size: 14px;
     color: $gray-600;
-    transition: color 0.2s;
-  }
-
-  .tab-label {
-    font-size: 13px;
     font-weight: 500;
-    color: $gray-700;
     transition: color 0.2s;
-    white-space: nowrap;
   }
 
-  &:hover:not(.active) {
-    background: $gray-100;
-    border-color: $gray-200;
-
-    .tab-icon {
-      color: $gray-700;
-    }
-
-    .tab-label {
-      color: $gray-800;
-    }
+  .cta-arrow {
+    color: $gray-400;
+    flex-shrink: 0;
+    transition: all 0.2s;
   }
 
-  &.active {
-    background: linear-gradient(135deg, $primary 0%, lighten($primary, 5%) 100%);
+  &:hover {
+    background: rgba($primary, 0.04);
     border-color: $primary;
-    box-shadow: 0 2px 8px rgba($primary, 0.25);
+    border-style: solid;
 
-    .tab-icon {
-      color: $white;
+    .cta-text {
+      color: $primary;
     }
 
-    .tab-label {
-      color: $white;
-      font-weight: 600;
+    .cta-arrow {
+      color: $primary;
+      transform: translateX(3px);
     }
   }
 
   @include mobile {
-    padding: 5px 12px;
-    gap: 4px;
-    border-radius: 16px;
-    flex: none;
-    white-space: nowrap;
-
-    .tab-label {
-      font-size: 13px;
-    }
-
-    .tab-icon {
-      display: none;
-    }
+    margin: 16px 0;
+    padding: 12px 16px;
   }
 }
 
@@ -2334,18 +2273,16 @@ defineExpose({
 
 // 右侧：侧栏（固定宽度 + sticky定位）
 .sidebar {
-  width: 320px;  // 固定宽度
-  flex-shrink: 0;  // 不缩小
-  position: sticky;  // 粘性定位
-  top: 112px;  // 顶部导航60px + 二级导航40px + 间距12px = 112px
-  align-self: flex-start;  // 从顶部对齐
-  // 移除高度和overflow限制,让内容完整展示
-  padding-bottom: 24px;  // 底部留白
+  width: 320px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 120px;  // 顶部导航60px + 二级导航48px + 间距12px = 120px
+  align-self: flex-start;
+  padding-bottom: 24px;
   transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1.0);
 
-  // 当顶部导航折叠时,侧栏同步上移
   &.header-collapsed {
-    top: 100px;  // 折叠后: 48px + 40px + 12px = 100px
+    top: 108px;  // 折叠后: 48px + 48px + 12px = 108px
   }
 
   @include mobile {

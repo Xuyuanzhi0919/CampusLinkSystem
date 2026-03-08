@@ -97,7 +97,11 @@
       </view>
       <view v-else class="empty-state">
         <Icon name="users" :size="32" class="empty-icon" />
-        <text class="empty-text">暂无活跃答主</text>
+        <text class="empty-text">去回答问题，成为活跃答主</text>
+        <view class="empty-action" @click="handleGoAnswer">
+          <Icon name="message-circle" :size="13" />
+          <text>去回答</text>
+        </view>
       </view>
     </CCard>
 
@@ -113,45 +117,12 @@
         :dynamic-size="false"
         :collapsible="true"
         :max-display="6"
-        empty-text="暂无热门标签"
+        :empty-text="hotTagsEmptyText"
         @tag-click="handleTagCloudClick"
       />
-    </CCard>
-
-    <!-- 热门问题模块 -->
-    <CCard variant="default" class="sidebar-card">
-      <HotQuestions
-        :questions="hotQuestions"
-        title="热门问题"
-        header-icon="trending-up"
-        :show-header="true"
-        :show-badge="false"
-        :show-view-more="false"
-        :show-bounty="false"
-        :max-display="5"
-        empty-text="暂无热门问题"
-        @question-click="handleHotQuestionClick"
-      />
-    </CCard>
-
-    <!-- 热门搜索模块 -->
-    <CCard variant="default" class="sidebar-card">
-      <view class="card-header">
-        <Icon name="trending-up" :size="18" class="header-icon" />
-        <text class="header-title">热门搜索</text>
-      </view>
-      <view class="hot-searches">
-        <view
-          v-for="(search, index) in hotSearches"
-          :key="index"
-          class="search-item"
-          @click="handleSearchClick(search.keyword)"
-        >
-          <view class="search-rank" :class="getSearchRankClass(index)">{{ index + 1 }}</view>
-          <text class="search-keyword">{{ search.keyword }}</text>
-          <view v-if="search.isHot" class="hot-badge">HOT</view>
-          <view v-if="search.isNew" class="new-badge">NEW</view>
-        </view>
+      <view v-if="hotTags.length === 0" class="tag-empty-action" @click="handleGoAsk">
+        <Icon name="edit-3" :size="13" />
+        <text>去提问并添加标签</text>
       </view>
     </CCard>
   </view>
@@ -164,9 +135,7 @@ import { CCard } from '@/components/ui'
 import FeaturedCarousel from '@/components/FeaturedCarousel.vue'
 import TagCloud from '@/components/TagCloud.vue'
 import type { TagItem } from '@/components/TagCloud.vue'
-import HotQuestions from '@/components/HotQuestions.vue'
-import type { HotQuestionItem } from '@/components/HotQuestions.vue'
-import { getQuestionList, getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
+import { getHotTags, getActiveUsers, getFeaturedQuestions } from '@/services/question'
 import { getTotalStats } from '@/services/stats'
 
 interface ActiveUser {
@@ -175,14 +144,6 @@ interface ActiveUser {
   avatar: string
   answerCount: number
   badge: string | null
-}
-
-// HotQuestionItem 已从 HotQuestions 组件导入,移除重复定义
-
-interface HotSearch {
-  keyword: string
-  isHot?: boolean
-  isNew?: boolean
 }
 
 interface FeaturedQuestionData {
@@ -214,20 +175,8 @@ const hotTags = ref<TagItem[]>([])
 // 活跃答主
 const activeUsers = ref<ActiveUser[]>([])
 
-// 热门问题
-const hotQuestions = ref<HotQuestionItem[]>([])
-
-// 热门搜索
-const hotSearches = ref<HotSearch[]>([
-  { keyword: '期末复习资料', isHot: true },
-  { keyword: 'Java多线程', isNew: true },
-  { keyword: '数据结构算法', isHot: true },
-  { keyword: '计算机网络', isNew: false },
-  { keyword: 'Python爬虫', isHot: false },
-  { keyword: '操作系统', isNew: false },
-  { keyword: 'MySQL优化', isHot: true },
-  { keyword: '前端框架', isNew: false }
-])
+// 热门标签空状态提示文案
+const hotTagsEmptyText = '暂无热门标签，提问时记得添加标签哦'
 
 
 // 排名徽章样式已移至 HotQuestions 组件内部
@@ -278,19 +227,23 @@ const handleViewMoreUsers = () => {
   uni.showToast({ title: '查看更多用户功能开发中', icon: 'none' })
 }
 
-// 点击热门问题 (HotQuestions组件回调)
-const handleHotQuestionClick = (question: HotQuestionItem) => {
-  uni.navigateTo({ url: `/pages/question/detail?id=${question.qid}` })
-}
-
 // 点击用户
 const handleUserClick = (userId: number) => {
   uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
 }
 
+// 空状态引导：去回答
+const handleGoAnswer = () => {
+  uni.switchTab({ url: '/pages/question/index' })
+}
+
+// 空状态引导：去提问
+const handleGoAsk = () => {
+  uni.navigateTo({ url: '/pages/question/ask' })
+}
+
 // 快捷操作
 const handleUploadResource = () => {
-  // 🎯 跳转到统一发布入口
   uni.navigateTo({ url: '/pages/publish/index' })
 }
 
@@ -304,18 +257,6 @@ const handleMyPoints = () => {
 
 const handleMyTasks = () => {
   uni.navigateTo({ url: '/pages/task/my' })
-}
-
-// 热门搜索相关
-const handleSearchClick = (keyword: string) => {
-  emit('filterByTag', keyword)  // 复用标签筛选逻辑
-}
-
-const getSearchRankClass = (index: number) => {
-  if (index === 0) return 'rank-1'
-  if (index === 1) return 'rank-2'
-  if (index === 2) return 'rank-3'
-  return ''
 }
 
 // 格式化数字（超过 1000 显示 1.2k）
@@ -343,28 +284,6 @@ const loadCommunityStats = async () => {
     }
   } catch {
     // 加载失败保持 '--' 占位
-  }
-}
-
-// 加载热门问题
-const loadHotQuestions = async () => {
-  try {
-    const res = await getQuestionList({
-      page: 1,
-      pageSize: 5,
-      sortBy: 'views',
-      sortOrder: 'desc'
-    })
-    hotQuestions.value = res.list.map(q => ({
-      qid: q.qid,
-      title: q.title,
-      views: q.views,
-      answerCount: q.answerCount
-    }))
-  } catch (error) {
-    console.error('[RecommendSidebar] 加载热门问题失败:', error)
-    // 失败时保持空数组，显示空状态
-    hotQuestions.value = []
   }
 }
 
@@ -431,7 +350,6 @@ const handleFeaturedRefresh = () => {
 onMounted(() => {
   loadCommunityStats()
   loadFeaturedQuestion()
-  loadHotQuestions()
   loadHotTags()
   loadActiveUsers()
 })
@@ -910,7 +828,7 @@ onMounted(() => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 24px 16px;
   gap: 8px;
 }
 
@@ -921,97 +839,53 @@ onMounted(() => {
 
 .empty-text {
   font-size: 13px;
-  color: $gray-400;
+  color: $gray-500;
   text-align: center;
+  line-height: 1.5;
 }
 
-// ===================================
-// 热门搜索
-// ===================================
-.hot-searches {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.search-item {
-  display: flex;
+.empty-action {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 8px;
-  background: $gray-50;
+  gap: 4px;
+  margin-top: 4px;
+  padding: 6px 16px;
+  background: $primary;
+  color: $white;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: 16px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: lighten($primary, 48%);
-    transform: translateX(3px);
+    background: darken($primary, 8%);
+    transform: translateY(-1px);
+    box-shadow: 0 3px 8px rgba($primary, 0.3);
+  }
 
-    .search-keyword {
-      color: $primary;
-    }
+  &:active {
+    transform: scale(0.96);
   }
 }
 
-.search-rank {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  background: $gray-200;
-  color: $gray-600;
-  font-size: 12px;
-  font-weight: 700;
-  display: flex;
+.tag-empty-action {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-
-  &.rank-1 {
-    background: linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%);
-    color: $white;
-  }
-
-  &.rank-2 {
-    background: linear-gradient(135deg, #D1D5DB 0%, #9CA3AF 100%);
-    color: $white;
-  }
-
-  &.rank-3 {
-    background: linear-gradient(135deg, #FB923C 0%, #F97316 100%);
-    color: $white;
-  }
-}
-
-.search-keyword {
-  flex: 1;
-  font-size: 13px;
-  color: $gray-800;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 5px 14px;
+  background: rgba($primary, 0.08);
+  color: $primary;
+  font-size: 12px;
   font-weight: 500;
-  @include text-ellipsis(1);
-  transition: color 0.2s;
-}
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
 
-.hot-badge {
-  flex-shrink: 0;
-  padding: 2px 6px;
-  background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
-  color: $white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
-}
-
-.new-badge {
-  flex-shrink: 0;
-  padding: 2px 6px;
-  background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-  color: $white;
-  font-size: 10px;
-  font-weight: 700;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
+  &:hover {
+    background: rgba($primary, 0.15);
+  }
 }
 
 // ===================================

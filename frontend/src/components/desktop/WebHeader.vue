@@ -978,7 +978,9 @@ defineExpose({
   position: fixed;
   inset: 0;
   z-index: $z-popover;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
 }
 
 .publish-popover {

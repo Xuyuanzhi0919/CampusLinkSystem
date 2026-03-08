@@ -233,11 +233,17 @@
 
           <!-- 上传者信息卡片 -->
           <view class="uploader-card" @click="navigateToUserProfile">
-            <image
-              :src="resource.uploaderAvatar || defaultAvatar"
-              class="uploader-avatar"
-              mode="aspectFill"
-            />
+            <view class="uploader-avatar-wrap">
+              <view class="uploader-avatar-placeholder" :style="getUploaderAvatarBg(resource.uploaderName)">
+                <text class="uploader-avatar-char">{{ resource.uploaderName?.charAt(0)?.toUpperCase() || '?' }}</text>
+              </view>
+              <image
+                v-if="resource.uploaderAvatar"
+                :src="resource.uploaderAvatar"
+                class="uploader-avatar"
+                mode="aspectFill"
+              />
+            </view>
             <view class="uploader-info">
               <text class="uploader-name">{{ resource.uploaderName }}</text>
               <view class="uploader-points">
@@ -491,6 +497,13 @@ const showLoginModal = ref(false)
 
 // 默认头像
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar
+
+// 上传者头像背景色（基于用户名首字符 hash）
+const UPLOADER_AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getUploaderAvatarBg = (name: string) => {
+  const idx = name ? name.charCodeAt(0) % UPLOADER_AVATAR_COLORS.length : 0
+  return { background: UPLOADER_AVATAR_COLORS[idx] }
+}
 
 // 资源数据
 const resource = ref<Partial<ResourceDetail>>({
@@ -2095,13 +2108,38 @@ const closePreview = () => {
   }
 }
 
-.uploader-avatar {
-  width: 80rpx; // 从 72rpx → 80rpx，头像稍大
+.uploader-avatar-wrap {
+  position: relative;
+  width: 80rpx;
   height: 80rpx;
   border-radius: $radius-full;
   margin-right: $sp-4;
   flex-shrink: 0;
-  border: 2rpx solid $gray-100; // 添加边框，提升层次感
+}
+
+.uploader-avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: $radius-full;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploader-avatar-char {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+.uploader-avatar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: $radius-full;
+  border: 2rpx solid $gray-100;
 }
 
 .uploader-info {

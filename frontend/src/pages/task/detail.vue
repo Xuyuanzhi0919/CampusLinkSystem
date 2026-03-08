@@ -10,7 +10,7 @@
       <!-- 顶部：类型 + 状态 -->
       <view class="top-badges">
         <view class="type-badge" :class="`type-${task.taskType}`">
-          <text class="type-badge-icon">{{ getTypeIcon(task.taskType) }}</text>
+          <Icon :name="getTypeIconName(task.taskType)" :size="15" class="type-badge-icon" />
           <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
         </view>
         <view
@@ -26,7 +26,7 @@
         <text class="task-title">{{ task.title }}</text>
         <view class="task-meta">
           <view class="meta-item">
-            <text class="meta-icon">👁</text>
+            <Icon name="eye" :size="14" class="meta-icon" />
             <text class="meta-text">{{ task.viewCount }} 浏览</text>
           </view>
         </view>
@@ -54,18 +54,27 @@
         <view class="section-title">任务信息</view>
         <view class="info-list">
           <view v-if="task.location" class="info-item">
-            <text class="info-label">📍 地点</text>
+            <view class="info-label">
+              <Icon name="map-pin" :size="14" class="label-icon" />
+              <text>地点</text>
+            </view>
             <text class="info-value">{{ task.location }}</text>
           </view>
           <view v-if="task.deadline" class="info-item">
-            <text class="info-label">⏰ 截止时间</text>
+            <view class="info-label">
+              <Icon name="clock" :size="14" class="label-icon" />
+              <text>截止时间</text>
+            </view>
             <text class="info-value" :class="{ 'expired-text': isExpired }">
               {{ formatDeadline(task.deadline) }}
               <text v-if="isExpired" class="expired-tag">已过期</text>
             </text>
           </view>
           <view class="info-item">
-            <text class="info-label">📅 发布时间</text>
+            <view class="info-label">
+              <Icon name="calendar" :size="14" class="label-icon" />
+              <text>发布时间</text>
+            </view>
             <text class="info-value">{{ formatTime(task.createdAt) }}</text>
           </view>
         </view>
@@ -177,6 +186,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import Icon from '@/components/icons/index.vue'
 import {
   getTaskById,
   acceptTask,
@@ -438,14 +448,14 @@ const goBack = () => {
 /**
  * 获取任务类型图标
  */
-const getTypeIcon = (type: TaskType): string => {
+const getTypeIconName = (type: TaskType): string => {
   const iconMap: Record<string, string> = {
-    errand: '🏃',
-    borrow: '🤝',
-    tutor: '📚',
-    other: '📦'
+    errand: 'footprints',
+    borrow: 'handshake',
+    tutor: 'book-open',
+    other: 'package'
   }
-  return iconMap[type] || '📦'
+  return iconMap[type] || 'package'
 }
 
 /**
@@ -602,8 +612,7 @@ onMounted(() => {
 }
 
 .type-badge-icon {
-  font-size: 26rpx;
-  line-height: 1;
+  flex-shrink: 0;
 }
 
 .type-badge-label {
@@ -791,6 +800,9 @@ onMounted(() => {
 }
 
 .info-label {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
   font-size: $font-size-base;
   color: $gray-500;
 }

@@ -48,7 +48,7 @@
             :class="{ active: currentType === type.value }"
             @click="handleTypeChange(type.value)"
           >
-            <text class="type-tab-icon">{{ type.icon }}</text>
+            <Icon :name="type.iconName" :size="15" class="type-tab-icon" />
             <text class="type-tab-label">{{ type.label }}</text>
           </view>
         </view>
@@ -88,7 +88,7 @@
             <!-- 顶部：类型标签 + 状态 -->
             <view class="card-top">
               <view class="type-badge" :class="`type-${task.taskType}`">
-                <text class="type-badge-icon">{{ getTypeIcon(task.taskType) }}</text>
+                <Icon :name="getTypeIconName(task.taskType)" :size="13" class="type-badge-icon" />
                 <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
               </view>
               <view
@@ -105,11 +105,11 @@
             <!-- 地点 + 截止时间 -->
             <view class="card-meta" v-if="task.location || task.deadline">
               <view v-if="task.location" class="meta-item">
-                <text class="meta-icon">📍</text>
+                <Icon name="map-pin" :size="13" class="meta-icon" />
                 <text class="meta-text">{{ task.location }}</text>
               </view>
               <view v-if="task.deadline" class="meta-item">
-                <text class="meta-icon">⏰</text>
+                <Icon name="clock" :size="13" class="meta-icon" />
                 <text class="meta-text">{{ formatDeadline(task.deadline) }}</text>
               </view>
             </view>
@@ -137,7 +137,7 @@
 
         <!-- 空状态 -->
         <view v-if="!loading && taskList.length === 0" class="empty-state">
-          <text class="empty-icon">📋</text>
+          <Icon name="clipboard-list" :size="56" class="empty-icon" />
           <text class="empty-text">暂无任务</text>
           <text class="empty-tip">快去发布一个新任务吧~</text>
         </view>
@@ -175,11 +175,11 @@ const statusOptions = [
 
 // 任务类型选项
 const taskTypes = [
-  { value: '', label: '全部', icon: '📋' },
-  { value: 'errand', label: '跑腿', icon: '🏃' },
-  { value: 'borrow', label: '借用', icon: '🤝' },
-  { value: 'tutor', label: '答疑互助', icon: '📚' },
-  { value: 'other', label: '其他', icon: '📦' }
+  { value: '', label: '全部', iconName: 'layout-grid' },
+  { value: 'errand', label: '跑腿', iconName: 'footprints' },
+  { value: 'borrow', label: '借用', iconName: 'handshake' },
+  { value: 'tutor', label: '答疑互助', iconName: 'book-open' },
+  { value: 'other', label: '其他', iconName: 'package' }
 ]
 
 const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
@@ -276,9 +276,14 @@ const handlePublish = () => {
   uni.navigateTo({ url: '/pages/task/publish' })
 }
 
-const getTypeIcon = (type: TaskType): string => {
-  const iconMap: Record<string, string> = { errand: '🏃', borrow: '🤝', tutor: '📚', other: '📦' }
-  return iconMap[type] || '📦'
+const getTypeIconName = (type: TaskType): string => {
+  const iconMap: Record<string, string> = {
+    errand: 'footprints',
+    borrow: 'handshake',
+    tutor: 'book-open',
+    other: 'package'
+  }
+  return iconMap[type] || 'package'
 }
 
 const getTypeLabel = (type: TaskType): string => {
@@ -533,8 +538,8 @@ defineExpose({
 }
 
 .type-tab-icon {
-  font-size: 28rpx;
-  line-height: 1;
+  color: $gray-500;
+  flex-shrink: 0;
 }
 
 .type-tab-label {
@@ -648,7 +653,7 @@ defineExpose({
   }
 }
 
-.type-badge-icon { font-size: 22rpx; line-height: 1; }
+.type-badge-icon { flex-shrink: 0; }
 .type-badge-label { font-size: $font-size-sm; font-weight: $font-weight-medium; }
 
 .status-tag {
@@ -685,7 +690,7 @@ defineExpose({
 }
 
 .meta-item { display: flex; align-items: center; gap: $sp-2; }
-.meta-icon { font-size: 22rpx; line-height: 1; }
+.meta-icon { color: $gray-400; flex-shrink: 0; }
 .meta-text { font-size: $font-size-sm; color: $gray-500; }
 
 .card-footer {
@@ -773,7 +778,7 @@ defineExpose({
   padding: 160rpx $sp-8;
 }
 
-.empty-icon { font-size: 120rpx; margin-bottom: $sp-8; }
+.empty-icon { color: $gray-300; margin-bottom: $sp-8; }
 .empty-text { font-size: $font-size-lg; color: $gray-500; margin-bottom: $sp-4; }
 .empty-tip { font-size: $font-size-sm; color: $gray-400; }
 

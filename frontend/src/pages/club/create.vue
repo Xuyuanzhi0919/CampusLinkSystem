@@ -23,40 +23,46 @@
     <scroll-view class="form-scroll" scroll-y>
       <view class="form-container">
 
-        <!-- 社团头像 -->
+        <!-- 基础信息卡片：头像 + 名称 + 类别合并 -->
         <view class="section">
-          <text class="section-title">社团头像</text>
-          <view class="avatar-wrapper">
-            <view class="avatar-picker" @click="handlePickAvatar">
-              <view v-if="uploading" class="avatar-uploading">
-                <Icon name="loader" :size="24" class="spin-icon" />
-                <text class="uploading-text">上传中...</text>
-              </view>
-              <image v-else-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
-              <view v-else class="avatar-placeholder">
-                <Icon name="image-plus" :size="28" color="#9CA3AF" />
-                <text class="placeholder-text">上传头像</text>
-              </view>
-            </view>
-            <!-- 已上传时显示删除按钮 -->
-            <view v-if="form.logoUrl && !uploading" class="avatar-remove" @click.stop="form.logoUrl = ''">
-              <Icon name="x" :size="12" color="#FFFFFF" />
-            </view>
-          </view>
-        </view>
-
-        <!-- 基本信息 -->
-        <view class="section">
-          <text class="section-title">基本信息</text>
+          <text class="section-title">社团信息</text>
           <view class="form-card">
+
+            <!-- 头像行 -->
+            <view class="form-item form-item--avatar">
+              <view class="avatar-left">
+                <view class="avatar-wrapper">
+                  <view class="avatar-picker" @click="handlePickAvatar">
+                    <view v-if="uploading" class="avatar-uploading">
+                      <Icon name="loader" :size="22" class="spin-icon" />
+                    </view>
+                    <image v-else-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
+                    <view v-else class="avatar-placeholder">
+                      <Icon name="image-plus" :size="24" color="#9CA3AF" />
+                    </view>
+                  </view>
+                  <view v-if="form.logoUrl && !uploading" class="avatar-remove" @click.stop="form.logoUrl = ''">
+                    <Icon name="x" :size="12" color="#FFFFFF" />
+                  </view>
+                </view>
+                <text class="avatar-hint">
+                  {{ uploading ? '上传中...' : form.logoUrl ? '点击更换' : '点击上传' }}
+                </text>
+              </view>
+            </view>
+
+            <view class="divider" />
 
             <!-- 社团名称 -->
             <view class="form-item">
-              <text class="form-label required">社团名称</text>
+              <view class="form-label-row">
+                <text class="form-label required">社团名称</text>
+                <text class="char-count-inline">{{ form.clubName.length }}/30</text>
+              </view>
               <input
                 class="form-input"
                 v-model="form.clubName"
-                placeholder="请输入社团名称（2-30字）"
+                placeholder="请输入社团名称"
                 maxlength="30"
                 @input="clearError('clubName')"
               />
@@ -70,7 +76,7 @@
               <text class="form-label required">社团类别</text>
               <view class="picker-value">
                 <text :class="form.category ? 'value-text' : 'placeholder-text'">
-                  {{ form.category || '请选择类别' }}
+                  {{ form.category || '请选择' }}
                 </text>
                 <Icon name="chevron-right" :size="16" color="#9CA3AF" />
               </view>
@@ -85,7 +91,10 @@
         <!-- 社团简介 -->
         <view class="section">
           <view class="section-header">
-            <text class="section-title">社团简介</text>
+            <view class="section-title-row">
+              <text class="section-title">社团简介</text>
+              <text class="section-optional">选填</text>
+            </view>
             <text class="char-count">{{ form.description.length }}/500</text>
           </view>
           <view class="textarea-card">
@@ -304,6 +313,12 @@ const handleSubmit = async () => {
   margin-bottom: 10px;
 }
 
+.section-title-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .section-title {
   font-size: 14px;
   font-weight: 600;
@@ -312,12 +327,39 @@ const handleSubmit = async () => {
   display: block;
 }
 
+.section-optional {
+  font-size: 11px;
+  color: $color-text-quaternary;
+  background: $color-bg-hover;
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin-bottom: 10px;
+}
+
 .char-count {
   font-size: 12px;
   color: $color-text-quaternary;
 }
 
 /* ========== 头像上传 ========== */
+// 头像行布局
+.form-item--avatar {
+  flex-direction: row !important;
+  align-items: center;
+}
+
+.avatar-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.avatar-hint {
+  font-size: 11px;
+  color: $color-text-quaternary;
+}
+
 .avatar-wrapper {
   position: relative;
   display: inline-block;
@@ -341,9 +383,9 @@ const handleSubmit = async () => {
 }
 
 .avatar-picker {
-  width: 88px;
-  height: 88px;
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
 }
@@ -359,21 +401,14 @@ const handleSubmit = async () => {
   height: 100%;
   background: $color-bg-hover;
   border: 2px dashed $color-border;
-  border-radius: 16px;
+  border-radius: 14px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
 
   .spin-icon {
     color: $campus-blue;
     animation: spin 1s linear infinite;
-  }
-
-  .uploading-text {
-    font-size: 11px;
-    color: $color-text-quaternary;
   }
 }
 
@@ -382,17 +417,22 @@ const handleSubmit = async () => {
   height: 100%;
   background: $color-bg-hover;
   border: 2px dashed $color-border;
-  border-radius: 16px;
+  border-radius: 14px;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+}
 
-  .placeholder-text {
-    font-size: 12px;
-    color: $color-text-quaternary;
-  }
+// 名称行：标签与字数计数同行
+.form-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.char-count-inline {
+  font-size: 12px;
+  color: $color-text-quaternary;
 }
 
 /* ========== 表单卡片 ========== */

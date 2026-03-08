@@ -165,7 +165,7 @@
 			"path": "pages/club/create",
 			"style": {
 				"navigationBarTitleText": "创建社团",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

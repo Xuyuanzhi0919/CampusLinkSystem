@@ -1,26 +1,37 @@
 <template>
   <view class="create-club-page">
 
-    <!-- 统一渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleBack">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+    <!-- 统一导航栏 -->
+    <CNavBar title="创建社团" :auto-back="false" @back="handleBack">
+      <template #right>
+        <!-- PC 端右上角发布按钮（移动端隐藏） -->
+        <view class="navbar-submit">
+          <CButton
+            type="primary"
+            size="sm"
+            :disabled="!canSubmit"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
+            {{ submitting ? '创建中...' : '创建社团' }}
+          </CButton>
         </view>
-        <text class="nav-title">创建社团</text>
-        <view class="nav-placeholder" />
-      </view>
-    </view>
+      </template>
+    </CNavBar>
 
     <!-- 表单主体 -->
     <scroll-view class="form-scroll" scroll-y>
       <view class="form-container">
 
-        <!-- 社团封面/Logo -->
+        <!-- 社团头像 -->
         <view class="section">
           <text class="section-title">社团头像</text>
           <view class="avatar-picker" @click="handlePickAvatar">
-            <image v-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
+            <view v-if="uploading" class="avatar-uploading">
+              <Icon name="loader" :size="24" class="spin-icon" />
+              <text class="uploading-text">上传中...</text>
+            </view>
+            <image v-else-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
             <view v-else class="avatar-placeholder">
               <Icon name="image-plus" :size="28" color="#9CA3AF" />
               <text class="placeholder-text">上传头像</text>
@@ -57,7 +68,9 @@
                 </text>
                 <Icon name="chevron-right" :size="16" color="#9CA3AF" />
               </view>
-              <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
+            </view>
+            <view v-if="errors.category" class="form-item" style="padding-top: 0;">
+              <text class="error-text">{{ errors.category }}</text>
             </view>
 
           </view>
@@ -80,21 +93,28 @@
           </view>
         </view>
 
-        <!-- 提交按钮 -->
-        <view class="submit-area">
-          <view
-            class="submit-btn"
-            :class="{ 'submit-btn--loading': submitting }"
-            @click="handleSubmit"
-          >
-            <Icon v-if="submitting" name="loader" :size="18" class="loading-icon" />
-            <text class="submit-text">{{ submitting ? '创建中...' : '创建社团' }}</text>
-          </view>
-          <text class="submit-hint">创建后需等待审核，审核通过后社团将对外公开</text>
-        </view>
+        <!-- 底部占位（移动端底部栏高度） -->
+        <view class="bottom-spacer" />
 
       </view>
     </scroll-view>
+
+    <!-- 底部操作栏（移动端固定，PC 端隐藏） -->
+    <view class="bottom-bar">
+      <view class="bottom-bar-inner">
+        <CButton type="ghost" size="lg" class="btn-cancel" @click="handleBack">取消</CButton>
+        <CButton
+          type="primary"
+          size="lg"
+          class="btn-submit"
+          :disabled="!canSubmit"
+          :loading="submitting"
+          @click="handleSubmit"
+        >
+          {{ submitting ? '创建中...' : '创建社团' }}
+        </CButton>
+      </view>
+    </view>
 
     <!-- 类别选择弹窗 -->
     <view v-if="showCategoryPicker" class="picker-overlay" @click="showCategoryPicker = false">
@@ -124,9 +144,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
+import CButton from '@/components/ui/CButton.vue'
 import { createClub } from '@/services/club'
+import { getOSSSignature, uploadToOSS } from '@/utils/upload'
 
 const categories = ['学术科技', '文化艺术', '体育竞技', '志愿公益', '创新创业', '兴趣爱好', '综合实践', '其他']
 
@@ -139,7 +162,12 @@ const form = reactive({
 
 const errors = reactive<Record<string, string>>({})
 const submitting = ref(false)
+const uploading = ref(false)
 const showCategoryPicker = ref(false)
+
+const canSubmit = computed(() =>
+  form.clubName.trim().length >= 2 && !!form.category
+)
 
 const handleBack = () => {
   uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/home/index' }) })
@@ -156,13 +184,24 @@ const selectCategory = (cat: string) => {
 }
 
 const handlePickAvatar = () => {
+  if (uploading.value) return
   uni.chooseImage({
     count: 1,
     sizeType: ['compressed'],
     sourceType: ['album', 'camera'],
-    success: (res) => {
-      // 实际项目中应上传到 OSS，这里暂时使用本地路径预览
-      form.logoUrl = res.tempFilePaths[0]
+    success: async (res) => {
+      const tempPath = res.tempFilePaths[0]
+      uploading.value = true
+      try {
+        const fileName = tempPath.split('/').pop() || 'avatar.jpg'
+        const signature = await getOSSSignature(fileName)
+        const url = await uploadToOSS(tempPath, signature)
+        form.logoUrl = url
+      } catch {
+        uni.showToast({ title: '头像上传失败', icon: 'none' })
+      } finally {
+        uploading.value = false
+      }
     }
   })
 }
@@ -196,12 +235,12 @@ const handleSubmit = async () => {
       clubName: form.clubName.trim(),
       description: form.description.trim(),
       logoUrl: form.logoUrl || undefined,
-      schoolId: 1  // 实际应从用户 store 中获取
+      category: form.category,
     })
 
-    uni.showToast({ title: '创建成功，等待审核', icon: 'success', duration: 2000 })
+    uni.showToast({ title: '社团创建成功', icon: 'success', duration: 2000 })
     setTimeout(() => {
-      uni.navigateBack()
+      uni.redirectTo({ url: `/pages/club/detail?id=${res.clubId}` })
     }, 1500)
   } catch (error: any) {
     uni.showToast({ title: error?.message || '创建失败，请重试', icon: 'none' })
@@ -215,56 +254,36 @@ const handleSubmit = async () => {
 @import '@/styles/design-tokens.scss';
 
 .create-club-page {
-  min-height: 100vh;
+  height: 100vh;
   background: #F1F5F9;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-// ── 渐变头部 ──
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
+// ── 导航栏发布按钮（PC 端显示，移动端隐藏）──
+.navbar-submit {
+  @media (max-width: 749px) {
+    display: none;
+  }
 }
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; }
 
 .form-scroll {
   flex: 1;
+  height: 0;
 }
 
 .form-container {
-  padding: 16px 16px 40px;
+  padding: 16px 16px 0;
   max-width: 640px;
   margin: 0 auto;
+}
+
+.bottom-spacer {
+  height: 80px;
+  @media (min-width: 750px) {
+    height: 32px;
+  }
 }
 
 /* ========== Section ========== */
@@ -305,6 +324,29 @@ const handleSubmit = async () => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.avatar-uploading {
+  width: 100%;
+  height: 100%;
+  background: $color-bg-hover;
+  border: 2px dashed $color-border;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+
+  .spin-icon {
+    color: $color-primary;
+    animation: spin 1s linear infinite;
+  }
+
+  .uploading-text {
+    font-size: 11px;
+    color: $color-text-quaternary;
+  }
 }
 
 .avatar-placeholder {
@@ -419,58 +461,36 @@ const handleSubmit = async () => {
   }
 }
 
-/* ========== 提交区 ========== */
-.submit-area {
-  margin-top: 8px;
+// ── 底部操作栏（移动端固定，PC 端隐藏）──
+.bottom-bar {
+  @media (min-width: 750px) {
+    display: none;
+  }
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: $color-bg-card;
+  border-top: 1px solid $color-divider;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  padding-bottom: constant(safe-area-inset-bottom);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.bottom-bar-inner {
   display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 12px;
+  padding: 12px 16px;
 }
 
-.submit-btn {
-  width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, $campus-blue 0%, $campus-blue-light 100%);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  transition: $transition-all;
-
-  &:active {
-    transform: scale(0.98);
-    opacity: 0.9;
-  }
-
-  &--loading {
-    opacity: 0.75;
-    pointer-events: none;
-  }
-
-  .loading-icon {
-    color: #FFFFFF;
-    animation: spin 1s linear infinite;
-  }
+.btn-cancel {
+  flex: 0 0 auto;
 }
 
-.submit-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #FFFFFF;
-}
-
-.submit-hint {
-  font-size: 12px;
-  color: $color-text-quaternary;
-  text-align: center;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.btn-submit {
+  flex: 1;
 }
 
 /* ========== 类别选择弹窗 ========== */
@@ -535,12 +555,13 @@ const handleSubmit = async () => {
   color: $color-text-primary;
 }
 
-/* ========== PC 端适配 ========== */
-@media (min-width: 1024px) {
-  .form-container {
-    padding: 32px 0 60px;
-  }
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
 
+/* ========== PC 端适配 ========== */
+@media (min-width: 750px) {
   .picker-overlay {
     align-items: center;
   }

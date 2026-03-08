@@ -27,4 +27,10 @@ public class CreateClubRequest {
      * 社团Logo
      */
     private String logoUrl;
+
+    /**
+     * 社团分类：学术科技/文化艺术/体育竞技/志愿公益/创新创业/兴趣爱好/综合实践/其他
+     */
+    @Size(max = 20, message = "社团分类不能超过20个字符")
+    private String category;
 }

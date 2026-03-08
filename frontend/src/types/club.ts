@@ -95,7 +95,7 @@ export interface ClubCreateParams {
   clubName: string
   description: string
   logoUrl?: string
-  schoolId: number
+  category: string
 }
 
 // 创建活动参数（clubId 通过 URL 路径传递，不包含在请求体中）

@@ -253,11 +253,15 @@ public class ClubService {
 
     /**
      * 获取我加入的社团
+     * @param managedOnly 为 true 时只返回用户是管理员或创始人的社团
      */
-    public PageResult<ClubResponse> getMyClubs(Long userId, Integer page, Integer pageSize) {
+    public PageResult<ClubResponse> getMyClubs(Long userId, Integer page, Integer pageSize, Boolean managedOnly) {
         // 查询用户加入的社团ID列表
         LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(ClubMember::getUserId, userId);
+        if (Boolean.TRUE.equals(managedOnly)) {
+            wrapper.in(ClubMember::getRole, "admin", "founder");
+        }
         List<ClubMember> memberList = clubMemberMapper.selectList(wrapper);
 
         if (memberList.isEmpty()) {

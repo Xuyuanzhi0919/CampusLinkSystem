@@ -151,26 +151,6 @@
             <text v-if="errors.endTime" class="error-text">{{ errors.endTime }}</text>
           </view>
 
-          <!-- 报名截止时间 -->
-          <view class="form-group">
-            <view class="form-label">
-              <text class="label-text">报名截止</text>
-              <text class="required">*</text>
-            </view>
-            <picker
-              mode="multiSelector"
-              :range="[dateRange, timeRange]"
-              :value="[deadlineDateIndex, deadlineTimeIndex]"
-              @change="handleDeadlineChange"
-              @columnchange="handleDeadlineColumnChange"
-            >
-              <view class="picker-trigger" :class="{ error: errors.signupDeadline }">
-                <text :class="{ placeholder: !formData.signupDeadline }">{{ formData.signupDeadline ? formatDateTime(formData.signupDeadline) : '请选择报名截止时间' }}</text>
-                <text class="arrow">▼</text>
-              </view>
-            </picker>
-            <text v-if="errors.signupDeadline" class="error-text">{{ errors.signupDeadline }}</text>
-          </view>
         </CCard>
 
         <!-- 参与设置 -->
@@ -210,7 +190,7 @@
                 v-for="points in rewardOptions"
                 :key="points"
                 class="reward-item"
-                :class="{ active: formData.checkInPoints === points }"
+                :class="{ active: formData.rewardPoints === points }"
                 @click="handleRewardSelect(points)"
               >
                 <text class="reward-points">{{ points }}</text>
@@ -313,23 +293,22 @@ import CCard from '@/components/ui/CCard.vue'
 import CButton from '@/components/ui/CButton.vue'
 import Icon from '@/components/icons/index.vue'
 import CNavBar from '@/components/layout/CNavBar.vue'
-import { createActivity, getMyClubs } from '@/services/club'
-import type { ActivityCreateParams, ClubItem } from '@/types/club'
+import { createActivity, getMyManagedClubs } from '@/services/club'
+import type { ClubItem } from '@/types/club'
 import { uploadToOSS } from '@/utils/upload'
 
-// 表单数据
-const formData = ref<ActivityCreateParams>({
+// 表单数据（clubId 仅用于 UI 状态，提交时作为路径参数）
+const formData = ref({
   clubId: 0,
   title: '',
-    description: '',
-    coverImage: '',
-    location: '',
-    startTime: '',
-    endTime: '',
-    maxParticipants: 50,
-    signupDeadline: '',
-    checkInPoints: 0
-  })
+  description: '',
+  coverImage: '',
+  location: '',
+  startTime: '',
+  endTime: '',
+  maxParticipants: 50,
+  rewardPoints: 0,
+})
 
 // 表单错误
 const errors = ref<Record<string, string>>({})
@@ -354,9 +333,6 @@ const startTimeIndex = ref(0)
 // 结束时间选择索引
 const endDateIndex = ref(0)
 const endTimeIndex = ref(0)
-// 报名截止时间选择索引
-const deadlineDateIndex = ref(0)
-const deadlineTimeIndex = ref(0)
 // 初始化日期时间范围
 const initDateTimeRange = () => {
   // 生成未来30天的日期
@@ -440,26 +416,11 @@ const handleEndTimeChange = (e: any) => {
   formData.value.endTime = buildISODateTime(dateIdx, timeIdx)
   errors.value.endTime = ''
 }
-// 报名截止时间选择处理
-const handleDeadlineColumnChange = (e: any) => {
-  if (e.detail.column === 0) {
-    deadlineDateIndex.value = e.detail.value
-  } else {
-    deadlineTimeIndex.value = e.detail.value
-  }
-}
-const handleDeadlineChange = (e: any) => {
-  const [dateIdx, timeIdx] = e.detail.value
-  deadlineDateIndex.value = dateIdx
-  deadlineTimeIndex.value = timeIdx
-  formData.value.signupDeadline = buildISODateTime(dateIdx, timeIdx)
-  errors.value.signupDeadline = ''
-}
 /**
  * 选择奖励积分
  */
 const handleRewardSelect = (points: number) => {
-  formData.value.checkInPoints = points
+  formData.value.rewardPoints = points
 }
 /**
  * 上传封面图片
@@ -517,7 +478,7 @@ const handleCreateClub = () => {
  */
 const loadMyClubs = async () => {
   try {
-    const result = await getMyClubs({ page: 1, pageSize: 100 })
+    const result = await getMyManagedClubs({ page: 1, pageSize: 100 })
     myClubs.value = result.list
     // 如果只有一个社团，自动选中
     if (myClubs.value.length === 1) {
@@ -564,16 +525,6 @@ const validateForm = (): boolean => {
       isValid = false
     }
   }
-  if (!formData.value.signupDeadline) {
-    errors.value.signupDeadline = '请选择报名截止时间'
-    isValid = false
-  }
-  if (formData.value.signupDeadline && formData.value.startTime) {
-    if (new Date(formData.value.signupDeadline) > new Date(formData.value.startTime)) {
-      errors.value.signupDeadline = '报名截止时间不能晚于活动开始时间'
-      isValid = false
-    }
-  }
   if (!formData.value.maxParticipants || formData.value.maxParticipants < 1) {
     errors.value.maxParticipants = '参与人数至少为1'
     isValid = false
@@ -591,7 +542,6 @@ const isFormValid = computed(() => {
     formData.value.location.length > 0 &&
     formData.value.startTime &&
     formData.value.endTime &&
-    formData.value.signupDeadline &&
     formData.value.maxParticipants >= 1
   )
 })
@@ -641,7 +591,8 @@ const handleSubmit = async () => {
   if (!validateForm()) return
   try {
     submitting.value = true
-    const response = await createActivity(formData.value)
+    const { clubId, ...activityData } = formData.value
+    const response = await createActivity(clubId, activityData)
     uni.showToast({
       title: '发布成功',
       icon: 'success',

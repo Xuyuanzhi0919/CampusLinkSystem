@@ -54,7 +54,6 @@ export interface ActivityItem {
   endTime: string
   maxParticipants: number
   currentParticipants: number
-  signupDeadline: string
   status: ActivityStatus
   createdAt: string
 }
@@ -71,7 +70,7 @@ export interface ActivityDetail extends ActivityItem {
   organizerId: number
   organizerName: string
   isParticipant: boolean
-  checkInPoints: number
+  rewardPoints: number
 }
 
 // 社团列表查询参数
@@ -99,9 +98,8 @@ export interface ClubCreateParams {
   schoolId: number
 }
 
-// 创建活动参数
+// 创建活动参数（clubId 通过 URL 路径传递，不包含在请求体中）
 export interface ActivityCreateParams {
-  clubId: number
   title: string
   description: string
   coverImage?: string
@@ -109,8 +107,6 @@ export interface ActivityCreateParams {
   startTime: string
   endTime: string
   maxParticipants: number
-    signupDeadline: string
-    checkInPoints: number
-    rewardPoints?: number // 添加奖励积分字段
+  rewardPoints: number
 }
 

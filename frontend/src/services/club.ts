@@ -74,10 +74,11 @@ export const getActivityDetail = (id: number) => {
 
 /**
  * 创建活动
+ * @param clubId 社团ID（路径参数）
  * @param data 活动数据
  */
-export const createActivity = (data: ActivityCreateParams) => {
-  return request.post<{ activityId: number }>('/activity/create', data)
+export const createActivity = (clubId: number, data: ActivityCreateParams) => {
+  return request.post<{ activityId: number }>(`/activity/club/${clubId}/create`, data)
 }
 
 /**
@@ -110,6 +111,14 @@ export const checkInActivity = (id: number) => {
  */
 export const getMyClubs = (params: { page?: number; pageSize?: number } = {}) => {
   return request.get<PageResult<ClubItem>>('/club/my', params)
+}
+
+/**
+ * 获取我管理的社团（仅 admin/founder 角色）
+ * @param params 查询参数
+ */
+export const getMyManagedClubs = (params: { page?: number; pageSize?: number } = {}) => {
+  return request.get<PageResult<ClubItem>>('/club/my', { ...params, managedOnly: true })
 }
 
 /**

@@ -89,14 +89,15 @@ public class ClubController {
         return Result.success(result);
     }
 
-    @Operation(summary = "获取我加入的社团")
+    @Operation(summary = "获取我加入的社团", description = "managedOnly=true 时只返回用户是管理员或创始人的社团")
     @GetMapping("/my")
     public Result<PageResult<ClubResponse>> getMyClubs(
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "false") Boolean managedOnly,
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
-        PageResult<ClubResponse> result = clubService.getMyClubs(userId, page, pageSize);
+        PageResult<ClubResponse> result = clubService.getMyClubs(userId, page, pageSize, managedOnly);
         return Result.success(result);
     }
 }

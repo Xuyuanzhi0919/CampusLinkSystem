@@ -84,6 +84,9 @@
     <view class="main-content">
       <view class="content-container">
 
+        <!-- ===== 主列表区 ===== -->
+        <view class="task-main">
+
         <!-- 骨架屏 -->
         <SkeletonScreen v-if="loading && taskList.length === 0" type="card" :count="4" />
 
@@ -165,6 +168,99 @@
         </view>
 
         <view class="safe-area-bottom" />
+
+        </view><!-- end task-main -->
+
+        <!-- ===== 侧边栏（仅桌面端显示） ===== -->
+        <view class="task-sidebar">
+
+          <!-- 模块1：我的任务 -->
+          <view class="sidebar-card" v-if="userStore.isLoggedIn">
+            <view class="sidebar-card-header">
+              <Icon name="clipboard-list" :size="15" class="sidebar-header-icon" />
+              <text class="sidebar-card-title">我的任务</text>
+            </view>
+            <view class="my-stats-grid">
+              <view class="stat-cell">
+                <text class="stat-num stat-pending">{{ myStats.pending }}</text>
+                <text class="stat-label">待接单</text>
+              </view>
+              <view class="stat-cell">
+                <text class="stat-num stat-ongoing">{{ myStats.ongoing }}</text>
+                <text class="stat-label">进行中</text>
+              </view>
+              <view class="stat-cell">
+                <text class="stat-num stat-done">{{ myStats.done }}</text>
+                <text class="stat-label">已完成</text>
+              </view>
+            </view>
+            <view class="sidebar-link-row">
+              <view class="sidebar-link" @click="goMyPublished">
+                <text class="sidebar-link-text">我的发布</text>
+              </view>
+              <text class="sidebar-link-sep">·</text>
+              <view class="sidebar-link" @click="goMyAccepted">
+                <text class="sidebar-link-text">我的接单</text>
+              </view>
+              <Icon name="arrow-right" :size="13" class="sidebar-link-arrow" />
+            </view>
+          </view>
+
+          <!-- 模块2：平台统计 -->
+          <view class="sidebar-card" v-if="todayPublished > 0">
+            <view class="sidebar-card-header">
+              <Icon name="bar-chart-2" :size="15" class="sidebar-header-icon" />
+              <text class="sidebar-card-title">今日动态</text>
+            </view>
+            <view class="platform-stats">
+              <view class="platform-stat-item">
+                <text class="platform-stat-num">{{ todayPublished }}</text>
+                <text class="platform-stat-label">今日发布</text>
+              </view>
+              <view class="platform-stat-divider" />
+              <view class="platform-stat-item">
+                <text class="platform-stat-num">{{ taskList.length }}</text>
+                <text class="platform-stat-label">当前在线</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 模块3：热门高积分任务 -->
+          <view class="sidebar-card" v-if="hotTasks.length > 0">
+            <view class="sidebar-card-header">
+              <Icon name="flame" :size="15" class="sidebar-header-icon" />
+              <text class="sidebar-card-title">高积分任务</text>
+            </view>
+            <view class="hot-task-list">
+              <view
+                v-for="(task, index) in hotTasks"
+                :key="task.tid"
+                class="hot-task-item"
+                @click="handleTaskClick(task)"
+              >
+                <text class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</text>
+                <text class="hot-title">{{ task.title }}</text>
+                <view class="hot-reward">
+                  <Icon name="zap" :size="11" />
+                  <text class="hot-pts">{{ task.rewardPoints }}</text>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 模块4：发布引导 -->
+          <view class="sidebar-publish-card" @click="handlePublish">
+            <Icon name="rocket" :size="22" class="publish-card-icon" />
+            <text class="publish-card-title">发布任务</text>
+            <text class="publish-card-desc">有需求？让同学帮你解决</text>
+            <view class="publish-card-btn">
+              <Icon name="plus" :size="14" />
+              <text>立即发布</text>
+            </view>
+          </view>
+
+        </view><!-- end task-sidebar -->
+
       </view>
     </view>
 
@@ -174,10 +270,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
-import { getTaskList } from '@/services/task'
+import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
+import { getTodayStats } from '@/services/stats'
+import { useUserStore } from '@/stores/user'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 import Icon from '@/components/icons/index.vue'
+
+const userStore = useUserStore()
 
 // 任务状态选项
 const statusOptions = [
@@ -314,6 +414,9 @@ const handlePublish = () => {
   uni.navigateTo({ url: '/pages/task/publish' })
 }
 
+const goMyPublished = () => { uni.navigateTo({ url: '/pages/task/my?tab=published' }) }
+const goMyAccepted = () => { uni.navigateTo({ url: '/pages/task/my?tab=accepted' }) }
+
 const getTypeIconName = (type: TaskType): string => {
   const iconMap: Record<string, string> = {
     errand: 'footprints',
@@ -370,12 +473,62 @@ const formatDeadline = (dateStr: string): string => {
   return `截止 ${month}-${day}`
 }
 
+// ===================================
+// 侧边栏数据
+// ===================================
+interface MyTaskStats {
+  pending: number   // 待接单
+  ongoing: number  // 进行中
+  done: number     // 已完成
+}
+
+const myStats = ref<MyTaskStats>({ pending: 0, ongoing: 0, done: 0 })
+const hotTasks = ref<TaskListItem[]>([])
+const todayPublished = ref<number>(0)
+const todayDone = ref<number>(0)
+
+const loadSidebarData = async () => {
+  try {
+    const [pubResult, accResult, statsResult, hotResult] = await Promise.allSettled([
+      userStore.isLoggedIn ? getMyPublishedTasks({ pageSize: 100 }) : Promise.resolve(null),
+      userStore.isLoggedIn ? getMyAcceptedTasks({ pageSize: 100 }) : Promise.resolve(null),
+      getTodayStats(),
+      getTaskList({ sortBy: 'reward_points', sortOrder: 'desc', pageSize: 3, status: 0 })
+    ])
+
+    // 我的发布统计
+    if (pubResult.status === 'fulfilled' && pubResult.value) {
+      const list = pubResult.value.list || []
+      myStats.value.pending = list.filter((t: TaskListItem) => t.status === 0).length
+      myStats.value.done = list.filter((t: TaskListItem) => t.status === 4 || t.status === 2).length
+    }
+    // 我的接单统计（进行中）
+    if (accResult.status === 'fulfilled' && accResult.value) {
+      const list = accResult.value.list || []
+      myStats.value.ongoing = list.filter((t: TaskListItem) => t.status === 1 || t.status === 2).length
+    }
+    // 平台统计
+    if (statsResult.status === 'fulfilled') {
+      todayPublished.value = statsResult.value.newTasks || 0
+    }
+    // 热门高积分任务
+    if (hotResult.status === 'fulfilled') {
+      hotTasks.value = hotResult.value.list?.slice(0, 3) || []
+    }
+  } catch (e) {
+    // 侧边栏数据加载失败不影响主列表
+  }
+}
+
 // 页面滚动监听：折叠顶部导航
 onPageScroll((e) => {
   isHeaderCollapsed.value = e.scrollTop > 40
 })
 
-onMounted(() => { loadTasks() })
+onMounted(() => {
+  loadTasks()
+  loadSidebarData()
+})
 
 defineExpose({
   onReachBottom: () => {
@@ -667,9 +820,18 @@ defineExpose({
 }
 
 .content-container {
-  max-width: 960px;
+  max-width: 1160px;
   margin: 0 auto;
   padding: $sp-6 $sp-8 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 48rpx;
+}
+
+// 主列表区（左侧，自适应宽度）
+.task-main {
+  flex: 1;
+  min-width: 0;
 }
 
 // ===================================
@@ -907,6 +1069,239 @@ defineExpose({
 .load-more-text { font-size: $font-size-sm; color: $gray-400; }
 
 .safe-area-bottom { height: 120rpx; }
+
+// ===================================
+// 侧边栏
+// ===================================
+.task-sidebar {
+  width: 560rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-6;
+  position: sticky;
+  top: 240rpx; // fixed-nav(112) + filter-bar(~80) + gap(~48)
+
+  // 移动端隐藏
+  @include mobile {
+    display: none;
+  }
+}
+
+// 侧边栏通用卡片
+.sidebar-card {
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-7;
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
+}
+
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-6;
+  padding-bottom: $sp-5;
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.sidebar-header-icon { color: $primary; }
+
+.sidebar-card-title {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $gray-800;
+}
+
+// 我的任务统计
+.my-stats-grid {
+  display: flex;
+  gap: 0;
+  margin-bottom: $sp-6;
+}
+
+.stat-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+
+  &:not(:last-child) {
+    border-right: 1rpx solid $gray-100;
+  }
+}
+
+.stat-num {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  line-height: 1;
+
+  &.stat-pending { color: #1677FF; }
+  &.stat-ongoing { color: #13C2C2; }
+  &.stat-done { color: #52C41A; }
+}
+
+.stat-label { font-size: $font-size-xs; color: $gray-400; }
+
+.sidebar-link-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+}
+
+.sidebar-link {
+  cursor: pointer;
+  &:active { opacity: 0.7; }
+}
+
+.sidebar-link-text {
+  font-size: $font-size-sm;
+  color: $primary;
+  font-weight: $font-weight-medium;
+}
+
+.sidebar-link-sep { font-size: $font-size-sm; color: $gray-300; }
+.sidebar-link-arrow { color: $primary; margin-left: auto; }
+
+// 平台统计
+.platform-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.platform-stat-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.platform-stat-divider {
+  width: 1rpx;
+  height: 64rpx;
+  background: $gray-100;
+}
+
+.platform-stat-num {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $primary;
+  line-height: 1;
+}
+
+.platform-stat-label { font-size: $font-size-xs; color: $gray-400; }
+
+// 热门任务
+.hot-task-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-5;
+}
+
+.hot-task-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+  cursor: pointer;
+  padding: $sp-3 0;
+
+  &:not(:last-child) { border-bottom: 1rpx solid $gray-50; }
+  &:active { opacity: 0.75; }
+}
+
+.hot-rank {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: $font-weight-bold;
+  flex-shrink: 0;
+  background: $gray-100;
+  color: $gray-500;
+
+  &.rank-1 { background: rgba(#FAAD14, 0.15); color: #D48806; }
+  &.rank-2 { background: rgba($gray-400, 0.15); color: $gray-500; }
+  &.rank-3 { background: rgba(#FF6B35, 0.12); color: #D4540A; }
+}
+
+.hot-title {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-sm;
+  color: $gray-700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-reward {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  flex-shrink: 0;
+  color: #FF6B35;
+}
+
+.hot-pts {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: #FF6B35;
+}
+
+// 发布引导卡片
+.sidebar-publish-card {
+  background: linear-gradient(135deg, $primary 0%, #4096FF 100%);
+  border-radius: $radius-card;
+  padding: $sp-8 $sp-7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: $sp-4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:active { opacity: 0.9; }
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-4rpx);
+    box-shadow: 0 12rpx 32rpx rgba($primary, 0.3);
+  }
+  /* #endif */
+}
+
+.publish-card-icon { color: rgba($white, 0.9); }
+
+.publish-card-title {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $white;
+}
+
+.publish-card-desc {
+  font-size: $font-size-sm;
+  color: rgba($white, 0.8);
+  text-align: center;
+}
+
+.publish-card-btn {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  background: $white;
+  color: $primary;
+  padding: $sp-3 $sp-7;
+  border-radius: $radius-2xl;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  margin-top: $sp-3;
+}
 </style>
 
 <!-- H5 端全局：隐藏滚动条 -->

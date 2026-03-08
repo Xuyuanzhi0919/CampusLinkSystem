@@ -191,7 +191,7 @@ const handleMetaClick = (item: any, activity: any) => {
 }
 
 const handleGoClub = () => {
-  nav.toActivityList()
+  nav.toCommunity()
 }
 
 const handleViewMore = () => {

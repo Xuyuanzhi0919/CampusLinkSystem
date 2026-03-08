@@ -210,7 +210,7 @@ const handleQuickLink = (type: string) => nav.toQuickLink(type)
 const handleViewMoreFeatured = () => nav.toQuestionList()
 const handleViewMoreQuestions = () => nav.toQuestionList()
 const handleViewMoreResources = () => nav.toResourceList()
-const handleViewMoreActivities = () => nav.toActivityList()
+const handleViewMoreActivities = () => nav.toCommunity()
 
 // ===================== 登录相关 =====================
 

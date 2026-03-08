@@ -662,7 +662,7 @@ onPageScroll((e) => {
 onMounted(() => {
   loadTasks()
   loadSidebarData()
-  loadNearbyTasks()
+  // 附近任务不自动触发定位，用户主动点击后才请求
 })
 
 defineExpose({

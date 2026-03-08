@@ -1017,19 +1017,21 @@ onLoad(() => {
 }
 
 // uni-input 内部元素高度控制（H5 uni-app 需要）
+// 注意：必须覆盖上方共享规则的垂直 padding，否则 wrapper height 计算错乱
 .form-input {
   height: 88rpx;
+  padding-top: 0;
+  padding-bottom: 0;
 
   :deep(.uni-input-wrapper) {
-    height: 88rpx;
+    height: 100%;
     display: flex;
     align-items: center;
     position: relative;
   }
 
   :deep(.uni-input-input) {
-    height: 88rpx;
-    line-height: 88rpx;
+    height: 100%;
   }
 
   :deep(.uni-input-placeholder) {

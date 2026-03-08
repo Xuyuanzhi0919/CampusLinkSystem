@@ -61,8 +61,9 @@ export interface ActivityItem {
 // 活动状态
 export enum ActivityStatus {
   NOT_STARTED = 0, // 未开始
-  IN_PROGRESS = 1, // 进行中
+  IN_PROGRESS = 1, // 进行中（报名中）
   ENDED = 2,       // 已结束
+  CANCELLED = 3,   // 已取消
 }
 
 // 活动详情

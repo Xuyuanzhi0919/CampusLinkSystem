@@ -226,8 +226,9 @@ public class ActivityService {
             throw new BusinessException(ResultCode.NOT_ACTIVITY_PARTICIPANT);
         }
 
-        // 检查活动状态
-        if (activity.getStatus() != 0) {
+        // 基于时间判断活动是否已开始（与签到逻辑保持一致，避免依赖可能未同步的 status 字段）
+        LocalDateTime now = LocalDateTime.now();
+        if (now.isAfter(activity.getStartTime())) {
             throw new BusinessException(ResultCode.BAD_REQUEST, "活动已开始或已结束，无法取消报名");
         }
 

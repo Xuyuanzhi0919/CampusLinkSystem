@@ -234,8 +234,9 @@ public class ClubService {
 
         Page<ClubMember> memberPage = new Page<>(page, pageSize);
         LambdaQueryWrapper<ClubMember> wrapper = new LambdaQueryWrapper<>();
+        // 按角色优先级排序（创始人 > 管理员 > 普通成员），同角色内按加入时间升序
         wrapper.eq(ClubMember::getClubId, clubId)
-                .orderByAsc(ClubMember::getJoinedAt);
+                .last("ORDER BY FIELD(role, 'founder', 'admin', 'member'), joined_at ASC");
 
         memberPage = clubMemberMapper.selectPage(memberPage, wrapper);
 
@@ -353,7 +354,12 @@ public class ClubService {
                 response.setJoinPosition(position.intValue());
             } else {
                 response.setIsMember(false);
+                response.setUserRole(""); // 明确设置非成员的角色为空字符串
             }
+        } else {
+            // 未登录用户：明确设置默认值，避免前端收到 null
+            response.setIsMember(false);
+            response.setUserRole("");
         }
 
         // TODO: 查询用户是否有待审核的加入申请 (需要加入申请表后实现)

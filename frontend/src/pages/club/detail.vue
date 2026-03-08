@@ -568,15 +568,6 @@ const loadClubDetail = async (id: number) => {
   try {
     const res = await getClubDetail(id)
     club.value = res
-
-    // 只预加载侧栏所需数据（成员列表，用于展示管理员）
-    // Tab 内容采用懒加载策略，切换时才请求
-    await loadMembers(id)
-
-    // 默认 Tab（动态）也预加载
-    await loadFeeds(id)
-    tabLoaded.value.feed = true
-    tabLoaded.value.member = true
   } catch (error: any) {
     console.error('加载社团详情失败:', error)
     uni.showToast({
@@ -586,6 +577,14 @@ const loadClubDetail = async (id: number) => {
   } finally {
     loading.value = false
   }
+
+  if (!club.value) return
+
+  // 社团详情加载完即渲染页面，成员/动态在后台并行加载，失败不影响主体
+  Promise.allSettled([
+    loadMembers(id).then(() => { tabLoaded.value.member = true }),
+    loadFeeds(id).then(() => { tabLoaded.value.feed = true })
+  ])
 }
 
 // 加载动态列表
@@ -825,7 +824,8 @@ const getActivityStatusLabel = (status: ActivityStatus): string => {
   const labelMap: Record<number, string> = {
     0: '未开始',
     1: '进行中',
-    2: '已结束'
+    2: '已结束',
+    3: '已取消'
   }
   return labelMap[status] || '未知'
 }

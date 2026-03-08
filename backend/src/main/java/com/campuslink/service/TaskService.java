@@ -186,6 +186,17 @@ public class TaskService {
         if (publisher != null) {
             response.setPublisherNickname(publisher.getNickname());
             response.setPublisherAvatar(publisher.getAvatarUrl());
+            response.setPublisherLevel(publisher.getLevel());
+            response.setPublisherCreditScore(publisher.getCreditScore());
+            response.setPublisherRatingCount(publisher.getRatingCount());
+            response.setPublisherIsVerified(publisher.getIsVerified());
+            // 统计发布者作为接单者完成的任务数
+            Long publisherCompleteCount = taskMapper.selectCount(
+                new LambdaQueryWrapper<Task>()
+                    .eq(Task::getAccepterId, task.getPublisherId())
+                    .eq(Task::getStatus, TaskStatus.COMPLETED.getCode())
+            );
+            response.setPublisherCompleteCount(publisherCompleteCount);
         }
 
         // 获取接单者信息（如果有）
@@ -194,6 +205,17 @@ public class TaskService {
             if (accepter != null) {
                 response.setAccepterNickname(accepter.getNickname());
                 response.setAccepterAvatar(accepter.getAvatarUrl());
+                response.setAccepterLevel(accepter.getLevel());
+                response.setAccepterCreditScore(accepter.getCreditScore());
+                response.setAccepterRatingCount(accepter.getRatingCount());
+                response.setAccepterIsVerified(accepter.getIsVerified());
+                // 统计接单者完成的任务数
+                Long accepterCompleteCount = taskMapper.selectCount(
+                    new LambdaQueryWrapper<Task>()
+                        .eq(Task::getAccepterId, task.getAccepterId())
+                        .eq(Task::getStatus, TaskStatus.COMPLETED.getCode())
+                );
+                response.setAccepterCompleteCount(accepterCompleteCount);
             }
         } else {
             // 显式设置为 null，确保放弃任务后接单者信息被清除

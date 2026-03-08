@@ -30,6 +30,31 @@ public class TaskResponse {
     private String publisherAvatar;
 
     /**
+     * 发布者等级
+     */
+    private Integer publisherLevel;
+
+    /**
+     * 发布者信用分 (0.0-5.0)
+     */
+    private Double publisherCreditScore;
+
+    /**
+     * 发布者被评价次数
+     */
+    private Integer publisherRatingCount;
+
+    /**
+     * 发布者是否实名认证
+     */
+    private Integer publisherIsVerified;
+
+    /**
+     * 发布者作为接单者完成任务数
+     */
+    private Long publisherCompleteCount;
+
+    /**
      * 任务标题
      */
     private String title;
@@ -73,6 +98,31 @@ public class TaskResponse {
      * 接单者头像
      */
     private String accepterAvatar;
+
+    /**
+     * 接单者等级
+     */
+    private Integer accepterLevel;
+
+    /**
+     * 接单者信用分 (0.0-5.0)
+     */
+    private Double accepterCreditScore;
+
+    /**
+     * 接单者被评价次数
+     */
+    private Integer accepterRatingCount;
+
+    /**
+     * 接单者是否实名认证
+     */
+    private Integer accepterIsVerified;
+
+    /**
+     * 接单者作为接单者完成任务数
+     */
+    private Long accepterCompleteCount;
 
     /**
      * 状态：0-待接单，1-进行中，2-已完成，3-已取消

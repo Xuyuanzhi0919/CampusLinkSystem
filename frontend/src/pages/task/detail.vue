@@ -73,7 +73,10 @@
                   <Icon name="map-pin" :size="14" class="label-icon" />
                   <text>地点</text>
                 </view>
-                <text class="info-value">{{ formatLocation(task.location) }}</text>
+                <view class="location-value">
+                  <text class="info-value">{{ displayLocation }}</text>
+                  <text v-if="locationLoading" class="location-loading">解析中...</text>
+                </view>
               </view>
               <view v-if="task.deadline" class="info-item">
                 <view class="info-label">
@@ -109,8 +112,24 @@
                 <image v-if="task.publisherAvatar" class="user-avatar" :src="task.publisherAvatar" mode="aspectFill" />
               </view>
               <view class="user-info">
-                <text class="user-name">{{ task.publisherNickname }}</text>
-                <text class="user-role">发布者</text>
+                <view class="user-name-row">
+                  <text class="user-name">{{ task.publisherNickname }}</text>
+                  <view v-if="task.publisherIsVerified === 1" class="verified-badge">
+                    <Icon name="shield-check" :size="12" />
+                    <text>已认证</text>
+                  </view>
+                  <view v-if="task.publisherLevel" class="level-badge">Lv.{{ task.publisherLevel }}</view>
+                </view>
+                <view class="user-meta">
+                  <view v-if="task.publisherCreditScore !== null" class="credit-score">
+                    <Icon name="star" :size="11" class="star-icon" />
+                    <text>{{ task.publisherCreditScore?.toFixed(1) }}</text>
+                    <text v-if="task.publisherRatingCount" class="rating-count">({{ task.publisherRatingCount }}次评价)</text>
+                  </view>
+                  <text v-if="task.publisherCompleteCount" class="complete-count">
+                    · 完成 {{ task.publisherCompleteCount }} 单
+                  </text>
+                </view>
               </view>
               <view v-if="!isPublisher && userStore.isLoggedIn" class="contact-btn" @click="contactUser(task.publisherId)">
                 <Icon name="message-circle" :size="14" />
@@ -133,8 +152,24 @@
                 <image v-if="task.accepterAvatar" class="user-avatar" :src="task.accepterAvatar" mode="aspectFill" />
               </view>
               <view class="user-info">
-                <text class="user-name">{{ task.accepterNickname }}</text>
-                <text class="user-role">接单者</text>
+                <view class="user-name-row">
+                  <text class="user-name">{{ task.accepterNickname }}</text>
+                  <view v-if="task.accepterIsVerified === 1" class="verified-badge">
+                    <Icon name="shield-check" :size="12" />
+                    <text>已认证</text>
+                  </view>
+                  <view v-if="task.accepterLevel" class="level-badge">Lv.{{ task.accepterLevel }}</view>
+                </view>
+                <view class="user-meta">
+                  <view v-if="task.accepterCreditScore !== null" class="credit-score">
+                    <Icon name="star" :size="11" class="star-icon" />
+                    <text>{{ task.accepterCreditScore?.toFixed(1) }}</text>
+                    <text v-if="task.accepterRatingCount" class="rating-count">({{ task.accepterRatingCount }}次评价)</text>
+                  </view>
+                  <text v-if="task.accepterCompleteCount" class="complete-count">
+                    · 完成 {{ task.accepterCompleteCount }} 单
+                  </text>
+                </view>
               </view>
               <view v-if="!isAccepter && userStore.isLoggedIn" class="contact-btn" @click="contactUser(task.accepterId!)">
                 <Icon name="message-circle" :size="14" />
@@ -258,6 +293,7 @@
 import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CNavBar } from '@/components/layout'
+import Request from '@/utils/request'
 import {
   getTaskById,
   acceptTask,
@@ -273,6 +309,8 @@ import { useUserStore } from '@/stores/user'
 const userStore = useUserStore()
 const task = ref<TaskDetail | null>(null)
 const loading = ref(true)
+const displayLocation = ref('')
+const locationLoading = ref(false)
 
 const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
 const getAvatarBg = (name: string) => {
@@ -393,14 +431,33 @@ const formatTimeAgo = (dateStr: string): string => {
   return formatTimeShort(dateStr)
 }
 
-/** 坐标字符串转可读文本 */
-const formatLocation = (loc: string): string => {
-  if (!loc) return ''
-  // 匹配经纬度格式
-  if (/^-?\d+\.?\d*[,，\s]+-?\d+\.?\d*$/.test(loc.trim())) {
-    return '📍 位置已记录（坐标）'
+/** 解析坐标字符串，返回 { lat, lng } 或 null */
+const parseCoord = (loc: string): { lat: number; lng: number } | null => {
+  if (!loc) return null
+  const m = loc.match(/^(-?\d+\.?\d*)\s*[,，]\s*(-?\d+\.?\d*)$/)
+  if (!m) return null
+  const a = parseFloat(m[1]), b = parseFloat(m[2])
+  return Math.abs(a) > 90 ? { lat: b, lng: a } : { lat: a, lng: b }
+}
+
+/** 初始化地点显示，若为坐标则调用反地理编码 */
+const initDisplayLocation = async (loc: string) => {
+  if (!loc) { displayLocation.value = ''; return }
+  const coord = parseCoord(loc)
+  if (!coord) { displayLocation.value = loc; return }
+
+  displayLocation.value = '📍 位置已记录'
+  locationLoading.value = true
+  try {
+    const req = new Request()
+    const res: any = await req.get(`/location/reverse-geocode?lat=${coord.lat}&lng=${coord.lng}`)
+    const addr = res?.data?.address || res?.address || ''
+    displayLocation.value = addr ? `📍 ${addr}` : '📍 位置已记录'
+  } catch {
+    displayLocation.value = '📍 位置已记录'
+  } finally {
+    locationLoading.value = false
   }
-  return loc
 }
 
 // ===================================
@@ -429,6 +486,9 @@ const loadTaskDetail = async (id: number) => {
   try {
     loading.value = true
     task.value = await getTaskById(id)
+    if (task.value?.location) {
+      initDisplayLocation(task.value.location)
+    }
   } catch (e: any) {
     uni.showToast({ title: e.message || '加载失败', icon: 'none' })
     task.value = null
@@ -773,9 +833,34 @@ onMounted(() => {
 .avatar-char { font-size: 30rpx; font-weight: $font-weight-bold; color: $white; line-height: 1; }
 .user-avatar  { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 50%; }
 
-.user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: $sp-1; }
+.user-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6rpx; }
+.user-name-row {
+  display: flex; align-items: center; gap: 8rpx; flex-wrap: wrap;
+}
 .user-name { font-size: $font-size-base; color: $gray-800; font-weight: $font-weight-medium; }
-.user-role { font-size: $font-size-xs; color: $gray-400; }
+.verified-badge {
+  display: flex; align-items: center; gap: 4rpx;
+  padding: 2rpx 8rpx; border-radius: 20rpx;
+  background: #EBF5FB; color: #2E86C1;
+  font-size: 20rpx;
+}
+.level-badge {
+  padding: 2rpx 8rpx; border-radius: 20rpx;
+  background: #FFF3CD; color: #856404;
+  font-size: 20rpx; font-weight: $font-weight-medium;
+}
+.user-meta {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 4rpx;
+}
+.credit-score {
+  display: flex; align-items: center; gap: 4rpx;
+  font-size: $font-size-xs; color: $gray-600;
+  .star-icon { color: #FAAD14; }
+}
+.rating-count { color: $gray-400; }
+.complete-count { font-size: $font-size-xs; color: $gray-500; }
+.location-value { display: flex; align-items: center; gap: 8rpx; }
+.location-loading { font-size: $font-size-xs; color: $gray-400; }
 
 .contact-btn {
   display: flex;

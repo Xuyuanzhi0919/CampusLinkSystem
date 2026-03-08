@@ -43,6 +43,11 @@ export interface TaskDetail {
   publisherId: number
   publisherNickname: string
   publisherAvatar: string | null
+  publisherLevel: number | null
+  publisherCreditScore: number | null
+  publisherRatingCount: number | null
+  publisherIsVerified: number | null
+  publisherCompleteCount: number | null
   title: string
   content: string
   taskType: TaskType
@@ -52,6 +57,11 @@ export interface TaskDetail {
   accepterId: number | null
   accepterNickname: string | null
   accepterAvatar: string | null
+  accepterLevel: number | null
+  accepterCreditScore: number | null
+  accepterRatingCount: number | null
+  accepterIsVerified: number | null
+  accepterCompleteCount: number | null
   status: TaskStatus
   createdAt: string
   updatedAt: string

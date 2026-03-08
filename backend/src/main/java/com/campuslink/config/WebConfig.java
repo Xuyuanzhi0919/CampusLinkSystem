@@ -77,7 +77,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/v3/api-docs",
                         "/webjars/**",
                         "/favicon.ico",
-                        "/ws/**"               // WebSocket 端点
+                        "/ws/**",              // WebSocket 端点
+                        "/location/reverse-geocode"  // 反地理编码（公开，无需登录）
                 );
     }
 }

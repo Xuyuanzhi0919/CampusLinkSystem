@@ -656,19 +656,20 @@ const handleGetLocation = () => {
       })
     },
     fail: (err) => {
-      console.error('定位失败:', err)
       uni.hideLoading()
 
+      const msg: string = err?.errMsg || ''
       let errorMsg = '定位失败，请手动输入地址'
-      if (err.errMsg && err.errMsg.includes('denied')) {
+
+      if (msg.includes('denied') || msg.includes('auth')) {
         errorMsg = '定位权限被拒绝，请在浏览器设置中允许定位'
+      } else if (msg.includes('unavailable') || msg.includes('unknown')) {
+        errorMsg = '当前位置不可用，请手动输入地址'
+      } else if (msg.includes('timeout')) {
+        errorMsg = '定位超时，请手动输入地址'
       }
 
-      uni.showToast({
-        title: errorMsg,
-        icon: 'none',
-        duration: 2500
-      })
+      uni.showToast({ title: errorMsg, icon: 'none', duration: 2500 })
     }
   })
 }

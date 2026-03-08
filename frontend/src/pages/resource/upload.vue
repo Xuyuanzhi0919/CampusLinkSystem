@@ -20,6 +20,7 @@ const fileType = ref('')
 const fileName = ref('')
 const uploading = ref(false)
 const uploadProgress = ref(0)
+const isDragging = ref(false)
 
 /**
  * 🎯 表单状态
@@ -213,6 +214,18 @@ const uploadFile = async (fileToUpload: FileInfo) => {
   } finally {
     uploading.value = false
   }
+}
+
+/**
+ * 🎯 拖拽上传处理
+ */
+const handleDrop = async (e: DragEvent) => {
+  isDragging.value = false
+  const droppedFile = e.dataTransfer?.files?.[0]
+  if (!droppedFile) return
+  const fileInfo = { name: droppedFile.name, size: droppedFile.size, path: '', tempFilePath: '' } as any
+  fileInfo._nativeFile = droppedFile
+  await handleFileSelected(fileInfo)
 }
 
 /**
@@ -537,7 +550,10 @@ onLoad(() => {
 
     <!-- 主内容滚动区 -->
     <scroll-view class="content-area" scroll-y>
-      <view class="page-inner">
+      <view class="page-layout">
+
+        <!-- ═══ 主内容区 ═══ -->
+        <view class="page-main">
 
         <!-- ── 卡片一：文件选择 ── -->
         <view class="section-card">
@@ -547,13 +563,22 @@ onLoad(() => {
             <text class="card-required">必选</text>
           </view>
 
-          <!-- 未上传状态 -->
-          <view v-if="!file" class="upload-area" @click="chooseFile">
+          <!-- 未上传状态（支持拖拽） -->
+          <view
+            v-if="!file"
+            class="upload-area"
+            :class="{ 'upload-area--drag': isDragging }"
+            @click="chooseFile"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="isDragging = false"
+            @drop.prevent="handleDrop"
+          >
             <view class="upload-icon-wrap">
-              <Icon name="folder-open" :size="40" color="#377DFF" />
+              <Icon name="upload" :size="36" :color="isDragging ? '#377DFF' : '#94A3B8'" />
             </view>
-            <text class="upload-title">点击选择文件</text>
-            <text class="upload-hint">支持 PDF、DOC、PPT、XLS、TXT、MD 等格式</text>
+            <text class="upload-title">{{ isDragging ? '松开鼠标上传' : '点击选择文件' }}</text>
+            <text class="upload-hint">或将文件拖拽到此处</text>
+            <text class="upload-formats">PDF · DOC · PPT · XLS · TXT · MD</text>
             <text class="upload-limit">单个文件最大 50MB</text>
           </view>
 
@@ -664,6 +689,11 @@ onLoad(() => {
             </view>
 
             <text v-if="errors.category" class="error-text">{{ errors.category }}</text>
+            <!-- 分类引导提示 -->
+            <view v-if="form.category" class="category-guide">
+              <Icon name="info" :size="12" color="#377DFF" />
+              <text class="category-guide-text">选择最匹配的分类有助于更快通过审核并被更多同学发现</text>
+            </view>
           </view>
 
           <!-- 课程名称（选填） -->
@@ -684,8 +714,8 @@ onLoad(() => {
         </view>
         <!-- /卡片二 -->
 
-        <!-- 上传须知 -->
-        <view class="upload-notice">
+        <!-- 上传须知（移动端保留，PC 端由侧边栏替代） -->
+        <view class="upload-notice upload-notice--mobile">
           <text class="notice-text">
             支持 PDF / Office 等格式，单文件最大 50MB。审核通过可获得
             <text class="notice-highlight">10 积分</text>
@@ -697,7 +727,91 @@ onLoad(() => {
         <!-- 底部占位（移动端 fixed bar 高度补偿） -->
         <view class="bottom-spacer" />
 
+        </view>
+        <!-- /page-main -->
+
+        <!-- ═══ 右侧信息栏（PC 端显示） ═══ -->
+        <view class="page-sidebar">
+
+          <!-- 积分奖励 -->
+          <view class="sidebar-card sidebar-card--reward">
+            <view class="sidebar-card-header">
+              <view class="sidebar-icon-wrap sidebar-icon--yellow">
+                <Icon name="sparkles" :size="14" color="#F59E0B" />
+              </view>
+              <text class="sidebar-card-title">积分奖励</text>
+            </view>
+            <view class="reward-main">
+              <text class="reward-score">+10</text>
+              <text class="reward-unit">积分</text>
+            </view>
+            <text class="reward-desc">资源审核通过后自动发放，激励更多优质内容</text>
+            <view class="reward-rules">
+              <view class="reward-rule-item">
+                <Icon name="check" :size="11" color="#22C55E" />
+                <text>上传审核通过：+10 积分</text>
+              </view>
+              <view class="reward-rule-item">
+                <Icon name="check" :size="11" color="#22C55E" />
+                <text>他人下载你的资源：+2 积分</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 上传规范 -->
+          <view class="sidebar-card">
+            <view class="sidebar-card-header">
+              <view class="sidebar-icon-wrap sidebar-icon--blue">
+                <Icon name="file-text" :size="14" color="#377DFF" />
+              </view>
+              <text class="sidebar-card-title">上传规范</text>
+            </view>
+            <view class="spec-list">
+              <view class="spec-item">
+                <text class="spec-label">支持格式</text>
+                <text class="spec-value">PDF · DOC · PPT · XLS · TXT · MD</text>
+              </view>
+              <view class="spec-item">
+                <text class="spec-label">大小限制</text>
+                <text class="spec-value">单文件最大 50MB</text>
+              </view>
+              <view class="spec-item">
+                <text class="spec-label">审核时间</text>
+                <text class="spec-value">1-2 个工作日</text>
+              </view>
+              <view class="spec-item">
+                <text class="spec-label">内容要求</text>
+                <text class="spec-value">真实有效，不得侵权</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 常见问题 -->
+          <view class="sidebar-card">
+            <view class="sidebar-card-header">
+              <view class="sidebar-icon-wrap sidebar-icon--purple">
+                <Icon name="help-circle" :size="14" color="#8B5CF6" />
+              </view>
+              <text class="sidebar-card-title">常见问题</text>
+            </view>
+            <view class="faq-list">
+              <view class="faq-item">
+                <text class="faq-q">如何提高审核通过率？</text>
+                <text class="faq-a">完善标题和描述，选择精准分类，确保内容原创或有合法授权。</text>
+              </view>
+              <view class="faq-item">
+                <text class="faq-q">上传失败怎么办？</text>
+                <text class="faq-a">检查文件格式和大小，网络不稳定时可刷新后重试。</text>
+              </view>
+            </view>
+            <text class="sidebar-link" @click="showUploadGuide">查看完整规则 →</text>
+          </view>
+
+        </view>
+        <!-- /page-sidebar -->
+
       </view>
+      <!-- /page-layout -->
     </scroll-view>
 
     <!-- 分类选择底部弹窗 -->
@@ -770,13 +884,37 @@ onLoad(() => {
   flex: 1;
 }
 
-.page-inner {
-  max-width: 720px;
+// ── 双列布局容器 ──
+.page-layout {
+  max-width: 1100px;
   margin: 0 auto;
   padding: $sp-8 $sp-8 0;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
 
   @include mobile {
+    flex-direction: column;
     padding: $sp-6 $sp-5 0;
+    gap: 0;
+  }
+}
+
+.page-main {
+  flex: 1;
+  min-width: 0;
+}
+
+// 侧边栏：PC 端固定宽度，移动端隐藏
+.page-sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @include mobile {
+    display: none;
   }
 }
 
@@ -848,6 +986,13 @@ onLoad(() => {
     transform: scale(0.99);
   }
 
+  &--drag {
+    border-color: $campus-blue;
+    background: $campus-blue-lighter;
+    transform: scale(1.01);
+    box-shadow: 0 0 0 4px rgba($campus-blue, 0.1);
+  }
+
   .upload-icon-wrap {
     display: flex;
     justify-content: center;
@@ -865,8 +1010,16 @@ onLoad(() => {
   .upload-hint {
     display: block;
     font-size: $font-size-sm;
+    color: $campus-blue;
+    margin-bottom: $sp-1;
+  }
+
+  .upload-formats {
+    display: block;
+    font-size: $font-size-xs;
     color: $color-text-tertiary;
     margin-bottom: $sp-1;
+    letter-spacing: 0.5px;
   }
 
   .upload-limit {
@@ -1098,6 +1251,31 @@ onLoad(() => {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+// 分类选择下方引导
+.category-guide {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-top: $sp-2;
+  padding: $sp-2 $sp-3;
+  background: rgba($campus-blue, 0.04);
+  border-radius: $radius-sm;
+
+  .category-guide-text {
+    font-size: $font-size-xs;
+    color: $campus-blue;
+    opacity: 0.8;
+    line-height: 1.4;
+  }
+}
+
+// 上传须知：移动端显示，PC 端隐藏（侧边栏替代）
+.upload-notice--mobile {
+  @media (min-width: 750px) {
+    display: none;
+  }
 }
 
 // 分类说明
@@ -1384,5 +1562,157 @@ onLoad(() => {
   position: absolute;
   top: $sp-3;
   right: $sp-3;
+}
+
+// ═══ 右侧信息侧边栏 ═══
+.sidebar-card {
+  background: $color-bg-card;
+  border-radius: $radius-card;
+  padding: $sp-5;
+  box-shadow: $card-shadow;
+
+  &--reward {
+    background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);
+    border: 1px solid rgba(#F59E0B, 0.2);
+  }
+}
+
+.sidebar-card-header {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
+  padding-bottom: $sp-3;
+  border-bottom: 1px solid $color-border-light;
+}
+
+.sidebar-icon-wrap {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.sidebar-icon--yellow { background: rgba(#F59E0B, 0.12); }
+  &.sidebar-icon--blue   { background: rgba(#377DFF, 0.1); }
+  &.sidebar-icon--purple { background: rgba(#8B5CF6, 0.1); }
+}
+
+.sidebar-card-title {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+// 积分奖励区
+.reward-main {
+  display: flex;
+  align-items: baseline;
+  gap: $sp-1;
+  margin-bottom: $sp-2;
+}
+
+.reward-score {
+  font-size: 32px;
+  font-weight: 800;
+  color: #F59E0B;
+  line-height: 1;
+}
+
+.reward-unit {
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  color: #D97706;
+}
+
+.reward-desc {
+  display: block;
+  font-size: $font-size-xs;
+  color: #92400E;
+  opacity: 0.7;
+  line-height: 1.5;
+  margin-bottom: $sp-4;
+}
+
+.reward-rules {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.reward-rule-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+
+  text {
+    font-size: $font-size-xs;
+    color: #92400E;
+    opacity: 0.8;
+  }
+}
+
+// 规范列表
+.spec-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2rpx;
+}
+
+.spec-label {
+  font-size: $font-size-xs;
+  color: $color-text-quaternary;
+  font-weight: $font-weight-medium;
+}
+
+.spec-value {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  line-height: 1.4;
+}
+
+// 常见问题
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-4;
+  margin-bottom: $sp-4;
+}
+
+.faq-item {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+}
+
+.faq-q {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.faq-a {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  line-height: 1.5;
+}
+
+.sidebar-link {
+  font-size: $font-size-xs;
+  color: $campus-blue;
+  cursor: pointer;
+  display: block;
+
+  /* #ifdef H5 */
+  &:hover { opacity: 0.75; }
+  /* #endif */
 }
 </style>

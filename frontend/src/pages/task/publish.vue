@@ -2,170 +2,361 @@
   <view class="publish-task-page">
 
     <!-- 统一导航栏 -->
-    <CNavBar title="发布任务" @back="handleCancel" />
+    <CNavBar title="发布任务" @back="handleCancel">
+      <template #right>
+        <view
+          class="nav-publish"
+          :class="{ 'is-disabled': !isFormValid || submitting }"
+          @click="handleSubmit"
+        >
+          <text class="nav-publish-text">{{ submitting ? '发布中...' : '发布任务' }}</text>
+        </view>
+      </template>
+    </CNavBar>
 
     <scroll-view class="content-scroll" scroll-y>
-    <view class="form-container">
-      <!-- 标题 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">任务标题</text>
-          <text class="required">*</text>
-        </view>
-        <input
-          v-model="formData.title"
-          class="form-input"
-          placeholder="请输入任务标题，5-200个字符"
-          maxlength="200"
-        />
-        <text v-if="errors.title" class="error-text">{{ errors.title }}</text>
-      </view>
+      <view class="main-container">
 
-      <!-- 任务类型 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">任务类型</text>
-          <text class="required">*</text>
-        </view>
-        <picker
-          mode="selector"
-          :range="taskTypes"
-          range-key="label"
-          :value="currentTypeIndex"
-          @change="handleTypeChange"
-        >
-          <view class="picker-trigger">
-            <text :class="{ placeholder: currentTypeIndex === -1 }">
-              {{ currentTypeIndex === -1 ? '请选择任务类型' : taskTypes[currentTypeIndex].label }}
-            </text>
-            <text class="arrow">▼</text>
+        <!-- 左侧：主表单区 -->
+        <view class="page-main">
+
+          <!-- 卡片 1：任务基础信息 -->
+          <view class="form-card">
+            <view class="card-header">
+              <view class="card-accent"></view>
+              <Icon name="clipboard" :size="17" class="card-icon" />
+              <text class="card-title">任务基础信息</text>
+            </view>
+            <view class="card-body">
+
+              <!-- 任务标题 -->
+              <view class="form-item">
+                <view class="item-label">
+                  <text class="label-text">任务标题</text>
+                  <text class="label-required">*</text>
+                </view>
+                <view class="input-wrap" :class="{ 'input-wrap--error': errors.title }">
+                  <input
+                    v-model="formData.title"
+                    class="field-input"
+                    placeholder="简洁描述任务核心，让接单者快速了解"
+                    :maxlength="200"
+                  />
+                </view>
+                <view class="input-footer">
+                  <text v-if="errors.title" class="field-error">{{ errors.title }}</text>
+                  <text v-else class="field-hint">清晰的标题让任务更快被接单</text>
+                  <text class="char-count" :class="{ 'char-count--warn': titleLength > 180 }">
+                    {{ titleLength }}/200
+                  </text>
+                </view>
+              </view>
+
+              <!-- 任务类型 -->
+              <view class="form-item" style="margin-bottom: 0">
+                <view class="item-label">
+                  <text class="label-text">任务类型</text>
+                  <text class="label-required">*</text>
+                </view>
+                <picker
+                  mode="selector"
+                  :range="taskTypes"
+                  range-key="label"
+                  :value="currentTypeIndex"
+                  @change="handleTypeChange"
+                >
+                  <view class="picker-trigger" :class="{ 'picker-trigger--error': errors.taskType }">
+                    <view class="picker-left">
+                      <Icon name="tag" :size="16" class="picker-icon" />
+                      <text :class="{ 'picker-placeholder': currentTypeIndex === -1 }">
+                        {{ currentTypeIndex === -1 ? '请选择任务类型' : taskTypes[currentTypeIndex].label }}
+                      </text>
+                    </view>
+                    <Icon name="chevron-down" :size="16" class="picker-arrow" />
+                  </view>
+                </picker>
+                <text v-if="errors.taskType" class="field-error-block">{{ errors.taskType }}</text>
+              </view>
+
+            </view>
           </view>
-        </picker>
-        <text v-if="errors.taskType" class="error-text">{{ errors.taskType }}</text>
-      </view>
 
-      <!-- 任务内容 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">任务描述</text>
-          <text class="required">*</text>
-        </view>
-        <textarea
-          v-model="formData.content"
-          class="form-textarea"
-          placeholder="请详细描述任务内容和要求，10-5000个字符"
-          maxlength="5000"
-          :auto-height="true"
-        />
-        <text v-if="errors.content" class="error-text">{{ errors.content }}</text>
-      </view>
-
-      <!-- 奖励积分 -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">奖励积分</text>
-          <text class="required">*</text>
-          <text class="label-hint">（当前积分：{{ userStore.userInfo?.points || 0 }}）</text>
-        </view>
-        <view class="reward-selector">
-          <view
-            v-for="points in rewardOptions"
-            :key="points"
-            class="reward-item"
-            :class="{ active: formData.rewardPoints === points && !isCustomReward }"
-            @click="handleRewardSelect(points)"
-          >
-            <text class="reward-points">{{ points }}</text>
-            <text class="reward-label">积分</text>
+          <!-- 卡片 2：任务详情 -->
+          <view class="form-card">
+            <view class="card-header">
+              <view class="card-accent"></view>
+              <Icon name="edit" :size="17" class="card-icon" />
+              <text class="card-title">任务详情</text>
+            </view>
+            <view class="card-body">
+              <view class="form-item" style="margin-bottom: 0">
+                <view class="item-label">
+                  <text class="label-text">任务描述</text>
+                  <text class="label-required">*</text>
+                </view>
+                <textarea
+                  v-model="formData.content"
+                  class="field-textarea"
+                  placeholder="请详细描述任务内容和要求，包括：&#10;• 具体需要做什么&#10;• 验收标准和交付形式&#10;• 其他特殊要求"
+                  :maxlength="5000"
+                  :auto-height="true"
+                  :show-confirm-bar="false"
+                />
+                <view class="input-footer">
+                  <text v-if="errors.content" class="field-error">{{ errors.content }}</text>
+                  <text v-else class="field-hint">描述越详细，接单速度越快</text>
+                  <text class="char-count" :class="{ 'char-count--warn': contentLength > 4800 }">
+                    {{ contentLength }}/5000
+                  </text>
+                </view>
+              </view>
+            </view>
           </view>
-          <view
-            class="reward-item custom"
-            :class="{ active: isCustomReward }"
-            @click="handleCustomRewardClick"
-          >
-            <text class="reward-points">{{ isCustomReward ? formData.rewardPoints : '自定义' }}</text>
-            <text class="reward-label">{{ isCustomReward ? '积分' : '1-100' }}</text>
+
+          <!-- 卡片 3：任务约束 -->
+          <view class="form-card">
+            <view class="card-header">
+              <view class="card-accent"></view>
+              <Icon name="settings" :size="17" class="card-icon" />
+              <text class="card-title">任务约束</text>
+            </view>
+            <view class="card-body">
+
+              <!-- 地点 -->
+              <view class="form-item">
+                <view class="item-label">
+                  <text class="label-text">任务地点</text>
+                  <text class="label-optional">（可选）</text>
+                </view>
+                <view class="location-row">
+                  <view class="input-wrap" style="flex: 1">
+                    <input
+                      v-model="formData.location"
+                      class="field-input"
+                      placeholder="如：图书馆 A 区、3 号宿舍楼"
+                    />
+                  </view>
+                  <view class="locate-btn" @click="handleGetLocation">
+                    <Icon name="map-pin" :size="15" class="locate-icon" />
+                    <text class="locate-text">定位</text>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 截止时间 -->
+              <view class="form-item" style="margin-bottom: 0">
+                <view class="item-label">
+                  <text class="label-text">截止时间</text>
+                  <text class="label-required">*</text>
+                </view>
+                <picker
+                  mode="multiSelector"
+                  :range="[dateRange, timeRange]"
+                  :value="[currentDateIndex, currentTimeIndex]"
+                  @change="handleDateTimeChange"
+                >
+                  <view class="picker-trigger" :class="{ 'picker-trigger--error': errors.deadline }">
+                    <view class="picker-left">
+                      <Icon name="clock" :size="16" class="picker-icon" />
+                      <text :class="{ 'picker-placeholder': !formData.deadline }">
+                        {{ formData.deadline ? formatDeadline(formData.deadline) : '请选择截止时间' }}
+                      </text>
+                    </view>
+                    <Icon name="chevron-down" :size="16" class="picker-arrow" />
+                  </view>
+                </picker>
+                <text v-if="errors.deadline" class="field-error-block">{{ errors.deadline }}</text>
+              </view>
+
+            </view>
           </view>
-        </view>
 
-        <!-- 自定义积分输入 -->
-        <view v-if="showCustomRewardInput" class="custom-reward-input">
-          <view class="custom-input-wrapper">
-            <input
-              v-model.number="customRewardInput"
-              class="custom-input"
-              type="number"
-              placeholder="输入1-100的积分"
-              @input="handleCustomRewardInput"
-              @confirm="handleCustomRewardConfirm"
-            />
-            <text class="input-unit">积分</text>
-            <CButton type="accent" size="sm" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</CButton>
+          <!-- 移动端：奖励积分（PC 端在侧栏，移动端显示此卡片） -->
+          <view class="form-card mobile-bounty-card">
+            <view class="card-header">
+              <view class="card-accent card-accent--amber"></view>
+              <Icon name="gift" :size="17" class="card-icon card-icon--amber" />
+              <text class="card-title">奖励积分</text>
+              <text class="card-hint">当前可用：{{ userPoints }}</text>
+            </view>
+            <view class="card-body">
+              <view class="bounty-grid">
+                <view
+                  v-for="points in rewardOptions"
+                  :key="points"
+                  class="bounty-pill"
+                  :class="{ active: formData.rewardPoints === points && !isCustomReward }"
+                  @click="handleRewardSelect(points)"
+                >
+                  <text class="bounty-val">{{ points }}</text>
+                  <text class="bounty-unit">积分</text>
+                </view>
+                <view
+                  class="bounty-pill bounty-pill--custom"
+                  :class="{ active: isCustomReward }"
+                  @click="handleCustomRewardClick"
+                >
+                  <text class="bounty-val">{{ isCustomReward ? formData.rewardPoints : '自定义' }}</text>
+                  <text class="bounty-unit">{{ isCustomReward ? '积分' : '1-100' }}</text>
+                </view>
+              </view>
+              <view v-if="showCustomRewardInput" class="custom-bounty-box">
+                <view class="custom-input-row">
+                  <input
+                    v-model.number="customRewardInput"
+                    class="custom-bounty-input"
+                    type="number"
+                    placeholder="1 - 100"
+                    :maxlength="3"
+                    @input="handleCustomRewardInput"
+                    @confirm="handleCustomRewardConfirm"
+                  />
+                  <text class="custom-unit">积分</text>
+                  <CButton type="ghost" size="sm" @click="handleCustomRewardClick">取消</CButton>
+                  <CButton type="accent" size="sm" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</CButton>
+                </view>
+                <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
+              </view>
+              <view class="bounty-notice">
+                <Icon name="zap" :size="13" class="notice-icon" />
+                <text class="notice-text">悬赏越高，接单速度越快，积分于任务完成后扣除</text>
+              </view>
+              <text v-if="errors.rewardPoints" class="field-error-block">{{ errors.rewardPoints }}</text>
+            </view>
           </view>
-          <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
+
         </view>
 
-        <view class="reward-hint">
-          <text class="hint-icon">💡</text>
-          <text class="hint-text">设置奖励可以吸引更多人接单（范围：1-100积分）</text>
-        </view>
-        <text v-if="errors.rewardPoints" class="error-text">{{ errors.rewardPoints }}</text>
-      </view>
+        <!-- 右侧：侧栏（PC 端显示） -->
+        <view class="page-sidebar">
 
-      <!-- 地点（可选） -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">地点</text>
-          <text class="optional">（可选）</text>
-        </view>
-        <view class="location-input-wrapper">
-          <input
-            v-model="formData.location"
-            class="form-input location-input"
-            placeholder="如果需要，请填写任务地点"
-          />
-          <CButton type="primary" size="sm" @click="handleGetLocation">
-            <template #icon><text>📍</text></template>
-            定位
-          </CButton>
-        </view>
-      </view>
-
-      <!-- 截止时间（必填） -->
-      <view class="form-group">
-        <view class="form-label">
-          <text class="label-text">截止时间</text>
-          <text class="required">*</text>
-        </view>
-        <picker
-          mode="multiSelector"
-          :range="[dateRange, timeRange]"
-          :value="[currentDateIndex, currentTimeIndex]"
-          @change="handleDateTimeChange"
-        >
-          <view class="picker-trigger" :class="{ error: errors.deadline }">
-            <text :class="{ placeholder: !formData.deadline }">
-              {{ formData.deadline ? formatDeadline(formData.deadline) : '请选择截止时间' }}
-            </text>
-            <text class="arrow">▼</text>
+          <!-- 奖励积分（侧栏交互区） -->
+          <view class="sidebar-panel sidebar-panel--bounty">
+            <view class="panel-header">
+              <view class="panel-accent panel-accent--amber"></view>
+              <Icon name="gift" :size="15" class="panel-icon panel-icon--amber" />
+              <text class="panel-title">奖励积分</text>
+              <text class="panel-balance">{{ userPoints }} 可用</text>
+            </view>
+            <view class="panel-body">
+              <view class="bounty-grid">
+                <view
+                  v-for="points in rewardOptions"
+                  :key="points"
+                  class="bounty-pill"
+                  :class="{ active: formData.rewardPoints === points && !isCustomReward }"
+                  @click="handleRewardSelect(points)"
+                >
+                  <text class="bounty-val">{{ points }}</text>
+                  <text class="bounty-unit">积分</text>
+                </view>
+                <view
+                  class="bounty-pill bounty-pill--custom"
+                  :class="{ active: isCustomReward }"
+                  @click="handleCustomRewardClick"
+                >
+                  <text class="bounty-val">{{ isCustomReward ? formData.rewardPoints : '自定义' }}</text>
+                  <text class="bounty-unit">{{ isCustomReward ? '积分' : '1-100' }}</text>
+                </view>
+              </view>
+              <view v-if="showCustomRewardInput" class="custom-bounty-box">
+                <view class="custom-input-row">
+                  <input
+                    v-model.number="customRewardInput"
+                    class="custom-bounty-input"
+                    type="number"
+                    placeholder="1-100"
+                    :maxlength="3"
+                    @input="handleCustomRewardInput"
+                    @confirm="handleCustomRewardConfirm"
+                  />
+                  <text class="custom-unit">积分</text>
+                  <CButton type="ghost" size="sm" @click="handleCustomRewardClick">取消</CButton>
+                  <CButton type="accent" size="sm" :disabled="!isCustomRewardValid" @click="handleCustomRewardConfirm">确定</CButton>
+                </view>
+                <text v-if="customRewardError" class="custom-error">{{ customRewardError }}</text>
+              </view>
+              <view class="bounty-notice">
+                <Icon name="zap" :size="13" class="notice-icon" />
+                <text class="notice-text">悬赏越高，接单速度越快</text>
+              </view>
+              <text v-if="errors.rewardPoints" class="field-error-block">{{ errors.rewardPoints }}</text>
+            </view>
           </view>
-        </picker>
-        <text v-if="errors.deadline" class="error-text">{{ errors.deadline }}</text>
-      </view>
 
-      <!-- 提交按钮 -->
+          <!-- 发布规范 -->
+          <view class="sidebar-panel sidebar-panel--tips">
+            <view class="panel-header">
+              <view class="panel-accent"></view>
+              <Icon name="bookmark" :size="15" class="panel-icon" />
+              <text class="panel-title">发布规范</text>
+            </view>
+            <view class="panel-body">
+              <view class="tip-item">
+                <Icon name="check-circle" :size="13" class="tip-check" />
+                <text class="tip-text">标题简洁，清楚说明任务内容</text>
+              </view>
+              <view class="tip-item">
+                <Icon name="check-circle" :size="13" class="tip-check" />
+                <text class="tip-text">详述验收标准和交付形式</text>
+              </view>
+              <view class="tip-item">
+                <Icon name="check-circle" :size="13" class="tip-check" />
+                <text class="tip-text">合理设置截止时间，留足余量</text>
+              </view>
+              <view class="tip-item">
+                <Icon name="check-circle" :size="13" class="tip-check" />
+                <text class="tip-text">积分越高越易吸引接单者</text>
+              </view>
+              <view class="tip-notice">
+                <Icon name="info" :size="12" class="tip-notice-icon" />
+                <text class="tip-notice-text">发布后任务不可删除，截止前可修改</text>
+              </view>
+            </view>
+          </view>
+
+          <!-- 常见问题 -->
+          <view class="sidebar-panel sidebar-panel--faq">
+            <view class="panel-header">
+              <view class="panel-accent panel-accent--blue"></view>
+              <Icon name="message-circle" :size="15" class="panel-icon panel-icon--blue" />
+              <text class="panel-title">常见问题</text>
+            </view>
+            <view class="panel-body">
+              <view class="faq-item">
+                <text class="faq-q">Q：积分何时扣除？</text>
+                <text class="faq-a">任务被接单完成后积分自动扣除，超时未完成则不扣除。</text>
+              </view>
+              <view class="faq-item">
+                <text class="faq-q">Q：可以修改任务吗？</text>
+                <text class="faq-a">可以，在任务详情页点击编辑按钮即可修改。</text>
+              </view>
+              <view class="faq-item">
+                <text class="faq-q">Q：如何验收任务完成？</text>
+                <text class="faq-a">接单者完成后提交，你在详情页确认验收即可。</text>
+              </view>
+            </view>
+          </view>
+
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 底部操作栏（移动端） -->
+    <view class="bottom-action-bar">
+      <CButton type="ghost" size="lg" @click="handleCancel">取消</CButton>
       <CButton
         type="primary"
         size="lg"
-        block
-        :disabled="!isFormValid"
+        class="submit-btn"
+        :disabled="!isFormValid || submitting"
         :loading="submitting"
         @click="handleSubmit"
       >
         发布任务
       </CButton>
     </view>
-    </scroll-view>
+
   </view>
 </template>
 
@@ -198,7 +389,6 @@ const currentTimeIndex = ref(0)
 
 // 初始化日期时间范围
 const initDateTimeRange = () => {
-  // 生成未来7天的日期
   const dates: string[] = []
   const today = new Date()
   for (let i = 0; i < 7; i++) {
@@ -210,7 +400,6 @@ const initDateTimeRange = () => {
   }
   dateRange.value = dates
 
-  // 生成时间选项（每30分钟）
   const times: string[] = []
   for (let h = 0; h < 24; h++) {
     for (let m = 0; m < 60; m += 30) {
@@ -245,6 +434,13 @@ const errors = ref({
 
 // 提交状态
 const submitting = ref(false)
+
+// 字数统计
+const titleLength = computed(() => formData.value.title.length)
+const contentLength = computed(() => formData.value.content.length)
+
+// 用户积分
+const userPoints = computed(() => userStore.userInfo?.points || 0)
 
 /**
  * 检查表单是否有未保存的内容
@@ -358,13 +554,9 @@ const handleCustomRewardConfirm = () => {
 const handleGetLocation = () => {
   uni.showLoading({ title: '定位中...' })
 
-  // H5端使用wgs84坐标系（浏览器Geolocation API标准）
-  // 小程序端可配置为gcj02（国测局坐标系）
   uni.getLocation({
     type: 'wgs84',
     success: (res) => {
-      // 使用逆地理编码获取地址
-      // 这里需要调用地图服务API（如高德/腾讯地图），暂时显示经纬度
       const locationText = `${res.longitude.toFixed(6)}, ${res.latitude.toFixed(6)}`
       formData.value.location = locationText
 
@@ -379,7 +571,6 @@ const handleGetLocation = () => {
       console.error('定位失败:', err)
       uni.hideLoading()
 
-      // 提供更友好的错误提示
       let errorMsg = '定位失败，请手动输入地址'
       if (err.errMsg && err.errMsg.includes('denied')) {
         errorMsg = '定位权限被拒绝，请在浏览器设置中允许定位'
@@ -411,7 +602,6 @@ const handleDateTimeChange = (e: any) => {
   currentDateIndex.value = dateIdx
   currentTimeIndex.value = timeIdx
 
-  // 构建截止时间
   const now = new Date()
   const targetDate = new Date(now)
   targetDate.setDate(now.getDate() + dateIdx)
@@ -419,20 +609,17 @@ const handleDateTimeChange = (e: any) => {
   const [hours, minutes] = timeRange.value[timeIdx].split(':')
   targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
 
-  // 验证：截止时间必须晚于当前时间
   if (targetDate <= now) {
     uni.showToast({
       title: '截止时间必须晚于当前时间',
       icon: 'none'
     })
-    // 重置选择
     formData.value.deadline = ''
     currentDateIndex.value = 0
     currentTimeIndex.value = 0
     return
   }
 
-  // 格式化为本地时间字符串 (YYYY-MM-DDTHH:mm:ss)
   const year = targetDate.getFullYear()
   const month = (targetDate.getMonth() + 1).toString().padStart(2, '0')
   const day = targetDate.getDate().toString().padStart(2, '0')
@@ -444,19 +631,19 @@ const handleDateTimeChange = (e: any) => {
 }
 
 /**
- * 表单验证
+ * 表单验证（可提交条件）
  */
 const isFormValid = computed(() => {
   return (
     formData.value.title.length >= 5 &&
     formData.value.content.length >= 10 &&
-    formData.value.taskType &&
+    formData.value.taskType !== '' &&
     formData.value.rewardPoints > 0
   )
 })
 
 /**
- * 验证表单
+ * 验证表单并收集错误
  */
 const validateForm = (): boolean => {
   errors.value = {
@@ -470,12 +657,12 @@ const validateForm = (): boolean => {
   let isValid = true
 
   if (formData.value.title.length < 5) {
-    errors.value.title = '标题长度至少5个字符'
+    errors.value.title = '标题至少 5 个字符'
     isValid = false
   }
 
   if (formData.value.content.length < 10) {
-    errors.value.content = '内容长度至少10个字符'
+    errors.value.content = '任务描述至少 10 个字符'
     isValid = false
   }
 
@@ -485,17 +672,16 @@ const validateForm = (): boolean => {
   }
 
   if (formData.value.rewardPoints < 1) {
-    errors.value.rewardPoints = '奖励积分至少为1'
+    errors.value.rewardPoints = '奖励积分至少为 1'
     isValid = false
   }
 
-  const userPoints = userStore.userInfo?.points || 0
-  if (formData.value.rewardPoints > userPoints) {
-    errors.value.rewardPoints = '积分不足'
+  const points = userStore.userInfo?.points || 0
+  if (formData.value.rewardPoints > points) {
+    errors.value.rewardPoints = `积分不足，当前可用 ${points}`
     isValid = false
   }
 
-  // 验证截止时间（必填）
   if (!formData.value.deadline) {
     errors.value.deadline = '请选择截止时间'
     isValid = false
@@ -519,7 +705,6 @@ const handleSubmit = async () => {
   try {
     submitting.value = true
 
-    // 构建提交数据
     const submitData: PublishTaskRequest = {
       title: formData.value.title,
       content: formData.value.content,
@@ -543,7 +728,6 @@ const handleSubmit = async () => {
       duration: 1500
     })
 
-    // 延迟跳转到详情页
     setTimeout(() => {
       uni.redirectTo({
         url: `/pages/task/detail?id=${result.taskId}`
@@ -574,11 +758,48 @@ const formatDeadline = (dateStr: string): string => {
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
 
+// ===================================
+// 导航栏右侧发布按钮（PC 端）
+// ===================================
+.nav-publish {
+  height: 32px;
+  padding: 0 14px;
+  background: $primary;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+
+  @include mobile {
+    display: none;
+  }
+
+  &:active:not(.is-disabled) {
+    opacity: 0.85;
+    transform: scale(0.97);
+  }
+
+  &.is-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}
+
+.nav-publish-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+// ===================================
+// 页面整体
+// ===================================
 .publish-task-page {
   height: 100vh;
-  background: #F1F5F9;
+  background: $bg-page;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -589,88 +810,251 @@ const formatDeadline = (dateStr: string): string => {
   height: 0;
 }
 
-.form-container {
-  background: $white;
-  border-radius: $radius-card;
-  margin: 12px 16px 24px;
-  padding: $sp-6;
-}
-
 // ===================================
-// 表单组
+// 双列容器
 // ===================================
-.form-group {
-  margin-bottom: $sp-8;
+.main-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 20px 80px 24px;
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
 
-  &:last-of-type {
-    margin-bottom: $sp-12;
+  @media (max-width: 1440px) {
+    padding: 20px 48px 24px;
+  }
+
+  @media (max-width: 1200px) {
+    padding: 20px 32px 24px;
+  }
+
+  @include mobile {
+    padding: 16px 16px 96px;
+    flex-direction: column;
+    gap: 0;
   }
 }
 
-.form-label {
+// ===================================
+// 左侧主表单
+// ===================================
+.page-main {
+  flex: 1;
+  min-width: 0;
+}
+
+// ===================================
+// 右侧侧栏（PC 端 280px）
+// ===================================
+.page-sidebar {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  @include mobile {
+    display: none;
+  }
+}
+
+// ===================================
+// 表单卡片
+// ===================================
+.form-card {
+  background: $white;
+  border-radius: 12px;
+  border: 1px solid $gray-100;
+  box-shadow: 0 2px 6px rgba($black, 0.03);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.card-header {
   display: flex;
   align-items: center;
-  margin-bottom: $sp-4;
+  gap: 8px;
+  padding: 14px 16px 14px 20px;
+  border-bottom: 1px solid $gray-100;
+  position: relative;
+}
+
+.card-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: $primary;
+  border-radius: 0 2px 2px 0;
+
+  &.card-accent--amber {
+    background: #F59E0B;
+  }
+}
+
+.card-icon {
+  color: $primary;
+  flex-shrink: 0;
+
+  &.card-icon--amber {
+    color: #F59E0B;
+  }
+}
+
+.card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $gray-900;
+  flex: 1;
+}
+
+.card-hint {
+  font-size: 12px;
+  color: $gray-400;
+}
+
+.card-body {
+  padding: 16px;
+}
+
+// 移动端奖励卡片（PC 端侧栏已包含，此处隐藏）
+.mobile-bounty-card {
+  @media (min-width: 750px) {
+    display: none;
+  }
+}
+
+// ===================================
+// 表单项
+// ===================================
+.form-item {
+  margin-bottom: 16px;
+}
+
+.item-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 
 .label-text {
-  font-size: $font-size-base;
+  font-size: 14px;
+  font-weight: 600;
   color: $gray-800;
-  font-weight: $font-weight-medium;
 }
 
-.required {
+.label-required {
   color: $error;
-  margin-left: $sp-1;
+  font-size: 14px;
 }
 
-.optional {
-  font-size: $font-size-sm;
+.label-optional {
+  font-size: 12px;
   color: $gray-400;
-  margin-left: $sp-2;
 }
 
 // ===================================
-// 表单输入
+// 输入框通用
 // ===================================
-.form-input {
-  width: 100%;
-  height: 88rpx;
-  padding: 0 $sp-6;
+.input-wrap {
+  border: 1.5px solid $gray-200;
+  border-radius: 8px;
   background: $gray-50;
-  border: 2rpx solid $gray-200;
-  border-radius: $radius-base;
-  font-size: $font-size-base + 2rpx;
-  color: $gray-800;
+  transition: all 0.2s;
 
-  &::placeholder {
-    color: $gray-400;
+  &:focus-within {
+    border-color: $primary;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.07);
   }
+
+  &.input-wrap--error {
+    border-color: $error;
+    background: $error-50;
+  }
+}
+
+.field-input {
+  width: 100%;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: $gray-900;
+  background: transparent;
+  border: none;
+  outline: none;
+
+  :deep(.uni-input-placeholder) {
+    color: $gray-400;
+    font-size: 13px;
+  }
+}
+
+.field-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 10px 12px;
+  font-size: 14px;
+  color: $gray-900;
+  line-height: 1.65;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: 8px;
+  transition: all 0.2s;
 
   &:focus {
     border-color: $primary;
     background: $white;
+    box-shadow: 0 0 0 3px rgba($primary, 0.07);
+    outline: none;
+  }
+
+  :deep(.uni-textarea-placeholder) {
+    color: $gray-400;
+    font-size: 13px;
+    line-height: 1.65;
   }
 }
 
-.form-textarea {
-  width: 100%;
-  min-height: 200rpx;
-  padding: $sp-6;
-  background: $gray-50;
-  border: 2rpx solid $gray-200;
-  border-radius: $radius-base;
-  font-size: $font-size-base + 2rpx;
-  color: $gray-800;
-  line-height: $line-height-relaxed;
+.input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+  gap: 8px;
+}
 
-  &::placeholder {
-    color: $gray-400;
-  }
+.field-hint {
+  font-size: 12px;
+  color: $gray-400;
+  flex: 1;
+}
 
-  &:focus {
-    border-color: $primary;
-    background: $white;
+.field-error {
+  font-size: 12px;
+  color: $error;
+  flex: 1;
+}
+
+.field-error-block {
+  display: block;
+  font-size: 12px;
+  color: $error;
+  margin-top: 6px;
+}
+
+.char-count {
+  font-size: 12px;
+  color: $gray-400;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+
+  &.char-count--warn {
+    color: $warning;
+    font-weight: 600;
   }
 }
 
@@ -678,193 +1062,406 @@ const formatDeadline = (dateStr: string): string => {
 // 选择器
 // ===================================
 .picker-trigger {
-  @include flex-between;
-  height: 88rpx;
-  padding: 0 $sp-6;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+  padding: 0 12px;
   background: $gray-50;
-  border: 2rpx solid $gray-200;
-  border-radius: $radius-base;
-  font-size: $font-size-base + 2rpx;
-  color: $gray-800;
+  border: 1.5px solid $gray-200;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 
-  .placeholder {
-    color: $gray-400;
+  &:active {
+    border-color: $primary;
+    background: $white;
   }
 
-  &.error {
+  &.picker-trigger--error {
     border-color: $error;
     background: $error-50;
   }
 }
 
-.arrow {
-  font-size: $font-size-xs;
-  color: $gray-400;
-}
-
-.input-with-unit {
-  position: relative;
+.picker-left {
   display: flex;
   align-items: center;
+  gap: 8px;
+  flex: 1;
 }
 
-.input-unit {
-  position: absolute;
-  right: $sp-6;
-  font-size: $font-size-base;
-  color: $gray-500;
-  pointer-events: none;
+.picker-icon {
+  color: $gray-400;
+  flex-shrink: 0;
 }
 
-.input-hint {
-  display: block;
-  margin-top: $sp-3;
-  font-size: $font-size-sm;
-  color: $gray-500;
+.picker-placeholder {
+  color: $gray-400;
+  font-size: 13px;
 }
 
-.error-text {
-  display: block;
-  margin-top: $sp-3;
-  font-size: $font-size-sm;
-  color: $error;
+.picker-arrow {
+  color: $gray-400;
+  flex-shrink: 0;
 }
-
 
 // ===================================
-// 奖励积分选择器
+// 地点行
 // ===================================
-.reward-selector {
+.location-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.locate-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 12px;
+  background: rgba($primary, 0.06);
+  border: 1.5px solid rgba($primary, 0.2);
+  border-radius: 8px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+
+  &:active {
+    background: rgba($primary, 0.12);
+    border-color: $primary;
+  }
+}
+
+.locate-icon {
+  color: $primary;
+}
+
+.locate-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: $primary;
+}
+
+// ===================================
+// 奖励积分网格（主表单 + 侧栏共用）
+// ===================================
+.bounty-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-3;
-  margin-bottom: $sp-4;
+  gap: 8px;
+  margin-bottom: 12px;
 }
 
-.reward-item {
-  flex: 0 0 calc(20% - 10rpx);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: $sp-5 $sp-3;
-  background: $gray-50;
-  border-radius: $radius-md;
-  border: 2rpx solid transparent;
-  transition: $transition-slow;
+.bounty-pill {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 3px;
+  padding: 7px 14px;
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: 20px;
   cursor: pointer;
+  transition: all 0.2s;
 
-  &.active {
-    background: $primary-50;
-    border-color: $primary;
-
-    .reward-points {
-      color: $primary;
-    }
-  }
-
-  &.custom {
-    flex: 0 0 calc(20% - 10rpx);
+  &:hover {
+    background: lighten($accent, 46%);
+    border-color: lighten($accent, 20%);
+    transform: translateY(-1px);
   }
 
   &:active {
-    opacity: 0.8;
+    transform: scale(0.97);
+  }
+
+  &.active {
+    background: $accent;
+    border-color: $accent;
+    box-shadow: 0 3px 10px rgba($accent, 0.28);
+
+    .bounty-val {
+      color: $white;
+      font-weight: 700;
+    }
+
+    .bounty-unit {
+      color: $white;
+    }
+  }
+
+  &.bounty-pill--custom {
+    border-style: dashed;
+    border-color: $gray-300;
+
+    &:hover {
+      border-color: $primary;
+      background: lighten($primary, 47%);
+      border-style: solid;
+    }
+
+    &.active {
+      background: $primary;
+      border-color: $primary;
+      border-style: solid;
+      box-shadow: 0 3px 10px rgba($primary, 0.25);
+    }
   }
 }
 
-.reward-points {
-  font-size: $font-size-lg;
-  font-weight: $font-weight-semibold;
+.bounty-val {
+  font-size: 15px;
+  font-weight: 600;
   color: $gray-800;
-  margin-bottom: $sp-1;
+  line-height: 1;
+  transition: color 0.2s;
 }
 
-.reward-label {
-  font-size: $font-size-sm;
+.bounty-unit {
+  font-size: 11px;
   color: $gray-500;
+  transition: color 0.2s;
 }
 
-// ===================================
-// 自定义奖励输入
-// ===================================
-.custom-reward-input {
-  margin-top: $sp-4;
+// 自定义积分输入
+.custom-bounty-box {
+  padding: 12px;
+  background: $gray-50;
+  border: 1.5px solid $primary;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  animation: slideDown 0.25s ease-out;
 }
 
-.custom-input-wrapper {
+.custom-input-row {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 8px;
 }
 
-.custom-input {
+.custom-bounty-input {
   flex: 1;
-  height: 72rpx;
-  padding: 0 $sp-6;
-  background: $gray-50;
-  border: 1rpx solid $gray-200;
-  border-radius: $radius-base;
-  font-size: $font-size-base;
-  color: $gray-800;
+  height: 36px;
+  padding: 0 10px;
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: $gray-900;
 
-  &::placeholder {
+  &:focus {
+    border-color: $primary;
+    outline: none;
+  }
+
+  :deep(.uni-input-placeholder) {
     color: $gray-400;
+    font-size: 12px;
+    text-align: center;
   }
 }
 
-.input-unit {
-  font-size: $font-size-base;
+.custom-unit {
+  font-size: 13px;
   color: $gray-500;
+  flex-shrink: 0;
 }
-
 
 .custom-error {
   display: block;
-  margin-top: $sp-2;
-  font-size: $font-size-sm;
+  font-size: 12px;
   color: $error;
-  padding-left: $sp-1;
+  margin-top: 6px;
 }
 
-.reward-hint {
-  display: flex;
-  align-items: flex-start;
-  gap: $sp-2;
-  padding: $sp-4;
-  background: $info-50;
-  border-radius: $radius-base;
-  margin-top: $sp-4;
-}
-
-.hint-icon {
-  font-size: $font-size-base;
-  line-height: 1;
-}
-
-.hint-text {
-  flex: 1;
-  font-size: $font-size-sm;
-  color: $info;
-  line-height: $line-height-normal;
-}
-
-// ===================================
-// 地点输入
-// ===================================
-.location-input-wrapper {
+.bounty-notice {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba($accent, 0.06);
+  border-radius: 8px;
 }
 
-.location-input {
+.notice-icon {
+  color: $accent;
+  flex-shrink: 0;
+}
+
+.notice-text {
+  font-size: 12px;
+  color: darken($accent, 10%);
+  line-height: 1.5;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ===================================
+// 侧栏面板通用
+// ===================================
+.sidebar-panel {
+  background: $white;
+  border-radius: 12px;
+  border: 1px solid $gray-100;
+  box-shadow: 0 2px 6px rgba($black, 0.03);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px 12px 18px;
+  border-bottom: 1px solid $gray-100;
+  position: relative;
+}
+
+.panel-accent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: $primary;
+  border-radius: 0 2px 2px 0;
+
+  &.panel-accent--amber { background: #F59E0B; }
+  &.panel-accent--blue  { background: #0EA5E9; }
+}
+
+.panel-icon {
+  color: $primary;
+  flex-shrink: 0;
+
+  &.panel-icon--amber { color: #F59E0B; }
+  &.panel-icon--blue  { color: #0EA5E9; }
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $gray-800;
   flex: 1;
 }
 
-
-.label-hint {
-  font-size: $font-size-sm;
-  color: $gray-400;
-  margin-left: $sp-2;
-  font-weight: $font-weight-normal;
+.panel-balance {
+  font-size: 12px;
+  font-weight: 600;
+  color: #D97706;
+  background: rgba(245, 158, 11, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
 }
+
+.panel-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+// 发布规范
+.tip-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+
+.tip-check {
+  color: #22C55E;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.tip-text {
+  font-size: 12px;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+.tip-notice {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 4px;
+  padding: 6px 8px;
+  background: $gray-50;
+  border-radius: 6px;
+}
+
+.tip-notice-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.tip-notice-text {
+  font-size: 11px;
+  color: $gray-500;
+  line-height: 1.4;
+}
+
+// 常见问题
+.faq-item {
+  padding-bottom: 8px;
+  border-bottom: 1px dashed $gray-100;
+
+  &:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+}
+
+.faq-q {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #0EA5E9;
+  margin-bottom: 3px;
+}
+
+.faq-a {
+  display: block;
+  font-size: 12px;
+  color: $gray-500;
+  line-height: 1.55;
+}
+
+// ===================================
+// 底部操作栏（移动端固定底部）
+// ===================================
+.bottom-action-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: $white;
+  border-top: 1px solid $gray-200;
+  box-shadow: 0 -2px 12px rgba($black, 0.06);
+  padding-bottom: calc(12px + constant(safe-area-inset-bottom));
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+
+  @media (min-width: 750px) {
+    display: none;
+  }
+
+  @media (max-width: 749px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+}
+
+.submit-btn {
+  flex: 1;
+}
+
 </style>

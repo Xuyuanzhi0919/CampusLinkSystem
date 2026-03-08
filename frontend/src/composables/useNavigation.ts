@@ -228,9 +228,9 @@ export function useNavigation() {
     switchTab('/pages/home/index')
   }
 
-  /** 跳转到社区聚合页 (TabBar) */
+  /** 跳转到社区聚合页（非 TabBar，用 navigateTo） */
   const toCommunity = () => {
-    switchTab('/pages/community/index')
+    navigateTo('/pages/community/index')
   }
 
   // ================== 其他 ==================

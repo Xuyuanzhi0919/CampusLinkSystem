@@ -213,12 +213,13 @@ const {
   toEditProfile,
   toMessages,
   toNotifications,
-  navigateTo
+  navigateTo,
+  switchTab
 } = useNavigation()
 
 // 导航跳转函数
 const toQuestions = () => {
-  navigateTo('/pages/question/index')
+  switchTab('/pages/question/index') // question/index 是 TabBar 页，必须用 switchTab
 }
 
 const toTasks = () => {

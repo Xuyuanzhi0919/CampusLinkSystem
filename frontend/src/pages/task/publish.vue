@@ -1,16 +1,8 @@
 <template>
   <view class="publish-task-page">
 
-    <!-- 统一渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleCancel">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
-        </view>
-        <text class="nav-title">发布任务</text>
-        <view class="nav-placeholder" />
-      </view>
-    </view>
+    <!-- 统一导航栏 -->
+    <CNavBar title="发布任务" @back="handleCancel" />
 
     <scroll-view class="content-scroll" scroll-y>
     <view class="form-container">
@@ -184,6 +176,7 @@ import type { PublishTaskRequest, TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
 import CButton from '@/components/ui/CButton.vue'
 import Icon from '@/components/icons/index.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
 
 const userStore = useUserStore()
 
@@ -590,42 +583,6 @@ const formatDeadline = (dateStr: string): string => {
   flex-direction: column;
   overflow: hidden;
 }
-
-// ── 统一渐变头部 ──
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; }
 
 .content-scroll {
   flex: 1;

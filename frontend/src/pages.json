@@ -266,7 +266,7 @@
 			"path": "pages/task/publish",
 			"style": {
 				"navigationBarTitleText": "发布任务",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

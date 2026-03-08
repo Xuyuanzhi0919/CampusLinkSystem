@@ -36,39 +36,49 @@
     <!-- 顶部导航占位（固定导航脱离文档流，需要等高占位） -->
     <view class="nav-spacer" />
 
-    <!-- ========== Sticky 筛选区（类型 + 状态） ========== -->
+    <!-- ========== Sticky 筛选区（类型 + 状态下拉） ========== -->
     <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
-      <!-- 任务类型筛选 -->
-      <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
-        <view class="type-tabs">
-          <view
-            v-for="type in taskTypes"
-            :key="type.value"
-            class="type-tab"
-            :class="{ active: currentType === type.value }"
-            @click="handleTypeChange(type.value)"
-          >
-            <Icon :name="type.iconName" :size="15" class="type-tab-icon" />
-            <text class="type-tab-label">{{ type.label }}</text>
+      <view class="filter-bar">
+        <!-- 任务类型：横向滚动标签 -->
+        <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
+          <view class="type-tabs">
+            <view
+              v-for="type in taskTypes"
+              :key="type.value"
+              class="type-tab"
+              :class="{ active: currentType === type.value }"
+              @click="handleTypeChange(type.value)"
+            >
+              <Icon :name="type.iconName" :size="14" class="type-tab-icon" />
+              <text class="type-tab-label">{{ type.label }}</text>
+            </view>
           </view>
-        </view>
-      </scroll-view>
+        </scroll-view>
 
-      <!-- 状态筛选 -->
-      <scroll-view class="status-scroll" scroll-x :show-scrollbar="false">
-        <view class="status-chips">
-          <view
-            v-for="statusOption in statusOptions"
-            :key="statusOption.value"
-            class="status-chip"
-            :class="{ active: currentStatus === statusOption.value }"
-            @click="handleStatusChange(statusOption.value)"
-          >
-            <text class="status-chip-label">{{ statusOption.label }}</text>
+        <!-- 状态筛选：下拉菜单 -->
+        <view class="status-dropdown-wrap">
+          <view class="status-dropdown-btn" :class="{ active: currentStatus !== '' }" @click.stop="toggleStatusDropdown">
+            <text class="status-dropdown-label">{{ currentStatusLabel }}</text>
+            <Icon name="chevron-down" :size="12" class="dropdown-arrow" :class="{ rotated: statusDropdownOpen }" />
+          </view>
+          <view v-if="statusDropdownOpen" class="status-dropdown-menu">
+            <view
+              v-for="opt in statusOptions"
+              :key="opt.value"
+              class="dropdown-item"
+              :class="{ active: currentStatus === opt.value }"
+              @click.stop="selectStatus(opt.value)"
+            >
+              <text class="dropdown-item-label">{{ opt.label }}</text>
+              <Icon v-if="currentStatus === opt.value" name="check" :size="13" class="dropdown-item-check" />
+            </view>
           </view>
         </view>
-      </scroll-view>
+      </view>
     </view>
+
+    <!-- 下拉遮罩 -->
+    <view v-if="statusDropdownOpen" class="dropdown-mask" @click="statusDropdownOpen = false" />
 
     <!-- ========== 主内容区（整页滚动） ========== -->
     <view class="main-content">
@@ -85,11 +95,14 @@
             class="task-card"
             @click="handleTaskClick(task)"
           >
-            <!-- 顶部：类型标签 + 状态 -->
-            <view class="card-top">
-              <view class="type-badge" :class="`type-${task.taskType}`">
-                <Icon :name="getTypeIconName(task.taskType)" :size="13" class="type-badge-icon" />
-                <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
+            <!-- 行1：类型标签 + 标题 + 状态 -->
+            <view class="card-row1">
+              <view class="card-row1-left">
+                <view class="type-badge" :class="`type-${task.taskType}`">
+                  <Icon :name="getTypeIconName(task.taskType)" :size="12" class="type-badge-icon" />
+                  <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
+                </view>
+                <text class="card-title">{{ task.title }}</text>
               </view>
               <view
                 class="status-tag"
@@ -99,36 +112,31 @@
               </view>
             </view>
 
-            <!-- 标题 -->
-            <text class="card-title">{{ task.title }}</text>
-
-            <!-- 地点 + 截止时间 -->
-            <view class="card-meta" v-if="task.location || task.deadline">
-              <view v-if="task.location" class="meta-item">
-                <Icon name="map-pin" :size="13" class="meta-icon" />
-                <text class="meta-text">{{ task.location }}</text>
+            <!-- 行2：头像 + 昵称 + 时间 + 地点/截止 -->
+            <view class="card-row2">
+              <view class="meta-avatar">
+                <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
+                  <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+                </view>
               </view>
-              <view v-if="task.deadline" class="meta-item">
-                <Icon name="clock" :size="13" class="meta-icon" />
-                <text class="meta-text">{{ formatDeadline(task.deadline) }}</text>
+              <text class="meta-name">{{ task.publisherNickname }}</text>
+              <text class="meta-dot">·</text>
+              <text class="meta-time">{{ formatTime(task.createdAt) }}</text>
+              <view v-if="task.location" class="meta-loc">
+                <Icon name="map-pin" :size="11" class="meta-loc-icon" />
+                <text class="meta-loc-text">{{ task.location }}</text>
+              </view>
+              <view v-else-if="task.deadline" class="meta-loc">
+                <Icon name="clock" :size="11" class="meta-loc-icon" />
+                <text class="meta-loc-text">{{ formatDeadline(task.deadline) }}</text>
               </view>
             </view>
 
-            <!-- 底栏：发布者 + 悬赏积分 -->
-            <view class="card-footer">
-              <view class="publisher-info">
-                <view class="avatar-wrap">
-                  <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
-                    <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
-                  </view>
-                </view>
-                <view class="publisher-detail">
-                  <text class="publisher-name">{{ task.publisherNickname }}</text>
-                  <text class="publish-time">{{ formatTime(task.createdAt) }}</text>
-                </view>
-              </view>
-              <view class="reward-wrap">
-                <text class="reward-points">{{ task.rewardPoints }}</text>
+            <!-- 行3：积分奖励（右对齐） -->
+            <view class="card-row3">
+              <view class="reward-pill">
+                <Icon name="zap" :size="12" class="reward-icon" />
+                <text class="reward-pts">{{ task.rewardPoints }}</text>
                 <text class="reward-unit">积分</text>
               </view>
             </view>
@@ -139,7 +147,15 @@
         <view v-if="!loading && taskList.length === 0" class="empty-state">
           <Icon name="clipboard-list" :size="56" class="empty-icon" />
           <text class="empty-text">暂无任务</text>
-          <text class="empty-tip">快去发布一个新任务吧~</text>
+          <text class="empty-tip">{{ (currentType || currentStatus) ? '未找到符合条件的任务，试试调整筛选条件' : '快去发布一个新任务吧~' }}</text>
+          <view v-if="currentType || currentStatus" class="empty-action-btn" @click="resetFilters">
+            <Icon name="rotate-ccw" :size="14" />
+            <text class="empty-action-text">重置筛选</text>
+          </view>
+          <view v-else class="empty-action-btn primary" @click="handlePublish">
+            <Icon name="plus" :size="14" />
+            <text class="empty-action-text">发布任务</text>
+          </view>
         </view>
 
         <!-- 加载更多 -->
@@ -156,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { getTaskList } from '@/services/task'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
@@ -198,6 +214,28 @@ const page = ref(1)
 const pageSize = 20
 const searchKeyword = ref('')
 const isHeaderCollapsed = ref(false)
+const statusDropdownOpen = ref(false)
+
+const currentStatusLabel = computed(() => {
+  const opt = statusOptions.find(o => o.value === currentStatus.value)
+  return opt ? opt.label : '全部状态'
+})
+
+const toggleStatusDropdown = () => {
+  statusDropdownOpen.value = !statusDropdownOpen.value
+}
+
+const selectStatus = (status: string) => {
+  statusDropdownOpen.value = false
+  handleStatusChange(status)
+}
+
+const resetFilters = () => {
+  currentType.value = ''
+  currentStatus.value = ''
+  taskList.value = []
+  loadTasks(true)
+}
 
 const loadTasks = async (isRefresh = false) => {
   if (isRefresh) {
@@ -499,10 +537,18 @@ defineExpose({
   }
 }
 
-// 类型筛选
+// 一行筛选栏
+.filter-bar {
+  display: flex;
+  align-items: center;
+  padding: $sp-4 0;
+}
+
+// 类型筛选（左侧可滚动）
 .type-scroll {
+  flex: 1;
+  min-width: 0;
   white-space: nowrap;
-  padding: $sp-5 0 $sp-4;
 
   /* #ifdef H5 */
   &::-webkit-scrollbar { display: none; }
@@ -511,7 +557,7 @@ defineExpose({
 
 .type-tabs {
   display: inline-flex;
-  padding: 0 $sp-8;
+  padding: 0 $sp-5 0 $sp-8;
   gap: $sp-3;
 }
 
@@ -519,7 +565,7 @@ defineExpose({
   display: inline-flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-3 $sp-5;
+  padding: $sp-2 $sp-5;
   border-radius: $radius-2xl;
   background: $gray-100;
   transition: $transition-slow;
@@ -527,70 +573,89 @@ defineExpose({
 
   &.active {
     background: $primary;
-
-    .type-tab-icon,
-    .type-tab-label {
-      color: $white;
-    }
+    .type-tab-icon, .type-tab-label { color: $white; }
   }
 
   &:active { transform: scale(0.95); }
 }
 
-.type-tab-icon {
-  color: $gray-500;
+.type-tab-icon { color: $gray-500; flex-shrink: 0; }
+.type-tab-label { font-size: $font-size-sm; color: $gray-600; font-weight: $font-weight-medium; }
+
+// 状态下拉（右侧固定）
+.status-dropdown-wrap {
+  position: relative;
   flex-shrink: 0;
+  padding: 0 $sp-6 0 $sp-4;
+  border-left: 1rpx solid $gray-200;
+  margin-left: $sp-4;
 }
 
-.type-tab-label {
+.status-dropdown-btn {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-2xl;
+  background: $gray-100;
+  cursor: pointer;
+  transition: $transition-slow;
+
+  &.active {
+    background: rgba($primary, 0.1);
+    .status-dropdown-label, .dropdown-arrow { color: $primary; }
+  }
+
+  &:active { transform: scale(0.96); }
+}
+
+.status-dropdown-label {
   font-size: $font-size-sm;
   color: $gray-600;
   font-weight: $font-weight-medium;
-}
-
-// 状态筛选
-.status-scroll {
   white-space: nowrap;
-  padding: 0 0 $sp-4;
-
-  /* #ifdef H5 */
-  &::-webkit-scrollbar { display: none; }
-  /* #endif */
 }
 
-.status-chips {
-  display: inline-flex;
-  padding: 0 $sp-8;
-  gap: $sp-3;
+.dropdown-arrow {
+  color: $gray-400;
+  transition: transform 0.2s ease;
+  &.rotated { transform: rotate(180deg); }
 }
 
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  padding: $sp-2 $sp-5;
-  border-radius: $radius-2xl;
+.status-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  right: 0;
+  background: $white;
+  border-radius: $radius-lg;
+  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.14);
   border: 1rpx solid $gray-200;
-  background: transparent;
-  transition: $transition-slow;
-  flex-shrink: 0;
-
-  &.active {
-    background: $accent;
-    border-color: $accent;
-
-    .status-chip-label {
-      color: $white;
-      font-weight: $font-weight-semibold;
-    }
-  }
-
-  &:active { transform: scale(0.95); }
+  min-width: 200rpx;
+  z-index: $z-dropdown + 5;
+  overflow: hidden;
 }
 
-.status-chip-label {
-  font-size: 24rpx;
-  color: $gray-500;
-  font-weight: $font-weight-medium;
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $sp-5 $sp-6;
+  gap: $sp-4;
+  transition: background 0.15s;
+
+  &:not(:last-child) { border-bottom: 1rpx solid $gray-100; }
+
+  &.active .dropdown-item-label { color: $primary; font-weight: $font-weight-semibold; }
+  &:active { background: $gray-50; }
+}
+
+.dropdown-item-label { font-size: $font-size-sm; color: $gray-700; }
+.dropdown-item-check { color: $primary; flex-shrink: 0; }
+
+.dropdown-mask {
+  position: fixed;
+  inset: 0;
+  z-index: $z-dropdown + 4;
 }
 
 // ===================================
@@ -619,23 +684,45 @@ defineExpose({
 .task-card {
   background: $white;
   border-radius: $radius-card;
-  padding: $sp-7 $sp-8;
+  padding: $sp-6 $sp-7;
   box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
+  transition: all 0.2s ease;
+  cursor: pointer;
 
-  &:active { opacity: 0.85; }
+  &:active { opacity: 0.88; }
+
+  /* #ifdef H5 */
+  &:hover {
+    transform: translateY(-4rpx);
+    box-shadow: 0 8rpx 24rpx rgba($gray-900, 0.12);
+  }
+  /* #endif */
 }
 
-.card-top {
-  @include flex-between;
-  margin-bottom: $sp-5;
+// --- 行1：类型 + 标题 + 状态 ---
+.card-row1 {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  margin-bottom: $sp-4;
+}
+
+.card-row1-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: $sp-3;
 }
 
 .type-badge {
   display: inline-flex;
   align-items: center;
   gap: $sp-2;
-  padding: $sp-2 $sp-4;
+  padding: 4rpx $sp-4;
   border-radius: $radius-2xl;
+  flex-shrink: 0;
 
   &.type-errand {
     background: rgba(#F59E0B, 0.12);
@@ -656,118 +743,121 @@ defineExpose({
 }
 
 .type-badge-icon { flex-shrink: 0; }
-.type-badge-label { font-size: $font-size-sm; font-weight: $font-weight-medium; }
-
-.status-tag {
-  padding: $sp-2 $sp-4;
-  border-radius: $radius-sm;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-medium;
-
-  &.status-0 { background: $primary-100; color: $primary; }
-  &.status-1 { background: $accent-100; color: $accent-700; }
-  &.status-2 { background: $info-100; color: $info; }
-  &.status-3 { background: $purple-100; color: $purple; }
-  &.status-4 { background: $success-100; color: $success; }
-  &.status-5 { background: $error-100; color: $error; }
-  &.status-6 { background: $gray-100; color: $gray-500; }
-  &.status-expired { background: $gray-100; color: $gray-400; }
-}
+.type-badge-label { font-size: 22rpx; font-weight: $font-weight-medium; }
 
 .card-title {
-  display: block;
-  font-size: $font-size-lg;
+  font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $gray-800;
-  margin-bottom: $sp-4;
-  @include text-ellipsis(2);
-  line-height: 1.4;
-}
-
-.card-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: $sp-5;
-  margin-bottom: $sp-5;
-}
-
-.meta-item { display: flex; align-items: center; gap: $sp-2; }
-.meta-icon { color: $gray-400; flex-shrink: 0; }
-.meta-text { font-size: $font-size-sm; color: $gray-500; }
-
-.card-footer {
-  @include flex-between;
-  padding-top: $sp-5;
-  border-top: 1rpx solid $gray-100;
-  align-items: center;
-}
-
-.publisher-info {
-  display: flex;
-  align-items: center;
-  gap: $sp-4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   flex: 1;
   min-width: 0;
 }
 
-.avatar-wrap {
-  position: relative;
-  width: 56rpx;
-  height: 56rpx;
+.status-tag {
+  padding: 4rpx $sp-4;
+  border-radius: $radius-sm;
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+  flex-shrink: 0;
+  white-space: nowrap;
+
+  &.status-0 { background: rgba(#1677FF, 0.1); color: #1677FF; }  // 待接单
+  &.status-1 { background: rgba(#13C2C2, 0.1); color: #13C2C2; }  // 已接取
+  &.status-2 { background: rgba(#1677FF, 0.08); color: #1677FF; } // 进行中
+  &.status-3 { background: rgba(#722ED1, 0.1); color: #722ED1; }  // 待确认
+  &.status-4 { background: rgba(#52C41A, 0.1); color: #52C41A; }  // 已完成
+  &.status-5 { background: $gray-100; color: $gray-400; }          // 已取消
+  &.status-6 { background: rgba(#FAAD14, 0.1); color: #FAAD14; }  // 已超时
+  &.status-expired { background: $gray-100; color: $gray-400; }    // 已截止
+}
+
+// --- 行2：头像 + 昵称 + 时间 + 地点 ---
+.card-row2 {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  margin-bottom: $sp-5;
+  overflow: hidden;
+}
+
+.meta-avatar {
+  width: 40rpx;
+  height: 40rpx;
   border-radius: 50%;
   flex-shrink: 0;
+  overflow: hidden;
 }
 
 .avatar-placeholder {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
+  width: 100%;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 50%;
 }
 
 .avatar-char {
-  font-size: 22rpx;
-  font-weight: $font-weight-semibold;
+  font-size: 18rpx;
+  font-weight: $font-weight-bold;
   color: $white;
   line-height: 1;
 }
 
-.publisher-detail {
-  display: flex;
-  flex-direction: column;
-  gap: $sp-1;
-  min-width: 0;
-}
-
-.publisher-name {
+.meta-name {
   font-size: $font-size-sm;
   color: $gray-600;
   font-weight: $font-weight-medium;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  max-width: 160rpx;
-}
-
-.publish-time { font-size: $font-size-xs; color: $gray-400; }
-
-.reward-wrap {
-  display: flex;
-  align-items: baseline;
-  gap: $sp-1;
+  max-width: 140rpx;
   flex-shrink: 0;
 }
 
-.reward-points {
-  font-size: 40rpx;
-  font-weight: $font-weight-bold;
-  color: $accent;
-  line-height: 1;
+.meta-dot { font-size: $font-size-sm; color: $gray-400; flex-shrink: 0; }
+.meta-time { font-size: $font-size-xs; color: $gray-400; flex-shrink: 0; }
+
+.meta-loc {
+  display: flex;
+  align-items: center;
+  gap: $sp-1;
+  flex-shrink: 1;
+  overflow: hidden;
+  margin-left: $sp-2;
 }
 
-.reward-unit { font-size: $font-size-sm; color: $accent; opacity: 0.8; }
+.meta-loc-icon { color: $gray-400; flex-shrink: 0; }
+.meta-loc-text {
+  font-size: $font-size-xs;
+  color: $gray-400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+// --- 行3：积分奖励 ---
+.card-row3 {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.reward-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  background: rgba(#FF6B35, 0.1);
+  color: #FF6B35;
+  padding: $sp-2 $sp-5;
+  border-radius: $radius-2xl;
+}
+
+.reward-icon { flex-shrink: 0; }
+.reward-pts { font-size: $font-size-base; font-weight: $font-weight-bold; }
+.reward-unit { font-size: 22rpx; }
 
 // ===================================
 // 空状态
@@ -782,7 +872,29 @@ defineExpose({
 
 .empty-icon { color: $gray-300; margin-bottom: $sp-8; }
 .empty-text { font-size: $font-size-lg; color: $gray-500; margin-bottom: $sp-4; }
-.empty-tip { font-size: $font-size-sm; color: $gray-400; }
+.empty-tip { font-size: $font-size-sm; color: $gray-400; text-align: center; margin-bottom: $sp-8; }
+
+.empty-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-4 $sp-8;
+  border-radius: $radius-2xl;
+  border: 1rpx solid $gray-300;
+  background: transparent;
+  color: $gray-600;
+  transition: $transition-slow;
+
+  &.primary {
+    background: $primary;
+    border-color: $primary;
+    color: $white;
+  }
+
+  &:active { opacity: 0.85; transform: scale(0.97); }
+}
+
+.empty-action-text { font-size: $font-size-sm; font-weight: $font-weight-medium; }
 
 // ===================================
 // 加载更多

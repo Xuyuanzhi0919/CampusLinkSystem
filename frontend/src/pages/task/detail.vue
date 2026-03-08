@@ -1,6 +1,15 @@
 <template>
   <view class="task-detail-page">
 
+    <!-- 顶部导航栏 -->
+    <CNavBar title="任务详情" :auto-back="false" @back="goBack">
+      <template #right>
+        <view class="nav-right" @click="showMoreMenu">
+          <Icon name="more-horizontal" :size="22" :stroke-width="1.5" class="nav-icon" />
+        </view>
+      </template>
+    </CNavBar>
+
     <!-- 加载状态 -->
     <view v-if="loading" class="loading-container">
       <text class="loading-text">加载中...</text>
@@ -248,6 +257,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import { CNavBar } from '@/components/layout'
 import {
   getTaskById,
   acceptTask,
@@ -487,6 +497,21 @@ const contactUser = (userId: number) => {
 
 const goBack = () => uni.navigateBack()
 
+const showMoreMenu = () => {
+  uni.showActionSheet({
+    itemList: ['分享任务', task.value?.isFavorited ? '取消收藏' : '收藏任务', '举报'],
+    success: async (res) => {
+      if (res.tapIndex === 0) {
+        uni.showToast({ title: '分享功能开发中', icon: 'none' })
+      } else if (res.tapIndex === 1) {
+        await handleFavorite()
+      } else if (res.tapIndex === 2) {
+        uni.showToast({ title: '已提交举报', icon: 'success' })
+      }
+    }
+  })
+}
+
 onMounted(() => {
   const pages = getCurrentPages()
   const options = (pages[pages.length - 1] as any)?.options || {}
@@ -501,6 +526,22 @@ onMounted(() => {
   min-height: 100vh;
   background: $bg-page;
   padding-bottom: 140rpx;
+}
+
+// ===================================
+// 导航栏
+// ===================================
+.nav-right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+  cursor: pointer;
+}
+.nav-icon {
+  color: $gray-600;
+  &--active { color: $primary; }
 }
 
 // ===================================

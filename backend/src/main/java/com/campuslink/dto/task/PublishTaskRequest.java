@@ -3,6 +3,7 @@ package com.campuslink.dto.task;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -31,6 +32,7 @@ public class PublishTaskRequest {
      * 任务类型
      */
     @NotBlank(message = "任务类型不能为空")
+    @Pattern(regexp = "errand|borrow|tutor|other", message = "任务类型无效，支持：errand/borrow/tutor/other")
     private String taskType;
 
     /**

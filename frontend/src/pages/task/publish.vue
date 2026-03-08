@@ -437,7 +437,7 @@ const userStore = useUserStore()
 const taskTypes = [
   { value: 'errand', label: '跑腿', icon: 'zap',        color: '#F59E0B' },
   { value: 'borrow', label: '借用', icon: 'share-2',    color: '#6366F1' },
-  { value: 'sign',   label: '代签到', icon: 'badge-check', color: '#22C55E' },
+  { value: 'tutor',  label: '答疑互助', icon: 'book-open',  color: '#22C55E' },
   { value: 'other',  label: '其他',  icon: 'grid',      color: '#0EA5E9' }
 ]
 

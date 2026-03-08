@@ -37,7 +37,7 @@ public class Task {
     private String content;
 
     /**
-     * 任务类型（errand-跑腿/borrow-借用/sign-代签到等）
+     * 任务类型（errand-跑腿/borrow-借用/tutor-答疑互助/other-其他）
      */
     @TableField("task_type")
     private String taskType;

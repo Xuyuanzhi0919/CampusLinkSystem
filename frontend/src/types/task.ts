@@ -18,7 +18,7 @@ export enum TaskStatus {
 /**
  * 任务类型
  */
-export type TaskType = 'errand' | 'borrow' | 'sign' | 'other'
+export type TaskType = 'errand' | 'borrow' | 'tutor' | 'other'
 
 /**
  * 任务列表项

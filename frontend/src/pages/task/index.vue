@@ -140,7 +140,7 @@ const taskTypes = [
   { value: '', label: '全部', icon: '📋' },
   { value: 'errand', label: '跑腿', icon: '🏃' },
   { value: 'borrow', label: '借用', icon: '🤝' },
-  { value: 'sign', label: '代签到', icon: '✅' },
+  { value: 'tutor', label: '答疑互助', icon: '📚' },
   { value: 'other', label: '其他', icon: '📦' }
 ]
 
@@ -252,7 +252,7 @@ const getTypeIcon = (type: TaskType): string => {
   const iconMap: Record<string, string> = {
     errand: '🏃',
     borrow: '🤝',
-    sign: '✅',
+    tutor: '📚',
     other: '📦'
   }
   return iconMap[type] || '📦'
@@ -262,7 +262,7 @@ const getTypeLabel = (type: TaskType): string => {
   const labelMap: Record<string, string> = {
     errand: '跑腿',
     borrow: '借用',
-    sign: '代签到',
+    tutor: '答疑互助',
     other: '其他'
   }
   return labelMap[type] || '其他'

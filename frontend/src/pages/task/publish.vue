@@ -1694,7 +1694,12 @@ const formatDeadline = (dateStr: string): string => {
   background: rgba(0, 0, 0, 0.45);
   z-index: 1000;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-end;       // 移动端：底部弹出
+
+  @media (min-width: 750px) {
+    align-items: center;       // PC 端：垂直居中
+    justify-content: center;
+  }
 }
 
 .deadline-sheet {
@@ -1708,15 +1713,21 @@ const formatDeadline = (dateStr: string): string => {
   animation: sheetSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 
   @media (min-width: 750px) {
-    max-width: 480px;
-    margin: 0 auto;
-    border-radius: 20px 20px 0 0;
+    width: 460px;
+    max-height: 620px;
+    border-radius: 16px;       // PC 端四角圆润
+    animation: sheetFadeIn 0.2s ease-out;
   }
 }
 
 @keyframes sheetSlideUp {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
+}
+
+@keyframes sheetFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .sheet-handle {

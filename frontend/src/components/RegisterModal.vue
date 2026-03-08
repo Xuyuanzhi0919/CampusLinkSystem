@@ -221,7 +221,7 @@
 import { ref, watch, computed, onUnmounted } from 'vue'
 import { register, sendCode, type RegisterRequest, type AuthResponse, type SendCodeRequest } from '@/services/auth'
 import config from '@/config'
-import request from '@/utils/request'
+import { getAllSchools, type SchoolItem } from '@/services/school'
 import Icon from '@/components/icons/index.vue'
 
 const props = defineProps({
@@ -246,8 +246,7 @@ const formData = ref({
 })
 
 // 学校选择
-interface SchoolOption { schoolId: number; schoolName: string }
-const schools = ref<SchoolOption[]>([])
+const schools = ref<SchoolItem[]>([])
 const showSchoolDropdown = ref(false)
 const schoolSearchKeyword = ref('')
 
@@ -260,12 +259,11 @@ const filteredSchools = computed(() => {
 const loadSchools = async () => {
   if (schools.value.length > 0) return
   try {
-    const res = await request.get<SchoolOption[]>('/school/all')
-    schools.value = res
+    schools.value = await getAllSchools()
   } catch (e) { /* 加载失败不阻塞注册 */ }
 }
 
-const selectSchool = (s: SchoolOption) => {
+const selectSchool = (s: SchoolItem) => {
   formData.value.schoolId = s.schoolId
   formData.value.schoolName = s.schoolName
   showSchoolDropdown.value = false

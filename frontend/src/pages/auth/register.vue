@@ -249,7 +249,7 @@ import { useUserStore } from '@/stores/user'
 import { register, sendCode, type RegisterRequest, type AuthResponse } from '@/services/auth'
 import Icon from '@/components/icons/index.vue'
 import config from '@/config'
-import request from '@/utils/request'
+import { getAllSchools, type SchoolItem } from '@/services/school'
 
 const userStore = useUserStore()
 
@@ -265,8 +265,7 @@ const formData = ref({
 })
 
 // 学校相关
-interface SchoolOption { schoolId: number; schoolName: string }
-const schools = ref<SchoolOption[]>([])
+const schools = ref<SchoolItem[]>([])
 const showSchoolPicker = ref(false)
 const schoolSearchKeyword = ref('')
 const schoolFocused = ref(false)
@@ -279,14 +278,13 @@ const filteredSchools = computed(() => {
 
 const loadSchools = async () => {
   try {
-    const res = await request.get<SchoolOption[]>('/school/all')
-    schools.value = res
+    schools.value = await getAllSchools()
   } catch (e) {
     // 加载失败不影响注册流程
   }
 }
 
-const selectSchool = (school: SchoolOption) => {
+const selectSchool = (school: SchoolItem) => {
   formData.value.schoolId = school.schoolId
   formData.value.schoolName = school.schoolName
   showSchoolPicker.value = false

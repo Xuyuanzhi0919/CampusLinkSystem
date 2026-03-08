@@ -203,14 +203,14 @@
             </view>
 
             <view class="sidebar-link-row">
-              <view class="sidebar-link" @click="goMyPublished">
-                <text class="sidebar-link-text">我的发布</text>
+              <view class="sidebar-quick-btn" @click="goMyPublished">
+                <Icon name="send" :size="13" class="quick-btn-icon" />
+                <text class="quick-btn-label">我的发布</text>
               </view>
-              <text class="sidebar-link-sep">·</text>
-              <view class="sidebar-link" @click="goMyAccepted">
-                <text class="sidebar-link-text">我的接单</text>
+              <view class="sidebar-quick-btn" @click="goMyAccepted">
+                <Icon name="package-check" :size="13" class="quick-btn-icon" />
+                <text class="quick-btn-label">我的接单</text>
               </view>
-              <Icon name="arrow-right" :size="13" class="sidebar-link-arrow" />
             </view>
           </view>
 
@@ -1159,22 +1159,31 @@ defineExpose({
 .sidebar-link-row {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: $sp-4;
 }
 
-.sidebar-link {
+.sidebar-quick-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $sp-2;
+  padding: $sp-4 0;
+  border-radius: $radius-lg;
+  background: $gray-50;
+  border: 1rpx solid $gray-200;
   cursor: pointer;
-  &:active { opacity: 0.7; }
+  transition: all 0.15s ease;
+
+  &:active { background: $primary-100; border-color: $primary; }
+
+  /* #ifdef H5 */
+  &:hover { background: $primary-100; border-color: $primary; .quick-btn-icon, .quick-btn-label { color: $primary; } }
+  /* #endif */
 }
 
-.sidebar-link-text {
-  font-size: $font-size-sm;
-  color: $primary;
-  font-weight: $font-weight-medium;
-}
-
-.sidebar-link-sep { font-size: $font-size-sm; color: $gray-300; }
-.sidebar-link-arrow { color: $primary; margin-left: auto; }
+.quick-btn-icon { color: $gray-500; flex-shrink: 0; }
+.quick-btn-label { font-size: $font-size-sm; color: $gray-600; font-weight: $font-weight-medium; }
 
 // 平台统计
 .platform-stats {

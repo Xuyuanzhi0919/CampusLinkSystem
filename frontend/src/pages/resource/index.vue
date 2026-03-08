@@ -311,7 +311,12 @@
                 <view class="contributor-rank" :class="`contributor-rank--${index + 1}`">
                   <text class="rank-num">{{ index + 1 }}</text>
                 </view>
-                <image class="contributor-avatar" :src="user.avatar || defaultAvatar" mode="aspectFill" />
+                <view class="contributor-avatar-wrap">
+                  <view class="contributor-avatar-placeholder" :style="getContributorAvatarBg(user.username)">
+                    <text class="contributor-avatar-char">{{ user.username?.charAt(0)?.toUpperCase() || '?' }}</text>
+                  </view>
+                  <image v-if="user.avatar" class="contributor-avatar" :src="user.avatar" mode="aspectFill" />
+                </view>
                 <view class="contributor-info">
                   <text class="contributor-name">{{ user.username }}</text>
                   <text class="contributor-stats">{{ user.uploadCount }} 份资源</text>
@@ -521,6 +526,13 @@ const total = ref(0)
 const hasMore = ref(true)
 const isFirstShow = ref(true) // 标记是否首次显示
 const defaultAvatar = PLACEHOLDER_IMAGES.avatar // 默认头像
+
+// 贡献者头像背景色（基于用户名首字符 hash）
+const CONTRIBUTOR_AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getContributorAvatarBg = (username: string) => {
+  const idx = username ? username.charCodeAt(0) % CONTRIBUTOR_AVATAR_COLORS.length : 0
+  return { background: CONTRIBUTOR_AVATAR_COLORS[idx] }
+}
 
 // 🎯 筛选条件
 const searchKeyword = ref('')
@@ -3051,18 +3063,43 @@ onUnmounted(() => {
   &--3 .rank-num { color: #CD7F32; }
 }
 
-.contributor-avatar {
+.contributor-avatar-wrap {
+  position: relative;
   width: 52rpx;
   height: 52rpx;
-  border-radius: 50%;
-  background: $gray-200;
   flex-shrink: 0;
   border: 2px solid transparent;
+  border-radius: 50%;
   transition: border-color 0.18s;
 
   .contributor-item:hover & {
     border-color: rgba($primary, 0.2);
   }
+}
+
+.contributor-avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contributor-avatar-char {
+  font-size: 22rpx;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+.contributor-avatar {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: $gray-200;
 }
 
 .contributor-info {

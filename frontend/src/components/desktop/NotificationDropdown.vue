@@ -5,57 +5,85 @@
       <!-- Header -->
       <view class="notification-header">
         <view class="header-left">
-          <text class="header-icon">📬</text>
+          <Icon name="bell" :size="18" class="header-bell-icon" />
           <text class="header-title">通知中心</text>
-          <view v-if="unreadCount > 0" class="unread-badge">{{ unreadCount }}</view>
+          <view v-if="unreadCount > 0" class="unread-badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
         </view>
-        <button v-if="unreadCount > 0" class="mark-all-read-btn" @click="handleMarkAllRead">
-          全部已读
+        <button v-if="isLoggedIn && unreadCount > 0" class="mark-all-read-btn" @click="handleMarkAllRead">
+          <Icon name="check-check" :size="13" />
+          <text>全部已读</text>
         </button>
       </view>
 
-      <!-- Notification List -->
+      <!-- 内容区 -->
       <view class="notification-list">
+
+        <!-- 骨架屏加载 -->
+        <view v-if="loading" class="skeleton-list">
+          <view v-for="i in 3" :key="i" class="skeleton-item">
+            <view class="skeleton-icon"></view>
+            <view class="skeleton-content">
+              <view class="skeleton-line skeleton-line-short"></view>
+              <view class="skeleton-line skeleton-line-long"></view>
+              <view class="skeleton-line skeleton-line-medium"></view>
+            </view>
+          </view>
+        </view>
+
         <!-- 未登录空状态 -->
-        <view v-if="!isLoggedIn" class="empty-state empty-state-guest">
-          <text class="empty-icon">🔔</text>
+        <view v-else-if="!isLoggedIn" class="empty-state">
+          <view class="empty-icon-wrap empty-icon-guest">
+            <Icon name="bell" :size="28" />
+          </view>
           <text class="empty-text">登录后即可查看通知</text>
-          <text class="empty-hint">系统通知、评论提醒、收藏更新等内容</text>
+          <text class="empty-hint">系统通知、评论提醒、收藏更新等</text>
+          <button class="btn-primary" @click="emit('login')">立即登录</button>
         </view>
 
         <!-- 已登录但无通知 -->
-        <view v-else-if="notifications.length === 0" class="empty-state">
-          <text class="empty-icon">🔕</text>
-          <text class="empty-text">暂无新通知</text>
-          <text class="empty-hint">看看校园里发生了什么吧</text>
-        </view>
-
-        <view
-          v-for="item in notifications"
-          :key="item.id"
-          class="notification-item"
-          :class="{ 'is-read': item.isRead }"
-          @click="handleNotificationClick(item)"
-        >
-          <view class="notification-icon">{{ item.icon }}</view>
-          <view class="notification-content">
-            <view class="notification-title-row">
-              <text class="notification-type">{{ item.type }}</text>
-              <view v-if="!item.isRead" class="unread-dot"></view>
-            </view>
-            <text class="notification-text">{{ item.message }}</text>
-            <text class="notification-time">{{ item.time }}</text>
+        <view v-else-if="!loading && notifications.length === 0" class="empty-state">
+          <view class="empty-icon-wrap">
+            <Icon name="bell-off" :size="28" />
+          </view>
+          <text class="empty-text">全部通知已读</text>
+          <text class="empty-hint">去首页发现更多动态</text>
+          <view class="empty-actions">
+            <button class="btn-outline" @click="handleViewAll">通知中心</button>
+            <button class="btn-primary" @click="handleGoHome">去首页逛逛</button>
           </view>
         </view>
+
+        <!-- 通知列表 -->
+        <template v-else>
+          <view
+            v-for="item in notifications"
+            :key="item.id"
+            class="notification-item"
+            :class="{ 'is-read': item.isRead }"
+            @click="handleNotificationClick(item)"
+          >
+            <view class="notification-icon-wrap">
+              <text class="notification-icon">{{ item.icon }}</text>
+            </view>
+            <view class="notification-content">
+              <view class="notification-title-row">
+                <text class="notification-type">{{ item.type }}</text>
+                <view v-if="!item.isRead" class="unread-dot"></view>
+                <text class="notification-time">{{ item.time }}</text>
+              </view>
+              <text class="notification-text">{{ item.message }}</text>
+            </view>
+            <Icon name="chevron-right" :size="13" class="item-arrow" />
+          </view>
+        </template>
+
       </view>
 
-      <!-- Footer -->
-      <view class="notification-footer">
-        <button v-if="!isLoggedIn" class="view-all-btn login-btn" @click="emit('login')">
-          登录 / 注册
-        </button>
-        <button v-else class="view-all-btn" @click="handleViewAll">
-          进入通知中心
+      <!-- Footer：有通知时显示 -->
+      <view v-if="isLoggedIn && notifications.length > 0" class="notification-footer">
+        <button class="btn-view-all" @click="handleViewAll">
+          查看全部通知
+          <Icon name="arrow-right" :size="13" />
         </button>
       </view>
 
@@ -64,23 +92,25 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Notification {
-  id: number;
-  type: string;
-  icon: string;
-  message: string;
-  time: string;
-  isRead: boolean;
-  linkUrl?: string;
+  id: number
+  type: string
+  icon: string
+  message: string
+  time: string
+  isRead: boolean
+  linkUrl?: string
 }
 
 interface Props {
-  visible: boolean;
-  position: { top: number; left: number };
-  notifications?: Notification[];
-  isLoggedIn?: boolean;
+  visible: boolean
+  position: { top: number; left: number }
+  notifications?: Notification[]
+  isLoggedIn?: boolean
+  loading?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -88,378 +118,404 @@ const props = withDefaults(defineProps<Props>(), {
   position: () => ({ top: 0, left: 0 }),
   notifications: () => [],
   isLoggedIn: true,
-});
+  loading: false,
+})
 
-const emit = defineEmits(['update:visible', 'mark-all-read', 'notification-click', 'view-all', 'login']);
-const showAnimation = ref(false);
+const emit = defineEmits(['update:visible', 'mark-all-read', 'notification-click', 'view-all', 'login'])
+const showAnimation = ref(false)
 
-const unreadCount = computed(() =>
-  props.notifications.filter(n => !n.isRead).length
-);
+const unreadCount = computed(() => props.notifications.filter(n => !n.isRead).length)
 
 const menuStyle = computed(() => {
-  const windowWidth = window.innerWidth || document.documentElement.clientWidth;
-  const rightOffset = windowWidth - props.position.left + 20;
-
-  return {
-    top: `${props.position.top}px`,
-    right: `${rightOffset}px`,
-    left: 'auto',
-  };
-});
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth
+  const rightOffset = windowWidth - props.position.left + 20
+  return { top: `${props.position.top}px`, right: `${rightOffset}px`, left: 'auto' }
+})
 
 const handleEscKey = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') {
-    handleMaskClick();
-  }
-};
+  if (e.key === 'Escape') handleMaskClick()
+}
 
-watch(() => props.visible, (newVal) => {
-  setTimeout(() => { showAnimation.value = newVal; }, 10);
-  if (newVal) {
-    document.addEventListener('keydown', handleEscKey);
-  } else {
-    document.removeEventListener('keydown', handleEscKey);
-  }
-}, { immediate: true });
+watch(() => props.visible, (val) => {
+  setTimeout(() => { showAnimation.value = val }, 10)
+  if (val) document.addEventListener('keydown', handleEscKey)
+  else document.removeEventListener('keydown', handleEscKey)
+}, { immediate: true })
 
-const handleMaskClick = () => emit('update:visible', false);
+const handleMaskClick = () => emit('update:visible', false)
 
 const handleMarkAllRead = () => {
-  emit('mark-all-read');
-};
+  emit('mark-all-read')
+  uni.showToast({ title: '已全部标记为已读', icon: 'none', duration: 1500 })
+}
 
 const handleNotificationClick = (item: Notification) => {
-  emit('notification-click', item);
-  emit('update:visible', false);
-};
+  emit('notification-click', item)
+  emit('update:visible', false)
+}
 
 const handleViewAll = () => {
-  emit('view-all');
-  emit('update:visible', false);
-};
+  emit('view-all')
+  emit('update:visible', false)
+}
 
-onUnmounted(() => {
-  document.removeEventListener('keydown', handleEscKey);
-});
+const handleGoHome = () => {
+  emit('update:visible', false)
+  uni.switchTab({ url: '/pages/home/index' })
+}
+
+onUnmounted(() => document.removeEventListener('keydown', handleEscKey))
 </script>
 
 <style scoped lang="scss">
 .dropdown-mask {
   position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
+  inset: 0;
   z-index: 9998;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.08);
   backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
 }
 
 .menu-final {
   position: absolute;
-  width: 360px;
-  max-height: 520px;
-  background: rgba(255, 255, 255, 0.98);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 16px;
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.16),
-    0 4px 12px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(255, 255, 255, 0.9);
+  width: 340px;
+  max-height: 480px;
+  background: #FFFFFF;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.13), 0 3px 10px rgba(0, 0, 0, 0.06);
   z-index: 9999;
   opacity: 0;
-  transform: translateX(0) translateY(-10px) scale(0.98);
+  transform: translateY(-8px) scale(0.97);
   transform-origin: top right;
-  transition: all 0.28s cubic-bezier(0.34, 1.26, 0.64, 1);
+  transition: all 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
   display: flex;
   flex-direction: column;
   overflow: hidden;
 
   &.menu-show {
     opacity: 1;
-    transform: translateX(0) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
+/* ========== Header ========== */
 .notification-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 20px 18px 20px; // 右侧增加 8px padding（总 28px）
-  padding-right: 28px;
-  // 优化 #4: 加深分割线，提升顶部栏稳定感
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  background: rgba(255, 255, 255, 0.5);
+  padding: 13px 14px;
+  border-bottom: 1px solid #F1F5F9;
+  flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
-.header-icon {
-  font-size: 22px;
+.header-bell-icon {
+  color: #6366F1;
 }
 
 .header-title {
-  font-size: 18px;
+  font-size: 15px;
   font-weight: 700;
-  color: $text-primary;
-  letter-spacing: -0.2px;
+  color: #1E293B;
 }
 
 .unread-badge {
-  background: $error;
-  color: white;
-  font-size: 11px;
+  background: #EF4444;
+  color: #FFFFFF;
+  font-size: 10px;
   font-weight: 700;
-  padding: 3px 7px;
-  border-radius: 12px;
-  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: 10px;
+  min-width: 18px;
   text-align: center;
-  transform: translateY(-2px);
 }
 
 .mark-all-read-btn {
-  // 优化 #1: 提升视觉存在感 - 加边框 + 增强背景
-  background: linear-gradient(135deg, rgba($primary, 0.14) 0%, rgba($primary, 0.10) 100%);
-  border: 1px solid rgba($primary, 0.25);
-  color: $primary;
-  font-size: 13px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.18);
+  color: #6366F1;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 7px 16px; // 增加水平 padding
-  border-radius: 10px;
-  transition: all 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
+  transition: all 0.15s;
 
   &:hover {
-    background: linear-gradient(135deg, rgba($primary, 0.20) 0%, rgba($primary, 0.16) 100%);
-    border-color: rgba($primary, 0.35);
-    color: $primary-dark;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba($primary, 0.15);
-  }
-
-  &:active {
-    transform: translateY(0);
-    background: linear-gradient(135deg, rgba($primary, 0.24) 0%, rgba($primary, 0.20) 100%);
+    background: rgba(99, 102, 241, 0.12);
+    border-color: rgba(99, 102, 241, 0.3);
   }
 }
 
+/* ========== 内容区 ========== */
 .notification-list {
   flex: 1;
   overflow-y: auto;
-  max-height: 400px;
-  // 优化 #2: 统一卡片间距，增加底部空白
-  padding: 12px 12px 24px 12px; // 底部增加到 24px，为 CTA 按钮留白
+  padding: 8px;
+  min-height: 0;
 
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(0, 0, 0, 0.12);
-    border-radius: 4px;
-    transition: background 0.2s;
-
-    &:hover {
-      background: rgba(0, 0, 0, 0.18);
-    }
-  }
+  &::-webkit-scrollbar { width: 3px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 3px; }
 }
 
+/* ========== 骨架屏 ========== */
+.skeleton-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.skeleton-item {
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  background: #F8FAFC;
+}
+
+.skeleton-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #E2E8F0 25%, #EFF6FF 50%, #E2E8F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  flex-shrink: 0;
+}
+
+.skeleton-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.skeleton-line {
+  height: 10px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #E2E8F0 25%, #EFF6FF 50%, #E2E8F0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+
+  &.skeleton-line-short  { width: 40%; }
+  &.skeleton-line-long   { width: 90%; }
+  &.skeleton-line-medium { width: 60%; }
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ========== 空状态 ========== */
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  // 优化 #1: 整体下移 30px，平衡视觉重心
-  padding: 70px 20px 50px 20px;
-  gap: 10px;
+  padding: 32px 20px 28px;
+  gap: 8px;
 }
 
-.empty-icon {
-  font-size: 52px;
-  // 优化 #2: 提升图标饱和度，加轻微阴影
-  opacity: 0.42;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06));
+.empty-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
   margin-bottom: 4px;
+
+  &.empty-icon-guest {
+    background: rgba(99, 102, 241, 0.08);
+    color: #6366F1;
+  }
 }
 
 .empty-text {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
-  // 优化 #3: 使用更清晰的灰色，提升可读性
-  color: #64748B;
-  letter-spacing: 0.2px;
+  color: #475569;
 }
 
 .empty-hint {
-  font-size: 13px;
+  font-size: 12px;
   color: #94A3B8;
-  margin-top: 2px;
+  margin-bottom: 4px;
+}
+
+.empty-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* ========== 按钮 ========== */
+.btn-primary {
+  height: 34px;
+  padding: 0 16px;
+  background: #6366F1;
+  border: none;
+  border-radius: 8px;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: #4F46E5; }
+  &:active { transform: scale(0.97); }
+}
+
+.btn-outline {
+  height: 34px;
+  padding: 0 14px;
+  background: transparent;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  color: #64748B;
+  font-size: 13px;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: #CBD5E1; background: #F8FAFC; }
 }
 
-// 未登录专属空状态
-.empty-state-guest {
-  padding: 60px 20px 40px 20px;
-
-  .empty-icon {
-    font-size: 48px;
-    opacity: 0.38;
-    margin-bottom: 6px;
-  }
-
-  .empty-text {
-    font-size: 16px;
-    font-weight: 700;
-    color: #475569;
-  }
-
-  .empty-hint {
-    font-size: 13px;
-    color: #94A3B8;
-    margin-top: 4px;
-  }
-}
-
+/* ========== 通知列表项 ========== */
 .notification-item {
   display: flex;
-  gap: 14px;
-  padding: 14px 16px;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
-  background: #F8FAFF;
-  border-radius: 14px;
-  // 优化 #2: 统一卡片间距为 12px
-  margin-bottom: 12px;
+  transition: all 0.15s;
+  margin-bottom: 4px;
 
-  &:last-child {
-    margin-bottom: 0;
-  }
+  &:last-child { margin-bottom: 0; }
 
   &:hover {
-    background: rgba($primary, 0.08);
-    transform: translateX(-2px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    background: #F0F4FF;
+    .item-arrow { opacity: 1; }
   }
 
-  &:active {
-    transform: translateX(0) scale(0.98);
-    background: rgba($primary, 0.12);
-  }
+  &:active { background: #E8EDFF; }
 
   &.is-read {
-    opacity: 0.6;
-
-    &:hover {
-      opacity: 0.75;
-    }
+    opacity: 0.55;
+    &:hover { opacity: 0.75; }
   }
+}
+
+.notification-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .notification-icon {
-  font-size: 20px;
-  flex-shrink: 0;
-  margin-top: 2px;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .notification-content {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+  gap: 3px;
 }
 
 .notification-title-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
 .notification-type {
-  font-size: 15px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: #1E293B;
-  letter-spacing: -0.1px;
 }
 
 .unread-dot {
-  width: 9px;
-  height: 9px;
-  background: $primary;
+  width: 6px;
+  height: 6px;
+  background: #6366F1;
   border-radius: 50%;
   flex-shrink: 0;
-  box-shadow: 0 0 0 2.5px rgba($primary, 0.18);
-  margin-left: -2px;
-}
-
-.notification-text {
-  font-size: 14px;
-  // 优化 #3: 增强文本颜色，从 $text-secondary 调整为更深的灰色
-  color: #344054; // 替代 $text-secondary，提升可读性
-  line-height: 1.5;
-  @include text-ellipsis(2);
-  margin-top: 2px;
 }
 
 .notification-time {
+  font-size: 10px;
+  color: #94A3B8;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.notification-text {
   font-size: 12px;
-  color: $text-tertiary;
-  margin-top: 8px;
-  font-weight: 500;
+  color: #475569;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
+.item-arrow {
+  color: #CBD5E1;
+  opacity: 0;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* ========== Footer ========== */
 .notification-footer {
-  // 优化 #5: CTA 按钮上移，减少底部 padding
-  padding: 8px 20px 16px 20px; // 顶部从 16px 减少到 8px
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
-  background: rgba(255, 255, 255, 0.4);
+  padding: 8px 10px 10px;
+  border-top: 1px solid #F1F5F9;
+  flex-shrink: 0;
 }
 
-.view-all-btn {
+.btn-view-all {
   width: 100%;
-  height: 48px;
-  background: linear-gradient(135deg, $primary 0%, $primary-light 100%);
-  border: none;
-  border-radius: 20px;
-  color: white;
-  font-size: 16px;
-  font-weight: 600;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  color: #64748B;
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.26, 0.64, 1);
-  box-shadow: 0 4px 14px rgba($primary, 0.28);
+  transition: all 0.15s;
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba($primary, 0.38);
-  }
-
-  &:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba($primary, 0.2);
-  }
-
-  // 登录按钮：橙色渐变，提升转化率
-  &.login-btn {
-    background: linear-gradient(135deg, #FF9A3C 0%, #FF6F3C 100%);
-    box-shadow: 0 4px 14px rgba(255, 140, 80, 0.28);
-
-    &:hover {
-      box-shadow: 0 6px 18px rgba(255, 140, 80, 0.38);
-    }
-
-    &:active {
-      box-shadow: 0 2px 8px rgba(255, 140, 80, 0.2);
-    }
+    background: #F0F4FF;
+    border-color: rgba(99, 102, 241, 0.25);
+    color: #6366F1;
   }
 }
 </style>

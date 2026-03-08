@@ -95,6 +95,7 @@
               :position="notificationPosition"
               :notifications="displayNotifications"
               :is-logged-in="isLoggedIn"
+              :loading="notificationLoading"
               @update:visible="showNotificationMenu = $event"
               @mark-all-read="handleMarkAllRead"
               @notification-click="handleNotificationClick"
@@ -436,12 +437,17 @@ const loadUnreadCount = async () => {
   }
 }
 
+const notificationLoading = ref(false)
+
 const loadNotifications = async () => {
+  notificationLoading.value = true
   try {
     const result = await loadNotificationsData(1, 10)
     notifications.value = result.list as NotificationResponse[]
   } catch (error) {
     console.error('加载通知列表失败:', error)
+  } finally {
+    notificationLoading.value = false
   }
 }
 

@@ -26,15 +26,21 @@
         <!-- 社团头像 -->
         <view class="section">
           <text class="section-title">社团头像</text>
-          <view class="avatar-picker" @click="handlePickAvatar">
-            <view v-if="uploading" class="avatar-uploading">
-              <Icon name="loader" :size="24" class="spin-icon" />
-              <text class="uploading-text">上传中...</text>
+          <view class="avatar-wrapper">
+            <view class="avatar-picker" @click="handlePickAvatar">
+              <view v-if="uploading" class="avatar-uploading">
+                <Icon name="loader" :size="24" class="spin-icon" />
+                <text class="uploading-text">上传中...</text>
+              </view>
+              <image v-else-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
+              <view v-else class="avatar-placeholder">
+                <Icon name="image-plus" :size="28" color="#9CA3AF" />
+                <text class="placeholder-text">上传头像</text>
+              </view>
             </view>
-            <image v-else-if="form.logoUrl" class="avatar-preview" :src="form.logoUrl" mode="aspectFill" />
-            <view v-else class="avatar-placeholder">
-              <Icon name="image-plus" :size="28" color="#9CA3AF" />
-              <text class="placeholder-text">上传头像</text>
+            <!-- 已上传时显示删除按钮 -->
+            <view v-if="form.logoUrl && !uploading" class="avatar-remove" @click.stop="form.logoUrl = ''">
+              <Icon name="x" :size="12" color="#FFFFFF" />
             </view>
           </view>
         </view>
@@ -312,6 +318,28 @@ const handleSubmit = async () => {
 }
 
 /* ========== 头像上传 ========== */
+.avatar-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #EF4444;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  &:active { opacity: 0.8; }
+}
+
 .avatar-picker {
   width: 88px;
   height: 88px;

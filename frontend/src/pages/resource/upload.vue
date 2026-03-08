@@ -1032,7 +1032,10 @@ onLoad(() => {
   }
 
   :deep(.uni-input-placeholder) {
-    line-height: 88rpx;
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: normal;
   }
 }
 

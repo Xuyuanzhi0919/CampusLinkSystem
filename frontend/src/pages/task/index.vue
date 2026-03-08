@@ -128,7 +128,7 @@
               <text class="meta-name">{{ task.publisherNickname }}</text>
               <text class="meta-dot">·</text>
               <text class="meta-time">{{ formatTime(task.createdAt) }}</text>
-              <view v-if="task.location" class="meta-loc">
+              <view v-if="task.location && !parseCoord(task.location)" class="meta-loc">
                 <Icon name="map-pin" :size="11" class="meta-loc-icon" />
                 <text class="meta-loc-text">{{ task.location }}</text>
               </view>
@@ -270,7 +270,7 @@
                 @click="handleTaskClick(task)"
               >
                 <text class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</text>
-                <text class="hot-title">{{ task.title }}</text>
+                <text class="hot-title">{{ task.rewardPoints >= 50 ? '🔥 ' + task.title : task.title }}</text>
                 <view class="hot-reward">
                   <Icon name="zap" :size="11" />
                   <text class="hot-pts">{{ task.rewardPoints }}</text>
@@ -1092,7 +1092,7 @@ defineExpose({
   margin-bottom: $sp-4;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 1;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

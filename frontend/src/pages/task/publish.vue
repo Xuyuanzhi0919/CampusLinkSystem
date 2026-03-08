@@ -64,9 +64,15 @@
                     :key="type.value"
                     class="type-card"
                     :class="{ 'type-card--active': currentTypeIndex === index }"
+                    :style="currentTypeIndex === index ? `--type-color: ${type.color}` : ''"
                     @click="handleTypeSelect(index)"
                   >
-                    <text class="type-emoji">{{ type.icon }}</text>
+                    <Icon
+                      :name="type.icon"
+                      :size="26"
+                      class="type-icon"
+                      :color="type.color"
+                    />
                     <text class="type-label">{{ type.label }}</text>
                   </view>
                 </view>
@@ -381,10 +387,10 @@ const userStore = useUserStore()
 
 // 任务类型选项
 const taskTypes = [
-  { value: 'errand', label: '跑腿', icon: '🏃' },
-  { value: 'borrow', label: '借用', icon: '🤝' },
-  { value: 'sign', label: '代签到', icon: '✅' },
-  { value: 'other', label: '其他', icon: '📦' }
+  { value: 'errand', label: '跑腿', icon: 'zap',        color: '#F59E0B' },
+  { value: 'borrow', label: '借用', icon: 'share-2',    color: '#6366F1' },
+  { value: 'sign',   label: '代签到', icon: 'badge-check', color: '#22C55E' },
+  { value: 'other',  label: '其他',  icon: 'grid',      color: '#0EA5E9' }
 ]
 
 const currentTypeIndex = ref(-1)
@@ -1137,20 +1143,19 @@ const formatDeadline = (dateStr: string): string => {
   }
 
   &.type-card--active {
-    border-color: $primary;
-    background: rgba($primary, 0.06);
-    box-shadow: 0 2px 10px rgba($primary, 0.12);
+    border-color: var(--type-color, #{$primary});
+    background: color-mix(in srgb, var(--type-color, #{$primary}) 8%, white);
+    box-shadow: 0 2px 10px color-mix(in srgb, var(--type-color, #{$primary}) 20%, transparent);
 
     .type-label {
-      color: $primary;
+      color: var(--type-color, #{$primary});
       font-weight: 700;
     }
   }
 }
 
-.type-emoji {
-  font-size: 26px;
-  line-height: 1;
+.type-icon {
+  flex-shrink: 0;
 }
 
 .type-label {

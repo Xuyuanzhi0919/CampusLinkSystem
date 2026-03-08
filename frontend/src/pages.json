@@ -172,7 +172,7 @@
 			"path": "pages/club/publish-activity",
 			"style": {
 				"navigationBarTitleText": "发布活动",
-				"navigationBarBackgroundColor": "#FFFFFF"
+				"navigationStyle": "custom"
 			}
 		},
 		{

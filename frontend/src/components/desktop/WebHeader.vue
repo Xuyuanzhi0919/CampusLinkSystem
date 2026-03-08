@@ -17,72 +17,45 @@
         </nav>
       </div>
 
-      <!-- 右侧区域：搜索 + 操作 -->
+      <!-- 右侧区域 -->
       <div class="header-right">
-        <!-- 搜索框 -->
-        <div class="search-box">
-          <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none">
-            <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <input
-            type="text"
-            class="search-input"
-            v-model="searchKeyword"
-            placeholder="搜索资源、问答..."
-            @keyup.enter="handleSearch"
-          />
-          <template v-if="searchKeyword">
-            <div class="search-clear" @click="searchKeyword = ''">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-            </div>
-            <div class="search-btn" @click="handleSearch">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-          </template>
-        </div>
 
-        <!-- 操作区域 -->
-        <div class="action-group">
-          <!-- 用户头像 -->
-          <div class="user-wrapper" ref="avatarContainer">
-            <template v-if="isLoggedIn && userInfo">
-              <UserAvatar
-                class="header-avatar"
-                :avatar-url="userInfo.avatar"
-                :nickname="userInfo.nickname"
-                :is-active="showUserMenu"
-                size="36px"
-                @click="handleAvatarClick"
-              />
-              <UserDropdownMenu
-                :visible="showUserMenu"
-                :position="dropdownPosition"
-                :user-info="userInfo"
-                :user-stats="userStats"
-                :is-checked-in="isCheckedIn"
-                @update:visible="showUserMenu = $event"
-                @menu-click="handleMenuClick"
-                @check-in="handleCheckIn"
-                @stat-click="handleStatClick"
-              />
-            </template>
-            <template v-else>
-              <button class="login-btn" @click="handleLogin">登录</button>
+        <!-- 工具区：搜索 + AI + 通知 -->
+        <div class="tools-group">
+          <!-- 搜索框 -->
+          <div class="search-box">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <path d="M11 19C15.4183 19 19 15.4183 19 11C19 6.58172 15.4183 3 11 3C6.58172 3 3 6.58172 3 11C3 15.4183 6.58172 19 11 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M21 21L16.65 16.65" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input
+              type="text"
+              class="search-input"
+              v-model="searchKeyword"
+              placeholder="搜索..."
+              @keyup.enter="handleSearch"
+            />
+            <template v-if="searchKeyword">
+              <div class="search-clear" @click="searchKeyword = ''">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="search-btn" @click="handleSearch">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
             </template>
           </div>
 
-          <!-- AI 助手按钮 -->
+          <!-- AI 助手 -->
           <button class="ai-btn" aria-label="AI 助手" @click="toAIChat">
-            <Icon name="sparkles" :size="18" />
+            <Icon name="sparkles" :size="16" />
             <span class="ai-btn-label">AI</span>
           </button>
 
-          <!-- 通知按钮 -->
+          <!-- 通知 -->
           <div class="notification-wrapper" ref="notificationContainer">
             <button
               class="icon-btn"
@@ -90,7 +63,7 @@
               aria-label="打开通知"
               @click="handleMessagesClick"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -109,11 +82,17 @@
               @login="handleLogin"
             />
           </div>
+        </div>
 
+        <!-- 分隔线 -->
+        <div class="header-divider"></div>
+
+        <!-- 核心区：发布 + 个人 -->
+        <div class="core-group">
           <!-- 发布按钮 -->
           <div class="publish-wrapper" ref="publishContainer">
             <button class="publish-btn" @click="handlePublish">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
                 <path d="M12 5V19M5 12H19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
               <span>发布</span>
@@ -171,9 +150,38 @@
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
+
+          <!-- 个人中心：头像 / 登录 -->
+          <div class="user-wrapper" ref="avatarContainer">
+            <template v-if="isLoggedIn && userInfo">
+              <UserAvatar
+                class="header-avatar"
+                :avatar-url="userInfo.avatar"
+                :nickname="userInfo.nickname"
+                :is-active="showUserMenu"
+                size="36px"
+                @click="handleAvatarClick"
+              />
+              <UserDropdownMenu
+                :visible="showUserMenu"
+                :position="dropdownPosition"
+                :user-info="userInfo"
+                :user-stats="userStats"
+                :is-checked-in="isCheckedIn"
+                @update:visible="showUserMenu = $event"
+                @menu-click="handleMenuClick"
+                @check-in="handleCheckIn"
+                @stat-click="handleStatClick"
+              />
+            </template>
+            <template v-else>
+              <button class="login-btn" @click="handleLogin">登录</button>
+            </template>
+          </div>
+
+        </div><!-- /core-group -->
+      </div><!-- /header-right -->
+    </div><!-- /header-container -->
 
     <!-- 底部强调线 -->
     <div class="header-accent-line"></div>
@@ -747,57 +755,74 @@ defineExpose({
   }
 }
 
-// 右侧区域
+// 右侧区域（工具区 | 分隔线 | 核心区）
 .header-right {
   display: flex;
   align-items: center;
-  gap: 12px;  // 统一右侧图标间距：16px → 12px
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+// 工具区：搜索 + AI + 通知
+.tools-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// 核心区：发布 + 头像
+.core-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// 区域分隔线
+.header-divider {
+  width: 1px;
+  height: 22px;
+  background: $border-light;
+  border-radius: 1px;
+  flex-shrink: 0;
 }
 
 // 搜索框
 .search-box {
   display: flex;
   align-items: center;
-  width: 260px;
-  height: 38px;
-  padding: 0 6px 0 14px;
+  width: 220px;
+  height: 36px;
+  padding: 0 6px 0 12px;
   background: $white;
   border: 1px solid $border-color;
   border-radius: $radius-full;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
   &:hover {
-    border-color: rgba($primary, 0.5);
-    box-shadow: 0 2px 8px rgba($primary, 0.08);
+    border-color: rgba($primary, 0.45);
+    box-shadow: 0 2px 6px rgba($primary, 0.07);
   }
 
   &:focus-within {
-    width: 300px;
+    width: 260px;
     border-color: $primary;
     box-shadow: 0 0 0 3px rgba($primary, 0.1);
   }
 
-  // 响应式适配
   @media (max-width: 1200px) {
-    width: 200px;
-
-    &:focus-within {
-      width: 240px;
-    }
+    width: 180px;
+    &:focus-within { width: 210px; }
   }
 
   @media (max-width: 1024px) {
-    width: 180px;
-
-    &:focus-within {
-      width: 200px;
-    }
+    width: 140px;
+    &:focus-within { width: 170px; }
   }
 }
 
 .search-icon {
   color: $text-quaternary;
-  margin-right: 10px;
+  margin-right: 8px;
   flex-shrink: 0;
 }
 
@@ -819,9 +844,9 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-right: 6px;
+  width: 18px;
+  height: 18px;
+  margin-right: 4px;
   border-radius: 50%;
   background: $gray-200;
   color: $text-tertiary;
@@ -838,28 +863,20 @@ defineExpose({
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: $primary;
   color: $white;
   cursor: pointer;
   transition: $transition-fast;
 
-  &:hover {
-    background: $primary-dark;
-  }
-}
-
-// 操作区域
-.action-group {
-  display: flex;
-  align-items: center;
-  gap: 12px;  // 统一操作按钮间距：10px → 12px，与 header-right 一致
+  &:hover { background: $primary-dark; }
 }
 
 .notification-wrapper,
-.user-wrapper {
+.user-wrapper,
+.publish-wrapper {
   position: relative;
 }
 
@@ -869,7 +886,7 @@ defineExpose({
   align-items: center;
   gap: 5px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 11px;
   background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
   border: none;
   border-radius: 16px;
@@ -890,6 +907,12 @@ defineExpose({
 
   :deep(.icon) {
     color: #fff;
+  }
+
+  // 中屏隐藏文字，仅显示图标
+  @media (max-width: 1100px) {
+    padding: 0 9px;
+    .ai-btn-label { display: none; }
   }
 }
 
@@ -985,42 +1008,38 @@ defineExpose({
   }
 }
 
-// 发布按钮
-// 发布按钮容器
-.publish-wrapper {
-  position: relative;
-}
-
+// 发布按钮（胶囊型，强化视觉权重）
 .publish-btn {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 20px;
   background: $primary;
   border: none;
-  border-radius: $radius-sm;
+  border-radius: 19px;  // 完整胶囊
   color: $white;
-  font-size: 13px;
-  font-weight: $font-weight-medium;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 4px rgba($primary, 0.2);
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba($primary, 0.28);
+  white-space: nowrap;
 
   &:hover {
     background: $primary-dark;
-    box-shadow: 0 4px 12px rgba($primary, 0.3);
+    box-shadow: 0 5px 16px rgba($primary, 0.38);
     transform: translateY(-1px);
   }
 
   &:active {
-    transform: translateY(0) scale(0.98);
-    box-shadow: 0 2px 4px rgba($primary, 0.2);
+    transform: translateY(0) scale(0.97);
+    box-shadow: 0 2px 6px rgba($primary, 0.22);
   }
 
   svg {
     flex-shrink: 0;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   &:hover svg {

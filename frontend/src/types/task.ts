@@ -27,6 +27,7 @@ export interface TaskListItem {
   tid: number
   publisherNickname: string
   title: string
+  content: string
   taskType: TaskType
   rewardPoints: number
   location: string

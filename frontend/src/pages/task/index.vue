@@ -115,7 +115,10 @@
               </view>
             </view>
 
-            <!-- 行2：头像 + 昵称 + 时间 + 地点/截止 -->
+            <!-- 行2：内容摘要 -->
+            <text v-if="task.content" class="card-excerpt">{{ task.content }}</text>
+
+            <!-- 行3：头像 + 昵称 + 时间 + 地点/截止 -->
             <view class="card-row2">
               <view class="meta-avatar">
                 <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
@@ -1051,6 +1054,18 @@ defineExpose({
   white-space: nowrap;
   flex: 1;
   min-width: 0;
+}
+
+.card-excerpt {
+  display: block;
+  font-size: $font-size-sm;
+  color: $gray-500;
+  line-height: 1.5;
+  margin-bottom: $sp-4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
 }
 
 .status-tag {

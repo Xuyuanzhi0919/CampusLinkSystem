@@ -25,6 +25,11 @@ public class TaskListResponse {
     private String title;
 
     /**
+     * 任务描述摘要
+     */
+    private String content;
+
+    /**
      * 任务类型
      */
     private String taskType;

@@ -129,6 +129,7 @@ public class TaskService {
             TaskListResponse response = new TaskListResponse();
             response.setTid(task.getTid());
             response.setTitle(task.getTitle());
+            response.setContent(task.getContent());
             response.setTaskType(task.getTaskType());
             response.setRewardPoints(task.getRewardPoints());
             response.setLocation(task.getLocation());
@@ -478,6 +479,7 @@ public class TaskService {
             TaskListResponse response = new TaskListResponse();
             response.setTid(task.getTid());
             response.setTitle(task.getTitle());
+            response.setContent(task.getContent());
             response.setTaskType(task.getTaskType());
             response.setRewardPoints(task.getRewardPoints());
             response.setLocation(task.getLocation());
@@ -527,6 +529,7 @@ public class TaskService {
             TaskListResponse response = new TaskListResponse();
             response.setTid(task.getTid());
             response.setTitle(task.getTitle());
+            response.setContent(task.getContent());
             response.setTaskType(task.getTaskType());
             response.setRewardPoints(task.getRewardPoints());
             response.setLocation(task.getLocation());
@@ -636,6 +639,7 @@ public class TaskService {
             TaskListResponse response = new TaskListResponse();
             response.setTid(t.getTid());
             response.setTitle(t.getTitle());
+            response.setContent(t.getContent());
             response.setTaskType(t.getTaskType());
             response.setRewardPoints(t.getRewardPoints());
             response.setLocation(t.getLocation());

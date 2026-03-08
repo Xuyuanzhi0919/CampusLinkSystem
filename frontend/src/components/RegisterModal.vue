@@ -1354,6 +1354,7 @@ onUnmounted(() => {
 }
 
 .school-display {
+  line-height: 84rpx;
   cursor: pointer;
   &.placeholder { color: #9CA3AF; }
 }

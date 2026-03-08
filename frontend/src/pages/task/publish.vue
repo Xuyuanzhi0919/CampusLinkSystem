@@ -162,23 +162,20 @@
                     <text>{{ preset.label }}</text>
                   </view>
                 </view>
-                <!-- 自定义时间选择器 -->
-                <picker
-                  mode="multiSelector"
-                  :range="[dateRange, timeRange]"
-                  :value="[currentDateIndex, currentTimeIndex]"
-                  @change="handleDateTimeChange"
+                <!-- 自定义时间触发器 -->
+                <view
+                  class="picker-trigger"
+                  :class="{ 'picker-trigger--error': errors.deadline }"
+                  @click="openDeadlinePicker"
                 >
-                  <view class="picker-trigger" :class="{ 'picker-trigger--error': errors.deadline }">
-                    <view class="picker-left">
-                      <Icon name="calendar" :size="16" class="picker-icon" />
-                      <text :class="{ 'picker-placeholder': !formData.deadline }">
-                        {{ formData.deadline ? formatDeadline(formData.deadline) : '自定义时间...' }}
-                      </text>
-                    </view>
-                    <Icon name="chevron-down" :size="16" class="picker-arrow" />
+                  <view class="picker-left">
+                    <Icon name="calendar" :size="16" class="picker-icon" />
+                    <text :class="{ 'picker-placeholder': !formData.deadline }">
+                      {{ formData.deadline ? formatDeadline(formData.deadline) : '自定义时间...' }}
+                    </text>
                   </view>
-                </picker>
+                  <Icon name="chevron-down" :size="16" class="picker-arrow" />
+                </view>
                 <text v-if="errors.deadline" class="field-error-block">{{ errors.deadline }}</text>
               </view>
 
@@ -356,6 +353,57 @@
       </view>
     </scroll-view>
 
+    <!-- 截止时间自定义弹窗 -->
+    <view v-if="showDeadlinePicker" class="deadline-sheet-overlay" @click.self="closeDeadlinePicker">
+      <view class="deadline-sheet">
+        <view class="sheet-handle"></view>
+
+        <!-- 弹窗头 -->
+        <view class="sheet-header">
+          <view class="sheet-cancel-btn" @click="closeDeadlinePicker">
+            <Icon name="x" :size="18" />
+          </view>
+          <text class="sheet-title">选择截止时间</text>
+          <view class="sheet-confirm-btn" @click="confirmDeadlinePicker">
+            <text class="sheet-confirm-text">确定</text>
+          </view>
+        </view>
+
+        <!-- 日期选择 -->
+        <text class="sheet-section-label">日期</text>
+        <scroll-view class="sheet-date-scroll" scroll-x>
+          <view class="sheet-date-row">
+            <view
+              v-for="(opt, idx) in dateOptions"
+              :key="idx"
+              class="date-pill"
+              :class="{ 'date-pill--active': tempDateIdx === idx }"
+              @click="handleTempDateSelect(idx)"
+            >
+              <text class="date-pill-day">{{ opt.dayLabel }}</text>
+              <text class="date-pill-date">{{ opt.dateLabel }}</text>
+            </view>
+          </view>
+        </scroll-view>
+
+        <!-- 时间选择 -->
+        <text class="sheet-section-label">时间</text>
+        <scroll-view class="sheet-time-scroll" scroll-y>
+          <view class="sheet-time-grid">
+            <view
+              v-for="(opt, idx) in availableTimeOptions"
+              :key="idx"
+              class="time-pill"
+              :class="{ 'time-pill--active': tempTimeIdx === idx, 'time-pill--disabled': opt.disabled }"
+              @click="handleTempTimeSelect(idx)"
+            >
+              <text>{{ opt.label }}</text>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </view>
+
     <!-- 底部操作栏（移动端） -->
     <view class="bottom-action-bar">
       <CButton type="ghost" size="lg" @click="handleCancel">取消</CButton>
@@ -375,7 +423,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { publishTask } from '@/services/task'
 import type { PublishTaskRequest, TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
@@ -395,12 +443,6 @@ const taskTypes = [
 
 const currentTypeIndex = ref(-1)
 
-// 日期时间范围
-const dateRange = ref<string[]>([])
-const timeRange = ref<string[]>([])
-const currentDateIndex = ref(0)
-const currentTimeIndex = ref(0)
-
 // 截止时间快捷预设
 const activePreset = ref('')
 const deadlinePresets = [
@@ -410,31 +452,54 @@ const deadlinePresets = [
   { label: '1周后', hours: 168 }
 ]
 
-// 初始化日期时间范围
-const initDateTimeRange = () => {
-  const dates: string[] = []
-  const today = new Date()
-  for (let i = 0; i < 7; i++) {
-    const date = new Date(today)
-    date.setDate(today.getDate() + i)
-    const month = (date.getMonth() + 1).toString().padStart(2, '0')
-    const day = date.getDate().toString().padStart(2, '0')
-    dates.push(`${month}-${day}`)
-  }
-  dateRange.value = dates
+// 自定义弹窗状态
+const showDeadlinePicker = ref(false)
+const tempDateIdx = ref(1)
+const tempTimeIdx = ref(16) // 默认 08:00
 
-  const times: string[] = []
+// 日期选项（今天起 7 天）
+const DAY_NAMES = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
+const dateOptions = computed(() => {
+  const today = new Date()
+  return Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(today)
+    d.setDate(today.getDate() + i)
+    return {
+      dayLabel: i === 0 ? '今天' : i === 1 ? '明天' : i === 2 ? '后天' : DAY_NAMES[d.getDay()],
+      dateLabel: `${d.getMonth() + 1}/${d.getDate()}`,
+      date: d
+    }
+  })
+})
+
+// 时间选项（每 30 分钟，今天已过时间置灰）
+const availableTimeOptions = computed(() => {
+  const now = new Date()
+  const selDate = dateOptions.value[tempDateIdx.value]?.date
+  const isToday = selDate &&
+    selDate.getDate() === now.getDate() &&
+    selDate.getMonth() === now.getMonth()
+  const result = []
   for (let h = 0; h < 24; h++) {
     for (let m = 0; m < 60; m += 30) {
-      const hour = h.toString().padStart(2, '0')
-      const minute = m.toString().padStart(2, '0')
-      times.push(`${hour}:${minute}`)
+      result.push({
+        label: `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`,
+        hours: h,
+        minutes: m,
+        disabled: !!(isToday && (h < now.getHours() || (h === now.getHours() && m <= now.getMinutes())))
+      })
     }
   }
-  timeRange.value = times
-}
+  return result
+})
 
-initDateTimeRange()
+// 切换日期时，若当前时间格已置灰则跳到第一个可用时间格
+watch(tempDateIdx, () => {
+  if (availableTimeOptions.value[tempTimeIdx.value]?.disabled) {
+    const first = availableTimeOptions.value.findIndex(t => !t.disabled)
+    tempTimeIdx.value = first >= 0 ? first : 0
+  }
+})
 
 // 表单数据
 const formData = ref<PublishTaskRequest>({
@@ -646,33 +711,63 @@ const handleDeadlinePreset = (preset: { label: string, hours: number }) => {
 }
 
 /**
- * 日期时间改变（手动滚动选择）
+ * 弹窗：打开（预填已有值）
  */
-const handleDateTimeChange = (e: any) => {
-  const [dateIdx, timeIdx] = e.detail.value
-  currentDateIndex.value = dateIdx
-  currentTimeIndex.value = timeIdx
-  activePreset.value = '' // 清除预设高亮
+const openDeadlinePicker = () => {
+  if (formData.value.deadline) {
+    const d = new Date(formData.value.deadline)
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const diff = Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime() - today.getTime()) / 86400000)
+    tempDateIdx.value = Math.max(0, Math.min(6, diff))
+    const idx = availableTimeOptions.value.findIndex(t => t.hours === d.getHours() && t.minutes === d.getMinutes())
+    tempTimeIdx.value = idx >= 0 ? idx : 16
+  } else {
+    tempDateIdx.value = 1
+    const first = availableTimeOptions.value.findIndex(t => !t.disabled)
+    tempTimeIdx.value = first >= 0 ? first : 16
+  }
+  showDeadlinePicker.value = true
+}
 
-  const now = new Date()
-  const targetDate = new Date(now)
-  targetDate.setDate(now.getDate() + dateIdx)
+/**
+ * 弹窗：关闭
+ */
+const closeDeadlinePicker = () => {
+  showDeadlinePicker.value = false
+}
 
-  const [hours, minutes] = timeRange.value[timeIdx].split(':')
-  targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0)
-
-  if (targetDate <= now) {
-    uni.showToast({
-      title: '截止时间必须晚于当前时间',
-      icon: 'none'
-    })
-    formData.value.deadline = ''
-    currentDateIndex.value = 0
-    currentTimeIndex.value = 0
+/**
+ * 弹窗：确认选择
+ */
+const confirmDeadlinePicker = () => {
+  const opt = availableTimeOptions.value[tempTimeIdx.value]
+  if (!opt || opt.disabled) {
+    uni.showToast({ title: '请选择有效时间', icon: 'none' })
     return
   }
+  const base = dateOptions.value[tempDateIdx.value].date
+  const target = new Date(base)
+  target.setHours(opt.hours, opt.minutes, 0, 0)
+  activePreset.value = ''
+  applyDeadline(target)
+  closeDeadlinePicker()
+}
 
-  applyDeadline(targetDate)
+/**
+ * 弹窗：选择日期格
+ */
+const handleTempDateSelect = (idx: number) => {
+  tempDateIdx.value = idx
+}
+
+/**
+ * 弹窗：选择时间格
+ */
+const handleTempTimeSelect = (idx: number) => {
+  if (!availableTimeOptions.value[idx]?.disabled) {
+    tempTimeIdx.value = idx
+  }
 }
 
 /**
@@ -1588,6 +1683,212 @@ const formatDeadline = (dateStr: string): string => {
   font-size: 12px;
   color: $gray-500;
   line-height: 1.55;
+}
+
+// ===================================
+// 截止时间自定义弹窗
+// ===================================
+.deadline-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+}
+
+.deadline-sheet {
+  width: 100%;
+  max-height: 72vh;
+  background: $white;
+  border-radius: 20px 20px 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: sheetSlideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+
+  @media (min-width: 750px) {
+    max-width: 480px;
+    margin: 0 auto;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+@keyframes sheetSlideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: $gray-200;
+  border-radius: 2px;
+  margin: 10px auto 0;
+  flex-shrink: 0;
+}
+
+.sheet-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 12px;
+  border-bottom: 1px solid $gray-100;
+  flex-shrink: 0;
+}
+
+.sheet-cancel-btn {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-400;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s;
+
+  &:active { background: $gray-100; }
+}
+
+.sheet-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: $gray-900;
+}
+
+.sheet-confirm-btn {
+  height: 32px;
+  padding: 0 16px;
+  background: $primary;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:active { opacity: 0.82; }
+}
+
+.sheet-confirm-text {
+  font-size: 13px;
+  font-weight: 600;
+  color: $white;
+}
+
+.sheet-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: $gray-400;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 10px 16px 6px;
+  flex-shrink: 0;
+}
+
+// 日期横向滚动行
+.sheet-date-scroll {
+  flex-shrink: 0;
+  white-space: nowrap;
+  padding: 0 16px 12px;
+}
+
+.sheet-date-row {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.date-pill {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  min-width: 60px;
+  background: $gray-50;
+  border: 2px solid $gray-200;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &:active { transform: scale(0.95); }
+
+  &.date-pill--active {
+    border-color: $primary;
+    background: rgba($primary, 0.07);
+
+    .date-pill-day { color: $primary; font-weight: 700; }
+    .date-pill-date { color: rgba($primary, 0.65); }
+  }
+}
+
+.date-pill-day {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.date-pill-date {
+  font-size: 11px;
+  color: $gray-400;
+}
+
+// 时间网格
+.sheet-time-scroll {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 0 16px 24px;
+}
+
+.sheet-time-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+
+  @media (min-width: 375px) {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+.time-pill {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-50;
+  border: 1.5px solid $gray-200;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  text {
+    font-size: 12px;
+    font-weight: 500;
+    color: $gray-700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &:active:not(.time-pill--disabled) { transform: scale(0.94); }
+
+  &:hover:not(.time-pill--disabled) {
+    border-color: $primary;
+    background: rgba($primary, 0.05);
+    text { color: $primary; }
+  }
+
+  &.time-pill--active {
+    background: $primary;
+    border-color: $primary;
+    box-shadow: 0 2px 8px rgba($primary, 0.3);
+    text { color: $white; font-weight: 600; }
+  }
+
+  &.time-pill--disabled {
+    opacity: 0.28;
+    cursor: not-allowed;
+  }
 }
 
 // ===================================

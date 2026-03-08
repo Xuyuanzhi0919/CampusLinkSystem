@@ -338,19 +338,15 @@ const handleCheckIn = async () => {
  * 统计项点击处理 - 使用 useNavigation 统一导航
  */
 const handleStatClick = (type: string) => {
-  switch (type) {
-    case 'answers':
-      navigateTo('/pages/user/my-answers')
-      break
-    case 'resources':
-      navigateTo('/pages/user/my-resources')
-      break
-    case 'checkin':
-      // 签到天数点击不跳转
-      break
-    case 'likes':
-      toUserCenter()
-      break
+  const routeMap: Record<string, string> = {
+    answers:   '/pages/question/my',
+    resources: '/pages/resource/my',
+    checkin:   '/pages/user/points-history',
+    likes:     '/pages/user/liked-list',
+  }
+  const url = routeMap[type]
+  if (url) {
+    navigateTo(url)
   }
 }
 

@@ -280,9 +280,9 @@ const activeStatus = ref(-1)
 
 const statusFilters = [
   { value: -1, label: '全部' },
-  { value: 1, label: '报名中' },
-  { value: 2, label: '进行中' },
-  { value: 3, label: '已结束' },
+  { value: 0, label: '未开始' },
+  { value: 1, label: '进行中' },
+  { value: 2, label: '已结束' },
 ]
 
 const filteredList = computed(() => {
@@ -354,7 +354,8 @@ const getActivityType = (type: number) => {
 }
 
 const getStatusText = (status: number) => {
-  const map: Record<number, string> = { 0: '未开始', 1: '报名中', 2: '进行中', 3: '已结束', 4: '已取消' }
+  // 与后端 convertToResponse() 动态计算的状态对齐：0=未开始 1=进行中 2=已结束 3=已取消
+  const map: Record<number, string> = { 0: '未开始', 1: '进行中', 2: '已结束', 3: '已取消' }
   return map[status] || '未知'
 }
 
@@ -531,11 +532,10 @@ const upcomingActivities = computed(() =>
   font-size: 11px;
   font-weight: 600;
 
-  &.status--0 { background: rgba(250,173,20,0.3);   color: #FFE58F; }
-  &.status--1 { background: rgba(55, 125, 255, 0.3); color: #AED6FF; }
-  &.status--2 { background: rgba(39, 174, 96, 0.3);  color: #A9EFC5; }
-  &.status--3 { background: rgba(255,255,255, 0.1);  color: rgba(255,255,255,0.5); }
-  &.status--4 { background: rgba(255, 92, 92, 0.3);  color: #FFAEAE; }
+  &.status--0 { background: rgba(250,173,20,0.3);   color: #FFE58F; }              // 未开始 orange
+  &.status--1 { background: rgba(39, 174, 96, 0.3);  color: #A9EFC5; }              // 进行中 green
+  &.status--2 { background: rgba(255,255,255, 0.1);  color: rgba(255,255,255,0.5); } // 已结束 gray
+  &.status--3 { background: rgba(255, 92, 92, 0.3);  color: #FFAEAE; }              // 已取消 red
 }
 
 .banner-title {
@@ -755,11 +755,10 @@ const upcomingActivities = computed(() =>
   font-size: 10px;
   font-weight: 700;
 
-  &.status--0 { background: rgba(250,173,20,0.3);  color: #FFE58F; }
-  &.status--1 { background: rgba(55,125,255,0.3);   color: #AED6FF; }
-  &.status--2 { background: rgba(39,174,96,0.35);   color: #A9EFC5; }
-  &.status--3 { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.5); }
-  &.status--4 { background: rgba(255,92,92,0.3);    color: #FFAEAE; }
+  &.status--0 { background: rgba(250,173,20,0.3);  color: #FFE58F; }              // 未开始 orange
+  &.status--1 { background: rgba(39,174,96,0.35);   color: #A9EFC5; }              // 进行中 green
+  &.status--2 { background: rgba(255,255,255,0.1);  color: rgba(255,255,255,0.5); } // 已结束 gray
+  &.status--3 { background: rgba(255,92,92,0.3);    color: #FFAEAE; }              // 已取消 red
 }
 
 /* 白色信息区 */
@@ -1040,11 +1039,10 @@ const upcomingActivities = computed(() =>
   font-size: 10px;
   font-weight: 700;
 
-  &.status--0 { color: #D97706;           background: rgba(250,173,20,0.12); }
-  &.status--1 { color: $campus-blue;      background: rgba(55, 125, 255, 0.1); }
-  &.status--2 { color: $color-success;    background: rgba(39, 174, 96, 0.1); }
-  &.status--3 { color: $color-text-tertiary; background: rgba(0,0,0,0.05); }
-  &.status--4 { color: $color-danger;     background: rgba(255, 92, 92, 0.1); }
+  &.status--0 { color: #D97706;              background: rgba(250,173,20,0.12); }  // 未开始 orange
+  &.status--1 { color: $color-success;       background: rgba(39, 174, 96, 0.1); } // 进行中 green
+  &.status--2 { color: $color-text-tertiary; background: rgba(0,0,0,0.05); }       // 已结束 gray
+  &.status--3 { color: $color-danger;        background: rgba(255, 92, 92, 0.1); } // 已取消 red
 }
 
 .activity-card__meta-row {

@@ -22,32 +22,6 @@
       </view>
     </view>
 
-    <!-- 快捷操作模块 -->
-    <CCard variant="default" class="sidebar-card quick-actions-card">
-      <view class="card-header">
-        <Icon name="zap" :size="18" class="header-icon" />
-        <text class="header-title">快捷操作</text>
-      </view>
-      <view class="quick-actions">
-        <view class="action-item primary-action" @click="handleUploadResource">
-          <Icon name="file-text" :size="20" class="action-icon" />
-          <text class="action-text">上传资源</text>
-        </view>
-        <view class="action-item secondary-action" @click="handleMyTasks">
-          <Icon name="check-circle" :size="18" class="action-icon" />
-          <text class="action-text">我的任务</text>
-        </view>
-        <view class="action-item secondary-action" @click="handleMyCollections">
-          <Icon name="bookmark" :size="18" class="action-icon" />
-          <text class="action-text">我的收藏</text>
-        </view>
-        <view class="action-item secondary-action" @click="handleMyPoints">
-          <Icon name="gift" :size="18" class="action-icon" />
-          <text class="action-text">我的积分</text>
-        </view>
-      </view>
-    </CCard>
-
     <!-- 精选推荐轮播模块 -->
     <FeaturedCarousel
       v-if="featuredQuestions.length > 0 && !isFeaturedDismissed"
@@ -240,23 +214,6 @@ const handleGoAnswer = () => {
 // 空状态引导：去提问
 const handleGoAsk = () => {
   uni.navigateTo({ url: '/pages/question/ask' })
-}
-
-// 快捷操作
-const handleUploadResource = () => {
-  uni.navigateTo({ url: '/pages/publish/index' })
-}
-
-const handleMyCollections = () => {
-  uni.navigateTo({ url: '/pages/user/favorites' })
-}
-
-const handleMyPoints = () => {
-  uni.navigateTo({ url: '/pages/user/points-history' })
-}
-
-const handleMyTasks = () => {
-  uni.navigateTo({ url: '/pages/task/my' })
 }
 
 // 格式化数字（超过 1000 显示 1.2k）
@@ -501,96 +458,6 @@ onMounted(() => {
 
   &--highlight {
     color: $primary;
-  }
-}
-
-// ===================================
-// 快捷操作
-// ===================================
-.quick-actions-card {
-  background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
-}
-
-.quick-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.action-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease-out;
-  border: 1px solid transparent;
-
-  .action-icon {
-    flex-shrink: 0;
-    transition: transform 0.2s;
-  }
-
-  .action-text {
-    font-size: 14px;
-    font-weight: 500;
-    flex: 1;
-  }
-
-  &:active {
-    transform: scale(0.98);
-  }
-}
-
-.primary-action {
-  background: linear-gradient(135deg, $primary 0%, lighten($primary, 5%) 100%);
-  color: $white;
-  box-shadow: 0 2px 8px rgba($primary, 0.25);
-
-  .action-icon {
-    color: $white;
-  }
-
-  .action-text {
-    color: $white;
-    font-weight: 600;
-  }
-
-  &:hover {
-    box-shadow: 0 4px 12px rgba($primary, 0.35);
-    transform: translateY(-2px);
-
-    .action-icon {
-      transform: scale(1.1);
-    }
-  }
-}
-
-.secondary-action {
-  background: $white;
-  border-color: $gray-200;
-
-  .action-icon {
-    color: $primary;
-  }
-
-  .action-text {
-    color: $gray-700;
-  }
-
-  &:hover {
-    background: $gray-50;
-    border-color: $primary;
-    box-shadow: 0 2px 8px rgba($primary, 0.15);
-
-    .action-icon {
-      transform: scale(1.1);
-    }
-
-    .action-text {
-      color: $primary;
-    }
   }
 }
 

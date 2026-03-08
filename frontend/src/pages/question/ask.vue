@@ -873,7 +873,7 @@ const handleSubmit = async () => {
 
 <style lang="scss" scoped>
 // ===================================
-// 导航栏右侧发布按钮
+// 导航栏右侧发布按钮（PC 端显示，移动端隐藏）
 // ===================================
 .nav-publish {
   height: 32px;
@@ -886,6 +886,10 @@ const handleSubmit = async () => {
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.2s;
+
+  @media (max-width: 749px) {
+    display: none;
+  }
 
   &:active:not(.is-disabled) {
     opacity: 0.85;
@@ -941,7 +945,7 @@ const handleSubmit = async () => {
   }
 
   @include mobile {
-    padding: 16px 16px 24px;
+    padding: 16px 16px 100px; // 底部留出固定操作栏的空间
     flex-direction: column;
     gap: 16px;
   }
@@ -1754,7 +1758,7 @@ const handleSubmit = async () => {
 
 
 // ===================================
-// 底部操作栏（PC 端显示，移动端隐藏）
+// 底部操作栏（移动端固定底部，PC 端隐藏）
 // ===================================
 .bottom-action-bar {
   flex-shrink: 0;
@@ -1764,9 +1768,18 @@ const handleSubmit = async () => {
   padding-bottom: constant(safe-area-inset-bottom);
   padding-bottom: env(safe-area-inset-bottom);
 
-  // 移动端隐藏：主操作按钮已在头部导航栏
-  @include mobile {
+  // PC 端隐藏：发布按钮已在导航栏右上角
+  @media (min-width: 750px) {
     display: none;
+  }
+
+  // 移动端：固定在底部
+  @media (max-width: 749px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
   }
 }
 

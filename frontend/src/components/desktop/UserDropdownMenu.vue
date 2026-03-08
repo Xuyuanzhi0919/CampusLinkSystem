@@ -261,8 +261,8 @@ const handlePointsClick = () => {
 .user-header {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 16px 16px 14px;
+  gap: 10px;
+  padding: 12px 12px 10px;
   background: linear-gradient(135deg, #F8FAFF 0%, #F0F4FF 100%);
   border-bottom: 1px solid rgba(59, 130, 246, 0.06);
   position: relative;
@@ -274,8 +274,8 @@ const handlePointsClick = () => {
 }
 
 .user-avatar-large {
-  width: 48px;
-  height: 48px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   overflow: hidden;
   border: 2.5px solid #FFFFFF;
@@ -319,7 +319,7 @@ const handlePointsClick = () => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .user-name-row {
@@ -464,8 +464,8 @@ const handlePointsClick = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 9px 14px;
-  margin: 10px 12px 0;
+  padding: 7px 12px;
+  margin: 8px 10px 0;
   background: rgba(59, 130, 246, 0.04);
   border: 1px solid rgba(59, 130, 246, 0.1);
   border-radius: 10px;
@@ -527,25 +527,25 @@ const handlePointsClick = () => {
 
 /* ========== ③ 数据统计 2×2 ========== */
 .stats-section {
-  padding: 10px 12px 12px;
+  padding: 8px 10px 10px;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 7px;
+  gap: 6px;
 }
 
 .stat-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px 8px 9px;
+  padding: 8px 6px 7px;
   background: #F8FAFC;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.15s;
-  gap: 4px;
+  gap: 3px;
 
   &:hover {
     background: #EFF6FF;
@@ -559,8 +559,8 @@ const handlePointsClick = () => {
 }
 
 .stat-icon-wrap {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -573,7 +573,7 @@ const handlePointsClick = () => {
 }
 
 .stat-value {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: #1E293B;
   line-height: 1;
@@ -594,7 +594,7 @@ const handlePointsClick = () => {
 
 /* ========== ④ 菜单项 ========== */
 .menu-items {
-  padding: 6px 8px;
+  padding: 4px 8px;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -604,7 +604,7 @@ const handlePointsClick = () => {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 9px 8px;
+  padding: 7px 8px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
@@ -620,8 +620,8 @@ const handlePointsClick = () => {
 }
 
 .menu-icon-wrap {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -648,10 +648,8 @@ const handlePointsClick = () => {
 
 /* ========== ⑤ 退出登录 ========== */
 .logout-section {
-  padding: 0 8px 10px;
   border-top: 1px solid #F1F5F9;
-  margin-top: 2px;
-  padding-top: 6px;
+  padding: 4px 8px 8px;
 }
 
 .logout-icon-wrap {

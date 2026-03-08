@@ -37,7 +37,6 @@
       <view class="card-header">
         <Icon name="users" :size="18" class="header-icon" />
         <text class="header-title">活跃答主</text>
-        <text class="view-more" @click="handleViewMoreUsers">查看更多 ></text>
       </view>
       <view v-if="activeUsers.length > 0" class="active-users">
         <view
@@ -182,11 +181,6 @@ const emit = defineEmits<{
 // 点击标签 - 触发父组件筛选 (TagCloud组件回调)
 const handleTagCloudClick = (tag: TagItem) => {
   emit('filterByTag', tag.name)
-}
-
-// 查看更多用户
-const handleViewMoreUsers = () => {
-  uni.showToast({ title: '查看更多用户功能开发中', icon: 'none' })
 }
 
 // 点击用户
@@ -380,22 +374,6 @@ onMounted(() => {
   flex: 1;
 }
 
-.view-more {
-  font-size: 12px;
-  color: $primary;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-
-  &:hover {
-    color: darken($primary, 10%);
-    transform: translateX(2px);
-  }
-
-  &:active {
-    transform: scale(0.95);
-  }
-}
 
 // ===================================
 // 社区统计

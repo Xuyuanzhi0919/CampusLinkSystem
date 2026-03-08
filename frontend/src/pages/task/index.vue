@@ -194,12 +194,25 @@
                 <text class="stat-label">已完成</text>
               </view>
             </view>
-            <!-- 成就文案 -->
+            <!-- 成就文案 + 趋势 -->
             <view v-if="totalTaskDone > 0 || (userStore.userInfo?.points ?? 0) > 0" class="achievement-banner">
               <Icon name="award" :size="14" class="achievement-icon" />
-              <text class="achievement-text">
-                累计完成 <text class="achievement-highlight">{{ totalTaskDone }}</text> 个任务，持有 <text class="achievement-highlight">{{ userStore.userInfo?.points ?? 0 }}</text> 积分
-              </text>
+              <view class="achievement-content">
+                <text class="achievement-text">
+                  累计完成 <text class="achievement-highlight">{{ totalTaskDone }}</text> 个任务，持有 <text class="achievement-highlight">{{ userStore.userInfo?.points ?? 0 }}</text> 积分
+                </text>
+                <view v-if="weekTrend" class="trend-row">
+                  <Icon
+                    :name="weekTrend.diff >= 0 ? 'trending-up' : 'trending-down'"
+                    :size="12"
+                    class="trend-icon"
+                    :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'"
+                  />
+                  <text class="trend-text" :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'">
+                    本周 +{{ weekTrend.thisWeekPts }} 积分{{ weekTrend.diff !== 0 ? `，较上周 ${weekTrend.diff > 0 ? '+' : ''}${weekTrend.diff}` : '' }}
+                  </text>
+                </view>
+              </view>
             </view>
 
             <view class="sidebar-link-row">
@@ -256,6 +269,46 @@
             </view>
           </view>
 
+          <!-- 模块4：附近任务（已获取定位后显示） -->
+          <view class="sidebar-card" v-if="nearbyTasks.length > 0">
+            <view class="sidebar-card-header">
+              <Icon name="map-pin" :size="15" class="sidebar-header-icon nearby-icon" />
+              <text class="sidebar-card-title">附近任务</text>
+              <view class="nearby-refresh" @click="loadNearbyTasks">
+                <Icon name="rotate-cw" :size="13" class="nearby-refresh-icon" :class="{ spinning: locationLoading }" />
+              </view>
+            </view>
+            <view class="nearby-task-list">
+              <view
+                v-for="task in nearbyTasks"
+                :key="task.tid"
+                class="nearby-task-item"
+                @click="handleTaskClick(task)"
+              >
+                <view class="nearby-task-info">
+                  <text class="nearby-task-title">{{ task.title }}</text>
+                  <view class="nearby-task-meta">
+                    <Icon name="map-pin" :size="11" class="nearby-meta-icon" />
+                    <text class="nearby-dist">{{ formatDist(task.distance) }}</text>
+                    <text class="nearby-sep">·</text>
+                    <Icon name="zap" :size="11" class="nearby-pts-icon" />
+                    <text class="nearby-pts">{{ task.rewardPoints }}</text>
+                  </view>
+                </view>
+                <Icon name="chevron-right" :size="14" class="nearby-arrow" />
+              </view>
+            </view>
+          </view>
+
+          <!-- 定位引导（未获取定位时显示，仅 H5） -->
+          <!-- #ifdef H5 -->
+          <view v-if="nearbyTasks.length === 0 && !locationLoading && !userLocation" class="location-prompt" @click="loadNearbyTasks">
+            <Icon name="map-pin" :size="15" class="location-prompt-icon" />
+            <text class="location-prompt-text">开启定位，发现附近任务</text>
+            <Icon name="chevron-right" :size="13" class="location-prompt-arrow" />
+          </view>
+          <!-- #endif -->
+
         </view><!-- end task-sidebar -->
 
       </view>
@@ -269,7 +322,7 @@ import { ref, computed, onMounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
 import { getTodayStats } from '@/services/stats'
-import { getUserStats } from '@/services/user'
+import { getUserStats, getPointsLog } from '@/services/user'
 import { useUserStore } from '@/stores/user'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
@@ -492,16 +545,71 @@ const myStats = ref<MyTaskStats>({ pending: 0, ongoing: 0, done: 0 })
 const hotTasks = ref<TaskListItem[]>([])
 const todayPublished = ref<number>(0)
 const todayDone = ref<number>(0)
-const totalTaskDone = ref<number>(0)  // 累计完成任务数
+const totalTaskDone = ref<number>(0)
+
+interface WeekTrend { thisWeekPts: number; diff: number }
+const weekTrend = ref<WeekTrend | null>(null)
+
+// ===================================
+// 附近任务（H5 Geolocation）
+// ===================================
+interface NearbyTask extends TaskListItem { distance: number }
+const nearbyTasks = ref<NearbyTask[]>([])
+const userLocation = ref<{ lat: number; lng: number } | null>(null)
+const locationLoading = ref(false)
+
+const parseCoord = (loc: string): { lat: number; lng: number } | null => {
+  if (!loc) return null
+  const m = loc.match(/^(-?\d+\.?\d*)\s*[,，]\s*(-?\d+\.?\d*)$/)
+  if (!m) return null
+  const a = parseFloat(m[1]), b = parseFloat(m[2])
+  // 如果第一个数绝对值 > 90，判断为经度在前（lng, lat）格式
+  return Math.abs(a) > 90 ? { lat: b, lng: a } : { lat: a, lng: b }
+}
+
+const haversine = (lat1: number, lng1: number, lat2: number, lng2: number): number => {
+  const R = 6371, toRad = (d: number) => d * Math.PI / 180
+  const dLat = toRad(lat2 - lat1), dLng = toRad(lng2 - lng1)
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+const formatDist = (km: number): string => km < 1 ? `${Math.round(km * 1000)}m` : `${km.toFixed(1)}km`
+
+const loadNearbyTasks = async () => {
+  /* #ifdef H5 */
+  if (typeof navigator === 'undefined' || !navigator.geolocation || locationLoading.value) return
+  locationLoading.value = true
+  try {
+    const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 6000, maximumAge: 120000 })
+    )
+    userLocation.value = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+    const result = await getTaskList({ pageSize: 50, status: 0 })
+    const { lat, lng } = userLocation.value
+    nearbyTasks.value = (result.list || [])
+      .map(t => ({ ...t, _coord: parseCoord(t.location) }))
+      .filter((t): t is typeof t & { _coord: NonNullable<ReturnType<typeof parseCoord>> } => t._coord !== null)
+      .map(t => ({ ...t, distance: haversine(lat, lng, t._coord.lat, t._coord.lng) }))
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 3) as NearbyTask[]
+  } catch {
+    // 用户拒绝或超时，静默失败
+  } finally {
+    locationLoading.value = false
+  }
+  /* #endif */
+}
 
 const loadSidebarData = async () => {
   try {
-    const [pubResult, accResult, statsResult, hotResult, userStatsResult] = await Promise.allSettled([
+    const [pubResult, accResult, statsResult, hotResult, userStatsResult, pointsResult] = await Promise.allSettled([
       userStore.isLoggedIn ? getMyPublishedTasks({ pageSize: 100 }) : Promise.resolve(null),
       userStore.isLoggedIn ? getMyAcceptedTasks({ pageSize: 100 }) : Promise.resolve(null),
       getTodayStats(),
       getTaskList({ sortBy: 'reward_points', sortOrder: 'desc', pageSize: 3, status: 0 }),
-      userStore.isLoggedIn ? getUserStats() : Promise.resolve(null)
+      userStore.isLoggedIn ? getUserStats() : Promise.resolve(null),
+      userStore.isLoggedIn ? getPointsLog(1, 100) : Promise.resolve(null)
     ])
 
     // 我的发布统计
@@ -527,6 +635,20 @@ const loadSidebarData = async () => {
     if (userStatsResult.status === 'fulfilled' && userStatsResult.value) {
       totalTaskDone.value = userStatsResult.value.taskCompleteCount || 0
     }
+    // 本周 vs 上周积分趋势
+    if (pointsResult.status === 'fulfilled' && pointsResult.value) {
+      const now = Date.now()
+      const week = 7 * 86400000
+      const logs = pointsResult.value.list || []
+      const sum = (from: number, to: number) =>
+        logs.filter(l => { const t = new Date(l.createdAt).getTime(); return t >= from && t < to && l.pointsChange > 0 })
+            .reduce((s, l) => s + l.pointsChange, 0)
+      const thisWeek = sum(now - week, now)
+      const lastWeek = sum(now - 2 * week, now - week)
+      if (thisWeek > 0 || lastWeek > 0) {
+        weekTrend.value = { thisWeekPts: thisWeek, diff: thisWeek - lastWeek }
+      }
+    }
   } catch (e) {
     // 侧边栏数据加载失败不影响主列表
   }
@@ -540,6 +662,7 @@ onPageScroll((e) => {
 onMounted(() => {
   loadTasks()
   loadSidebarData()
+  loadNearbyTasks()
 })
 
 defineExpose({
@@ -1276,6 +1399,25 @@ defineExpose({
 }
 
 // 发布引导卡片
+// 趋势行
+.achievement-content {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+  flex: 1;
+}
+
+.trend-row {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+}
+
+.trend-icon { flex-shrink: 0; }
+.trend-text { font-size: $font-size-xs; font-weight: $font-weight-medium; }
+.trend-up { color: #52C41A; }
+.trend-down { color: #FF4D4F; }
+
 // 成就文案
 .achievement-banner {
   display: flex;
@@ -1299,6 +1441,76 @@ defineExpose({
   font-weight: $font-weight-bold;
   color: $primary;
 }
+
+// 附近任务
+.nearby-icon { color: #52C41A; }
+
+.nearby-refresh {
+  margin-left: auto;
+  cursor: pointer;
+  &:active { opacity: 0.6; }
+}
+
+.nearby-refresh-icon {
+  color: $gray-400;
+  transition: transform 0.3s linear;
+  &.spinning { animation: spin 1s linear infinite; }
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.nearby-task-list { display: flex; flex-direction: column; gap: $sp-4; }
+
+.nearby-task-item {
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-3 0;
+  cursor: pointer;
+  &:not(:last-child) { border-bottom: 1rpx solid $gray-50; }
+  &:active { opacity: 0.75; }
+}
+
+.nearby-task-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: $sp-2; }
+
+.nearby-task-title {
+  font-size: $font-size-sm;
+  color: $gray-700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nearby-task-meta { display: flex; align-items: center; gap: $sp-2; }
+.nearby-meta-icon { color: #52C41A; flex-shrink: 0; }
+.nearby-dist { font-size: $font-size-xs; color: #52C41A; font-weight: $font-weight-medium; }
+.nearby-sep { font-size: $font-size-xs; color: $gray-300; }
+.nearby-pts-icon { color: #FF6B35; flex-shrink: 0; }
+.nearby-pts { font-size: $font-size-xs; color: #FF6B35; font-weight: $font-weight-semibold; }
+.nearby-arrow { color: $gray-300; flex-shrink: 0; }
+
+// 定位引导
+.location-prompt {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+  background: $white;
+  border-radius: $radius-card;
+  padding: $sp-6 $sp-7;
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
+  border: 1rpx dashed $gray-300;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:active { background: $gray-50; }
+  /* #ifdef H5 */
+  &:hover { border-color: $primary; background: rgba($primary, 0.03); .location-prompt-text { color: $primary; } .location-prompt-icon { color: $primary; } }
+  /* #endif */
+}
+
+.location-prompt-icon { color: $gray-400; flex-shrink: 0; }
+.location-prompt-text { flex: 1; font-size: $font-size-sm; color: $gray-500; }
+.location-prompt-arrow { color: $gray-400; }
 </style>
 
 <!-- H5 端全局：隐藏滚动条 -->

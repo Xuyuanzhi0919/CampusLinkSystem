@@ -138,12 +138,19 @@
               </view>
             </view>
 
-            <!-- 行3：积分奖励（右对齐） -->
+            <!-- 行4：积分 + 快捷接单 -->
             <view class="card-row3">
               <view class="reward-pill">
                 <Icon name="zap" :size="12" class="reward-icon" />
                 <text class="reward-pts">{{ task.rewardPoints }}</text>
                 <text class="reward-unit">积分</text>
+              </view>
+              <view
+                v-if="task.status === 0 && !isTaskExpired(task) && userStore.isLoggedIn && task.publisherNickname !== userStore.userInfo?.nickname"
+                class="quick-accept-btn"
+                @click.stop="handleQuickAccept(task)"
+              >
+                <text>立即接单</text>
               </view>
             </view>
           </view>
@@ -323,7 +330,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
-import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks } from '@/services/task'
+import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks, acceptTask } from '@/services/task'
 import { getTodayStats } from '@/services/stats'
 import { getUserStats, getPointsLog } from '@/services/user'
 import { useUserStore } from '@/stores/user'
@@ -470,6 +477,27 @@ const clearSearch = () => {
 
 const handleTaskClick = (task: TaskListItem) => {
   uni.navigateTo({ url: `/pages/task/detail?id=${task.tid}` })
+}
+
+const handleQuickAccept = (task: TaskListItem) => {
+  uni.showModal({
+    title: '确认接单',
+    content: `接受任务「${task.title}」？`,
+    confirmText: '接单',
+    confirmColor: '#1677FF',
+    success: async (res) => {
+      if (!res.confirm) return
+      try {
+        await acceptTask(task.tid)
+        uni.showToast({ title: '接单成功', icon: 'success' })
+        // 刷新列表
+        taskList.value = []
+        loadTasks(true)
+      } catch (e: any) {
+        uni.showToast({ title: e.message || '接单失败', icon: 'none' })
+      }
+    }
+  })
 }
 
 const handlePublish = () => {
@@ -1086,13 +1114,21 @@ defineExpose({
   &.status-expired { background: $gray-100; color: $gray-400; }    // 已截止
 }
 
-// --- 行2：头像 + 昵称 + 时间 + 地点 ---
+// --- 行3：头像 + 昵称 + 时间 + 地点 ---
 .card-row2 {
   display: flex;
   align-items: center;
   gap: $sp-3;
   margin-bottom: $sp-5;
   overflow: hidden;
+
+  // 移动端：截断过长的昵称和地点，保持单行紧凑
+  @include mobile {
+    .meta-name { max-width: 120rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .meta-loc  { flex: 1; min-width: 0;
+      .meta-loc-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    }
+  }
 }
 
 .meta-avatar {
@@ -1151,10 +1187,28 @@ defineExpose({
   white-space: nowrap;
 }
 
-// --- 行3：积分奖励 ---
+// --- 行4：积分 + 快捷接单 ---
 .card-row3 {
   display: flex;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quick-accept-btn {
+  padding: 10rpx 28rpx;
+  background: $primary;
+  color: $white;
+  border-radius: 40rpx;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:active { opacity: 0.8; }
+
+  /* #ifdef H5 */
+  &:hover { opacity: 0.88; }
+  /* #endif */
 }
 
 .reward-pill {

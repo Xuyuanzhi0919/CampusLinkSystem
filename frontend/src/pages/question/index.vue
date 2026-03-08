@@ -111,7 +111,7 @@
         <view class="quick-chips">
           <view
             class="quick-chip"
-            :class="{ active: sortBy === 'created_at' && status === null }"
+            :class="{ active: sortBy === 'updated_at' && status === null }"
             @click="handleQuickFilter('latest')"
           >
             <Icon name="clock" :size="13" class="chip-icon" />
@@ -479,7 +479,7 @@ const hotSearchWords = ['期末复习资料', 'Java多线程', '数据结构算�
 // 筛选条件
 const category = ref<string | null>(null)
 const status = ref<number | null>(null)
-const sortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
+const sortBy = ref<'updated_at' | 'created_at' | 'views' | 'bounty' | 'answerCount'>('updated_at')
 const hasBounty = ref(false) // 仅看有悬赏的问题
 let filterDebounce: number | null = null
 
@@ -512,7 +512,7 @@ const handleCloseFilterModal = () => {
 
 const tempCategory = ref<string | null>(null)
 const tempStatus = ref<number | null>(null)
-const tempSortBy = ref<'created_at' | 'views' | 'bounty' | 'answerCount' | 'lastAnswerTime'>('created_at')
+const tempSortBy = ref<'updated_at' | 'created_at' | 'views' | 'bounty' | 'answerCount'>('updated_at')
 const tempHasBounty = ref(false)
 
 // 顶部导航折叠状态
@@ -521,7 +521,7 @@ const COLLAPSE_THRESHOLD = 120 // 滚动阈值120px
 
 // 判断是否有激活的筛选条件
 const hasActiveFilters = computed(() => {
-  return category.value !== null || status.value !== null || sortBy.value !== 'created_at' || hasBounty.value
+  return category.value !== null || status.value !== null || sortBy.value !== 'updated_at' || hasBounty.value
 })
 
 // 活跃筛选项数量
@@ -563,11 +563,11 @@ const categories: Array<{ label: string; value: string | null; icon: string; ico
 
 // 排序选项
 const sortOptions = [
+  { label: '最近活跃', value: 'updated_at' as const, iconName: 'activity' },
   { label: '最新发布', value: 'created_at' as const, iconName: 'clock' },
   { label: '浏览最多', value: 'views' as const, iconName: 'eye' },
   { label: '悬赏最高', value: 'bounty' as const, iconName: 'award' },
   { label: '回答数', value: 'answerCount' as const, iconName: 'message-square' },
-  { label: '最新回答', value: 'lastAnswerTime' as const, iconName: 'message-circle' }
 ]
 
 // 状态标签
@@ -733,7 +733,7 @@ const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
 
   switch (type) {
     case 'latest':
-      sortBy.value = 'created_at'
+      sortBy.value = 'updated_at'
       break
     case 'bounty':
       sortBy.value = 'bounty'
@@ -754,7 +754,7 @@ const handleQuickFilter = (type: 'latest' | 'bounty' | 'hot' | 'unsolved') => {
 const handleResetFilter = () => {
   tempCategory.value = null
   tempStatus.value = null
-  tempSortBy.value = 'created_at'
+  tempSortBy.value = 'updated_at'
   tempHasBounty.value = false
 }
 

@@ -135,7 +135,9 @@ public class QuestionService {
         }
 
         // 排序
-        if ("created_at".equals(sortBy)) {
+        if ("updated_at".equals(sortBy)) {
+            wrapper.orderBy(true, "asc".equals(sortOrder), Question::getUpdatedAt);
+        } else if ("created_at".equals(sortBy)) {
             wrapper.orderBy(true, "asc".equals(sortOrder), Question::getCreatedAt);
         } else if ("views".equals(sortBy)) {
             wrapper.orderBy(true, "asc".equals(sortOrder), Question::getViews);

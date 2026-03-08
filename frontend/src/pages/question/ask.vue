@@ -1481,9 +1481,23 @@ const handleSubmit = async () => {
   background: transparent;
   outline: none;
 
-  &::placeholder {
+  :deep(.uni-input-wrapper) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  :deep(.uni-input-input) {
+    height: 100%;
+  }
+
+  :deep(.uni-input-placeholder) {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    line-height: normal !important;
     color: $gray-400;
-    font-size: 13px;  // placeholder稍小
+    font-size: 13px;
   }
 }
 
@@ -1758,17 +1772,35 @@ const handleSubmit = async () => {
   transition: all 0.2s;
   display: block;
 
+  :deep(.uni-input-wrapper) {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  :deep(.uni-input-input) {
+    height: 100%;
+    text-align: center;
+  }
+
+  :deep(.uni-input-placeholder) {
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    line-height: normal !important;
+    text-align: center;
+    width: 100%;
+    color: $gray-400;
+    font-weight: 400;
+    font-size: 14px;
+  }
+
   &:focus {
     background: $white;
     border-color: $primary;
     box-shadow: 0 0 0 3px rgba($primary, 0.1);
     outline: none;
-  }
-
-  &::placeholder {
-    color: $gray-400;
-    font-weight: 400;
-    font-size: 14px;
   }
 }
 

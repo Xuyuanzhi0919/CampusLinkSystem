@@ -773,7 +773,6 @@ const handleJoinClub = async (club: any) => {
 
 /* ========== 搜索 + 分类筛选 ========== */
 .filter-wrap {
-  padding: 0 16px;
   margin: 4px 0 12px;
   display: flex;
   flex-direction: column;
@@ -788,6 +787,7 @@ const handleJoinClub = async (club: any) => {
   border: 1px solid #E5E7EB;
   border-radius: 24px;
   padding: 8px 14px;
+  margin: 0 16px;
   transition: border-color 0.15s;
 
   &:focus-within {
@@ -830,7 +830,7 @@ const handleJoinClub = async (club: any) => {
 .cat-tabs {
   display: inline-flex;
   gap: 8px;
-  padding: 2px 0;
+  padding: 2px 16px;
 }
 
 .cat-tab {
@@ -1100,8 +1100,7 @@ const handleJoinClub = async (club: any) => {
   width: 22px;
   height: 22px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.22);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: var(--card-color);
   flex-shrink: 0;
   transition: opacity 0.15s, transform 0.15s;
 
@@ -1109,7 +1108,7 @@ const handleJoinClub = async (club: any) => {
 
   &--joined {
     background: transparent;
-    border-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid #E5E7EB;
   }
 
   &--loading {
@@ -1121,12 +1120,13 @@ const handleJoinClub = async (club: any) => {
 .hot-card__join-text {
   font-size: 12px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.95);
+  color: #FFFFFF;
   line-height: 1;
 
   .hot-card__join--joined & {
     font-size: 10px;
-    color: rgba(255, 255, 255, 0.6);
+    color: #9CA3AF;
+    font-weight: 600;
   }
 }
 

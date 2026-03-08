@@ -105,7 +105,8 @@
                 </view>
                 <view class="deadline-value">
                   <text class="info-value">{{ formatTime(task.deadline) }}</text>
-                  <text v-if="deadlineNote" class="deadline-note" :class="deadlineNoteClass">{{ deadlineNote }}</text>
+                  <text v-if="countdownText" class="deadline-note" :class="countdownUrgent ? 'note-warn' : 'note-active'">{{ countdownText }}</text>
+                  <text v-else-if="deadlineNote" class="deadline-note" :class="deadlineNoteClass">{{ deadlineNote }}</text>
                 </view>
               </view>
               <view class="info-item">
@@ -343,7 +344,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { CNavBar } from '@/components/layout'
 import {
   MoreHorizontal, Frown,
@@ -387,6 +388,38 @@ const isExpired = computed(() => {
   if (!task.value?.deadline) return false
   return new Date() > new Date(task.value.deadline)
 })
+
+// ===================================
+// 倒计时
+// ===================================
+const countdownText = ref('')
+const countdownUrgent = ref(false)
+let countdownTimer: ReturnType<typeof setInterval> | null = null
+
+const calcCountdown = () => {
+  if (!task.value?.deadline) { countdownText.value = ''; return }
+  const s = task.value.status
+  if (s === TaskStatus.COMPLETED || s === TaskStatus.CANCELLED || s === TaskStatus.EXPIRED) {
+    countdownText.value = ''; return
+  }
+  const diff = new Date(task.value.deadline).getTime() - Date.now()
+  if (diff <= 0) {
+    countdownText.value = '已截止'
+    countdownUrgent.value = true
+    return
+  }
+  countdownUrgent.value = diff < 86400000
+  const days = Math.floor(diff / 86400000)
+  const hours = Math.floor((diff % 86400000) / 3600000)
+  const minutes = Math.floor((diff % 3600000) / 60000)
+  if (days > 0) {
+    countdownText.value = `还剩 ${days}天${hours}小时`
+  } else if (hours > 0) {
+    countdownText.value = `还剩 ${hours}小时${minutes}分钟`
+  } else {
+    countdownText.value = `还剩 ${minutes} 分钟`
+  }
+}
 
 // ===================================
 // 状态 & 截止时间联动
@@ -552,6 +585,7 @@ const loadTaskDetail = async (id: number) => {
     if (task.value?.location) {
       initDisplayLocation(task.value.location)
     }
+    calcCountdown()
   } catch (e: any) {
     uni.showToast({ title: e.message || '加载失败', icon: 'none' })
     task.value = null
@@ -641,6 +675,11 @@ onMounted(() => {
   const options = (pages[pages.length - 1] as any)?.options || {}
   if (options.id) loadTaskDetail(Number(options.id))
   else loading.value = false
+  countdownTimer = setInterval(calcCountdown, 60000)
+})
+
+onUnmounted(() => {
+  if (countdownTimer) clearInterval(countdownTimer)
 })
 </script>
 
@@ -1037,6 +1076,7 @@ onMounted(() => {
   &.note-success { color: #52C41A; }
   &.note-warn    { color: #FAAD14; }
   &.note-neutral { color: $gray-400; }
+  &.note-active  { color: $primary; }
 }
 
 // ===================================

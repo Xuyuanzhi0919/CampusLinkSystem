@@ -1529,6 +1529,14 @@ const handleJoinClub = async (club: any) => {
     width: 68px;
   }
 
+  .club-search {
+    margin: 0 80px;
+  }
+
+  .cat-tabs {
+    padding: 2px 80px;
+  }
+
   .club-items {
     padding: 0 80px;
     display: grid;

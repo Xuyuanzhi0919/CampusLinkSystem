@@ -572,6 +572,8 @@ onMounted(() => {
 
 
 .detail-container {
+  max-width: 960px;
+  margin: 0 auto;
   padding: $sp-8;
 }
 

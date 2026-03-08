@@ -602,6 +602,8 @@ defineExpose({
 }
 
 .content-container {
+  max-width: 960px;
+  margin: 0 auto;
   padding: $sp-6 $sp-8 0;
 }
 

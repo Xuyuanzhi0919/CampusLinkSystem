@@ -287,6 +287,39 @@
       </view>
     </view>
 
+    <!-- 自定义更多菜单弹窗 -->
+    <view v-if="moreMenuVisible" class="sheet-mask" @click="moreMenuVisible = false" />
+    <view class="sheet-panel" :class="{ 'sheet-panel--visible': moreMenuVisible }">
+      <view class="sheet-handle" />
+      <view class="sheet-title">更多操作</view>
+      <view class="sheet-items">
+        <view class="sheet-item" @click="onMenuShare">
+          <view class="sheet-item-icon share">
+            <Share2 :size="18" />
+          </view>
+          <text class="sheet-item-label">分享任务</text>
+          <ChevronRight :size="16" class="sheet-item-arrow" />
+        </view>
+        <view class="sheet-item" @click="onMenuFavorite">
+          <view class="sheet-item-icon" :class="task?.isFavorited ? 'unfavorite' : 'favorite'">
+            <component :is="task?.isFavorited ? BookmarkCheck : Bookmark" :size="18" />
+          </view>
+          <text class="sheet-item-label">{{ task?.isFavorited ? '取消收藏' : '收藏任务' }}</text>
+          <ChevronRight :size="16" class="sheet-item-arrow" />
+        </view>
+        <view class="sheet-item sheet-item--danger" @click="onMenuReport">
+          <view class="sheet-item-icon report">
+            <Flag :size="18" />
+          </view>
+          <text class="sheet-item-label">举报</text>
+          <ChevronRight :size="16" class="sheet-item-arrow" />
+        </view>
+      </view>
+      <view class="sheet-cancel" @click="moreMenuVisible = false">
+        <text>取消</text>
+      </view>
+    </view>
+
   </view>
 </template>
 
@@ -300,6 +333,7 @@ import {
   Zap, CheckCircle, Send, XCircle, CheckCheck, Trash2,
   Bookmark, BookmarkCheck, ListChecks,
   Footprints, Handshake, BookOpen, Package,
+  Share2, ChevronRight, Flag,
 } from 'lucide-vue-next'
 import Request from '@/utils/request'
 import {
@@ -567,19 +601,20 @@ const contactUser = (userId: number) => {
 
 const goBack = () => uni.navigateBack()
 
-const showMoreMenu = () => {
-  uni.showActionSheet({
-    itemList: ['分享任务', task.value?.isFavorited ? '取消收藏' : '收藏任务', '举报'],
-    success: async (res) => {
-      if (res.tapIndex === 0) {
-        uni.showToast({ title: '分享功能开发中', icon: 'none' })
-      } else if (res.tapIndex === 1) {
-        await handleFavorite()
-      } else if (res.tapIndex === 2) {
-        uni.showToast({ title: '已提交举报', icon: 'success' })
-      }
-    }
-  })
+const moreMenuVisible = ref(false)
+const showMoreMenu = () => { moreMenuVisible.value = true }
+
+const onMenuShare = () => {
+  moreMenuVisible.value = false
+  uni.showToast({ title: '分享功能开发中', icon: 'none' })
+}
+const onMenuFavorite = async () => {
+  moreMenuVisible.value = false
+  await handleFavorite()
+}
+const onMenuReport = () => {
+  moreMenuVisible.value = false
+  uni.showToast({ title: '已提交举报', icon: 'success' })
 }
 
 onMounted(() => {
@@ -596,6 +631,100 @@ onMounted(() => {
   min-height: 100vh;
   background: $bg-page;
   padding-bottom: 140rpx;
+}
+
+// ===================================
+// 自定义 ActionSheet 弹窗
+// ===================================
+.sheet-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+
+.sheet-panel {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  z-index: 1000;
+  background: $white;
+  border-radius: 24rpx 24rpx 0 0;
+  padding: 0 0 calc(env(safe-area-inset-bottom) + 16rpx);
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+
+  &--visible { transform: translateY(0); }
+}
+
+.sheet-handle {
+  width: 64rpx; height: 8rpx;
+  background: $gray-200;
+  border-radius: 4rpx;
+  margin: 16rpx auto 0;
+}
+
+.sheet-title {
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $gray-400;
+  padding: 20rpx 0 16rpx;
+}
+
+.sheet-items {
+  padding: 0 24rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 4rpx;
+}
+
+.sheet-item {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 28rpx 20rpx;
+  border-radius: 16rpx;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: $gray-50; }
+
+  &--danger .sheet-item-label { color: $error; }
+}
+
+.sheet-item-icon {
+  width: 72rpx; height: 72rpx;
+  border-radius: 18rpx;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+
+  &.share    { background: #EBF5FB; color: #2196F3; }
+  &.favorite { background: #FFF3E0; color: #FF9800; }
+  &.unfavorite { background: $gray-100; color: $gray-500; }
+  &.report   { background: #FDECEA; color: $error; }
+}
+
+.sheet-item-label {
+  flex: 1;
+  font-size: $font-size-base;
+  color: $gray-800;
+  font-weight: $font-weight-medium;
+}
+
+.sheet-item-arrow {
+  color: $gray-300;
+}
+
+.sheet-cancel {
+  margin: 16rpx 24rpx 0;
+  padding: 28rpx;
+  text-align: center;
+  background: $gray-50;
+  border-radius: 16rpx;
+  font-size: $font-size-base;
+  color: $gray-600;
+  cursor: pointer;
+  &:active { background: $gray-100; }
 }
 
 // ===================================

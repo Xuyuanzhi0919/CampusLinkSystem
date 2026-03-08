@@ -7,22 +7,24 @@
 
     <!-- 任务详情 -->
     <view v-else-if="task" class="detail-container">
-      <!-- 状态标签 -->
-      <view
-        class="status-badge"
-        :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isExpired }]"
-      >
-        <text class="status-text">{{ getStatusLabel(task.status) }}</text>
+      <!-- 顶部：类型 + 状态 -->
+      <view class="top-badges">
+        <view class="type-badge" :class="`type-${task.taskType}`">
+          <text class="type-badge-icon">{{ getTypeIcon(task.taskType) }}</text>
+          <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
+        </view>
+        <view
+          class="status-badge"
+          :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isExpired }]"
+        >
+          <text class="status-text">{{ getStatusLabel(task.status) }}</text>
+        </view>
       </view>
 
       <!-- 任务标题 -->
       <view class="task-header">
         <text class="task-title">{{ task.title }}</text>
         <view class="task-meta">
-          <view class="meta-item">
-            <text class="meta-icon">{{ getTypeIcon(task.taskType) }}</text>
-            <text class="meta-text">{{ getTypeLabel(task.taskType) }}</text>
-          </view>
           <view class="meta-item">
             <text class="meta-icon">👁</text>
             <text class="meta-text">{{ task.viewCount }} 浏览</text>
@@ -73,11 +75,17 @@
       <view class="user-section">
         <view class="section-title">发布者</view>
         <view class="user-card">
-          <image
-            class="user-avatar"
-            :src="task.publisherAvatar || '/static/default-avatar.png'"
-            mode="aspectFill"
-          />
+          <view class="avatar-wrap">
+            <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
+              <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+            </view>
+            <image
+              v-if="task.publisherAvatar"
+              class="user-avatar"
+              :src="task.publisherAvatar"
+              mode="aspectFill"
+            />
+          </view>
           <text class="user-name">{{ task.publisherNickname }}</text>
         </view>
       </view>
@@ -86,11 +94,17 @@
       <view v-if="task.accepterId" class="user-section">
         <view class="section-title">接单者</view>
         <view class="user-card">
-          <image
-            class="user-avatar"
-            :src="task.accepterAvatar || '/static/default-avatar.png'"
-            mode="aspectFill"
-          />
+          <view class="avatar-wrap">
+            <view class="avatar-placeholder" :style="getAvatarBg(task.accepterNickname || '')">
+              <text class="avatar-char">{{ task.accepterNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+            </view>
+            <image
+              v-if="task.accepterAvatar"
+              class="user-avatar"
+              :src="task.accepterAvatar"
+              mode="aspectFill"
+            />
+          </view>
           <text class="user-name">{{ task.accepterNickname }}</text>
         </view>
       </view>
@@ -180,6 +194,12 @@ const userStore = useUserStore()
 
 const task = ref<TaskDetail | null>(null)
 const loading = ref(true)
+
+const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getAvatarBg = (name: string) => {
+  const idx = name ? name.charCodeAt(0) % AVATAR_COLORS.length : 0
+  return { background: AVATAR_COLORS[idx] }
+}
 
 // 判断是否是我的任务
 const isMyTask = computed(() => {
@@ -546,6 +566,52 @@ onMounted(() => {
 }
 
 // ===================================
+// 顶部徽标行
+// ===================================
+.top-badges {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $sp-6;
+}
+
+// 类型徽标
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-5;
+  border-radius: $radius-2xl;
+
+  &.type-errand {
+    background: rgba(#F59E0B, 0.12);
+    .type-badge-icon, .type-badge-label { color: #D97706; }
+  }
+  &.type-borrow {
+    background: $primary-100;
+    .type-badge-icon, .type-badge-label { color: $primary; }
+  }
+  &.type-tutor {
+    background: $success-100;
+    .type-badge-icon, .type-badge-label { color: $success; }
+  }
+  &.type-other {
+    background: $gray-100;
+    .type-badge-icon, .type-badge-label { color: $gray-500; }
+  }
+}
+
+.type-badge-icon {
+  font-size: 26rpx;
+  line-height: 1;
+}
+
+.type-badge-label {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+}
+
+// ===================================
 // 状态标签
 // ===================================
 .status-badge {
@@ -554,7 +620,6 @@ onMounted(() => {
   border-radius: $radius-base;
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
-  margin-bottom: $sp-6;
 
   // 待接单 - 蓝色
   &.status-0 {
@@ -755,14 +820,40 @@ onMounted(() => {
 .user-card {
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: $sp-5;
+}
+
+.avatar-wrap {
+  position: relative;
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-char {
+  font-size: 30rpx;
+  font-weight: $font-weight-semibold;
+  color: $white;
+  line-height: 1;
 }
 
 .user-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: $radius-full;
-  background: $gray-200;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1rpx solid $gray-200;
 }
 
 .user-name {

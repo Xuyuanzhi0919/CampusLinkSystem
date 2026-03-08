@@ -1,36 +1,37 @@
 <template>
   <view class="task-list-page">
-    <!-- 任务类型筛选栏 -->
-    <view class="filter-section">
-      <scroll-view class="filter-scroll" scroll-x :show-scrollbar="false">
-        <view class="filter-tabs">
+    <!-- 筛选区 -->
+    <view class="filter-header">
+      <!-- 任务类型 -->
+      <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
+        <view class="type-tabs">
           <view
             v-for="type in taskTypes"
             :key="type.value"
-            class="filter-tab"
+            class="type-tab"
             :class="{ active: currentType === type.value }"
             @click="handleTypeChange(type.value)"
           >
-            <text class="tab-icon">{{ type.icon }}</text>
-            <text class="tab-label">{{ type.label }}</text>
+            <text class="type-tab-icon">{{ type.icon }}</text>
+            <text class="type-tab-label">{{ type.label }}</text>
           </view>
         </view>
       </scroll-view>
-    </view>
 
-    <!-- 状态筛选栏 -->
-    <view class="status-section">
-      <view class="status-tabs">
-        <view
-          v-for="statusOption in statusOptions"
-          :key="statusOption.value"
-          class="status-tab"
-          :class="{ active: currentStatus === statusOption.value }"
-          @click="handleStatusChange(statusOption.value)"
-        >
-          <text class="status-label">{{ statusOption.label }}</text>
+      <!-- 状态筛选 -->
+      <scroll-view class="status-scroll" scroll-x :show-scrollbar="false">
+        <view class="status-chips">
+          <view
+            v-for="statusOption in statusOptions"
+            :key="statusOption.value"
+            class="status-chip"
+            :class="{ active: currentStatus === statusOption.value }"
+            @click="handleStatusChange(statusOption.value)"
+          >
+            <text class="status-chip-label">{{ statusOption.label }}</text>
+          </view>
         </view>
-      </view>
+      </scroll-view>
     </view>
 
     <!-- 任务列表 -->
@@ -42,7 +43,6 @@
       :refresher-enabled="true"
       :refresher-triggered="refreshing"
     >
-      <!-- 列表内容 -->
       <view v-if="!loading && taskList.length > 0" class="task-list">
         <view
           v-for="task in taskList"
@@ -50,39 +50,51 @@
           class="task-card"
           @click="handleTaskClick(task)"
         >
-          <!-- 卡片头部：发布者和时间 -->
-          <view class="card-header">
-            <text class="publisher">{{ task.publisherNickname }}</text>
-            <text class="time">{{ formatTime(task.createdAt) }}</text>
-          </view>
-
-          <!-- 标题 -->
-          <text class="card-title">{{ task.title }}</text>
-
-          <!-- 信息栏 -->
-          <view class="card-info">
-            <view class="info-item">
-              <text class="info-icon">{{ getTypeIcon(task.taskType) }}</text>
-              <text class="info-text">{{ getTypeLabel(task.taskType) }}</text>
-            </view>
-            <view v-if="task.location" class="info-item">
-              <text class="info-icon">📍</text>
-              <text class="info-text">{{ task.location }}</text>
-            </view>
-          </view>
-
-          <!-- 底栏：奖励和状态 -->
-          <view class="card-footer">
-            <view class="reward">
-              <text class="reward-label">奖励</text>
-              <text class="reward-points">{{ task.rewardPoints }}</text>
-              <text class="reward-unit">积分</text>
+          <!-- 顶部：类型标签 + 状态 -->
+          <view class="card-top">
+            <view class="type-badge" :class="`type-${task.taskType}`">
+              <text class="type-badge-icon">{{ getTypeIcon(task.taskType) }}</text>
+              <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
             </view>
             <view
               class="status-tag"
               :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isTaskExpired(task) }]"
             >
               <text class="status-text">{{ getStatusLabel(task.status, task) }}</text>
+            </view>
+          </view>
+
+          <!-- 标题 -->
+          <text class="card-title">{{ task.title }}</text>
+
+          <!-- 地点 + 截止时间 -->
+          <view class="card-meta" v-if="task.location || task.deadline">
+            <view v-if="task.location" class="meta-item">
+              <text class="meta-icon">📍</text>
+              <text class="meta-text">{{ task.location }}</text>
+            </view>
+            <view v-if="task.deadline" class="meta-item">
+              <text class="meta-icon">⏰</text>
+              <text class="meta-text">{{ formatDeadline(task.deadline) }}</text>
+            </view>
+          </view>
+
+          <!-- 底栏：发布者 + 悬赏积分 -->
+          <view class="card-footer">
+            <view class="publisher-info">
+              <view class="avatar-wrap">
+                <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
+                  <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+                </view>
+              </view>
+              <view class="publisher-detail">
+                <text class="publisher-name">{{ task.publisherNickname }}</text>
+                <text class="publish-time">{{ formatTime(task.createdAt) }}</text>
+              </view>
+            </view>
+            <view class="reward-wrap">
+              <text class="reward-points">{{ task.rewardPoints }}</text>
+              <text class="reward-unit">积分</text>
             </view>
           </view>
         </view>
@@ -95,12 +107,8 @@
         <text class="empty-tip">快去发布一个新任务吧~</text>
       </view>
 
-      <!-- 加载中 - 骨架屏 -->
-      <SkeletonScreen
-        v-if="loading && taskList.length === 0"
-        type="card"
-        :count="4"
-      />
+      <!-- 骨架屏 -->
+      <SkeletonScreen v-if="loading && taskList.length === 0" type="card" :count="4" />
 
       <!-- 加载更多 -->
       <view v-if="taskList.length > 0" class="load-more">
@@ -111,10 +119,11 @@
       <view class="safe-area-bottom" />
     </scroll-view>
 
-    <!-- 发布任务按钮 -->
-    <CButton type="primary" size="lg" round class="fab-button" @click="handlePublish">
-      <template #icon><text class="fab-icon">+</text></template>
-    </CButton>
+    <!-- 发布任务 FAB -->
+    <view class="fab-btn" @click="handlePublish">
+      <text class="fab-icon">+</text>
+      <text class="fab-label">发布任务</text>
+    </view>
   </view>
 </template>
 
@@ -123,7 +132,6 @@ import { ref, onMounted } from 'vue'
 import { getTaskList } from '@/services/task'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
-import CButton from '@/components/ui/CButton.vue'
 
 // 任务状态选项
 const statusOptions = [
@@ -143,6 +151,12 @@ const taskTypes = [
   { value: 'tutor', label: '答疑互助', icon: '📚' },
   { value: 'other', label: '其他', icon: '📦' }
 ]
+
+const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
+const getAvatarBg = (name: string) => {
+  const idx = name ? name.charCodeAt(0) % AVATAR_COLORS.length : 0
+  return { background: AVATAR_COLORS[idx] }
+}
 
 const currentStatus = ref<string>('')
 const currentType = ref<string>('')
@@ -197,10 +211,7 @@ const loadTasks = async (isRefresh = false) => {
     hasMore.value = page.value < result.totalPages
   } catch (error: any) {
     console.error('加载任务列表失败:', error)
-    uni.showToast({
-      title: error.message || '加载失败',
-      icon: 'none'
-    })
+    uni.showToast({ title: error.message || '加载失败', icon: 'none' })
   } finally {
     loading.value = false
     refreshing.value = false
@@ -226,9 +237,7 @@ const handleTypeChange = (type: string) => {
   loadTasks()
 }
 
-const handleRefresh = () => {
-  loadTasks(true)
-}
+const handleRefresh = () => { loadTasks(true) }
 
 const handleLoadMore = () => {
   if (loadingMore.value || !hasMore.value) return
@@ -237,15 +246,11 @@ const handleLoadMore = () => {
 }
 
 const handleTaskClick = (task: TaskListItem) => {
-  uni.navigateTo({
-    url: `/pages/task/detail?id=${task.tid}`
-  })
+  uni.navigateTo({ url: `/pages/task/detail?id=${task.tid}` })
 }
 
 const handlePublish = () => {
-  uni.navigateTo({
-    url: '/pages/task/publish'
-  })
+  uni.navigateTo({ url: '/pages/task/publish' })
 }
 
 const getTypeIcon = (type: TaskType): string => {
@@ -268,33 +273,17 @@ const getTypeLabel = (type: TaskType): string => {
   return labelMap[type] || '其他'
 }
 
-/**
- * 检查任务是否已截止
- */
 const isTaskExpired = (task: TaskListItem): boolean => {
   if (!task.deadline) return false
-  const now = new Date()
-  const deadline = new Date(task.deadline)
-  return now > deadline
+  return new Date() > new Date(task.deadline)
 }
 
 const getStatusLabel = (status: TaskStatus | number, task?: TaskListItem): string => {
-  // 确保status是数字类型
   const statusNum = typeof status === 'string' ? parseInt(status) : status
-
-  // 如果是待接单状态且已过截止时间，显示"已截止"
-  if (statusNum === 0 && task && isTaskExpired(task)) {
-    return '已截止'
-  }
-
+  if (statusNum === 0 && task && isTaskExpired(task)) return '已截止'
   const labelMap: Record<number, string> = {
-    0: '待接单',
-    1: '已接取',
-    2: '进行中',
-    3: '待确认',
-    4: '已完成',
-    5: '已取消',
-    6: '已超时'
+    0: '待接单', 1: '已接取', 2: '进行中',
+    3: '待确认', 4: '已完成', 5: '已取消', 6: '已超时'
   }
   return labelMap[statusNum] !== undefined ? labelMap[statusNum] : '未知'
 }
@@ -305,14 +294,8 @@ const formatTime = (dateStr: string): string => {
   const diff = now.getTime() - date.getTime()
 
   if (diff < 60000) return '刚刚'
-  if (diff < 3600000) {
-    const minutes = Math.floor(diff / 60000)
-    return `${minutes}分钟前`
-  }
-  if (diff < 86400000) {
-    const hours = Math.floor(diff / 3600000)
-    return `${hours}小时前`
-  }
+  if (diff < 3600000) return `${Math.floor(diff / 60000)}分钟前`
+  if (diff < 86400000) return `${Math.floor(diff / 3600000)}小时前`
   if (diff < 172800000) return '昨天'
 
   const month = (date.getMonth() + 1).toString().padStart(2, '0')
@@ -320,22 +303,32 @@ const formatTime = (dateStr: string): string => {
   return `${month}-${day}`
 }
 
-onMounted(() => {
-  loadTasks()
-})
+const formatDeadline = (dateStr: string): string => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diff = date.getTime() - now.getTime()
+
+  if (diff < 0) return '已截止'
+  if (diff < 3600000) return `剩余 ${Math.floor(diff / 60000)} 分钟`
+  if (diff < 86400000) return `剩余 ${Math.floor(diff / 3600000)} 小时`
+
+  const month = (date.getMonth() + 1).toString().padStart(2, '0')
+  const day = date.getDate().toString().padStart(2, '0')
+  return `截止 ${month}-${day}`
+}
+
+onMounted(() => { loadTasks() })
 
 defineExpose({
   onPullDownRefresh: () => {
     handleRefresh()
-    setTimeout(() => {
-      uni.stopPullDownRefresh()
-    }, 1000)
+    setTimeout(() => { uni.stopPullDownRefresh() }, 1000)
   }
 })
 </script>
 
 <style lang="scss" scoped>
-// 变量已通过 uni.scss 全局注入
 
 .task-list-page {
   height: 100vh;
@@ -344,48 +337,47 @@ defineExpose({
 }
 
 // ===================================
-// 分类筛选栏
+// 筛选区（类型 + 状态，合并）
 // ===================================
-.filter-section {
+.filter-header {
   position: sticky;
   top: 0;
   z-index: $z-dropdown;
   background: $white;
-  padding: $sp-6 0;
   border-bottom: 1rpx solid $gray-200;
 }
 
-.filter-scroll {
+// 类型筛选
+.type-scroll {
   white-space: nowrap;
+  padding: $sp-5 0 $sp-4;
 
   /* #ifdef H5 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
   /* #endif */
 }
 
-.filter-tabs {
+.type-tabs {
   display: inline-flex;
   padding: 0 $sp-8;
-  gap: $sp-4;
+  gap: $sp-3;
 }
 
-.filter-tab {
+.type-tab {
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  padding: $sp-4 $sp-6;
-  border-radius: $radius-md;
+  gap: $sp-2;
+  padding: $sp-3 $sp-5;
+  border-radius: $radius-2xl;
   background: $gray-100;
   transition: $transition-slow;
-  min-width: 120rpx;
+  flex-shrink: 0;
 
   &.active {
     background: $primary;
 
-    .tab-icon,
-    .tab-label {
+    .type-tab-icon,
+    .type-tab-label {
       color: $white;
     }
   }
@@ -395,54 +387,48 @@ defineExpose({
   }
 }
 
-.tab-icon {
-  font-size: 36rpx;
-  margin-bottom: $sp-2;
+.type-tab-icon {
+  font-size: 28rpx;
+  line-height: 1;
 }
 
-.tab-label {
+.type-tab-label {
   font-size: $font-size-sm;
-  color: $gray-500;
+  color: $gray-600;
   font-weight: $font-weight-medium;
 }
 
-// ===================================
-// 状态筛选栏
-// ===================================
-.status-section {
-  position: sticky;
-  top: 120rpx;
-  z-index: $z-dropdown - 1;
-  background: $white;
-  padding: $sp-4 $sp-8;
-  border-bottom: 1rpx solid $gray-200;
-}
-
-.status-tabs {
-  display: flex;
-  gap: $sp-3;
-  overflow-x: auto;
+// 状态筛选
+.status-scroll {
   white-space: nowrap;
+  padding: 0 0 $sp-4;
 
   /* #ifdef H5 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
   /* #endif */
 }
 
-.status-tab {
-  @include flex-center;
-  padding: $sp-2 + 2rpx $sp-6;
+.status-chips {
+  display: inline-flex;
+  padding: 0 $sp-8;
+  gap: $sp-3;
+}
+
+.status-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: $sp-2 $sp-5;
   border-radius: $radius-2xl;
-  background: $gray-100;
+  border: 1rpx solid $gray-200;
+  background: transparent;
   transition: $transition-slow;
   flex-shrink: 0;
 
   &.active {
     background: $accent;
+    border-color: $accent;
 
-    .status-label {
+    .status-chip-label {
       color: $white;
       font-weight: $font-weight-semibold;
     }
@@ -453,8 +439,8 @@ defineExpose({
   }
 }
 
-.status-label {
-  font-size: $font-size-sm;
+.status-chip-label {
+  font-size: 24rpx;
   color: $gray-500;
   font-weight: $font-weight-medium;
 }
@@ -463,12 +449,10 @@ defineExpose({
 // 内容滚动区
 // ===================================
 .content-scroll {
-  height: calc(100vh - 240rpx);
+  height: calc(100vh - 170rpx);
 
   /* #ifdef H5 */
-  &::-webkit-scrollbar {
-    display: none;
-  }
+  &::-webkit-scrollbar { display: none; }
   /* #endif */
 }
 
@@ -482,31 +466,59 @@ defineExpose({
 .task-card {
   background: $white;
   border-radius: $radius-card;
-  padding: $sp-8;
+  padding: $sp-7 $sp-8;
   margin-bottom: $sp-5;
-  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.05);
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
+  transition: box-shadow 0.2s;
 
   &:active {
-    opacity: 0.8;
+    opacity: 0.85;
   }
 }
 
-.card-header {
+// 顶部：类型 + 状态
+.card-top {
   @include flex-between;
-  margin-bottom: $sp-4;
+  margin-bottom: $sp-5;
 }
 
-.publisher {
+// 类型徽标
+.type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $sp-2;
+  padding: $sp-2 $sp-4;
+  border-radius: $radius-2xl;
+
+  &.type-errand {
+    background: rgba(#F59E0B, 0.12);
+    .type-badge-icon, .type-badge-label { color: #D97706; }
+  }
+  &.type-borrow {
+    background: $primary-100;
+    .type-badge-icon, .type-badge-label { color: $primary; }
+  }
+  &.type-tutor {
+    background: $success-100;
+    .type-badge-icon, .type-badge-label { color: $success; }
+  }
+  &.type-other {
+    background: $gray-100;
+    .type-badge-icon, .type-badge-label { color: $gray-500; }
+  }
+}
+
+.type-badge-icon {
+  font-size: 22rpx;
+  line-height: 1;
+}
+
+.type-badge-label {
   font-size: $font-size-sm;
-  color: $gray-500;
   font-weight: $font-weight-medium;
 }
 
-.time {
-  font-size: $font-size-sm;
-  color: $gray-400;
-}
-
+// 标题
 .card-title {
   display: block;
   font-size: $font-size-lg;
@@ -514,56 +526,113 @@ defineExpose({
   color: $gray-800;
   margin-bottom: $sp-4;
   @include text-ellipsis(2);
+  line-height: 1.4;
 }
 
-.card-info {
+// 地点 + 截止时间
+.card-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: $sp-4;
+  gap: $sp-5;
   margin-bottom: $sp-5;
 }
 
-.info-item {
+.meta-item {
   display: flex;
   align-items: center;
   gap: $sp-2;
 }
 
-.info-icon {
-  font-size: $font-size-sm;
+.meta-icon {
+  font-size: 22rpx;
+  line-height: 1;
 }
 
-.info-text {
+.meta-text {
   font-size: $font-size-sm;
   color: $gray-500;
 }
 
+// 底栏
 .card-footer {
   @include flex-between;
   padding-top: $sp-5;
   border-top: 1rpx solid $gray-100;
+  align-items: center;
 }
 
-.reward {
+.publisher-info {
+  display: flex;
+  align-items: center;
+  gap: $sp-4;
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar-wrap {
+  position: relative;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-char {
+  font-size: 22rpx;
+  font-weight: $font-weight-semibold;
+  color: $white;
+  line-height: 1;
+}
+
+.publisher-detail {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-1;
+  min-width: 0;
+}
+
+.publisher-name {
+  font-size: $font-size-sm;
+  color: $gray-600;
+  font-weight: $font-weight-medium;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160rpx;
+}
+
+.publish-time {
+  font-size: $font-size-xs;
+  color: $gray-400;
+}
+
+.reward-wrap {
   display: flex;
   align-items: baseline;
-  gap: $sp-2;
-}
-
-.reward-label {
-  font-size: $font-size-sm;
-  color: $gray-500;
+  gap: $sp-1;
+  flex-shrink: 0;
 }
 
 .reward-points {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: $font-weight-bold;
   color: $accent;
+  line-height: 1;
 }
 
 .reward-unit {
   font-size: $font-size-sm;
   color: $accent;
+  opacity: 0.8;
 }
 
 // ===================================
@@ -575,53 +644,14 @@ defineExpose({
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
 
-  // 待接单 - 蓝色
-  &.status-0 {
-    background: $primary-100;
-    color: $primary;
-  }
-
-  // 已接取 - 橙色
-  &.status-1 {
-    background: $accent-100;
-    color: $accent-700;
-  }
-
-  // 进行中 - 青色
-  &.status-2 {
-    background: $info-100;
-    color: $info;
-  }
-
-  // 待确认 - 紫色
-  &.status-3 {
-    background: $purple-100;
-    color: $purple;
-  }
-
-  // 已完成 - 绿色
-  &.status-4 {
-    background: $success-100;
-    color: $success;
-  }
-
-  // 已取消 - 红色
-  &.status-5 {
-    background: $error-100;
-    color: $error;
-  }
-
-  // 已超时 - 灰色
-  &.status-6 {
-    background: $gray-100;
-    color: $gray-500;
-  }
-
-  // 已截止状态（特殊处理）
-  &.status-expired {
-    background: $gray-100;
-    color: $gray-400;
-  }
+  &.status-0 { background: $primary-100; color: $primary; }
+  &.status-1 { background: $accent-100; color: $accent-700; }
+  &.status-2 { background: $info-100; color: $info; }
+  &.status-3 { background: $purple-100; color: $purple; }
+  &.status-4 { background: $success-100; color: $success; }
+  &.status-5 { background: $error-100; color: $error; }
+  &.status-6 { background: $gray-100; color: $gray-500; }
+  &.status-expired { background: $gray-100; color: $gray-400; }
 }
 
 // ===================================
@@ -635,35 +665,13 @@ defineExpose({
   padding: 160rpx $sp-8;
 }
 
-.empty-icon {
-  font-size: 120rpx;
-  margin-bottom: $sp-8;
-}
-
-.empty-text {
-  font-size: $font-size-lg;
-  color: $gray-500;
-  margin-bottom: $sp-4;
-}
-
-.empty-tip {
-  font-size: $font-size-sm;
-  color: $gray-400;
-}
+.empty-icon { font-size: 120rpx; margin-bottom: $sp-8; }
+.empty-text { font-size: $font-size-lg; color: $gray-500; margin-bottom: $sp-4; }
+.empty-tip { font-size: $font-size-sm; color: $gray-400; }
 
 // ===================================
 // 加载状态
 // ===================================
-.loading-state {
-  @include flex-center;
-  padding: 160rpx $sp-8;
-}
-
-.loading-text {
-  font-size: $font-size-base;
-  color: $gray-400;
-}
-
 .load-more {
   @include flex-center;
   padding: $sp-8;
@@ -679,25 +687,39 @@ defineExpose({
 }
 
 // ===================================
-// 发布按钮
+// 发布任务 FAB
 // ===================================
-.fab-button {
+.fab-btn {
   position: fixed;
   right: $sp-8;
   bottom: 120rpx;
   z-index: $z-modal - 1;
+  display: flex;
+  align-items: center;
+  gap: $sp-3;
+  padding: $sp-5 $sp-7;
+  background: $primary;
+  border-radius: $radius-2xl;
+  box-shadow: 0 8rpx 24rpx rgba($primary, 0.35);
+  transition: $transition-slow;
 
-  :deep(.c-button) {
-    width: 112rpx;
-    height: 112rpx;
-    padding: 0;
-    box-shadow: 0 8rpx 24rpx rgba($primary, 0.3);
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
   }
 }
 
 .fab-icon {
-  font-size: 56rpx;
+  font-size: 36rpx;
+  color: $white;
   line-height: 1;
+  font-weight: 300;
+}
+
+.fab-label {
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  color: $white;
 }
 </style>
 
@@ -709,12 +731,8 @@ page {
 }
 
 /* #ifdef H5 */
-/* H5端隐藏所有滚动条 */
-::-webkit-scrollbar {
-  display: none;
-}
+::-webkit-scrollbar { display: none; }
 
-/* uni-app H5端页面容器 */
 uni-page-body {
   height: 100%;
   overflow: hidden;

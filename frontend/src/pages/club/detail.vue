@@ -1,5 +1,12 @@
 <template>
   <view class="club-detail-page">
+    <!-- 顶部导航栏 -->
+    <CNavBar
+      :title="club?.clubName || '社团详情'"
+      :show-back="true"
+      :border="true"
+    />
+
     <!-- 骨架屏 -->
     <view v-if="loading" class="skeleton-wrapper">
       <!-- Hero 骨架 -->
@@ -465,6 +472,7 @@ import { onLoad } from '@dcloudio/uni-app'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
 import CButton from '@/components/ui/CButton.vue'
+import { CNavBar } from '@/components/layout'
 import Icon from '@/components/icons/index.vue'
 import { requireLogin } from '@/utils/auth'
 import ClLoginGuideModal from '@/components/cl/ClLoginGuideModal.vue'

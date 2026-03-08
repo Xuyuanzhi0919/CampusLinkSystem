@@ -338,10 +338,20 @@ watch(() => props.visible, (newVal) => {
   if (newVal) {
     setTimeout(() => { showAnimation.value = true }, 10)
     loadSchools()
+    // #ifdef H5
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = 'hidden'
+    }
+    // #endif
   } else {
     showAnimation.value = false
     showSchoolDropdown.value = false
     resetForm()
+    // #ifdef H5
+    if (typeof document !== 'undefined') {
+      document.body.style.overflow = ''
+    }
+    // #endif
   }
 })
 
@@ -773,11 +783,16 @@ const handleGoToLogin = () => {
   handleClose()
 }
 
-// 组件卸载时清理定时器
+// 组件卸载时清理定时器并恢复滚动
 onUnmounted(() => {
   if (countdownTimer) {
     clearInterval(countdownTimer)
   }
+  // #ifdef H5
+  if (typeof document !== 'undefined') {
+    document.body.style.overflow = ''
+  }
+  // #endif
 })
 </script>
 

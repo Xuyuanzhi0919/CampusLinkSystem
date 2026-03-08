@@ -166,18 +166,18 @@ watch(() => props.visible, (newVal) => {
     setTimeout(() => {
       showAnimation.value = true
     }, 10)
-    // 弹窗打开时添加键盘监听（仅 H5 平台）
     // #ifdef H5
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = 'hidden'
     }
     // #endif
   } else {
     showAnimation.value = false
-    // 弹窗关闭时移除键盘监听（仅 H5 平台）
     // #ifdef H5
     if (typeof window !== 'undefined') {
       window.removeEventListener('keydown', handleKeyDown)
+      document.body.style.overflow = ''
     }
     // #endif
   }
@@ -192,11 +192,12 @@ onMounted(() => {
   }
 })
 
-// 组件卸载时清理键盘监听
+// 组件卸载时清理键盘监听并恢复滚动
 onUnmounted(() => {
   // #ifdef H5
   if (typeof window !== 'undefined') {
     window.removeEventListener('keydown', handleKeyDown)
+    document.body.style.overflow = ''
   }
   // #endif
 })

@@ -339,7 +339,7 @@ const handleSubmit = async () => {
   gap: 6px;
 
   .spin-icon {
-    color: $color-primary;
+    color: $campus-blue;
     animation: spin 1s linear infinite;
   }
 

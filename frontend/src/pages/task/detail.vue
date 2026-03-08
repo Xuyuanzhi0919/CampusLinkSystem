@@ -74,6 +74,7 @@
                   <text>地点</text>
                 </view>
                 <view class="location-value">
+                  <MapPin v-if="isCoordLocation" :size="13" class="location-pin-icon" />
                   <text class="info-value">{{ displayLocation }}</text>
                   <text v-if="locationLoading" class="location-loading">解析中...</text>
                 </view>
@@ -318,6 +319,7 @@ const task = ref<TaskDetail | null>(null)
 const loading = ref(true)
 const displayLocation = ref('')
 const locationLoading = ref(false)
+const isCoordLocation = ref(false)
 
 const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
 const getAvatarBg = (name: string) => {
@@ -453,15 +455,16 @@ const initDisplayLocation = async (loc: string) => {
   const coord = parseCoord(loc)
   if (!coord) { displayLocation.value = loc; return }
 
-  displayLocation.value = '📍 位置已记录'
+  isCoordLocation.value = true
+  displayLocation.value = '位置已记录'
   locationLoading.value = true
   try {
     const req = new Request()
     const res: any = await req.get(`/location/reverse-geocode?lat=${coord.lat}&lng=${coord.lng}`)
     const addr = res?.data?.address || res?.address || ''
-    displayLocation.value = addr ? `📍 ${addr}` : '📍 位置已记录'
+    displayLocation.value = addr || '位置已记录'
   } catch {
-    displayLocation.value = '📍 位置已记录'
+    displayLocation.value = '位置已记录'
   } finally {
     locationLoading.value = false
   }
@@ -866,7 +869,8 @@ onMounted(() => {
 }
 .rating-count { color: $gray-400; }
 .complete-count { font-size: $font-size-xs; color: $gray-500; }
-.location-value { display: flex; align-items: center; gap: 8rpx; }
+.location-value { display: flex; align-items: center; gap: 6rpx; }
+.location-pin-icon { color: $primary; flex-shrink: 0; }
 .location-loading { font-size: $font-size-xs; color: $gray-400; }
 
 .contact-btn {

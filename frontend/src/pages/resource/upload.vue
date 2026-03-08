@@ -518,7 +518,22 @@ onLoad(() => {
   <view class="upload-page">
 
     <!-- 统一导航栏 -->
-    <CNavBar title="上传资源" />
+    <CNavBar title="上传资源">
+      <template #right>
+        <!-- PC 端右上角提交按钮（移动端隐藏） -->
+        <view class="navbar-submit">
+          <CButton
+            type="primary"
+            size="sm"
+            :disabled="!canSubmit"
+            :loading="submitting"
+            @click="handleSubmit"
+          >
+            {{ submitting ? '提交中...' : '提交审核' }}
+          </CButton>
+        </view>
+      </template>
+    </CNavBar>
 
     <!-- 主内容滚动区 -->
     <scroll-view class="content-area" scroll-y>
@@ -1143,27 +1158,34 @@ onLoad(() => {
   }
 }
 
-// 底部占位补偿（给 fixed bar 腾空间）
+// 底部占位补偿（给移动端 fixed bar 腾空间，PC 端不需要）
 .bottom-spacer {
   height: 80px;
 
-  @include desktop { height: 0; }
+  @media (min-width: 750px) { height: 0; }
 }
 
-// ── 底部操作栏 ──
+// ── 导航栏提交按钮（PC 端显示，移动端隐藏）──
+.navbar-submit {
+  @media (max-width: 749px) {
+    display: none;
+  }
+}
+
+// ── 底部操作栏（移动端专属，PC 端隐藏）──
 .submit-bar {
-  flex-shrink: 0;
+  @media (min-width: 750px) {
+    display: none;
+  }
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   background: $color-bg-card;
   border-top: 1px solid $color-border-light;
   box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
-
-  @include mobile {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-  }
 }
 
 .submit-bar-inner {

@@ -741,10 +741,9 @@ public class QuestionService {
             limit = 8;
         }
 
-        // 查询最近30天的问题（正常状态）
+        // 查询所有正常状态的问题（不限时间，热门标签应基于全量数据）
         LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Question::getStatus, 1)
-                .ge(Question::getCreatedAt, LocalDateTime.now().minusDays(30))
                 .isNotNull(Question::getTags);
 
         List<Question> questions = questionMapper.selectList(wrapper);
@@ -789,15 +788,15 @@ public class QuestionService {
             limit = 4;
         }
 
-        // 计算时间范围（默认最近7天）
+        // 计算时间范围（默认最近90天，兜底为全量数据）
         LocalDateTime startTime;
         if ("30d".equals(period)) {
             startTime = LocalDateTime.now().minusDays(30);
         } else {
-            startTime = LocalDateTime.now().minusDays(7);
+            startTime = LocalDateTime.now().minusDays(90);
         }
 
-        // 查询最近活跃的答案（正常状态）
+        // 查询时间范围内的答案（正常状态）
         LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Answer::getStatus, 1)
                 .ge(Answer::getCreatedAt, startTime);
@@ -866,13 +865,13 @@ public class QuestionService {
             limit = 5;  // 默认返回5条
         }
 
-        // 查询7天内的问题
-        LocalDateTime sevenDaysAgo = LocalDateTime.now().minusDays(7);
+        // 查询近180天的问题（兜底范围足够大，保证有数据）
+        LocalDateTime halfYearAgo = LocalDateTime.now().minusDays(180);
 
         LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(Question::getStatus, 1)  // status=1 表示正常
                 .eq(Question::getIsSolved, 0)  // 优先未解决的问题
-                .ge(Question::getCreatedAt, sevenDaysAgo)
+                .ge(Question::getCreatedAt, halfYearAgo)
                 .orderByDesc(Question::getCreatedAt);
 
         List<Question> questions = questionMapper.selectList(wrapper);
@@ -887,14 +886,14 @@ public class QuestionService {
                     .eq(Answer::getStatus, 1);
             long answerCount = answerMapper.selectCount(answerWrapper);
 
-            // 至少3个回答才能入选
-            if (answerCount < 3) {
+            // 至少1个回答才能入选（数据少时降低门槛）
+            if (answerCount < 1) {
                 continue;
             }
 
-            // 计算天数衰减（天数越少，分数越高）
+            // 计算天数衰减（天数越少，分数越高，以180天为窗口）
             long daysOld = java.time.Duration.between(question.getCreatedAt(), LocalDateTime.now()).toDays();
-            double timeDecay = Math.max(0, 7 - daysOld);  // 7天内线性衰减
+            double timeDecay = Math.max(0, 180 - daysOld) / 180.0 * 5;  // 归一化到0-5分
 
             // 计算质量分数
             double score = answerCount * 3.0  // 回答数权重最高

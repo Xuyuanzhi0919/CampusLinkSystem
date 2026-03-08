@@ -19,7 +19,7 @@ export interface RegisterRequest {
   phone?: string    // 手机号（可选，与email二选一）
   schoolId?: number // 学校ID（可选）
   role?: string     // 角色：student/teacher（可选，默认student）
-  code?: string     // 验证码（可选，暂时不验证）
+  code: string      // 邮箱验证码（6位，注册必填）
 }
 
 /**

@@ -37,6 +37,7 @@ public class UserService {
     private final PointsLogMapper pointsLogMapper;
     private final SchoolMapper schoolMapper;
     private final JwtUtil jwtUtil;
+    private final EmailCodeService emailCodeService;
 
     // 统计数据查询所需Mapper
     private final com.campuslink.mapper.ResourceMapper resourceMapper;
@@ -50,6 +51,9 @@ public class UserService {
      * 用户注册
      */
     public AuthResponse register(RegisterRequest request) {
+        // 验证邮箱验证码
+        emailCodeService.verify(request.getEmail(), "register", request.getCode());
+
         // 检查用户名是否已存在
         LambdaQueryWrapper<User> usernameQuery = new LambdaQueryWrapper<>();
         usernameQuery.eq(User::getUsername, request.getUsername());

@@ -652,8 +652,7 @@ const validateForm = () => {
   usernameError.value = !formData.value.username || formData.value.username.length < 3 || formData.value.username.length > 20
   passwordError.value = !formData.value.password || formData.value.password.length < 6
   confirmPasswordError.value = formData.value.password !== formData.value.confirmPassword
-  // 临时禁用验证码验证
-  // codeError.value = !formData.value.code
+  codeError.value = !formData.value.code || formData.value.code.length !== 6
 
   if (accountError.value) {
     showToast('请填写邮箱或手机号哦 ~', 'info')
@@ -690,11 +689,10 @@ const validateForm = () => {
     return false
   }
 
-  // 临时禁用验证码验证
-  // if (codeError.value) {
-  //   showToast('别忘了填验证码哦 ~', 'info')
-  //   return false
-  // }
+  if (codeError.value) {
+    showToast('别忘了填写验证码哦 ~', 'info')
+    return false
+  }
 
   return true
 }
@@ -717,8 +715,7 @@ const handleRegister = async () => {
       phone: !isEmail ? formData.value.account : undefined,
       nickname: formData.value.nickname.trim() || formData.value.username.trim(), // 使用用户填写的昵称，如果为空则使用用户名
       schoolId: formData.value.schoolId || undefined,
-      // 临时处理：验证码可选，如果没填则传默认值
-      code: formData.value.code || '000000'
+      code: formData.value.code
     }
 
     const response: AuthResponse = await register(registerData)

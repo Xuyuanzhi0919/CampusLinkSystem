@@ -58,4 +58,11 @@ public class RegisterRequest {
      * 角色：student-学生，teacher-教师
      */
     private String role;
+
+    /**
+     * 邮箱验证码
+     */
+    @NotBlank(message = "验证码不能为空")
+    @Size(min = 6, max = 6, message = "验证码为6位数字")
+    private String code;
 }

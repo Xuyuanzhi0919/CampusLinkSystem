@@ -427,6 +427,10 @@ const validateForm = () => {
     uni.showToast({ title: '请填写正确的邮箱或手机号', icon: 'none' })
     return false
   }
+  if (!formData.value.code || formData.value.code.length !== 6) {
+    uni.showToast({ title: '请先获取并填写验证码', icon: 'none' })
+    return false
+  }
   if (usernameError.value) {
     uni.showToast({ title: '用户名需要 3-20 个字符', icon: 'none' })
     return false
@@ -464,7 +468,7 @@ const handleRegister = async () => {
       phone: !isEmail ? formData.value.account : undefined,
       nickname: formData.value.nickname.trim() || formData.value.username.trim(),
       schoolId: formData.value.schoolId || undefined,
-      code: formData.value.code || '000000'
+      code: formData.value.code
     }
     const response: AuthResponse = await register(registerData)
     uni.setStorageSync(config.tokenKey, response.token)

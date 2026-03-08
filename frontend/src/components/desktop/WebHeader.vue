@@ -528,8 +528,13 @@ const handleMenuClick = (menuId: string) => {
     case 'settings':
       toEditProfile()
       break
+    case 'edit-profile':
+      navigateTo('/pages/user/edit-profile')
+      break
+    case 'points-history':
+      navigateTo('/pages/user/points-history')
+      break
     case 'logout':
-      // 显示自定义退出确认弹窗
       showLogoutModal.value = true
       break
   }

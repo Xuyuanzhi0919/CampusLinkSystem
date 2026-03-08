@@ -5,7 +5,7 @@
     <CNavBar title="任务详情" :auto-back="false" @back="goBack">
       <template #right>
         <view class="nav-right" @click="showMoreMenu">
-          <Icon name="more-horizontal" :size="22" :stroke-width="1.5" class="nav-icon" />
+          <MoreHorizontal :size="22" :stroke-width="1.5" class="nav-icon" />
         </view>
       </template>
     </CNavBar>
@@ -17,7 +17,7 @@
 
     <!-- 错误状态 -->
     <view v-else-if="!task" class="error-container">
-      <Icon name="frown" :size="48" class="error-icon" />
+      <Frown :size="48" class="error-icon" />
       <text class="error-text">任务不存在或已删除</text>
       <view class="error-back-btn" @click="goBack">返回</view>
     </view>
@@ -29,7 +29,7 @@
       <view class="header-card">
         <view class="header-top">
           <view class="type-badge" :class="`type-${task.taskType}`">
-            <Icon :name="getTypeIconName(task.taskType)" :size="14" class="type-badge-icon" />
+            <component :is="getTypeIconComp(task.taskType)" :size="14" class="type-badge-icon" />
             <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
           </view>
           <view class="status-badge" :class="statusClass">
@@ -38,10 +38,10 @@
         </view>
         <text class="task-title">{{ task.title }}</text>
         <view class="header-meta">
-          <Icon name="eye" :size="13" class="meta-icon" />
+          <Eye :size="13" class="meta-icon" />
           <text class="meta-text">{{ task.viewCount }} 浏览</text>
           <text class="meta-sep">·</text>
-          <Icon name="clock" :size="13" class="meta-icon" />
+          <Clock :size="13" class="meta-icon" />
           <text class="meta-text">发布于 {{ formatTimeAgo(task.createdAt) }}</text>
         </view>
       </view>
@@ -55,7 +55,7 @@
           <!-- 任务描述 -->
           <view class="detail-card">
             <view class="card-section-title">
-              <Icon name="file-text" :size="16" class="section-icon" />
+              <FileText :size="16" class="section-icon" />
               <text>任务描述</text>
             </view>
             <text class="content-text">{{ task.content }}</text>
@@ -64,13 +64,13 @@
           <!-- 任务信息 -->
           <view class="detail-card">
             <view class="card-section-title">
-              <Icon name="info" :size="16" class="section-icon" />
+              <Info :size="16" class="section-icon" />
               <text>任务信息</text>
             </view>
             <view class="info-list">
               <view v-if="task.location" class="info-item">
                 <view class="info-label">
-                  <Icon name="map-pin" :size="14" class="label-icon" />
+                  <MapPin :size="14" class="label-icon" />
                   <text>地点</text>
                 </view>
                 <view class="location-value">
@@ -80,7 +80,7 @@
               </view>
               <view v-if="task.deadline" class="info-item">
                 <view class="info-label">
-                  <Icon name="clock" :size="14" class="label-icon" />
+                  <Clock :size="14" class="label-icon" />
                   <text>截止时间</text>
                 </view>
                 <view class="deadline-value">
@@ -90,7 +90,7 @@
               </view>
               <view class="info-item">
                 <view class="info-label">
-                  <Icon name="calendar" :size="14" class="label-icon" />
+                  <Calendar :size="14" class="label-icon" />
                   <text>发布时间</text>
                 </view>
                 <text class="info-value">{{ formatTime(task.createdAt) }}</text>
@@ -101,7 +101,7 @@
           <!-- 发布者 -->
           <view class="detail-card">
             <view class="card-section-title">
-              <Icon name="user" :size="16" class="section-icon" />
+              <User :size="16" class="section-icon" />
               <text>发布者</text>
             </view>
             <view class="user-row">
@@ -115,14 +115,14 @@
                 <view class="user-name-row">
                   <text class="user-name">{{ task.publisherNickname }}</text>
                   <view v-if="task.publisherIsVerified === 1" class="verified-badge">
-                    <Icon name="shield-check" :size="12" />
+                    <ShieldCheck :size="12" />
                     <text>已认证</text>
                   </view>
                   <view v-if="task.publisherLevel" class="level-badge">Lv.{{ task.publisherLevel }}</view>
                 </view>
                 <view class="user-meta">
                   <view v-if="task.publisherCreditScore !== null" class="credit-score">
-                    <Icon name="star" :size="11" class="star-icon" />
+                    <Star :size="11" class="star-icon" />
                     <text>{{ task.publisherCreditScore?.toFixed(1) }}</text>
                     <text v-if="task.publisherRatingCount" class="rating-count">({{ task.publisherRatingCount }}次评价)</text>
                   </view>
@@ -132,7 +132,7 @@
                 </view>
               </view>
               <view v-if="!isPublisher && userStore.isLoggedIn" class="contact-btn" @click="contactUser(task.publisherId)">
-                <Icon name="message-circle" :size="14" />
+                <MessageCircle :size="14" />
                 <text>联系TA</text>
               </view>
             </view>
@@ -141,7 +141,7 @@
           <!-- 接单者 -->
           <view v-if="task.accepterId" class="detail-card">
             <view class="card-section-title">
-              <Icon name="package-check" :size="16" class="section-icon" />
+              <PackageCheck :size="16" class="section-icon" />
               <text>接单者</text>
             </view>
             <view class="user-row">
@@ -155,14 +155,14 @@
                 <view class="user-name-row">
                   <text class="user-name">{{ task.accepterNickname }}</text>
                   <view v-if="task.accepterIsVerified === 1" class="verified-badge">
-                    <Icon name="shield-check" :size="12" />
+                    <ShieldCheck :size="12" />
                     <text>已认证</text>
                   </view>
                   <view v-if="task.accepterLevel" class="level-badge">Lv.{{ task.accepterLevel }}</view>
                 </view>
                 <view class="user-meta">
                   <view v-if="task.accepterCreditScore !== null" class="credit-score">
-                    <Icon name="star" :size="11" class="star-icon" />
+                    <Star :size="11" class="star-icon" />
                     <text>{{ task.accepterCreditScore?.toFixed(1) }}</text>
                     <text v-if="task.accepterRatingCount" class="rating-count">({{ task.accepterRatingCount }}次评价)</text>
                   </view>
@@ -172,7 +172,7 @@
                 </view>
               </view>
               <view v-if="!isAccepter && userStore.isLoggedIn" class="contact-btn" @click="contactUser(task.accepterId!)">
-                <Icon name="message-circle" :size="14" />
+                <MessageCircle :size="14" />
                 <text>联系TA</text>
               </view>
             </view>
@@ -186,7 +186,7 @@
           <!-- 奖励卡片 -->
           <view class="aside-card reward-card">
             <view class="reward-header">
-              <Icon name="zap" :size="16" class="reward-icon-head" />
+              <Zap :size="16" class="reward-icon-head" />
               <text class="reward-card-title">任务奖励</text>
             </view>
             <view class="reward-amount-row">
@@ -201,39 +201,39 @@
             <!-- 待接单：接单 -->
             <view v-if="task.status === 0 && !isMyTask && !isExpired && userStore.isLoggedIn"
               class="action-btn primary" @click="handleAccept">
-              <Icon name="check-circle" :size="16" />
+              <CheckCircle :size="16" />
               <text>立即接单</text>
             </view>
 
             <!-- 进行中（接单者）：提交 + 放弃 -->
             <view v-if="task.status === 2 && isAccepter"
               class="action-btn success" @click="handleSubmit">
-              <Icon name="send" :size="16" />
+              <Send :size="16" />
               <text>提交任务</text>
             </view>
             <view v-if="task.status === 2 && isAccepter"
               class="action-btn ghost" @click="handleAbandon">
-              <Icon name="x-circle" :size="16" />
+              <XCircle :size="16" />
               <text>放弃任务</text>
             </view>
 
             <!-- 待确认（发布者）：确认完成 -->
             <view v-if="task.status === 3 && isPublisher"
               class="action-btn success" @click="handleComplete">
-              <Icon name="check-check" :size="16" />
+              <CheckCheck :size="16" />
               <text>确认完成</text>
             </view>
 
             <!-- 待接单（发布者）：取消任务 -->
             <view v-if="task.status === 0 && isPublisher"
               class="action-btn danger" @click="handleCancel">
-              <Icon name="trash-2" :size="16" />
+              <Trash2 :size="16" />
               <text>取消任务</text>
             </view>
 
             <!-- 收藏 -->
             <view class="action-btn ghost" :class="{ favorited: task.isFavorited }" @click="handleFavorite">
-              <Icon :name="task.isFavorited ? 'bookmark-check' : 'bookmark'" :size="16" />
+              <component :is="task.isFavorited ? BookmarkCheck : Bookmark" :size="16" />
               <text>{{ task.isFavorited ? '已收藏' : '收藏任务' }}</text>
             </view>
           </view>
@@ -241,7 +241,7 @@
           <!-- 任务时间线 -->
           <view class="aside-card timeline-card">
             <view class="timeline-title">
-              <Icon name="list-checks" :size="15" class="timeline-title-icon" />
+              <ListChecks :size="15" class="timeline-title-icon" />
               <text>任务进度</text>
             </view>
             <view class="timeline">
@@ -281,7 +281,7 @@
         <text>确认完成</text>
       </view>
       <view v-else class="mobile-btn ghost" @click="handleFavorite">
-        <Icon :name="task.isFavorited ? 'bookmark-check' : 'bookmark'" :size="16" />
+        <component :is="task.isFavorited ? BookmarkCheck : Bookmark" :size="16" />
         <text>{{ task.isFavorited ? '已收藏' : '收藏' }}</text>
       </view>
     </view>
@@ -291,8 +291,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import Icon from '@/components/icons/index.vue'
 import { CNavBar } from '@/components/layout'
+import {
+  MoreHorizontal, Frown,
+  Eye, Clock, FileText, Info, MapPin, Calendar,
+  User, ShieldCheck, Star, MessageCircle, PackageCheck,
+  Zap, CheckCircle, Send, XCircle, CheckCheck, Trash2,
+  Bookmark, BookmarkCheck, ListChecks,
+  Footprints, Handshake, BookOpen, Package,
+} from 'lucide-vue-next'
 import Request from '@/utils/request'
 import {
   getTaskById,
@@ -463,9 +470,9 @@ const initDisplayLocation = async (loc: string) => {
 // ===================================
 // 状态标签
 // ===================================
-const getTypeIconName = (type: TaskType): string => {
-  const m: Record<string, string> = { errand: 'footprints', borrow: 'handshake', tutor: 'book-open', other: 'package' }
-  return m[type] || 'package'
+const getTypeIconComp = (type: TaskType) => {
+  const m: Record<string, any> = { errand: Footprints, borrow: Handshake, tutor: BookOpen, other: Package }
+  return m[type] || Package
 }
 const getTypeLabel = (type: TaskType): string => {
   const m: Record<string, string> = { errand: '跑腿', borrow: '借用', tutor: '答疑互助', other: '其他' }

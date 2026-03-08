@@ -71,6 +71,47 @@
           />
         </view>
 
+        <!-- 所属学校（选填） -->
+        <view class="school-picker-wrapper">
+          <view
+            class="input-group"
+            :class="{ 'input-focus': showSchoolDropdown }"
+            @tap="showSchoolDropdown = !showSchoolDropdown"
+          >
+            <view class="input-icon-wrapper">
+              <text class="input-icon gradient-icon">🏫</text>
+            </view>
+            <text class="form-input school-display" :class="{ placeholder: !formData.schoolName }">
+              {{ formData.schoolName || '所在学校（选填）' }}
+            </text>
+            <text class="dropdown-arrow" :class="{ open: showSchoolDropdown }">▾</text>
+          </view>
+          <!-- 学校下拉列表 -->
+          <view v-if="showSchoolDropdown" class="school-dropdown">
+            <view class="school-search-row">
+              <input
+                class="school-search-input"
+                placeholder="搜索学校..."
+                v-model="schoolSearchKeyword"
+                @tap.stop
+              />
+            </view>
+            <scroll-view class="school-list" scroll-y>
+              <view v-if="filteredSchools.length === 0" class="school-empty">暂无匹配</view>
+              <view
+                v-for="s in filteredSchools"
+                :key="s.schoolId"
+                class="school-item"
+                :class="{ active: formData.schoolId === s.schoolId }"
+                @tap.stop="selectSchool(s)"
+              >
+                <text class="school-item-name">{{ s.schoolName }}</text>
+                <text v-if="formData.schoolId === s.schoolId" class="school-item-check">✓</text>
+              </view>
+            </scroll-view>
+          </view>
+        </view>
+
         <!-- 设置密码 -->
         <view class="input-group" :class="{ 'input-focus': passwordFocused, 'input-error': passwordError }">
           <view class="input-icon-wrapper">
@@ -180,6 +221,7 @@
 import { ref, watch, computed, onUnmounted } from 'vue'
 import { register, sendCode, type RegisterRequest, type AuthResponse, type SendCodeRequest } from '@/services/auth'
 import config from '@/config'
+import request from '@/utils/request'
 
 const props = defineProps({
   visible: {
@@ -197,8 +239,37 @@ const formData = ref({
   nickname: '',
   password: '',
   confirmPassword: '',
-  code: ''
+  code: '',
+  schoolId: 0,
+  schoolName: ''
 })
+
+// 学校选择
+interface SchoolOption { schoolId: number; schoolName: string }
+const schools = ref<SchoolOption[]>([])
+const showSchoolDropdown = ref(false)
+const schoolSearchKeyword = ref('')
+
+const filteredSchools = computed(() => {
+  const kw = schoolSearchKeyword.value.trim()
+  if (!kw) return schools.value
+  return schools.value.filter(s => s.schoolName.includes(kw))
+})
+
+const loadSchools = async () => {
+  if (schools.value.length > 0) return
+  try {
+    const res = await request.get<SchoolOption[]>('/school/all')
+    schools.value = res
+  } catch (e) { /* 加载失败不阻塞注册 */ }
+}
+
+const selectSchool = (s: SchoolOption) => {
+  formData.value.schoolId = s.schoolId
+  formData.value.schoolName = s.schoolName
+  showSchoolDropdown.value = false
+  schoolSearchKeyword.value = ''
+}
 
 // 状态管理
 const showAnimation = ref(false)
@@ -264,11 +335,11 @@ const canSendCode = computed(() => {
 // 监听弹窗显示状态
 watch(() => props.visible, (newVal) => {
   if (newVal) {
-    setTimeout(() => {
-      showAnimation.value = true
-    }, 10)
+    setTimeout(() => { showAnimation.value = true }, 10)
+    loadSchools()
   } else {
     showAnimation.value = false
+    showSchoolDropdown.value = false
     resetForm()
   }
 })
@@ -482,8 +553,11 @@ const resetForm = () => {
     nickname: '',
     password: '',
     confirmPassword: '',
-    code: ''
+    code: '',
+    schoolId: 0,
+    schoolName: ''
   }
+  schoolSearchKeyword.value = ''
   accountError.value = false
   usernameError.value = false
   nicknameError.value = false
@@ -633,7 +707,7 @@ const handleRegister = async () => {
       email: isEmail ? formData.value.account : undefined,
       phone: !isEmail ? formData.value.account : undefined,
       nickname: formData.value.nickname.trim() || formData.value.username.trim(), // 使用用户填写的昵称，如果为空则使用用户名
-      schoolId: 1, // TODO: 后续添加学校选择
+      schoolId: formData.value.schoolId || undefined,
       // 临时处理：验证码可选，如果没填则传默认值
       code: formData.value.code || '000000'
     }
@@ -1291,6 +1365,111 @@ onUnmounted(() => {
 
   &.hint-error {
     color: #EF4444;
+  }
+}
+
+/* ========== 学校选择器 ========== */
+.school-picker-wrapper {
+  position: relative;
+  margin-bottom: 16rpx;
+
+  .input-group {
+    margin-bottom: 0;
+    cursor: pointer;
+    user-select: none;
+  }
+}
+
+.school-display {
+  cursor: pointer;
+  &.placeholder { color: #9CA3AF; }
+}
+
+.dropdown-arrow {
+  font-size: 24rpx;
+  color: #9CA3AF;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+
+  &.open { transform: rotate(180deg); }
+}
+
+.school-dropdown {
+  position: absolute;
+  top: calc(100% + 8rpx);
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.98);
+  border: 2rpx solid rgba(37, 99, 235, 0.15);
+  border-radius: 20rpx;
+  box-shadow: 0 12rpx 40rpx rgba(37, 99, 235, 0.15), 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+  overflow: hidden;
+  animation: dropdownIn 0.18s ease;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8rpx); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.school-search-row {
+  padding: 16rpx 20rpx 12rpx;
+  border-bottom: 1rpx solid rgba(203, 213, 225, 0.4);
+
+  .school-search-input {
+    width: 100%;
+    height: 64rpx;
+    padding: 0 16rpx;
+    font-size: 26rpx;
+    color: #374151;
+    background: #F8FAFF;
+    border: 2rpx solid #E8EEFF;
+    border-radius: 14rpx;
+    box-sizing: border-box;
+
+    &::placeholder { color: #9CA3AF; }
+  }
+}
+
+.school-list {
+  max-height: 360rpx;
+  padding: 8rpx 0;
+}
+
+.school-empty {
+  text-align: center;
+  font-size: 26rpx;
+  color: #9CA3AF;
+  padding: 40rpx 0;
+}
+
+.school-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 28rpx;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover { background: #F8FAFF; }
+
+  &.active {
+    background: #EEF2FF;
+    .school-item-name { color: #2563EB; font-weight: 600; }
+  }
+
+  .school-item-name {
+    font-size: 28rpx;
+    color: #374151;
+    flex: 1;
+  }
+
+  .school-item-check {
+    font-size: 28rpx;
+    color: #2563EB;
+    font-weight: bold;
+    margin-left: 12rpx;
   }
 }
 </style>

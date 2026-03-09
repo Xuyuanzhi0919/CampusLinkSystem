@@ -30,15 +30,11 @@
         <view class="navbar-left">
           <!-- 返回首页按钮 -->
           <view class="back-btn" @click="handleBackToHome">
-            <svg viewBox="0 0 24 24" fill="none" class="back-icon">
-              <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
+            <Icon name="arrow-left" :size="20" />
           </view>
           <!-- 会话列表按钮 -->
           <view class="sessions-btn" @click="showSessionDrawer = true">
-            <svg viewBox="0 0 24 24" fill="none" class="menu-icon">
-              <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="menu" :size="20" />
           </view>
           <text class="navbar-title">{{ currentSessionTitle }}</text>
           <view class="online-badge">
@@ -49,15 +45,11 @@
         <view class="navbar-right">
           <!-- 新建会话按钮 -->
           <view class="new-session-btn" @click="handleNewSession">
-            <svg viewBox="0 0 20 20" fill="none">
-              <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="plus" :size="18" />
           </view>
           <!-- 清空当前对话按钮 -->
           <view class="clear-btn" @click="handleClearChat">
-            <svg viewBox="0 0 20 20" fill="none">
-              <path d="M16 5L15.3 15.5C15.2 16.3 14.5 17 13.7 17H6.3C5.5 17 4.8 16.3 4.7 15.5L4 5M8 8V14M12 8V14M13 5V3.5C13 3.2 12.8 3 12.5 3H7.5C7.2 3 7 3.2 7 3.5V5M3 5H17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+            <Icon name="trash-2" :size="18" />
           </view>
         </view>
       </view>
@@ -70,9 +62,7 @@
         <view class="drawer-header">
           <view class="header-left">
             <view class="drawer-icon">
-              <svg viewBox="0 0 24 24" fill="none">
-                <path d="M8 10H16M8 14H13M5 6C5 4.89543 5.89543 4 7 4H17C18.1046 4 19 4.89543 19 6V16C19 17.1046 18.1046 18 17 18H10L5 21V6Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="message-square" :size="22" />
             </view>
             <view class="header-text">
               <text class="drawer-title">历史对话</text>
@@ -80,18 +70,13 @@
             </view>
           </view>
           <view class="close-drawer" @click="showSessionDrawer = false">
-            <svg viewBox="0 0 24 24" fill="none">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="x" :size="20" />
           </view>
         </view>
 
         <!-- 搜索栏 -->
         <view class="search-bar">
-          <svg class="search-icon" viewBox="0 0 20 20" fill="none">
-            <circle cx="8.5" cy="8.5" r="5.5" stroke="currentColor" stroke-width="1.5"/>
-            <path d="M12.5 12.5L16 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
+          <Icon name="search" :size="18" class="search-icon" />
           <input
             v-model="searchKeyword"
             class="search-input"
@@ -100,10 +85,7 @@
             @input="handleSearch"
           />
           <view v-if="searchKeyword" class="clear-search" @click="searchKeyword = ''">
-            <svg viewBox="0 0 16 16" fill="none">
-              <circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.2"/>
-              <path d="M10 6L6 10M6 6L10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-            </svg>
+            <Icon name="x-circle" :size="16" />
           </view>
         </view>
 
@@ -123,9 +105,7 @@
               >
                 <!-- 会话图标 -->
                 <view class="session-icon">
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path d="M6 7H14M6 10H11M4 4H16C17.1046 4 18 4.89543 18 6V12C18 13.1046 17.1046 14 16 14H8L4 17V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                  </svg>
+                  <Icon name="message-square" :size="17" />
                 </view>
 
                 <!-- 会话信息 -->
@@ -141,16 +121,12 @@
                 <view class="session-actions" @click.stop>
                   <!-- 重命名按钮 -->
                   <view class="action-btn rename-btn" @click="handleRenameSession(session.id)">
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <path d="M11.5 3.5L12.5 4.5M2 14L3.5 13.5L12 5L11 4L2.5 12.5L2 14Z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
+                    <Icon name="edit-3" :size="13" />
                   </view>
 
                   <!-- 删除按钮 -->
                   <view class="action-btn delete-btn" @click="handleDeleteSession(session.id)">
-                    <svg viewBox="0 0 16 16" fill="none">
-                      <path d="M13 4L12.5 13C12.4 13.6 11.9 14 11.3 14H4.7C4.1 14 3.6 13.6 3.5 13L3 4M6 6V11M10 6V11M11 4V2.5C11 2.2 10.8 2 10.5 2H5.5C5.2 2 5 2.2 5 2.5V4M2 4H14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-                    </svg>
+                    <Icon name="trash-2" :size="13" />
                   </view>
                 </view>
               </view>
@@ -160,10 +136,7 @@
           <!-- 空状态 -->
           <view v-if="filteredSessions.length === 0" class="empty-sessions">
             <view class="empty-icon">
-              <svg viewBox="0 0 64 64" fill="none">
-                <circle cx="32" cy="32" r="28" stroke="currentColor" stroke-width="2" opacity="0.2"/>
-                <path d="M20 26H44M20 32H36M16 16H48C49.1046 16 50 16.8954 50 18V38C50 39.1046 49.1046 40 48 40H28L16 48V16Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
+              <Icon name="message-square" :size="48" />
             </view>
             <text class="empty-text">{{ searchKeyword ? '未找到匹配的对话' : '暂无对话记录' }}</text>
             <text class="empty-hint">{{ searchKeyword ? '尝试其他关键词' : '开始新对话探索 AI 助手功能' }}</text>
@@ -185,20 +158,7 @@
         <view class="welcome-banner">
           <view class="banner-glow"></view>
           <view class="welcome-ai-avatar">
-            <svg viewBox="0 0 64 64" fill="none">
-              <defs>
-                <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:rgba(255,255,255,0.9)"/>
-                  <stop offset="100%" style="stop-color:rgba(255,255,255,0.6)"/>
-                </linearGradient>
-              </defs>
-              <circle cx="32" cy="32" r="28" fill="url(#avatarGrad)" opacity="0.15"/>
-              <circle cx="32" cy="32" r="22" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
-              <circle cx="26" cy="28" r="2.5" fill="white"/>
-              <circle cx="38" cy="28" r="2.5" fill="white"/>
-              <path d="M25 36C25 36 28 41 32 41C36 41 39 36 39 36" stroke="white" stroke-width="2" stroke-linecap="round"/>
-              <path d="M20 18L16 14M44 18L48 14" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
-            </svg>
+            <Icon name="bot" :size="56" class="welcome-bot-icon" />
           </view>
           <view class="welcome-banner-text">
             <text class="welcome-title">你好，我是 CampusLink AI</text>
@@ -230,9 +190,7 @@
               <text class="suggestion-card-desc">{{ (item as any).desc }}</text>
             </view>
             <view class="suggestion-card-arrow">
-              <svg viewBox="0 0 16 16" fill="none">
-                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <Icon name="chevron-right" :size="16" />
             </view>
           </view>
         </view>
@@ -263,13 +221,7 @@
           <view v-if="pair.assistant" class="ai-message-card">
             <view class="ai-header">
               <view class="ai-avatar">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
-                  <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
-                  <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
-                  <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
-                  <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
-                </svg>
+                <Icon name="bot" :size="18" />
               </view>
               <text class="ai-label">AI 助手</text>
             </view>
@@ -288,10 +240,7 @@
             <view v-if="!pair.assistant.isStreaming" class="ai-footer">
               <text class="msg-timestamp">{{ formatTime(pair.assistant.timestamp) }}</text>
               <view class="action-copy" @click="handleCopy(pair.assistant.content)">
-                <svg viewBox="0 0 16 16" fill="none">
-                  <rect x="5" y="5" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.5"/>
-                  <path d="M3 11V3C3 2.4 3.4 2 4 2H10" stroke="currentColor" stroke-width="1.5"/>
-                </svg>
+                <Icon name="copy" :size="13" />
                 <text>复制</text>
               </view>
             </view>
@@ -301,13 +250,7 @@
         <view v-if="isLoading" class="ai-thinking-card">
           <view class="ai-header">
             <view class="ai-avatar">
-              <svg viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
-                <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
-                <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
-                <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
-                <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
+              <Icon name="bot" :size="18" />
             </view>
             <text class="ai-label">AI 助手</text>
           </view>
@@ -329,9 +272,7 @@
               class="follow-up-item"
               @click="inputText = question; handleSend()"
             >
-              <svg viewBox="0 0 16 16" fill="none" class="follow-up-icon">
-                <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-              </svg>
+              <Icon name="chevron-right" :size="14" class="follow-up-icon" />
               <text class="follow-up-text">{{ question }}</text>
             </view>
           </view>
@@ -364,15 +305,8 @@
           :class="{ active: canSend, loading: isLoading }"
           @click="handleSend"
         >
-          <svg v-if="!isLoading" viewBox="0 0 24 24" fill="none">
-            <path d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-          <svg v-else viewBox="0 0 24 24" fill="none" class="loading-spinner">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2.5" opacity="0.25"/>
-            <path d="M12 2C6.48 2 2 6.48 2 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-              <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
-            </path>
-          </svg>
+          <Icon v-if="!isLoading" name="send" :size="20" />
+          <Icon v-else name="loader" :size="20" class="loading-spinner" />
         </view>
       </view>
     </view>
@@ -381,10 +315,7 @@
     <view v-if="showClearModal" class="modal-overlay" @click="showClearModal = false">
       <view class="modal-box" @click.stop>
         <view class="modal-icon-wrap">
-          <svg viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 8V12M12 16H12.01" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
+          <Icon name="alert-circle" :size="36" />
         </view>
         <text class="modal-title">确认清空对话？</text>
         <text class="modal-desc">清空后将无法恢复历史消息</text>
@@ -400,6 +331,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick } from 'vue'
 import type { Message, QuickPrompt, ChatSession } from '@/types/ai'
+import Icon from '@/components/icons/index.vue'
 import {
   sendMessage,
   saveChatHistory,
@@ -1049,12 +981,7 @@ const scrollToBottom = () => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-
-  svg {
-    width: 18px;
-    height: 18px;
-    color: $gray-600;
-  }
+  color: $gray-600;
 
   &:hover {
     background: $gray-100;
@@ -1066,49 +993,27 @@ const scrollToBottom = () => {
 }
 
 .back-btn {
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
   &:hover {
     background: $gray-100;
-    svg {
-      color: $gray-900;
-    }
-  }
-
-  &:active {
-    transform: scale(0.95);
+    color: $gray-900;
   }
 }
 
 .sessions-btn {
-  svg {
-    width: 20px;
-    height: 20px;
-  }
-
   &:hover {
     background: $primary-50;
-    svg {
-      color: $primary;
-    }
+    color: $primary;
   }
 }
 
 .new-session-btn:hover {
   background: $primary-50;
-  svg {
-    color: $primary;
-  }
+  color: $primary;
 }
 
 .clear-btn:hover {
   background: $error-50;
-  svg {
-    color: $error;
-  }
+  color: $error;
 }
 
 // ==================== 会话列表抽屉 - 重构版 ====================
@@ -1172,12 +1077,7 @@ const scrollToBottom = () => {
   background: linear-gradient(135deg, $primary, lighten($primary, 10%));
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba($primary, 0.25);
-
-  svg {
-    width: 22px;
-    height: 22px;
-    color: $white;
-  }
+  color: $white;
 }
 
 .header-text {
@@ -1209,12 +1109,7 @@ const scrollToBottom = () => {
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: $gray-600;
-  }
+  color: $gray-600;
 
   &:hover {
     background: $gray-100;
@@ -1273,12 +1168,7 @@ const scrollToBottom = () => {
   justify-content: center;
   cursor: pointer;
   flex-shrink: 0;
-
-  svg {
-    width: 16px;
-    height: 16px;
-    color: $gray-500;
-  }
+  color: $gray-500;
 
   &:active {
     transform: scale(0.9);
@@ -1364,9 +1254,7 @@ const scrollToBottom = () => {
 
     .session-icon {
       background: $primary;
-      svg {
-        color: $white;
-      }
+      color: $white;
     }
 
     .session-title {
@@ -1391,12 +1279,7 @@ const scrollToBottom = () => {
   border-radius: 8px;
   flex-shrink: 0;
   transition: all 0.2s;
-
-  svg {
-    width: 17px; // 18px → 17px
-    height: 17px;
-    color: $gray-600;
-  }
+  color: $gray-600;
 }
 
 // 会话内容区域
@@ -1484,22 +1367,12 @@ const scrollToBottom = () => {
   box-shadow: 0 1px 3px rgba($black, 0.1); // 轻微阴影
   flex-shrink: 0;
 
-  svg {
-    width: 13px;
-    height: 13px;
-    display: block;
-  }
-
   &.rename-btn {
-    svg {
-      color: $gray-600;
-    }
+    color: $gray-600;
 
     &:hover {
       background: rgba($primary, 0.15);
-      svg {
-        color: $primary;
-      }
+      color: $primary;
     }
 
     &:active {
@@ -1509,15 +1382,11 @@ const scrollToBottom = () => {
   }
 
   &.delete-btn {
-    svg {
-      color: $gray-600;
-    }
+    color: $gray-600;
 
     &:hover {
       background: rgba($error, 0.15);
-      svg {
-        color: $error;
-      }
+      color: $error;
     }
 
     &:active {
@@ -1542,12 +1411,7 @@ const scrollToBottom = () => {
   height: 80px;
   margin-bottom: 8px;
   opacity: 0.4;
-
-  svg {
-    width: 100%;
-    height: 100%;
-    color: $gray-400;
-  }
+  color: $gray-400;
 }
 
 .empty-text {
@@ -1632,11 +1496,10 @@ const scrollToBottom = () => {
   height: 80px;
   margin: 0 auto 20px;
   position: relative;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
 
   &::before {
     content: '';
@@ -1783,11 +1646,6 @@ const scrollToBottom = () => {
   height: 20px;
   color: $gray-400;
 
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-
   .suggestion-card:hover & {
     color: $primary;
   }
@@ -1922,11 +1780,7 @@ const scrollToBottom = () => {
   background: $primary-50;
   border-radius: 50%;
   padding: 5px;
-
-  svg {
-    width: 100%;
-    height: 100%;
-  }
+  color: $primary;
 }
 
 .ai-label {
@@ -1998,26 +1852,17 @@ const scrollToBottom = () => {
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-
-  svg {
-    width: 13px;
-    height: 13px;
-    color: $gray-600;
-  }
+  color: $gray-600;
 
   text {
     font-size: 12px;
     font-weight: 500;
-    color: $gray-600;
+    color: inherit;
   }
 
   &:hover {
     background: $primary-50;
-
-    svg,
-    text {
-      color: $primary;
-    }
+    color: $primary;
   }
 
   &:active {
@@ -2220,22 +2065,13 @@ const scrollToBottom = () => {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
-
-  svg {
-    width: 20px;
-    height: 20px;
-    color: $gray-400;
-    transition: all 0.2s;
-  }
+  color: $gray-400;
 
   &.active {
     cursor: pointer;
     background: linear-gradient(135deg, $primary, $primary-light);
     box-shadow: 0 4px 12px rgba($primary, 0.35);
-
-    svg {
-      color: $white;
-    }
+    color: $white;
 
     &::before {
       content: '';
@@ -2265,10 +2101,7 @@ const scrollToBottom = () => {
     background: linear-gradient(135deg, $primary, $primary-light);
     box-shadow: 0 4px 12px rgba($primary, 0.35);
     pointer-events: none;
-
-    svg {
-      color: $white;
-    }
+    color: $white;
   }
 }
 
@@ -2315,12 +2148,7 @@ const scrollToBottom = () => {
   justify-content: center;
   background: $warning-50;
   border-radius: 50%;
-
-  svg {
-    width: 36px;
-    height: 36px;
-    color: $warning;
-  }
+  color: $warning;
 }
 
 .modal-title {
@@ -2409,11 +2237,6 @@ const scrollToBottom = () => {
   .clear-btn {
     width: 38px;
     height: 38px;
-
-    svg {
-      width: 19px;
-      height: 19px;
-    }
   }
 
   .welcome-screen {
@@ -2523,11 +2346,6 @@ const scrollToBottom = () => {
   .action-copy {
     padding: 7px 12px;
 
-    svg {
-      width: 14px;
-      height: 14px;
-    }
-
     text {
       font-size: 12px;
     }
@@ -2557,11 +2375,6 @@ const scrollToBottom = () => {
   .send-btn {
     width: 48px;
     height: 48px;
-
-    svg {
-      width: 22px;
-      height: 22px;
-    }
   }
 
   .modal-box {
@@ -2572,11 +2385,6 @@ const scrollToBottom = () => {
   .modal-icon-wrap {
     width: 56px;
     height: 56px;
-
-    svg {
-      width: 32px;
-      height: 32px;
-    }
   }
 
   .modal-title {

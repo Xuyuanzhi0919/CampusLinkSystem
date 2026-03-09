@@ -4,24 +4,26 @@
     <!-- ========== 固定顶部导航区 ========== -->
     <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
       <view class="top-nav-container">
-        <!-- 品牌 Logo -->
+        <!-- 品牌 Logo（移动端隐藏） -->
         <view class="brand-logo">
-          <Icon name="clipboard-list" :size="isHeaderCollapsed ? 18 : 20" class="logo-icon" />
+          <Icon name="clipboard-list" :size="20" class="logo-icon" />
           <text class="logo-text">任务大厅</text>
         </view>
 
         <!-- 搜索框 -->
-        <view class="search-bar">
-          <Icon name="search" :size="14" class="search-icon" />
-          <input
-            v-model="searchKeyword"
-            class="search-input"
-            placeholder="搜索任务..."
-            confirm-type="search"
-            @confirm="handleSearch"
-          />
-          <view v-if="searchKeyword" class="clear-btn" @click="clearSearch">
-            <Icon name="x" :size="13" />
+        <view class="search-wrapper">
+          <view class="compact-search-bar">
+            <Icon name="search" :size="16" class="search-icon" />
+            <input
+              v-model="searchKeyword"
+              class="search-input"
+              placeholder="搜索任务..."
+              confirm-type="search"
+              @confirm="handleSearch"
+            />
+            <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
+              <Icon name="x" :size="14" />
+            </view>
           </view>
         </view>
 
@@ -752,98 +754,148 @@ defineExpose({
   &.collapsed {
     box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.12);
 
-    .top-nav-container {
-      height: 96rpx;
-    }
+    .top-nav-container { height: 96rpx; }
+
+    .brand-logo { min-width: 200rpx; .logo-text { font-size: 30rpx; } }
+
+    .compact-search-bar { height: 64rpx; }
+
+    .publish-btn { height: 64rpx; padding: 0 28rpx; }
   }
 }
 
 .top-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+  height: 120rpx;
   display: flex;
   align-items: center;
-  gap: 24rpx;
-  padding: 0 32rpx;
-  height: 112rpx;
+  gap: 32rpx;
   transition: height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  @media (max-width: 1200px) { padding: 0 64rpx; }
+
+  @include mobile {
+    padding: 0 32rpx;
+    height: 112rpx;
+    gap: 24rpx;
+  }
 }
 
 .brand-logo {
   display: flex;
   align-items: center;
-  gap: $sp-3;
+  gap: 16rpx;
   flex-shrink: 0;
+  min-width: 240rpx;
+  transition: min-width 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  // 移动端隐藏 logo，节省空间
+  @include mobile { display: none; }
 }
 
-.logo-icon {
-  color: $primary;
-}
+.logo-icon { color: $primary; }
 
 .logo-text {
-  font-size: $font-size-lg;
+  font-size: 32rpx;
   font-weight: $font-weight-bold;
-  color: $gray-800;
+  color: $gray-900;
   white-space: nowrap;
+  transition: font-size 0.18s;
 }
 
 // 搜索框
-.search-bar {
+.search-wrapper {
+  position: relative;
   flex: 1;
-  max-width: 400rpx;
+  max-width: 960rpx;
+  margin: 0 auto;
+  min-width: 0;
+
+  @include mobile {
+    max-width: none;
+    margin: 0;
+  }
+}
+
+.compact-search-bar {
+  width: 100%;
+  height: 72rpx;
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  background: $gray-100;
-  border-radius: $radius-2xl;
-  padding: $sp-3 $sp-5;
-  min-width: 0;
+  background: $bg-page;
+  border-radius: 36rpx;
+  padding: 0 28rpx;
+  gap: 16rpx;
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  &:focus-within {
+    background: $gray-100;
+    box-shadow: 0 0 0 4rpx rgba($primary, 0.1);
+  }
+
+  @include mobile { height: 64rpx; padding: 0 24rpx; }
 }
 
 .search-icon {
-  color: $gray-400;
+  color: $gray-600;
   flex-shrink: 0;
 }
 
 .search-input {
   flex: 1;
-  font-size: $font-size-sm;
-  color: $gray-700;
+  height: 100%;
+  font-size: 28rpx;
+  color: $gray-800;
   background: transparent;
   border: none;
   outline: none;
-  padding: 0;
   min-width: 0;
 
-  &::placeholder {
-    color: $gray-400;
-  }
+  &::placeholder { color: $text-placeholder; }
 }
 
-.clear-btn {
-  color: $gray-400;
+.clear-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-600;
+  cursor: pointer;
+  padding: 8rpx;
+  border-radius: 50%;
   flex-shrink: 0;
-  @include flex-center;
+  transition: all 0.2s;
+
+  &:hover { background: $gray-200; color: $gray-900; }
+  &:active { transform: scale(0.9); }
 }
 
 // 发布按钮
 .publish-btn {
   display: flex;
   align-items: center;
-  gap: $sp-2;
-  padding: $sp-3 $sp-5;
+  gap: 12rpx;
+  height: 72rpx;
   background: $primary;
-  border-radius: $radius-2xl;
+  padding: 0 36rpx;
+  border-radius: 36rpx;
   flex-shrink: 0;
-  transition: $transition-slow;
+  cursor: pointer;
+  transition: all 0.2s;
 
-  &:active {
-    opacity: 0.85;
-    transform: scale(0.96);
+  &:hover {
+    background: $primary-light;
+    transform: translateY(-2rpx);
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.3);
   }
+
+  &:active { opacity: 0.85; transform: scale(0.96); }
+
+  @include mobile { height: 64rpx; padding: 0 28rpx; }
 }
 
-.publish-icon {
-  color: $white;
-}
+.publish-icon { color: $white; }
 
 .publish-text {
   font-size: $font-size-sm;
@@ -855,7 +907,9 @@ defineExpose({
 // 顶部导航占位
 // ===================================
 .nav-spacer {
-  height: 112rpx;
+  height: 120rpx;
+
+  @include mobile { height: 112rpx; }
 }
 
 // ===================================
@@ -863,7 +917,7 @@ defineExpose({
 // ===================================
 .sticky-nav {
   position: sticky;
-  top: 112rpx;
+  top: 120rpx;
   z-index: $z-dropdown;
   background: $white;
   border-bottom: 1rpx solid $gray-200;
@@ -872,6 +926,8 @@ defineExpose({
   &.header-collapsed {
     top: 96rpx;
   }
+
+  @include mobile { top: 112rpx; }
 }
 
 // 一行筛选栏

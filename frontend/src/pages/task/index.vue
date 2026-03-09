@@ -181,8 +181,12 @@
 
         </view><!-- end task-main -->
 
-        <!-- ===== 侧边栏（仅桌面端显示） ===== -->
-        <view class="task-sidebar">
+        <!-- ===== 侧边栏（仅桌面端显示；移动端由 FAB 触发） ===== -->
+        <view class="task-sidebar" :class="{ 'mobile-open': showMobileSidebar }">
+          <!-- 移动端关闭按钮 -->
+          <view class="mobile-sidebar-close" @click="showMobileSidebar = false">
+            <Icon name="x" :size="18" />
+          </view>
 
           <!-- 模块1：我的任务 -->
           <view class="sidebar-card" v-if="userStore.isLoggedIn">
@@ -324,6 +328,15 @@
       </view>
     </view>
 
+    <!-- 移动端侧边栏遮罩 -->
+    <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
+
+    <!-- 移动端 FAB（快捷操作入口） -->
+    <view class="main-fab" aria-label="快捷操作" role="button" @click="showMobileSidebar = true">
+      <view v-if="mobileActiveCount > 0" class="fab-badge">{{ mobileActiveCount }}</view>
+      <Icon name="menu" :size="22" />
+    </view>
+
   </view>
 </template>
 
@@ -378,6 +391,7 @@ const pageSize = 20
 const searchKeyword = ref('')
 const isHeaderCollapsed = ref(false)
 const statusDropdownOpen = ref(false)
+const showMobileSidebar = ref(false)
 
 const currentStatusLabel = computed(() => {
   const opt = statusOptions.find(o => o.value === currentStatus.value)
@@ -573,6 +587,9 @@ interface MyTaskStats {
 }
 
 const myStats = ref<MyTaskStats>({ pending: 0, ongoing: 0, done: 0 })
+const mobileActiveCount = computed(() =>
+  userStore.isLoggedIn ? myStats.value.pending + myStats.value.ongoing : 0
+)
 const hotTasks = ref<TaskListItem[]>([])
 const todayPublished = ref<number>(0)
 const todayDone = ref<number>(0)
@@ -771,6 +788,7 @@ defineExpose({
 // 搜索框
 .search-bar {
   flex: 1;
+  max-width: 400rpx;
   display: flex;
   align-items: center;
   gap: $sp-3;
@@ -1286,10 +1304,106 @@ defineExpose({
   position: sticky;
   top: 240rpx; // fixed-nav(112) + filter-bar(~80) + gap(~48)
 
-  // 移动端隐藏
+  // 移动端默认隐藏，FAB 触发后以抽屉形式显示
   @include mobile {
     display: none;
+
+    &.mobile-open {
+      display: flex;
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: $z-modal;
+      width: 80vw;
+      max-width: 340px;
+      background: $white;
+      overflow-y: auto;
+      padding: $sp-6;
+      box-shadow: -4rpx 0 32rpx rgba($gray-900, 0.15);
+      animation: slideInRight 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
   }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+// 移动端侧边栏关闭按钮
+.mobile-sidebar-close {
+  display: none;
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin-bottom: $sp-4;
+    color: $gray-500;
+    cursor: pointer;
+  }
+}
+
+// 移动端遮罩
+.mobile-sidebar-backdrop {
+  display: none;
+
+  @include mobile {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: $z-modal - 1;
+    background: rgba($gray-900, 0.4);
+    backdrop-filter: blur(2px);
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+// 移动端 FAB
+.main-fab {
+  display: none;
+
+  @include mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 48rpx;
+    bottom: calc(120rpx + env(safe-area-inset-bottom, 0px));
+    z-index: $z-dropdown + 5;
+    width: 104rpx;
+    height: 104rpx;
+    border-radius: 50%;
+    background: $primary;
+    color: $white;
+    box-shadow: 0 8rpx 24rpx rgba($primary, 0.45);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+
+    &:active {
+      transform: scale(0.92);
+      box-shadow: 0 4rpx 12rpx rgba($primary, 0.4);
+    }
+  }
+}
+
+.fab-badge {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  min-width: 36rpx;
+  height: 36rpx;
+  padding: 0 8rpx;
+  background: #FF4D4F;
+  color: $white;
+  border-radius: 18rpx;
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2rpx solid $white;
 }
 
 // 侧边栏通用卡片

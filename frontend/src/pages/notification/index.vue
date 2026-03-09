@@ -251,11 +251,53 @@
 
         <!-- 空状态 -->
         <view v-if="!loading && notificationList.length === 0" class="empty-state">
-          <view class="empty-icon-wrap">
-            <Icon name="bell-off" :size="36" color="#9CA3AF" />
+          <!-- 视觉区 -->
+          <view class="empty-visual">
+            <view class="empty-orb">
+              <view class="empty-orb-inner">
+                <Icon name="bell" :size="36" color="#2563EB" />
+              </view>
+            </view>
+            <view class="empty-float empty-float--1" />
+            <view class="empty-float empty-float--2" />
+            <view class="empty-float empty-float--3" />
           </view>
-          <text class="empty-title">{{ emptyInfo.title }}</text>
-          <text class="empty-desc">{{ emptyInfo.desc }}</text>
+
+          <!-- 文案区 -->
+          <view class="empty-copy">
+            <text class="empty-title">{{ emptyInfo.title }}</text>
+            <text class="empty-subtitle">{{ emptyInfo.subtitle }}</text>
+          </view>
+
+          <!-- 行动按钮 -->
+          <view class="empty-cta" @click="goExplore">
+            <text class="empty-cta-text">{{ emptyInfo.action }}</text>
+            <Icon name="arrow-right" :size="14" color="#fff" />
+          </view>
+
+          <!-- 功能说明（仅"全部"标签展示） -->
+          <view v-if="currentTab === 'all'" class="empty-features">
+            <view class="empty-feature">
+              <view class="feature-dot feature-dot--blue">
+                <Icon name="message-circle" :size="12" color="#2563EB" />
+              </view>
+              <text class="feature-label">回答与评论</text>
+            </view>
+            <view class="empty-feature-sep" />
+            <view class="empty-feature">
+              <view class="feature-dot feature-dot--amber">
+                <Icon name="zap" :size="12" color="#D97706" />
+              </view>
+              <text class="feature-label">积分动态</text>
+            </view>
+            <view class="empty-feature-sep" />
+            <view class="empty-feature">
+              <view class="feature-dot feature-dot--violet">
+                <Icon name="megaphone" :size="12" color="#7C3AED" />
+              </view>
+              <text class="feature-label">系统公告</text>
+            </view>
+          </view>
         </view>
 
         <!-- 加载更多骨架 -->
@@ -465,14 +507,44 @@ const earlierNotifications = computed(() => {
 })
 
 const emptyInfo = computed(() => {
-  const map: Record<string, { title: string; desc: string }> = {
-    all:     { title: '暂无通知',     desc: '有新消息时会在这里提醒你' },
-    ANSWER:  { title: '暂无回答通知', desc: '有人回答了你的问题，会在这里提醒你' },
-    COMMENT: { title: '暂无评论通知', desc: '有人评论了你的内容，会在这里提醒你' },
-    SYSTEM:  { title: '暂无系统通知', desc: '系统消息和公告会在这里显示' }
+  const map: Record<string, { title: string; subtitle: string; action: string; actionUrl: string }> = {
+    all: {
+      title: '还没有收到任何通知',
+      subtitle: '当有人回复、评论或系统有重要更新时，消息会第一时间出现在这里',
+      action: '去社区逛逛',
+      actionUrl: '/pages/question/index'
+    },
+    ANSWER: {
+      title: '还没有回答通知',
+      subtitle: '提出你的第一个问题，等待来自同学的精彩解答',
+      action: '去提问题',
+      actionUrl: '/pages/question/index'
+    },
+    COMMENT: {
+      title: '还没有评论通知',
+      subtitle: '分享知识与见解，开始与其他同学互动交流',
+      action: '浏览问答',
+      actionUrl: '/pages/question/index'
+    },
+    SYSTEM: {
+      title: '暂无系统通知',
+      subtitle: '系统消息、积分变动和重要公告会在这里显示',
+      action: '返回首页',
+      actionUrl: '/pages/home/index'
+    }
   }
   return map[currentTab.value] || map.all
 })
+
+const goExplore = () => {
+  const { actionUrl } = emptyInfo.value
+  const tabUrls = ['/pages/home/index', '/pages/question/index', '/pages/resource/index']
+  if (tabUrls.includes(actionUrl)) {
+    uni.switchTab({ url: actionUrl })
+  } else {
+    uni.navigateTo({ url: actionUrl })
+  }
+}
 
 // ===================== 类型映射 =====================
 const getTypeIcon = (type: string): string => {
@@ -1308,33 +1380,181 @@ defineExpose({})
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 80px 32px;
-  gap: 12px;
+  padding: 48px 32px 40px;
   animation: card-fade-up 0.4s ease both;
 }
 
-.empty-icon-wrap {
-  width: 72px;
-  height: 72px;
-  border-radius: 36px;
-  background: #F3F4F6;
+/* 视觉区 */
+.empty-visual {
+  position: relative;
+  width: 128px;
+  height: 128px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 4px;
+  margin-bottom: 28px;
+}
+
+.empty-orb {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 12px rgba(37, 99, 235, 0.06), 0 0 0 24px rgba(37, 99, 235, 0.025);
+}
+
+.empty-orb-inner {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.18);
+}
+
+/* 浮动装饰点 */
+.empty-float {
+  position: absolute;
+  border-radius: 50%;
+  animation: float-bob 3s ease-in-out infinite;
+}
+
+.empty-float--1 {
+  width: 10px;
+  height: 10px;
+  background: #BFDBFE;
+  top: 10px;
+  right: 14px;
+  animation-delay: 0s;
+}
+
+.empty-float--2 {
+  width: 7px;
+  height: 7px;
+  background: #C7D2FE;
+  bottom: 12px;
+  left: 12px;
+  animation-delay: 0.8s;
+}
+
+.empty-float--3 {
+  width: 5px;
+  height: 5px;
+  background: #DDD6FE;
+  top: 30px;
+  left: 6px;
+  animation-delay: 1.4s;
+}
+
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-7px); }
+}
+
+/* 文案区 */
+.empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 28px;
+  text-align: center;
 }
 
 .empty-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #6B7280;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1F2937;
+  line-height: 1.4;
 }
 
-.empty-desc {
+.empty-subtitle {
   font-size: 13px;
-  color: #9CA3AF;
+  color: #6B7280;
+  line-height: 1.75;
+  max-width: 280px;
   text-align: center;
+}
+
+/* 行动按钮 */
+.empty-cta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 28px;
+  background: #2563EB;
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
+  margin-bottom: 36px;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+  }
+
+  // #ifdef H5
+  &:hover {
+    background: #1D4ED8;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+  }
+  // #endif
+}
+
+.empty-cta-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+}
+
+/* 功能说明条 */
+.empty-features {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  background: #F8FAFC;
+  border-radius: 16px;
+  border: 1px solid #E4E4E7;
+}
+
+.empty-feature {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty-feature-sep {
+  width: 1px;
+  height: 16px;
+  background: #E4E4E7;
+}
+
+.feature-dot {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feature-dot--blue   { background: #EFF6FF; }
+.feature-dot--amber  { background: #FEF3C7; }
+.feature-dot--violet { background: #F5F3FF; }
+
+.feature-label {
+  font-size: 12px;
+  color: #6B7280;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 /* ===================== 没有更多 ===================== */

@@ -4,6 +4,9 @@
     <!-- ── 顶部导航栏 ── -->
     <CNavBar title="积分明细" />
 
+    <!-- ── 内容居中容器 ── -->
+    <view class="page-body">
+
     <!-- ── 积分卡区域 ── -->
     <view class="banner-section">
       <view class="banner-card">
@@ -141,6 +144,8 @@
       </view>
 
     </scroll-view>
+
+    </view><!-- /page-body -->
 
   </view>
 </template>
@@ -317,6 +322,16 @@ onMounted(() => loadPoints())
   height: 100vh;
   background: #F1F5F9;
   overflow: hidden;
+}
+
+.page-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 // ── 积分卡区域 ────────────────────────────────

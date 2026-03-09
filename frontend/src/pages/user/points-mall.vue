@@ -4,6 +4,9 @@
     <!-- 统一导航栏 -->
     <CNavBar title="积分商城" />
 
+    <!-- 内容居中容器 -->
+    <view class="page-body">
+
     <!-- 积分卡 -->
     <view class="banner-section">
       <view class="banner-card">
@@ -216,6 +219,8 @@
       </scroll-view>
     </view>
 
+    </view><!-- /page-body -->
+
     <!-- ═══ 兑换确认弹窗 ═══ -->
     <view v-if="confirmItem" class="mask" @click="closeConfirm" />
     <view class="confirm-sheet" :class="{ 'confirm-sheet--show': !!confirmItem }">
@@ -423,6 +428,17 @@ onMounted(async () => {
   height: 100vh;
   background: #F1F5F9;
   overflow: hidden;
+}
+
+// ── 居中容器 ──────────────────────────────────
+.page-body {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: 680px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 // ── 积分卡 ────────────────────────────────────

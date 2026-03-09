@@ -20,9 +20,38 @@
               placeholder="搜索任务..."
               confirm-type="search"
               @confirm="handleSearch"
+              @focus="handleSearchFocus"
+              @blur="handleSearchBlur"
             />
             <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
               <Icon name="x" :size="14" />
+            </view>
+          </view>
+
+          <!-- 搜索历史下拉面板 -->
+          <view v-if="showSearchHistory" class="search-history-dropdown">
+            <template v-if="searchHistory.length > 0">
+              <view class="history-header">
+                <text class="history-title">搜索历史</text>
+                <text class="history-clear" @click="clearSearchHistory">清空</text>
+              </view>
+              <view class="history-list">
+                <view
+                  v-for="(item, index) in searchHistory"
+                  :key="index"
+                  class="history-item"
+                  @click="handleSearchHistoryClick(item)"
+                >
+                  <Icon name="clock" :size="14" class="history-icon" />
+                  <text class="history-text">{{ item }}</text>
+                  <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+                </view>
+              </view>
+            </template>
+            <view v-else class="history-empty">
+              <Icon name="search" :size="32" class="history-empty-icon" />
+              <text class="empty-text">暂无搜索历史</text>
+              <text class="empty-hint">搜索后会自动记录</text>
             </view>
           </view>
         </view>
@@ -354,6 +383,7 @@ import { useUserStore } from '@/stores/user'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 import Icon from '@/components/icons/index.vue'
+import { taskSearchHistory } from '@/utils/searchHistory'
 
 const userStore = useUserStore()
 
@@ -393,6 +423,8 @@ const hasMore = ref(true)
 const page = ref(1)
 const pageSize = 20
 const searchKeyword = ref('')
+const showSearchHistory = ref(false)
+const searchHistory = ref<string[]>([])
 const isHeaderCollapsed = ref(false)
 const statusDropdownOpen = ref(false)
 const showMobileSidebar = ref(false)
@@ -482,7 +514,16 @@ const handleTypeChange = (type: string) => {
   loadTasks(true)
 }
 
+const loadSearchHistory = () => {
+  searchHistory.value = taskSearchHistory.getHistory()
+}
+
 const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    taskSearchHistory.add(searchKeyword.value.trim())
+    loadSearchHistory()
+  }
+  showSearchHistory.value = false
   taskList.value = []
   loadTasks(true)
 }
@@ -491,6 +532,38 @@ const clearSearch = () => {
   searchKeyword.value = ''
   taskList.value = []
   loadTasks(true)
+}
+
+const clearSearchHistory = () => {
+  uni.showModal({
+    title: '提示',
+    content: '确定清空所有搜索历史吗？',
+    success: (res) => {
+      if (res.confirm) {
+        taskSearchHistory.clear()
+        loadSearchHistory()
+      }
+    }
+  })
+}
+
+const deleteSearchHistoryItem = (keyword: string) => {
+  taskSearchHistory.remove(keyword)
+  loadSearchHistory()
+}
+
+const handleSearchHistoryClick = (keyword: string) => {
+  showSearchHistory.value = false
+  searchKeyword.value = keyword
+  handleSearch()
+}
+
+const handleSearchFocus = () => {
+  setTimeout(() => { showSearchHistory.value = true }, 100)
+}
+
+const handleSearchBlur = () => {
+  setTimeout(() => { showSearchHistory.value = false }, 200)
 }
 
 const handleTaskClick = (task: TaskListItem) => {
@@ -714,6 +787,7 @@ onPageScroll((e) => {
 onMounted(() => {
   loadTasks()
   loadSidebarData()
+  loadSearchHistory()
   // 附近任务不自动触发定位，用户主动点击后才请求
 })
 
@@ -871,6 +945,156 @@ defineExpose({
 
   &:hover { background: $gray-200; color: $gray-900; }
   &:active { transform: scale(0.9); }
+}
+
+// 搜索历史下拉面板
+.search-history-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 8px;
+  background: $white;
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  max-height: 360px;
+  overflow: hidden;
+  z-index: 200;
+  animation: searchDropdownIn 0.18s ease-out;
+}
+
+@keyframes searchDropdownIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid $gray-100;
+  background: $gray-50;
+}
+
+.history-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: $gray-800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  &::before {
+    content: '';
+    display: block;
+    width: 3px;
+    height: 14px;
+    background: $primary;
+    border-radius: 2px;
+  }
+}
+
+.history-clear {
+  font-size: 13px;
+  color: $primary;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.2s;
+
+  &:hover { background: rgba($primary, 0.1); }
+  &:active { opacity: 0.7; }
+}
+
+.history-list {
+  padding: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+
+  /* #ifdef H5 */
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: $gray-300; border-radius: 3px; }
+  /* #endif */
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $gray-50;
+    transform: translateX(2px);
+
+    .history-remove { opacity: 1; }
+  }
+
+  &:active { background: $gray-100; transform: translateX(0); }
+}
+
+.history-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-100;
+  border-radius: 50%;
+  padding: 3px;
+}
+
+.history-text {
+  flex: 1;
+  font-size: 14px;
+  color: $gray-800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.history-remove {
+  color: $gray-400;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: all 0.2s;
+
+  &:hover { background: rgba($error, 0.1); color: $error; }
+  &:active { transform: scale(0.9); }
+}
+
+.history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 20px;
+  text-align: center;
+}
+
+.history-empty-icon { color: $gray-300; margin-bottom: 12px; }
+
+.empty-text {
+  font-size: 15px;
+  color: $gray-600;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.empty-hint {
+  font-size: 13px;
+  color: $gray-400;
 }
 
 // 发布按钮

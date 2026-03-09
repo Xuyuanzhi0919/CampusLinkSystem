@@ -13,6 +13,7 @@
             <Icon name="star" :size="36" color="#FBBF24" />
           </view>
           <view class="banner-info">
+            <text class="banner-label">当前积分</text>
             <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
             <text class="banner-desc">可用于下载资源、发布悬赏</text>
           </view>
@@ -22,7 +23,20 @@
           </view>
         </view>
       </view>
+    </view>
 
+    <!-- ── 筛选栏 ── -->
+    <view class="filter-bar">
+      <view
+        v-for="f in FILTERS"
+        :key="f.value"
+        class="filter-tab"
+        :class="{ 'filter-tab--active': activeFilter === f.value }"
+        @click="setFilter(f.value)"
+      >
+        <Icon :name="f.icon" :size="13" class="filter-tab-icon" />
+        <text class="filter-tab-text">{{ f.label }}</text>
+      </view>
     </view>
 
     <!-- ── 列表滚动区 ── -->
@@ -31,62 +45,108 @@
       scroll-y
       @scrolltolower="handleLoadMore"
     >
-      <!-- 骨架屏 -->
+      <!-- 骨架屏（首次加载） -->
       <view v-if="loading && pointsList.length === 0" class="list">
         <view v-for="i in 8" :key="i" class="record-card record-card--skeleton">
-          <view class="skeleton-icon" />
+          <view class="skeleton-icon skeleton-shine" />
           <view class="skeleton-body">
-            <view class="skeleton-line skeleton-line--long" />
-            <view class="skeleton-line skeleton-line--short" />
+            <view class="skeleton-line skeleton-line--long skeleton-shine" />
+            <view class="skeleton-line skeleton-line--short skeleton-shine" />
           </view>
-          <view class="skeleton-amount" />
+          <view class="skeleton-amount skeleton-shine" />
         </view>
       </view>
 
-      <!-- 记录列表 -->
-      <view v-else-if="pointsList.length > 0" class="list">
-        <view
-          v-for="item in pointsList"
-          :key="item.logId"
-          class="record-card"
-          @click="handleCardClick(item)"
-        >
-          <view class="record-icon" :style="{ background: getReasonStyle(item.reason).bg }">
-            <Icon :name="getReasonIcon(item.reason)" :size="18" :color="getReasonStyle(item.reason).color" />
+      <!-- 按日期分组的明细列表 -->
+      <view v-else-if="groupedList.length > 0" class="list">
+        <template v-for="group in groupedList" :key="group.dateLabel">
+          <view class="date-divider">
+            <text class="date-divider-text">{{ group.dateLabel }}</text>
           </view>
-          <view class="record-body">
-            <text class="record-reason">{{ item.reason }}</text>
-            <text class="record-meta">余额 {{ item.pointsAfter }} · {{ formatTime(item.createdAt) }}</text>
+          <view
+            v-for="item in group.items"
+            :key="item.logId"
+            class="record-card"
+            @click="handleCardClick(item)"
+          >
+            <view class="record-icon" :style="{ background: getReasonStyle(item.reason).bg }">
+              <Icon :name="getReasonIcon(item.reason)" :size="18" :color="getReasonStyle(item.reason).color" />
+            </view>
+            <view class="record-body">
+              <text class="record-reason">{{ item.reason }}</text>
+              <text class="record-meta">余额 {{ item.pointsAfter }} · {{ formatTime(item.createdAt) }}</text>
+            </view>
+            <text
+              class="record-amount"
+              :class="item.pointsChange > 0 ? 'record-amount--plus' : 'record-amount--minus'"
+            >
+              {{ item.pointsChange > 0 ? '+' : '' }}{{ item.pointsChange }}
+            </text>
           </view>
-          <text class="record-amount" :class="item.pointsChange > 0 ? 'record-amount--plus' : 'record-amount--minus'">
-            {{ item.pointsChange > 0 ? '+' : '' }}{{ item.pointsChange }}
-          </text>
-        </view>
+        </template>
+
+        <!-- 底部状态 -->
         <view class="footer-tip">
-          <text class="footer-text">{{ loadingMore ? '加载中…' : hasMore ? '上拉加载更多' : '已显示全部记录' }}</text>
+          <template v-if="loadingMore">
+            <view class="footer-loading">
+              <Icon name="loader" :size="14" class="footer-spinner" color="#94A3B8" />
+              <text class="footer-text">加载中…</text>
+            </view>
+          </template>
+          <template v-else-if="!hasMore">
+            <view class="footer-end">
+              <view class="footer-line" />
+              <text class="footer-text">已显示全部记录</text>
+              <view class="footer-line" />
+            </view>
+          </template>
         </view>
       </view>
 
-      <!-- 空状态 -->
-      <view v-else class="empty-state">
-        <Icon name="award" :size="44" color="#D1D5DB" />
+      <!-- 筛选无结果（有数据但当前分类为空） -->
+      <view v-else-if="!loading && pointsList.length > 0" class="empty-state">
+        <view class="empty-icon-wrap">
+          <Icon name="filter-x" :size="28" color="#94A3B8" />
+        </view>
+        <text class="empty-text">暂无此类记录</text>
+        <text class="empty-tip">切换其他分类试试</text>
+      </view>
+
+      <!-- 完全空（无任何积分数据） -->
+      <view v-else-if="!loading" class="empty-state">
+        <view class="empty-icon-wrap">
+          <Icon name="award" :size="28" color="#94A3B8" />
+        </view>
         <text class="empty-text">暂无积分记录</text>
         <text class="empty-tip">完成任务、上传资源等可获得积分</text>
       </view>
+
     </scroll-view>
 
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { CNavBar } from '@/components/layout'
 import { getPointsLog } from '@/services/user'
 import type { PointsLogItem } from '@/types/user'
 import { useUserStore } from '@/stores/user'
 
-// ── 模块级常量，不随组件重建 ──────────────────
+// ── 筛选分类 ──────────────────────────────────
+const FILTERS = [
+  { label: '全部', value: 'all',     icon: 'layout-list' },
+  { label: '签到', value: 'checkin', icon: 'calendar-check' },
+  { label: '任务', value: 'task',    icon: 'target' },
+  { label: '消费', value: 'consume', icon: 'shopping-cart' },
+] as const
+
+type FilterValue = typeof FILTERS[number]['value']
+
+const TASK_REASONS = new Set(['发布任务', '完成任务', '接受任务', '回答问题', '回答被采纳'])
+
+// ── 模块级常量 ────────────────────────────────
 const REASON_ICON_MAP: Record<string, string> = {
   注册奖励:   'gift',
   上传资源:   'file-plus',
@@ -126,28 +186,68 @@ const getReasonStyle = (reason: string) =>
 const formatTime = (dateStr: string): string => {
   const d = new Date(dateStr)
   const now = new Date()
-  const diff = now.getTime() - d.getTime()
   const hm = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-  if (diff < 86400000)  return `今天 ${hm}`
-  if (diff < 172800000) return `昨天 ${hm}`
   if (d.getFullYear() === now.getFullYear())
     return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${hm}`
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 // ── 响应式状态 ────────────────────────────────
-const userStore = useUserStore()
+const userStore    = useUserStore()
 const pointsList   = ref<PointsLogItem[]>([])
 const loading      = ref(false)
 const loadingMore  = ref(false)
 const hasMore      = ref(true)
 const page         = ref(1)
 const PAGE_SIZE    = 20
+const activeFilter = ref<FilterValue>('all')
+
+// ── 筛选 ──────────────────────────────────────
+const filteredList = computed(() => {
+  const list = pointsList.value
+  switch (activeFilter.value) {
+    case 'checkin': return list.filter(i => i.reason.includes('签到'))
+    case 'task':    return list.filter(i => TASK_REASONS.has(i.reason))
+    case 'consume': return list.filter(i => i.pointsChange < 0)
+    default:        return list
+  }
+})
+
+// ── 日期分组 ──────────────────────────────────
+interface DateGroup { dateLabel: string; items: PointsLogItem[] }
+
+const groupedList = computed<DateGroup[]>(() => {
+  const now      = new Date()
+  const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0)
+  const yestStart  = new Date(todayStart); yestStart.setDate(todayStart.getDate() - 1)
+
+  const groups: DateGroup[] = []
+  const seen: Record<string, DateGroup> = {}
+
+  for (const item of filteredList.value) {
+    const d = new Date(item.createdAt)
+    let label: string
+    if (d >= todayStart)      label = '今天'
+    else if (d >= yestStart)  label = '昨天'
+    else {
+      const m = d.getMonth() + 1
+      const day = d.getDate()
+      label = d.getFullYear() === now.getFullYear()
+        ? `${m}月${day}日`
+        : `${d.getFullYear()}年${m}月${day}日`
+    }
+    if (!seen[label]) {
+      seen[label] = { dateLabel: label, items: [] }
+      groups.push(seen[label])
+    }
+    seen[label].items.push(item)
+  }
+  return groups
+})
+
+const setFilter = (val: FilterValue) => { activeFilter.value = val }
 
 // ── 交互 ──────────────────────────────────────
-const goBack = () =>
-  uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/home/index' }) })
-
 const handleCardClick = (item: PointsLogItem) => {
   if (!item.relatedType || !item.relatedId) return
   const routeMap: Record<string, string> = {
@@ -211,7 +311,6 @@ onMounted(() => loadPoints())
   padding: 12px 16px 16px;
 }
 
-// ── 积分卡 ────────────────────────────────────
 .banner-card {
   position: relative;
   overflow: hidden;
@@ -257,7 +356,14 @@ onMounted(() => loadPoints())
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
+
+.banner-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #64748B;
+  letter-spacing: 0.5px;
 }
 
 .banner-value {
@@ -265,12 +371,13 @@ onMounted(() => loadPoints())
   font-weight: 800;
   color: #1E293B;
   letter-spacing: -1px;
-  line-height: 1;
+  line-height: 1.1;
 }
 
 .banner-desc {
   font-size: 11px;
   color: #94A3B8;
+  margin-top: 2px;
 }
 
 .banner-mall-btn {
@@ -292,6 +399,51 @@ onMounted(() => loadPoints())
   color: #FFFFFF;
 }
 
+// ── 筛选栏 ────────────────────────────────────
+.filter-bar {
+  flex-shrink: 0;
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px 8px;
+  background: #F1F5F9;
+}
+
+.filter-tab {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:active { opacity: 0.75; }
+
+  // #ifdef H5
+  &:hover:not(.filter-tab--active) { border-color: #CBD5E1; }
+  // #endif
+
+  &--active {
+    background: #2563EB;
+    border-color: #2563EB;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.28);
+
+    .filter-tab-icon { color: #FFFFFF; }
+    .filter-tab-text { color: #FFFFFF; }
+  }
+}
+
+.filter-tab-icon { color: #94A3B8; }
+
+.filter-tab-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #64748B;
+  white-space: nowrap;
+}
+
 // ── 列表区 ────────────────────────────────────
 .content-scroll {
   flex: 1;
@@ -302,8 +454,23 @@ onMounted(() => loadPoints())
 .list {
   display: flex;
   flex-direction: column;
+  padding: 8px 16px 16px;
+}
+
+// ── 日期分隔 ──────────────────────────────────
+.date-divider {
+  padding: 12px 4px 6px;
+  display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 12px 16px;
+
+  &:first-child { padding-top: 4px; }
+}
+
+.date-divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
 }
 
 // ── 记录卡片 ──────────────────────────────────
@@ -311,15 +478,25 @@ onMounted(() => loadPoints())
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px;
+  padding: 13px 14px;
   background: #FFFFFF;
   border-radius: 14px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  margin-bottom: 8px;
+  transition: box-shadow 0.15s;
+  cursor: pointer;
+
   &:active { background: #F8FAFF; }
 
+  // #ifdef H5
+  &:hover { box-shadow: 0 3px 10px rgba(0, 0, 0, 0.09); }
+  // #endif
+
   &--skeleton {
-    min-height: 60px;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    min-height: 64px;
+    box-shadow: none;
+    cursor: default;
+    &:active { background: #FFFFFF; }
   }
 }
 
@@ -359,42 +536,94 @@ onMounted(() => loadPoints())
   flex-shrink: 0;
   font-size: 17px;
   font-weight: 800;
+  letter-spacing: -0.5px;
   &--plus  { color: #10B981; }
   &--minus { color: #EF4444; }
 }
 
 // ── 骨架屏 ────────────────────────────────────
-.skeleton-icon   { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; background: #E5E7EB; }
+.skeleton-icon   { width: 42px; height: 42px; flex-shrink: 0; border-radius: 12px; }
 .skeleton-body   { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-.skeleton-amount { width: 40px; height: 18px; flex-shrink: 0; border-radius: 6px; background: #E5E7EB; }
+.skeleton-amount { width: 44px; height: 20px; flex-shrink: 0; border-radius: 6px; }
 
 .skeleton-line {
-  height: 11px;
+  height: 12px;
   border-radius: 6px;
-  background: #E5E7EB;
-  &--long  { width: 60%; }
-  &--short { width: 40%; }
+  &--long  { width: 55%; }
+  &--short { width: 38%; }
 }
 
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
+.skeleton-shine {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
 }
 
-// ── 底部 & 空状态 ─────────────────────────────
-.footer-tip  { display: flex; justify-content: center; padding: 14px; }
-.footer-text { font-size: 12px; color: #CBD5E1; }
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
 
+// ── 底部状态 ──────────────────────────────────
+.footer-tip { padding: 8px 0 16px; }
+
+.footer-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.footer-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.footer-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.footer-line {
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.footer-text {
+  font-size: 12px;
+  color: #CBD5E1;
+  white-space: nowrap;
+}
+
+// ── 空状态 ────────────────────────────────────
 .empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 80px 20px;
+  padding: 72px 20px;
 }
 
-.empty-text { font-size: 14px; font-weight: 500; color: #9CA3AF; }
-.empty-tip  { font-size: 12px; color: #D1D5DB; }
+.empty-icon-wrap {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.empty-text { font-size: 14px; font-weight: 500; color: #94A3B8; }
+.empty-tip  { font-size: 12px; color: #CBD5E1; }
 
 </style>

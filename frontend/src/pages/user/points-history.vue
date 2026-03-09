@@ -1,19 +1,11 @@
 <template>
   <view class="page">
 
-    <!-- ── 统一头部（导航 + 积分卡共享渐变背景）── -->
+    <!-- ── 顶部导航栏 ── -->
+    <CNavBar title="积分明细" />
+
+    <!-- ── 积分卡区域 ── -->
     <view class="page-header">
-
-      <!-- 导航行 -->
-      <view class="header-nav">
-        <view class="nav-back" @click="goBack">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
-        </view>
-        <text class="nav-title">积分明细</text>
-        <view class="nav-placeholder" />
-      </view>
-
-      <!-- 积分卡 -->
       <view class="banner-wrap">
         <view class="banner-card">
           <view class="banner-glow" />
@@ -89,6 +81,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import { CNavBar } from '@/components/layout'
 import { getPointsLog } from '@/services/user'
 import type { PointsLogItem } from '@/types/user'
 import { useUserStore } from '@/stores/user'
@@ -207,46 +200,15 @@ onMounted(() => loadPoints())
   overflow: hidden;
 }
 
-// ── 统一头部 ──────────────────────────────────
+// ── 积分卡区域 ────────────────────────────────
 .page-header {
   flex-shrink: 0;
   background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
   border-radius: 0 0 24px 24px;
 }
 
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; flex-shrink: 0; }
-
-// ── 积分卡 ────────────────────────────────────
 .banner-wrap {
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
 }
 
 // ── 积分卡 ────────────────────────────────────

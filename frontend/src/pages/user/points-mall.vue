@@ -11,9 +11,7 @@
     <view class="banner-section">
       <view class="banner-card">
         <view class="banner-header">
-          <view class="banner-title-group">
-            <text class="banner-label">我的积分</text>
-          </view>
+          <text class="banner-label">我的积分</text>
           <view class="banner-history-btn" @click="goHistory">
             <text class="banner-history-text">积分明细</text>
             <Icon name="chevron-right" :size="12" color="#2563EB" />
@@ -60,7 +58,7 @@
     <!-- ═══ 商城视图 ═══ -->
     <view v-if="activeMainTab === 'mall'" class="mall-view">
 
-      <!-- 分类筛选 -->
+      <!-- 分类筛选（带图标） -->
       <scroll-view class="category-scroll" scroll-x>
         <view class="category-list">
           <view
@@ -70,6 +68,11 @@
             :class="{ 'category-chip--active': activeCategory === cat.key }"
             @click="handleCategoryChange(cat.key)"
           >
+            <Icon
+              :name="cat.icon"
+              :size="13"
+              :color="activeCategory === cat.key ? '#FFFFFF' : '#64748B'"
+            />
             <text class="category-text">{{ cat.label }}</text>
           </view>
         </view>
@@ -80,11 +83,13 @@
 
         <!-- 骨架屏 -->
         <view v-if="itemsLoading" class="items-grid">
-          <view v-for="i in 6" :key="i" class="item-card item-card--skeleton">
-            <view class="skeleton-icon shimmer" />
-            <view class="skeleton-line skeleton-line--long shimmer" />
-            <view class="skeleton-line skeleton-line--short shimmer" />
-            <view class="skeleton-btn shimmer" />
+          <view v-for="i in 6" :key="i" class="item-card-skeleton">
+            <view class="sk-header shimmer" />
+            <view class="sk-body">
+              <view class="sk-line sk-line--long shimmer" />
+              <view class="sk-line sk-line--short shimmer" />
+              <view class="sk-footer shimmer" />
+            </view>
           </view>
         </view>
 
@@ -94,25 +99,34 @@
             v-for="item in items"
             :key="item.itemId"
             class="item-card"
+            :class="[`item-card--${item.category}`, { 'item-card--locked': currentPoints < item.pointsCost }]"
             @click="openConfirm(item)"
           >
-            <view class="item-icon-wrap" :class="`item-icon-wrap--${item.category}`">
-              <Icon :name="getCategoryIcon(item.category)" :size="28" color="white" />
-            </view>
-            <text class="item-name">{{ item.name }}</text>
-            <text class="item-desc">{{ item.description }}</text>
-            <text v-if="item.stock > 0 && item.stock <= 20" class="item-stock">
-              仅剩 {{ item.stock }} 件
-            </text>
-            <view class="item-footer">
-              <view class="item-cost">
-                <Icon name="star" :size="13" color="#F59E0B" />
-                <text class="item-cost-num">{{ item.pointsCost }}</text>
+            <!-- 彩色头部区 -->
+            <view class="item-header">
+              <view class="item-icon-wrap">
+                <Icon :name="getCategoryIcon(item.category)" :size="24" color="white" />
               </view>
-              <view class="item-btn" :class="{ 'item-btn--disabled': currentPoints < item.pointsCost }">
-                <text class="item-btn-text">
-                  {{ currentPoints >= item.pointsCost ? '立即兑换' : '积分不足' }}
-                </text>
+              <view v-if="item.stock > 0 && item.stock <= 20" class="item-stock-badge">
+                <text class="item-stock-text">仅剩 {{ item.stock }}</text>
+              </view>
+            </view>
+
+            <!-- 内容区 -->
+            <view class="item-body">
+              <text class="item-name">{{ item.name }}</text>
+              <text class="item-desc">{{ item.description }}</text>
+              <view class="item-footer">
+                <view class="item-cost">
+                  <Icon name="star" :size="12" color="#F59E0B" />
+                  <text class="item-cost-num">{{ item.pointsCost }}</text>
+                </view>
+                <view v-if="currentPoints >= item.pointsCost" class="item-btn">
+                  <text class="item-btn-text">兑换</text>
+                </view>
+                <view v-else class="item-btn item-btn--locked">
+                  <text class="item-btn-text item-btn-text--locked">差 {{ item.pointsCost - currentPoints }}</text>
+                </view>
               </view>
             </view>
           </view>
@@ -139,7 +153,6 @@
           </view>
         </view>
 
-        <!-- 底部间距 -->
         <view style="height: 24px;" />
       </scroll-view>
     </view>
@@ -151,34 +164,40 @@
         <!-- 骨架屏 -->
         <view v-if="recordsLoading" class="records-list">
           <view v-for="i in 5" :key="i" class="record-card record-card--skeleton">
-            <view class="skeleton-icon skeleton-icon--sm shimmer" />
-            <view class="skeleton-block">
-              <view class="skeleton-line skeleton-line--long shimmer" />
-              <view class="skeleton-line skeleton-line--short shimmer" />
+            <view class="sk-icon shimmer" />
+            <view class="sk-block">
+              <view class="sk-line sk-line--long shimmer" />
+              <view class="sk-line sk-line--short shimmer" />
             </view>
           </view>
         </view>
 
-        <!-- 记录列表 -->
-        <view v-else-if="records.length > 0" class="records-list">
-          <view v-for="rec in records" :key="rec.recordId" class="record-card">
-            <view class="record-icon-wrap" :class="`record-icon-wrap--${getEffectCategory(rec.effectType)}`">
-              <Icon :name="getEffectIcon(rec.effectType)" :size="20" color="white" />
+        <!-- 记录列表（按日期分组） -->
+        <view v-else-if="groupedRecords.length > 0" class="records-list">
+          <template v-for="group in groupedRecords" :key="group.dateLabel">
+            <!-- 日期分隔 -->
+            <view class="date-divider">
+              <text class="date-divider-text">{{ group.dateLabel }}</text>
             </view>
-            <view class="record-info">
-              <text class="record-name">{{ rec.itemName }}</text>
-              <text class="record-meta">
-                {{ EFFECT_LABELS[rec.effectType] || '权益' }}：{{ rec.effectValue }} ·
-                {{ formatDate(rec.createdAt) }}
-              </text>
-            </view>
-            <view class="record-right">
-              <text class="record-cost">-{{ rec.pointsCost }}</text>
-              <view class="record-status" :class="`record-status--${rec.status}`">
-                <text class="record-status-text">{{ STATUS_LABELS[rec.status] }}</text>
+
+            <view v-for="rec in group.items" :key="rec.recordId" class="record-card">
+              <view class="record-icon-wrap" :class="`record-icon-wrap--${getEffectCategory(rec.effectType)}`">
+                <Icon :name="getEffectIcon(rec.effectType)" :size="20" color="white" />
+              </view>
+              <view class="record-info">
+                <text class="record-name">{{ rec.itemName }}</text>
+                <text class="record-meta">
+                  {{ EFFECT_LABELS[rec.effectType] || '权益' }}：{{ rec.effectValue }} · {{ formatTime(rec.createdAt) }}
+                </text>
+              </view>
+              <view class="record-right">
+                <text class="record-cost">-{{ rec.pointsCost }}</text>
+                <view class="record-status" :class="`record-status--${rec.status}`">
+                  <text class="record-status-text">{{ STATUS_LABELS[rec.status] }}</text>
+                </view>
               </view>
             </view>
-          </view>
+          </template>
 
           <!-- 底部状态 -->
           <view v-if="recordsLoadingMore" class="footer-loader">
@@ -227,7 +246,7 @@
       <view v-if="confirmItem">
         <view class="sheet-handle" />
         <view class="sheet-item-info">
-          <view class="sheet-icon-wrap" :class="`item-icon-wrap--${confirmItem.category}`">
+          <view class="sheet-icon-wrap" :class="`item-card--${confirmItem.category}`">
             <Icon :name="getCategoryIcon(confirmItem.category)" :size="32" color="white" />
           </view>
           <view class="sheet-item-text">
@@ -282,18 +301,16 @@ import { getRewardItems, redeemItem, getRedeemRecords } from '@/services/reward'
 import type { RewardItem, RedeemRecord } from '@/types/reward'
 import { CATEGORIES, EFFECT_LABELS } from '@/types/reward'
 
-// ── 模块级常量 ────────────────────────────────
+// ── 常量 ──────────────────────────────────────
 const STATUS_LABELS: Record<number, string> = { 0: '待发放', 1: '已发放', 2: '已失效' }
 
 const CATEGORY_ICON_MAP: Record<string, string> = {
   download: 'download', privilege: 'crown', badge: 'badge-check', coupon: 'ticket',
 }
-
 const EFFECT_CATEGORY_MAP: Record<string, string> = {
   extra_download: 'download', question_top: 'privilege',
   badge_expert: 'badge', task_bonus: 'coupon', vip_trial: 'privilege',
 }
-
 const EFFECT_ICON_MAP: Record<string, string> = {
   extra_download: 'download', question_top: 'trending-up',
   badge_expert: 'badge-check', task_bonus: 'ticket', vip_trial: 'crown',
@@ -303,9 +320,9 @@ const getCategoryIcon   = (cat: string)  => CATEGORY_ICON_MAP[cat]    ?? 'gift'
 const getEffectCategory = (type: string) => EFFECT_CATEGORY_MAP[type] ?? 'download'
 const getEffectIcon     = (type: string) => EFFECT_ICON_MAP[type]     ?? 'gift'
 
-const formatDate = (dateStr: string) => {
+const formatTime = (dateStr: string) => {
   const d = new Date(dateStr)
-  return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 // ── 状态 ──────────────────────────────────────
@@ -334,6 +351,28 @@ const redeeming   = ref(false)
 const affordableCount = computed(() =>
   items.value.filter(i => i.pointsCost <= currentPoints.value).length
 )
+
+// 兑换记录按日期分组
+interface RecordGroup { dateLabel: string; items: RedeemRecord[] }
+const groupedRecords = computed<RecordGroup[]>(() => {
+  const groups: RecordGroup[] = []
+  const today = new Date(); today.setHours(0, 0, 0, 0)
+  const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1)
+
+  records.value.forEach(rec => {
+    const d = new Date(rec.createdAt); d.setHours(0, 0, 0, 0)
+    let label: string
+    if (d.getTime() === today.getTime()) label = '今天'
+    else if (d.getTime() === yesterday.getTime()) label = '昨天'
+    else if (d.getFullYear() === today.getFullYear()) label = `${d.getMonth() + 1}月${d.getDate()}日`
+    else label = `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
+
+    const group = groups.find(g => g.dateLabel === label)
+    if (group) group.items.push(rec)
+    else groups.push({ dateLabel: label, items: [rec] })
+  })
+  return groups
+})
 
 // ── 交互 ──────────────────────────────────────
 const goHistory = () => uni.navigateTo({ url: '/pages/user/points-history' })
@@ -421,7 +460,7 @@ onMounted(async () => {
 
 <style lang="scss" scoped>
 
-// ── 页面容器 ──────────────────────────────────
+// ── 页面 & 居中容器 ───────────────────────────
 .mall-page {
   display: flex;
   flex-direction: column;
@@ -430,7 +469,6 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-// ── 居中容器 ──────────────────────────────────
 .page-body {
   flex: 1;
   overflow: hidden;
@@ -572,11 +610,7 @@ onMounted(async () => {
   font-size: 14px;
   font-weight: 500;
   color: #94A3B8;
-
-  .main-tab-item--active & {
-    color: #2563EB;
-    font-weight: 700;
-  }
+  .main-tab-item--active & { color: #2563EB; font-weight: 700; }
 }
 
 // ── 商城视图 ──────────────────────────────────
@@ -587,6 +621,7 @@ onMounted(async () => {
   overflow: hidden;
 }
 
+// 分类筛选（带图标）
 .category-scroll {
   flex-shrink: 0;
   background: white;
@@ -604,7 +639,8 @@ onMounted(async () => {
 .category-chip {
   display: inline-flex;
   align-items: center;
-  padding: 5px 14px;
+  gap: 5px;
+  padding: 5px 12px;
   border-radius: 20px;
   background: #F1F5F9;
   cursor: pointer;
@@ -623,6 +659,7 @@ onMounted(async () => {
   white-space: nowrap;
 }
 
+// 商品网格
 .items-scroll { flex: 1; }
 
 .items-grid {
@@ -632,39 +669,78 @@ onMounted(async () => {
   padding: 16px;
 }
 
-// ── 商品卡片 ──────────────────────────────────
+// ── 商品卡片（彩色头部设计）────────────────────
 .item-card {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
   background: white;
   border-radius: 16px;
-  padding: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
   cursor: pointer;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
-  transition: transform 0.12s;
+  transition: transform 0.12s, box-shadow 0.12s;
 
   &:active { transform: scale(0.97); }
-  &--skeleton { cursor: default; &:active { transform: none; } }
+
+  // #ifdef H5
+  &:hover { box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1); }
+  // #endif
+
+  &--locked { opacity: 0.75; }
+}
+
+// 头部彩色区
+.item-header {
+  padding: 14px 14px 10px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+
+  .item-card--download &  { background: linear-gradient(135deg, #EFF6FF, #DBEAFE); }
+  .item-card--privilege & { background: linear-gradient(135deg, #FFFBEB, #FEF3C7); }
+  .item-card--badge &     { background: linear-gradient(135deg, #F5F3FF, #EDE9FE); }
+  .item-card--coupon &    { background: linear-gradient(135deg, #F0FDF4, #DCFCE7); }
 }
 
 .item-icon-wrap {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
 
-  &--download  { background: linear-gradient(135deg, #60A5FA, #3B82F6); }
-  &--privilege { background: linear-gradient(135deg, #FFB766, #F39C12); }
-  &--badge     { background: linear-gradient(135deg, #A78BFA, #7C3AED); }
-  &--coupon    { background: linear-gradient(135deg, #34D399, #059669); }
+  .item-card--download &  { background: linear-gradient(135deg, #60A5FA, #3B82F6); }
+  .item-card--privilege & { background: linear-gradient(135deg, #FBBF24, #F59E0B); }
+  .item-card--badge &     { background: linear-gradient(135deg, #A78BFA, #7C3AED); }
+  .item-card--coupon &    { background: linear-gradient(135deg, #34D399, #059669); }
+}
+
+.item-stock-badge {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  border-radius: 8px;
+  padding: 2px 6px;
+  flex-shrink: 0;
+}
+
+.item-stock-text {
+  font-size: 10px;
+  color: #EF4444;
+  font-weight: 600;
+}
+
+// 内容区
+.item-body {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
 }
 
 .item-name {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #1E293B;
   line-height: 1.3;
@@ -680,21 +756,11 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-.item-stock {
-  font-size: 10px;
-  color: #EF4444;
-  font-weight: 600;
-  background: #FEF2F2;
-  padding: 2px 6px;
-  border-radius: 6px;
-}
-
 .item-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
-  margin-top: 4px;
+  margin-top: 6px;
 }
 
 .item-cost {
@@ -704,25 +770,24 @@ onMounted(async () => {
 }
 
 .item-cost-num {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #F59E0B;
 }
 
 .item-btn {
-  padding: 5px 10px;
+  padding: 4px 9px;
   background: #2563EB;
   border-radius: 8px;
   cursor: pointer;
-
-  &--disabled { background: #E2E8F0; cursor: not-allowed; }
+  &--locked { background: #F1F5F9; }
 }
 
 .item-btn-text {
   font-size: 11px;
   font-weight: 600;
   color: white;
-  .item-btn--disabled & { color: #94A3B8; }
+  &--locked { color: #94A3B8; }
 }
 
 // ── 骨架屏（shimmer）─────────────────────────
@@ -737,25 +802,35 @@ onMounted(async () => {
   animation: shimmer 1.4s ease-in-out infinite;
 }
 
-.skeleton-icon {
-  width: 52px; height: 52px; border-radius: 14px;
+// 商品骨架
+.item-card-skeleton {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.06);
 }
 
-.skeleton-icon--sm {
-  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+.sk-header { height: 80px; }
+
+.sk-body {
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.skeleton-line {
-  height: 12px; border-radius: 6px;
-  &--long  { width: 80%; }
+.sk-line {
+  height: 11px;
+  border-radius: 6px;
+  &--long  { width: 75%; }
   &--short { width: 50%; }
 }
 
-.skeleton-btn {
-  height: 30px; border-radius: 8px; align-self: stretch; margin-top: 4px;
-}
+.sk-footer { height: 26px; border-radius: 8px; margin-top: 4px; }
 
-.skeleton-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+// 记录骨架
+.sk-icon  { width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0; }
+.sk-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
 
 // ── 兑换记录视图 ──────────────────────────────
 .records-view { flex: 1; overflow: hidden; }
@@ -764,8 +839,18 @@ onMounted(async () => {
 .records-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 12px 16px;
+  padding: 8px 16px;
+}
+
+// 日期分隔
+.date-divider {
+  padding: 12px 4px 6px;
+}
+
+.date-divider-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
 }
 
 .record-card {
@@ -776,8 +861,9 @@ onMounted(async () => {
   border-radius: 14px;
   padding: 14px 16px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
 
-  &--skeleton { min-height: 64px; }
+  &--skeleton { min-height: 64px; display: flex; align-items: center; gap: 12px; }
 }
 
 .record-icon-wrap {
@@ -785,12 +871,12 @@ onMounted(async () => {
   display: flex; align-items: center; justify-content: center;
 
   &--download  { background: linear-gradient(135deg, #60A5FA, #3B82F6); }
-  &--privilege { background: linear-gradient(135deg, #FFB766, #F39C12); }
+  &--privilege { background: linear-gradient(135deg, #FBBF24, #F59E0B); }
   &--badge     { background: linear-gradient(135deg, #A78BFA, #7C3AED); }
   &--coupon    { background: linear-gradient(135deg, #34D399, #059669); }
 }
 
-.record-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.record-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 
 .record-name {
   font-size: 14px; font-weight: 600; color: #1E293B;
@@ -819,18 +905,12 @@ onMounted(async () => {
   .record-status--2 & { color: #94A3B8; }
 }
 
-// ── 底部加载 / 结束提示 ───────────────────────
+// ── 底部状态 ──────────────────────────────────
 .footer-loader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 16px;
+  display: flex; align-items: center; justify-content: center; gap: 6px; padding: 16px;
 }
 
-.footer-spinner {
-  animation: spin 1s linear infinite;
-}
+.footer-spinner { animation: spin 1s linear infinite; }
 
 @keyframes spin {
   from { transform: rotate(0deg); }
@@ -840,67 +920,39 @@ onMounted(async () => {
 .footer-loader-text { font-size: 12px; color: #94A3B8; }
 
 .footer-end {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
+  display: flex; align-items: center; gap: 10px; padding: 16px 20px;
 }
 
-.footer-line {
-  flex: 1;
-  height: 1px;
-  background: #E2E8F0;
-}
+.footer-line { flex: 1; height: 1px; background: #E2E8F0; }
 
-.footer-end-text {
-  font-size: 11px;
-  color: #CBD5E1;
-  white-space: nowrap;
-}
+.footer-end-text { font-size: 11px; color: #CBD5E1; white-space: nowrap; }
 
 // ── 空状态 ────────────────────────────────────
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 48px 32px 32px;
-  gap: 16px;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 32px 32px; gap: 16px;
 }
 
-.empty-visual {
-  position: relative;
-  width: 88px;
-  height: 88px;
-}
+.empty-visual { position: relative; width: 88px; height: 88px; }
 
 .empty-orb {
-  width: 88px;
-  height: 88px;
-  border-radius: 50%;
+  width: 88px; height: 88px; border-radius: 50%;
   background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
 
 .empty-orb-inner {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+  width: 64px; height: 64px; border-radius: 50%;
   background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
 }
 
 .empty-float {
-  position: absolute;
-  border-radius: 50%;
+  position: absolute; border-radius: 50%;
   animation: float-bob 2.4s ease-in-out infinite;
-
-  &--1 { width: 10px; height: 10px; background: #BFDBFE; top: 4px;  right: 8px;  animation-delay: 0s; }
-  &--2 { width: 7px;  height: 7px;  background: #93C5FD; bottom: 8px; right: 4px; animation-delay: 0.6s; }
-  &--3 { width: 8px;  height: 8px;  background: #DBEAFE; bottom: 6px; left: 6px;  animation-delay: 1.2s; }
+  &--1 { width: 10px; height: 10px; background: #BFDBFE; top: 4px; right: 8px; animation-delay: 0s; }
+  &--2 { width: 7px; height: 7px; background: #93C5FD; bottom: 8px; right: 4px; animation-delay: 0.6s; }
+  &--3 { width: 8px; height: 8px; background: #DBEAFE; bottom: 6px; left: 6px; animation-delay: 1.2s; }
 }
 
 @keyframes float-bob {
@@ -908,40 +960,19 @@ onMounted(async () => {
   50%       { transform: translateY(-5px); opacity: 1; }
 }
 
-.empty-copy {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-}
+.empty-copy { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 
-.empty-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1E293B;
-}
+.empty-title { font-size: 16px; font-weight: 700; color: #1E293B; }
 
-.empty-subtitle {
-  font-size: 13px;
-  color: #94A3B8;
-  line-height: 1.5;
-  text-align: center;
-}
+.empty-subtitle { font-size: 13px; color: #94A3B8; line-height: 1.5; text-align: center; }
 
 .empty-cta {
-  padding: 10px 28px;
-  background: #2563EB;
-  border-radius: 24px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
-  cursor: pointer;
+  padding: 10px 28px; background: #2563EB; border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28); cursor: pointer;
   &:active { opacity: 0.82; }
 }
 
-.empty-cta-text {
-  font-size: 14px;
-  font-weight: 600;
-  color: white;
-}
+.empty-cta-text { font-size: 14px; font-weight: 600; color: white; }
 
 // ── 确认弹窗 ──────────────────────────────────
 .mask {
@@ -978,9 +1009,14 @@ onMounted(async () => {
   padding-bottom: 20px; border-bottom: 1px solid #E2E8F0;
 }
 
+// 弹窗图标复用商品卡片头部颜色
 .sheet-icon-wrap {
   width: 56px; height: 56px; border-radius: 16px; flex-shrink: 0;
   display: flex; align-items: center; justify-content: center;
+  &.item-card--download  { background: linear-gradient(135deg, #60A5FA, #3B82F6); }
+  &.item-card--privilege { background: linear-gradient(135deg, #FBBF24, #F59E0B); }
+  &.item-card--badge     { background: linear-gradient(135deg, #A78BFA, #7C3AED); }
+  &.item-card--coupon    { background: linear-gradient(135deg, #34D399, #059669); }
 }
 
 .sheet-item-text { flex: 1; display: flex; flex-direction: column; gap: 4px; }

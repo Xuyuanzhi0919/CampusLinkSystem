@@ -165,9 +165,9 @@
             <text class="welcome-subtitle">学习助手 · 资源推荐 · 答疑解惑</text>
           </view>
           <view class="welcome-capabilities">
-            <view class="capability-tag">📖 学习规划</view>
-            <view class="capability-tag">💡 知识答疑</view>
-            <view class="capability-tag">🔗 资源发现</view>
+            <view class="capability-tag"><Icon name="book-open" :size="13" />学习规划</view>
+            <view class="capability-tag"><Icon name="lightbulb" :size="13" />知识答疑</view>
+            <view class="capability-tag"><Icon name="link" :size="13" />资源发现</view>
           </view>
         </view>
 
@@ -182,8 +182,8 @@
             class="suggestion-card"
             @click="handleSuggestion(item)"
           >
-            <view class="suggestion-card-icon" :style="{ background: item.color + '18' }">
-              <text class="suggestion-emoji">{{ item.icon }}</text>
+            <view class="suggestion-card-icon" :style="{ background: item.color + '18', color: item.color }">
+              <Icon :name="item.icon" :size="22" />
             </view>
             <view class="suggestion-card-text">
               <text class="suggestion-card-title">{{ item.text }}</text>
@@ -369,10 +369,10 @@ interface SuggestionCard extends QuickPrompt {
 }
 
 const suggestions: SuggestionCard[] = [
-  { id: '1', text: '如何高效复习备考？', desc: '获取备考策略、时间管理技巧和记忆方法', category: 'study', icon: '📚', color: '#3B82F6' },
-  { id: '2', text: '推荐学习资源', desc: '发现优质教程、书籍和在线课程', category: 'resource', icon: '🔍', color: '#8B5CF6' },
-  { id: '3', text: '解决编程问题', desc: '代码调试、算法解析和技术答疑', category: 'tech', icon: '💻', color: '#10B981' },
-  { id: '4', text: '写作与论文指导', desc: '论文结构、写作技巧和学术规范', category: 'writing', icon: '✍️', color: '#F59E0B' },
+  { id: '1', text: '如何高效复习备考？', desc: '获取备考策略、时间管理技巧和记忆方法', category: 'study', icon: 'book-open', color: '#3B82F6' },
+  { id: '2', text: '推荐学习资源', desc: '发现优质教程、书籍和在线课程', category: 'resource', icon: 'search', color: '#8B5CF6' },
+  { id: '3', text: '解决编程问题', desc: '代码调试、算法解析和技术答疑', category: 'tech', icon: 'code', color: '#10B981' },
+  { id: '4', text: '写作与论文指导', desc: '论文结构、写作技巧和学术规范', category: 'writing', icon: 'edit-3', color: '#F59E0B' },
 ]
 
 // 追问建议（根据最后一条 AI 回复动态生成）
@@ -1546,6 +1546,9 @@ const scrollToBottom = () => {
 }
 
 .capability-tag {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   padding: 5px 14px;
   background: rgba(255,255,255,0.15);
   backdrop-filter: blur(8px);
@@ -1611,10 +1614,6 @@ const scrollToBottom = () => {
   justify-content: center;
 }
 
-.suggestion-emoji {
-  font-size: 22px;
-  line-height: 1;
-}
 
 .suggestion-card-text {
   flex: 1;

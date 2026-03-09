@@ -179,37 +179,61 @@
       :scroll-into-view="scrollIntoView"
       :scroll-with-animation="true"
     >
-      <!-- 欢迎屏幕 -->
+      <!-- 欢迎屏幕（重构：品牌 Banner + 大卡片建议） -->
       <view v-if="messages.length === 0" class="welcome-screen">
-        <view class="welcome-card">
-          <view class="welcome-icon">
-            <svg viewBox="0 0 80 80" fill="none">
+        <!-- Hero Banner -->
+        <view class="welcome-banner">
+          <view class="banner-glow"></view>
+          <view class="welcome-ai-avatar">
+            <svg viewBox="0 0 64 64" fill="none">
               <defs>
-                <linearGradient id="aiGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:#2563EB"/>
-                  <stop offset="100%" style="stop-color:#60A5FA"/>
+                <linearGradient id="avatarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgba(255,255,255,0.9)"/>
+                  <stop offset="100%" style="stop-color:rgba(255,255,255,0.6)"/>
                 </linearGradient>
               </defs>
-              <circle cx="40" cy="40" r="32" fill="url(#aiGrad)" opacity="0.1"/>
-              <circle cx="40" cy="40" r="26" stroke="url(#aiGrad)" stroke-width="2.5"/>
-              <circle cx="33" cy="35" r="2.5" fill="url(#aiGrad)"/>
-              <circle cx="47" cy="35" r="2.5" fill="url(#aiGrad)"/>
-              <path d="M32 45C32 45 35 49 40 49C45 49 48 45 48 45" stroke="url(#aiGrad)" stroke-width="2.5" stroke-linecap="round"/>
+              <circle cx="32" cy="32" r="28" fill="url(#avatarGrad)" opacity="0.15"/>
+              <circle cx="32" cy="32" r="22" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
+              <circle cx="26" cy="28" r="2.5" fill="white"/>
+              <circle cx="38" cy="28" r="2.5" fill="white"/>
+              <path d="M25 36C25 36 28 41 32 41C36 41 39 36 39 36" stroke="white" stroke-width="2" stroke-linecap="round"/>
+              <path d="M20 18L16 14M44 18L48 14" stroke="rgba(255,255,255,0.6)" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </view>
-          <text class="welcome-title">你好！我是 AI 学习助手</text>
-          <text class="welcome-desc">我可以帮你解答学习问题、推荐资源、提供学习建议</text>
+          <view class="welcome-banner-text">
+            <text class="welcome-title">你好，我是 CampusLink AI</text>
+            <text class="welcome-subtitle">学习助手 · 资源推荐 · 答疑解惑</text>
+          </view>
+          <view class="welcome-capabilities">
+            <view class="capability-tag">📖 学习规划</view>
+            <view class="capability-tag">💡 知识答疑</view>
+            <view class="capability-tag">🔗 资源发现</view>
+          </view>
         </view>
 
-        <view class="suggestions-list">
+        <!-- 快捷提问卡片 -->
+        <view class="suggestions-header">
+          <text class="suggestions-title">你可以试着问我</text>
+        </view>
+        <view class="suggestions-grid">
           <view
             v-for="item in suggestions"
             :key="item.id"
-            class="suggestion-item"
+            class="suggestion-card"
             @click="handleSuggestion(item)"
           >
-            <view class="suggestion-icon-wrap">{{ item.icon }}</view>
-            <text class="suggestion-label">{{ item.text }}</text>
+            <view class="suggestion-card-icon" :style="{ background: item.color + '18' }">
+              <text class="suggestion-emoji">{{ item.icon }}</text>
+            </view>
+            <view class="suggestion-card-text">
+              <text class="suggestion-card-title">{{ item.text }}</text>
+              <text class="suggestion-card-desc">{{ (item as any).desc }}</text>
+            </view>
+            <view class="suggestion-card-arrow">
+              <svg viewBox="0 0 16 16" fill="none">
+                <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </view>
           </view>
         </view>
       </view>
@@ -273,6 +297,46 @@
             </view>
           </view>
         </view>
+        <!-- AI 思考中动画卡片 -->
+        <view v-if="isLoading" class="ai-thinking-card">
+          <view class="ai-header">
+            <view class="ai-avatar">
+              <svg viewBox="0 0 24 24" fill="none">
+                <circle cx="12" cy="12" r="10" fill="#EFF6FF"/>
+                <circle cx="12" cy="12" r="7" stroke="#2563EB" stroke-width="2"/>
+                <circle cx="10" cy="10" r="1.5" fill="#2563EB"/>
+                <circle cx="14" cy="10" r="1.5" fill="#2563EB"/>
+                <path d="M9.5 13.5C9.5 13.5 10.5 15 12 15C13.5 15 14.5 13.5 14.5 13.5" stroke="#2563EB" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+            </view>
+            <text class="ai-label">AI 助手</text>
+          </view>
+          <view class="thinking-dots">
+            <view class="thinking-dot thinking-dot--1"></view>
+            <view class="thinking-dot thinking-dot--2"></view>
+            <view class="thinking-dot thinking-dot--3"></view>
+          </view>
+          <text class="thinking-hint">正在思考...</text>
+        </view>
+
+        <!-- 追问建议（显示在最后一条 AI 回复后） -->
+        <view v-if="!isLoading && followUpSuggestions.length > 0" class="follow-up-section">
+          <text class="follow-up-label">继续探索</text>
+          <view class="follow-up-list">
+            <view
+              v-for="(question, idx) in followUpSuggestions"
+              :key="idx"
+              class="follow-up-item"
+              @click="inputText = question; handleSend()"
+            >
+              <svg viewBox="0 0 16 16" fill="none" class="follow-up-icon">
+                <path d="M8 3V13M3 8H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+              </svg>
+              <text class="follow-up-text">{{ question }}</text>
+            </view>
+          </view>
+        </view>
+
         <view id="messages-end" class="scroll-anchor"></view>
       </view>
     </scroll-view>
@@ -366,12 +430,41 @@ const searchKeyword = ref('') // 搜索关键词
 const inputCharCount = computed(() => inputText.value.length)
 const inputMaxLength = 2000
 
-const suggestions: QuickPrompt[] = [
-  { id: '1', text: '如何高效复习备考？', category: 'study', icon: '📚' },
-  { id: '2', text: '推荐学习资源', category: 'resource', icon: '🔍' },
-  { id: '3', text: '解决编程问题', category: 'tech', icon: '💻' },
-  { id: '4', text: '其他问题', category: 'other', icon: '💬' }
+// 扩展 QuickPrompt 类型（本地扩展，不修改类型文件）
+interface SuggestionCard extends QuickPrompt {
+  desc: string
+  color: string
+}
+
+const suggestions: SuggestionCard[] = [
+  { id: '1', text: '如何高效复习备考？', desc: '获取备考策略、时间管理技巧和记忆方法', category: 'study', icon: '📚', color: '#3B82F6' },
+  { id: '2', text: '推荐学习资源', desc: '发现优质教程、书籍和在线课程', category: 'resource', icon: '🔍', color: '#8B5CF6' },
+  { id: '3', text: '解决编程问题', desc: '代码调试、算法解析和技术答疑', category: 'tech', icon: '💻', color: '#10B981' },
+  { id: '4', text: '写作与论文指导', desc: '论文结构、写作技巧和学术规范', category: 'writing', icon: '✍️', color: '#F59E0B' },
 ]
+
+// 追问建议（根据最后一条 AI 回复动态生成）
+const followUpMap: Record<string, string[]> = {
+  study: ['还有哪些具体的学习技巧？', '能帮我制定一个学习计划吗？', '如何避免学习拖延？'],
+  resource: ['有没有免费的学习资源？', '如何评估资源的质量？', '适合初学者的推荐？'],
+  tech: ['能给我看个代码示例吗？', '这个问题的常见解决方案有哪些？', '有相关的文档或教程吗？'],
+  writing: ['能帮我改一段文字吗？', '如何提高论文的逻辑性？', '有什么写作工具推荐？'],
+  default: ['能详细解释一下吗？', '还有其他相关的内容吗？', '能给个具体例子吗？']
+}
+
+const followUpSuggestions = computed<string[]>(() => {
+  if (messages.value.length === 0) return []
+  const lastAiMsg = [...messages.value].reverse().find(m => m.role === 'assistant' && !m.isStreaming)
+  if (!lastAiMsg) return []
+  // 简单匹配关键词推断类别
+  const content = lastAiMsg.content.toLowerCase()
+  let category = 'default'
+  if (content.includes('学习') || content.includes('复习') || content.includes('备考')) category = 'study'
+  else if (content.includes('资源') || content.includes('教程') || content.includes('课程')) category = 'resource'
+  else if (content.includes('代码') || content.includes('编程') || content.includes('函数')) category = 'tech'
+  else if (content.includes('论文') || content.includes('写作') || content.includes('文章')) category = 'writing'
+  return followUpMap[category] || followUpMap.default
+})
 
 const canSend = computed(() => inputText.value.trim().length > 0 && !isLoading.value)
 const userAvatar = computed(() => userStore.userInfo?.avatar || userStore.userInfo?.avatarUrl || '')
@@ -621,7 +714,7 @@ const handleSend = async () => {
   }
 }
 
-const handleSuggestion = (item: QuickPrompt) => {
+const handleSuggestion = (item: QuickPrompt | SuggestionCard) => {
   inputText.value = item.text
   setTimeout(() => handleSend(), 100)
 }
@@ -836,26 +929,26 @@ const scrollToBottom = () => {
   background: linear-gradient(180deg, #F6FAFF 0%, #F9FBFE 50%, #F3F6FA 100%);
 }
 
-// ==================== 背景星座网络（继承首页） ====================
+// ==================== 背景星座网络（弱化，减少干扰） ====================
 .constellation-bg {
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  opacity: 0.6;
+  opacity: 0.18; // 从 0.6 降到 0.18，专注度优先
 }
 
 .constellation-canvas {
   width: 100%;
   height: 100%;
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 .ai-line {
-  stroke: rgba($primary, 0.15);
-  stroke-width: 1.5;
+  stroke: rgba($primary, 0.12);
+  stroke-width: 1;
   stroke-dasharray: 4 4;
-  animation: dash 20s linear infinite;
+  animation: dash 25s linear infinite;
 }
 
 @keyframes dash {
@@ -865,8 +958,8 @@ const scrollToBottom = () => {
 }
 
 .ai-node {
-  fill: rgba($primary, 0.4);
-  filter: blur(1px);
+  fill: rgba($primary, 0.3);
+  filter: blur(0.5px);
 }
 
 // ==================== 顶部导航栏 ====================
@@ -1506,93 +1599,198 @@ const scrollToBottom = () => {
   scrollbar-color: rgba($gray-400, 0.3) transparent;
 }
 
-// ==================== 欢迎屏幕 ====================
+// ==================== 欢迎屏幕（重构版） ====================
 .welcome-screen {
   max-width: 800px;
-  margin: 32px auto 0;
-  padding: 0 24px;
+  margin: 0 auto;
+  padding: 0 0 24px;
 }
 
-.welcome-card {
-  background: $white;
-  border: 1px solid $gray-200;
-  border-radius: 16px;
-  padding: 36px 28px;
+// Hero Banner
+.welcome-banner {
+  background: linear-gradient(135deg, $primary 0%, #1D4ED8 40%, #6D28D9 100%);
+  padding: 40px 28px 36px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba($black, 0.04);
-  margin-bottom: 20px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 24px;
 }
 
-.welcome-icon {
-  width: 72px;
-  height: 72px;
+.banner-glow {
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  background: radial-gradient(circle, rgba(255,255,255,0.12), transparent 70%);
+  top: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.welcome-ai-avatar {
+  width: 80px;
+  height: 80px;
   margin: 0 auto 20px;
+  position: relative;
 
   svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 2px 8px rgba($primary, 0.15));
   }
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    animation: avatar-ring 3s ease-in-out infinite;
+  }
+}
+
+@keyframes avatar-ring {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+.welcome-banner-text {
+  margin-bottom: 20px;
 }
 
 .welcome-title {
   display: block;
-  font-size: 20px;
-  font-weight: 600;
-  color: $gray-900;
-  margin-bottom: 8px;
-  letter-spacing: -0.01em;
+  font-size: 22px;
+  font-weight: 700;
+  color: $white;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.15);
 }
 
-.welcome-desc {
+.welcome-subtitle {
   display: block;
-  font-size: 14px;
-  color: $gray-600;
-  line-height: 1.5;
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
   font-weight: 400;
+  letter-spacing: 0.01em;
 }
 
-.suggestions-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
+.welcome-capabilities {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
-.suggestion-item {
+.capability-tag {
+  padding: 5px 14px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 20px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.9);
+  font-weight: 500;
+}
+
+// 快捷建议
+.suggestions-header {
+  padding: 0 24px 12px;
+}
+
+.suggestions-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.suggestions-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 24px;
+}
+
+.suggestion-card {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 16px 16px;
   background: $white;
   border: 1px solid $gray-200;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.22s;
+  box-shadow: 0 1px 4px rgba($black, 0.04);
 
   &:hover {
-    border-color: $primary;
+    border-color: rgba($primary, 0.4);
     background: $primary-50;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba($primary, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba($primary, 0.12);
   }
 
   &:active {
     transform: translateY(0);
+    box-shadow: 0 1px 4px rgba($black, 0.04);
   }
 }
 
-.suggestion-icon-wrap {
-  font-size: 24px;
-  line-height: 1;
+.suggestion-card-icon {
   flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.suggestion-label {
+.suggestion-emoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.suggestion-card-text {
   flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.suggestion-card-title {
   font-size: 14px;
-  color: $gray-800;
-  font-weight: 500;
+  font-weight: 600;
+  color: $gray-900;
   line-height: 1.3;
+}
+
+.suggestion-card-desc {
+  font-size: 12px;
+  color: $gray-500;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.suggestion-card-arrow {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  color: $gray-400;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  .suggestion-card:hover & {
+    color: $primary;
+  }
 }
 
 // ==================== 对话容器 ====================
@@ -1825,6 +2023,107 @@ const scrollToBottom = () => {
   &:active {
     transform: scale(0.97);
   }
+}
+
+// ==================== AI 思考中动画卡片 ====================
+.ai-thinking-card {
+  max-width: 85%;
+  background: $white;
+  border: 1.5px solid $gray-200;
+  border-radius: 16px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 10px rgba($black, 0.06);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.thinking-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 12px 0 6px;
+}
+
+.thinking-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: $primary;
+  opacity: 0.3;
+}
+
+.thinking-dot--1 { animation: bounce-dot 1.2s ease-in-out 0s infinite; }
+.thinking-dot--2 { animation: bounce-dot 1.2s ease-in-out 0.2s infinite; }
+.thinking-dot--3 { animation: bounce-dot 1.2s ease-in-out 0.4s infinite; }
+
+@keyframes bounce-dot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.3; }
+  30% { transform: translateY(-6px); opacity: 1; background: $primary; }
+}
+
+.thinking-hint {
+  font-size: 12px;
+  color: $gray-400;
+  display: block;
+}
+
+// ==================== 追问建议 ====================
+.follow-up-section {
+  margin-top: 16px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.follow-up-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: $gray-500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  padding-left: 2px;
+}
+
+.follow-up-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.follow-up-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba($primary, 0.04);
+  border: 1px solid rgba($primary, 0.15);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: $primary-50;
+    border-color: rgba($primary, 0.35);
+    transform: translateX(3px);
+  }
+
+  &:active {
+    transform: translateX(0);
+  }
+}
+
+.follow-up-icon {
+  width: 14px;
+  height: 14px;
+  color: $primary;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.follow-up-text {
+  font-size: 13px;
+  color: $primary;
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .scroll-anchor {

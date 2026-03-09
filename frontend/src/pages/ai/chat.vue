@@ -152,6 +152,7 @@
       :scroll-into-view="scrollIntoView"
       :scroll-with-animation="true"
     >
+      <view class="messages-content" :class="{ 'is-switching': isTransitioning }">
       <!-- 欢迎屏幕（重构：品牌 Banner + 大卡片建议） -->
       <view v-if="messages.length === 0" class="welcome-screen">
         <!-- Hero Banner -->
@@ -280,6 +281,7 @@
 
         <view id="messages-end" class="scroll-anchor"></view>
       </view>
+      </view><!-- /messages-content -->
     </scroll-view>
 
     <!-- 底部输入栏 -->
@@ -351,6 +353,7 @@ const inputText = ref('')
 const isLoading = ref(false)
 const showClearModal = ref(false)
 const scrollIntoView = ref('')
+const isTransitioning = ref(false)
 
 // 会话管理
 const sessions = ref<ChatSession[]>([])
@@ -710,7 +713,7 @@ const handleNewSession = () => {
   uni.showToast({ title: '已创建新对话', icon: 'success', duration: 1500 })
 }
 
-// 选择会话
+// 选择会话（带淡出/淡入过渡）
 const handleSelectSession = (sessionId: string) => {
   if (sessionId === currentSessionId.value) {
     showSessionDrawer.value = false
@@ -718,12 +721,17 @@ const handleSelectSession = (sessionId: string) => {
   }
 
   const session = getSession(sessionId)
-  if (session) {
+  if (!session) return
+
+  showSessionDrawer.value = false
+  isTransitioning.value = true   // 触发淡出
+
+  setTimeout(() => {
     currentSessionId.value = sessionId
     messages.value = session.messages
-    showSessionDrawer.value = false
+    isTransitioning.value = false  // 触发淡入
     scrollToBottom()
-  }
+  }, 160)
 }
 
 // 删除会话
@@ -1428,6 +1436,17 @@ const scrollToBottom = () => {
 }
 
 // ==================== 消息区域 ====================
+.messages-content {
+  transition: opacity 0.16s ease, transform 0.16s ease;
+  opacity: 1;
+  transform: translateY(0);
+
+  &.is-switching {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
 .messages-area {
   flex: 1;
   position: relative;

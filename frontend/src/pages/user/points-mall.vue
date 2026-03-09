@@ -1,42 +1,47 @@
 <template>
   <view class="mall-page">
 
-    <!-- ── 统一头部（导航 + 积分卡共享渐变背景）── -->
-    <view class="page-header">
+    <!-- 统一导航栏 -->
+    <CNavBar title="积分商城" />
 
-      <!-- 导航行 -->
-      <view class="header-nav">
-        <view class="nav-back" @click="goBack">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
-        </view>
-        <text class="nav-title">积分商城</text>
-        <view class="nav-placeholder" />
-      </view>
-
-      <!-- 积分卡 -->
-      <view class="banner-wrap">
-        <view class="banner-card">
-          <view class="banner-glow" />
-          <view class="banner-star">
-            <Icon name="star" :size="36" color="#FBBF24" />
+    <!-- 积分卡 -->
+    <view class="banner-section">
+      <view class="banner-card">
+        <view class="banner-header">
+          <view class="banner-title-group">
+            <text class="banner-label">我的积分</text>
           </view>
-          <view class="banner-info">
-            <text class="banner-value">{{ currentPoints.toLocaleString() }}</text>
-            <text class="banner-desc">
-              <text v-if="affordableCount > 0">可兑换 {{ affordableCount }} 件商品</text>
-              <text v-else>积分不足以兑换任何商品</text>
-            </text>
-          </view>
-          <view class="banner-detail-btn" @click="goHistory">
-            <text class="banner-detail-text">明细</text>
-            <Icon name="chevron-right" :size="13" color="#FFFFFF" />
+          <view class="banner-history-btn" @click="goHistory">
+            <text class="banner-history-text">积分明细</text>
+            <Icon name="chevron-right" :size="12" color="#2563EB" />
           </view>
         </view>
+        <view class="banner-main">
+          <text class="banner-value">{{ currentPoints.toLocaleString() }}</text>
+          <text class="banner-unit">分</text>
+        </view>
+        <text class="banner-desc">
+          <text v-if="affordableCount > 0">当前可兑换 {{ affordableCount }} 件商品</text>
+          <text v-else>积分不足以兑换任何商品，继续加油赚积分</text>
+        </text>
+        <view class="banner-tips">
+          <view class="banner-tip-chip">
+            <Icon name="calendar-check" :size="11" color="#10B981" />
+            <text class="tip-chip-text">签到 +10</text>
+          </view>
+          <view class="banner-tip-chip">
+            <Icon name="upload" :size="11" color="#3B82F6" />
+            <text class="tip-chip-text">上传 +10</text>
+          </view>
+          <view class="banner-tip-chip">
+            <Icon name="check-circle" :size="11" color="#8B5CF6" />
+            <text class="tip-chip-text">采纳 +20</text>
+          </view>
+        </view>
       </view>
-
     </view>
 
-    <!-- ── 主 Tab：商城 / 我的兑换 ── -->
+    <!-- 主 Tab：商城 / 我的兑换 -->
     <view class="main-tabs">
       <view
         v-for="tab in mainTabs"
@@ -73,10 +78,10 @@
         <!-- 骨架屏 -->
         <view v-if="itemsLoading" class="items-grid">
           <view v-for="i in 6" :key="i" class="item-card item-card--skeleton">
-            <view class="skeleton-icon" />
-            <view class="skeleton-line skeleton-line--long" />
-            <view class="skeleton-line skeleton-line--short" />
-            <view class="skeleton-btn" />
+            <view class="skeleton-icon shimmer" />
+            <view class="skeleton-line skeleton-line--long shimmer" />
+            <view class="skeleton-line skeleton-line--short shimmer" />
+            <view class="skeleton-btn shimmer" />
           </view>
         </view>
 
@@ -112,10 +117,27 @@
 
         <!-- 空状态 -->
         <view v-else class="empty-state">
-          <Icon name="shopping-bag" :size="48" color="#D1D5DB" />
-          <text class="empty-text">暂无商品</text>
+          <view class="empty-visual">
+            <view class="empty-orb">
+              <view class="empty-orb-inner">
+                <Icon name="shopping-bag" :size="32" color="#93C5FD" />
+              </view>
+            </view>
+            <view class="empty-float empty-float--1" />
+            <view class="empty-float empty-float--2" />
+            <view class="empty-float empty-float--3" />
+          </view>
+          <view class="empty-copy">
+            <text class="empty-title">暂无商品</text>
+            <text class="empty-subtitle">该分类下暂时没有可兑换商品，去其他分类看看吧</text>
+          </view>
+          <view class="empty-cta" @click="handleCategoryChange('all')">
+            <text class="empty-cta-text">查看全部商品</text>
+          </view>
         </view>
 
+        <!-- 底部间距 -->
+        <view style="height: 24px;" />
       </scroll-view>
     </view>
 
@@ -126,10 +148,10 @@
         <!-- 骨架屏 -->
         <view v-if="recordsLoading" class="records-list">
           <view v-for="i in 5" :key="i" class="record-card record-card--skeleton">
-            <view class="skeleton-icon skeleton-icon--sm" />
+            <view class="skeleton-icon skeleton-icon--sm shimmer" />
             <view class="skeleton-block">
-              <view class="skeleton-line skeleton-line--long" />
-              <view class="skeleton-line skeleton-line--short" />
+              <view class="skeleton-line skeleton-line--long shimmer" />
+              <view class="skeleton-line skeleton-line--short shimmer" />
             </view>
           </view>
         </view>
@@ -155,21 +177,42 @@
             </view>
           </view>
 
-          <view v-if="recordsHasMore" class="footer-tip">
-            <text class="footer-text">{{ recordsLoadingMore ? '加载中…' : '上拉加载更多' }}</text>
+          <!-- 底部状态 -->
+          <view v-if="recordsLoadingMore" class="footer-loader">
+            <view class="footer-spinner">
+              <Icon name="loader" :size="16" color="#94A3B8" />
+            </view>
+            <text class="footer-loader-text">加载中…</text>
           </view>
-          <view v-else class="footer-tip">
-            <text class="footer-text">已显示全部记录</text>
+          <view v-else-if="!recordsHasMore" class="footer-end">
+            <view class="footer-line" />
+            <text class="footer-end-text">已显示全部记录</text>
+            <view class="footer-line" />
           </view>
         </view>
 
         <!-- 空状态 -->
         <view v-else class="empty-state">
-          <Icon name="inbox" :size="48" color="#D1D5DB" />
-          <text class="empty-text">暂无兑换记录</text>
-          <text class="empty-sub" @click="activeMainTab = 'mall'">去逛商城 →</text>
+          <view class="empty-visual">
+            <view class="empty-orb">
+              <view class="empty-orb-inner">
+                <Icon name="inbox" :size="32" color="#93C5FD" />
+              </view>
+            </view>
+            <view class="empty-float empty-float--1" />
+            <view class="empty-float empty-float--2" />
+            <view class="empty-float empty-float--3" />
+          </view>
+          <view class="empty-copy">
+            <text class="empty-title">暂无兑换记录</text>
+            <text class="empty-subtitle">你还没有兑换过任何商品，去商城挑选心仪的权益吧</text>
+          </view>
+          <view class="empty-cta" @click="activeMainTab = 'mall'">
+            <text class="empty-cta-text">去逛商城</text>
+          </view>
         </view>
 
+        <view style="height: 24px;" />
       </scroll-view>
     </view>
 
@@ -228,6 +271,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import Icon from '@/components/icons/index.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
 import { useUserStore } from '@/stores/user'
 import { getRewardItems, redeemItem, getRedeemRecords } from '@/services/reward'
 import type { RewardItem, RedeemRecord } from '@/types/reward'
@@ -250,9 +294,9 @@ const EFFECT_ICON_MAP: Record<string, string> = {
   badge_expert: 'badge-check', task_bonus: 'ticket', vip_trial: 'crown',
 }
 
-const getCategoryIcon    = (cat: string)    => CATEGORY_ICON_MAP[cat]    ?? 'gift'
-const getEffectCategory  = (type: string)   => EFFECT_CATEGORY_MAP[type] ?? 'download'
-const getEffectIcon      = (type: string)   => EFFECT_ICON_MAP[type]     ?? 'gift'
+const getCategoryIcon   = (cat: string)  => CATEGORY_ICON_MAP[cat]    ?? 'gift'
+const getEffectCategory = (type: string) => EFFECT_CATEGORY_MAP[type] ?? 'download'
+const getEffectIcon     = (type: string) => EFFECT_ICON_MAP[type]     ?? 'gift'
 
 const formatDate = (dateStr: string) => {
   const d = new Date(dateStr)
@@ -287,9 +331,6 @@ const affordableCount = computed(() =>
 )
 
 // ── 交互 ──────────────────────────────────────
-const goBack = () =>
-  uni.navigateBack({ fail: () => uni.switchTab({ url: '/pages/home/index' }) })
-
 const goHistory = () => uni.navigateTo({ url: '/pages/user/points-history' })
 
 const openConfirm  = (item: RewardItem) => { confirmItem.value = item }
@@ -384,126 +425,102 @@ onMounted(async () => {
   overflow: hidden;
 }
 
-// ── 统一头部 ──────────────────────────────────
-.page-header {
-  flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
-}
-
-.header-nav {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 16px 0 12px;
-}
-
-.nav-back {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nav-title {
-  flex: 1;
-  text-align: center;
-  font-size: 17px;
-  font-weight: 700;
-  color: #FFFFFF;
-}
-
-.nav-placeholder { width: 36px; flex-shrink: 0; }
-
 // ── 积分卡 ────────────────────────────────────
-.banner-wrap {
-  padding: 0 16px 16px;
+.banner-section {
+  flex-shrink: 0;
+  padding: 12px 16px;
 }
 
 .banner-card {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #FFFFFF;
+  border: 1px solid #EEF2FF;
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(29, 78, 216, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.banner-glow {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
-  background: rgba(96, 165, 250, 0.22);
-  border-radius: 50%;
-  filter: blur(28px);
-  pointer-events: none;
-}
-
-.banner-star {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-  border: 1.5px solid rgba(251, 191, 36, 0.4);
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.28);
-}
-
-.banner-info {
-  flex: 1;
-  min-width: 0;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.banner-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.banner-label {
+  font-size: 13px;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.banner-history-btn {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 12px;
+  background: #EFF6FF;
+  border-radius: 20px;
+  cursor: pointer;
+  &:active { opacity: 0.7; }
+}
+
+.banner-history-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #2563EB;
+}
+
+.banner-main {
+  display: flex;
+  align-items: baseline;
   gap: 4px;
+  margin-top: 2px;
 }
 
 .banner-value {
-  font-size: 32px;
+  font-size: 48px;
   font-weight: 800;
-  color: #1E293B;
+  color: #2563EB;
   letter-spacing: -1px;
   line-height: 1;
 }
 
-.banner-desc {
-  font-size: 11px;
-  color: #94A3B8;
+.banner-unit {
+  font-size: 18px;
+  font-weight: 600;
+  color: #93C5FD;
 }
 
-.banner-detail-btn {
-  flex-shrink: 0;
+.banner-desc {
+  font-size: 12px;
+  color: #94A3B8;
+  margin-top: 2px;
+}
+
+.banner-tips {
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 9px 15px;
-  background: #2563EB;
-  border-radius: 22px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
-  cursor: pointer;
-  &:active { opacity: 0.82; }
+  gap: 8px;
+  padding-top: 10px;
+  margin-top: 4px;
+  border-top: 1px solid #F1F5F9;
 }
 
-.banner-detail-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #FFFFFF;
+.banner-tip-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+}
+
+.tip-chip-text {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 500;
 }
 
 // ── 主 Tab ────────────────────────────────────
@@ -530,7 +547,7 @@ onMounted(async () => {
     left: 20%;
     right: 20%;
     height: 2px;
-    background: #3B82F6;
+    background: #2563EB;
     border-radius: 2px;
   }
 }
@@ -541,7 +558,7 @@ onMounted(async () => {
   color: #94A3B8;
 
   .main-tab-item--active & {
-    color: #3B82F6;
+    color: #2563EB;
     font-weight: 700;
   }
 }
@@ -578,7 +595,7 @@ onMounted(async () => {
   transition: all 0.15s;
 
   &--active {
-    background: #3B82F6;
+    background: #2563EB;
     .category-text { color: white; }
   }
 }
@@ -678,7 +695,7 @@ onMounted(async () => {
 
 .item-btn {
   padding: 5px 10px;
-  background: #3B82F6;
+  background: #2563EB;
   border-radius: 8px;
   cursor: pointer;
 
@@ -692,36 +709,37 @@ onMounted(async () => {
   .item-btn--disabled & { color: #94A3B8; }
 }
 
-// ── 骨架屏 ────────────────────────────────────
+// ── 骨架屏（shimmer）─────────────────────────
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+
 .skeleton-icon {
   width: 52px; height: 52px; border-radius: 14px;
-  background: #E2E8F0; animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
 .skeleton-icon--sm {
-  width: 40px; height: 40px; border-radius: 12px;
-  background: #E2E8F0; flex-shrink: 0;
-  animation: skeleton-pulse 1.5s ease-in-out infinite;
+  width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
 }
 
 .skeleton-line {
   height: 12px; border-radius: 6px;
-  background: #E2E8F0; animation: skeleton-pulse 1.5s ease-in-out infinite;
   &--long  { width: 80%; }
   &--short { width: 50%; }
 }
 
 .skeleton-btn {
   height: 30px; border-radius: 8px; align-self: stretch; margin-top: 4px;
-  background: #E2E8F0; animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
 
 .skeleton-block { flex: 1; display: flex; flex-direction: column; gap: 8px; }
-
-@keyframes skeleton-pulse {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.5; }
-}
 
 // ── 兑换记录视图 ──────────────────────────────
 .records-view { flex: 1; overflow: hidden; }
@@ -743,11 +761,7 @@ onMounted(async () => {
   padding: 14px 16px;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.06);
 
-  &--skeleton {
-    min-height: 64px;
-    animation: skeleton-pulse 1.5s ease-in-out infinite;
-    background: white;
-  }
+  &--skeleton { min-height: 64px; }
 }
 
 .record-icon-wrap {
@@ -789,20 +803,128 @@ onMounted(async () => {
   .record-status--2 & { color: #94A3B8; }
 }
 
-// ── 底部提示 & 空状态 ─────────────────────────
-.footer-tip  { display: flex; justify-content: center; padding: 14px; }
-.footer-text { font-size: 12px; color: #CBD5E1; }
-
-.empty-state {
-  display: flex; flex-direction: column; align-items: center;
-  justify-content: center; padding: 60px 20px; gap: 12px;
+// ── 底部加载 / 结束提示 ───────────────────────
+.footer-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
 }
 
-.empty-text { font-size: 14px; color: #94A3B8; }
+.footer-spinner {
+  animation: spin 1s linear infinite;
+}
 
-.empty-sub {
-  font-size: 13px; color: #3B82F6; font-weight: 600;
-  cursor: pointer; text-decoration: underline;
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.footer-loader-text { font-size: 12px; color: #94A3B8; }
+
+.footer-end {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 16px 20px;
+}
+
+.footer-line {
+  flex: 1;
+  height: 1px;
+  background: #E2E8F0;
+}
+
+.footer-end-text {
+  font-size: 11px;
+  color: #CBD5E1;
+  white-space: nowrap;
+}
+
+// ── 空状态 ────────────────────────────────────
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48px 32px 32px;
+  gap: 16px;
+}
+
+.empty-visual {
+  position: relative;
+  width: 88px;
+  height: 88px;
+}
+
+.empty-orb {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-orb-inner {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-float {
+  position: absolute;
+  border-radius: 50%;
+  animation: float-bob 2.4s ease-in-out infinite;
+
+  &--1 { width: 10px; height: 10px; background: #BFDBFE; top: 4px;  right: 8px;  animation-delay: 0s; }
+  &--2 { width: 7px;  height: 7px;  background: #93C5FD; bottom: 8px; right: 4px; animation-delay: 0.6s; }
+  &--3 { width: 8px;  height: 8px;  background: #DBEAFE; bottom: 6px; left: 6px;  animation-delay: 1.2s; }
+}
+
+@keyframes float-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50%       { transform: translateY(-5px); opacity: 1; }
+}
+
+.empty-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.empty-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.empty-subtitle {
+  font-size: 13px;
+  color: #94A3B8;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.empty-cta {
+  padding: 10px 28px;
+  background: #2563EB;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+  cursor: pointer;
+  &:active { opacity: 0.82; }
+}
+
+.empty-cta-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
 }
 
 // ── 确认弹窗 ──────────────────────────────────

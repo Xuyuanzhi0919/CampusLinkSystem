@@ -364,10 +364,10 @@
     <!-- 移动端侧边栏遮罩 -->
     <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
 
-    <!-- 移动端 FAB（快捷操作入口） -->
-    <view class="main-fab" aria-label="快捷操作" role="button" @click="showMobileSidebar = true">
+    <!-- FAB 快捷操作按钮 -->
+    <view class="main-fab" aria-label="快捷操作" role="button" @click="handleFabClick">
       <view v-if="mobileActiveCount > 0" class="fab-badge">{{ mobileActiveCount }}</view>
-      <Icon name="menu" :size="22" />
+      <Icon name="plus" :size="24" />
     </view>
 
   </view>
@@ -593,6 +593,15 @@ const handleQuickAccept = (task: TaskListItem) => {
 
 const handlePublish = () => {
   uni.navigateTo({ url: '/pages/task/publish' })
+}
+
+const handleFabClick = () => {
+  const { windowWidth } = uni.getSystemInfoSync()
+  if (windowWidth <= 1024) {
+    showMobileSidebar.value = true
+  } else {
+    handlePublish()
+  }
 }
 
 const goMyPublished = () => { uni.navigateTo({ url: '/pages/task/my?tab=published' }) }
@@ -1678,31 +1687,32 @@ defineExpose({
   }
 }
 
-// 移动端 FAB
+// FAB 快捷操作按钮
 .main-fab {
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  right: 48rpx;
+  bottom: calc(120rpx + env(safe-area-inset-bottom, 0px));
+  z-index: $z-dropdown + 5;
+  width: 104rpx;
+  height: 104rpx;
+  border-radius: 50%;
+  background: $primary;
+  color: $white;
+  box-shadow: 0 8rpx 24rpx rgba($primary, 0.45);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
 
-  @include mobile {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    right: 48rpx;
-    bottom: calc(120rpx + env(safe-area-inset-bottom, 0px));
-    z-index: $z-dropdown + 5;
-    width: 104rpx;
-    height: 104rpx;
-    border-radius: 50%;
-    background: $primary;
-    color: $white;
-    box-shadow: 0 8rpx 24rpx rgba($primary, 0.45);
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
+  &:hover {
+    transform: scale(1.06);
+    box-shadow: 0 12rpx 32rpx rgba($primary, 0.5);
+  }
 
-    &:active {
-      transform: scale(0.92);
-      box-shadow: 0 4rpx 12rpx rgba($primary, 0.4);
-    }
+  &:active {
+    transform: scale(0.92);
+    box-shadow: 0 4rpx 12rpx rgba($primary, 0.4);
   }
 }
 

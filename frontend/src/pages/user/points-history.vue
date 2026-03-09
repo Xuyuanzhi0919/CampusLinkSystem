@@ -5,21 +5,40 @@
     <CNavBar title="积分明细" />
 
     <!-- ── 积分卡区域 ── -->
-    <view class="page-header">
-      <view class="banner-wrap">
-        <view class="banner-card">
-          <view class="banner-glow" />
-          <view class="banner-star">
-            <Icon name="star" :size="36" color="#FBBF24" />
-          </view>
-          <view class="banner-info">
-            <text class="banner-label">当前积分</text>
-            <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
-            <text class="banner-desc">可用于下载资源、发布悬赏</text>
+    <view class="banner-section">
+      <view class="banner-card">
+        <!-- 顶部：标题 + 商城入口 -->
+        <view class="banner-header">
+          <view class="banner-title-group">
+            <Icon name="zap" :size="14" color="#2563EB" />
+            <text class="banner-title">我的积分</text>
           </view>
           <view class="banner-mall-btn" @click="uni.navigateTo({ url: '/pages/user/points-mall' })">
-            <text class="banner-mall-text">去商城</text>
-            <Icon name="chevron-right" :size="13" color="#FFFFFF" />
+            <text class="banner-mall-text">积分商城</text>
+            <Icon name="arrow-right" :size="12" color="#2563EB" />
+          </view>
+        </view>
+
+        <!-- 主数值 -->
+        <view class="banner-main">
+          <text class="banner-value">{{ (userStore.userInfo?.points ?? 0).toLocaleString() }}</text>
+          <text class="banner-unit">分</text>
+        </view>
+        <text class="banner-desc">可用于下载资源、发布悬赏任务</text>
+
+        <!-- 积分获取提示 -->
+        <view class="banner-tips">
+          <view class="banner-tip">
+            <Icon name="calendar-check" :size="11" color="#16A34A" />
+            <text class="banner-tip-text">签到 +10</text>
+          </view>
+          <view class="banner-tip">
+            <Icon name="file-plus" :size="11" color="#2563EB" />
+            <text class="banner-tip-text">上传 +10</text>
+          </view>
+          <view class="banner-tip">
+            <Icon name="badge-check" :size="11" color="#D97706" />
+            <text class="banner-tip-text">采纳 +20</text>
           </view>
         </view>
       </view>
@@ -301,102 +320,109 @@ onMounted(() => loadPoints())
 }
 
 // ── 积分卡区域 ────────────────────────────────
-.page-header {
+.banner-section {
   flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
-}
-
-.banner-wrap {
-  padding: 12px 16px 16px;
+  padding: 12px 16px;
 }
 
 .banner-card {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  background: #FFFFFF;
   border-radius: 20px;
-  box-shadow: 0 8px 32px rgba(29, 78, 216, 0.18), 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 16px 18px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #EEF2FF;
 }
 
-.banner-glow {
-  position: absolute;
-  top: -20px;
-  right: -20px;
-  width: 100px;
-  height: 100px;
-  background: rgba(96, 165, 250, 0.22);
-  border-radius: 50%;
-  filter: blur(28px);
-  pointer-events: none;
-}
-
-.banner-star {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
+.banner-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #FEF3C7, #FDE68A);
-  border: 1.5px solid rgba(251, 191, 36, 0.4);
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.28);
+  justify-content: space-between;
+  margin-bottom: 14px;
 }
 
-.banner-info {
-  flex: 1;
-  min-width: 0;
+.banner-title-group {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
+  align-items: center;
+  gap: 5px;
 }
 
-.banner-label {
-  font-size: 11px;
-  font-weight: 500;
+.banner-title {
+  font-size: 13px;
   color: #64748B;
-  letter-spacing: 0.5px;
-}
-
-.banner-value {
-  font-size: 32px;
-  font-weight: 800;
-  color: #1E293B;
-  letter-spacing: -1px;
-  line-height: 1.1;
-}
-
-.banner-desc {
-  font-size: 11px;
-  color: #94A3B8;
-  margin-top: 2px;
+  font-weight: 500;
 }
 
 .banner-mall-btn {
-  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 2px;
-  padding: 9px 15px;
-  background: #2563EB;
-  border-radius: 22px;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+  gap: 3px;
+  padding: 5px 12px;
+  background: #EFF6FF;
+  border-radius: 20px;
   cursor: pointer;
-  &:active { opacity: 0.82; }
+  transition: background 0.15s;
+
+  &:active { background: #DBEAFE; }
+
+  // #ifdef H5
+  &:hover { background: #DBEAFE; }
+  // #endif
 }
 
 .banner-mall-text {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #2563EB;
+}
+
+.banner-main {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+
+.banner-value {
+  font-size: 48px;
+  font-weight: 800;
+  color: #2563EB;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+
+.banner-unit {
+  font-size: 18px;
   font-weight: 600;
-  color: #FFFFFF;
+  color: #93C5FD;
+}
+
+.banner-desc {
+  font-size: 12px;
+  color: #94A3B8;
+  margin-bottom: 14px;
+}
+
+.banner-tips {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.banner-tip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: #F8FAFC;
+  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+}
+
+.banner-tip-text {
+  font-size: 11px;
+  color: #64748B;
+  font-weight: 500;
 }
 
 // ── 筛选栏 ────────────────────────────────────

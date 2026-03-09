@@ -2105,6 +2105,15 @@ const scrollToBottom = () => {
   }
 }
 
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 // ==================== 清空确认弹窗 ====================
 .modal-overlay {
   position: fixed;

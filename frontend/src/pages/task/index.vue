@@ -40,22 +40,24 @@
 
     <!-- ========== Sticky 筛选区（类型 + 状态下拉） ========== -->
     <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
-      <view class="filter-bar">
+      <view class="filter-nav-container">
         <!-- 任务类型：横向滚动标签 -->
-        <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
-          <view class="type-tabs">
-            <view
-              v-for="type in taskTypes"
-              :key="type.value"
-              class="type-tab"
-              :class="{ active: currentType === type.value }"
-              @click="handleTypeChange(type.value)"
-            >
-              <Icon :name="type.iconName" :size="14" class="type-tab-icon" />
-              <text class="type-tab-label">{{ type.label }}</text>
+        <view class="type-tabs-wrap">
+          <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
+            <view class="type-tabs">
+              <view
+                v-for="type in taskTypes"
+                :key="type.value"
+                class="type-tab"
+                :class="{ active: currentType === type.value }"
+                @click="handleTypeChange(type.value)"
+              >
+                <Icon :name="type.iconName" :size="14" class="type-tab-icon" />
+                <text class="type-tab-label">{{ type.label }}</text>
+              </view>
             </view>
-          </view>
-        </scroll-view>
+          </scroll-view>
+        </view>
 
         <!-- 状态筛选：下拉菜单 -->
         <view class="status-dropdown-wrap">
@@ -920,27 +922,62 @@ defineExpose({
   top: 120rpx;
   z-index: $z-dropdown;
   background: $white;
-  border-bottom: 1rpx solid $gray-200;
-  transition: top 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+  border-bottom: 1rpx solid $gray-100;
+  box-shadow: 0 2rpx 4rpx rgba(0, 0, 0, 0.02);
+  transition: all 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
+  overflow: hidden;
 
   &.header-collapsed {
-    top: 96rpx;
+    max-height: 0;
+    opacity: 0;
+    border-bottom: none;
+    box-shadow: none;
   }
 
   @include mobile { top: 112rpx; }
 }
 
-// 一行筛选栏
-.filter-bar {
+// 筛选栏容器（对齐顶部导航）
+.filter-nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 80rpx;
+  height: 80rpx;
   display: flex;
   align-items: center;
-  padding: $sp-4 0;
+  gap: 32rpx;
+
+  @media (max-width: 1200px) { padding: 0 64rpx; }
+
+  @include mobile {
+    padding: 0 32rpx;
+    height: 88rpx;
+    gap: 20rpx;
+  }
 }
 
-// 类型筛选（左侧可滚动）
-.type-scroll {
+// 类型标签包裹层（overflow hidden + 右侧渐变遮罩）
+.type-tabs-wrap {
+  position: relative;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: 0; top: 0; bottom: 0;
+    width: 32px;
+    background: linear-gradient(to right, transparent, $white);
+    pointer-events: none;
+    z-index: 1;
+
+    @include desktop { display: none; }
+  }
+}
+
+// 类型筛选（横向滚动）
+.type-scroll {
   white-space: nowrap;
 
   /* #ifdef H5 */
@@ -950,8 +987,10 @@ defineExpose({
 
 .type-tabs {
   display: inline-flex;
-  padding: 0 $sp-5 0 $sp-8;
+  padding-right: 32px;
   gap: $sp-3;
+
+  @include desktop { padding-right: 0; }
 }
 
 .type-tab {
@@ -979,9 +1018,8 @@ defineExpose({
 .status-dropdown-wrap {
   position: relative;
   flex-shrink: 0;
-  padding: 0 $sp-6 0 $sp-4;
+  padding-left: $sp-5;
   border-left: 1rpx solid $gray-200;
-  margin-left: $sp-4;
 }
 
 .status-dropdown-btn {

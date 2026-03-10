@@ -100,7 +100,12 @@
 
             <!-- 发布弹窗 -->
             <div v-if="showPublishMenu" class="publish-popover-overlay" @click="showPublishMenu = false">
-              <div class="publish-popover" @click.stop :style="{ top: publishMenuPosition.top + 'px', left: publishMenuPosition.left + 'px' }">
+              <div
+                class="publish-popover"
+                :class="{ 'publish-popover--centered': isPopoverCentered }"
+                @click.stop
+                :style="isPopoverCentered ? {} : { top: publishMenuPosition.top + 'px', left: publishMenuPosition.left + 'px' }"
+              >
 
                 <!-- 标题栏 -->
                 <div class="popover-header">
@@ -401,6 +406,7 @@ const handleSearch = () => {
 
 // 发布菜单相关
 const showPublishMenu = ref(false)
+const isPopoverCentered = ref(false)
 const publishContainer = ref<HTMLElement | null>(null)
 const publishMenuPosition = ref({ top: 0, left: 0 })
 
@@ -446,21 +452,19 @@ const publishTypes = [
 
 const handlePublish = (fromEvent = false) => {
   if (fromEvent) {
-    // 由全局事件触发时，Popover 固定在顶部导航栏下方居中位置
-    publishMenuPosition.value = {
-      top: 64,
-      left: Math.max(16, window.innerWidth / 2 - 130)
-    }
+    // 由全局事件触发时，CSS 居中显示，不需要坐标
+    isPopoverCentered.value = true
+    showPublishMenu.value = true
   } else {
     if (!publishContainer.value) return
     const rect = publishContainer.value.getBoundingClientRect()
     publishMenuPosition.value = {
       top: rect.bottom + 8,
-      left: rect.right - 260 // Popover 宽度为 260px，右对齐
+      left: rect.right - 256 // Popover 宽度为 256px，右对齐
     }
+    isPopoverCentered.value = false
+    showPublishMenu.value = !showPublishMenu.value
   }
-
-  showPublishMenu.value = !showPublishMenu.value
 }
 
 const handlePublishSelect = (item: any) => {
@@ -1084,6 +1088,19 @@ defineExpose({
 @keyframes popoverSlideDown {
   from { opacity: 0; transform: translateY(-6px) scale(0.97); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// 由全局事件触发时：视口居中显示
+.publish-popover--centered {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%);
+  animation: popoverZoomIn 0.22s cubic-bezier(0.34, 1.26, 0.64, 1);
+}
+
+@keyframes popoverZoomIn {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
 
 .popover-header {

@@ -13,13 +13,14 @@
     <!-- Speed Dial 菜单项 -->
     <transition-group name="speed-dial" tag="view" class="speed-dial-items">
       <view
-        v-for="(item, index) in navItems"
+        v-for="item in visibleNavItems"
         v-show="isExpanded"
         :key="item.key"
         class="speed-dial-item"
-        :class="{ active: currentPage === item.path }"
+        :class="{ active: item.path && currentPage === item.path }"
         @click="navigateTo(item)"
-        :aria-label="`前往${item.label}`"
+        @keydown.enter.prevent="navigateTo(item)"
+        :aria-label="item.key === 'scroll-top' ? '返回顶部' : `前往${item.label}`"
         role="button"
         tabindex="0"
       >
@@ -42,12 +43,15 @@
 
     <!-- 主悬浮按钮 FAB -->
     <view
+      ref="fabRef"
       class="main-fab"
       :class="{ expanded: isExpanded, 'has-progress': showProgress }"
       @click="handleFabClick"
+      @keydown.enter.prevent="handleFabClick"
       @mouseenter="showTooltip = true"
       @mouseleave="showTooltip = false"
-      aria-label="快捷操作"
+      :aria-label="isExpanded ? '关闭菜单' : '快捷导航'"
+      :aria-expanded="isExpanded"
       role="button"
       tabindex="0"
     >
@@ -80,11 +84,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
+import { useNavigationStore } from '@/stores/navigation'
 
 // 使用统一导航 composable
 const { toHome, toResourceList, toCommunity, toUserCenter } = useNavigation()
+const navigationStore = useNavigationStore()
 
 // 导航项配置
 interface NavItem {
@@ -95,18 +101,20 @@ interface NavItem {
   handler: () => void
 }
 
-// 使用 Unicode 符号代替 emoji - 与TabBar保持一致
+// 固定导航项
 const navItems: NavItem[] = [
-  { key: 'home', label: '首页', icon: '⌂', path: '/pages/home/index', handler: toHome },
-  { key: 'resource', label: '资源', icon: '◈', path: '/pages/resource/index', handler: toResourceList },
-  { key: 'publish', label: '发布', icon: '✚', path: '/pages/publish/index', handler: () => uni.$emit('open-publish-menu') },
+  { key: 'home',      label: '首页', icon: '⌂', path: '/pages/home/index',     handler: toHome },
+  { key: 'resource',  label: '资源', icon: '◈', path: '/pages/resource/index',  handler: toResourceList },
+  { key: 'publish',   label: '发布', icon: '✚', path: '',                        handler: () => uni.$emit('open-publish-menu') },
   { key: 'community', label: '社区', icon: '◉', path: '/pages/community/index', handler: toCommunity },
-  { key: 'user', label: '我的', icon: '◎', path: '/pages/user/index', handler: toUserCenter },
+  { key: 'user',      label: '我的', icon: '◎', path: '/pages/user/index',       handler: toUserCenter },
 ]
+
+// Fix 1：currentPage 由 navigationStore 派生，不再手动维护
+const currentPage = computed(() => navigationStore.activePath)
 
 // 状态
 const isExpanded = ref(false)
-const currentPage = ref('')
 const isPCMode = ref(false)
 const isHidden = ref(false)
 const showTooltip = ref(false)
@@ -133,25 +141,15 @@ const progressOffset = computed(() => {
   return circumference - (progress / 100) * circumference
 })
 
-// 智能图标切换
-const fabIcon = computed(() => {
-  if (isExpanded.value) {
-    return '×' // 展开状态：关闭图标
-  } else if (scrollTop.value < 300) {
-    return '≡' // 顶部：菜单图标
-  } else {
-    return '↑' // 下方：返回顶部图标
-  }
-})
+// Fix 3：FAB 始终作为菜单开关；"返回顶部"改为菜单内的动态选项
+const fabIcon = computed(() => isExpanded.value ? '×' : '≡')
+const tooltipText = computed(() => '快捷导航')
 
-// Tooltip 文字
-const tooltipText = computed(() => {
-  if (scrollTop.value < 300) {
-    return '快捷导航'
-  } else {
-    return '返回顶部'
-  }
-})
+// Fix 3：滚动 > 100 时，在菜单顶部插入"返回顶部"选项
+const scrollTopItem: NavItem = { key: 'scroll-top', label: '顶部', icon: '↑', path: '', handler: () => scrollToTop() }
+const visibleNavItems = computed<NavItem[]>(() =>
+  scrollTop.value > 100 ? [scrollTopItem, ...navItems] : navItems
+)
 
 /**
  * 检测是否为PC模式
@@ -167,18 +165,30 @@ const checkPCMode = () => {
   // #endif
 }
 
+// Fix 2：FAB ref，用于关闭后归还焦点
+const fabRef = ref<HTMLElement | null>(null)
+
 /**
  * 切换菜单展开/收起
+ * Fix 2：展开时自动 focus 第一个菜单项
  */
 const toggleMenu = () => {
   isExpanded.value = !isExpanded.value
+  if (isExpanded.value) {
+    nextTick(() => {
+      const first = document.querySelector<HTMLElement>('.speed-dial-item')
+      first?.focus()
+    })
+  }
 }
 
 /**
  * 关闭菜单
+ * Fix 2：关闭后焦点归还给 FAB
  */
 const closeMenu = () => {
   isExpanded.value = false
+  nextTick(() => fabRef.value?.focus())
 }
 
 /**
@@ -196,36 +206,22 @@ const scrollToTop = () => {
 }
 
 /**
- * FAB 点击处理 - 智能行为
+ * FAB 点击处理
+ * Fix 3：始终切换菜单，"返回顶部"由菜单内选项提供
  */
 const handleFabClick = () => {
-  if (scrollTop.value < 300) {
-    // 顶部：展开菜单
-    toggleMenu()
-  } else {
-    // 下方：返回顶部
-    scrollToTop()
-  }
+  toggleMenu()
 }
 
 /**
- * 导航到指定页面 - 使用 useNavigation 统一导航
+ * 导航到指定页面
+ * Fix 1：移除手动 currentPage 赋值
+ * Fix 2：关闭后焦点归还给 FAB
  */
 const navigateTo = (item: NavItem) => {
   item.handler()
-  currentPage.value = item.path
   isExpanded.value = false
-}
-
-/**
- * 获取当前页面路径
- */
-const getCurrentPage = () => {
-  const pages = getCurrentPages()
-  if (pages.length > 0) {
-    const currentPageObj = pages[pages.length - 1]
-    currentPage.value = '/' + currentPageObj.route
-  }
+  nextTick(() => fabRef.value?.focus())
 }
 
 /**
@@ -288,7 +284,6 @@ const handleKeydown = (e: KeyboardEvent) => {
 // 生命周期
 onMounted(() => {
   checkPCMode()
-  getCurrentPage()
 
   // #ifdef H5
   window.addEventListener('resize', checkPCMode)

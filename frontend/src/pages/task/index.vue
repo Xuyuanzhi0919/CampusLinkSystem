@@ -1693,45 +1693,53 @@ defineExpose({
   align-items: center;
   justify-content: center;
   position: fixed;
-  right: 48rpx;
-  bottom: calc(120rpx + env(safe-area-inset-bottom, 0px));
+  right: 32px;
+  bottom: 32px;
   z-index: $z-dropdown + 5;
-  width: 104rpx;
-  height: 104rpx;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
-  background: $primary;
-  color: $white;
-  box-shadow: 0 8rpx 24rpx rgba($primary, 0.45);
+  background: $white;
+  color: $primary;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
   cursor: pointer;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: all 0.3s;
 
   &:hover {
-    transform: scale(1.06);
-    box-shadow: 0 12rpx 32rpx rgba($primary, 0.5);
+    background: $primary;
+    color: $white;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba($primary, 0.3);
   }
 
   &:active {
-    transform: scale(0.92);
-    box-shadow: 0 4rpx 12rpx rgba($primary, 0.4);
+    transform: scale(0.94);
+  }
+
+  @include mobile {
+    right: 16px;
+    bottom: 80px;
+    width: 40px;
+    height: 40px;
   }
 }
 
 .fab-badge {
   position: absolute;
-  top: 12rpx;
-  right: 12rpx;
-  min-width: 36rpx;
-  height: 36rpx;
-  padding: 0 8rpx;
+  top: -4px;
+  right: -4px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
   background: #FF4D4F;
   color: $white;
-  border-radius: 18rpx;
-  font-size: 20rpx;
+  border-radius: 8px;
+  font-size: 10px;
   font-weight: $font-weight-bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2rpx solid $white;
+  border: 1.5px solid $white;
 }
 
 // 侧边栏通用卡片

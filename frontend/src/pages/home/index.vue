@@ -191,7 +191,7 @@ const handlePublish = () => nav.toPublish()
 const handleUpload = () => nav.toPublish() // 保持接口兼容,内部跳转到统一入口
 const handleAsk = () => {
   if (isDesktop.value) {
-    nav.toPublish()
+    uni.$emit('open-publish-menu')
   } else {
     uni.$emit('open-publish-sheet')
   }

@@ -197,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from './UserDropdownMenu.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
@@ -444,13 +444,20 @@ const publishTypes = [
   },
 ]
 
-const handlePublish = () => {
-  if (!publishContainer.value) return
-
-  const rect = publishContainer.value.getBoundingClientRect()
-  publishMenuPosition.value = {
-    top: rect.bottom + 8,
-    left: rect.right - 260 // Popover 宽度为 260px，右对齐
+const handlePublish = (fromEvent = false) => {
+  if (fromEvent) {
+    // 由全局事件触发时，Popover 固定在顶部导航栏下方居中位置
+    publishMenuPosition.value = {
+      top: 64,
+      left: Math.max(16, window.innerWidth / 2 - 130)
+    }
+  } else {
+    if (!publishContainer.value) return
+    const rect = publishContainer.value.getBoundingClientRect()
+    publishMenuPosition.value = {
+      top: rect.bottom + 8,
+      left: rect.right - 260 // Popover 宽度为 260px，右对齐
+    }
   }
 
   showPublishMenu.value = !showPublishMenu.value
@@ -631,6 +638,11 @@ onMounted(() => {
     unreadCount.value = 0
     notifications.value = []
   })
+  uni.$on('open-publish-menu', () => handlePublish(true))
+})
+
+onUnmounted(() => {
+  uni.$off('open-publish-menu')
 })
 
 defineExpose({

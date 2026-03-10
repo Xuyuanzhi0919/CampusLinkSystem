@@ -1261,7 +1261,6 @@ defineExpose({
       .item-arrow { opacity: 0; }
     }
   }
-  }
 
   &:active { transform: translateX(0); background: #EEF2FF; }
 }

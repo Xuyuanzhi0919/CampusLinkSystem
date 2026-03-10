@@ -87,7 +87,7 @@ export function useNavigation() {
 
   /** 🎯 跳转到统一发布入口（推荐） */
   const toPublish = () => {
-    navigateTo('/pages/publish/index')
+    switchTab('/pages/publish/index')
   }
 
   /** 跳转到上传资源 */

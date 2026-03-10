@@ -297,10 +297,6 @@
             :disabled="isLoading"
             @focus="handleInputFocus"
           />
-          <!-- 字数统计 -->
-          <view class="char-count" :class="{ warning: inputCharCount > inputMaxLength * 0.9 }">
-            {{ inputCharCount }}/{{ inputMaxLength }}
-          </view>
         </view>
         <view
           class="send-btn"
@@ -310,6 +306,10 @@
           <Icon v-if="!isLoading" name="send" :size="20" />
           <Icon v-else name="loader" :size="20" class="loading-spinner" />
         </view>
+      </view>
+      <!-- 字数统计：有内容时显示在输入框下方 -->
+      <view v-if="inputCharCount > 0" class="char-count" :class="{ warning: inputCharCount > inputMaxLength * 0.9 }">
+        {{ inputCharCount }}/{{ inputMaxLength }}
       </view>
     </view>
 
@@ -1596,6 +1596,12 @@ const scrollToBottom = () => {
   flex-direction: column;
   gap: 8px;
   padding: 0 24px;
+
+  @media (min-width: 768px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
 
 .suggestion-card {
@@ -2043,7 +2049,6 @@ const scrollToBottom = () => {
   font-weight: 400;
   resize: none;
   padding: 12px 0;
-  padding-right: 60px; // 为字数统计留出空间
 
   &::placeholder {
     color: $gray-400;
@@ -2051,22 +2056,17 @@ const scrollToBottom = () => {
   }
 }
 
-// 字数统计
+// 字数统计（位于输入框下方右侧）
 .char-count {
-  position: absolute;
-  right: 0;
-  bottom: 8px;
+  text-align: right;
   font-size: 11px;
   color: $gray-400;
   font-weight: 400;
-  padding: 2px 6px;
-  background: rgba($gray-50, 0.8);
-  border-radius: 4px;
-  transition: all 0.2s;
+  padding: 4px 4px 0;
+  transition: color 0.2s;
 
   &.warning {
     color: $warning;
-    background: rgba($warning, 0.1);
   }
 }
 

@@ -367,7 +367,7 @@
     <!-- FAB 快捷操作按钮 -->
     <view class="main-fab" aria-label="快捷操作" role="button" @click="handleFabClick">
       <view v-if="mobileActiveCount > 0" class="fab-badge">{{ mobileActiveCount }}</view>
-      <Icon name="plus" :size="24" />
+      <Icon name="plus" :size="26" color="#FFFFFF" />
     </view>
 
   </view>
@@ -1693,48 +1693,72 @@ defineExpose({
   align-items: center;
   justify-content: center;
   position: fixed;
-  right: 32px;
-  bottom: 32px;
+  right: 24px;
+  bottom: 24px;
   z-index: $z-dropdown + 5;
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
+  min-width: 64px;
+  min-height: 64px;
   border-radius: 50%;
-  background: $white;
-  color: $primary;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
+  color: #FFFFFF;
+  box-shadow:
+    0 4px 14px rgba(37, 99, 235, 0.25),
+    0 0 0 0 rgba(37, 99, 235, 0.4);
   cursor: pointer;
-  transition: all 0.3s;
+  animation: fab-breathe 2s ease-in-out infinite;
+  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
 
   &:hover {
-    background: $primary;
-    color: $white;
-    transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba($primary, 0.3);
+    transform: scale(1.05);
+    box-shadow:
+      0 6px 20px rgba(37, 99, 235, 0.35),
+      0 0 20px rgba(37, 99, 235, 0.2);
+    animation: none;
   }
 
   &:active {
-    transform: scale(0.94);
+    transform: scale(0.98);
+    box-shadow:
+      inset 0 2px 8px rgba(0, 0, 0, 0.2),
+      0 4px 12px rgba(37, 99, 235, 0.2);
   }
 
   @include mobile {
     right: 16px;
     bottom: 80px;
-    width: 40px;
-    height: 40px;
+    width: 52px;
+    height: 52px;
+    min-width: 52px;
+    min-height: 52px;
+  }
+}
+
+@keyframes fab-breathe {
+  0%, 100% {
+    box-shadow:
+      0 4px 14px rgba(37, 99, 235, 0.25),
+      0 0 0 0 rgba(37, 99, 235, 0.4);
+  }
+  50% {
+    box-shadow:
+      0 4px 14px rgba(37, 99, 235, 0.25),
+      0 0 0 8px rgba(37, 99, 235, 0);
   }
 }
 
 .fab-badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 16px;
-  height: 16px;
-  padding: 0 4px;
+  top: 4px;
+  right: 4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   background: #FF4D4F;
   color: $white;
-  border-radius: 8px;
-  font-size: 10px;
+  border-radius: 9px;
+  font-size: 11px;
   font-weight: $font-weight-bold;
   display: flex;
   align-items: center;

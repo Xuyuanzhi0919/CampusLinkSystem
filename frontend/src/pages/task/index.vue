@@ -364,10 +364,40 @@
     <!-- 移动端侧边栏遮罩 -->
     <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
 
-    <!-- FAB 快捷操作按钮 -->
-    <view class="main-fab" aria-label="快捷操作" role="button" @click="handleFabClick">
-      <view v-if="mobileActiveCount > 0" class="fab-badge">{{ mobileActiveCount }}</view>
-      <Icon name="plus" :size="26" color="#FFFFFF" />
+    <!-- FAB Speed Dial -->
+    <transition name="fab-backdrop-fade">
+      <view v-if="isFabExpanded" class="fab-backdrop" @click="isFabExpanded = false" />
+    </transition>
+
+    <view class="fab-container">
+      <!-- Speed Dial 菜单项 -->
+      <transition-group name="speed-dial" tag="view" class="speed-dial-items">
+        <view
+          v-for="(action, index) in FAB_ACTIONS"
+          v-show="isFabExpanded"
+          :key="action.key"
+          class="speed-dial-item"
+          :style="{ transitionDelay: isFabExpanded ? `${index * 30}ms` : '0ms' }"
+          @click="handleFabAction(action)"
+        >
+          <text class="speed-dial-label">{{ action.label }}</text>
+          <view class="speed-dial-icon">
+            <Icon :name="action.icon" :size="16" color="#374151" />
+          </view>
+        </view>
+      </transition-group>
+
+      <!-- 主 FAB -->
+      <view
+        class="main-fab"
+        :class="{ expanded: isFabExpanded }"
+        aria-label="快捷操作"
+        role="button"
+        @click="isFabExpanded = !isFabExpanded"
+      >
+        <view v-if="mobileActiveCount > 0 && !isFabExpanded" class="fab-badge">{{ mobileActiveCount }}</view>
+        <Icon :name="isFabExpanded ? 'x' : 'plus'" :size="26" color="#FFFFFF" />
+      </view>
     </view>
 
   </view>
@@ -591,17 +621,23 @@ const handleQuickAccept = (task: TaskListItem) => {
   })
 }
 
-const handlePublish = () => {
-  uni.navigateTo({ url: '/pages/task/publish' })
+// FAB Speed Dial
+const isFabExpanded = ref(false)
+
+interface FabAction { key: string; label: string; icon: string; handler: () => void }
+const FAB_ACTIONS: FabAction[] = [
+  { key: 'publish',  label: '发布任务', icon: 'plus-circle',   handler: () => uni.navigateTo({ url: '/pages/task/publish' }) },
+  { key: 'accepted', label: '我的接单', icon: 'package-check', handler: () => uni.navigateTo({ url: '/pages/task/my?tab=accepted' }) },
+  { key: 'published',label: '我的发布', icon: 'send',          handler: () => uni.navigateTo({ url: '/pages/task/my?tab=published' }) },
+]
+
+const handleFabAction = (action: FabAction) => {
+  isFabExpanded.value = false
+  action.handler()
 }
 
-const handleFabClick = () => {
-  const { windowWidth } = uni.getSystemInfoSync()
-  if (windowWidth <= 1024) {
-    showMobileSidebar.value = true
-  } else {
-    handlePublish()
-  }
+const handlePublish = () => {
+  uni.navigateTo({ url: '/pages/task/publish' })
 }
 
 const goMyPublished = () => { uni.navigateTo({ url: '/pages/task/my?tab=published' }) }
@@ -1687,15 +1723,105 @@ defineExpose({
   }
 }
 
+// FAB 容器 & Speed Dial
+.fab-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(14, 19, 32, 0.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: $z-dropdown + 4;
+}
+
+.fab-container {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: $z-dropdown + 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+
+  @include mobile {
+    right: 16px;
+    bottom: 80px;
+  }
+}
+
+.speed-dial-items {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.speed-dial-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+
+  &:active .speed-dial-icon { transform: scale(0.92); }
+}
+
+.speed-dial-label {
+  height: 36px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1F2937;
+  white-space: nowrap;
+  background: #FFFFFF;
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid #E5E7EB;
+  border-radius: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  transition: all 0.15s;
+
+  .speed-dial-item:hover & {
+    background: #F3F4F6;
+  }
+}
+
+.speed-dial-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #FFFFFF;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+
+  .speed-dial-item:hover & {
+    background: #F3F4F6;
+  }
+}
+
+// Speed Dial 动画
+.speed-dial-enter-active { transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
+.speed-dial-leave-active  { transition: all 0.15s ease-in; }
+.speed-dial-enter-from    { opacity: 0; transform: translateY(16px) scale(0.95); }
+.speed-dial-leave-to      { opacity: 0; transform: translateY(8px)  scale(0.95); }
+
+// 遮罩动画
+.fab-backdrop-fade-enter-active { transition: opacity 0.2s ease; }
+.fab-backdrop-fade-leave-active { transition: opacity 0.15s ease-in; }
+.fab-backdrop-fade-enter-from,
+.fab-backdrop-fade-leave-to     { opacity: 0; }
+
 // FAB 快捷操作按钮
 .main-fab {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: $z-dropdown + 5;
   width: 64px;
   height: 64px;
   min-width: 64px;
@@ -1709,6 +1835,15 @@ defineExpose({
   cursor: pointer;
   animation: fab-breathe 2s ease-in-out infinite;
   transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  flex-shrink: 0;
+
+  &.expanded {
+    background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+    animation: none;
+    box-shadow:
+      0 6px 20px rgba(37, 99, 235, 0.4),
+      0 0 0 4px rgba(37, 99, 235, 0.12);
+  }
 
   &:hover {
     transform: scale(1.05);
@@ -1726,8 +1861,6 @@ defineExpose({
   }
 
   @include mobile {
-    right: 16px;
-    bottom: 80px;
     width: 52px;
     height: 52px;
     min-width: 52px;

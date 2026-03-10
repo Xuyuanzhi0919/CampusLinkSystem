@@ -16,6 +16,7 @@
     <HeroSection
       @upload="handleUpload"
       @ask="handleAsk"
+      @browse="handleBrowse"
       @task="handleTask"
       @tag-click="handleTagClick"
     />
@@ -188,8 +189,22 @@ const handleSearch = (keyword: string) => nav.toSearchResult(keyword)
 // 🎯 统一发布入口：所有发布行为都跳转到选择页
 const handlePublish = () => nav.toPublish()
 const handleUpload = () => nav.toPublish() // 保持接口兼容,内部跳转到统一入口
-const handleAsk = () => nav.toPublish()
+const handleAsk = () => {
+  if (isDesktop.value) {
+    nav.toPublish()
+  } else {
+    uni.$emit('open-publish-sheet')
+  }
+}
 const handleTask = () => nav.toPublish()
+
+// Hero 浏览按钮：H5 端平滑滚动到主内容区
+const handleBrowse = () => {
+  // #ifdef H5
+  const el = document.querySelector('.main-content')
+  el?.scrollIntoView({ behavior: 'smooth' })
+  // #endif
+}
 
 const handleTagClick = (tag: any) => nav.toSearchResult(tag.name)
 const handleNavigate = (_path: string) => { /* Footer 导航由组件内部处理 */ }

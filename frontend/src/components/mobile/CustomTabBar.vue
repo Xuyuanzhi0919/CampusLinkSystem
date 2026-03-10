@@ -150,7 +150,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
@@ -300,6 +300,12 @@ const handlePublishSelect = (item: any) => {
 // 组件挂载
 onMounted(() => {
   navigationStore.syncActivePath()
+  // 监听来自 Hero 区域「发布需求」的触发（移动端复用本组件的 Bottom Sheet）
+  uni.$on('open-publish-sheet', openBottomSheet)
+})
+
+onUnmounted(() => {
+  uni.$off('open-publish-sheet', openBottomSheet)
 })
 </script>
 

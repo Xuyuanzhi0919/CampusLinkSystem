@@ -56,8 +56,7 @@ export const useNavigationStore = defineStore('navigation', () => {
    * 发布按钮（action: true）不参与匹配，默认返回 0（首页）
    */
   const activeTabIndex = computed(() => {
-    const index = tabList.findIndex(item => !item.action && item.path === activePath.value)
-    return index >= 0 ? index : 0
+    return tabList.findIndex(item => !item.action && item.path === activePath.value)
   })
 
   /**

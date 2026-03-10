@@ -99,39 +99,44 @@
             </button>
 
             <!-- 发布弹窗 -->
-            <div v-if="showPublishMenu" class="publish-popover-overlay" @click="showPublishMenu = false">
+            <div v-if="showPublishMenu" class="publish-popover-overlay" @click="closePopover">
               <div
+                ref="popoverRef"
                 class="publish-popover"
                 :class="{ 'publish-popover--centered': isPopoverCentered }"
                 @click.stop
+                @keydown="handlePopoverKeydown"
                 :style="isPopoverCentered ? {} : { top: publishMenuPosition.top + 'px', left: publishMenuPosition.left + 'px' }"
               >
-
                 <!-- 标题栏 -->
                 <div class="popover-header">
                   <div class="popover-header-left">
                     <Icon name="plus-circle" :size="15" class="popover-header-icon" />
                     <span class="popover-title">发布内容</span>
                   </div>
-                  <button class="popover-close-btn" @click="showPublishMenu = false">
+                  <button class="popover-close-btn" @click="closePopover">
                     <Icon name="x" :size="14" />
                   </button>
                 </div>
 
-                <!-- 未登录提示 -->
-                <div v-if="!isLoggedIn" class="popover-login-tip">
-                  <Icon name="lock" :size="28" class="login-tip-icon" />
-                  <span class="login-tip-text">请先登录后发布</span>
-                  <button class="login-tip-btn" @click="emit('login'); showPublishMenu = false">立即登录</button>
+                <!-- 未登录提示条 -->
+                <div v-if="!isLoggedIn" class="popover-login-banner">
+                  <Icon name="lock" :size="13" class="login-banner-icon" />
+                  <span>登录后即可发布</span>
+                  <button class="login-banner-btn" @click="emit('login'); closePopover()">立即登录</button>
                 </div>
 
-                <!-- 发布类型列表 -->
-                <div v-else class="popover-list">
+                <!-- 发布类型列表（始终显示，未登录时为禁用态） -->
+                <div class="popover-list">
                   <div
                     v-for="item in publishTypes"
                     :key="item.type"
                     class="popover-item"
-                    @click="handlePublishSelect(item)"
+                    :class="{ 'popover-item--disabled': !isLoggedIn }"
+                    tabindex="0"
+                    :aria-disabled="!isLoggedIn"
+                    @click="handleItemClick(item)"
+                    @keydown.enter.prevent="handleItemClick(item)"
                   >
                     <div class="item-icon" :style="{ background: item.iconBg }">
                       <Icon :name="item.iconName" :size="18" :color="item.iconColor" />
@@ -144,9 +149,9 @@
                   </div>
                 </div>
 
-                <!-- 底部：查看我的发布 -->
+                <!-- 底部：查看我的发布（仅登录后显示） -->
                 <div v-if="isLoggedIn" class="popover-footer">
-                  <button class="my-publish-btn" @click="navigateTo('/pages/user/index'); showPublishMenu = false">
+                  <button class="my-publish-btn" @click="navigateTo('/pages/user/index'); closePopover()">
                     <Icon name="user" :size="13" />
                     <span>查看我的发布</span>
                   </button>
@@ -202,7 +207,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import UserAvatar from '@/components/UserAvatar.vue'
 import UserDropdownMenu from './UserDropdownMenu.vue'
 import NotificationDropdown from './NotificationDropdown.vue'
@@ -409,6 +414,48 @@ const showPublishMenu = ref(false)
 const isPopoverCentered = ref(false)
 const publishContainer = ref<HTMLElement | null>(null)
 const publishMenuPosition = ref({ top: 0, left: 0 })
+const popoverRef = ref<HTMLElement | null>(null)
+const lastFocusedElement = ref<HTMLElement | null>(null)
+
+const openPopover = () => {
+  lastFocusedElement.value = document.activeElement as HTMLElement
+  showPublishMenu.value = true
+  nextTick(() => {
+    const first = popoverRef.value?.querySelector<HTMLElement>('.popover-item')
+    first?.focus()
+  })
+}
+
+const closePopover = () => {
+  showPublishMenu.value = false
+  nextTick(() => lastFocusedElement.value?.focus())
+}
+
+const handlePopoverKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') {
+    closePopover()
+    return
+  }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    const items = Array.from(popoverRef.value?.querySelectorAll<HTMLElement>('.popover-item') ?? [])
+    if (!items.length) return
+    const idx = items.indexOf(document.activeElement as HTMLElement)
+    const next = e.key === 'ArrowDown'
+      ? (idx + 1) % items.length
+      : (idx - 1 + items.length) % items.length
+    items[next]?.focus()
+  }
+}
+
+const handleItemClick = (item: any) => {
+  if (!isLoggedIn.value) {
+    closePopover()
+    emit('login')
+    return
+  }
+  handlePublishSelect(item)
+}
 
 // 发布类型配置（与移动端 CustomTabBar 保持一致，共 4 种）
 const publishTypes = [
@@ -452,18 +499,18 @@ const publishTypes = [
 
 const handlePublish = (fromEvent = false) => {
   if (fromEvent) {
-    // 由全局事件触发时，CSS 居中显示，不需要坐标
     isPopoverCentered.value = true
-    showPublishMenu.value = true
+    openPopover()
   } else {
     if (!publishContainer.value) return
+    if (showPublishMenu.value) { closePopover(); return }
     const rect = publishContainer.value.getBoundingClientRect()
     publishMenuPosition.value = {
       top: rect.bottom + 8,
-      left: rect.right - 256 // Popover 宽度为 256px，右对齐
+      left: rect.right - 256
     }
     isPopoverCentered.value = false
-    showPublishMenu.value = !showPublishMenu.value
+    openPopover()
   }
 }
 
@@ -1148,40 +1195,35 @@ defineExpose({
   &:hover { background: #E2E8F0; color: #475569; }
 }
 
-// 未登录提示
-.popover-login-tip {
+// 未登录提示条（轻量横幅，不占用主选项区域）
+.popover-login-banner {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 24px 16px 20px;
-  gap: 8px;
-}
+  gap: 6px;
+  padding: 7px 12px;
+  background: #FFF7ED;
+  border-bottom: 1px solid #FED7AA;
+  font-size: 12px;
+  color: #92400E;
 
-.login-tip-icon {
-  color: #CBD5E1;
-  margin-bottom: 4px;
-}
+  .login-banner-icon { color: #F59E0B; flex-shrink: 0; }
 
-.login-tip-text {
-  font-size: 13px;
-  color: #64748B;
-  font-weight: 500;
-}
+  span { flex: 1; }
 
-.login-tip-btn {
-  margin-top: 4px;
-  height: 32px;
-  padding: 0 20px;
-  background: #6366F1;
-  border: none;
-  border-radius: 8px;
-  color: #FFFFFF;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
+  .login-banner-btn {
+    padding: 2px 10px;
+    background: #F59E0B;
+    border: none;
+    border-radius: 5px;
+    color: #FFF;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
 
-  &:hover { background: #4F46E5; }
+    &:hover { background: #D97706; }
+  }
 }
 
 .popover-list {
@@ -1196,13 +1238,29 @@ defineExpose({
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.15s;
+  outline: none;
 
-  &:hover {
+  &:hover, &:focus-visible {
     background: #F5F7FF;
     transform: translateX(2px);
 
     .item-title { color: #6366F1; }
     .item-arrow { opacity: 1; }
+  }
+
+  // 未登录禁用态
+  &.popover-item--disabled {
+    cursor: default;
+    opacity: 0.45;
+    pointer-events: auto; // 保留点击以触发登录
+
+    &:hover, &:focus-visible {
+      background: transparent;
+      transform: none;
+      .item-title { color: #1E293B; }
+      .item-arrow { opacity: 0; }
+    }
+  }
   }
 
   &:active { transform: translateX(0); background: #EEF2FF; }

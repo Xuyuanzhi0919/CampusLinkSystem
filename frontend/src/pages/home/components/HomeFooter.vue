@@ -294,6 +294,11 @@ const handleReport = () => {
   display: flex;
   flex-direction: column;
   gap: 20rpx;
+
+  @include mobile {
+    flex-direction: row;
+    gap: 16rpx;
+  }
 }
 
 .support-btn {
@@ -339,6 +344,19 @@ const handleReport = () => {
   &:active {
     transform: translateY(0) scale(0.98);
   }
+
+  // 移动端：横排三等分，图标上 + 文字下
+  @include mobile {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12rpx;
+    padding: 28rpx 8rpx;
+    text-align: center;
+    font-size: 24rpx;
+    min-width: 0;
+  }
 }
 
 .support-icon {
@@ -346,6 +364,12 @@ const handleReport = () => {
   height: 32rpx;
   flex-shrink: 0;
   color: currentColor;
+
+  @include mobile {
+    width: 44rpx;
+    height: 44rpx;
+    flex-shrink: 0;
+  }
 }
 
 /* ========== 底部：合规信息 ========== */

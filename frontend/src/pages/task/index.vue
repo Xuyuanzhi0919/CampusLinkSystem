@@ -364,61 +364,19 @@
     <!-- 移动端侧边栏遮罩 -->
     <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
 
-    <!-- PC端：FAB Speed Dial -->
-    <transition name="fab-backdrop-fade">
-      <view v-if="isFabExpanded" class="fab-backdrop" @click="isFabExpanded = false" />
-    </transition>
+    <!-- 移动端自定义底部导航 -->
+    <CustomTabBar v-if="!isDesktop" />
 
-    <view class="fab-container">
-      <!-- Speed Dial 菜单项 -->
-      <transition-group name="speed-dial" tag="view" class="speed-dial-items">
-        <view
-          v-for="(action, index) in FAB_ACTIONS"
-          v-show="isFabExpanded"
-          :key="action.key"
-          class="speed-dial-item"
-          :style="{ transitionDelay: isFabExpanded ? `${index * 30}ms` : '0ms' }"
-          @click="handleFabAction(action)"
-        >
-          <text class="speed-dial-label">{{ action.label }}</text>
-          <view class="speed-dial-icon">
-            <Icon :name="action.icon" :size="16" color="#374151" />
-          </view>
-        </view>
-      </transition-group>
-
-      <!-- 主 FAB -->
-      <view
-        class="main-fab"
-        :class="{ expanded: isFabExpanded }"
-        aria-label="快捷操作"
-        role="button"
-        @click="isFabExpanded = !isFabExpanded"
-      >
-        <Icon :name="isFabExpanded ? 'x' : 'plus'" :size="26" color="#FFFFFF" />
-      </view>
-    </view>
-
-    <!-- 移动端：底部快捷操作栏 -->
-    <view class="mobile-action-bar">
-      <view
-        v-for="action in FAB_ACTIONS"
-        :key="action.key"
-        class="mobile-action-item"
-        @click="handleFabAction(action)"
-      >
-        <view class="mobile-action-icon">
-          <Icon :name="action.icon" :size="20" color="#2563EB" />
-        </view>
-        <text class="mobile-action-label">{{ action.label }}</text>
-      </view>
-    </view>
+    <!-- PC端悬浮导航（仅 H5） -->
+    <!-- #ifdef H5 -->
+    <PCFloatingNav />
+    <!-- #endif -->
 
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks, acceptTask } from '@/services/task'
 import { getTodayStats } from '@/services/stats'
@@ -428,6 +386,14 @@ import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 import Icon from '@/components/icons/index.vue'
 import { taskSearchHistory } from '@/utils/searchHistory'
+
+// 移动端组件
+import { CustomTabBar } from '@/components/mobile'
+
+// PC 端组件（仅 H5）
+// #ifdef H5
+import { PCFloatingNav } from '@/components/desktop'
+// #endif
 
 const userStore = useUserStore()
 
@@ -635,20 +601,9 @@ const handleQuickAccept = (task: TaskListItem) => {
   })
 }
 
-// FAB Speed Dial
-const isFabExpanded = ref(false)
-
-interface FabAction { key: string; label: string; icon: string; handler: () => void }
-const FAB_ACTIONS: FabAction[] = [
-  { key: 'publish',  label: '发布任务', icon: 'plus-circle',   handler: () => uni.navigateTo({ url: '/pages/task/publish' }) },
-  { key: 'accepted', label: '我的接单', icon: 'package-check', handler: () => uni.navigateTo({ url: '/pages/task/my?tab=accepted' }) },
-  { key: 'published',label: '我的发布', icon: 'send',          handler: () => uni.navigateTo({ url: '/pages/task/my?tab=published' }) },
-]
-
-const handleFabAction = (action: FabAction) => {
-  isFabExpanded.value = false
-  action.handler()
-}
+// 桌面端判断
+const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
+const isDesktop = computed(() => windowWidth.value >= 1024)
 
 const handlePublish = () => {
   uni.navigateTo({ url: '/pages/task/publish' })
@@ -848,6 +803,15 @@ onMounted(() => {
   loadSidebarData()
   loadSearchHistory()
   // 附近任务不自动触发定位，用户主动点击后才请求
+  // #ifdef H5
+  window.addEventListener('resize', () => { windowWidth.value = window.innerWidth })
+  // #endif
+})
+
+onUnmounted(() => {
+  // #ifdef H5
+  window.removeEventListener('resize', () => { windowWidth.value = window.innerWidth })
+  // #endif
 })
 
 defineExpose({
@@ -1741,240 +1705,6 @@ defineExpose({
   }
 }
 
-// FAB 容器 & Speed Dial
-.fab-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(14, 19, 32, 0.18);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: $z-dropdown + 4;
-}
-
-.fab-container {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  z-index: $z-dropdown + 5;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 10px;
-
-  @include mobile {
-    display: none;
-  }
-}
-
-.speed-dial-items {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-}
-
-.speed-dial-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-
-  &:active .speed-dial-icon { transform: scale(0.92); }
-}
-
-.speed-dial-label {
-  height: 36px;
-  padding: 0 14px;
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: #1F2937;
-  white-space: nowrap;
-  background: #FFFFFF;
-  backdrop-filter: saturate(180%) blur(20px);
-  -webkit-backdrop-filter: saturate(180%) blur(20px);
-  border: 1px solid #E5E7EB;
-  border-radius: 18px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  transition: all 0.15s;
-
-  .speed-dial-item:hover & {
-    background: #F3F4F6;
-  }
-}
-
-.speed-dial-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.15s;
-
-  .speed-dial-item:hover & {
-    background: #F3F4F6;
-  }
-}
-
-// Speed Dial 动画
-.speed-dial-enter-active { transition: all 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28); }
-.speed-dial-leave-active  { transition: all 0.15s ease-in; }
-.speed-dial-enter-from    { opacity: 0; transform: translateY(16px) scale(0.95); }
-.speed-dial-leave-to      { opacity: 0; transform: translateY(8px)  scale(0.95); }
-
-// 遮罩动画
-.fab-backdrop-fade-enter-active { transition: opacity 0.2s ease; }
-.fab-backdrop-fade-leave-active { transition: opacity 0.15s ease-in; }
-.fab-backdrop-fade-enter-from,
-.fab-backdrop-fade-leave-to     { opacity: 0; }
-
-// FAB 快捷操作按钮
-.main-fab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 64px;
-  height: 64px;
-  min-width: 64px;
-  min-height: 64px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 50%, #60A5FA 100%);
-  color: #FFFFFF;
-  box-shadow:
-    0 4px 14px rgba(37, 99, 235, 0.25),
-    0 0 0 0 rgba(37, 99, 235, 0.4);
-  cursor: pointer;
-  animation: fab-breathe 2s ease-in-out infinite;
-  transition: all 200ms cubic-bezier(0.2, 0.8, 0.2, 1);
-  flex-shrink: 0;
-
-  &.expanded {
-    background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
-    animation: none;
-    box-shadow:
-      0 6px 20px rgba(37, 99, 235, 0.4),
-      0 0 0 4px rgba(37, 99, 235, 0.12);
-  }
-
-  &:hover {
-    transform: scale(1.05);
-    box-shadow:
-      0 6px 20px rgba(37, 99, 235, 0.35),
-      0 0 20px rgba(37, 99, 235, 0.2);
-    animation: none;
-  }
-
-  &:active {
-    transform: scale(0.98);
-    box-shadow:
-      inset 0 2px 8px rgba(0, 0, 0, 0.2),
-      0 4px 12px rgba(37, 99, 235, 0.2);
-  }
-
-  @include mobile {
-    width: 52px;
-    height: 52px;
-    min-width: 52px;
-    min-height: 52px;
-  }
-}
-
-@keyframes fab-breathe {
-  0%, 100% {
-    box-shadow:
-      0 4px 14px rgba(37, 99, 235, 0.25),
-      0 0 0 0 rgba(37, 99, 235, 0.4);
-  }
-  50% {
-    box-shadow:
-      0 4px 14px rgba(37, 99, 235, 0.25),
-      0 0 0 8px rgba(37, 99, 235, 0);
-  }
-}
-
-.fab-badge {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  background: #FF4D4F;
-  color: $white;
-  border-radius: 9px;
-  font-size: 11px;
-  font-weight: $font-weight-bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid $white;
-}
-
-// 移动端底部快捷操作栏
-.mobile-action-bar {
-  display: none;
-
-  @include mobile {
-    display: flex;
-    position: fixed;
-    bottom: 50px; // 悬浮于 TabBar 之上
-    left: 0;
-    right: 0;
-    height: 56px;
-    background: $white;
-    border-top: 1px solid #E5E7EB;
-    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
-    z-index: $z-dropdown + 3;
-    align-items: stretch;
-  }
-}
-
-.mobile-action-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  cursor: pointer;
-  transition: background 0.15s;
-  position: relative;
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 12px;
-    bottom: 12px;
-    width: 1px;
-    background: #E5E7EB;
-  }
-
-  &:active {
-    background: #F3F4F6;
-  }
-}
-
-.mobile-action-icon {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mobile-action-label {
-  font-size: 11px;
-  color: #2563EB;
-  font-weight: 500;
-  line-height: 1;
-}
 
 // 侧边栏通用卡片
 .sidebar-card {

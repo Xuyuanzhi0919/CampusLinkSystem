@@ -90,10 +90,6 @@
           <text class="header-title">今日热问</text>
           <text class="header-subtitle">· 近24h</text>
         </view>
-        <view class="header-more header-more--enhanced" @click="handleViewMoreQuestions">
-          <text>查看全部</text>
-          <text class="more-arrow">→</text>
-        </view>
       </view>
 
       <!-- 加载状态 -->
@@ -181,6 +177,12 @@
             <text>{{ item.isSolved ? '查看' : '回答' }}</text>
           </view>
         </view>
+
+        <!-- 底部：查看全部入口 -->
+        <view class="card-footer-more" @click="handleViewMoreQuestions">
+          <text>查看全部热问</text>
+          <text class="more-arrow">→</text>
+        </view>
       </view>
     </view>
 
@@ -191,10 +193,6 @@
         <view class="header-title-group">
           <text class="header-title">热门话题</text>
           <text class="header-subtitle">· 实时热度</text>
-        </view>
-        <view class="header-more header-more--enhanced" @click="handleViewMoreTopics">
-          <text>发现更多</text>
-          <text class="more-arrow">→</text>
         </view>
       </view>
 
@@ -235,7 +233,7 @@
       <!-- 正常列表（新版：热度条 + 隐藏0%） -->
       <view v-else class="topic-list">
         <view
-          v-for="(tag, index) in hotTags"
+          v-for="(tag, index) in hotTags.slice(0, 5)"
           :key="tag.id"
           class="topic-item"
           @click="handleTagClick(tag)"
@@ -273,6 +271,12 @@
               <text class="activity-count">{{ formatCount(tag.discussionCount) }} 讨论</text>
             </view>
           </view>
+        </view>
+
+        <!-- 底部：发现更多入口 -->
+        <view class="card-footer-more" @click="handleViewMoreTopics">
+          <text>发现更多话题</text>
+          <text class="more-arrow">→</text>
         </view>
       </view>
     </view>
@@ -354,9 +358,7 @@ const handleQuickAction = (action: string) => {
 }
 
 const handleViewMoreQuestions = () => {
-  uni.navigateTo({
-    url: '/pages/question/index'
-  })
+  uni.switchTab({ url: '/pages/question/index' })
 }
 
 // 查看更多话题
@@ -844,7 +846,7 @@ onMounted(() => {
   color: $color-text-primary;
   line-height: 1.5;
   transition: color $transition-fast;
-  @include text-ellipsis(2);
+  @include text-ellipsis(1);
 }
 
 /* 状态标签 */
@@ -933,6 +935,35 @@ onMounted(() => {
 
   &:active {
     transform: scale(0.95);
+  }
+}
+
+/* ========== 模块底部「更多」入口（热问/话题通用） ========== */
+.card-footer-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-2;
+  margin-top: $spacing-4;
+  padding: $spacing-3 0 $spacing-1;
+  border-top: 1px solid $color-border-light;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  .more-arrow {
+    font-size: $font-size-md;
+    line-height: 1;
+    transition: transform $transition-fast;
+  }
+
+  &:hover {
+    color: $campus-blue;
+
+    .more-arrow {
+      transform: translateX(4rpx);
+    }
   }
 }
 

@@ -364,7 +364,7 @@
     <!-- 移动端侧边栏遮罩 -->
     <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
 
-    <!-- FAB Speed Dial -->
+    <!-- PC端：FAB Speed Dial -->
     <transition name="fab-backdrop-fade">
       <view v-if="isFabExpanded" class="fab-backdrop" @click="isFabExpanded = false" />
     </transition>
@@ -395,8 +395,22 @@
         role="button"
         @click="isFabExpanded = !isFabExpanded"
       >
-        <view v-if="mobileActiveCount > 0 && !isFabExpanded" class="fab-badge">{{ mobileActiveCount }}</view>
         <Icon :name="isFabExpanded ? 'x' : 'plus'" :size="26" color="#FFFFFF" />
+      </view>
+    </view>
+
+    <!-- 移动端：底部快捷操作栏 -->
+    <view class="mobile-action-bar">
+      <view
+        v-for="action in FAB_ACTIONS"
+        :key="action.key"
+        class="mobile-action-item"
+        @click="handleFabAction(action)"
+      >
+        <view class="mobile-action-icon">
+          <Icon :name="action.icon" :size="20" color="#2563EB" />
+        </view>
+        <text class="mobile-action-label">{{ action.label }}</text>
       </view>
     </view>
 
@@ -1364,6 +1378,10 @@ defineExpose({
 .main-content {
   padding-bottom: 80rpx;
   background: $bg-page;
+
+  @include mobile {
+    padding-bottom: 110px; // 为底部操作栏 + TabBar 留空间
+  }
 }
 
 .content-container {
@@ -1744,8 +1762,7 @@ defineExpose({
   gap: 10px;
 
   @include mobile {
-    right: 16px;
-    bottom: 80px;
+    display: none;
   }
 }
 
@@ -1897,6 +1914,66 @@ defineExpose({
   align-items: center;
   justify-content: center;
   border: 1.5px solid $white;
+}
+
+// 移动端底部快捷操作栏
+.mobile-action-bar {
+  display: none;
+
+  @include mobile {
+    display: flex;
+    position: fixed;
+    bottom: 50px; // 悬浮于 TabBar 之上
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: $white;
+    border-top: 1px solid #E5E7EB;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.08);
+    z-index: $z-dropdown + 3;
+    align-items: stretch;
+  }
+}
+
+.mobile-action-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: #E5E7EB;
+  }
+
+  &:active {
+    background: #F3F4F6;
+  }
+}
+
+.mobile-action-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-action-label {
+  font-size: 11px;
+  color: #2563EB;
+  font-weight: 500;
+  line-height: 1;
 }
 
 // 侧边栏通用卡片

@@ -5,6 +5,8 @@
     <view class="page-body">
       <!-- Hero + 搜索 -->
       <view class="hero-section">
+        <view class="hero-deco hero-deco--1"></view>
+        <view class="hero-deco hero-deco--2"></view>
         <text class="hero-title">有什么可以帮你？</text>
         <text class="hero-sub">搜索问题或浏览常见问题分类</text>
         <view class="search-wrap" :class="{ focused: searchFocused }">
@@ -21,8 +23,8 @@
             @blur="searchFocused = false"
           />
           <view v-if="searchQuery" class="search-clear" @click="searchQuery = ''">
-            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
-              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <svg viewBox="0 0 24 24" fill="none" width="14" height="14">
+              <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
             </svg>
           </view>
         </view>
@@ -54,12 +56,12 @@
             >
               <view class="faq-header">
                 <view class="faq-q-wrap">
-                  <view class="faq-dot"></view>
+                  <view class="faq-num">Q</view>
                   <text class="faq-q">{{ item.q }}</text>
                 </view>
                 <view class="faq-chevron">
-                  <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+                    <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                   </svg>
                 </view>
               </view>
@@ -82,9 +84,9 @@
         </view>
 
         <!-- 底部联系卡片 -->
-        <view class="contact-card">
+        <view class="contact-card" @click="goFeedback">
           <view class="contact-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" width="26" height="26">
+            <svg viewBox="0 0 24 24" fill="none" width="24" height="24">
               <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
           </view>
@@ -92,7 +94,11 @@
             <text class="contact-title">没找到答案？</text>
             <text class="contact-desc">我们的团队会在 24 小时内回复您</text>
           </view>
-          <view class="contact-btn" @click="goFeedback">发送反馈</view>
+          <view class="contact-arrow">
+            <svg viewBox="0 0 24 24" fill="none" width="16" height="16">
+              <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </view>
         </view>
       </view>
     </view>
@@ -174,50 +180,75 @@ const goFeedback = () => {
 
 // ===== Hero =====
 .hero-section {
-  background: linear-gradient(135deg, $primary 0%, #1D4ED8 60%, #4F46E5 100%);
-  padding: 36px 24px 48px;
+  background: linear-gradient(135deg, $primary 0%, #1D4ED8 55%, #4F46E5 100%);
+  padding: 40px 24px 60px;
   text-align: center;
   position: relative;
+  overflow: hidden;
+}
+
+.hero-deco {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  pointer-events: none;
+
+  &--1 {
+    width: 200px;
+    height: 200px;
+    top: -80px;
+    right: -40px;
+  }
+
+  &--2 {
+    width: 140px;
+    height: 140px;
+    bottom: -60px;
+    left: -30px;
+  }
 }
 
 .hero-title {
   display: block;
-  font-size: 24px;
+  font-size: 26px;
   font-weight: $font-weight-bold;
   color: $white;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   letter-spacing: -0.02em;
+  position: relative;
 }
 
 .hero-sub {
   display: block;
   font-size: 14px;
-  color: rgba(255,255,255,0.75);
-  margin-bottom: 24px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-bottom: 28px;
+  position: relative;
 }
 
 .search-wrap {
-  max-width: 560px;
+  max-width: 540px;
   margin: 0 auto;
   background: $white;
   border: 2px solid transparent;
   border-radius: 14px;
-  padding: 10px 14px;
+  padding: 11px 14px;
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
   transition: all 0.2s;
+  position: relative;
 
   &.focused {
-    border-color: rgba(255,255,255,0.6);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.2), 0 0 0 4px rgba(255,255,255,0.15);
+    border-color: rgba(255, 255, 255, 0.5);
+    box-shadow: 0 8px 36px rgba(0, 0, 0, 0.25), 0 0 0 4px rgba(255, 255, 255, 0.12);
   }
 }
 
 .search-ico {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: $gray-400;
   flex-shrink: 0;
 }
@@ -234,8 +265,8 @@ const goFeedback = () => {
 }
 
 .search-clear {
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -244,16 +275,19 @@ const goFeedback = () => {
   cursor: pointer;
   flex-shrink: 0;
   color: $gray-500;
+  transition: all 0.15s;
 
-  &:active { transform: scale(0.9); }
+  &:hover { background: $gray-200; }
+  &:active { transform: scale(0.88); }
 }
 
 // ===== Content =====
 .content-container {
-  max-width: 680px;
+  max-width: 700px;
   width: 100%;
-  margin: -20px auto 0;
-  padding: 0 20px 40px;
+  margin: -24px auto 0;
+  padding: 0 20px 48px;
+  position: relative;
 }
 
 // ===== Category Chips =====
@@ -265,35 +299,36 @@ const goFeedback = () => {
 .cats-row {
   display: flex;
   gap: 8px;
-  padding: 4px 0 8px;
+  padding: 4px 0 10px;
   white-space: nowrap;
 }
 
 .cat-chip {
   display: inline-flex;
   align-items: center;
-  padding: 7px 16px;
+  padding: 7px 18px;
   background: $white;
   border: 1.5px solid $gray-200;
-  border-radius: 20px;
+  border-radius: 24px;
   font-size: 13px;
   font-weight: $font-weight-medium;
   color: $gray-600;
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 
   &:hover {
-    border-color: rgba($primary, 0.4);
+    border-color: rgba($primary, 0.45);
     color: $primary;
+    background: rgba($primary, 0.03);
   }
 
   &.active {
     background: $primary;
     border-color: $primary;
     color: $white;
-    box-shadow: 0 2px 8px rgba($primary, 0.3);
+    box-shadow: 0 3px 10px rgba($primary, 0.32);
   }
 }
 
@@ -308,32 +343,37 @@ const goFeedback = () => {
 .faq-item {
   background: $white;
   border: 1.5px solid $gray-100;
+  border-left: 3px solid $gray-100;
   border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  transition: all 0.22s;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
 
   &:hover {
-    border-color: rgba($primary, 0.25);
-    box-shadow: 0 2px 10px rgba($primary, 0.08);
+    border-color: rgba($primary, 0.2);
+    border-left-color: rgba($primary, 0.4);
+    box-shadow: 0 3px 12px rgba($primary, 0.07);
+    transform: translateY(-1px);
   }
 
   &.open {
-    border-color: rgba($primary, 0.3);
-    box-shadow: 0 3px 14px rgba($primary, 0.1);
+    border-color: rgba($primary, 0.2);
+    border-left-color: $primary;
+    box-shadow: 0 4px 16px rgba($primary, 0.1);
 
     .faq-chevron {
       transform: rotate(180deg);
       color: $primary;
     }
 
-    .faq-dot {
+    .faq-num {
       background: $primary;
+      color: $white;
     }
 
     .faq-q {
-      color: $primary;
+      color: $gray-900;
     }
   }
 }
@@ -348,26 +388,33 @@ const goFeedback = () => {
 
 .faq-q-wrap {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
   flex: 1;
   min-width: 0;
 }
 
-.faq-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: $gray-300;
+.faq-num {
   flex-shrink: 0;
-  transition: background 0.2s;
+  width: 22px;
+  height: 22px;
+  background: $gray-100;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: $font-weight-bold;
+  color: $gray-500;
+  transition: all 0.2s;
+  margin-top: 1px;
 }
 
 .faq-q {
   font-size: 15px;
   font-weight: $font-weight-medium;
   color: $gray-800;
-  line-height: 1.4;
+  line-height: 1.45;
   transition: color 0.2s;
 }
 
@@ -378,22 +425,22 @@ const goFeedback = () => {
 }
 
 .faq-body {
-  padding: 0 18px 18px;
-  border-top: 1px solid $gray-100;
-  padding-top: 14px;
-  animation: slideDown 0.2s ease-out;
+  padding: 0 18px 18px 50px;
+  border-top: 1px solid $gray-50;
+  padding-top: 12px;
+  animation: fadeIn 0.18s ease-out;
 }
 
 .faq-a {
   font-size: 14px;
   color: $gray-600;
-  line-height: 1.75;
+  line-height: 1.8;
   white-space: pre-line;
   display: block;
 }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-6px); }
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -402,19 +449,22 @@ const goFeedback = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 24px;
+  padding: 64px 24px;
   gap: 10px;
+  background: $white;
+  border-radius: 16px;
+  border: 1.5px dashed $gray-200;
 }
 
 .empty-svg {
   color: $gray-300;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .empty-title {
   font-size: 16px;
   font-weight: $font-weight-medium;
-  color: $gray-600;
+  color: $gray-500;
 }
 
 .empty-hint {
@@ -424,24 +474,33 @@ const goFeedback = () => {
 
 // ===== Contact Card =====
 .contact-card {
-  background: linear-gradient(135deg, rgba($primary, 0.06), rgba($primary, 0.03));
-  border: 1.5px solid rgba($primary, 0.15);
-  border-radius: 16px;
-  padding: 20px;
+  background: linear-gradient(135deg, $primary, #4F46E5);
+  border-radius: 18px;
+  padding: 20px 24px;
   display: flex;
   align-items: center;
   gap: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 6px 24px rgba($primary, 0.3);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba($primary, 0.4);
+  }
+
+  &:active { transform: scale(0.99); }
 }
 
 .contact-icon-wrap {
   width: 48px;
   height: 48px;
-  background: rgba($primary, 0.1);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $primary;
+  color: $white;
   flex-shrink: 0;
 }
 
@@ -454,63 +513,47 @@ const goFeedback = () => {
   display: block;
   font-size: 15px;
   font-weight: $font-weight-bold;
-  color: $gray-900;
-  margin-bottom: 2px;
+  color: $white;
+  margin-bottom: 3px;
 }
 
 .contact-desc {
   display: block;
   font-size: 12px;
-  color: $gray-500;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-.contact-btn {
+.contact-arrow {
   flex-shrink: 0;
-  padding: 9px 18px;
-  background: $primary;
-  color: $white;
-  font-size: 13px;
-  font-weight: $font-weight-medium;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 2px 8px rgba($primary, 0.3);
-
-  &:hover { background: darken($primary, 6%); }
-  &:active { transform: scale(0.97); }
+  color: rgba(255, 255, 255, 0.7);
 }
 
 // ===== PC =====
 @media (min-width: 768px) {
   .hero-section {
-    padding: 56px 40px 64px;
+    padding: 60px 40px 76px;
   }
 
-  .hero-title { font-size: 30px; }
-  .hero-sub   { font-size: 16px; }
+  .hero-title { font-size: 32px; }
+  .hero-sub   { font-size: 16px; margin-bottom: 32px; }
 
   .content-container {
     padding: 0 32px 60px;
   }
 
-  .faq-item {
-    border-radius: 16px;
-  }
-
+  .faq-item { border-radius: 16px; }
   .faq-header { padding: 18px 22px; }
-
-  .faq-body {
-    padding: 0 22px 18px;
-    padding-top: 14px;
-  }
-
+  .faq-body { padding: 0 22px 20px 54px; padding-top: 12px; }
   .faq-q { font-size: 16px; }
   .faq-a { font-size: 15px; }
+
+  .contact-card { padding: 24px 28px; }
 }
 
 // ===== Mobile =====
 @include mobile {
-  .hero-section { padding: 28px 20px 40px; }
-  .content-container { padding: 0 16px 32px; }
+  .hero-section { padding: 32px 20px 48px; }
+  .content-container { padding: 0 16px 36px; }
+  .hero-title { font-size: 22px; }
 }
 </style>

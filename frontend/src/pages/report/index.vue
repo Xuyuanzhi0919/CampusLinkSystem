@@ -2,107 +2,109 @@
   <view class="report-page">
     <CNavBar title="举报中心" />
 
-    <scroll-view class="page-body" scroll-y>
-      <view class="page-container">
-
-        <!-- 说明横幅 -->
-        <view class="notice-banner">
-          <svg viewBox="0 0 24 24" fill="none" width="20" height="20" class="notice-icon">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
-            <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-          <text class="notice-text">您的举报将匿名处理，我们承诺在 48 小时内完成审核</text>
-        </view>
-
-        <!-- 举报对象类型 -->
-        <view class="form-card">
-          <text class="form-label">举报对象 <text class="required">*</text></text>
-          <view class="target-grid">
-            <view
-              v-for="t in targetTypes"
-              :key="t.id"
-              class="target-item"
-              :class="{ selected: selectedTarget === t.id }"
-              @click="selectedTarget = t.id"
-            >
-              <view class="target-icon-wrap">
-                <svg :viewBox="t.viewBox" fill="none" width="20" height="20">
-                  <path :d="t.path" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-              </view>
-              <text class="target-label">{{ t.label }}</text>
-            </view>
-          </view>
-        </view>
-
-        <!-- 举报原因 -->
-        <view class="form-card">
-          <text class="form-label">举报原因 <text class="required">*</text></text>
-          <view class="reason-list">
-            <view
-              v-for="r in reasons"
-              :key="r.id"
-              class="reason-item"
-              :class="{ selected: selectedReason === r.id }"
-              @click="selectedReason = r.id"
-            >
-              <view class="radio-circle">
-                <view v-if="selectedReason === r.id" class="radio-dot"></view>
-              </view>
-              <view class="reason-body">
-                <text class="reason-label">{{ r.label }}</text>
-                <text class="reason-desc">{{ r.desc }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- 补充说明 -->
-        <view class="form-card">
-          <text class="form-label">补充说明 <text class="optional">（选填）</text></text>
-          <view class="textarea-wrap" :class="{ focused: descFocused }">
-            <textarea
-              v-model="description"
-              class="form-textarea"
-              placeholder="请提供更多详情，例如截图链接、发生时间等，帮助我们准确处理…"
-              :maxlength="300"
-              :auto-height="true"
-              @focus="descFocused = true"
-              @blur="descFocused = false"
-            />
-            <text class="char-count">{{ description.length }}/300</text>
-          </view>
-        </view>
-
-        <!-- 提交 -->
-        <view class="submit-section">
-          <view
-            class="submit-btn"
-            :class="{ active: canSubmit, submitting: isSubmitting, done: submitted }"
-            @click="handleSubmit"
-          >
-            <template v-if="!isSubmitting && !submitted">
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <path d="M12 9V13M12 17H12.01M5 19H19C19.53 19 20.04 18.79 20.41 18.41C20.79 18.04 21 17.53 21 17V7C21 6.47 20.79 5.96 20.41 5.59C20.04 5.21 19.53 5 19 5H5C4.47 5 3.96 5.21 3.59 5.59C3.21 5.96 3 6.47 3 7V17C3 17.53 3.21 18.04 3.59 18.41C3.96 18.79 4.47 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              </svg>
-              <text>提交举报</text>
-            </template>
-            <template v-else-if="isSubmitting">
-              <view class="btn-spinner"></view>
-              <text>提交中…</text>
-            </template>
-            <template v-else>
-              <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
-                <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-              <text>举报已提交</text>
-            </template>
-          </view>
-          <text class="submit-hint">恶意举报可能影响您的账号信誉</text>
-        </view>
-
+    <!-- Hero 区块 -->
+    <view class="hero-section">
+      <view class="hero-deco hero-deco--1"></view>
+      <view class="hero-deco hero-deco--2"></view>
+      <view class="hero-icon">
+        <svg viewBox="0 0 24 24" fill="none" width="30" height="30">
+          <path d="M12 9V13M12 17H12.01M5 19H19C19.53 19 20.04 18.79 20.41 18.41C20.79 18.04 21 17.53 21 17V7C21 6.47 20.79 5.96 20.41 5.59C20.04 5.21 19.53 5 19 5H5C4.47 5 3.96 5.21 3.59 5.59C3.21 5.96 3 6.47 3 7V17C3 17.53 3.21 18.04 3.59 18.41C3.96 18.79 4.47 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </view>
-    </scroll-view>
+      <text class="hero-title">举报违规内容</text>
+      <text class="hero-sub">匿名处理 · 承诺 48 小时内完成审核</text>
+    </view>
+
+    <view class="page-container">
+
+      <!-- 举报对象类型 -->
+      <view class="form-card">
+        <text class="form-label">举报对象 <text class="required">*</text></text>
+        <view class="target-grid">
+          <view
+            v-for="t in targetTypes"
+            :key="t.id"
+            class="target-item"
+            :class="{ selected: selectedTarget === t.id }"
+            @click="selectedTarget = t.id"
+          >
+            <view class="target-icon-wrap">
+              <svg :viewBox="t.viewBox" fill="none" width="22" height="22">
+                <path :d="t.path" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </view>
+            <text class="target-label">{{ t.label }}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 举报原因 -->
+      <view class="form-card">
+        <text class="form-label">举报原因 <text class="required">*</text></text>
+        <view class="reason-list">
+          <view
+            v-for="r in reasons"
+            :key="r.id"
+            class="reason-item"
+            :class="{ selected: selectedReason === r.id }"
+            @click="selectedReason = r.id"
+          >
+            <view class="radio-circle">
+              <view v-if="selectedReason === r.id" class="radio-dot"></view>
+            </view>
+            <view class="reason-body">
+              <text class="reason-label">{{ r.label }}</text>
+              <text class="reason-desc">{{ r.desc }}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <!-- 补充说明 -->
+      <view class="form-card">
+        <text class="form-label">补充说明 <text class="optional">（选填）</text></text>
+        <view class="textarea-wrap" :class="{ focused: descFocused }">
+          <textarea
+            v-model="description"
+            class="form-textarea"
+            placeholder="请提供更多详情，例如截图链接、发生时间等，帮助我们准确处理…"
+            :maxlength="300"
+            :auto-height="true"
+            @focus="descFocused = true"
+            @blur="descFocused = false"
+          />
+          <text class="char-count">{{ description.length }}/300</text>
+        </view>
+      </view>
+
+      <!-- 提交 -->
+      <view class="submit-section">
+        <view
+          class="submit-btn"
+          :class="{ active: canSubmit, submitting: isSubmitting, done: submitted }"
+          @click="handleSubmit"
+        >
+          <template v-if="!isSubmitting && !submitted">
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+              <path d="M12 9V13M12 17H12.01M5 19H19C19.5304 19 20.0391 18.7893 20.4142 18.4142C20.7893 18.0391 21 17.5304 21 17V7C21 6.46957 20.7893 5.96086 20.4142 5.58579C20.0391 5.21071 19.5304 5 19 5H5C4.46957 5 3.96086 5.21071 3.58579 5.58579C3.21071 5.96086 3 6.46957 3 7V17C3 17.5304 3.21071 18.0391 3.58579 18.4142C3.96086 18.7893 4.46957 19 5 19Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            <text>提交举报</text>
+          </template>
+          <template v-else-if="isSubmitting">
+            <view class="btn-spinner"></view>
+            <text>提交中…</text>
+          </template>
+          <template v-else>
+            <svg viewBox="0 0 24 24" fill="none" width="18" height="18">
+              <polyline points="20 6 9 17 4 12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <text>举报已提交</text>
+          </template>
+        </view>
+        <text class="submit-hint">恶意举报可能影响您的账号信誉</text>
+      </view>
+
+    </view>
   </view>
 </template>
 
@@ -174,48 +176,88 @@ const handleSubmit = async () => {
   background: $gray-50;
 }
 
-.page-body {
-  height: calc(100vh - 56px);
+// ===== Hero =====
+.hero-section {
+  background: linear-gradient(135deg, #92400E 0%, #D97706 50%, #F59E0B 100%);
+  padding: 40px 24px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  position: relative;
+  overflow: hidden;
 }
 
+.hero-deco {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  pointer-events: none;
+
+  &--1 {
+    width: 200px;
+    height: 200px;
+    top: -80px;
+    right: -40px;
+  }
+
+  &--2 {
+    width: 120px;
+    height: 120px;
+    bottom: -50px;
+    left: -20px;
+  }
+}
+
+.hero-icon {
+  width: 64px;
+  height: 64px;
+  background: rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(10px);
+  border-radius: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  margin-bottom: 6px;
+  position: relative;
+}
+
+.hero-title {
+  display: block;
+  font-size: 22px;
+  font-weight: $font-weight-bold;
+  color: $white;
+  letter-spacing: -0.02em;
+  position: relative;
+}
+
+.hero-sub {
+  display: block;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  position: relative;
+}
+
+// ===== Page Container =====
 .page-container {
   max-width: 640px;
-  margin: 0 auto;
-  padding: 20px 20px 48px;
+  margin: -24px auto 0;
+  padding: 0 20px 48px;
   display: flex;
   flex-direction: column;
   gap: 16px;
-}
-
-// ===== Notice =====
-.notice-banner {
-  background: rgba($warning, 0.08);
-  border: 1.5px solid rgba($warning, 0.25);
-  border-radius: 12px;
-  padding: 14px 16px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.notice-icon {
-  color: $warning;
-  flex-shrink: 0;
-  margin-top: 1px;
-}
-
-.notice-text {
-  font-size: 13px;
-  color: darken($warning, 20%);
-  line-height: 1.5;
+  position: relative;
 }
 
 // ===== Form Card =====
 .form-card {
   background: $white;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .form-label {
@@ -249,37 +291,40 @@ const handleSubmit = async () => {
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  padding: 14px 8px;
+  padding: 16px 8px;
   background: $gray-50;
   border: 1.5px solid $gray-200;
-  border-radius: 12px;
+  border-radius: 14px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
 
   &:hover {
-    border-color: rgba($primary, 0.4);
-    background: rgba($primary, 0.03);
+    border-color: rgba($error, 0.4);
+    background: rgba($error, 0.03);
+    transform: translateY(-1px);
   }
 
   &.selected {
-    background: rgba($primary, 0.07);
-    border-color: $primary;
+    background: rgba($error, 0.06);
+    border-color: $error;
 
     .target-icon-wrap {
-      background: rgba($primary, 0.12);
-      color: $primary;
+      background: rgba($error, 0.12);
+      color: $error;
     }
 
-    .target-label { color: $primary; font-weight: $font-weight-medium; }
+    .target-label { color: $error; font-weight: $font-weight-medium; }
   }
+
+  &:active { transform: scale(0.97); }
 }
 
 .target-icon-wrap {
-  width: 40px;
-  height: 40px;
-  background: rgba($gray-200, 0.6);
-  border-radius: 10px;
+  width: 46px;
+  height: 46px;
+  background: rgba($gray-200, 0.7);
+  border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -291,13 +336,14 @@ const handleSubmit = async () => {
   font-size: 12px;
   color: $gray-600;
   transition: color 0.2s;
+  line-height: 1.3;
 }
 
 // ===== Reason List =====
 .reason-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .reason-item {
@@ -307,21 +353,21 @@ const handleSubmit = async () => {
   padding: 14px 16px;
   background: $gray-50;
   border: 1.5px solid $gray-100;
-  border-radius: 12px;
+  border-radius: 13px;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
-    background: rgba($primary, 0.02);
-    border-color: rgba($primary, 0.2);
+    background: rgba($error, 0.02);
+    border-color: rgba($error, 0.2);
   }
 
   &.selected {
-    background: rgba($primary, 0.05);
-    border-color: $primary;
+    background: rgba($error, 0.04);
+    border-color: rgba($error, 0.3);
 
-    .radio-circle { border-color: $primary; }
-    .reason-label { color: $primary; font-weight: $font-weight-medium; }
+    .radio-circle { border-color: $error; }
+    .reason-label { color: $error; font-weight: $font-weight-medium; }
   }
 
   &:active { transform: scale(0.99); }
@@ -342,7 +388,7 @@ const handleSubmit = async () => {
 .radio-dot {
   width: 8px;
   height: 8px;
-  background: $primary;
+  background: $error;
   border-radius: 50%;
 }
 
@@ -370,14 +416,14 @@ const handleSubmit = async () => {
 .textarea-wrap {
   background: $gray-50;
   border: 1.5px solid $gray-200;
-  border-radius: 12px;
-  padding: 12px 14px;
+  border-radius: 13px;
+  padding: 14px 16px;
   transition: all 0.2s;
 
   &.focused {
     background: $white;
-    border-color: $primary;
-    box-shadow: 0 0 0 3px rgba($primary, 0.1);
+    border-color: #D97706;
+    box-shadow: 0 0 0 3px rgba(#D97706, 0.1);
   }
 }
 
@@ -385,7 +431,7 @@ const handleSubmit = async () => {
   width: 100%;
   min-height: 80px;
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.65;
   color: $gray-900;
   background: transparent;
   border: none;
@@ -400,7 +446,7 @@ const handleSubmit = async () => {
   text-align: right;
   font-size: 11px;
   color: $gray-400;
-  margin-top: 6px;
+  margin-top: 8px;
 }
 
 // ===== Submit =====
@@ -409,20 +455,19 @@ const handleSubmit = async () => {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .submit-btn {
   width: 100%;
-  max-width: 320px;
-  height: 50px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   background: $gray-200;
   color: $gray-400;
-  border-radius: 14px;
+  border-radius: 16px;
   font-size: 15px;
   font-weight: $font-weight-medium;
   cursor: not-allowed;
@@ -432,9 +477,9 @@ const handleSubmit = async () => {
     background: linear-gradient(135deg, $error, darken($error, 8%));
     color: $white;
     cursor: pointer;
-    box-shadow: 0 4px 16px rgba($error, 0.3);
+    box-shadow: 0 4px 20px rgba($error, 0.32);
 
-    &:hover { box-shadow: 0 6px 20px rgba($error, 0.4); transform: translateY(-1px); }
+    &:hover { box-shadow: 0 6px 24px rgba($error, 0.42); transform: translateY(-1px); }
     &:active { transform: translateY(0) scale(0.99); }
   }
 
@@ -475,21 +520,23 @@ const handleSubmit = async () => {
 
 // ===== PC =====
 @media (min-width: 768px) {
+  .hero-section { padding: 56px 40px 72px; }
+  .hero-title { font-size: 26px; }
+  .hero-sub { font-size: 14px; }
+
   .page-container {
-    padding: 28px 32px 60px;
+    padding: 0 32px 60px;
     gap: 20px;
   }
 
-  .form-card { padding: 24px; }
-
-  .reason-item {
-    padding: 16px 18px;
-  }
+  .form-card { padding: 28px; border-radius: 24px; }
 }
 
 // ===== Mobile =====
 @include mobile {
-  .page-container { padding: 16px 16px 40px; }
+  .hero-section { padding: 32px 20px 50px; }
+  .page-container { padding: 0 16px 40px; }
+  .form-card { border-radius: 16px; }
 
   .target-grid {
     grid-template-columns: repeat(2, 1fr);

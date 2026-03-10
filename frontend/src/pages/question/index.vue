@@ -404,7 +404,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { onPageScroll, onShow } from '@dcloudio/uni-app'
 import { storeToRefs } from 'pinia'
 import { useQuestionStore } from '@/stores/question'
@@ -932,12 +932,6 @@ onPageScroll((e) => {
   handleScroll(e.scrollTop)
 })
 
-// H5端滚动监听函数(需要保存引用以便移除)
-const scrollListener = () => {
-  const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-  handleScroll(scrollTop)
-}
-
 // 标记是否是首次显示(用于区分首次加载和从详情页返回)
 const isFirstShow = ref(true)
 
@@ -947,17 +941,13 @@ onMounted(() => {
   loadSearchHistory()
   navigationStore.syncActivePath()
   loadUnreadCount()
-
-  // H5端监听窗口滚动事件
-  // #ifdef H5
-  window.addEventListener('scroll', scrollListener)
-  // #endif
 })
 
 // P0优化: 页面显示(从详情页返回时触发)
 onShow(() => {
   // 每次显示都刷新通知未读数（含从通知页返回的情况）
   loadUnreadCount()
+  navigationStore.showNav()
 
   // 首次显示由 onMounted 处理,跳过
   if (isFirstShow.value) {
@@ -990,13 +980,6 @@ onShow(() => {
   }
 })
 
-// 页面卸载
-onUnmounted(() => {
-  // H5端移除滚动监听
-  // #ifdef H5
-  window.removeEventListener('scroll', scrollListener)
-  // #endif
-})
 
 // 导出方法给页面使用(小程序端的onReachBottom需要)
 defineExpose({

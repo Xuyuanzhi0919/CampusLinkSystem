@@ -95,10 +95,12 @@ export const useNavigationStore = defineStore('navigation', () => {
    * 处理页面滚动，自动隐藏/显示导航栏
    */
   const handleScroll = (scrollTop: number) => {
-    // 向下滚动超过 80px 时隐藏
-    if (scrollTop > lastScrollTop && scrollTop > 80) {
+    const delta = scrollTop - lastScrollTop
+    // 向下滚动超过 5px 且超过阈值时隐藏；向上滚动超过 5px 时显示
+    // delta 阈值防止双监听器同帧调用时互相翻转状态
+    if (delta > 5 && scrollTop > 80) {
       isNavVisible.value = false
-    } else {
+    } else if (delta < -5) {
       isNavVisible.value = true
     }
     lastScrollTop = scrollTop
@@ -109,6 +111,7 @@ export const useNavigationStore = defineStore('navigation', () => {
    */
   const showNav = () => {
     isNavVisible.value = true
+    lastScrollTop = 0  // 页面重新显示时重置，防止跨页面 lastScrollTop 残留导致阈值判断错误
   }
 
   /**

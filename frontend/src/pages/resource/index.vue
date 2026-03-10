@@ -890,6 +890,9 @@ const handlePageScroll = () => {
 
   // 滚动超过阈值时折叠顶部导航
   isHeaderCollapsed.value = scrollTopValue > COLLAPSE_THRESHOLD
+
+  // 同步 TabBar 滚动隐藏/显示
+  navigationStore.handleScroll(scrollTopValue)
   // #endif
 }
 

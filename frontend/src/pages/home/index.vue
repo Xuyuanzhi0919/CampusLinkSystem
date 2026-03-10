@@ -115,7 +115,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { onPullDownRefresh, onShow } from '@dcloudio/uni-app'
+import { onPullDownRefresh, onShow, onPageScroll } from '@dcloudio/uni-app'
 import { useNavigationStore } from '@/stores/navigation'
 
 // 移动端组件
@@ -334,6 +334,10 @@ onShow(() => {
   navigationStore.syncActivePath()
   // 确保 TabBar 可见
   navigationStore.showNav()
+})
+
+onPageScroll((e) => {
+  navigationStore.handleScroll(e.scrollTop)
 })
 
 onUnmounted(() => {

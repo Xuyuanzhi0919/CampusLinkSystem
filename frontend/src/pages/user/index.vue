@@ -403,6 +403,7 @@ const scrollTopVal = ref<number | undefined>(undefined)
 const handleScroll = (e: any) => {
   const top = e.detail?.scrollTop ?? 0
   showScrollTop.value = top > 400
+  navigationStore.handleScroll(top)
 }
 
 const scrollToTop = () => {

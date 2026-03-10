@@ -89,7 +89,7 @@ import { useNavigation } from '@/composables/useNavigation'
 import { useNavigationStore } from '@/stores/navigation'
 
 // 使用统一导航 composable
-const { toHome, toResourceList, toCommunity, toUserCenter } = useNavigation()
+const { toHome, toResourceList, toPublish, toCommunity, toUserCenter } = useNavigation()
 const navigationStore = useNavigationStore()
 
 // 导航项配置
@@ -102,10 +102,11 @@ interface NavItem {
 }
 
 // 固定导航项
+// publish 直接 switchTab，不依赖 WebHeader 事件（WebHeader 仅存在于首页）
 const navItems: NavItem[] = [
   { key: 'home',      label: '首页', icon: '⌂', path: '/pages/home/index',     handler: toHome },
   { key: 'resource',  label: '资源', icon: '◈', path: '/pages/resource/index',  handler: toResourceList },
-  { key: 'publish',   label: '发布', icon: '✚', path: '',                        handler: () => uni.$emit('open-publish-menu') },
+  { key: 'publish',   label: '发布', icon: '✚', path: '/pages/publish/index',   handler: toPublish },
   { key: 'community', label: '社区', icon: '◉', path: '/pages/community/index', handler: toCommunity },
   { key: 'user',      label: '我的', icon: '◎', path: '/pages/user/index',       handler: toUserCenter },
 ]

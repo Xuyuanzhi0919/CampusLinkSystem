@@ -233,7 +233,7 @@
       <!-- 正常列表（新版：热度条 + 隐藏0%） -->
       <view v-else class="topic-list">
         <view
-          v-for="(tag, index) in hotTags.slice(0, 5)"
+          v-for="(tag, index) in hotTags.slice(0, 4)"
           :key="tag.id"
           class="topic-item"
           @click="handleTagClick(tag)"
@@ -246,7 +246,7 @@
             <view class="topic-header">
               <!-- 话题标签（Tag 样式） -->
               <view class="topic-tag">
-                <text class="topic-name"># {{ tag.name }}</text>
+                <text class="topic-name">#{{ tag.name }}</text>
               </view>
               <!-- 趋势指示器：仅显示有效增幅 (>5%) -->
               <view
@@ -781,9 +781,8 @@ onMounted(() => {
     }
 
     .question-action {
-      background: $campus-blue;
-      color: #FFFFFF;
-      border-color: $campus-blue;
+      color: $campus-blue;
+      text-decoration: underline;
     }
   }
 }
@@ -911,26 +910,25 @@ onMounted(() => {
   line-height: 1;
 }
 
-/* 操作按钮 */
+/* 操作按钮（纯文字链接样式，降低视觉权重） */
 .question-action {
   flex-shrink: 0;
   align-self: flex-start;
-  padding: 8rpx 16rpx;
-  margin-top: 4rpx;
+  padding: 4rpx 0;
+  margin-top: 6rpx;
   font-size: 22rpx;
   font-weight: $font-weight-medium;
   color: $campus-blue;
   background: transparent;
-  border: 1px solid rgba($campus-blue, 0.3);
-  border-radius: $radius-md;
+  border: none;
   cursor: pointer;
   transition: all $transition-fast;
   white-space: nowrap;
+  opacity: 0.8;
 
   &:hover {
-    background: $campus-blue;
-    color: #FFFFFF;
-    border-color: $campus-blue;
+    opacity: 1;
+    text-decoration: underline;
   }
 
   &:active {

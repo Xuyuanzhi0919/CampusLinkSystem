@@ -147,7 +147,7 @@ import { useRouter } from 'vue-router'
 - 前端：`config.ts` 中 `getBaseURL()` 根据 `import.meta.env.DEV` 和平台（H5/APP）动态切换
 
 ### 数据库设计
-17 张核心表，关键表：`users`（uid、role 字段）、`questions`、`answers`（is_adopted）、`tasks`（状态：0待接单→1进行中→2已完成/3已取消）、`resources`、`clubs`、`activities`（activity_signups 报名表）、`messages`（私信）、`notifications`、`points_history`（积分流水）。
+17 张核心表，关键表：`users`（uid、role 字段）、`questions`、`answers`（is_adopted）、`tasks`（7 种状态：PENDING=0待接单 → IN_PROGRESS=2进行中 → SUBMITTED=3待确认 → COMPLETED=4已完成；CANCELLED=5已取消；EXPIRED=6已超时；ACCEPTED=1已废弃，接单直接进入IN_PROGRESS）、`resources`、`clubs`、`activities`（activity_signups 报名表）、`messages`（私信）、`notifications`、`points_history`（积分流水）。
 
 ### 积分规则
 注册+100、签到+10、上传资源+10、下载资源-5、提问-2、回答+5、回答被采纳+20、完成任务+任务悬赏、活动签到+10。

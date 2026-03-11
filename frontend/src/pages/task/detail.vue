@@ -220,7 +220,7 @@
           <!-- 操作按钮 -->
           <view class="aside-card action-card">
             <!-- 待接单：接单 -->
-            <view v-if="task.status === 0 && !isMyTask && !isExpired && userStore.isLoggedIn"
+            <view v-if="task.status === 0 && !isPublisher && !isExpired && userStore.isLoggedIn"
               class="action-btn primary" @click="handleAccept">
               <CheckCircle :size="16" />
               <text>立即接单</text>
@@ -289,7 +289,7 @@
 
     <!-- 移动端底部操作栏 -->
     <view v-if="task" class="mobile-action-bar">
-      <view v-if="task.status === 0 && !isMyTask && !isExpired && userStore.isLoggedIn"
+      <view v-if="task.status === 0 && !isPublisher && !isExpired && userStore.isLoggedIn"
         class="mobile-btn primary" @click="handleAccept">
         <text>立即接单</text>
       </view>
@@ -381,7 +381,6 @@ const getAvatarBg = (name: string) => {
   return { background: AVATAR_COLORS[idx] }
 }
 
-const isMyTask = computed(() => task.value?.publisherId === userStore.userInfo?.uid)
 const isPublisher = computed(() => task.value?.publisherId === userStore.userInfo?.uid)
 const isAccepter = computed(() => task.value?.accepterId === userStore.userInfo?.uid)
 const isExpired = computed(() => {
@@ -606,7 +605,7 @@ const confirm = (title: string, content: string, action: () => Promise<void>, co
   })
 }
 
-const handleAccept = () => confirm('确认接单', `确定接单？将获得 ${task.value?.rewardPoints} 积分`, async () => {
+const handleAccept = () => confirm('确认接单', `确定接单？完成任务后可获得 ${task.value?.rewardPoints} 积分奖励`, async () => {
   await acceptTask(task.value!.tid)
   uni.showToast({ title: '接单成功', icon: 'success' })
 })
@@ -621,10 +620,25 @@ const handleCancel = () => confirm('取消任务', '确定取消这个任务？'
   uni.showToast({ title: '已取消', icon: 'success' })
 }, '#EF4444')
 
-const handleSubmit = () => confirm('提交任务', '确定提交任务？提交后等待发布者确认', async () => {
-  await submitTask(task.value!.tid, { description: '任务已完成，请查收。', images: [] })
-  uni.showToast({ title: '提交成功，等待确认', icon: 'success' })
-})
+const handleSubmit = () => {
+  uni.showModal({
+    title: '提交任务',
+    content: '请填写完成说明（如截图链接、完成情况等）',
+    editable: true,
+    placeholderText: '请描述任务完成情况，方便发布者确认…',
+    success: async (res) => {
+      if (!res.confirm) return
+      const description = (res.content || '').trim() || '任务已完成，请查收。'
+      try {
+        await submitTask(task.value!.tid, { description, images: [] })
+        uni.showToast({ title: '提交成功，等待确认', icon: 'success' })
+        await loadTaskDetail(task.value!.tid)
+      } catch (e: any) {
+        uni.showToast({ title: e.message || '提交失败', icon: 'none' })
+      }
+    }
+  })
+}
 
 const handleAbandon = () => confirm('放弃任务', '确定放弃任务？任务将重新回到待接单状态', async () => {
   await abandonTask(task.value!.tid)
@@ -667,7 +681,7 @@ const onMenuFavorite = async () => {
 }
 const onMenuReport = () => {
   moreMenuVisible.value = false
-  uni.showToast({ title: '已提交举报', icon: 'success' })
+  uni.navigateTo({ url: `/pages/report/index?type=task&id=${task.value?.tid}` })
 }
 
 onMounted(() => {

@@ -210,7 +210,7 @@ const loadCommunityStats = async () => {
   try {
     const [statsRes, solvedRes] = await Promise.all([
       getTotalStats(),
-      getQuestionList({ page: 1, pageSize: 1, isSolved: 1, sortBy: 'created_at', sortOrder: 'desc' })
+      getQuestionList({ page: 1, pageSize: 1, status: 1, sortBy: 'created_at', sortOrder: 'desc' })
     ])
     const total = statsRes.newQuestions ?? 0
     const totalAnswers = statsRes.totalAnswers ?? 0

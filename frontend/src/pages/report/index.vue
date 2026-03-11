@@ -109,7 +109,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import request from '@/utils/request'
+
+// type → API 路径映射
+const TYPE_TO_PATH: Record<string, string> = {
+  task: 'task',
+  question: 'question',
+  answer: 'answer',
+  resource: 'resource',
+  user: 'user',
+}
+
+// type → targetTypes.id 映射（用于预选举报对象）
+const TYPE_TO_TARGET: Record<string, string> = {
+  task: 'task',
+  question: 'content',
+  answer: 'comment',
+  resource: 'content',
+  user: 'user',
+}
 
 const selectedTarget = ref('content')
 const selectedReason = ref('')
@@ -117,6 +136,28 @@ const description = ref('')
 const descFocused = ref(false)
 const isSubmitting = ref(false)
 const submitted = ref(false)
+
+let reportType = ''
+let reportId = 0
+
+onMounted(() => {
+  // #ifdef H5
+  const url = new URL(location.href)
+  reportType = url.searchParams.get('type') || ''
+  reportId = Number(url.searchParams.get('id')) || 0
+  // #endif
+
+  // #ifndef H5
+  const pages = getCurrentPages()
+  const options = (pages[pages.length - 1] as any)?.options || {}
+  reportType = options.type || ''
+  reportId = Number(options.id) || 0
+  // #endif
+
+  if (reportType && TYPE_TO_TARGET[reportType]) {
+    selectedTarget.value = TYPE_TO_TARGET[reportType]
+  }
+})
 
 const targetTypes = [
   {
@@ -160,11 +201,21 @@ const handleSubmit = async () => {
   if (!canSubmit.value) return
 
   isSubmitting.value = true
-  await new Promise(r => setTimeout(r, 1200))
-
-  isSubmitting.value = false
-  submitted.value = true
-  uni.showToast({ title: '举报已提交', icon: 'success', duration: 2000 })
+  try {
+    const apiPath = TYPE_TO_PATH[reportType]
+    if (apiPath && reportId) {
+      await request.post(`/${apiPath}/${reportId}/report`, {
+        reason: selectedReason.value,
+        description: description.value || undefined,
+      })
+    }
+    submitted.value = true
+    uni.showToast({ title: '举报已提交', icon: 'success', duration: 2000 })
+  } catch (e: any) {
+    uni.showToast({ title: e.message || '提交失败，请重试', icon: 'none' })
+  } finally {
+    isSubmitting.value = false
+  }
 }
 </script>
 

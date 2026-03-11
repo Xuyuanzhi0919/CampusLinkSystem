@@ -52,7 +52,8 @@ export interface AnswerItem {
 // 问题列表查询参数
 export interface QuestionListParams {
   category?: QuestionCategory | string | null
-  isSolved?: number | null  // 0=未解决，1=已解决
+  status?: number | null  // 0=未解决，1=已解决（与后端 status 字段一致）
+  hasBounty?: number      // 1=有悬赏
   keyword?: string
   page?: number
   pageSize?: number

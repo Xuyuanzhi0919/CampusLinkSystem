@@ -616,7 +616,7 @@ const loadQuestions = async (refresh = false) => {
     const params = {
       keyword: searchKeyword.value,
       category: category.value,
-      isSolved: status.value,  // 使用 isSolved 而不是 status
+      status: status.value,
       hasBounty: hasBounty.value ? 1 : undefined,
       page: page.value,
       pageSize: pageSize.value,
@@ -813,7 +813,7 @@ const handleLoadMore = async () => {
     const params = {
       keyword: searchKeyword.value,
       category: category.value,
-      isSolved: status.value,
+      status: status.value,
       hasBounty: hasBounty.value ? 1 : undefined,
       page: page.value,
       pageSize: pageSize.value,

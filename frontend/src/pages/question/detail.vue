@@ -609,15 +609,7 @@ const handleShare = () => {
 }
 
 const handleReportQuestion = () => {
-  uni.showModal({
-    title: '举报',
-    content: '确定要举报这个问题吗？',
-    success: (res) => {
-      if (res.confirm) {
-        uni.showToast({ title: '举报成功，我们会尽快处理', icon: 'success' })
-      }
-    }
-  })
+  uni.navigateTo({ url: `/pages/report/index?type=question&id=${question.value?.qid}` })
 }
 
 const handlePreviewQuestionImage = (index: number) => {

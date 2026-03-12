@@ -6,3 +6,4 @@
 export { default as CustomTabBar } from './CustomTabBar.vue'
 export { default as MobileHeader } from './MobileHeader.vue'
 export { default as GridNavigation } from './GridNavigation.vue'
+export { default as CheckInBanner } from './CheckInBanner.vue'

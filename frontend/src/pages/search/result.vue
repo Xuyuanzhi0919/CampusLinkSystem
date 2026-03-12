@@ -24,9 +24,28 @@
             <Icon name="x" :size="13" class="clear-icon" />
           </view>
         </view>
-        <view class="search-btn" @click="handleSearch">
-          <text>搜索</text>
+        <view class="search-actions">
+          <view class="ai-action-btn" @click="handleAISearch">
+            <Icon name="sparkles" :size="14" class="ai-action-icon" />
+          </view>
+          <view class="search-btn" @click="handleSearch">
+            <text>搜索</text>
+          </view>
         </view>
+      </view>
+
+      <!-- 快速建议气泡（聚焦且无关键词时显示） -->
+      <view v-if="inputFocused && !keyword" class="quick-bubbles">
+        <scroll-view scroll-x class="bubbles-scroll">
+          <view class="bubbles-row">
+            <view
+              v-for="item in aiSuggestions"
+              :key="item"
+              class="bubble-chip"
+              @click="handleTagClick(item)"
+            >{{ item }}</view>
+          </view>
+        </scroll-view>
       </view>
 
       <!-- 搜索建议下拉列表 -->
@@ -79,83 +98,66 @@
     <!-- 搜索默认页（无关键词时显示） -->
     <view v-if="!keyword && !hasSearched" class="search-default-page">
       <view class="search-default-container">
-        <!-- AI 搜索提示模块 -->
-        <view class="ai-search-hint">
-          <view class="ai-hint-left">
-            <Icon name="sparkles" :size="14" class="ai-hint-icon" />
-            <text class="ai-hint-text">试试搜索：</text>
-            <view class="ai-hint-suggestions">
-              <text
-                v-for="(item, index) in aiSuggestions"
-                :key="index"
-                class="ai-suggestion-item"
-                @click="handleTagClick(item)"
+        <!-- 热门搜索卡片（横向滚动） -->
+        <view class="search-card">
+          <view class="card-header">
+            <view class="card-header-left">
+              <Icon name="flame" :size="15" class="section-icon flame-icon" />
+              <text class="section-title">热门搜索</text>
+            </view>
+          </view>
+          <scroll-view scroll-x class="hot-scroll">
+            <view class="hot-tags-row">
+              <view
+                v-for="(item, index) in hotKeywords"
+                :key="item.id"
+                class="hot-tag-item"
+                :class="{ 'hot-tag-item--top': index < 3 }"
+                @click="handleTagClick(item.keyword)"
               >
-                {{ item }}{{ index < aiSuggestions.length - 1 ? '、' : '' }}
-              </text>
-            </view>
-          </view>
-          <view class="ai-hint-right" @click="handleAISearch">
-            <text>向 AI 提问</text>
-            <Icon name="arrow-right" :size="13" class="ai-arrow" />
-          </view>
-        </view>
-
-        <!-- 热门搜索区（网格布局） -->
-        <view class="search-section">
-          <view class="section-header">
-            <Icon name="flame" :size="15" class="section-icon" />
-            <text class="section-title">热门搜索</text>
-          </view>
-          <view class="hot-tags-grid">
-            <view
-              v-for="(item, index) in hotKeywords"
-              :key="item.id"
-              class="hot-tag-item"
-              :class="{ 'hot-tag-item--top': index < 3 }"
-              @click="handleTagClick(item.keyword)"
-            >
-              <text v-if="index < 3" class="hot-rank">{{ index + 1 }}</text>
-              <text class="hot-text">{{ item.keyword }}</text>
-              <!-- 动态标签：新/热/爆 -->
-              <view v-if="item.tag" class="hot-badge" :class="`hot-badge--${item.tag}`">
-                <text>{{ getHotTagLabel(item.tag) }}</text>
+                <text v-if="index < 3" class="hot-rank">{{ index + 1 }}</text>
+                <text class="hot-text">{{ item.keyword }}</text>
+                <view v-if="item.tag" class="hot-badge" :class="`hot-badge--${item.tag}`">
+                  <text>{{ getHotTagLabel(item.tag) }}</text>
+                </view>
+                <Icon
+                  v-if="item.trend && index >= 3 && getTrendIcon(item.trend)"
+                  :name="getTrendIcon(item.trend)"
+                  :size="12"
+                  class="hot-trend"
+                  :class="`hot-trend--${item.trend}`"
+                />
               </view>
-              <!-- 趋势图标 -->
-              <Icon
-                v-if="item.trend && index >= 3 && getTrendIcon(item.trend)"
-                :name="getTrendIcon(item.trend)"
-                :size="12"
-                class="hot-trend"
-                :class="`hot-trend--${item.trend}`"
-              />
             </view>
-          </view>
+          </scroll-view>
         </view>
 
-        <!-- 搜索历史区（规整标签布局） -->
-        <view v-if="searchHistory.length > 0" class="search-section">
-          <view class="section-header">
-            <view class="section-header-left">
+        <!-- 搜索历史卡片（列表式可删） -->
+        <view v-if="searchHistory.length > 0" class="search-card">
+          <view class="card-header">
+            <view class="card-header-left">
               <Icon name="clock" :size="15" class="section-icon" />
               <text class="section-title">搜索历史</text>
             </view>
-            <text class="section-action" @click="clearHistory">清空</text>
+            <text class="card-action" @click="clearHistory">清空</text>
           </view>
-          <view class="history-tags-grid">
+          <view class="history-list">
             <view
               v-for="item in searchHistory"
               :key="item"
-              class="history-tag-item"
+              class="history-list-item"
               @click="handleTagClick(item)"
             >
-              <text class="history-text">{{ item }}</text>
-              <text class="history-remove" @click.stop="removeHistoryItem(item)">×</text>
+              <Icon name="clock" :size="13" class="history-item-icon" />
+              <text class="history-item-text">{{ item }}</text>
+              <view class="history-item-del" @click.stop="removeHistoryItem(item)">
+                <Icon name="x" :size="12" class="del-icon" />
+              </view>
             </view>
           </view>
         </view>
 
-        <!-- 空状态引导（无历史记录时） -->
+        <!-- 空状态引导 -->
         <view v-if="searchHistory.length === 0" class="empty-history-hint">
           <Icon name="lightbulb" :size="16" class="empty-hint-icon" />
           <text class="empty-hint-text">输入关键词，探索校园资源与问答</text>
@@ -1408,6 +1410,34 @@ onUnmounted(() => {
   }
 }
 
+.search-actions {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+}
+
+.ai-action-btn {
+  width: 68rpx;
+  height: 68rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba($campus-blue, 0.08);
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  .ai-action-icon {
+    color: $campus-blue;
+  }
+
+  &:active {
+    background: rgba($campus-blue, 0.16);
+    transform: scale(0.92);
+  }
+}
+
 .search-btn {
   padding: 16rpx 32rpx;
   background: $campus-blue;
@@ -1418,6 +1448,43 @@ onUnmounted(() => {
     font-size: 28rpx;
     font-weight: $font-weight-medium;
     color: #FFFFFF;
+  }
+}
+
+/* ========== 快速建议气泡 ========== */
+.quick-bubbles {
+  padding: 20rpx 32rpx 12rpx;
+  overflow: hidden;
+}
+
+.bubbles-scroll {
+  width: 100%;
+}
+
+.bubbles-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding-bottom: 4rpx;
+  white-space: nowrap;
+}
+
+.bubble-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 12rpx 28rpx;
+  background: rgba($campus-blue, 0.06);
+  border-radius: 28rpx;
+  font-size: 24rpx;
+  color: $campus-blue;
+  font-weight: $font-weight-medium;
+  white-space: nowrap;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:active {
+    background: rgba($campus-blue, 0.14);
   }
 }
 
@@ -1666,11 +1733,10 @@ onUnmounted(() => {
   flex: 1;
   background: $color-bg-page;
   padding: 0 32rpx;
-  /* Web端：增加搜索栏与内容区间距 24-32px */
-  padding-top: 48rpx;
+  padding-top: 32rpx;
 
   @media (max-width: 768px) {
-    padding-top: 32rpx;
+    padding-top: 24rpx;
   }
 }
 
@@ -1679,107 +1745,48 @@ onUnmounted(() => {
   margin: 0 auto;
 }
 
-/* AI 搜索提示模块 - 优化：背景透明度 3-4%，padding 增大 */
-.ai-search-hint {
+/* ========== 搜索卡片通用样式 ========== */
+.search-card {
+  background: #FFFFFF;
+  border-radius: 24rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 14rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid $color-border-light;
+  margin-bottom: 24rpx;
+  overflow: hidden;
+}
+
+.card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 40rpx 44rpx;
-  background: linear-gradient(135deg, rgba($campus-blue, 0.04) 0%, rgba($campus-blue, 0.02) 100%);
-  border-radius: 20rpx;
-  margin-bottom: 48rpx;
-  border: 1rpx solid rgba($campus-blue, 0.08);
-
-  @media (max-width: 768px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24rpx;
-    padding: 32rpx 28rpx;
-  }
+  margin-bottom: 28rpx;
 }
 
-.ai-hint-left {
+.card-header-left {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  flex: 1;
-  flex-wrap: wrap;
+  gap: 10rpx;
 }
 
-.ai-hint-icon {
-  color: $campus-blue;
-  flex-shrink: 0;
-}
-
-.ai-hint-text {
+.card-action {
   font-size: 26rpx;
-  color: $color-text-secondary;
-}
-
-.ai-hint-suggestions {
-  display: flex;
-  flex-wrap: wrap;
-}
-
-.ai-suggestion-item {
-  font-size: 26rpx;
-  color: $campus-blue;
+  color: $color-text-tertiary;
   cursor: pointer;
-
-  &:hover {
-    text-decoration: underline;
-  }
-}
-
-.ai-hint-right {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
-  padding: 14rpx 24rpx;
-  background: $campus-blue;
-  color: #FFFFFF;
-  font-size: 26rpx;
-  font-weight: $font-weight-medium;
-  border-radius: 32rpx;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: all 0.2s ease;
-
-  &:hover {
-    background: #1D4ED8; // darken(#2563EB, 8%)
-  }
+  transition: color 0.15s ease;
 
   &:active {
-    transform: scale(0.96);
+    color: #EF4444;
   }
-}
-
-.ai-arrow {
-  color: $campus-blue;
-  flex-shrink: 0;
-}
-
-/* 搜索模块通用 */
-.search-section {
-  margin-bottom: 40rpx;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24rpx;
-}
-
-.section-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8rpx;
 }
 
 .section-icon {
   color: $color-text-secondary;
   flex-shrink: 0;
+}
+
+.flame-icon {
+  color: #FF6B35 !important;
 }
 
 .section-title {
@@ -1788,48 +1795,40 @@ onUnmounted(() => {
   color: $color-text-primary;
 }
 
-.section-action {
-  font-size: 26rpx;
-  color: $color-text-tertiary;
-  cursor: pointer;
-
-  &:hover {
-    color: $campus-blue;
-  }
+/* 热门搜索横向滚动 */
+.hot-scroll {
+  width: 100%;
 }
 
-/* 热门搜索网格 */
-.hot-tags-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20rpx;
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* 统一标签尺寸：font-size: 14px(28rpx), padding: 6px 14px(12rpx 28rpx), height: ~28px */
-.hot-tag-item {
+.hot-tags-row {
   display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding-bottom: 4rpx;
+  white-space: nowrap;
+}
+
+.hot-tag-item {
+  display: inline-flex;
   align-items: center;
   gap: 12rpx;
   padding: 12rpx 28rpx;
   height: 56rpx;
-  background: #FFFFFF;
+  background: $color-bg-page;
   border-radius: 28rpx;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+  flex-shrink: 0;
+  border: 1rpx solid $color-border-light;
 
   &:hover {
-    background: rgba($campus-blue, 0.04);
-    transform: translateY(-2rpx);
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+    background: rgba($campus-blue, 0.06);
+    border-color: rgba($campus-blue, 0.2);
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale(0.96);
+    background: rgba($campus-blue, 0.08);
   }
 
   /* 前三名热门 */
@@ -1918,55 +1917,75 @@ onUnmounted(() => {
   }
 }
 
-/* 历史记录网格 */
-.history-tags-grid {
+/* 历史记录列表 */
+.history-list {
   display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
+  flex-direction: column;
 }
 
-/* 统一历史标签尺寸 */
-.history-tag-item {
+.history-list-item {
   display: flex;
   align-items: center;
-  gap: 12rpx;
-  padding: 12rpx 28rpx;
-  height: 56rpx;
-  background: #FFFFFF;
-  border-radius: 28rpx;
+  gap: 16rpx;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid $color-divider;
   cursor: pointer;
-  transition: all 0.2s ease;
-  border: 1rpx solid $color-border-light;
+  transition: background 0.15s ease;
 
-  &:hover {
-    border-color: $campus-blue;
-    background: rgba($campus-blue, 0.02);
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 
-    .history-remove {
-      opacity: 1;
-    }
+  &:first-child {
+    padding-top: 0;
   }
 
   &:active {
-    transform: scale(0.96);
+    background: $color-bg-hover;
+    margin: 0 -8rpx;
+    padding-left: 8rpx;
+    padding-right: 8rpx;
+    border-radius: 12rpx;
   }
 }
 
-.history-text {
-  font-size: 28rpx;
-  line-height: 1;
-  color: $color-text-secondary;
+.history-item-icon {
+  color: $color-text-quaternary;
+  flex-shrink: 0;
 }
 
-.history-remove {
-  font-size: 24rpx;
-  color: $color-text-quaternary;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  padding: 4rpx;
+.history-item-text {
+  flex: 1;
+  font-size: 28rpx;
+  color: $color-text-secondary;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  &:hover {
-    color: #EF4444;
+.history-item-del {
+  width: 48rpx;
+  height: 48rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: $color-bg-hover;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+
+  .del-icon {
+    color: $color-text-quaternary;
+  }
+
+  &:active {
+    background: rgba(239, 68, 68, 0.1);
+
+    .del-icon {
+      color: #EF4444;
+    }
   }
 }
 

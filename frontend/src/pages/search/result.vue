@@ -404,7 +404,7 @@
             <!-- 活动结果 -->
             <view v-if="activityList.length > 0" class="result-group">
               <view class="group-header">
-                <view class="group-title"><Icon name="calendar-days" :size="15" class="group-icon" />活动</view>
+                <view class="group-title"><Icon name="calendar" :size="15" class="group-icon" />活动</view>
                 <text class="group-more" @click="switchTab('activity')">查看更多 →</text>
               </view>
               <view class="result-items">

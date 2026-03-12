@@ -9,7 +9,7 @@
         class="cover-image"
       />
       <view v-else class="cover-placeholder">
-        <text class="placeholder-icon">🎉</text>
+        <Icon name="calendar" :size="32" class="placeholder-icon" />
       </view>
       <!-- 状态标签 -->
       <view class="status-tag" :class="statusClass">
@@ -23,11 +23,11 @@
 
       <view class="card-info">
         <view class="info-item">
-          <text class="info-icon">📅</text>
+          <Icon name="calendar" :size="13" class="info-icon" />
           <text class="info-text">{{ formatDate(activity.startTime) }}</text>
         </view>
         <view class="info-item">
-          <text class="info-icon">📍</text>
+          <Icon name="map-pin" :size="13" class="info-icon" />
           <text class="info-text">{{ activity.location || '待定' }}</text>
         </view>
       </view>
@@ -47,6 +47,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   activity: {
@@ -159,7 +160,8 @@ const highlightedTitle = computed(() => highlightText(props.activity.title))
   justify-content: center;
 
   .placeholder-icon {
-    font-size: 48rpx;
+    color: #6366F1;
+    opacity: 0.7;
   }
 }
 
@@ -221,7 +223,8 @@ const highlightedTitle = computed(() => highlightText(props.activity.title))
 }
 
 .info-icon {
-  font-size: 24rpx;
+  color: $color-text-quaternary;
+  flex-shrink: 0;
 }
 
 .info-text {

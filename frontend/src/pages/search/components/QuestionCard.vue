@@ -21,11 +21,18 @@
     <!-- 底部信息 -->
     <view class="card-footer">
       <view class="footer-left">
-        <text class="meta-item">👁️ {{ question.views }}</text>
-        <text class="meta-item">💬 {{ question.answerCount }}</text>
+        <view class="meta-item">
+          <Icon name="eye" :size="13" class="meta-icon" />
+          <text>{{ question.views }}</text>
+        </view>
+        <view class="meta-item">
+          <Icon name="message-circle" :size="13" class="meta-icon" />
+          <text>{{ question.answerCount }}</text>
+        </view>
       </view>
       <view v-if="question.bounty > 0" class="bounty-tag">
-        <text>🎁 {{ question.bounty }} 积分</text>
+        <Icon name="gift" :size="12" class="bounty-icon" />
+        <text>{{ question.bounty }} 积分</text>
       </view>
     </view>
   </view>
@@ -34,6 +41,7 @@
 <script setup lang="ts">
 import type { QuestionItem } from '@/types/question'
 import { computed } from 'vue'
+import Icon from '@/components/icons/index.vue'
 
 interface Props {
   question: QuestionItem
@@ -210,6 +218,9 @@ const highlightedContent = computed(() => highlightText(props.question.content |
 }
 
 .meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   font-size: 24rpx;
   color: $color-text-quaternary;
 
@@ -218,8 +229,16 @@ const highlightedContent = computed(() => highlightText(props.question.content |
   }
 }
 
+.meta-icon {
+  color: $color-text-quaternary;
+  flex-shrink: 0;
+}
+
 /* 优化5：悬赏标签也改为浅底深字 */
 .bounty-tag {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   padding: 8rpx 16rpx;
   background: rgba(255, 107, 53, 0.08);
   border-radius: 20rpx;
@@ -234,6 +253,11 @@ const highlightedContent = computed(() => highlightText(props.question.content |
   @media (max-width: 768px) {
     padding: 6rpx 12rpx;
   }
+}
+
+.bounty-icon {
+  color: #FF6B35;
+  flex-shrink: 0;
 }
 
 /* 关键词高亮样式 */

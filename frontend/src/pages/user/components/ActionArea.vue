@@ -12,67 +12,32 @@
       </view>
     </view>
 
-    <!-- 次按钮组(签到、查看成长) -->
+    <!-- 次按钮组(查看成长 / 我的徽章) -->
     <view class="secondary-actions">
-      <view
-        class="secondary-action-btn"
-        :class="{ disabled: isCheckedIn }"
-        @click="handleCheckIn"
-      >
-        <Icon :name="isCheckedIn ? 'check-circle' : 'calendar'" :size="16" class="action-icon-sm" />
-        <text class="action-text-sm">{{ checkInButtonText }}</text>
-      </view>
       <view class="secondary-action-btn" @click="handlePointsClick">
         <Icon name="trending-up" :size="16" class="action-icon-sm" />
         <text class="action-text-sm">查看成长</text>
+      </view>
+      <view class="secondary-action-btn" @click="handleBadgesClick">
+        <Icon name="award" :size="16" class="action-icon-sm" />
+        <text class="action-text-sm">我的徽章</text>
       </view>
     </view>
   </view>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
 
-interface Props {
-  isCheckedIn: boolean
-}
-
-const props = defineProps<Props>()
-
 const emit = defineEmits<{
-  checkIn: []
   pointsClick: []
   publish: []
 }>()
 
-// 签到按钮文本
-const checkInButtonText = computed(() => {
-  return props.isCheckedIn ? '已签到' : '每日签到'
-})
-
-/**
- * 处理签到
- */
-const handleCheckIn = () => {
-  if (!props.isCheckedIn) {
-    emit('checkIn')
-  }
-}
-
-/**
- * 🎯 处理发布内容(强转化按钮)
- */
-const handlePublish = () => {
-  emit('publish')
-}
-
-/**
- * 处理积分点击
- */
-const handlePointsClick = () => {
-  emit('pointsClick')
-}
+const handlePublish = () => emit('publish')
+const handlePointsClick = () => emit('pointsClick')
+const handleBadgesClick = () =>
+  uni.navigateTo({ url: '/pages/user/badges' })
 </script>
 
 <style lang="scss" scoped>

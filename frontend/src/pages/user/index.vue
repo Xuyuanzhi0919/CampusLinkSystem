@@ -56,8 +56,6 @@
           <!-- 签到 & 快捷操作卡片 -->
           <view class="action-card">
             <ActionArea
-              :is-checked-in="isCheckedIn"
-              @check-in="handleCheckIn"
               @points-click="handlePointsClick"
               @publish="() => uni.$emit('open-publish-sheet')"
             />

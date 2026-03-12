@@ -88,6 +88,10 @@
     <!-- 用户详情抽屉 -->
     <el-drawer v-model="detailVisible" title="用户详情" size="460px">
       <template v-if="selectedUser">
+        <div v-if="detailLoading" class="detail-loading">
+          <el-icon class="is-loading"><Loading /></el-icon>
+          <span>正在同步最新数据...</span>
+        </div>
         <div class="detail-header">
           <el-avatar :size="64" :src="selectedUser.avatarUrl">
             {{ selectedUser.nickname?.charAt(0) }}
@@ -179,7 +183,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listUsers, banUser, setRole, adjustPoints, getUserPointsHistory, type PointsLogItem } from '@/api/user'
+import { listUsers, getUserDetail, banUser, setRole, adjustPoints, getUserPointsHistory, type PointsLogItem } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
@@ -197,6 +201,7 @@ const query = reactive({
 
 const detailVisible = ref(false)
 const selectedUser = ref<AdminUser | null>(null)
+const detailLoading = ref(false)
 const selectedRole = ref('')
 const drawerTab = ref('info')
 const pointsHistory = ref<PointsLogItem[]>([])
@@ -231,13 +236,22 @@ function formatDate(d?: string) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
 }
 
-function openDetail(row: AdminUser) {
+async function openDetail(row: AdminUser) {
   selectedUser.value = row
   selectedRole.value = row.role
   drawerTab.value = 'info'
   pointsHistory.value = []
   pointsHistoryPage.value = 1
   detailVisible.value = true
+  // 异步拉取最新数据，不阻塞抽屉打开
+  detailLoading.value = true
+  try {
+    const fresh = await getUserDetail(row.uId)
+    selectedUser.value = fresh
+    selectedRole.value = fresh.role
+  } finally {
+    detailLoading.value = false
+  }
 }
 
 function onDrawerTabClick(tab: { paneName: string }) {
@@ -314,4 +328,8 @@ onMounted(fetchUsers)
 .detail-desc { margin-bottom: 24px; }
 .detail-actions { display: flex; gap: 12px; }
 .points-hint { font-size: 12px; color: #9ca3af; margin-left: 8px; }
+.detail-loading {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: #909399; margin-bottom: 12px;
+}
 </style>

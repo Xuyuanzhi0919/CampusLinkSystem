@@ -70,7 +70,7 @@
 
     <!-- 底部快捷入口 -->
     <el-row :gutter="16" class="quick-row">
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="quick-card" @click="$router.push('/content?status=0')">
           <div class="quick-icon pending">
             <el-icon :size="20"><DocumentChecked /></el-icon>
@@ -82,7 +82,7 @@
           <el-icon class="quick-arrow"><ArrowRight /></el-icon>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="quick-card" @click="$router.push('/reports?status=0')">
           <div class="quick-icon report">
             <el-icon :size="20"><Flag /></el-icon>
@@ -94,7 +94,7 @@
           <el-icon class="quick-arrow"><ArrowRight /></el-icon>
         </div>
       </el-col>
-      <el-col :span="8">
+      <el-col :span="6">
         <div class="quick-card" @click="$router.push('/users?status=0')">
           <div class="quick-icon banned">
             <el-icon :size="20"><UserFilled /></el-icon>
@@ -102,6 +102,18 @@
           <div class="quick-info">
             <div class="quick-num">{{ data?.bannedUsers ?? '-' }}</div>
             <div class="quick-label">封禁用户数</div>
+          </div>
+          <el-icon class="quick-arrow"><ArrowRight /></el-icon>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="quick-card" @click="$router.push('/activities')">
+          <div class="quick-icon activity">
+            <el-icon :size="20"><Calendar /></el-icon>
+          </div>
+          <div class="quick-info">
+            <div class="quick-num">{{ data?.totalActivities ?? '-' }}</div>
+            <div class="quick-label">活动总数</div>
           </div>
           <el-icon class="quick-arrow"><ArrowRight /></el-icon>
         </div>
@@ -232,9 +244,10 @@ onMounted(async () => {
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
 }
-.quick-icon.pending { background: #fff7e6; color: #e6a23c; }
-.quick-icon.report  { background: #fef0f0; color: #f56c6c; }
-.quick-icon.banned  { background: #f0f2f5; color: #909399; }
+.quick-icon.pending  { background: #fff7e6; color: #e6a23c; }
+.quick-icon.report   { background: #fef0f0; color: #f56c6c; }
+.quick-icon.banned   { background: #f0f2f5; color: #909399; }
+.quick-icon.activity { background: #f0f9ff; color: #0ea5e9; }
 .quick-num { font-size: 24px; font-weight: 700; color: #1a1a2e; }
 .quick-label { font-size: 12px; color: #9ca3af; margin-top: 2px; }
 .quick-arrow { margin-left: auto; color: #d1d5db; }

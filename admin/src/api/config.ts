@@ -1,4 +1,4 @@
-import { get, post, put } from './request'
+import { get, post, put, del } from './request'
 
 export interface SystemConfig {
   configId: number
@@ -19,4 +19,8 @@ export function updateConfig(configKey: string, configValue: string, description
 
 export function createConfig(data: { configKey: string; configValue: string; description?: string }) {
   return post<void>('/config', data)
+}
+
+export function deleteConfig(configKey: string) {
+  return del<void>(`/config/${configKey}`)
 }

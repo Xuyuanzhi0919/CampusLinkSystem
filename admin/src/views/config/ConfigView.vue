@@ -16,8 +16,11 @@
             <span v-else>{{ row.configValue }}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column prop="description" label="描述" min-width="160" show-overflow-tooltip />
+        <el-table-column label="最后更新" width="160">
+          <template #default="{ row }">{{ formatDate(row.updatedAt || row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <template v-if="editingKey === row.configKey">
               <el-button text type="success" size="small" :loading="saving" @click="saveEdit(row)">保存</el-button>
@@ -25,6 +28,7 @@
             </template>
             <template v-else>
               <el-button text size="small" @click="startEdit(row)">编辑</el-button>
+              <el-button text type="danger" size="small" @click="handleDelete(row)">删除</el-button>
             </template>
           </template>
         </el-table-column>
@@ -54,8 +58,9 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { listConfigs, updateConfig, createConfig, type SystemConfig } from '@/api/config'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { listConfigs, updateConfig, createConfig, deleteConfig, type SystemConfig } from '@/api/config'
+import dayjs from 'dayjs'
 
 const loading = ref(false)
 const configs = ref<SystemConfig[]>([])
@@ -102,6 +107,21 @@ function openCreate() {
   createForm.configValue = ''
   createForm.description = ''
   createVisible.value = true
+}
+
+function formatDate(d?: string) {
+  return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
+}
+
+async function handleDelete(row: SystemConfig) {
+  await ElMessageBox.confirm(
+    `确认删除配置项「${row.configKey}」？此操作不可恢复。`,
+    '删除配置',
+    { type: 'warning', confirmButtonText: '确认删除', cancelButtonText: '取消' }
+  )
+  await deleteConfig(row.configKey)
+  ElMessage.success('删除成功')
+  configs.value = configs.value.filter(c => c.configKey !== row.configKey)
 }
 
 async function submitCreate() {

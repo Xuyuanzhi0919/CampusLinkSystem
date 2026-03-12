@@ -45,6 +45,12 @@ spring:
           min-idle: 0
           max-wait: -1ms
 
+  # Jackson 日期序列化配置
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Shanghai
+
   # 文件上传配置
   servlet:
     multipart:

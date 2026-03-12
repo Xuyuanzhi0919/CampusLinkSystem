@@ -61,6 +61,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="!loading && resources.length === 0" description="暂无资源数据" />
       <el-pagination v-model:current-page="page" :total="total" layout="total, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
 
@@ -92,6 +93,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="!loading && questions.length === 0" description="暂无问答数据" />
       <el-pagination v-model:current-page="page" :total="total" layout="total, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
   </div>
@@ -99,15 +101,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listResources, updateResourceStatus, listQuestions, updateQuestionStatus } from '@/api/content'
 import type { AdminResource, AdminQuestion } from '@/types'
 import dayjs from 'dayjs'
 
-const activeTab = ref('resources')
+const route = useRoute()
+const activeTab = ref((route.query.tab as string) || 'resources')
 const loading = ref(false)
 const keyword = ref('')
-const statusFilter = ref<number | undefined>(undefined)
+const statusFilter = ref<number | undefined>(
+  route.query.status !== undefined ? Number(route.query.status) : undefined
+)
 const page = ref(1)
 const total = ref(0)
 const resources = ref<AdminResource[]>([])

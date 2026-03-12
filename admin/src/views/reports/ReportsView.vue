@@ -48,6 +48,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="!loading && reports.length === 0" description="暂无举报数据" />
 
       <el-pagination
         v-model:current-page="page"
@@ -82,15 +83,19 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { listReports, handleReport, type ReportVO } from '@/api/report'
 import dayjs from 'dayjs'
 
+const route = useRoute()
 const loading = ref(false)
 const reports = ref<ReportVO[]>([])
 const total = ref(0)
 const page = ref(1)
-const statusFilter = ref<number | undefined>(undefined)
+const statusFilter = ref<number | undefined>(
+  route.query.status !== undefined ? Number(route.query.status) : undefined
+)
 const typeFilter = ref<number | undefined>(undefined)
 
 const handleVisible = ref(false)

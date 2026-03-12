@@ -72,6 +72,7 @@
           </template>
         </el-table-column>
       </el-table>
+      <el-empty v-if="!loading && users.length === 0" description="暂无用户数据" />
 
       <el-pagination
         v-model:current-page="query.page"
@@ -147,15 +148,23 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { listUsers, banUser, setRole, adjustPoints } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
+const route = useRoute()
 const loading = ref(false)
 const users = ref<AdminUser[]>([])
 const total = ref(0)
-const query = reactive({ keyword: '', role: '', status: undefined as number | undefined, page: 1, pageSize: 20 })
+const query = reactive({
+  keyword: '',
+  role: '',
+  status: route.query.status !== undefined ? Number(route.query.status) : undefined as number | undefined,
+  page: 1,
+  pageSize: 20
+})
 
 const detailVisible = ref(false)
 const selectedUser = ref<AdminUser | null>(null)

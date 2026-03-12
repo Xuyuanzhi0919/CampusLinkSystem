@@ -40,6 +40,12 @@ const router = createRouter({
           meta: { title: '举报管理', icon: 'Warning' }
         },
         {
+          path: 'tasks',
+          name: 'Tasks',
+          component: () => import('@/views/tasks/TasksView.vue'),
+          meta: { title: '任务管理', icon: 'List' }
+        },
+        {
           path: 'notices',
           name: 'Notices',
           component: () => import('@/views/notices/NoticesView.vue'),

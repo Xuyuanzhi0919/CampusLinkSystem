@@ -80,12 +80,7 @@ const handleLogoClick = () => {
 // 搜索
 const handleSearch = () => {
   // 触发父组件的搜索事件
-  uni.navigateTo({
-    url: '/pages/search/index',
-    fail: () => {
-      uni.showToast({ title: '功能开发中', icon: 'none' })
-    }
-  })
+  uni.navigateTo({ url: '/pages/search/result' })
 }
 
 // 通知

@@ -52,6 +52,13 @@
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"
         />
+        <!-- 签到 & 快捷操作行 -->
+        <ActionArea
+          :is-checked-in="isCheckedIn"
+          @check-in="handleCheckIn"
+          @points-click="handlePointsClick"
+          @publish="() => uni.$emit('open-publish-sheet')"
+        />
         <view class="page-body">
           <!-- 个性化入口 -->
           <view class="customize-entry" @click="openCustomizeSheet">
@@ -255,12 +262,13 @@ import { onShow } from '@dcloudio/uni-app'
 import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
 import type { UserProfileData, UserStatsData } from '@/types/user'
-import { getUserProfile, getUserStats, getCheckInStatus } from '@/services/user'
+import { getUserProfile, getUserStats, getCheckInStatus, checkIn } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import Icon from '@/components/icons/index.vue'
 
 import HeroSection from './components/HeroSection.vue'
+import ActionArea from './components/ActionArea.vue'
 import QuickActions from './components/QuickActions.vue'
 import AchievementSection from './components/AchievementSection.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
@@ -395,6 +403,7 @@ const userProfile = ref<UserProfileData | null>(null)
 const userStats = ref<UserStatsData | null>(null)
 const unreadNotifications = ref(0)
 const unreadMessages = ref(0)
+const isCheckedIn = ref(false)
 
 // 滚动状态
 const showScrollTop = ref(false)
@@ -470,7 +479,7 @@ const loadUserData = async () => {
     return
   }
   try {
-    const [profileRes, statsRes, , notifRes, msgRes] = await Promise.all([
+    const [profileRes, statsRes, checkInStatus, notifRes, msgRes] = await Promise.all([
       getUserProfile(),
       getUserStats(),
       getCheckInStatus(),
@@ -479,6 +488,7 @@ const loadUserData = async () => {
     ])
     userProfile.value = profileRes
     userStats.value = statsRes
+    isCheckedIn.value = !!checkInStatus
     unreadNotifications.value = notifRes
     unreadMessages.value = msgRes
     if (profileRes) userStore.setUserInfo(profileRes)
@@ -537,6 +547,22 @@ const handleCapabilityClick = (item: any) => {
 
 const handleSettingsClick = (item: any) => {
   if (item.path) uni.navigateTo({ url: item.path, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+}
+
+const handleCheckIn = async () => {
+  if (isCheckedIn.value) {
+    uni.showToast({ title: '今日已签到', icon: 'none' })
+    return
+  }
+  try {
+    await checkIn()
+    isCheckedIn.value = true
+    // 刷新积分统计
+    getUserStats().then(res => { if (res) userStats.value = res })
+    uni.showToast({ title: '签到成功 +10 积分', icon: 'success' })
+  } catch (err: any) {
+    uni.showToast({ title: err?.message || '签到失败，请稍后再试', icon: 'none' })
+  }
 }
 
 const handleLogout = () => {

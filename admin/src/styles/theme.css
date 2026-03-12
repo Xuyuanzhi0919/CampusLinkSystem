@@ -1,0 +1,287 @@
+/* ================================================================
+   CampusLink Admin — "Campus Pulse" Design System
+   目标受众：大学生管理员   风格：现代、活力、年轻、专业
+   ================================================================ */
+
+/* ── 1. CSS 变量 ─────────────────────────────────────────────── */
+:root {
+  /* 品牌色 */
+  --cp-brand:          #7c3aed;
+  --cp-brand-deep:     #6d28d9;
+  --cp-brand-light:    #a78bfa;
+  --cp-brand-bg:       #ede9fe;
+  --cp-brand-bg-soft:  #f5f3ff;
+
+  /* 渐变 */
+  --cp-grad-brand:   linear-gradient(135deg, #6d28d9 0%, #a855f7 100%);
+  --cp-grad-blue:    linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  --cp-grad-emerald: linear-gradient(135deg, #047857 0%, #10b981 100%);
+  --cp-grad-amber:   linear-gradient(135deg, #b45309 0%, #f59e0b 100%);
+  --cp-grad-rose:    linear-gradient(135deg, #be123c 0%, #fb7185 100%);
+  --cp-grad-cyan:    linear-gradient(135deg, #0e7490 0%, #22d3ee 100%);
+
+  /* 语义色 */
+  --cp-success: #10b981;
+  --cp-warning: #f59e0b;
+  --cp-danger:  #ef4444;
+  --cp-info:    #3b82f6;
+
+  /* 界面色 */
+  --cp-bg:       #f5f3ff;
+  --cp-surface:  #ffffff;
+  --cp-border:   rgba(109, 40, 217, 0.1);
+  --cp-text:     #1e1b4b;
+  --cp-text-2:   #6b7280;
+  --cp-text-3:   #9ca3af;
+
+  /* 侧边栏 */
+  --cp-sidebar:        #0c0920;
+  --cp-sidebar-text:   rgba(255, 255, 255, 0.55);
+  --cp-sidebar-hover:  rgba(255, 255, 255, 0.07);
+  --cp-sidebar-active: rgba(124, 58, 237, 0.75);
+
+  /* 字体 */
+  --cp-font-display: 'Outfit', -apple-system, sans-serif;
+  --cp-font-body:    'Nunito', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  /* 圆角 */
+  --cp-r-sm:  6px;
+  --cp-r-md:  10px;
+  --cp-r-lg:  14px;
+  --cp-r-xl:  18px;
+
+  /* 阴影 */
+  --cp-shadow-sm:    0 1px 3px rgba(109, 40, 217, 0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --cp-shadow-md:    0 4px 16px rgba(109, 40, 217, 0.09), 0 1px 4px rgba(0,0,0,0.04);
+  --cp-shadow-lg:    0 8px 30px rgba(109, 40, 217, 0.14), 0 2px 8px rgba(0,0,0,0.06);
+  --cp-shadow-glow:  0 0 0 3px rgba(124, 58, 237, 0.18);
+}
+
+/* ── 2. 全局基础 ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  font-family: var(--cp-font-body);
+}
+
+body {
+  background: var(--cp-bg);
+  color: var(--cp-text);
+}
+
+h1, h2, h3, h4, h5, h6,
+.page-title,
+.chart-title,
+.stat-value,
+.quick-num {
+  font-family: var(--cp-font-display) !important;
+}
+
+/* ── 3. 卡片通用 ────────────────────────────────────────────── */
+.table-card,
+.chart-card,
+.quick-card {
+  border-radius: var(--cp-r-lg) !important;
+  box-shadow: var(--cp-shadow-md) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.table-card:hover,
+.chart-card:hover {
+  box-shadow: var(--cp-shadow-lg) !important;
+}
+
+.quick-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--cp-shadow-lg) !important;
+}
+
+.stat-card {
+  border-radius: var(--cp-r-lg) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.14) !important;
+  transition: transform 0.22s ease, box-shadow 0.22s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* ── 4. 页面标题渐变色 ─────────────────────────────────────── */
+.page-title {
+  font-size: 22px !important;
+  font-weight: 700 !important;
+  background: var(--cp-grad-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
+}
+
+/* ── 5. Element Plus 覆盖 ───────────────────────────────────── */
+
+/* 按钮 */
+.el-button--primary {
+  background: var(--cp-grad-brand) !important;
+  border: none !important;
+  border-radius: var(--cp-r-sm) !important;
+  font-family: var(--cp-font-body);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.3);
+  transition: opacity 0.15s, transform 0.15s, box-shadow 0.15s !important;
+}
+
+.el-button--primary:hover {
+  opacity: 0.88;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(109, 40, 217, 0.4) !important;
+}
+
+.el-button--primary:active {
+  transform: translateY(0);
+}
+
+/* 表格 */
+.el-table {
+  border-radius: var(--cp-r-md) !important;
+  overflow: hidden;
+}
+
+.el-table th {
+  font-family: var(--cp-font-display) !important;
+  font-weight: 600 !important;
+  color: var(--cp-text) !important;
+  background: #faf8ff !important;
+  font-size: 13px;
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td {
+  background: #fdf9ff !important;
+}
+
+.el-table__row:hover td {
+  background: #f5f0ff !important;
+}
+
+/* 标签 */
+.el-tag {
+  border-radius: 6px !important;
+  font-family: var(--cp-font-body);
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+}
+
+/* 抽屉 */
+.el-drawer__header {
+  font-family: var(--cp-font-display) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: var(--cp-text) !important;
+  border-bottom: 1px solid var(--cp-brand-bg) !important;
+  padding-bottom: 16px !important;
+  margin-bottom: 8px !important;
+}
+
+/* 对话框 */
+.el-dialog__header {
+  font-family: var(--cp-font-display) !important;
+  padding-bottom: 16px !important;
+  border-bottom: 1px solid var(--cp-brand-bg);
+}
+
+.el-dialog__title {
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  color: var(--cp-text) !important;
+}
+
+.el-dialog {
+  border-radius: var(--cp-r-xl) !important;
+  overflow: hidden;
+}
+
+/* 输入框 */
+.el-input__wrapper {
+  border-radius: var(--cp-r-sm) !important;
+  transition: box-shadow 0.2s !important;
+}
+
+.el-input__wrapper:focus-within {
+  box-shadow: 0 0 0 1px var(--cp-brand) inset, var(--cp-shadow-glow) !important;
+}
+
+/* 选择框 */
+.el-select__wrapper {
+  border-radius: var(--cp-r-sm) !important;
+}
+
+/* 分页 */
+.el-pagination {
+  font-family: var(--cp-font-body) !important;
+}
+
+.el-pagination .el-pager li.is-active {
+  background: var(--cp-grad-brand) !important;
+  border-radius: 6px !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+/* 描述列表 */
+.el-descriptions__label {
+  font-weight: 600 !important;
+  color: var(--cp-text) !important;
+  font-size: 13px !important;
+  background: #faf8ff !important;
+}
+
+/* 滚动条美化 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(124, 58, 237, 0.25);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 58, 237, 0.45);
+}
+
+/* ── 6. 抽屉内部样式统一 ──────────────────────────────────── */
+.el-drawer__body .drawer-section {
+  margin-bottom: 20px;
+}
+
+.el-drawer__body .section-title {
+  font-family: var(--cp-font-display) !important;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--cp-brand);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── 7. 动画 ────────────────────────────────────────────────── */
+@keyframes cp-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.table-card,
+.chart-card,
+.stat-cards .el-col {
+  animation: cp-fade-up 0.4s ease both;
+}
+
+.stat-cards .el-col:nth-child(1) { animation-delay: 0.05s; }
+.stat-cards .el-col:nth-child(2) { animation-delay: 0.10s; }
+.stat-cards .el-col:nth-child(3) { animation-delay: 0.15s; }
+.stat-cards .el-col:nth-child(4) { animation-delay: 0.20s; }
+.stat-cards .el-col:nth-child(5) { animation-delay: 0.25s; }

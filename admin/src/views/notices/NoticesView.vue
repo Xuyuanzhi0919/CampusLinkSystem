@@ -78,7 +78,7 @@
           </ul>
         </div>
 
-        <div class="card quick-card" style="margin-top: 16px">
+        <div class="card template-card" style="margin-top: 16px">
           <h3 class="card-title">快捷模板</h3>
           <div class="template-list">
             <div
@@ -165,22 +165,22 @@ function resetForm() {
 
 <style scoped>
 .page-header { margin-bottom: 20px; }
-.page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
 
 .card {
   background: #fff;
-  border-radius: 10px;
+  border-radius: 14px;
   padding: 24px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(109,40,217,0.09), 0 1px 4px rgba(0,0,0,0.04);
 }
 
 .card-title {
+  font-family: 'Outfit', sans-serif;
   font-size: 15px;
-  font-weight: 600;
-  color: #374151;
+  font-weight: 700;
+  color: #1e1b4b;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 2px solid #ede9fe;
 }
 
 .tips-list {
@@ -207,22 +207,25 @@ function resetForm() {
 
 .template-item {
   padding: 10px 14px;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
+  border: 1px solid #ede9fe;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
+  background: #faf8ff;
 }
 
 .template-item:hover {
-  border-color: #409eff;
-  background: #f0f7ff;
+  border-color: #7c3aed;
+  background: #ede9fe;
+  transform: translateX(2px);
 }
 
 .template-label {
   font-size: 13px;
-  font-weight: 600;
-  color: #1a1a2e;
+  font-weight: 700;
+  color: #1e1b4b;
   display: block;
+  font-family: 'Outfit', sans-serif;
 }
 
 .template-preview {

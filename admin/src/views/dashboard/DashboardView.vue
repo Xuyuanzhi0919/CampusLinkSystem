@@ -4,13 +4,13 @@
 
     <!-- 核心指标卡片 -->
     <el-row :gutter="16" class="stat-cards">
-      <el-col :span="Math.floor(24 / statCards.length)" v-for="card in statCards" :key="card.label">
-        <div class="stat-card" :style="{ '--accent': card.color }">
+      <el-col :span="Math.floor(24 / statCards.length)" v-for="(card, i) in statCards" :key="card.label">
+        <div class="stat-card" :style="{ background: card.gradient, animationDelay: `${i * 0.08}s` }">
           <div class="stat-icon">
-            <el-icon :size="24"><component :is="card.icon" /></el-icon>
+            <el-icon :size="22"><component :is="card.icon" /></el-icon>
           </div>
           <div class="stat-info">
-            <div class="stat-value">{{ loading ? '-' : card.value }}</div>
+            <div class="stat-value">{{ loading ? '—' : card.value?.toLocaleString() }}</div>
             <div class="stat-label">{{ card.label }}</div>
           </div>
           <div class="stat-today" v-if="card.today !== undefined">
@@ -140,11 +140,11 @@ const data = ref<DashboardVO | null>(null)
 const statCards = computed(() => {
   if (!data.value) return []
   return [
-    { label: '注册用户', value: data.value.totalUsers, today: data.value.todayNewUsers, icon: 'User', color: '#409eff' },
-    { label: '资源总数', value: data.value.totalResources, today: data.value.todayNewResources, icon: 'Document', color: '#67c23a' },
-    { label: '问题总数', value: data.value.totalQuestions, today: data.value.todayNewQuestions, icon: 'ChatDotRound', color: '#e6a23c' },
-    { label: '任务总数', value: data.value.totalTasks, today: data.value.todayNewTasks, icon: 'List', color: '#f56c6c' },
-    { label: '活动总数', value: data.value.totalActivities, today: undefined, icon: 'Calendar', color: '#909399' }
+    { label: '注册用户', value: data.value.totalUsers, today: data.value.todayNewUsers, icon: 'User', gradient: 'linear-gradient(135deg, #6d28d9 0%, #a855f7 100%)' },
+    { label: '资源总数', value: data.value.totalResources, today: data.value.todayNewResources, icon: 'Document', gradient: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)' },
+    { label: '问题总数', value: data.value.totalQuestions, today: data.value.todayNewQuestions, icon: 'ChatDotRound', gradient: 'linear-gradient(135deg, #047857 0%, #10b981 100%)' },
+    { label: '任务总数', value: data.value.totalTasks, today: data.value.todayNewTasks, icon: 'List', gradient: 'linear-gradient(135deg, #b45309 0%, #f59e0b 100%)' },
+    { label: '活动总数', value: data.value.totalActivities, today: undefined, icon: 'Calendar', gradient: 'linear-gradient(135deg, #0e7490 0%, #22d3ee 100%)' }
   ]
 })
 
@@ -188,30 +188,44 @@ onMounted(async () => {
 
 .stat-cards { margin-bottom: 20px; }
 .stat-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 22px 20px;
   display: flex;
   align-items: center;
   gap: 16px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14);
   position: relative;
   overflow: hidden;
-  border-left: 4px solid var(--accent);
+  animation: cp-fade-up 0.4s ease both;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+}
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 100px; height: 100px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
 }
 .stat-icon {
   width: 48px; height: 48px;
-  background: color-mix(in srgb, var(--accent) 12%, white);
-  border-radius: 10px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  color: var(--accent);
+  color: #fff;
+  flex-shrink: 0;
 }
-.stat-value { font-size: 28px; font-weight: 700; color: #1a1a2e; }
-.stat-label { font-size: 13px; color: #6b7280; margin-top: 2px; }
+.stat-value { font-size: 28px; font-weight: 800; color: #fff; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px; }
+.stat-label { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 3px; font-weight: 500; }
 .stat-today {
-  position: absolute; right: 16px; bottom: 16px;
-  font-size: 12px; color: #67c23a;
-  background: #f0fdf4; padding: 2px 8px; border-radius: 12px;
+  position: absolute; right: 14px; bottom: 14px;
+  font-size: 11px; color: rgba(255,255,255,0.9);
+  background: rgba(255,255,255,0.2); padding: 2px 8px; border-radius: 12px;
+  font-weight: 600;
 }
 
 .alert-row { margin-bottom: 20px; }
@@ -244,10 +258,10 @@ onMounted(async () => {
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
 }
-.quick-icon.pending  { background: #fff7e6; color: #e6a23c; }
-.quick-icon.report   { background: #fef0f0; color: #f56c6c; }
-.quick-icon.banned   { background: #f0f2f5; color: #909399; }
-.quick-icon.activity { background: #f0f9ff; color: #0ea5e9; }
+.quick-icon.pending  { background: linear-gradient(135deg,#fde68a,#fbbf24); color: #78350f; }
+.quick-icon.report   { background: linear-gradient(135deg,#fca5a5,#ef4444); color: #fff; }
+.quick-icon.banned   { background: linear-gradient(135deg,#c4b5fd,#7c3aed); color: #fff; }
+.quick-icon.activity { background: linear-gradient(135deg,#67e8f9,#0891b2); color: #fff; }
 .quick-num { font-size: 24px; font-weight: 700; color: #1a1a2e; }
 .quick-label { font-size: 12px; color: #9ca3af; margin-top: 2px; }
 .quick-arrow { margin-left: auto; color: #d1d5db; }

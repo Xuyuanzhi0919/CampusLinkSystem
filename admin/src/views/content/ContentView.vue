@@ -62,7 +62,7 @@
         </el-table-column>
       </el-table>
       <el-empty v-if="!loading && resources.length === 0" description="暂无资源数据" />
-      <el-pagination v-model:current-page="page" :total="total" layout="total, prev, pager, next" @change="fetchData" class="pagination" />
+      <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
 
     <!-- 问答表格 -->
@@ -94,7 +94,7 @@
         </el-table-column>
       </el-table>
       <el-empty v-if="!loading && questions.length === 0" description="暂无问答数据" />
-      <el-pagination v-model:current-page="page" :total="total" layout="total, prev, pager, next" @change="fetchData" class="pagination" />
+      <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
   </div>
 </template>
@@ -115,6 +115,7 @@ const statusFilter = ref<number | undefined>(
   route.query.status !== undefined ? Number(route.query.status) : undefined
 )
 const page = ref(1)
+const pageSize = ref(20)
 const total = ref(0)
 const resources = ref<AdminResource[]>([])
 const questions = ref<AdminQuestion[]>([])
@@ -122,7 +123,7 @@ const questions = ref<AdminQuestion[]>([])
 async function fetchData() {
   loading.value = true
   try {
-    const params = { keyword: keyword.value || undefined, status: statusFilter.value, page: page.value, pageSize: 20 }
+    const params = { keyword: keyword.value || undefined, status: statusFilter.value, page: page.value, pageSize: pageSize.value }
     if (activeTab.value === 'resources') {
       const r = await listResources(params)
       resources.value = r.list
@@ -139,6 +140,7 @@ async function fetchData() {
 
 function onTabChange() {
   page.value = 1
+  pageSize.value = 20
   statusFilter.value = undefined
   fetchData()
 }

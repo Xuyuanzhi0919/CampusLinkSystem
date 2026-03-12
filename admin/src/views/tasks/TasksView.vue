@@ -79,8 +79,9 @@
 
       <el-pagination
         v-model:current-page="page"
+        v-model:page-size="pageSize"
         :total="total"
-        :page-sizes="[20, 50, 100]"
+        :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next"
         @change="fetchData"
         class="pagination"
@@ -99,6 +100,7 @@ const loading = ref(false)
 const tasks = ref<AdminTask[]>([])
 const total = ref(0)
 const page = ref(1)
+const pageSize = ref(20)
 const keyword = ref('')
 const statusFilter = ref<number | undefined>(undefined)
 
@@ -113,7 +115,7 @@ const statusSummary = [
 async function fetchData() {
   loading.value = true
   try {
-    const r = await listTasks({ keyword: keyword.value || undefined, status: statusFilter.value, page: page.value, pageSize: 20 })
+    const r = await listTasks({ keyword: keyword.value || undefined, status: statusFilter.value, page: page.value, pageSize: pageSize.value })
     tasks.value = r.list
     total.value = r.total
   } finally {

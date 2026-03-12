@@ -52,8 +52,10 @@
 
       <el-pagination
         v-model:current-page="page"
+        v-model:page-size="pageSize"
         :total="total"
-        layout="total, prev, pager, next"
+        :page-sizes="[10, 20, 50, 100]"
+        layout="total, sizes, prev, pager, next"
         @change="fetchData"
         class="pagination"
       />
@@ -93,6 +95,7 @@ const loading = ref(false)
 const reports = ref<ReportVO[]>([])
 const total = ref(0)
 const page = ref(1)
+const pageSize = ref(20)
 const statusFilter = ref<number | undefined>(
   route.query.status !== undefined ? Number(route.query.status) : undefined
 )
@@ -107,7 +110,7 @@ const submitting = ref(false)
 async function fetchData() {
   loading.value = true
   try {
-    const r = await listReports({ status: statusFilter.value, reportType: typeFilter.value, page: page.value, pageSize: 20 })
+    const r = await listReports({ status: statusFilter.value, reportType: typeFilter.value, page: page.value, pageSize: pageSize.value })
     reports.value = r.list
     total.value = r.total
   } finally {

@@ -78,7 +78,7 @@
         v-model:current-page="query.page"
         v-model:page-size="query.pageSize"
         :total="total"
-        :page-sizes="[20, 50, 100]"
+        :page-sizes="[10, 20, 50, 100]"
         layout="total, sizes, prev, pager, next"
         @change="fetchUsers"
         class="pagination"

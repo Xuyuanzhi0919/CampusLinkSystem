@@ -370,7 +370,7 @@
             <!-- 资源结果 -->
             <view v-if="resourceList.length > 0" class="result-group">
               <view class="group-header">
-                <text class="group-title">📚 资源</text>
+                <view class="group-title"><Icon name="book-open" :size="15" class="group-icon" />资源</view>
                 <text class="group-more" @click="switchTab('resource')">查看更多 →</text>
               </view>
               <view class="result-items">
@@ -387,7 +387,7 @@
             <!-- 问答结果 -->
             <view v-if="questionList.length > 0" class="result-group">
               <view class="group-header">
-                <text class="group-title">❓ 问答</text>
+                <view class="group-title"><Icon name="help-circle" :size="15" class="group-icon" />问答</view>
                 <text class="group-more" @click="switchTab('question')">查看更多 →</text>
               </view>
               <view class="result-items">
@@ -404,7 +404,7 @@
             <!-- 活动结果 -->
             <view v-if="activityList.length > 0" class="result-group">
               <view class="group-header">
-                <text class="group-title">🎉 活动</text>
+                <view class="group-title"><Icon name="calendar-days" :size="15" class="group-icon" />活动</view>
                 <text class="group-more" @click="switchTab('activity')">查看更多 →</text>
               </view>
               <view class="result-items">
@@ -2323,6 +2323,11 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8rpx;
+}
+
+.group-icon {
+  color: $color-text-secondary;
+  flex-shrink: 0;
 }
 
 .group-more {

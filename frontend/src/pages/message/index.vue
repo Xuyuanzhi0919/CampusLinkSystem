@@ -2,20 +2,7 @@
   <view class="message-page">
 
     <!-- 顶部导航 -->
-    <view class="header">
-      <view class="header-inner">
-        <view class="header-left"></view>
-        <view class="header-center">
-          <text class="header-title">私信</text>
-          <text v-if="totalUnread > 0" class="header-badge">{{ totalUnread > 99 ? '99+' : totalUnread }}</text>
-        </view>
-        <view class="header-right">
-          <view class="compose-btn" @click="handleCompose">
-            <ClIcon name="icon-pencil" size="lg" />
-          </view>
-        </view>
-      </view>
-    </view>
+    <CNavBar title="私信" />
 
     <!-- 列表主体 -->
     <scroll-view
@@ -101,8 +88,6 @@
 
       <view class="safe-bottom" />
     </scroll-view>
-
-    <CustomTabBar />
   </view>
 </template>
 
@@ -112,7 +97,7 @@ import { getConversationList } from '@/services/message'
 import type { Conversation } from '@/types/message'
 import { MessageType } from '@/types/message'
 import { ClIcon } from '@/components/cl'
-import CustomTabBar from '@/components/mobile/CustomTabBar.vue'
+import { CNavBar } from '@/components/layout'
 
 const conversationList = ref<Conversation[]>([])
 const loading = ref(false)
@@ -212,80 +197,11 @@ $error:        #EF4444;
   flex-direction: column;
 }
 
-// ─── 顶部导航 ─────────────────────────────────────────────────────────────────
-
-.header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.96);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid $gray-200;
-}
-
-.header-inner {
-  display: flex;
-  align-items: center;
-  height: 56px;
-  padding: 0 4px;
-}
-
-.header-left,
-.header-right {
-  width: 56px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-center {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.header-title {
-  font-size: 17px;
-  font-weight: 700;
-  color: $gray-900;
-  letter-spacing: -0.01em;
-}
-
-.header-badge {
-  background: $error;
-  color: $white;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 1px 6px;
-  border-radius: 10px;
-  line-height: 1.4;
-}
-
-.compose-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 10px;
-  cursor: pointer;
-  color: $gray-700;
-  transition: background 0.15s ease;
-
-  &:active {
-    background: $gray-100;
-    color: $primary;
-  }
-}
 
 // ─── 滚动区域 ─────────────────────────────────────────────────────────────────
 
 .content-scroll {
   flex: 1;
-  height: calc(100vh - 56px);
 }
 
 // ─── 会话列表 ─────────────────────────────────────────────────────────────────
@@ -560,6 +476,6 @@ $error:        #EF4444;
 // ─── 底部安全区 ───────────────────────────────────────────────────────────────
 
 .safe-bottom {
-  height: 100px; // TabBar 60px + 安全区
+  height: 32px;
 }
 </style>

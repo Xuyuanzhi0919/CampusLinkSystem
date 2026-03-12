@@ -13,10 +13,10 @@
         size="large"
         @submit.prevent="handleLogin"
       >
-        <el-form-item prop="username">
+        <el-form-item prop="account">
           <el-input
-            v-model="form.username"
-            placeholder="用户名"
+            v-model="form.account"
+            placeholder="用户名/邮箱/手机号"
             prefix-icon="User"
             autocomplete="username"
           />
@@ -59,10 +59,10 @@ const authStore = useAuthStore()
 const formRef = ref<FormInstance>()
 const loading = ref(false)
 
-const form = reactive({ username: '', password: '' })
+const form = reactive({ account: '', password: '' })
 
 const rules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+  account: [{ required: true, message: '请输入账号', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 

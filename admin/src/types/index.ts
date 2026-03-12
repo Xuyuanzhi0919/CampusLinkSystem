@@ -16,7 +16,7 @@ export interface PageResult<T> {
 
 // ===== 认证 =====
 export interface LoginRequest {
-  username: string
+  account: string
   password: string
 }
 

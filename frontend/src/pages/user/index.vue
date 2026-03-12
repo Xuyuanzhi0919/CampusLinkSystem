@@ -716,6 +716,13 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   padding: 16rpx 24rpx 0;
   width: 100%;
   box-sizing: border-box;
+
+  // 统一移除子组件自带的水平 padding，由 page-body 统一控制边距
+  :deep(.quick-actions),
+  :deep(.achievement-section) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 /* 签到行动卡片 */

@@ -66,7 +66,17 @@
 </template>
 
 <script setup lang="ts">
-const items = [
+interface NavItem {
+  id: number
+  label: string
+  desc: string
+  theme: string
+  isHighlight: boolean
+  url: string
+  isTabBar?: boolean
+}
+
+const items: NavItem[] = [
   {
     id: 1,
     label: '热门活动',
@@ -81,7 +91,8 @@ const items = [
     desc: '发布 & 接单赚积分',
     theme: 'teal',
     isHighlight: false,
-    url: '/pages/task/index'
+    url: '/pages/task/index',
+    isTabBar: true
   },
   {
     id: 3,
@@ -89,7 +100,7 @@ const items = [
     desc: '看看谁最贡献',
     theme: 'rose',
     isHighlight: false,
-    url: '/pages/user/ranking'
+    url: '/pages/user/points-history'
   },
   {
     id: 4,
@@ -101,11 +112,15 @@ const items = [
   }
 ]
 
-const handleClick = (item: typeof items[0]) => {
-  uni.navigateTo({
-    url: item.url,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
-  })
+const handleClick = (item: NavItem) => {
+  if ((item as any).isTabBar) {
+    uni.switchTab({ url: item.url })
+  } else {
+    uni.navigateTo({
+      url: item.url,
+      fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
+    })
+  }
 }
 </script>
 

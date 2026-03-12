@@ -71,11 +71,19 @@ async function handleLogin() {
   loading.value = true
   try {
     const result = await login(form)
-    if (result.role !== 'admin') {
-      ElMessage.error('无管理员权限')
+    if (result.user.role !== 'admin') {
+      ElMessage.error('无管理员权限，请使用管理员账号登录')
       return
     }
-    authStore.setAuth(result)
+    authStore.setAuth({
+      uId: result.user.uId,
+      username: result.user.username,
+      nickname: result.user.nickname,
+      role: result.user.role,
+      avatarUrl: result.user.avatarUrl,
+      token: result.token,
+      refreshToken: result.refreshToken
+    })
     ElMessage.success('登录成功')
     router.push('/dashboard')
   } finally {

@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   function setAuth(info: AuthInfo) {
     userInfo.value = info
-    localStorage.setItem('admin_token', info.accessToken)
+    localStorage.setItem('admin_token', info.token)
     localStorage.setItem('admin_user', JSON.stringify(info))
   }
 

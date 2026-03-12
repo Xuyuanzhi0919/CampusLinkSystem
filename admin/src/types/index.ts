@@ -20,13 +20,28 @@ export interface LoginRequest {
   password: string
 }
 
+// 后端 AuthResponse 结构：{ token, refreshToken, user: UserVO }
+export interface AuthResponse {
+  token: string
+  refreshToken: string
+  user: {
+    uId: number
+    username: string
+    nickname: string
+    role: string
+    avatarUrl: string
+    email: string
+  }
+}
+
+// 前端存储用的扁平化结构
 export interface AuthInfo {
-  userId: number
+  uId: number
   username: string
   nickname: string
   role: string
   avatarUrl: string
-  accessToken: string
+  token: string
   refreshToken: string
 }
 

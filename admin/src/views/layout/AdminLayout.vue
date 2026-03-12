@@ -40,6 +40,14 @@
           <el-icon><List /></el-icon>
           <template #title>任务管理</template>
         </el-menu-item>
+        <el-menu-item index="/clubs">
+          <el-icon><Flag /></el-icon>
+          <template #title>社团管理</template>
+        </el-menu-item>
+        <el-menu-item index="/activities">
+          <el-icon><Calendar /></el-icon>
+          <template #title>活动管理</template>
+        </el-menu-item>
         <el-menu-item index="/notices">
           <el-icon><Bell /></el-icon>
           <template #title>公告管理</template>
@@ -117,6 +125,8 @@ const currentTitle = computed(() => {
     content: '内容管理',
     reports: '举报管理',
     tasks: '任务管理',
+    clubs: '社团管理',
+    activities: '活动管理',
     notices: '公告管理',
     config: '系统配置'
   }

@@ -4,7 +4,7 @@
 
     <!-- 核心指标卡片 -->
     <el-row :gutter="16" class="stat-cards">
-      <el-col :span="6" v-for="card in statCards" :key="card.label">
+      <el-col :span="Math.floor(24 / statCards.length)" v-for="card in statCards" :key="card.label">
         <div class="stat-card" :style="{ '--accent': card.color }">
           <div class="stat-icon">
             <el-icon :size="24"><component :is="card.icon" /></el-icon>
@@ -131,7 +131,8 @@ const statCards = computed(() => {
     { label: '注册用户', value: data.value.totalUsers, today: data.value.todayNewUsers, icon: 'User', color: '#409eff' },
     { label: '资源总数', value: data.value.totalResources, today: data.value.todayNewResources, icon: 'Document', color: '#67c23a' },
     { label: '问题总数', value: data.value.totalQuestions, today: data.value.todayNewQuestions, icon: 'ChatDotRound', color: '#e6a23c' },
-    { label: '任务总数', value: data.value.totalTasks, today: data.value.todayNewTasks, icon: 'List', color: '#f56c6c' }
+    { label: '任务总数', value: data.value.totalTasks, today: data.value.todayNewTasks, icon: 'List', color: '#f56c6c' },
+    { label: '活动总数', value: data.value.totalActivities, today: undefined, icon: 'Calendar', color: '#909399' }
   ]
 })
 

@@ -1,8 +1,12 @@
 package com.campuslink.controller.admin;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.admin.*;
+import com.campuslink.entity.PointsLog;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -21,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminUserController {
 
     private final AdminService adminService;
+    private final PointsLogMapper pointsLogMapper;
 
     @Operation(summary = "用户列表", description = "分页查询用户，支持关键词/角色/状态筛选")
     @GetMapping
@@ -62,5 +67,22 @@ public class AdminUserController {
             @Valid @RequestBody AdjustPointsRequest req) {
         adminService.adjustPoints(operatorId, userId, req);
         return Result.success("积分调整成功");
+    }
+
+    @Operation(summary = "用户积分流水")
+    @GetMapping("/{userId}/points-history")
+    public Result<PageResult<PointsLog>> getPointsHistory(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "20") Integer pageSize) {
+        Page<PointsLog> p = new Page<>(page, pageSize);
+        LambdaQueryWrapper<PointsLog> wrapper = new LambdaQueryWrapper<PointsLog>()
+                .eq(PointsLog::getUserId, userId)
+                .orderByDesc(PointsLog::getCreatedAt);
+        Page<PointsLog> result = pointsLogMapper.selectPage(p, wrapper);
+        return Result.success(new PageResult<>(
+                result.getRecords(), result.getTotal(),
+                (long) page, (long) pageSize, result.getPages()
+        ));
     }
 }

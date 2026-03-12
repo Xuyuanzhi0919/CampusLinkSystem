@@ -20,3 +20,16 @@ export function setRole(userId: number, role: string) {
 export function adjustPoints(userId: number, delta: number, reason?: string) {
   return post<void>(`/admin/users/${userId}/points`, { delta, reason })
 }
+
+export interface PointsLogItem {
+  logId: number
+  pointsChange: number
+  pointsAfter: number
+  reason: string
+  relatedType: string
+  createdAt: string
+}
+
+export function getUserPointsHistory(userId: number, params: { page?: number; pageSize?: number }) {
+  return get<PageResult<PointsLogItem>>(`/admin/users/${userId}/points-history`, params as Record<string, unknown>)
+}

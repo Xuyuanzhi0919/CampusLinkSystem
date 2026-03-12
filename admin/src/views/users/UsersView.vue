@@ -86,7 +86,7 @@
     </div>
 
     <!-- 用户详情抽屉 -->
-    <el-drawer v-model="detailVisible" title="用户详情" size="420px">
+    <el-drawer v-model="detailVisible" title="用户详情" size="460px">
       <template v-if="selectedUser">
         <div class="detail-header">
           <el-avatar :size="64" :src="selectedUser.avatarUrl">
@@ -101,29 +101,58 @@
           </div>
         </div>
 
-        <el-descriptions :column="1" border class="detail-desc">
-          <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
-          <el-descriptions-item label="手机">{{ selectedUser.phone || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="角色">
-            <el-tag :type="roleType(selectedUser.role)" size="small">{{ roleLabel(selectedUser.role) }}</el-tag>
-          </el-descriptions-item>
-          <el-descriptions-item label="积分">{{ selectedUser.points }}</el-descriptions-item>
-          <el-descriptions-item label="等级">Lv.{{ selectedUser.level }}</el-descriptions-item>
-          <el-descriptions-item label="信用分">{{ selectedUser.creditScore?.toFixed(1) }}</el-descriptions-item>
-          <el-descriptions-item label="学校">{{ selectedUser.schoolName || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="专业">{{ selectedUser.major || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.createdAt) }}</el-descriptions-item>
-          <el-descriptions-item label="最后登录">{{ formatDate(selectedUser.lastLoginTime) }}</el-descriptions-item>
-        </el-descriptions>
+        <el-tabs v-model="drawerTab" @tab-click="onDrawerTabClick">
+          <el-tab-pane label="基本信息" name="info">
+            <el-descriptions :column="1" border class="detail-desc">
+              <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
+              <el-descriptions-item label="手机">{{ selectedUser.phone || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="角色">
+                <el-tag :type="roleType(selectedUser.role)" size="small">{{ roleLabel(selectedUser.role) }}</el-tag>
+              </el-descriptions-item>
+              <el-descriptions-item label="积分">{{ selectedUser.points }}</el-descriptions-item>
+              <el-descriptions-item label="等级">Lv.{{ selectedUser.level }}</el-descriptions-item>
+              <el-descriptions-item label="信用分">{{ selectedUser.creditScore?.toFixed(1) }}</el-descriptions-item>
+              <el-descriptions-item label="学校">{{ selectedUser.schoolName || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="专业">{{ selectedUser.major || '-' }}</el-descriptions-item>
+              <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.createdAt) }}</el-descriptions-item>
+              <el-descriptions-item label="最后登录">{{ formatDate(selectedUser.lastLoginTime) }}</el-descriptions-item>
+            </el-descriptions>
+            <div class="detail-actions">
+              <el-select v-model="selectedRole" placeholder="修改角色" style="width: 140px">
+                <el-option label="学生" value="student" />
+                <el-option label="教师" value="teacher" />
+                <el-option label="管理员" value="admin" />
+              </el-select>
+              <el-button type="primary" :disabled="!selectedRole" @click="handleSetRole">确认修改</el-button>
+            </div>
+          </el-tab-pane>
 
-        <div class="detail-actions">
-          <el-select v-model="selectedRole" placeholder="修改角色" style="width: 140px">
-            <el-option label="学生" value="student" />
-            <el-option label="教师" value="teacher" />
-            <el-option label="管理员" value="admin" />
-          </el-select>
-          <el-button type="primary" :disabled="!selectedRole" @click="handleSetRole">确认修改</el-button>
-        </div>
+          <el-tab-pane label="积分流水" name="points">
+            <el-table :data="pointsHistory" v-loading="pointsHistoryLoading" size="small" stripe>
+              <el-table-column label="变动" width="80" align="center">
+                <template #default="{ row }">
+                  <span :style="{ color: row.pointsChange >= 0 ? '#67c23a' : '#f56c6c', fontWeight: 600 }">
+                    {{ row.pointsChange >= 0 ? '+' : '' }}{{ row.pointsChange }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column prop="pointsAfter" label="余额" width="70" align="center" />
+              <el-table-column prop="reason" label="原因" min-width="120" show-overflow-tooltip />
+              <el-table-column label="时间" width="130">
+                <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+              </el-table-column>
+            </el-table>
+            <el-pagination
+              v-model:current-page="pointsHistoryPage"
+              :total="pointsHistoryTotal"
+              :page-size="20"
+              layout="total, prev, pager, next"
+              @current-change="loadPointsHistory"
+              class="pagination"
+              style="margin-top: 12px"
+            />
+          </el-tab-pane>
+        </el-tabs>
       </template>
     </el-drawer>
 
@@ -150,7 +179,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listUsers, banUser, setRole, adjustPoints } from '@/api/user'
+import { listUsers, banUser, setRole, adjustPoints, getUserPointsHistory, type PointsLogItem } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
@@ -169,6 +198,11 @@ const query = reactive({
 const detailVisible = ref(false)
 const selectedUser = ref<AdminUser | null>(null)
 const selectedRole = ref('')
+const drawerTab = ref('info')
+const pointsHistory = ref<PointsLogItem[]>([])
+const pointsHistoryTotal = ref(0)
+const pointsHistoryPage = ref(1)
+const pointsHistoryLoading = ref(false)
 
 const pointsVisible = ref(false)
 const pointsLoading = ref(false)
@@ -200,7 +234,28 @@ function formatDate(d?: string) {
 function openDetail(row: AdminUser) {
   selectedUser.value = row
   selectedRole.value = row.role
+  drawerTab.value = 'info'
+  pointsHistory.value = []
+  pointsHistoryPage.value = 1
   detailVisible.value = true
+}
+
+function onDrawerTabClick(tab: { paneName: string }) {
+  if (tab.paneName === 'points' && pointsHistory.value.length === 0) {
+    loadPointsHistory()
+  }
+}
+
+async function loadPointsHistory() {
+  if (!selectedUser.value) return
+  pointsHistoryLoading.value = true
+  try {
+    const r = await getUserPointsHistory(selectedUser.value.uId, { page: pointsHistoryPage.value, pageSize: 20 })
+    pointsHistory.value = r.list
+    pointsHistoryTotal.value = r.total
+  } finally {
+    pointsHistoryLoading.value = false
+  }
 }
 
 async function toggleBan(row: AdminUser) {

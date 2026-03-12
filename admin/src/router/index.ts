@@ -52,6 +52,18 @@ const router = createRouter({
           meta: { title: '公告管理', icon: 'Bell' }
         },
         {
+          path: 'clubs',
+          name: 'Clubs',
+          component: () => import('@/views/clubs/ClubsView.vue'),
+          meta: { title: '社团管理', icon: 'Flag' }
+        },
+        {
+          path: 'activities',
+          name: 'Activities',
+          component: () => import('@/views/activities/ActivitiesView.vue'),
+          meta: { title: '活动管理', icon: 'Calendar' }
+        },
+        {
           path: 'config',
           name: 'Config',
           component: () => import('@/views/config/ConfigView.vue'),

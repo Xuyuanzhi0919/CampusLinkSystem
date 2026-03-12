@@ -5,12 +5,21 @@ export interface ReportVO {
   reportId: number
   reporterId: number
   reporterName: string
+  reporterAvatar: string
   reportType: number
+  reportTypeName: string
   targetId: number
+  targetContent: string
   reasonType: number
+  reasonTypeName: string
   description: string
+  evidenceImages: string
   status: number
+  statusName: string
   handleResult: string
+  handlerId: number
+  handlerName: string
+  handledAt: string
   createdAt: string
 }
 

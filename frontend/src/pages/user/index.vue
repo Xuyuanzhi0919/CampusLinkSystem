@@ -52,14 +52,16 @@
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"
         />
-        <!-- 签到 & 快捷操作行 -->
-        <ActionArea
-          :is-checked-in="isCheckedIn"
-          @check-in="handleCheckIn"
-          @points-click="handlePointsClick"
-          @publish="() => uni.$emit('open-publish-sheet')"
-        />
         <view class="page-body">
+          <!-- 签到 & 快捷操作卡片 -->
+          <view class="action-card">
+            <ActionArea
+              :is-checked-in="isCheckedIn"
+              @check-in="handleCheckIn"
+              @points-click="handlePointsClick"
+              @publish="() => uni.$emit('open-publish-sheet')"
+            />
+          </view>
           <!-- 个性化入口 -->
           <view class="customize-entry" @click="openCustomizeSheet">
             <text class="customize-entry__icon">⊞</text>
@@ -706,9 +708,22 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   display: flex;
   flex-direction: column;
   gap: 14rpx;
-  padding: 0 24rpx;
+  padding: 16rpx 24rpx 0;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* 签到行动卡片 */
+.action-card {
+  background: #fff;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+
+  :deep(.action-area) {
+    padding-left: 0;
+    padding-right: 0;
+  }
 }
 
 /* ========== 区块标签 ========== */

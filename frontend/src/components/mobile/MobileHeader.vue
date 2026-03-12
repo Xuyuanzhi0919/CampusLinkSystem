@@ -20,10 +20,11 @@
           </svg>
         </view>
 
-        <!-- 消息按钮 -->
+        <!-- 通知按钮 -->
         <view class="icon-btn" @click="handleMessage">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke-linejoin="round"/>
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
           </svg>
           <view v-if="unreadCount > 0" class="badge">{{ unreadCount > 99 ? '99+' : unreadCount }}</view>
         </view>
@@ -44,7 +45,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user'
-import { getUnreadCount } from '@/services/message'
+import { getUnreadCount } from '@/services/notification'
 
 const userStore = useUserStore()
 
@@ -87,19 +88,19 @@ const handleSearch = () => {
   })
 }
 
-// 消息
+// 通知
 const handleMessage = () => {
   if (!userStore.isLoggedIn) {
     uni.$emit('show-login-guide', {
       actionType: 'message',
-      title: '查看消息需要登录',
-      content: '登录后可查看私信和系统通知'
+      title: '查看通知需要登录',
+      content: '登录后可查看点赞、评论等系统通知'
     })
     return
   }
 
   uni.navigateTo({
-    url: '/pages/message/index'
+    url: '/pages/notification/index'
   })
 }
 

@@ -91,8 +91,7 @@ const items: NavItem[] = [
     desc: '发布 & 接单赚积分',
     theme: 'teal',
     isHighlight: false,
-    url: '/pages/task/index',
-    isTabBar: true
+    url: '/pages/task/index'
   },
   {
     id: 3,

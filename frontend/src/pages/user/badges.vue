@@ -5,7 +5,8 @@
     <CNavBar title="我的徽章" :auto-back="true">
       <template #right>
         <view class="nav-rule-btn" @click="openRuleModal">
-          <text class="nav-rule-text">徽章规则</text>
+          <Icon name="info" :size="16" class="nav-rule-icon" />
+          <text class="nav-rule-text">规则</text>
         </view>
       </template>
     </CNavBar>
@@ -19,60 +20,100 @@
     >
       <view class="page-inner">
 
-        <!-- ── 成就概览卡片 ── -->
-        <view class="overview-card">
-          <view class="ov-left">
-            <view class="ov-count-row">
-              <text class="ov-count">{{ unlockedCount }}</text>
-              <text class="ov-count-total"> / {{ allBadges.length }} 枚</text>
+        <!-- ── 成就概览 Banner ── -->
+        <view class="overview-banner">
+          <!-- 背景装饰圆 -->
+          <view class="ov-deco ov-deco--1" />
+          <view class="ov-deco ov-deco--2" />
+
+          <!-- 三列核心数据 -->
+          <view class="ov-stats-row">
+            <view class="ov-stat">
+              <text class="ov-stat-num">{{ unlockedCount }}</text>
+              <text class="ov-stat-label">已解锁</text>
             </view>
-            <view class="ov-title-row">
-              <view class="ov-badge-tag">
-                <Icon name="award" :size="12" class="ov-badge-icon" />
-                <text class="ov-badge-label">{{ achievementTitle }}</text>
-              </view>
+            <view class="ov-divider-v" />
+            <view class="ov-stat">
+              <text class="ov-stat-num">{{ allBadges.length }}</text>
+              <text class="ov-stat-label">徽章总数</text>
             </view>
-            <view class="ov-reward-row">
-              <Icon name="zap" :size="12" class="ov-reward-icon" />
-              <text class="ov-reward-text">已通过徽章获得 {{ totalRewardPoints }} 积分</text>
+            <view class="ov-divider-v" />
+            <view class="ov-stat">
+              <text class="ov-stat-num ov-stat-num--gold">+{{ totalRewardPoints }}</text>
+              <text class="ov-stat-label">已获积分</text>
             </view>
           </view>
-          <view class="ov-right">
+
+          <!-- 成就称号 -->
+          <view class="ov-title-row">
+            <view class="ov-badge-pill">
+              <Icon name="award" :size="11" class="ov-badge-pill-icon" />
+              <text class="ov-badge-pill-text">{{ achievementTitle }}</text>
+            </view>
+          </view>
+
+          <!-- 进度条 -->
+          <view class="ov-progress-area">
             <view class="ov-progress-header">
               <text class="ov-progress-label">成就进度</text>
               <text class="ov-progress-pct">{{ progressPercent }}%</text>
             </view>
-            <view class="ov-progress-track">
-              <view class="ov-progress-fill" :style="{ width: progressPercent + '%' }" />
+            <view class="ov-track">
+              <view class="ov-fill" :style="{ width: progressPercent + '%' }" />
             </view>
-            <view v-if="remainCount > 0" class="ov-hint-row">
-              <text class="ov-progress-hint">再解锁 {{ remainCount }} 枚，升级为「{{ nextTitle }}」，解锁</text>
-              <text class="ov-reward-highlight"> +{{ nextReward }} 积分</text>
-            </view>
-            <text v-else class="ov-progress-hint ov-progress-hint--maxed">
-              已解锁全部徽章 🎉
+            <text v-if="remainCount > 0" class="ov-hint">
+              再解锁 {{ remainCount }} 枚升至「{{ nextTitle }}」，可获 +{{ nextReward }} 积分
             </text>
+            <text v-else class="ov-hint ov-hint--maxed">🎉 已解锁全部徽章！</text>
           </view>
         </view>
 
-        <!-- ── 分类 Tab 栏 ── -->
+        <!-- ── 首页展示区（有固定徽章时显示）── -->
+        <view v-if="pinnedIds.length > 0" class="pinned-section">
+          <view class="pinned-header">
+            <Icon name="star" :size="13" class="pinned-icon" />
+            <text class="pinned-title">首页展示</text>
+            <text class="pinned-count">{{ pinnedIds.length }}/{{ MAX_PINNED }}</text>
+          </view>
+          <view class="pinned-list">
+            <view
+              v-for="id in pinnedIds"
+              :key="id"
+              class="pinned-item"
+              @click="openDetailModal(getBadge(id)!)"
+            >
+              <view
+                class="pinned-icon-box"
+                :class="`bc-color--${getBadge(id)?.color ?? 'blue'}`"
+              >
+                <Icon :name="getBadge(id)?.icon ?? 'star'" :size="20" class="bc-icon" :stroke-width="1.5" />
+              </view>
+              <text class="pinned-name">{{ getBadge(id)?.name }}</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- ── 分类 Tab 栏（胶囊样式）── -->
         <view class="tab-bar-wrap">
           <scroll-view class="tab-scroll" scroll-x :show-scrollbar="false">
             <view class="tab-list">
               <view
                 v-for="tab in TABS"
                 :key="tab.key"
-                class="tab-item"
-                :class="{ 'tab-item--active': activeTab === tab.key }"
-                :style="{ '--tab-color': CATEGORY_COLORS[tab.key] ?? '#377DFF' }"
+                class="tab-pill"
+                :class="{ 'tab-pill--active': activeTab === tab.key }"
+                :style="activeTab === tab.key
+                  ? { '--tab-color': CATEGORY_COLORS[tab.key], background: CATEGORY_BG_COLORS[tab.key], borderColor: CATEGORY_COLORS[tab.key] + '55' }
+                  : { '--tab-color': CATEGORY_COLORS[tab.key] }"
                 @click="activeTab = tab.key"
               >
-                <text class="tab-label">{{ tab.label }}</text>
-                <text class="tab-count">({{ tabCount(tab.key) }})</text>
+                <text class="tab-pill-label">{{ tab.label }}</text>
+                <view class="tab-pill-badge" :class="{ 'tab-pill-badge--active': activeTab === tab.key }">
+                  <text class="tab-pill-count">{{ tabCount(tab.key) }}</text>
+                </view>
               </view>
             </view>
           </scroll-view>
-          <view class="tab-divider" />
         </view>
 
         <!-- ── 徽章网格 ── -->
@@ -87,17 +128,20 @@
               : {}"
             @click="openDetailModal(badge)"
           >
+            <!-- 已固定徽章：右上角星形角标 -->
+            <view v-if="badge.unlocked && isPinned(badge.id)" class="bc-star-mark">
+              <Icon name="star" :size="10" class="bc-star-icon" />
+            </view>
+
             <!-- 图标区 -->
             <view
               class="bc-icon-wrap"
               :class="badge.unlocked ? `bc-color--${badge.color}` : 'bc-color--locked'"
             >
               <Icon :name="badge.icon" :size="26" class="bc-icon" :stroke-width="1.5" />
-              <!-- 已解锁：对勾角标 -->
               <view v-if="badge.unlocked" class="bc-badge bc-badge--unlocked">
                 <Icon name="check" :size="9" />
               </view>
-              <!-- 未解锁：锁角标 -->
               <view v-else class="bc-badge bc-badge--locked">
                 <Icon name="lock" :size="9" />
               </view>
@@ -110,13 +154,6 @@
             <text v-if="badge.unlocked && badge.unlockedAt" class="bc-date">{{ badge.unlockedAt }}</text>
             <text v-else-if="badge.unlocked" class="bc-date">已解锁</text>
             <text v-else class="bc-hint" :style="{ color: badgeCategoryColor(badge.category) }">去解锁 ›</text>
-
-            <!-- 首页展示标签（正常流，不遮内容） -->
-            <view class="bc-pinned-row">
-              <view v-if="badge.unlocked && isPinned(badge.id)" class="bc-pinned-tag">
-                <text class="bc-pinned-text">首页展示</text>
-              </view>
-            </view>
           </view>
         </view>
 
@@ -155,7 +192,6 @@
         :class="{ 'modal-card--up': detailUp }"
         @click.stop
       >
-        <!-- 拖动条（移动端） -->
         <view class="modal-bar" />
 
         <!-- 徽章大图 + 名称 -->
@@ -173,22 +209,20 @@
             />
           </view>
           <text class="detail-name">{{ detailBadge?.name }}</text>
-          <view v-if="detailBadge?.unlocked" class="detail-unlocked-tag">
-            <Icon name="check-circle" :size="13" class="detail-unlocked-icon" />
-            <text class="detail-unlocked-text">已解锁</text>
+          <view v-if="detailBadge?.unlocked" class="detail-status-tag detail-status-tag--unlocked">
+            <Icon name="check-circle" :size="13" class="detail-status-icon" />
+            <text class="detail-status-text">已解锁</text>
           </view>
-          <view v-else class="detail-locked-tag">
-            <Icon name="lock" :size="12" class="detail-locked-icon" />
-            <text class="detail-locked-text">未解锁</text>
+          <view v-else class="detail-status-tag detail-status-tag--locked">
+            <Icon name="lock" :size="12" class="detail-status-icon" />
+            <text class="detail-status-text">未解锁</text>
           </view>
         </view>
 
-        <!-- 分割线 -->
         <view class="detail-divider" />
 
         <!-- 信息区 -->
         <view class="detail-info">
-          <!-- 解锁条件 -->
           <view class="detail-row">
             <view class="detail-row-label">
               <Icon name="target" :size="14" class="detail-row-icon detail-row-icon--blue" />
@@ -197,7 +231,6 @@
             <text class="detail-row-val">{{ detailBadge?.condition }}</text>
           </view>
 
-          <!-- 获得时间（已解锁时显示） -->
           <view v-if="detailBadge?.unlocked && detailBadge?.unlockedAt" class="detail-row">
             <view class="detail-row-label">
               <Icon name="calendar" :size="14" class="detail-row-icon detail-row-icon--teal" />
@@ -206,7 +239,6 @@
             <text class="detail-row-val">{{ detailBadge.unlockedAt }}</text>
           </view>
 
-          <!-- 积分奖励 -->
           <view class="detail-row">
             <view class="detail-row-label">
               <Icon name="zap" :size="14" class="detail-row-icon detail-row-icon--amber" />
@@ -215,7 +247,6 @@
             <text class="detail-row-val detail-row-val--highlight">+{{ detailBadge?.reward }} 积分</text>
           </view>
 
-          <!-- 徽章介绍 -->
           <view class="detail-desc-wrap">
             <text class="detail-desc">{{ detailBadge?.description }}</text>
           </view>
@@ -229,11 +260,7 @@
               :class="{ 'detail-btn--pinned': detailBadge && isPinned(detailBadge.id) }"
               @click="togglePin"
             >
-              <Icon
-                :name="detailBadge && isPinned(detailBadge.id) ? 'star' : 'star'"
-                :size="15"
-                class="detail-btn-icon"
-              />
+              <Icon name="star" :size="15" class="detail-btn-icon" />
               <text class="detail-btn-text">
                 {{ detailBadge && isPinned(detailBadge.id) ? '取消首页展示' : '设为首页展示' }}
               </text>
@@ -314,32 +341,32 @@ interface Badge {
   category: string       // growth | contribution | interaction | limited
   unlocked: boolean
   unlockedAt?: string    // 解锁日期 'YYYY-MM-DD'
-  description: string    // 简短描述（卡片用）
-  condition: string      // 详细解锁条件（弹窗用）
-  reward: number         // 积分奖励
+  description: string
+  condition: string
+  reward: number
 }
 
 /* ──────────────────────────────────────────
-   徽章数据（完整定义，后续可替换为 API 数据）
+   徽章数据
 ────────────────────────────────────────── */
 const allBadges: Badge[] = [
   // ─── 成长类 ───
-  { id: 1,  name: '新人报到',  icon: 'star',          color: 'amber',  category: 'growth',       unlocked: true,  unlockedAt: '2024-09-01', description: '完成首次登录，踏入校园社区',       condition: '完成首次登录注册账号',             reward: 20 },
-  { id: 5,  name: '签到达人',  icon: 'calendar-check', color: 'blue',   category: 'growth',       unlocked: false, description: '坚持签到，养成学习好习惯',         condition: '连续签到 7 天',                    reward: 30 },
-  { id: 6,  name: '学习标兵',  icon: 'book-open',     color: 'teal',   category: 'growth',       unlocked: false, description: '高频签到，学习态度满分',           condition: '连续签到 30 天',                   reward: 50 },
-  { id: 7,  name: '等级达人',  icon: 'trending-up',   color: 'violet', category: 'growth',       unlocked: false, description: '积分快速成长，等级大幅提升',       condition: '账号等级达到 Lv.5',                reward: 30 },
+  { id: 1,  name: '新人报到',  icon: 'star',           color: 'amber',  category: 'growth',       unlocked: true,  unlockedAt: '2024-09-01', description: '完成首次登录，踏入校园社区',     condition: '完成首次登录注册账号',           reward: 20 },
+  { id: 5,  name: '签到达人',  icon: 'calendar-check', color: 'blue',   category: 'growth',       unlocked: false, description: '坚持签到，养成学习好习惯',       condition: '连续签到 7 天',                  reward: 30 },
+  { id: 6,  name: '学习标兵',  icon: 'book-open',      color: 'teal',   category: 'growth',       unlocked: false, description: '高频签到，学习态度满分',         condition: '连续签到 30 天',                 reward: 50 },
+  { id: 7,  name: '等级达人',  icon: 'trending-up',    color: 'violet', category: 'growth',       unlocked: false, description: '积分快速成长，等级大幅提升',     condition: '账号等级达到 Lv.5',              reward: 30 },
   // ─── 贡献类 ───
-  { id: 2,  name: '资源贡献',  icon: 'file-text',     color: 'blue',   category: 'contribution', unlocked: false, description: '分享知识，让更多人受益',           condition: '上传并通过审核 5 个资源',           reward: 30 },
-  { id: 8,  name: '优质内容',  icon: 'award',         color: 'amber',  category: 'contribution', unlocked: false, description: '内容质量过硬，广受好评',           condition: '上传的资源累计获得 10 次收藏',      reward: 40 },
-  { id: 9,  name: '资源达人',  icon: 'layers',        color: 'violet', category: 'contribution', unlocked: false, description: '持续输出，成为社区知识库',         condition: '累计上传 20 个优质资源',            reward: 80 },
+  { id: 2,  name: '资源贡献',  icon: 'file-text',      color: 'blue',   category: 'contribution', unlocked: false, description: '分享知识，让更多人受益',         condition: '上传并通过审核 5 个资源',         reward: 30 },
+  { id: 8,  name: '优质内容',  icon: 'award',          color: 'amber',  category: 'contribution', unlocked: false, description: '内容质量过硬，广受好评',         condition: '上传的资源累计获得 10 次收藏',    reward: 40 },
+  { id: 9,  name: '资源达人',  icon: 'layers',         color: 'violet', category: 'contribution', unlocked: false, description: '持续输出，成为社区知识库',       condition: '累计上传 20 个优质资源',          reward: 80 },
   // ─── 互动类 ───
-  { id: 3,  name: '热心助人',  icon: 'heart',         color: 'rose',   category: 'interaction',  unlocked: false, description: '积极回答，传递知识的温度',         condition: '累计回答 10 个问题',               reward: 30 },
-  { id: 4,  name: '人气王',    icon: 'users',         color: 'blue',   category: 'interaction',  unlocked: false, description: '内容深受欢迎，人气爆棚',           condition: '累计获得 50 个点赞',               reward: 50 },
-  { id: 10, name: '获赞达人',  icon: 'thumbs-up',     color: 'teal',   category: 'interaction',  unlocked: false, description: '高质量内容持续输出，获赞无数',     condition: '累计获得 200 个点赞',              reward: 100 },
-  { id: 11, name: '收藏达人',  icon: 'bookmark',      color: 'violet', category: 'interaction',  unlocked: false, description: '广泛收集精华内容，学习资料丰富',   condition: '累计收藏 50 个内容',               reward: 30 },
+  { id: 3,  name: '热心助人',  icon: 'heart',          color: 'rose',   category: 'interaction',  unlocked: false, description: '积极回答，传递知识的温度',       condition: '累计回答 10 个问题',             reward: 30 },
+  { id: 4,  name: '人气王',    icon: 'users',          color: 'blue',   category: 'interaction',  unlocked: false, description: '内容深受欢迎，人气爆棚',         condition: '累计获得 50 个点赞',             reward: 50 },
+  { id: 10, name: '获赞达人',  icon: 'thumbs-up',      color: 'teal',   category: 'interaction',  unlocked: false, description: '高质量内容持续输出，获赞无数',   condition: '累计获得 200 个点赞',            reward: 100 },
+  { id: 11, name: '收藏达人',  icon: 'bookmark',       color: 'violet', category: 'interaction',  unlocked: false, description: '广泛收集精华内容，学习资料丰富', condition: '累计收藏 50 个内容',             reward: 30 },
   // ─── 限定类 ───
-  { id: 12, name: '开学季',    icon: 'graduation-cap', color: 'teal',  category: 'limited',      unlocked: false, description: '2024 年开学季限定徽章',           condition: '参与 2024 年开学季活动',           reward: 50 },
-  { id: 13, name: '新年快乐',  icon: 'gift',           color: 'rose',  category: 'limited',      unlocked: false, description: '新年限定徽章，满满的祝福',         condition: '参与新年活动并完成签到',             reward: 50 },
+  { id: 12, name: '开学季',    icon: 'graduation-cap', color: 'teal',   category: 'limited',      unlocked: false, description: '2024 年开学季限定徽章',         condition: '参与 2024 年开学季活动',         reward: 50 },
+  { id: 13, name: '新年快乐',  icon: 'gift',           color: 'rose',   category: 'limited',      unlocked: false, description: '新年限定徽章，满满的祝福',       condition: '参与新年活动并完成签到',           reward: 50 },
 ]
 
 /* ──────────────────────────────────────────
@@ -353,16 +380,22 @@ const TABS = [
   { key: 'limited',      label: '限定类' },
 ]
 
-/** 各分类主题色：Tab 选中/hover + 「去解锁」文字 */
 const CATEGORY_COLORS: Record<string, string> = {
-  all:          '#377DFF',  // 主蓝（全部 Tab）
-  growth:       '#377DFF',  // 蓝 — 成长类
-  contribution: '#10B981',  // 绿 — 贡献类
-  interaction:  '#A78BFA',  // 紫 — 互动类
-  limited:      '#F97316',  // 橙 — 限定类
+  all:          '#377DFF',
+  growth:       '#377DFF',
+  contribution: '#10B981',
+  interaction:  '#8B5CF6',
+  limited:      '#F97316',
 }
 
-/** 已解锁卡片浅色背景（按徽章色系） */
+const CATEGORY_BG_COLORS: Record<string, string> = {
+  all:          'rgba(55, 125, 255, 0.08)',
+  growth:       'rgba(55, 125, 255, 0.08)',
+  contribution: 'rgba(16, 185, 129, 0.08)',
+  interaction:  'rgba(139, 92, 246, 0.08)',
+  limited:      'rgba(249, 115, 22, 0.08)',
+}
+
 const BADGE_BG_MAP: Record<string, string> = {
   blue:   '#EFF6FF',
   teal:   '#ECFDF5',
@@ -371,7 +404,6 @@ const BADGE_BG_MAP: Record<string, string> = {
   rose:   '#FFF1F2',
 }
 
-/** 已解锁卡片彩色描边 */
 const BADGE_BORDER_MAP: Record<string, string> = {
   blue:   'rgba(59,130,246,0.25)',
   teal:   'rgba(16,185,129,0.25)',
@@ -380,17 +412,16 @@ const BADGE_BORDER_MAP: Record<string, string> = {
   rose:   'rgba(244,63,94,0.22)',
 }
 
-/** 根据徽章分类返回对应主题色 */
 const badgeCategoryColor = (category: string): string =>
   CATEGORY_COLORS[category] ?? CATEGORY_COLORS.all
 
 const ACHIEVEMENT_TITLES = [
-  { min: 0,  title: '探索者',    next: '初学者',   nextReward: 20  },
-  { min: 1,  title: '初学者',    next: '进阶者',   nextReward: 30  },
-  { min: 3,  title: '进阶者',    next: '知识达人', nextReward: 50  },
-  { min: 6,  title: '知识达人',  next: '贡献之星', nextReward: 80  },
-  { min: 9,  title: '贡献之星',  next: '徽章达人', nextReward: 100 },
-  { min: 11, title: '徽章达人',  next: '',         nextReward: 0   },
+  { min: 0,  title: '探索者',   next: '初学者',   nextReward: 20  },
+  { min: 1,  title: '初学者',   next: '进阶者',   nextReward: 30  },
+  { min: 3,  title: '进阶者',   next: '知识达人', nextReward: 50  },
+  { min: 6,  title: '知识达人', next: '贡献之星', nextReward: 80  },
+  { min: 9,  title: '贡献之星', next: '徽章达人', nextReward: 100 },
+  { min: 11, title: '徽章达人', next: '',         nextReward: 0   },
 ]
 
 const BADGE_PINNED_KEY = 'cl_badge_pinned'
@@ -438,7 +469,6 @@ const RULE_SECTIONS = [
 ────────────────────────────────────────── */
 const activeTab = ref<string>('all')
 
-// 已固定到首页的徽章 ID 列表
 const loadPinned = (): number[] => {
   try {
     const raw = uni.getStorageSync(BADGE_PINNED_KEY)
@@ -475,26 +505,23 @@ const onScrollMouseDown = (e: MouseEvent) => {
 }
 // #endif
 
-// 弹窗状态（detail）
-const showDetail = ref(false)
-const detailUp   = ref(false)
+const showDetail  = ref(false)
+const detailUp    = ref(false)
 const detailBadge = ref<Badge | null>(null)
 
-// 弹窗状态（rule）
 const showRule = ref(false)
 const ruleUp   = ref(false)
 
 /* ──────────────────────────────────────────
    计算属性
 ────────────────────────────────────────── */
-const unlockedCount = computed(() => allBadges.filter(b => b.unlocked).length)
-const remainCount   = computed(() => allBadges.length - unlockedCount.value)
-const progressPercent = computed(() =>
-  Math.round((unlockedCount.value / allBadges.length) * 100)
-)
+const unlockedCount   = computed(() => allBadges.filter(b => b.unlocked).length)
+const remainCount     = computed(() => allBadges.length - unlockedCount.value)
+const progressPercent = computed(() => Math.round((unlockedCount.value / allBadges.length) * 100))
 const totalRewardPoints = computed(() =>
   allBadges.filter(b => b.unlocked).reduce((sum, b) => sum + b.reward, 0)
 )
+
 const achievementTitle = computed(() => {
   const n = unlockedCount.value
   for (let i = ACHIEVEMENT_TITLES.length - 1; i >= 0; i--) {
@@ -509,7 +536,6 @@ const nextTitle = computed(() => {
   }
   return ''
 })
-
 const nextReward = computed(() => {
   const n = unlockedCount.value
   for (let i = ACHIEVEMENT_TITLES.length - 1; i >= 0; i--) {
@@ -518,7 +544,6 @@ const nextReward = computed(() => {
   return 0
 })
 
-// 排序：已解锁（最新解锁在前）→ 未解锁
 const sortedBadges = computed(() => {
   const unlocked = allBadges
     .filter(b => b.unlocked)
@@ -528,14 +553,12 @@ const sortedBadges = computed(() => {
       if (b.unlockedAt) return 1
       return 0
     })
-  const locked = allBadges.filter(b => !b.unlocked)
-  return [...unlocked, ...locked]
+  return [...unlocked, ...allBadges.filter(b => !b.unlocked)]
 })
 
 const filteredBadges = computed(() => {
-  const base = sortedBadges.value
-  if (activeTab.value === 'all') return base
-  return base.filter(b => b.category === activeTab.value)
+  if (activeTab.value === 'all') return sortedBadges.value
+  return sortedBadges.value.filter(b => b.category === activeTab.value)
 })
 
 const tabCount = (key: string) => {
@@ -544,7 +567,13 @@ const tabCount = (key: string) => {
 }
 
 /* ──────────────────────────────────────────
-   方法：首页固定
+   工具方法
+────────────────────────────────────────── */
+const getBadge = (id: number): Badge | null =>
+  allBadges.find(b => b.id === id) ?? null
+
+/* ──────────────────────────────────────────
+   首页固定
 ────────────────────────────────────────── */
 const isPinned = (id: number) => pinnedIds.value.includes(id)
 
@@ -554,14 +583,11 @@ const savePinned = () =>
 const togglePin = () => {
   if (!detailBadge.value) return
   const id = detailBadge.value.id
-  const idx = pinnedIds.value.indexOf(id)
-  if (idx >= 0) {
-    // 取消固定
+  if (pinnedIds.value.includes(id)) {
     pinnedIds.value = pinnedIds.value.filter(i => i !== id)
     savePinned()
     uni.showToast({ title: '已取消首页展示', icon: 'none' })
   } else {
-    // 固定
     if (pinnedIds.value.length >= MAX_PINNED) {
       uni.showModal({
         title: '首页展示已满',
@@ -578,19 +604,17 @@ const togglePin = () => {
 }
 
 /* ──────────────────────────────────────────
-   方法：弹窗控制
+   弹窗控制
 ────────────────────────────────────────── */
-const openDetailModal = (badge: Badge) => {
+const openDetailModal = (badge: Badge | null) => {
+  if (!badge) return
   detailBadge.value = badge
   showDetail.value = true
   nextTick(() => { detailUp.value = true })
 }
 const closeDetailModal = () => {
   detailUp.value = false
-  setTimeout(() => {
-    showDetail.value = false
-    detailBadge.value = null
-  }, 300)
+  setTimeout(() => { showDetail.value = false; detailBadge.value = null }, 300)
 }
 
 const openRuleModal = () => {
@@ -603,11 +627,11 @@ const closeRuleModal = () => {
 }
 
 /* ──────────────────────────────────────────
-   方法：导航
+   导航
 ────────────────────────────────────────── */
 const CATEGORY_URL: Record<string, string> = {
   growth:       '/pages/user/index',
-  contribution: '/pages/resource/publish',
+  contribution: '/pages/resource/upload',
   interaction:  '/pages/question/index',
   limited:      '',
 }
@@ -618,10 +642,7 @@ const goToTask = (category: string) => {
     uni.showToast({ title: '关注平台活动即可获得', icon: 'none' })
     return
   }
-  uni.navigateTo({
-    url,
-    fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }),
-  })
+  uni.navigateTo({ url, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 }
 
 const handleGoTask = () => {
@@ -641,22 +662,22 @@ const handleGoTask = () => {
 .badges-page {
   display: flex;
   flex-direction: column;
-  height: 100vh;       /* 固定视口高度，scroll-view 才能接管滚动 */
+  height: 100vh;
   overflow: hidden;
   background: $color-bg-page;
 }
 
 .page-scroll {
   flex: 1;
-  min-height: 0;       /* flex 子项：允许缩小到 0，overflow 才生效 */
+  min-height: 0;
 }
 
-/* #ifdef H5 */
+// #ifdef H5
 .page-scroll {
   cursor: grab;
   &:active { cursor: grabbing; }
 }
-/* #endif */
+// #endif
 
 .page-inner {
   padding: 20rpx 24rpx 0;
@@ -675,28 +696,41 @@ const handleGoTask = () => {
 
 .page-bottom-safe {
   height: 80rpx;
-
-  @media (min-width: 1024px) { height: 32px; }
+  @media (min-width: 1024px) { height: 40px; }
 }
 
 /* ══════════════════════════════════════════
    导航栏右侧按钮
 ══════════════════════════════════════════ */
 .nav-rule-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
   padding: 8rpx 16rpx;
-  border-radius: 12rpx;
+  border-radius: 100rpx;
+  border: 1rpx solid rgba(255, 255, 255, 0.35);
   cursor: pointer;
-  transition: background $transition-fast $transition-ease-in-out;
+  transition: background 0.15s ease;
 
-  &:active { background: rgba(255, 255, 255, 0.2); }
+  &:active { background: rgba(255, 255, 255, 0.15); }
 
   // #ifdef H5
-  &:hover { background: rgba(255, 255, 255, 0.2); }
+  &:hover { background: rgba(255, 255, 255, 0.15); }
   // #endif
+
+  @media (min-width: 1024px) {
+    gap: 4px;
+    padding: 5px 12px;
+    border-radius: 100px;
+  }
+}
+
+.nav-rule-icon {
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .nav-rule-text {
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.9);
 
@@ -704,119 +738,162 @@ const handleGoTask = () => {
 }
 
 /* ══════════════════════════════════════════
-   成就概览卡片
+   成就概览 Banner（渐变背景）
 ══════════════════════════════════════════ */
-.overview-card {
-  background: $color-bg-card;
+.overview-banner {
+  background: linear-gradient(135deg, #1a2e72 0%, #2952c4 55%, #3d6ee8 100%);
   border-radius: 24rpx;
-  border: 1rpx solid $color-border-light;
-  box-shadow: $shadow-base;
-  padding: 32rpx 28rpx;
-  display: flex;
-  align-items: center;
-  gap: 24rpx;
+  padding: 36rpx 28rpx 28rpx;
+  position: relative;
+  overflow: hidden;
 
   @media (min-width: 1024px) {
     border-radius: 16px;
-    padding: 24px 28px;
-    gap: 40px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    padding: 28px 32px;
   }
 }
 
-.ov-left {
-  flex: 0 0 auto;
+/* 背景装饰圆 */
+.ov-deco {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+
+  &--1 {
+    width: 280rpx;
+    height: 280rpx;
+    top: -80rpx;
+    right: -60rpx;
+    background: rgba(255, 255, 255, 0.06);
+
+    @media (min-width: 1024px) {
+      width: 200px;
+      height: 200px;
+      top: -60px;
+      right: -40px;
+    }
+  }
+
+  &--2 {
+    width: 160rpx;
+    height: 160rpx;
+    top: 20rpx;
+    right: 60rpx;
+    background: rgba(255, 255, 255, 0.04);
+
+    @media (min-width: 1024px) {
+      width: 120px;
+      height: 120px;
+      top: 10px;
+      right: 80px;
+    }
+  }
+}
+
+/* 三列统计数据 */
+.ov-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 28rpx;
+  position: relative;
+  z-index: 1;
+
+  @media (min-width: 1024px) { margin-bottom: 20px; }
+}
+
+.ov-stat {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10rpx;
+  align-items: center;
+  gap: 6rpx;
 
-  @media (min-width: 1024px) { gap: 8px; }
+  @media (min-width: 1024px) { gap: 5px; }
 }
 
-.ov-count-row {
-  display: flex;
-  align-items: baseline;
-  gap: 4rpx;
-}
-
-.ov-count {
+.ov-stat-num {
   font-size: 56rpx;
   font-weight: 800;
-  color: #F97316;          // 橙色：与积分/进度条统一
+  color: #fff;
   line-height: 1;
   letter-spacing: -0.02em;
+
+  &--gold {
+    color: #FFD166;  // 金色：积分数字高亮
+  }
 
   @media (min-width: 1024px) { font-size: 36px; }
 }
 
-.ov-count-total {
-  font-size: 22rpx;
-  color: $color-text-tertiary;
-  font-weight: 400;
-
-  @media (min-width: 1024px) { font-size: 13px; }
-}
-
-.ov-title-row {
-  display: flex;
-  align-items: center;
-}
-
-.ov-badge-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6rpx;
-  background: $campus-blue;    // 实心蓝：仪式感更强
-  border-radius: 100rpx;
-  padding: 6rpx 16rpx 6rpx 10rpx;
-  box-shadow: 0 2rpx 8rpx rgba($campus-blue, 0.30);
-
-  @media (min-width: 1024px) {
-    gap: 4px;
-    padding: 4px 12px 4px 8px;
-    border-radius: 100px;
-    box-shadow: 0 2px 6px rgba(55, 125, 255, 0.28);
-  }
-}
-
-.ov-badge-icon {
-  color: rgba(255, 255, 255, 0.85);  // 白色图标
-}
-
-.ov-badge-label {
+.ov-stat-label {
   font-size: 20rpx;
-  font-weight: 600;
-  color: #fff;               // 白色文字
+  color: rgba(255, 255, 255, 0.60);
+  font-weight: 400;
+  letter-spacing: 0.02em;
 
   @media (min-width: 1024px) { font-size: 12px; }
 }
 
-.ov-reward-row {
+.ov-divider-v {
+  width: 1rpx;
+  height: 56rpx;
+  background: rgba(255, 255, 255, 0.15);
+  flex-shrink: 0;
+
+  @media (min-width: 1024px) { width: 1px; height: 40px; }
+}
+
+/* 成就称号胶囊 */
+.ov-title-row {
   display: flex;
+  justify-content: center;
+  margin-bottom: 22rpx;
+  position: relative;
+  z-index: 1;
+
+  @media (min-width: 1024px) { margin-bottom: 16px; }
+}
+
+.ov-badge-pill {
+  display: inline-flex;
   align-items: center;
   gap: 6rpx;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1rpx solid rgba(255, 255, 255, 0.22);
+  border-radius: 100rpx;
+  padding: 7rpx 18rpx 7rpx 13rpx;
+
+  @media (min-width: 1024px) {
+    gap: 5px;
+    padding: 5px 14px 5px 10px;
+    border-radius: 100px;
+    border-width: 1px;
+  }
 }
 
-.ov-reward-icon {
-  color: #f59e0b;
-  flex-shrink: 0;
+.ov-badge-pill-icon {
+  color: rgba(255, 255, 255, 0.80);
 }
 
-.ov-reward-text {
-  font-size: 19rpx;
-  color: $color-text-tertiary;
+.ov-badge-pill-text {
+  font-size: 21rpx;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.90);
+  letter-spacing: 0.02em;
 
-  @media (min-width: 1024px) { font-size: 11px; }
+  @media (min-width: 1024px) { font-size: 13px; }
 }
 
-.ov-right {
-  flex: 1;
-  min-width: 0;
+/* 进度区域 */
+.ov-progress-area {
   display: flex;
   flex-direction: column;
   gap: 10rpx;
+  position: relative;
+  z-index: 1;
 
-  @media (min-width: 1024px) { gap: 8px; }
+  @media (min-width: 1024px) { gap: 7px; }
 }
 
 .ov-progress-header {
@@ -826,72 +903,149 @@ const handleGoTask = () => {
 }
 
 .ov-progress-label {
-  font-size: 21rpx;
-  color: $color-text-tertiary;
-  font-weight: 500;
+  font-size: 20rpx;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
 
   @media (min-width: 1024px) { font-size: 12px; }
 }
 
 .ov-progress-pct {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 700;
-  color: #F97316;
+  color: #FFD166;
 
-  @media (min-width: 1024px) { font-size: 14px; }
+  @media (min-width: 1024px) { font-size: 13px; }
 }
 
-.ov-progress-track {
+.ov-track {
   width: 100%;
   height: 8rpx;
-  background: $color-border-light;
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 100rpx;
   overflow: hidden;
 
-  @media (min-width: 1024px) {
-    height: 6px;
-    border-radius: 100px;
-  }
+  @media (min-width: 1024px) { height: 6px; border-radius: 100px; }
 }
 
-.ov-progress-fill {
+.ov-fill {
   height: 100%;
-  /* 橙色渐变：与积分体系视觉统一 */
-  background: linear-gradient(90deg, #F97316 0%, #FFB766 100%);
+  background: linear-gradient(90deg, #60A5FA 0%, #A78BFA 100%);
   border-radius: 100rpx;
   transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.ov-hint-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 0;
-}
-
-.ov-progress-hint {
+.ov-hint {
   font-size: 19rpx;
-  color: $color-text-tertiary;
+  color: rgba(255, 255, 255, 0.50);
   line-height: 1.4;
 
   &--maxed {
-    color: #f59e0b;
+    color: #FFD166;
     font-weight: 500;
   }
 
-  @media (min-width: 1024px) { font-size: 11px; }
+  @media (min-width: 1024px) { font-size: 12px; }
 }
 
-.ov-reward-highlight {
+/* ══════════════════════════════════════════
+   首页展示区
+══════════════════════════════════════════ */
+.pinned-section {
+  background: $color-bg-card;
+  border-radius: 20rpx;
+  border: 1rpx solid $color-border-light;
+  box-shadow: $shadow-xs;
+  padding: 24rpx 24rpx 20rpx;
+
+  @media (min-width: 1024px) {
+    border-radius: 14px;
+    border-width: 1px;
+    padding: 18px 20px 16px;
+  }
+}
+
+.pinned-header {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-bottom: 18rpx;
+
+  @media (min-width: 1024px) { margin-bottom: 14px; gap: 6px; }
+}
+
+.pinned-icon {
+  color: #F59E0B;
+  flex-shrink: 0;
+}
+
+.pinned-title {
+  font-size: 25rpx;
+  font-weight: 600;
+  color: $color-text-primary;
+  flex: 1;
+
+  @media (min-width: 1024px) { font-size: 14px; }
+}
+
+.pinned-count {
+  font-size: 21rpx;
+  color: $color-text-tertiary;
+  font-weight: 400;
+
+  @media (min-width: 1024px) { font-size: 12px; }
+}
+
+.pinned-list {
+  display: flex;
+  gap: 20rpx;
+
+  @media (min-width: 1024px) { gap: 16px; }
+}
+
+.pinned-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10rpx;
+  cursor: pointer;
+
+  @media (min-width: 1024px) { gap: 7px; }
+}
+
+.pinned-icon-box {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
+
+  &:active { transform: scale(0.90); }
+
+  // #ifdef H5
+  &:hover { transform: translateY(-2px) scale(1.04); }
+  // #endif
+
+  @media (min-width: 1024px) {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+  }
+}
+
+.pinned-name {
   font-size: 19rpx;
-  font-weight: 700;
-  color: #F97316;            // 橙色高亮：积分奖励一眼可见
+  color: $color-text-secondary;
+  text-align: center;
+  white-space: nowrap;
 
   @media (min-width: 1024px) { font-size: 11px; }
 }
 
 /* ══════════════════════════════════════════
-   分类 Tab 栏
+   分类 Tab 栏（胶囊样式）
 ══════════════════════════════════════════ */
 .tab-bar-wrap {
   margin: 0 -24rpx;
@@ -908,86 +1062,79 @@ const handleGoTask = () => {
   display: flex;
   flex-direction: row;
   padding: 0 24rpx;
-  gap: 4rpx;
+  gap: 10rpx;
 
   @media (min-width: 1024px) {
     padding: 0;
-    gap: 4px;
+    gap: 8px;
   }
 }
 
-.tab-item {
-  --tab-color: #377DFF; // fallback：覆盖 JS 未注入时
+.tab-pill {
+  --tab-color: #377DFF;
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4rpx;
-  padding: 18rpx 24rpx 16rpx;
+  gap: 7rpx;
+  padding: 14rpx 22rpx;
+  border-radius: 100rpx;
+  background: $color-bg-hover;
+  border: 1.5rpx solid transparent;
   cursor: pointer;
-  position: relative;
-  transition: color $transition-fast $transition-ease-in-out;
-
-  &::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 24rpx;
-    right: 24rpx;
-    height: 3rpx;
-    background: var(--tab-color);   // 随分类变色
-    border-radius: 100rpx;
-    transform: scaleX(0);
-    transition: transform 0.2s $transition-ease-in-out;
-  }
+  transition: all 0.18s ease;
 
   &--active {
-    &::after { transform: scaleX(1); }
-
-    .tab-label { color: var(--tab-color); font-weight: 600; }
-    .tab-count { color: var(--tab-color); opacity: 0.75; }
+    .tab-pill-label { color: var(--tab-color); font-weight: 600; }
   }
 
+  &:active { opacity: 0.7; }
+
   // #ifdef H5
-  &:not(.tab-item--active):hover {
-    .tab-label { color: var(--tab-color); }
+  &:not(.tab-pill--active):hover {
+    background: $color-border-light;
   }
   // #endif
 
   @media (min-width: 1024px) {
-    padding: 12px 20px 10px;
-
-    &::after {
-      left: 20px;
-      right: 20px;
-      height: 2px;
-      border-radius: 100px;
-    }
+    padding: 8px 16px;
+    gap: 5px;
+    border-radius: 100px;
+    border-width: 1px;
   }
 }
 
-.tab-label {
-  font-size: 26rpx;
+.tab-pill-label {
+  font-size: 25rpx;
+  color: $color-text-secondary;
+  font-weight: 500;
+  transition: color 0.18s ease;
+
+  @media (min-width: 1024px) { font-size: 13px; }
+}
+
+.tab-pill-badge {
+  background: $color-border;
+  border-radius: 100rpx;
+  padding: 2rpx 10rpx;
+  transition: background 0.18s ease;
+
+  &--active { background: var(--tab-color); }
+
+  @media (min-width: 1024px) {
+    border-radius: 100px;
+    padding: 1px 7px;
+  }
+}
+
+.tab-pill-count {
+  font-size: 18rpx;
   color: $color-text-tertiary;
-  font-weight: 400;
-  transition: color $transition-fast $transition-ease-in-out;
 
-  @media (min-width: 1024px) { font-size: 14px; }
-}
+  .tab-pill-badge--active & {
+    color: #fff;
+  }
 
-.tab-count {
-  font-size: 20rpx;
-  color: $color-text-placeholder;
-  transition: color $transition-fast $transition-ease-in-out;
-
-  @media (min-width: 1024px) { font-size: 12px; }
-}
-
-.tab-divider {
-  height: 1rpx;
-  background: $color-divider;
-  margin: 0 24rpx;
-
-  @media (min-width: 1024px) { margin: 0; height: 1px; }
+  @media (min-width: 1024px) { font-size: 11px; }
 }
 
 /* ══════════════════════════════════════════
@@ -995,17 +1142,17 @@ const handleGoTask = () => {
 ══════════════════════════════════════════ */
 .badge-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16rpx;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14rpx;
 
-  @media (min-width: 640px) {
-    grid-template-columns: repeat(3, 1fr);
+  @media (min-width: 600px) {
+    grid-template-columns: repeat(4, 1fr);
     gap: 12px;
   }
 
   @media (min-width: 1024px) {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
   }
 }
 
@@ -1014,72 +1161,85 @@ const handleGoTask = () => {
   --bc-bg:     #{$color-bg-card};
   --bc-border: #{$color-border-light};
   background: var(--bc-bg);
-  border-radius: 20rpx;
+  border-radius: 18rpx;
   border: 1.5rpx solid var(--bc-border);
   box-shadow: $shadow-xs;
-  padding: 28rpx 16rpx 22rpx;
+  padding: 24rpx 12rpx 18rpx;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
   cursor: pointer;
   position: relative;
-  transition: box-shadow 0.2s $transition-ease-in-out, transform 0.2s $transition-ease-out;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
 
   &:active {
-    transform: translateY(2rpx);
-    box-shadow: $shadow-xs;
+    transform: translateY(1rpx) scale(0.98);
   }
 
   // #ifdef H5
   &:hover {
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05),
-                0 0 0 2px rgba(55, 125, 255, 0.18);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 8px rgba(0, 0, 0, 0.05),
+                0 0 0 2px rgba(55, 125, 255, 0.15);
     transform: translateY(-3px);
   }
   // #endif
 
-  /* 未解锁：灰度 + 弱化阴影，hover 保持静止 */
   &--locked {
-    background: #F9F9F9;
-    opacity: 0.62;
-    filter: grayscale(55%);
+    background: #F7F8FA;
+    opacity: 0.60;
+    filter: grayscale(60%);
 
     &:active { transform: none; }
 
     // #ifdef H5
     &:hover {
-      /* 灰度降低，提示卡片可交互 */
-      opacity: 0.82;
+      opacity: 0.80;
       filter: grayscale(20%);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
       transform: none;
-
-      .bc-hint {
-        color: $campus-blue-dark;
-        text-decoration: underline;
-        text-underline-offset: 2px;
-      }
     }
     // #endif
   }
 
   @media (min-width: 1024px) {
-    border-radius: 14px;
-    padding: 24px 16px 20px;
-    gap: 10px;
-
-    &:hover {
-      transform: translateY(-3px);
-    }
+    border-radius: 12px;
+    padding: 20px 12px 16px;
+    gap: 8px;
+    border-width: 1px;
   }
+}
+
+/* 已固定：右上角星形角标 */
+.bc-star-mark {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  width: 28rpx;
+  height: 28rpx;
+  border-radius: 50%;
+  background: #F59E0B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @media (min-width: 1024px) {
+    width: 18px;
+    height: 18px;
+    top: 6px;
+    right: 6px;
+  }
+}
+
+.bc-star-icon {
+  color: #fff;
 }
 
 /* ─── 图标容器 ─── */
 .bc-icon-wrap {
-  width: 76rpx;
-  height: 76rpx;
-  border-radius: 20rpx;
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1087,13 +1247,13 @@ const handleGoTask = () => {
   flex-shrink: 0;
 
   @media (min-width: 1024px) {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+    width: 52px;
+    height: 52px;
+    border-radius: 13px;
   }
 }
 
-/* 图标颜色系统（已解锁：更饱和的背景 + 更鲜明的前景色） */
+/* 图标颜色系统 */
 .bc-color {
   &--blue   { background: #DBEAFE; .bc-icon { color: #2563EB; } }
   &--teal   { background: #D1FAE5; .bc-icon { color: #0D9488; } }
@@ -1111,88 +1271,50 @@ const handleGoTask = () => {
   position: absolute;
   top: -6rpx;
   right: -6rpx;
-  width: 28rpx;
-  height: 28rpx;
+  width: 26rpx;
+  height: 26rpx;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 2rpx solid $color-bg-card;
 
-  &--unlocked {
-    background: $color-success;
-    color: #fff;
-  }
-
-  &--locked {
-    background: $color-text-quaternary;
-    color: #fff;
-  }
+  &--unlocked { background: $color-success; color: #fff; }
+  &--locked   { background: $color-text-quaternary; color: #fff; }
 
   @media (min-width: 1024px) {
-    width: 20px;
-    height: 20px;
-    top: -5px;
-    right: -5px;
-    border-width: 2px;
+    width: 18px;
+    height: 18px;
+    top: -4px;
+    right: -4px;
+    border-width: 1.5px;
   }
 }
 
 .bc-name {
-  font-size: 24rpx;
+  font-size: 22rpx;
   font-weight: 600;
   color: $color-text-primary;
   text-align: center;
   line-height: 1.3;
 
-  @media (min-width: 1024px) { font-size: 13px; }
+  @media (min-width: 1024px) { font-size: 12px; }
 }
 
 .bc-date {
-  font-size: 19rpx;
+  font-size: 18rpx;
   color: $color-text-tertiary;
   text-align: center;
 
-  @media (min-width: 1024px) { font-size: 11px; }
+  @media (min-width: 1024px) { font-size: 10px; }
 }
 
 .bc-hint {
-  font-size: 19rpx;
+  font-size: 18rpx;
   color: $campus-blue;
   font-weight: 500;
 
-  @media (min-width: 1024px) { font-size: 11px; }
-}
-
-/* 首页展示行 — 占位容器保持网格高度一致 */
-.bc-pinned-row {
-  height: 36rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  @media (min-width: 1024px) { height: 22px; }
-}
-
-.bc-pinned-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.bc-pinned-text {
-  font-size: 17rpx;
-  color: $campus-blue;
-  background: $campus-blue-lighter;
-  border-radius: 100rpx;
-  padding: 3rpx 14rpx;
-  font-weight: 500;
-
-  @media (min-width: 1024px) {
-    font-size: 10px;
-    padding: 2px 10px;
-    border-radius: 100px;
-  }
+  @media (min-width: 1024px) { font-size: 10px; }
 }
 
 /* ══════════════════════════════════════════
@@ -1229,7 +1351,7 @@ const handleGoTask = () => {
   border-radius: 100rpx;
   padding: 18rpx 40rpx;
   cursor: pointer;
-  transition: background $transition-fast $transition-ease-in-out;
+  transition: background 0.15s ease;
 
   &:active { background: $campus-blue-dark; }
 
@@ -1270,9 +1392,7 @@ const handleGoTask = () => {
     pointer-events: auto;
   }
 
-  @media (min-width: 1024px) {
-    align-items: center;
-  }
+  @media (min-width: 1024px) { align-items: center; }
 }
 
 .modal-card {
@@ -1286,12 +1406,10 @@ const handleGoTask = () => {
   pointer-events: auto;
   overflow: hidden;
 
-  &--up {
-    transform: translateY(0);
-  }
+  &--up { transform: translateY(0); }
 
   @media (min-width: 1024px) {
-    width: 480px;
+    width: 460px;
     max-width: 90vw;
     border-radius: 20px;
     box-shadow: $shadow-xl;
@@ -1299,17 +1417,13 @@ const handleGoTask = () => {
     opacity: 0;
     transition: transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.18s ease;
 
-    &--up {
-      transform: scale(1);
-      opacity: 1;
-    }
+    &--up { transform: scale(1); opacity: 1; }
   }
 }
 
-/* 拖动条 */
 .modal-bar {
   width: 48rpx;
-  height: 6rpx;
+  height: 5rpx;
   background: $color-border;
   border-radius: 100rpx;
   margin: 16rpx auto 0;
@@ -1317,29 +1431,23 @@ const handleGoTask = () => {
   @media (min-width: 1024px) { display: none; }
 }
 
-/* 底部安全区 */
 .modal-bottom-safe {
   height: 72rpx;
-
   @media (min-width: 1024px) { height: 8px; }
 }
 
 /* ══════════════════════════════════════════
    徽章详情弹窗内容
 ══════════════════════════════════════════ */
-.detail-card {
-  @media (min-width: 1024px) { padding-bottom: 0; }
-}
-
 .detail-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 28rpx 32rpx 24rpx;
+  padding: 28rpx 32rpx 20rpx;
   gap: 14rpx;
 
   @media (min-width: 1024px) {
-    padding: 28px 32px 20px;
+    padding: 24px 32px 18px;
     gap: 10px;
   }
 }
@@ -1359,10 +1467,6 @@ const handleGoTask = () => {
   }
 }
 
-.detail-icon {
-  // color inherited from parent .bc-color--* class
-}
-
 .detail-name {
   font-size: 36rpx;
   font-weight: 700;
@@ -1372,13 +1476,26 @@ const handleGoTask = () => {
   @media (min-width: 1024px) { font-size: 20px; }
 }
 
-.detail-unlocked-tag,
-.detail-locked-tag {
+.detail-status-tag {
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
   border-radius: 100rpx;
   padding: 6rpx 18rpx 6rpx 12rpx;
+
+  &--unlocked {
+    background: $color-success-bg;
+
+    .detail-status-icon { color: $color-success; }
+    .detail-status-text { color: $color-success; }
+  }
+
+  &--locked {
+    background: $color-bg-hover;
+
+    .detail-status-icon { color: $color-text-tertiary; }
+    .detail-status-text { color: $color-text-tertiary; }
+  }
 
   @media (min-width: 1024px) {
     gap: 4px;
@@ -1387,34 +1504,11 @@ const handleGoTask = () => {
   }
 }
 
-.detail-unlocked-tag {
-  background: $color-success-bg;
-}
+.detail-status-icon {}
 
-.detail-unlocked-icon {
-  color: $color-success;
-}
-
-.detail-unlocked-text {
+.detail-status-text {
   font-size: 22rpx;
   font-weight: 600;
-  color: $color-success;
-
-  @media (min-width: 1024px) { font-size: 13px; }
-}
-
-.detail-locked-tag {
-  background: $color-bg-hover;
-}
-
-.detail-locked-icon {
-  color: $color-text-tertiary;
-}
-
-.detail-locked-text {
-  font-size: 22rpx;
-  font-weight: 500;
-  color: $color-text-tertiary;
 
   @media (min-width: 1024px) { font-size: 13px; }
 }
@@ -1428,14 +1522,14 @@ const handleGoTask = () => {
 }
 
 .detail-info {
-  padding: 24rpx 32rpx;
+  padding: 22rpx 32rpx;
   display: flex;
   flex-direction: column;
-  gap: 18rpx;
+  gap: 16rpx;
 
   @media (min-width: 1024px) {
-    padding: 20px 32px;
-    gap: 14px;
+    padding: 18px 32px;
+    gap: 13px;
   }
 }
 
@@ -1445,7 +1539,7 @@ const handleGoTask = () => {
   justify-content: space-between;
   gap: 12rpx;
 
-  @media (min-width: 1024px) { gap: 8px; }
+  @media (min-width: 1024px) { gap: 10px; }
 }
 
 .detail-row-label {
@@ -1460,16 +1554,15 @@ const handleGoTask = () => {
 .detail-row-icon {
   flex-shrink: 0;
 
-  &--blue   { color: $campus-blue; }
+  &--blue   { color: #3B82F6; }
   &--teal   { color: #0D9488; }
-  &--amber  { color: #B45309; }
+  &--amber  { color: #D97706; }
 }
 
 .detail-row-key {
   font-size: 24rpx;
+  color: $color-text-secondary;
   font-weight: 500;
-  color: $color-text-tertiary;
-  white-space: nowrap;
 
   @media (min-width: 1024px) { font-size: 13px; }
 }
@@ -1478,10 +1571,11 @@ const handleGoTask = () => {
   font-size: 24rpx;
   color: $color-text-primary;
   text-align: right;
+  flex: 1;
   line-height: 1.4;
 
   &--highlight {
-    color: #f59e0b;
+    color: #D97706;
     font-weight: 600;
   }
 
@@ -1489,9 +1583,9 @@ const handleGoTask = () => {
 }
 
 .detail-desc-wrap {
-  background: $color-bg-page;
+  background: $color-bg-hover;
   border-radius: 12rpx;
-  padding: 18rpx 20rpx;
+  padding: 16rpx 20rpx;
 
   @media (min-width: 1024px) {
     border-radius: 8px;
@@ -1500,90 +1594,94 @@ const handleGoTask = () => {
 }
 
 .detail-desc {
-  font-size: 24rpx;
+  font-size: 22rpx;
   color: $color-text-secondary;
   line-height: 1.6;
 
   @media (min-width: 1024px) { font-size: 13px; }
 }
 
+/* 操作按钮区 */
 .detail-actions {
   display: flex;
-  gap: 16rpx;
-  padding: 0 32rpx 8rpx;
+  flex-direction: column;
+  gap: 12rpx;
+  padding: 8rpx 28rpx 0;
 
   @media (min-width: 1024px) {
-    gap: 12px;
-    padding: 4px 32px 8px;
+    padding: 4px 28px 0;
+    gap: 8px;
   }
 }
 
-/* ─── 操作按钮 ─── */
 .detail-btn {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8rpx;
-  border-radius: 100rpx;
-  padding: 22rpx 0;
+  height: 88rpx;
+  border-radius: 16rpx;
   cursor: pointer;
-  transition: opacity 0.15s ease, transform 0.1s ease;
-
-  &:active {
-    opacity: 0.85;
-    transform: scale(0.98);
-  }
-
-  // #ifdef H5
-  &:hover { opacity: 0.9; }
-  // #endif
+  transition: all 0.15s ease;
 
   &--primary {
     background: $campus-blue;
+    box-shadow: 0 4rpx 12rpx rgba($campus-blue, 0.30);
+
     .detail-btn-icon { color: #fff; }
     .detail-btn-text { color: #fff; }
 
-    // #ifdef H5
-    &:hover { background: $campus-blue-light; opacity: 1; }
-    // #endif
+    &:active { background: $campus-blue-dark; }
   }
 
   &--secondary {
-    background: $campus-blue-lighter;
+    background: #FFFBEB;
+    border: 1.5rpx solid #FDE68A;
+
+    .detail-btn-icon { color: #D97706; }
+    .detail-btn-text { color: #D97706; }
+
+    &:active { background: #FEF3C7; }
+  }
+
+  &--secondary.detail-btn--pinned {
+    background: #EFF6FF;
+    border-color: #BFDBFE;
+
     .detail-btn-icon { color: $campus-blue; }
     .detail-btn-text { color: $campus-blue; }
   }
 
-  &--pinned {
-    background: $color-warning-bg;
-    .detail-btn-icon { color: $color-warning; }
-    .detail-btn-text { color: $color-warning; }
-  }
-
   &--ghost {
     background: $color-bg-hover;
-    .detail-btn-icon { color: $color-text-tertiary; }
-    .detail-btn-text { color: $color-text-tertiary; }
+
+    .detail-btn-text { color: $color-text-secondary; }
+
+    &:active { background: $color-border-light; }
   }
+
+  // #ifdef H5
+  &--primary:hover   { background: $campus-blue-light; }
+  &--secondary:hover { background: #FEF3C7; }
+  &--ghost:hover     { background: $color-border-light; }
+  // #endif
 
   @media (min-width: 1024px) {
-    border-radius: 100px;
-    padding: 12px 0;
+    height: 44px;
+    border-radius: 10px;
     gap: 6px;
+    border-width: 1px;
   }
-}
-
-.detail-btn-icon {
-  flex-shrink: 0;
 }
 
 .detail-btn-text {
-  font-size: 26rpx;
-  font-weight: 500;
+  font-size: 28rpx;
+  font-weight: 600;
 
   @media (min-width: 1024px) { font-size: 14px; }
 }
+
+.detail-btn-icon {}
 
 /* ══════════════════════════════════════════
    规则弹窗内容
@@ -1591,7 +1689,7 @@ const handleGoTask = () => {
 .rule-header {
   padding: 24rpx 32rpx 16rpx;
 
-  @media (min-width: 1024px) { padding: 20px 32px 12px; }
+  @media (min-width: 1024px) { padding: 20px 28px 14px; }
 }
 
 .rule-title {
@@ -1603,10 +1701,9 @@ const handleGoTask = () => {
 }
 
 .rule-scroll {
-  max-height: 60vh;
-  overflow: hidden;
+  max-height: 56vh;
 
-  @media (min-width: 1024px) { max-height: 400px; }
+  @media (min-width: 1024px) { max-height: 360px; }
 }
 
 .rule-body {
@@ -1616,25 +1713,23 @@ const handleGoTask = () => {
   gap: 24rpx;
 
   @media (min-width: 1024px) {
-    padding: 0 32px;
-    gap: 20px;
+    padding: 0 28px;
+    gap: 18px;
   }
 }
 
-.rule-section {
-  display: flex;
-  flex-direction: column;
-  gap: 10rpx;
-
-  @media (min-width: 1024px) { gap: 8px; }
-}
+.rule-section {}
 
 .rule-section-header {
   display: flex;
   align-items: center;
   gap: 10rpx;
+  margin-bottom: 12rpx;
 
-  @media (min-width: 1024px) { gap: 8px; }
+  @media (min-width: 1024px) {
+    gap: 7px;
+    margin-bottom: 8px;
+  }
 }
 
 .rule-section-icon {
@@ -1651,19 +1746,16 @@ const handleGoTask = () => {
 }
 
 .rule-section-content {
-  padding-left: 28rpx;
   display: flex;
   flex-direction: column;
-  gap: 6rpx;
+  gap: 8rpx;
+  padding-left: 28rpx;
 
-  @media (min-width: 1024px) {
-    padding-left: 22px;
-    gap: 4px;
-  }
+  @media (min-width: 1024px) { gap: 5px; padding-left: 20px; }
 }
 
 .rule-line {
-  font-size: 24rpx;
+  font-size: 23rpx;
   color: $color-text-secondary;
   line-height: 1.6;
 
@@ -1671,17 +1763,8 @@ const handleGoTask = () => {
 }
 
 .rule-footer {
-  padding: 20rpx 32rpx 8rpx;
-  display: flex;
+  padding: 20rpx 28rpx;
 
-  .detail-btn {
-    padding: 22rpx 0;
-  }
-
-  @media (min-width: 1024px) {
-    padding: 16px 32px 4px;
-
-    .detail-btn { padding: 12px 0; }
-  }
+  @media (min-width: 1024px) { padding: 16px 28px; }
 }
 </style>

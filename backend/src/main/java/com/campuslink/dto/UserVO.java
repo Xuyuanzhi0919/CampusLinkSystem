@@ -1,5 +1,6 @@
 package com.campuslink.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ public class UserVO {
     /**
      * 用户ID
      */
+    @JsonProperty("uId")
     private Long uId;
 
     /**

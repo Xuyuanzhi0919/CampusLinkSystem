@@ -1,5 +1,6 @@
 package com.campuslink.config;
 
+import com.campuslink.middleware.AdminAuthInterceptor;
 import com.campuslink.middleware.JwtAuthInterceptor;
 import com.campuslink.middleware.OptionalJwtAuthInterceptor;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     private final JwtAuthInterceptor jwtAuthInterceptor;
     private final OptionalJwtAuthInterceptor optionalJwtAuthInterceptor;
+    private final AdminAuthInterceptor adminAuthInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -27,6 +29,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        // 🎯 管理员专属拦截器 - /admin/** 必须 role=admin
+        registry.addInterceptor(adminAuthInterceptor)
+                .addPathPatterns("/admin/**");
+
         // 🎯 可选认证拦截器 - 用于游客可访问但需要识别登录用户的接口
         registry.addInterceptor(optionalJwtAuthInterceptor)
                 .addPathPatterns(
@@ -78,7 +84,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/webjars/**",
                         "/favicon.ico",
                         "/ws/**",              // WebSocket 端点
-                        "/location/reverse-geocode"  // 反地理编码（公开，无需登录）
+                        "/location/reverse-geocode",  // 反地理编码（公开，无需登录）
+                        "/admin/**"            // 管理员接口由 AdminAuthInterceptor 专门处理
                 );
     }
 }

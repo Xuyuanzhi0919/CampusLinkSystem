@@ -1,382 +1,740 @@
 <template>
   <view class="task-hall-page">
 
-    <!-- ========== 固定顶部导航区 ========== -->
-    <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
-      <view class="top-nav-container">
-        <!-- 品牌 Logo（移动端隐藏） -->
-        <view class="brand-logo">
-          <Icon name="clipboard-list" :size="20" class="logo-icon" />
-          <text class="logo-text">任务大厅</text>
-        </view>
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║         移动端独立布局                ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <template v-if="!isDesktop">
+      <view class="mobile-page">
 
-        <!-- 搜索框 -->
-        <view class="search-wrapper">
-          <view class="compact-search-bar">
-            <Icon name="search" :size="16" class="search-icon" />
-            <input
-              v-model="searchKeyword"
-              class="search-input"
-              placeholder="搜索任务..."
-              confirm-type="search"
-              @confirm="handleSearch"
-              @focus="handleSearchFocus"
-              @blur="handleSearchBlur"
-            />
-            <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
-              <Icon name="x" :size="14" />
-            </view>
-          </view>
-
-          <!-- 搜索历史下拉面板 -->
-          <view v-if="showSearchHistory" class="search-history-dropdown">
-            <template v-if="searchHistory.length > 0">
-              <view class="history-header">
-                <text class="history-title">搜索历史</text>
-                <text class="history-clear" @click="clearSearchHistory">清空</text>
+        <!-- NavBar：title slot 放搜索框，right slot 放发布 -->
+        <CNavBar :auto-back="true" :border="true">
+          <template #title>
+            <view class="m-nav-search">
+              <Icon name="search" :size="15" class="m-nav-search-icon" />
+              <input
+                v-model="searchKeyword"
+                class="m-nav-search-input"
+                placeholder="搜索任务..."
+                confirm-type="search"
+                @confirm="handleSearch"
+                @focus="handleSearchFocus"
+                @blur="handleSearchBlur"
+              />
+              <view v-if="searchKeyword" class="m-nav-clear" @click.stop="clearSearch">
+                <Icon name="x" :size="13" />
               </view>
-              <view class="history-list">
-                <view
-                  v-for="(item, index) in searchHistory"
-                  :key="index"
-                  class="history-item"
-                  @click="handleSearchHistoryClick(item)"
-                >
-                  <Icon name="clock" :size="14" class="history-icon" />
-                  <text class="history-text">{{ item }}</text>
-                  <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+            </view>
+          </template>
+          <template #right>
+            <view class="m-publish-btn" @click="handlePublish">
+              <Icon name="plus" :size="20" class="m-publish-icon" />
+            </view>
+          </template>
+        </CNavBar>
+
+        <!-- 搜索历史下拉（叠在 NavBar 正下方）-->
+        <view v-if="showSearchHistory" class="m-search-dropdown">
+          <template v-if="searchHistory.length > 0">
+            <view class="m-sh-header">
+              <text class="m-sh-title">搜索历史</text>
+              <text class="m-sh-clear" @click="clearSearchHistory">清空</text>
+            </view>
+            <view class="m-sh-list">
+              <view
+                v-for="(item, index) in searchHistory"
+                :key="index"
+                class="m-sh-item"
+                @click="handleSearchHistoryClick(item)"
+              >
+                <Icon name="clock" :size="13" class="m-sh-icon" />
+                <text class="m-sh-text">{{ item }}</text>
+                <view class="m-sh-remove" @click.stop="deleteSearchHistoryItem(item)">
+                  <Icon name="x" :size="12" />
                 </view>
               </view>
-            </template>
-            <view v-else class="history-empty">
-              <Icon name="search" :size="32" class="history-empty-icon" />
-              <text class="empty-text">暂无搜索历史</text>
-              <text class="empty-hint">搜索后会自动记录</text>
             </view>
+          </template>
+          <view v-else class="m-sh-empty">
+            <Icon name="search" :size="28" class="m-sh-empty-icon" />
+            <text class="m-sh-empty-text">暂无搜索历史</text>
           </view>
         </view>
 
-        <!-- 发布任务按钮 -->
-        <view class="publish-btn" @click="handlePublish">
-          <Icon name="plus" :size="15" class="publish-icon" />
-          <text class="publish-text">发布</text>
-        </view>
-      </view>
-    </view>
-
-    <!-- 顶部导航占位（固定导航脱离文档流，需要等高占位） -->
-    <view class="nav-spacer" />
-
-    <!-- ========== Sticky 筛选区（类型 + 状态下拉） ========== -->
-    <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
-      <view class="filter-nav-container">
-        <!-- 任务类型：横向滚动标签 -->
-        <view class="type-tabs-wrap">
-          <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
-            <view class="type-tabs">
+        <!-- 筛选栏（类型滚动 + 状态 + 侧边栏入口）-->
+        <view class="m-filter-bar">
+          <scroll-view class="m-type-scroll" scroll-x :show-scrollbar="false">
+            <view class="m-type-tabs">
               <view
                 v-for="type in taskTypes"
                 :key="type.value"
-                class="type-tab"
+                class="m-type-tab"
                 :class="{ active: currentType === type.value }"
                 @click="handleTypeChange(type.value)"
               >
-                <Icon :name="type.iconName" :size="14" class="type-tab-icon" />
-                <text class="type-tab-label">{{ type.label }}</text>
+                <Icon :name="type.iconName" :size="13" class="m-tab-icon" />
+                <text class="m-tab-label">{{ type.label }}</text>
               </view>
             </view>
           </scroll-view>
-        </view>
 
-        <!-- 状态筛选：下拉菜单 -->
-        <view class="status-dropdown-wrap">
-          <view class="status-dropdown-btn" :class="{ active: currentStatus !== '' }" @click.stop="toggleStatusDropdown">
-            <text class="status-dropdown-label">{{ currentStatusLabel }}</text>
-            <Icon name="chevron-down" :size="12" class="dropdown-arrow" :class="{ rotated: statusDropdownOpen }" />
+          <!-- 右侧：状态下拉 + 数据面板入口 -->
+          <view class="m-filter-right">
+            <view
+              class="m-status-btn"
+              :class="{ active: currentStatus !== '' }"
+              @click.stop="toggleStatusDropdown"
+            >
+              <text class="m-status-label">{{ currentStatusLabel }}</text>
+              <Icon
+                name="chevron-down"
+                :size="11"
+                class="m-dropdown-arrow"
+                :class="{ rotated: statusDropdownOpen }"
+              />
+            </view>
+            <view class="m-info-btn" @click="openMobileSidebar">
+              <Icon name="sliders-horizontal" :size="16" class="m-info-icon" />
+              <view v-if="mobileActiveCount > 0" class="m-info-dot" />
+            </view>
           </view>
-          <view v-if="statusDropdownOpen" class="status-dropdown-menu">
+
+          <!-- 状态下拉菜单 -->
+          <view v-if="statusDropdownOpen" class="m-status-menu">
             <view
               v-for="opt in statusOptions"
               :key="opt.value"
-              class="dropdown-item"
+              class="m-menu-item"
               :class="{ active: currentStatus === opt.value }"
               @click.stop="selectStatus(opt.value)"
             >
-              <text class="dropdown-item-label">{{ opt.label }}</text>
-              <Icon v-if="currentStatus === opt.value" name="check" :size="13" class="dropdown-item-check" />
+              <text class="m-menu-label">{{ opt.label }}</text>
+              <Icon v-if="currentStatus === opt.value" name="check" :size="13" class="m-menu-check" />
             </view>
           </view>
         </view>
-      </view>
-    </view>
 
-    <!-- 下拉遮罩 -->
-    <view v-if="statusDropdownOpen" class="dropdown-mask" @click="statusDropdownOpen = false" />
+        <!-- 状态遮罩 -->
+        <view v-if="statusDropdownOpen" class="dropdown-mask" @click="statusDropdownOpen = false" />
 
-    <!-- ========== 主内容区（整页滚动） ========== -->
-    <view class="main-content">
-      <view class="content-container">
+        <!-- 我的任务快捷条（已登录时显示）-->
+        <view v-if="userStore.isLoggedIn" class="m-my-strip" @click="openMobileSidebar">
+          <view class="m-strip-left">
+            <Icon name="clipboard-list" :size="14" class="m-strip-icon" />
+            <text class="m-strip-title">我的任务</text>
+          </view>
+          <view class="m-strip-stats">
+            <view class="m-strip-cell">
+              <text class="m-strip-num m-strip-num--pending">{{ myStats.pending }}</text>
+              <text class="m-strip-name">待接单</text>
+            </view>
+            <view class="m-strip-div" />
+            <view class="m-strip-cell">
+              <text class="m-strip-num m-strip-num--ongoing">{{ myStats.ongoing }}</text>
+              <text class="m-strip-name">进行中</text>
+            </view>
+            <view class="m-strip-div" />
+            <view class="m-strip-cell">
+              <text class="m-strip-num m-strip-num--done">{{ myStats.done }}</text>
+              <text class="m-strip-name">已完成</text>
+            </view>
+          </view>
+          <Icon name="chevron-right" :size="14" class="m-strip-arrow" />
+        </view>
 
-        <!-- ===== 主列表区 ===== -->
-        <view class="task-main">
+        <!-- ───── 主列表（scroll-view 接管滚动）───── -->
+        <scroll-view
+          class="m-scroll"
+          scroll-y
+          refresher-enabled
+          :refresher-triggered="mobileRefreshing"
+          @refresherrefresh="handleMobileRefresh"
+          @scrolltolower="handleScrollToLower"
+        >
+          <!-- 骨架屏 -->
+          <SkeletonScreen v-if="loading && taskList.length === 0" type="card" :count="4" />
 
-        <!-- 骨架屏 -->
-        <SkeletonScreen v-if="loading && taskList.length === 0" type="card" :count="4" />
-
-        <!-- 任务列表 -->
-        <view v-if="!loading || taskList.length > 0" class="task-list">
-          <view
-            v-for="task in taskList"
-            :key="task.tid"
-            class="task-card"
-            @click="handleTaskClick(task)"
-          >
-            <!-- 行1：类型标签 + 标题 + 状态 -->
-            <view class="card-row1">
-              <view class="card-row1-left">
+          <!-- 任务卡片列表 -->
+          <view v-if="!loading || taskList.length > 0" class="m-task-list">
+            <view
+              v-for="task in taskList"
+              :key="task.tid"
+              class="m-task-card"
+              @click="handleTaskClick(task)"
+            >
+              <!-- 行1：类型标签 + 状态 -->
+              <view class="m-card-top">
                 <view class="type-badge" :class="`type-${task.taskType}`">
-                  <Icon :name="getTypeIconName(task.taskType)" :size="12" class="type-badge-icon" />
+                  <Icon :name="getTypeIconName(task.taskType)" :size="11" class="type-badge-icon" />
                   <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
                 </view>
-                <text class="card-title">{{ task.title }}</text>
+                <view
+                  class="status-tag"
+                  :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isTaskExpired(task) }]"
+                >
+                  <text class="status-text">{{ getStatusLabel(task.status, task) }}</text>
+                </view>
               </view>
-              <view
-                class="status-tag"
-                :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isTaskExpired(task) }]"
-              >
-                <text class="status-text">{{ getStatusLabel(task.status, task) }}</text>
-              </view>
-            </view>
 
-            <!-- 行2：内容摘要 -->
-            <text v-if="task.content" class="card-excerpt">{{ task.content }}</text>
+              <!-- 行2：标题 -->
+              <text class="m-card-title">{{ task.title }}</text>
 
-            <!-- 行3：头像 + 昵称 + 时间 + 地点/截止 -->
-            <view class="card-row2">
-              <view class="meta-avatar">
+              <!-- 行3：内容摘要 -->
+              <text v-if="task.content" class="m-card-excerpt">{{ task.content }}</text>
+
+              <!-- 行4：发布者 + 时间 + 地点/截止 -->
+              <view class="m-card-meta">
                 <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
                   <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
                 </view>
-              </view>
-              <text class="meta-name">{{ task.publisherNickname }}</text>
-              <text class="meta-dot">·</text>
-              <text class="meta-time">{{ formatTime(task.createdAt) }}</text>
-              <view v-if="task.location && !parseCoord(task.location)" class="meta-loc">
-                <Icon name="map-pin" :size="11" class="meta-loc-icon" />
-                <text class="meta-loc-text">{{ task.location }}</text>
-              </view>
-              <view v-else-if="task.deadline" class="meta-loc">
-                <Icon name="clock" :size="11" class="meta-loc-icon" />
-                <text class="meta-loc-text">{{ formatDeadline(task.deadline) }}</text>
-              </view>
-            </view>
-
-            <!-- 行4：积分 + 快捷接单 -->
-            <view class="card-row3">
-              <view class="reward-pill">
-                <Icon name="zap" :size="12" class="reward-icon" />
-                <text class="reward-pts">{{ task.rewardPoints }}</text>
-                <text class="reward-unit">积分</text>
-              </view>
-              <view
-                v-if="task.status === 0 && !isTaskExpired(task) && userStore.isLoggedIn && task.publisherNickname !== userStore.userInfo?.nickname"
-                class="quick-accept-btn"
-                @click.stop="handleQuickAccept(task)"
-              >
-                <text>立即接单</text>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- 空状态 -->
-        <view v-if="!loading && taskList.length === 0" class="empty-state">
-          <Icon name="clipboard-list" :size="56" class="empty-icon" />
-          <text class="empty-text">暂无任务</text>
-          <text class="empty-tip">{{ (currentType || currentStatus) ? '未找到符合条件的任务，试试调整筛选条件' : '快去发布一个新任务吧~' }}</text>
-          <view v-if="currentType || currentStatus" class="empty-action-btn" @click="resetFilters">
-            <Icon name="rotate-ccw" :size="14" />
-            <text class="empty-action-text">重置筛选</text>
-          </view>
-          <view v-else class="empty-action-btn primary" @click="handlePublish">
-            <Icon name="plus" :size="14" />
-            <text class="empty-action-text">发布任务</text>
-          </view>
-        </view>
-
-        <!-- 加载更多 -->
-        <view v-if="taskList.length > 0" class="load-more">
-          <text v-if="loadingMore" class="load-more-text">加载中...</text>
-          <text v-else-if="!hasMore" class="load-more-text">没有更多了</text>
-        </view>
-
-        <view class="safe-area-bottom" />
-
-        </view><!-- end task-main -->
-
-        <!-- ===== 侧边栏（仅桌面端显示；移动端由 FAB 触发） ===== -->
-        <view class="task-sidebar" :class="{ 'mobile-open': showMobileSidebar }">
-          <!-- 移动端关闭按钮 -->
-          <view class="mobile-sidebar-close" @click="showMobileSidebar = false">
-            <Icon name="x" :size="18" />
-          </view>
-
-          <!-- 模块1：我的任务 -->
-          <view class="sidebar-card" v-if="userStore.isLoggedIn">
-            <view class="sidebar-card-header">
-              <Icon name="clipboard-list" :size="15" class="sidebar-header-icon" />
-              <text class="sidebar-card-title">我的任务</text>
-            </view>
-            <view class="my-stats-grid">
-              <view class="stat-cell">
-                <text class="stat-num stat-pending">{{ myStats.pending }}</text>
-                <text class="stat-label">待接单</text>
-              </view>
-              <view class="stat-cell">
-                <text class="stat-num stat-ongoing">{{ myStats.ongoing }}</text>
-                <text class="stat-label">进行中</text>
-              </view>
-              <view class="stat-cell">
-                <text class="stat-num stat-done">{{ myStats.done }}</text>
-                <text class="stat-label">已完成</text>
-              </view>
-            </view>
-            <!-- 成就文案 + 趋势 -->
-            <view v-if="totalTaskDone > 0 || (userStore.userInfo?.points ?? 0) > 0" class="achievement-banner">
-              <Icon name="award" :size="14" class="achievement-icon" />
-              <view class="achievement-content">
-                <text class="achievement-text">
-                  累计完成 <text class="achievement-highlight">{{ totalTaskDone }}</text> 个任务，持有 <text class="achievement-highlight">{{ userStore.userInfo?.points ?? 0 }}</text> 积分
-                </text>
-                <view v-if="weekTrend" class="trend-row">
-                  <Icon
-                    :name="weekTrend.diff >= 0 ? 'trending-up' : 'trending-down'"
-                    :size="12"
-                    class="trend-icon"
-                    :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'"
-                  />
-                  <text class="trend-text" :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'">
-                    本周 +{{ weekTrend.thisWeekPts }} 积分{{ weekTrend.diff !== 0 ? `，较上周 ${weekTrend.diff > 0 ? '+' : ''}${weekTrend.diff}` : '' }}
-                  </text>
+                <text class="meta-name">{{ task.publisherNickname }}</text>
+                <text class="meta-dot">·</text>
+                <text class="meta-time">{{ formatTime(task.createdAt) }}</text>
+                <view v-if="task.location && !parseCoord(task.location)" class="meta-loc">
+                  <Icon name="map-pin" :size="10" class="meta-loc-icon" />
+                  <text class="meta-loc-text">{{ task.location }}</text>
+                </view>
+                <view v-else-if="task.deadline" class="meta-loc">
+                  <Icon name="clock" :size="10" class="meta-loc-icon" />
+                  <text class="meta-loc-text">{{ formatDeadline(task.deadline) }}</text>
                 </view>
               </view>
-            </view>
 
-            <view class="sidebar-link-row">
-              <view class="sidebar-quick-btn" @click="goMyPublished">
-                <Icon name="send" :size="13" class="quick-btn-icon" />
-                <text class="quick-btn-label">我的发布</text>
-              </view>
-              <view class="sidebar-quick-btn" @click="goMyAccepted">
-                <Icon name="package-check" :size="13" class="quick-btn-icon" />
-                <text class="quick-btn-label">我的接单</text>
-              </view>
-            </view>
-          </view>
-
-          <!-- 模块2：平台统计 -->
-          <view class="sidebar-card" v-if="todayPublished > 0">
-            <view class="sidebar-card-header">
-              <Icon name="bar-chart-2" :size="15" class="sidebar-header-icon" />
-              <text class="sidebar-card-title">今日动态</text>
-            </view>
-            <view class="platform-stats">
-              <view class="platform-stat-item">
-                <text class="platform-stat-num">{{ todayPublished }}</text>
-                <text class="platform-stat-label">今日发布</text>
-              </view>
-              <view class="platform-stat-divider" />
-              <view class="platform-stat-item">
-                <text class="platform-stat-num">{{ taskList.length }}</text>
-                <text class="platform-stat-label">当前在线</text>
-              </view>
-            </view>
-          </view>
-
-          <!-- 模块3：热门高积分任务 -->
-          <view class="sidebar-card" v-if="hotTasks.length > 0">
-            <view class="sidebar-card-header">
-              <Icon name="flame" :size="15" class="sidebar-header-icon" />
-              <text class="sidebar-card-title">高积分任务</text>
-            </view>
-            <view class="hot-task-list">
-              <view
-                v-for="(task, index) in hotTasks"
-                :key="task.tid"
-                class="hot-task-item"
-                @click="handleTaskClick(task)"
-              >
-                <text class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</text>
-                <text class="hot-title">{{ task.rewardPoints >= 50 ? '🔥 ' + task.title : task.title }}</text>
-                <view class="hot-reward">
-                  <Icon name="zap" :size="11" />
-                  <text class="hot-pts">{{ task.rewardPoints }}</text>
+              <!-- 行5：积分 + 快捷接单 -->
+              <view class="m-card-footer">
+                <view class="reward-pill">
+                  <Icon name="zap" :size="12" class="reward-icon" />
+                  <text class="reward-pts">{{ task.rewardPoints }}</text>
+                  <text class="reward-unit">积分</text>
+                </view>
+                <view
+                  v-if="task.status === 0 && !isTaskExpired(task) && userStore.isLoggedIn && task.publisherNickname !== userStore.userInfo?.nickname"
+                  class="quick-accept-btn"
+                  @click.stop="handleQuickAccept(task)"
+                >
+                  <text>立即接单</text>
                 </view>
               </view>
             </view>
           </view>
 
-          <!-- 模块4：附近任务（已获取定位后显示） -->
-          <view class="sidebar-card" v-if="nearbyTasks.length > 0">
-            <view class="sidebar-card-header">
-              <Icon name="map-pin" :size="15" class="sidebar-header-icon nearby-icon" />
-              <text class="sidebar-card-title">附近任务</text>
-              <view class="nearby-refresh" @click="loadNearbyTasks">
-                <Icon name="rotate-cw" :size="13" class="nearby-refresh-icon" :class="{ spinning: locationLoading }" />
+          <!-- 空状态 -->
+          <view v-if="!loading && taskList.length === 0" class="empty-state">
+            <Icon name="clipboard-list" :size="56" class="empty-icon" />
+            <text class="empty-text">暂无任务</text>
+            <text class="empty-tip">
+              {{ (currentType || currentStatus) ? '未找到符合条件的任务，试试调整筛选条件' : '快去发布一个新任务吧~' }}
+            </text>
+            <view v-if="currentType || currentStatus" class="empty-action-btn" @click="resetFilters">
+              <Icon name="rotate-ccw" :size="14" />
+              <text class="empty-action-text">重置筛选</text>
+            </view>
+            <view v-else class="empty-action-btn primary" @click="handlePublish">
+              <Icon name="plus" :size="14" />
+              <text class="empty-action-text">发布任务</text>
+            </view>
+          </view>
+
+          <!-- 加载更多 -->
+          <view v-if="taskList.length > 0" class="load-more">
+            <text v-if="loadingMore" class="load-more-text">加载中...</text>
+            <text v-else-if="!hasMore" class="load-more-text">没有更多了</text>
+          </view>
+
+          <view class="m-safe-bottom" />
+        </scroll-view>
+
+        <!-- ───── Bottom Sheet：数据面板 ───── -->
+        <view
+          v-if="showMobileSidebar"
+          class="bs-overlay"
+          :class="{ 'bs-overlay--dim': bsUp }"
+          @click="closeMobileSidebar"
+        >
+          <view class="bs-sheet" :class="{ 'bs-sheet--up': bsUp }" @click.stop>
+            <view class="bs-bar" />
+
+            <!-- Sheet 头部 -->
+            <view class="bs-header">
+              <text class="bs-title">任务中心</text>
+              <view class="bs-close" @click="closeMobileSidebar">
+                <Icon name="x" :size="18" class="bs-close-icon" />
               </view>
             </view>
-            <view class="nearby-task-list">
-              <view
-                v-for="task in nearbyTasks"
-                :key="task.tid"
-                class="nearby-task-item"
-                @click="handleTaskClick(task)"
-              >
-                <view class="nearby-task-info">
-                  <text class="nearby-task-title">{{ task.title }}</text>
-                  <view class="nearby-task-meta">
-                    <Icon name="map-pin" :size="11" class="nearby-meta-icon" />
-                    <text class="nearby-dist">{{ formatDist(task.distance) }}</text>
-                    <text class="nearby-sep">·</text>
-                    <Icon name="zap" :size="11" class="nearby-pts-icon" />
-                    <text class="nearby-pts">{{ task.rewardPoints }}</text>
+
+            <scroll-view class="bs-scroll" scroll-y>
+
+              <!-- 我的任务（登录后） -->
+              <view v-if="userStore.isLoggedIn" class="bs-card">
+                <view class="bs-card-header">
+                  <Icon name="clipboard-list" :size="14" class="bs-card-icon" />
+                  <text class="bs-card-title">我的任务</text>
+                </view>
+                <view class="bs-stats-row">
+                  <view class="bs-stat">
+                    <text class="bs-stat-num bs-stat-num--pending">{{ myStats.pending }}</text>
+                    <text class="bs-stat-label">待接单</text>
+                  </view>
+                  <view class="bs-stat-div" />
+                  <view class="bs-stat">
+                    <text class="bs-stat-num bs-stat-num--ongoing">{{ myStats.ongoing }}</text>
+                    <text class="bs-stat-label">进行中</text>
+                  </view>
+                  <view class="bs-stat-div" />
+                  <view class="bs-stat">
+                    <text class="bs-stat-num bs-stat-num--done">{{ myStats.done }}</text>
+                    <text class="bs-stat-label">已完成</text>
                   </view>
                 </view>
-                <Icon name="chevron-right" :size="14" class="nearby-arrow" />
+                <view v-if="totalTaskDone > 0 || (userStore.userInfo?.points ?? 0) > 0" class="bs-achievement">
+                  <Icon name="award" :size="13" class="bs-award-icon" />
+                  <text class="bs-achievement-text">
+                    累计完成 {{ totalTaskDone }} 个任务，持有 {{ userStore.userInfo?.points ?? 0 }} 积分
+                  </text>
+                </view>
+                <view class="bs-quick-row">
+                  <view class="bs-quick-btn" @click="goMyPublished">
+                    <Icon name="send" :size="13" class="bs-quick-icon" />
+                    <text class="bs-quick-label">我的发布</text>
+                  </view>
+                  <view class="bs-quick-btn" @click="goMyAccepted">
+                    <Icon name="package-check" :size="13" class="bs-quick-icon" />
+                    <text class="bs-quick-label">我的接单</text>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 高积分任务 -->
+              <view v-if="hotTasks.length > 0" class="bs-card">
+                <view class="bs-card-header">
+                  <Icon name="flame" :size="14" class="bs-card-icon bs-card-icon--hot" />
+                  <text class="bs-card-title">高积分任务</text>
+                </view>
+                <view class="bs-hot-list">
+                  <view
+                    v-for="(task, index) in hotTasks"
+                    :key="task.tid"
+                    class="bs-hot-item"
+                    @click="() => { closeMobileSidebar(); setTimeout(() => handleTaskClick(task), 320) }"
+                  >
+                    <text class="bs-hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</text>
+                    <text class="bs-hot-title">{{ task.rewardPoints >= 50 ? '🔥 ' + task.title : task.title }}</text>
+                    <view class="bs-hot-reward">
+                      <Icon name="zap" :size="11" class="bs-hot-icon" />
+                      <text class="bs-hot-pts">{{ task.rewardPoints }}</text>
+                    </view>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 今日动态 -->
+              <view v-if="todayPublished > 0" class="bs-card bs-card--compact">
+                <view class="bs-platform-row">
+                  <view class="bs-platform-item">
+                    <text class="bs-platform-num">{{ todayPublished }}</text>
+                    <text class="bs-platform-label">今日发布</text>
+                  </view>
+                  <view class="bs-platform-div" />
+                  <view class="bs-platform-item">
+                    <text class="bs-platform-num">{{ taskList.length }}</text>
+                    <text class="bs-platform-label">当前在线</text>
+                  </view>
+                </view>
+              </view>
+
+              <!-- 附近任务（已获取定位）-->
+              <view v-if="nearbyTasks.length > 0" class="bs-card">
+                <view class="bs-card-header">
+                  <Icon name="map-pin" :size="14" class="bs-card-icon bs-card-icon--nearby" />
+                  <text class="bs-card-title">附近任务</text>
+                  <view class="bs-nearby-refresh" @click="loadNearbyTasks">
+                    <Icon name="rotate-cw" :size="13" :class="{ spinning: locationLoading }" />
+                  </view>
+                </view>
+                <view class="bs-nearby-list">
+                  <view
+                    v-for="task in nearbyTasks"
+                    :key="task.tid"
+                    class="bs-nearby-item"
+                    @click="() => { closeMobileSidebar(); setTimeout(() => handleTaskClick(task), 320) }"
+                  >
+                    <view class="bs-nearby-info">
+                      <text class="bs-nearby-title">{{ task.title }}</text>
+                      <view class="bs-nearby-meta">
+                        <Icon name="map-pin" :size="10" class="bs-nearby-icon" />
+                        <text class="bs-nearby-dist">{{ formatDist(task.distance) }}</text>
+                        <text class="bs-nearby-dot">·</text>
+                        <Icon name="zap" :size="10" class="bs-nearby-icon" />
+                        <text class="bs-nearby-pts">{{ task.rewardPoints }}</text>
+                      </view>
+                    </view>
+                    <Icon name="chevron-right" :size="13" class="bs-nearby-arrow" />
+                  </view>
+                </view>
+              </view>
+
+              <!-- 定位引导（未获取定位时，仅 H5）-->
+              <!-- #ifdef H5 -->
+              <view
+                v-if="nearbyTasks.length === 0 && !locationLoading && !userLocation"
+                class="bs-location-prompt"
+                @click="loadNearbyTasks"
+              >
+                <Icon name="map-pin" :size="15" class="bs-location-icon" />
+                <text class="bs-location-text">开启定位，发现附近任务</text>
+                <Icon name="chevron-right" :size="13" class="bs-location-arrow" />
+              </view>
+              <!-- #endif -->
+
+              <view class="bs-safe-bottom" />
+            </scroll-view>
+          </view>
+        </view>
+
+        <!-- 移动端底部导航 -->
+        <CustomTabBar />
+
+      </view>
+    </template>
+
+    <!-- ╔══════════════════════════════════════╗ -->
+    <!-- ║         桌面端布局（完全保持原有）     ║ -->
+    <!-- ╚══════════════════════════════════════╝ -->
+    <template v-else>
+
+      <!-- 固定顶部导航区 -->
+      <view class="top-nav-fixed" :class="{ collapsed: isHeaderCollapsed }">
+        <view class="top-nav-container">
+          <view class="brand-logo">
+            <Icon name="clipboard-list" :size="20" class="logo-icon" />
+            <text class="logo-text">任务大厅</text>
+          </view>
+          <view class="search-wrapper">
+            <view class="compact-search-bar">
+              <Icon name="search" :size="16" class="search-icon" />
+              <input
+                v-model="searchKeyword"
+                class="search-input"
+                placeholder="搜索任务..."
+                confirm-type="search"
+                @confirm="handleSearch"
+                @focus="handleSearchFocus"
+                @blur="handleSearchBlur"
+              />
+              <view v-if="searchKeyword" class="clear-icon" @click="clearSearch">
+                <Icon name="x" :size="14" />
+              </view>
+            </view>
+            <view v-if="showSearchHistory" class="search-history-dropdown">
+              <template v-if="searchHistory.length > 0">
+                <view class="history-header">
+                  <text class="history-title">搜索历史</text>
+                  <text class="history-clear" @click="clearSearchHistory">清空</text>
+                </view>
+                <view class="history-list">
+                  <view
+                    v-for="(item, index) in searchHistory"
+                    :key="index"
+                    class="history-item"
+                    @click="handleSearchHistoryClick(item)"
+                  >
+                    <Icon name="clock" :size="14" class="history-icon" />
+                    <text class="history-text">{{ item }}</text>
+                    <Icon name="x" :size="14" class="history-remove" @click.stop="deleteSearchHistoryItem(item)" />
+                  </view>
+                </view>
+              </template>
+              <view v-else class="history-empty">
+                <Icon name="search" :size="32" class="history-empty-icon" />
+                <text class="empty-text">暂无搜索历史</text>
+                <text class="empty-hint">搜索后会自动记录</text>
               </view>
             </view>
           </view>
-
-          <!-- 定位引导（未获取定位时显示，仅 H5） -->
-          <!-- #ifdef H5 -->
-          <view v-if="nearbyTasks.length === 0 && !locationLoading && !userLocation" class="location-prompt" @click="loadNearbyTasks">
-            <Icon name="map-pin" :size="15" class="location-prompt-icon" />
-            <text class="location-prompt-text">开启定位，发现附近任务</text>
-            <Icon name="chevron-right" :size="13" class="location-prompt-arrow" />
+          <view class="publish-btn" @click="handlePublish">
+            <Icon name="plus" :size="15" class="publish-icon" />
+            <text class="publish-text">发布</text>
           </view>
-          <!-- #endif -->
-
-        </view><!-- end task-sidebar -->
-
+        </view>
       </view>
-    </view>
 
-    <!-- 移动端侧边栏遮罩 -->
-    <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
+      <view class="nav-spacer" />
 
-    <!-- 移动端自定义底部导航 -->
-    <CustomTabBar v-if="!isDesktop" />
+      <!-- Sticky 筛选区 -->
+      <view class="sticky-nav" :class="{ 'header-collapsed': isHeaderCollapsed }">
+        <view class="filter-nav-container">
+          <view class="type-tabs-wrap">
+            <scroll-view class="type-scroll" scroll-x :show-scrollbar="false">
+              <view class="type-tabs">
+                <view
+                  v-for="type in taskTypes"
+                  :key="type.value"
+                  class="type-tab"
+                  :class="{ active: currentType === type.value }"
+                  @click="handleTypeChange(type.value)"
+                >
+                  <Icon :name="type.iconName" :size="14" class="type-tab-icon" />
+                  <text class="type-tab-label">{{ type.label }}</text>
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+          <view class="status-dropdown-wrap">
+            <view class="status-dropdown-btn" :class="{ active: currentStatus !== '' }" @click.stop="toggleStatusDropdown">
+              <text class="status-dropdown-label">{{ currentStatusLabel }}</text>
+              <Icon name="chevron-down" :size="12" class="dropdown-arrow" :class="{ rotated: statusDropdownOpen }" />
+            </view>
+            <view v-if="statusDropdownOpen" class="status-dropdown-menu">
+              <view
+                v-for="opt in statusOptions"
+                :key="opt.value"
+                class="dropdown-item"
+                :class="{ active: currentStatus === opt.value }"
+                @click.stop="selectStatus(opt.value)"
+              >
+                <text class="dropdown-item-label">{{ opt.label }}</text>
+                <Icon v-if="currentStatus === opt.value" name="check" :size="13" class="dropdown-item-check" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
 
-    <!-- PC端悬浮导航（仅 H5） -->
-    <!-- #ifdef H5 -->
-    <PCFloatingNav />
-    <!-- #endif -->
+      <view v-if="statusDropdownOpen" class="dropdown-mask" @click="statusDropdownOpen = false" />
+
+      <!-- 主内容区 -->
+      <view class="main-content">
+        <view class="content-container">
+
+          <!-- 主列表 -->
+          <view class="task-main">
+            <SkeletonScreen v-if="loading && taskList.length === 0" type="card" :count="4" />
+            <view v-if="!loading || taskList.length > 0" class="task-list">
+              <view
+                v-for="task in taskList"
+                :key="task.tid"
+                class="task-card"
+                @click="handleTaskClick(task)"
+              >
+                <view class="card-row1">
+                  <view class="card-row1-left">
+                    <view class="type-badge" :class="`type-${task.taskType}`">
+                      <Icon :name="getTypeIconName(task.taskType)" :size="12" class="type-badge-icon" />
+                      <text class="type-badge-label">{{ getTypeLabel(task.taskType) }}</text>
+                    </view>
+                    <text class="card-title">{{ task.title }}</text>
+                  </view>
+                  <view
+                    class="status-tag"
+                    :class="[`status-${task.status}`, { 'status-expired': task.status === 0 && isTaskExpired(task) }]"
+                  >
+                    <text class="status-text">{{ getStatusLabel(task.status, task) }}</text>
+                  </view>
+                </view>
+                <text v-if="task.content" class="card-excerpt">{{ task.content }}</text>
+                <view class="card-row2">
+                  <view class="meta-avatar">
+                    <view class="avatar-placeholder" :style="getAvatarBg(task.publisherNickname)">
+                      <text class="avatar-char">{{ task.publisherNickname?.charAt(0)?.toUpperCase() || '?' }}</text>
+                    </view>
+                  </view>
+                  <text class="meta-name">{{ task.publisherNickname }}</text>
+                  <text class="meta-dot">·</text>
+                  <text class="meta-time">{{ formatTime(task.createdAt) }}</text>
+                  <view v-if="task.location && !parseCoord(task.location)" class="meta-loc">
+                    <Icon name="map-pin" :size="11" class="meta-loc-icon" />
+                    <text class="meta-loc-text">{{ task.location }}</text>
+                  </view>
+                  <view v-else-if="task.deadline" class="meta-loc">
+                    <Icon name="clock" :size="11" class="meta-loc-icon" />
+                    <text class="meta-loc-text">{{ formatDeadline(task.deadline) }}</text>
+                  </view>
+                </view>
+                <view class="card-row3">
+                  <view class="reward-pill">
+                    <Icon name="zap" :size="12" class="reward-icon" />
+                    <text class="reward-pts">{{ task.rewardPoints }}</text>
+                    <text class="reward-unit">积分</text>
+                  </view>
+                  <view
+                    v-if="task.status === 0 && !isTaskExpired(task) && userStore.isLoggedIn && task.publisherNickname !== userStore.userInfo?.nickname"
+                    class="quick-accept-btn"
+                    @click.stop="handleQuickAccept(task)"
+                  >
+                    <text>立即接单</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+
+            <view v-if="!loading && taskList.length === 0" class="empty-state">
+              <Icon name="clipboard-list" :size="56" class="empty-icon" />
+              <text class="empty-text">暂无任务</text>
+              <text class="empty-tip">{{ (currentType || currentStatus) ? '未找到符合条件的任务，试试调整筛选条件' : '快去发布一个新任务吧~' }}</text>
+              <view v-if="currentType || currentStatus" class="empty-action-btn" @click="resetFilters">
+                <Icon name="rotate-ccw" :size="14" />
+                <text class="empty-action-text">重置筛选</text>
+              </view>
+              <view v-else class="empty-action-btn primary" @click="handlePublish">
+                <Icon name="plus" :size="14" />
+                <text class="empty-action-text">发布任务</text>
+              </view>
+            </view>
+
+            <view v-if="taskList.length > 0" class="load-more">
+              <text v-if="loadingMore" class="load-more-text">加载中...</text>
+              <text v-else-if="!hasMore" class="load-more-text">没有更多了</text>
+            </view>
+            <view class="safe-area-bottom" />
+          </view>
+
+          <!-- 侧边栏（桌面端） -->
+          <view class="task-sidebar" :class="{ 'mobile-open': showMobileSidebar }">
+            <view class="mobile-sidebar-close" @click="showMobileSidebar = false">
+              <Icon name="x" :size="18" />
+            </view>
+            <view class="sidebar-card" v-if="userStore.isLoggedIn">
+              <view class="sidebar-card-header">
+                <Icon name="clipboard-list" :size="15" class="sidebar-header-icon" />
+                <text class="sidebar-card-title">我的任务</text>
+              </view>
+              <view class="my-stats-grid">
+                <view class="stat-cell">
+                  <text class="stat-num stat-pending">{{ myStats.pending }}</text>
+                  <text class="stat-label">待接单</text>
+                </view>
+                <view class="stat-cell">
+                  <text class="stat-num stat-ongoing">{{ myStats.ongoing }}</text>
+                  <text class="stat-label">进行中</text>
+                </view>
+                <view class="stat-cell">
+                  <text class="stat-num stat-done">{{ myStats.done }}</text>
+                  <text class="stat-label">已完成</text>
+                </view>
+              </view>
+              <view v-if="totalTaskDone > 0 || (userStore.userInfo?.points ?? 0) > 0" class="achievement-banner">
+                <Icon name="award" :size="14" class="achievement-icon" />
+                <view class="achievement-content">
+                  <text class="achievement-text">
+                    累计完成 <text class="achievement-highlight">{{ totalTaskDone }}</text> 个任务，持有 <text class="achievement-highlight">{{ userStore.userInfo?.points ?? 0 }}</text> 积分
+                  </text>
+                  <view v-if="weekTrend" class="trend-row">
+                    <Icon
+                      :name="weekTrend.diff >= 0 ? 'trending-up' : 'trending-down'"
+                      :size="12"
+                      class="trend-icon"
+                      :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'"
+                    />
+                    <text class="trend-text" :class="weekTrend.diff >= 0 ? 'trend-up' : 'trend-down'">
+                      本周 +{{ weekTrend.thisWeekPts }} 积分{{ weekTrend.diff !== 0 ? `，较上周 ${weekTrend.diff > 0 ? '+' : ''}${weekTrend.diff}` : '' }}
+                    </text>
+                  </view>
+                </view>
+              </view>
+              <view class="sidebar-link-row">
+                <view class="sidebar-quick-btn" @click="goMyPublished">
+                  <Icon name="send" :size="13" class="quick-btn-icon" />
+                  <text class="quick-btn-label">我的发布</text>
+                </view>
+                <view class="sidebar-quick-btn" @click="goMyAccepted">
+                  <Icon name="package-check" :size="13" class="quick-btn-icon" />
+                  <text class="quick-btn-label">我的接单</text>
+                </view>
+              </view>
+            </view>
+            <view class="sidebar-card" v-if="todayPublished > 0">
+              <view class="sidebar-card-header">
+                <Icon name="bar-chart-2" :size="15" class="sidebar-header-icon" />
+                <text class="sidebar-card-title">今日动态</text>
+              </view>
+              <view class="platform-stats">
+                <view class="platform-stat-item">
+                  <text class="platform-stat-num">{{ todayPublished }}</text>
+                  <text class="platform-stat-label">今日发布</text>
+                </view>
+                <view class="platform-stat-divider" />
+                <view class="platform-stat-item">
+                  <text class="platform-stat-num">{{ taskList.length }}</text>
+                  <text class="platform-stat-label">当前在线</text>
+                </view>
+              </view>
+            </view>
+            <view class="sidebar-card" v-if="hotTasks.length > 0">
+              <view class="sidebar-card-header">
+                <Icon name="flame" :size="15" class="sidebar-header-icon" />
+                <text class="sidebar-card-title">高积分任务</text>
+              </view>
+              <view class="hot-task-list">
+                <view
+                  v-for="(task, index) in hotTasks"
+                  :key="task.tid"
+                  class="hot-task-item"
+                  @click="handleTaskClick(task)"
+                >
+                  <text class="hot-rank" :class="`rank-${index + 1}`">{{ index + 1 }}</text>
+                  <text class="hot-title">{{ task.rewardPoints >= 50 ? '🔥 ' + task.title : task.title }}</text>
+                  <view class="hot-reward">
+                    <Icon name="zap" :size="11" />
+                    <text class="hot-pts">{{ task.rewardPoints }}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+            <view class="sidebar-card" v-if="nearbyTasks.length > 0">
+              <view class="sidebar-card-header">
+                <Icon name="map-pin" :size="15" class="sidebar-header-icon nearby-icon" />
+                <text class="sidebar-card-title">附近任务</text>
+                <view class="nearby-refresh" @click="loadNearbyTasks">
+                  <Icon name="rotate-cw" :size="13" class="nearby-refresh-icon" :class="{ spinning: locationLoading }" />
+                </view>
+              </view>
+              <view class="nearby-task-list">
+                <view
+                  v-for="task in nearbyTasks"
+                  :key="task.tid"
+                  class="nearby-task-item"
+                  @click="handleTaskClick(task)"
+                >
+                  <view class="nearby-task-info">
+                    <text class="nearby-task-title">{{ task.title }}</text>
+                    <view class="nearby-task-meta">
+                      <Icon name="map-pin" :size="11" class="nearby-meta-icon" />
+                      <text class="nearby-dist">{{ formatDist(task.distance) }}</text>
+                      <text class="nearby-sep">·</text>
+                      <Icon name="zap" :size="11" class="nearby-pts-icon" />
+                      <text class="nearby-pts">{{ task.rewardPoints }}</text>
+                    </view>
+                  </view>
+                  <Icon name="chevron-right" :size="14" class="nearby-arrow" />
+                </view>
+              </view>
+            </view>
+            <!-- #ifdef H5 -->
+            <view v-if="nearbyTasks.length === 0 && !locationLoading && !userLocation" class="location-prompt" @click="loadNearbyTasks">
+              <Icon name="map-pin" :size="15" class="location-prompt-icon" />
+              <text class="location-prompt-text">开启定位，发现附近任务</text>
+              <Icon name="chevron-right" :size="13" class="location-prompt-arrow" />
+            </view>
+            <!-- #endif -->
+          </view>
+
+        </view>
+      </view>
+
+      <view v-if="showMobileSidebar" class="mobile-sidebar-backdrop" @click="showMobileSidebar = false" />
+
+      <!-- PC端悬浮导航（仅 H5） -->
+      <!-- #ifdef H5 -->
+      <PCFloatingNav />
+      <!-- #endif -->
+
+    </template>
 
   </view>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { onPageScroll } from '@dcloudio/uni-app'
 import { getTaskList, getMyPublishedTasks, getMyAcceptedTasks, acceptTask } from '@/services/task'
 import { getTodayStats } from '@/services/stats'
@@ -385,19 +743,17 @@ import { useUserStore } from '@/stores/user'
 import type { TaskStatus, TaskListItem, TaskType } from '@/types/task'
 import SkeletonScreen from '@/components/SkeletonScreen.vue'
 import Icon from '@/components/icons/index.vue'
+import CNavBar from '@/components/layout/CNavBar.vue'
 import { taskSearchHistory } from '@/utils/searchHistory'
 
-// 移动端组件
 import { CustomTabBar } from '@/components/mobile'
 
-// PC 端组件（仅 H5）
 // #ifdef H5
 import { PCFloatingNav } from '@/components/desktop'
 // #endif
 
 const userStore = useUserStore()
 
-// 任务状态选项
 const statusOptions = [
   { value: '', label: '全部' },
   { value: '0', label: '待接单' },
@@ -407,7 +763,6 @@ const statusOptions = [
   { value: '6', label: '已超时' }
 ]
 
-// 任务类型选项
 const taskTypes = [
   { value: '', label: '全部', iconName: 'layout-grid' },
   { value: 'errand', label: '跑腿', iconName: 'footprints' },
@@ -439,14 +794,16 @@ const isHeaderCollapsed = ref(false)
 const statusDropdownOpen = ref(false)
 const showMobileSidebar = ref(false)
 
+// 移动端新增状态
+const mobileRefreshing = ref(false)
+const bsUp = ref(false)
+
 const currentStatusLabel = computed(() => {
   const opt = statusOptions.find(o => o.value === currentStatus.value)
   return opt ? opt.label : '全部状态'
 })
 
-const toggleStatusDropdown = () => {
-  statusDropdownOpen.value = !statusDropdownOpen.value
-}
+const toggleStatusDropdown = () => { statusDropdownOpen.value = !statusDropdownOpen.value }
 
 const selectStatus = (status: string) => {
   statusDropdownOpen.value = false
@@ -461,39 +818,18 @@ const resetFilters = () => {
 }
 
 const loadTasks = async (isRefresh = false) => {
-  if (isRefresh) {
-    page.value = 1
-    hasMore.value = true
-  }
-
+  if (isRefresh) { page.value = 1; hasMore.value = true }
   if (!hasMore.value && !isRefresh) return
-
   try {
-    if (page.value === 1) {
-      loading.value = true
-    } else {
-      loadingMore.value = true
-    }
-
-    const params: any = {
-      page: page.value,
-      pageSize,
-      sortBy: 'created_at',
-      sortOrder: 'desc'
-    }
-
+    if (page.value === 1) loading.value = true
+    else loadingMore.value = true
+    const params: any = { page: page.value, pageSize, sortBy: 'created_at', sortOrder: 'desc' }
     if (currentStatus.value !== '') params.status = currentStatus.value
     if (currentType.value) params.taskType = currentType.value
     if (searchKeyword.value) params.keyword = searchKeyword.value
-
     const result = await getTaskList(params)
-
-    if (isRefresh || page.value === 1) {
-      taskList.value = result.list
-    } else {
-      taskList.value = [...taskList.value, ...result.list]
-    }
-
+    if (isRefresh || page.value === 1) taskList.value = result.list
+    else taskList.value = [...taskList.value, ...result.list]
     hasMore.value = page.value < result.totalPages
   } catch (error: any) {
     console.error('加载任务列表失败:', error)
@@ -524,9 +860,7 @@ const handleTypeChange = (type: string) => {
   loadTasks(true)
 }
 
-const loadSearchHistory = () => {
-  searchHistory.value = taskSearchHistory.getHistory()
-}
+const loadSearchHistory = () => { searchHistory.value = taskSearchHistory.getHistory() }
 
 const handleSearch = () => {
   if (searchKeyword.value.trim()) {
@@ -548,33 +882,14 @@ const clearSearchHistory = () => {
   uni.showModal({
     title: '提示',
     content: '确定清空所有搜索历史吗？',
-    success: (res) => {
-      if (res.confirm) {
-        taskSearchHistory.clear()
-        loadSearchHistory()
-      }
-    }
+    success: (res) => { if (res.confirm) { taskSearchHistory.clear(); loadSearchHistory() } }
   })
 }
 
-const deleteSearchHistoryItem = (keyword: string) => {
-  taskSearchHistory.remove(keyword)
-  loadSearchHistory()
-}
-
-const handleSearchHistoryClick = (keyword: string) => {
-  showSearchHistory.value = false
-  searchKeyword.value = keyword
-  handleSearch()
-}
-
-const handleSearchFocus = () => {
-  setTimeout(() => { showSearchHistory.value = true }, 100)
-}
-
-const handleSearchBlur = () => {
-  setTimeout(() => { showSearchHistory.value = false }, 200)
-}
+const deleteSearchHistoryItem = (keyword: string) => { taskSearchHistory.remove(keyword); loadSearchHistory() }
+const handleSearchHistoryClick = (keyword: string) => { showSearchHistory.value = false; searchKeyword.value = keyword; handleSearch() }
+const handleSearchFocus = () => { setTimeout(() => { showSearchHistory.value = true }, 100) }
+const handleSearchBlur = () => { setTimeout(() => { showSearchHistory.value = false }, 200) }
 
 const handleTaskClick = (task: TaskListItem) => {
   uni.navigateTo({ url: `/pages/task/detail?id=${task.tid}` })
@@ -591,7 +906,6 @@ const handleQuickAccept = (task: TaskListItem) => {
       try {
         await acceptTask(task.tid)
         uni.showToast({ title: '接单成功', icon: 'success' })
-        // 刷新列表
         taskList.value = []
         loadTasks(true)
       } catch (e: any) {
@@ -601,24 +915,15 @@ const handleQuickAccept = (task: TaskListItem) => {
   })
 }
 
-// 桌面端判断
 const windowWidth = ref(typeof window !== 'undefined' ? window.innerWidth : 0)
 const isDesktop = computed(() => windowWidth.value >= 1024)
 
-const handlePublish = () => {
-  uni.navigateTo({ url: '/pages/task/publish' })
-}
-
+const handlePublish = () => { uni.navigateTo({ url: '/pages/task/publish' }) }
 const goMyPublished = () => { uni.navigateTo({ url: '/pages/task/my?tab=published' }) }
-const goMyAccepted = () => { uni.navigateTo({ url: '/pages/task/my?tab=accepted' }) }
+const goMyAccepted  = () => { uni.navigateTo({ url: '/pages/task/my?tab=accepted' }) }
 
 const getTypeIconName = (type: TaskType): string => {
-  const iconMap: Record<string, string> = {
-    errand: 'footprints',
-    borrow: 'handshake',
-    tutor: 'book-open',
-    other: 'package'
-  }
+  const iconMap: Record<string, string> = { errand: 'footprints', borrow: 'handshake', tutor: 'book-open', other: 'package' }
   return iconMap[type] || 'package'
 }
 
@@ -668,30 +973,18 @@ const formatDeadline = (dateStr: string): string => {
   return `截止 ${month}-${day}`
 }
 
-// ===================================
 // 侧边栏数据
-// ===================================
-interface MyTaskStats {
-  pending: number   // 待接单
-  ongoing: number  // 进行中
-  done: number     // 已完成
-}
-
+interface MyTaskStats { pending: number; ongoing: number; done: number }
 const myStats = ref<MyTaskStats>({ pending: 0, ongoing: 0, done: 0 })
-const mobileActiveCount = computed(() =>
-  userStore.isLoggedIn ? myStats.value.pending + myStats.value.ongoing : 0
-)
+const mobileActiveCount = computed(() => userStore.isLoggedIn ? myStats.value.pending + myStats.value.ongoing : 0)
 const hotTasks = ref<TaskListItem[]>([])
 const todayPublished = ref<number>(0)
-const todayDone = ref<number>(0)
 const totalTaskDone = ref<number>(0)
 
 interface WeekTrend { thisWeekPts: number; diff: number }
 const weekTrend = ref<WeekTrend | null>(null)
 
-// ===================================
-// 附近任务（H5 Geolocation）
-// ===================================
+// 附近任务
 interface NearbyTask extends TaskListItem { distance: number }
 const nearbyTasks = ref<NearbyTask[]>([])
 const userLocation = ref<{ lat: number; lng: number } | null>(null)
@@ -702,7 +995,6 @@ const parseCoord = (loc: string): { lat: number; lng: number } | null => {
   const m = loc.match(/^(-?\d+\.?\d*)\s*[,，]\s*(-?\d+\.?\d*)$/)
   if (!m) return null
   const a = parseFloat(m[1]), b = parseFloat(m[2])
-  // 如果第一个数绝对值 > 90，判断为经度在前（lng, lat）格式
   return Math.abs(a) > 90 ? { lat: b, lng: a } : { lat: a, lng: b }
 }
 
@@ -732,11 +1024,8 @@ const loadNearbyTasks = async () => {
       .map(t => ({ ...t, distance: haversine(lat, lng, t._coord.lat, t._coord.lng) }))
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 3) as NearbyTask[]
-  } catch {
-    // 用户拒绝或超时，静默失败
-  } finally {
-    locationLoading.value = false
-  }
+  } catch { /* 用户拒绝或超时，静默失败 */ }
+  finally { locationLoading.value = false }
   /* #endif */
 }
 
@@ -750,59 +1039,66 @@ const loadSidebarData = async () => {
       userStore.isLoggedIn ? getUserStats() : Promise.resolve(null),
       userStore.isLoggedIn ? getPointsLog(1, 100) : Promise.resolve(null)
     ])
-
-    // 我的发布统计
     if (pubResult.status === 'fulfilled' && pubResult.value) {
       const list = pubResult.value.list || []
       myStats.value.pending = list.filter((t: TaskListItem) => t.status === 0).length
       myStats.value.done = list.filter((t: TaskListItem) => t.status === 4 || t.status === 2).length
     }
-    // 我的接单统计（进行中）
     if (accResult.status === 'fulfilled' && accResult.value) {
       const list = accResult.value.list || []
       myStats.value.ongoing = list.filter((t: TaskListItem) => t.status === 1 || t.status === 2).length
     }
-    // 平台统计
-    if (statsResult.status === 'fulfilled') {
-      todayPublished.value = statsResult.value.newTasks || 0
-    }
-    // 热门高积分任务
-    if (hotResult.status === 'fulfilled') {
-      hotTasks.value = hotResult.value.list?.slice(0, 3) || []
-    }
-    // 累计任务完成数
+    if (statsResult.status === 'fulfilled') todayPublished.value = statsResult.value.newTasks || 0
+    if (hotResult.status === 'fulfilled') hotTasks.value = hotResult.value.list?.slice(0, 3) || []
     if (userStatsResult.status === 'fulfilled' && userStatsResult.value) {
       totalTaskDone.value = userStatsResult.value.taskCompleteCount || 0
     }
-    // 本周 vs 上周积分趋势
     if (pointsResult.status === 'fulfilled' && pointsResult.value) {
-      const now = Date.now()
-      const week = 7 * 86400000
+      const now = Date.now(), week = 7 * 86400000
       const logs = pointsResult.value.list || []
       const sum = (from: number, to: number) =>
         logs.filter(l => { const t = new Date(l.createdAt).getTime(); return t >= from && t < to && l.pointsChange > 0 })
             .reduce((s, l) => s + l.pointsChange, 0)
-      const thisWeek = sum(now - week, now)
-      const lastWeek = sum(now - 2 * week, now - week)
-      if (thisWeek > 0 || lastWeek > 0) {
-        weekTrend.value = { thisWeekPts: thisWeek, diff: thisWeek - lastWeek }
-      }
+      const thisWeek = sum(now - week, now), lastWeek = sum(now - 2 * week, now - week)
+      if (thisWeek > 0 || lastWeek > 0) weekTrend.value = { thisWeekPts: thisWeek, diff: thisWeek - lastWeek }
     }
-  } catch (e) {
-    // 侧边栏数据加载失败不影响主列表
+  } catch { /* 侧边栏数据加载失败不影响主列表 */ }
+}
+
+// 桌面端：页面滚动监听（折叠顶部导航）
+onPageScroll((e) => { isHeaderCollapsed.value = e.scrollTop > 40 })
+
+// 移动端：scroll-view 滚动到底部加载更多
+const handleScrollToLower = () => {
+  if (!loadingMore.value && hasMore.value) {
+    page.value++
+    loadTasks()
   }
 }
 
-// 页面滚动监听：折叠顶部导航
-onPageScroll((e) => {
-  isHeaderCollapsed.value = e.scrollTop > 40
-})
+// 移动端：下拉刷新
+const handleMobileRefresh = async () => {
+  mobileRefreshing.value = true
+  taskList.value = []
+  await loadTasks(true)
+  mobileRefreshing.value = false
+}
+
+// 移动端：bottom sheet 开关（带动画）
+const openMobileSidebar = () => {
+  showMobileSidebar.value = true
+  nextTick(() => { bsUp.value = true })
+}
+
+const closeMobileSidebar = () => {
+  bsUp.value = false
+  setTimeout(() => { showMobileSidebar.value = false }, 300)
+}
 
 onMounted(() => {
   loadTasks()
   loadSidebarData()
   loadSearchHistory()
-  // 附近任务不自动触发定位，用户主动点击后才请求
   // #ifdef H5
   window.addEventListener('resize', () => { windowWidth.value = window.innerWidth })
   // #endif
@@ -814,12 +1110,10 @@ onUnmounted(() => {
   // #endif
 })
 
+// 桌面端页面生命周期（document-level scroll）
 defineExpose({
   onReachBottom: () => {
-    if (!loadingMore.value && hasMore.value) {
-      page.value++
-      loadTasks()
-    }
+    if (!loadingMore.value && hasMore.value) { page.value++; loadTasks() }
   },
   onPullDownRefresh: () => {
     taskList.value = []
@@ -831,14 +1125,751 @@ defineExpose({
 
 <style lang="scss" scoped>
 
+// ═══════════════════════════════════════════════
+// 页面容器（同时承载移动端和桌面端）
+// ═══════════════════════════════════════════════
 .task-hall-page {
   min-height: 100vh;
   background: $bg-page;
 }
 
-// ===================================
-// 固定顶部导航
-// ===================================
+// ╔══════════════════════════════════════╗
+// ║         移动端样式                   ║
+// ╚══════════════════════════════════════╝
+
+.mobile-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: $bg-page;
+}
+
+// ── NavBar 搜索框 ──
+.m-nav-search {
+  display: flex;
+  align-items: center;
+  background: $bg-page;
+  border-radius: 36rpx;
+  padding: 0 20rpx;
+  height: 64rpx;
+  gap: 10rpx;
+  width: 100%;
+  max-width: 560rpx;
+}
+
+.m-nav-search-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+}
+
+.m-nav-search-input {
+  flex: 1;
+  height: 100%;
+  font-size: 26rpx;
+  color: $gray-800;
+  background: transparent;
+  border: none;
+  outline: none;
+  min-width: 0;
+
+  &::placeholder { color: $text-placeholder; }
+}
+
+.m-nav-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-400;
+  padding: 6rpx;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  &:active { background: $gray-200; }
+}
+
+.m-publish-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  background: $primary;
+  border-radius: 50%;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+
+  &:active { opacity: 0.8; }
+}
+
+.m-publish-icon { color: $white; }
+
+// ── 搜索历史下拉 ──
+.m-search-dropdown {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: $white;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  z-index: 200;
+  max-height: 320rpx;
+  overflow: hidden;
+  // CNavBar 本身 sticky top:0，dropdown 叠在其下方
+  margin-top: 100rpx; // CNavBar height
+}
+
+.m-sh-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16rpx 32rpx;
+  border-bottom: 1rpx solid $gray-100;
+  background: $gray-50;
+}
+
+.m-sh-title {
+  font-size: 24rpx;
+  font-weight: 600;
+  color: $gray-700;
+}
+
+.m-sh-clear {
+  font-size: 24rpx;
+  color: $primary;
+  cursor: pointer;
+  padding: 4rpx 8rpx;
+}
+
+.m-sh-list { padding: 8rpx 0; }
+
+.m-sh-item {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  padding: 18rpx 32rpx;
+  cursor: pointer;
+
+  &:active { background: $gray-50; }
+}
+
+.m-sh-icon { color: $gray-400; flex-shrink: 0; }
+
+.m-sh-text {
+  flex: 1;
+  font-size: 26rpx;
+  color: $gray-800;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-sh-remove {
+  color: $gray-400;
+  padding: 4rpx;
+  cursor: pointer;
+}
+
+.m-sh-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 48rpx 32rpx;
+  gap: 12rpx;
+}
+
+.m-sh-empty-icon { color: $gray-300; }
+.m-sh-empty-text { font-size: 26rpx; color: $gray-400; }
+
+// ── 筛选栏 ──
+.m-filter-bar {
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
+  display: flex;
+  align-items: center;
+  height: 92rpx;
+  padding: 0 28rpx 0 24rpx;
+  position: relative;
+  flex-shrink: 0;
+  gap: 0;
+}
+
+.m-type-scroll {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+
+  /* #ifdef H5 */
+  &::-webkit-scrollbar { display: none; }
+  /* #endif */
+}
+
+.m-type-tabs {
+  display: inline-flex;
+  gap: 8rpx;
+  padding-right: 16rpx;
+}
+
+.m-type-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 20rpx;
+  border-radius: 100rpx;
+  background: $gray-100;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
+
+  &.active {
+    background: $primary;
+    .m-tab-icon, .m-tab-label { color: $white; }
+  }
+
+  &:active { transform: scale(0.95); }
+}
+
+.m-tab-icon { color: $gray-500; flex-shrink: 0; }
+.m-tab-label { font-size: 24rpx; color: $gray-600; font-weight: 500; }
+
+// 右侧：状态 + 信息按钮
+.m-filter-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  flex-shrink: 0;
+  padding-left: 16rpx;
+  border-left: 1rpx solid $gray-100;
+}
+
+.m-status-btn {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  padding: 10rpx 16rpx;
+  border-radius: 100rpx;
+  background: $gray-100;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &.active {
+    background: rgba($primary, 0.1);
+    .m-status-label, .m-dropdown-arrow { color: $primary; }
+  }
+
+  &:active { opacity: 0.7; }
+}
+
+.m-status-label { font-size: 24rpx; color: $gray-600; font-weight: 500; white-space: nowrap; }
+.m-dropdown-arrow {
+  color: $gray-400;
+  transition: transform 0.2s ease;
+  &.rotated { transform: rotate(180deg); }
+}
+
+.m-info-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: $gray-100;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+
+  &:active { background: $gray-200; }
+}
+
+.m-info-icon { color: $gray-600; }
+
+.m-info-dot {
+  position: absolute;
+  top: 10rpx;
+  right: 10rpx;
+  width: 14rpx;
+  height: 14rpx;
+  border-radius: 50%;
+  background: $error;
+  border: 2rpx solid $white;
+}
+
+// 状态下拉菜单（移动端）
+.m-status-menu {
+  position: absolute;
+  top: calc(100% + 4rpx);
+  right: 28rpx;
+  background: $white;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.14);
+  border: 1rpx solid $gray-200;
+  min-width: 200rpx;
+  z-index: 150;
+  overflow: hidden;
+}
+
+.m-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22rpx 28rpx;
+  gap: $sp-4;
+  transition: background 0.15s;
+
+  &:not(:last-child) { border-bottom: 1rpx solid $gray-100; }
+  &.active .m-menu-label { color: $primary; font-weight: 600; }
+  &:active { background: $gray-50; }
+}
+
+.m-menu-label { font-size: 26rpx; color: $gray-700; }
+.m-menu-check { color: $primary; flex-shrink: 0; }
+
+// ── 我的任务快捷条 ──
+.m-my-strip {
+  display: flex;
+  align-items: center;
+  background: $white;
+  border-bottom: 1rpx solid $gray-100;
+  padding: 18rpx 28rpx;
+  flex-shrink: 0;
+  cursor: pointer;
+  gap: 16rpx;
+  transition: background 0.15s;
+
+  &:active { background: $gray-50; }
+}
+
+.m-strip-left {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-shrink: 0;
+}
+
+.m-strip-icon { color: $primary; }
+
+.m-strip-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $gray-800;
+}
+
+.m-strip-stats {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 20rpx;
+}
+
+.m-strip-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 6rpx;
+}
+
+.m-strip-num {
+  font-size: 28rpx;
+  font-weight: 700;
+
+  &--pending { color: #1677FF; }
+  &--ongoing { color: #13C2C2; }
+  &--done    { color: #52C41A; }
+}
+
+.m-strip-name { font-size: 20rpx; color: $gray-400; }
+
+.m-strip-div {
+  width: 1rpx;
+  height: 28rpx;
+  background: $gray-200;
+  flex-shrink: 0;
+}
+
+.m-strip-arrow { color: $gray-400; flex-shrink: 0; }
+
+// ── 主列表 scroll-view ──
+.m-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+.m-task-list {
+  padding: 20rpx 24rpx 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+// ── 移动端任务卡片 ──
+.m-task-card {
+  background: $white;
+  border-radius: 20rpx;
+  padding: 28rpx 28rpx 22rpx;
+  box-shadow: 0 2rpx 10rpx rgba($gray-900, 0.06);
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  &:active { opacity: 0.88; transform: scale(0.99); }
+}
+
+.m-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14rpx;
+}
+
+.m-card-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: $gray-900;
+  line-height: 1.4;
+  margin-bottom: 10rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.m-card-excerpt {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 26rpx;
+  color: $gray-500;
+  line-height: 1.5;
+  margin-bottom: 16rpx;
+}
+
+.m-card-meta {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-bottom: 18rpx;
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.m-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.m-safe-bottom { height: 160rpx; }
+
+// ── Bottom Sheet ──
+.bs-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+  pointer-events: none;
+  display: flex;
+  align-items: flex-end;
+
+  &--dim {
+    background: rgba(0, 0, 0, 0.45);
+    pointer-events: auto;
+  }
+}
+
+.bs-sheet {
+  width: 100%;
+  background: $white;
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.12);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+  pointer-events: auto;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+
+  &--up { transform: translateY(0); }
+}
+
+.bs-bar {
+  width: 60rpx;
+  height: 6rpx;
+  background: $gray-300;
+  border-radius: 100rpx;
+  margin: 18rpx auto 0;
+  flex-shrink: 0;
+}
+
+.bs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20rpx 32rpx 16rpx;
+  flex-shrink: 0;
+  border-bottom: 1rpx solid $gray-100;
+}
+
+.bs-title {
+  font-size: 32rpx;
+  font-weight: 700;
+  color: $gray-900;
+}
+
+.bs-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  background: $gray-100;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:active { background: $gray-200; }
+}
+
+.bs-close-icon { color: $gray-500; }
+
+.bs-scroll {
+  flex: 1;
+  min-height: 0;
+}
+
+// BS 卡片
+.bs-card {
+  margin: 20rpx 28rpx 0;
+  background: $gray-50;
+  border-radius: 20rpx;
+  padding: 24rpx;
+
+  &--compact { padding: 20rpx 24rpx; }
+}
+
+.bs-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  margin-bottom: 18rpx;
+}
+
+.bs-card-icon {
+  color: $primary;
+
+  &--hot    { color: #FF6B35; }
+  &--nearby { color: #52C41A; }
+}
+
+.bs-card-title {
+  font-size: 26rpx;
+  font-weight: 600;
+  color: $gray-800;
+  flex: 1;
+}
+
+// BS 我的任务统计
+.bs-stats-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin-bottom: 18rpx;
+}
+
+.bs-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.bs-stat-div {
+  width: 1rpx;
+  height: 48rpx;
+  background: $gray-200;
+}
+
+.bs-stat-num {
+  font-size: 40rpx;
+  font-weight: 800;
+  line-height: 1;
+
+  &--pending { color: #1677FF; }
+  &--ongoing { color: #13C2C2; }
+  &--done    { color: #52C41A; }
+}
+
+.bs-stat-label { font-size: 22rpx; color: $gray-500; }
+
+// BS 成就横幅
+.bs-achievement {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  background: rgba($primary, 0.06);
+  border-radius: 12rpx;
+  padding: 14rpx 16rpx;
+  margin-bottom: 18rpx;
+}
+
+.bs-award-icon { color: #F59E0B; flex-shrink: 0; }
+
+.bs-achievement-text { font-size: 22rpx; color: $gray-600; line-height: 1.4; }
+
+// BS 快捷按钮
+.bs-quick-row {
+  display: flex;
+  gap: 12rpx;
+}
+
+.bs-quick-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  height: 72rpx;
+  border-radius: 12rpx;
+  background: $white;
+  border: 1rpx solid $gray-200;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:active { background: $gray-50; }
+}
+
+.bs-quick-icon { color: $primary; }
+.bs-quick-label { font-size: 24rpx; color: $gray-700; font-weight: 500; }
+
+// BS 高积分任务
+.bs-hot-list { display: flex; flex-direction: column; gap: 0; }
+
+.bs-hot-item {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid $gray-100;
+  cursor: pointer;
+
+  &:last-child { border-bottom: none; }
+  &:active { opacity: 0.7; }
+}
+
+.bs-hot-rank {
+  font-size: 26rpx;
+  font-weight: 800;
+  width: 32rpx;
+  text-align: center;
+  flex-shrink: 0;
+
+  &.rank-1 { color: #FF4D4F; }
+  &.rank-2 { color: #FA8C16; }
+  &.rank-3 { color: #FAAD14; }
+}
+
+.bs-hot-title {
+  flex: 1;
+  font-size: 26rpx;
+  color: $gray-700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bs-hot-reward {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  flex-shrink: 0;
+}
+
+.bs-hot-icon { color: #FF6B35; }
+.bs-hot-pts { font-size: 24rpx; font-weight: 700; color: #FF6B35; }
+
+// BS 今日动态
+.bs-platform-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.bs-platform-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4rpx;
+}
+
+.bs-platform-div {
+  width: 1rpx;
+  height: 48rpx;
+  background: $gray-200;
+}
+
+.bs-platform-num { font-size: 36rpx; font-weight: 700; color: $primary; }
+.bs-platform-label { font-size: 22rpx; color: $gray-400; }
+
+// BS 附近任务
+.bs-nearby-refresh { margin-left: auto; color: $gray-400; cursor: pointer; }
+.bs-nearby-list { display: flex; flex-direction: column; gap: 0; }
+
+.bs-nearby-item {
+  display: flex;
+  align-items: center;
+  padding: 16rpx 0;
+  border-bottom: 1rpx solid $gray-100;
+  cursor: pointer;
+
+  &:last-child { border-bottom: none; }
+  &:active { opacity: 0.7; }
+}
+
+.bs-nearby-info { flex: 1; min-width: 0; }
+.bs-nearby-title { font-size: 26rpx; color: $gray-700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.bs-nearby-meta {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  margin-top: 6rpx;
+}
+
+.bs-nearby-icon { color: $gray-400; }
+.bs-nearby-dist { font-size: 22rpx; color: $gray-400; }
+.bs-nearby-dot { font-size: 22rpx; color: $gray-300; }
+.bs-nearby-pts { font-size: 22rpx; color: #FF6B35; font-weight: 600; }
+.bs-nearby-arrow { color: $gray-400; flex-shrink: 0; margin-left: 8rpx; }
+
+// BS 定位引导
+.bs-location-prompt {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  margin: 20rpx 28rpx 0;
+  padding: 20rpx 24rpx;
+  background: rgba($primary, 0.05);
+  border-radius: 16rpx;
+  border: 1rpx dashed rgba($primary, 0.3);
+  cursor: pointer;
+
+  &:active { background: rgba($primary, 0.1); }
+}
+
+.bs-location-icon { color: $primary; flex-shrink: 0; }
+.bs-location-text { flex: 1; font-size: 26rpx; color: $primary; }
+.bs-location-arrow { color: $primary; flex-shrink: 0; }
+
+.bs-safe-bottom { height: 48rpx; }
+
+
+// ╔══════════════════════════════════════╗
+// ║         桌面端样式（原有，完整保留）  ║
+// ╚══════════════════════════════════════╝
+
 .top-nav-fixed {
   position: fixed;
   top: 0;
@@ -852,13 +1883,9 @@ defineExpose({
 
   &.collapsed {
     box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.12);
-
     .top-nav-container { height: 96rpx; }
-
     .brand-logo { min-width: 200rpx; .logo-text { font-size: 30rpx; } }
-
     .compact-search-bar { height: 64rpx; }
-
     .publish-btn { height: 64rpx; padding: 0 28rpx; }
   }
 }
@@ -874,12 +1901,6 @@ defineExpose({
   transition: height 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
 
   @media (max-width: 1200px) { padding: 0 64rpx; }
-
-  @include mobile {
-    padding: 0 32rpx;
-    height: 112rpx;
-    gap: 24rpx;
-  }
 }
 
 .brand-logo {
@@ -889,9 +1910,6 @@ defineExpose({
   flex-shrink: 0;
   min-width: 240rpx;
   transition: min-width 0.18s cubic-bezier(0.25, 0.1, 0.25, 1);
-
-  // 移动端隐藏 logo，节省空间
-  @include mobile { display: none; }
 }
 
 .logo-icon { color: $primary; }
@@ -904,18 +1922,12 @@ defineExpose({
   transition: font-size 0.18s;
 }
 
-// 搜索框
 .search-wrapper {
   position: relative;
   flex: 1;
   max-width: 960rpx;
   margin: 0 auto;
   min-width: 0;
-
-  @include mobile {
-    max-width: none;
-    margin: 0;
-  }
 }
 
 .compact-search-bar {
@@ -933,14 +1945,9 @@ defineExpose({
     background: $gray-100;
     box-shadow: 0 0 0 4rpx rgba($primary, 0.1);
   }
-
-  @include mobile { height: 64rpx; padding: 0 24rpx; }
 }
 
-.search-icon {
-  color: $gray-600;
-  flex-shrink: 0;
-}
+.search-icon { color: $gray-600; flex-shrink: 0; }
 
 .search-input {
   flex: 1;
@@ -970,7 +1977,6 @@ defineExpose({
   &:active { transform: scale(0.9); }
 }
 
-// 搜索历史下拉面板
 .search-history-dropdown {
   position: absolute;
   top: 100%;
@@ -1055,7 +2061,6 @@ defineExpose({
   &:hover {
     background: $gray-50;
     transform: translateX(2px);
-
     .history-remove { opacity: 1; }
   }
 
@@ -1120,7 +2125,6 @@ defineExpose({
   color: $gray-400;
 }
 
-// 发布按钮
 .publish-btn {
   display: flex;
   align-items: center;
@@ -1140,8 +2144,6 @@ defineExpose({
   }
 
   &:active { opacity: 0.85; transform: scale(0.96); }
-
-  @include mobile { height: 64rpx; padding: 0 28rpx; }
 }
 
 .publish-icon { color: $white; }
@@ -1152,18 +2154,10 @@ defineExpose({
   color: $white;
 }
 
-// ===================================
-// 顶部导航占位
-// ===================================
 .nav-spacer {
   height: 120rpx;
-
-  @include mobile { height: 112rpx; }
 }
 
-// ===================================
-// Sticky 筛选区
-// ===================================
 .sticky-nav {
   position: sticky;
   top: 120rpx;
@@ -1180,11 +2174,8 @@ defineExpose({
     border-bottom: none;
     box-shadow: none;
   }
-
-  @include mobile { top: 112rpx; }
 }
 
-// 筛选栏容器（对齐顶部导航）
 .filter-nav-container {
   max-width: 1280px;
   margin: 0 auto;
@@ -1195,15 +2186,8 @@ defineExpose({
   gap: 32rpx;
 
   @media (max-width: 1200px) { padding: 0 64rpx; }
-
-  @include mobile {
-    padding: 0 32rpx;
-    height: 88rpx;
-    gap: 20rpx;
-  }
 }
 
-// 类型标签包裹层（overflow hidden + 右侧渐变遮罩）
 .type-tabs-wrap {
   position: relative;
   flex: 1;
@@ -1218,12 +2202,9 @@ defineExpose({
     background: linear-gradient(to right, transparent, $white);
     pointer-events: none;
     z-index: 1;
-
-    @include desktop { display: none; }
   }
 }
 
-// 类型筛选（横向滚动）
 .type-scroll {
   white-space: nowrap;
 
@@ -1236,8 +2217,6 @@ defineExpose({
   display: inline-flex;
   padding-right: 32px;
   gap: $sp-3;
-
-  @include desktop { padding-right: 0; }
 }
 
 .type-tab {
@@ -1261,7 +2240,6 @@ defineExpose({
 .type-tab-icon { color: $gray-500; flex-shrink: 0; }
 .type-tab-label { font-size: $font-size-sm; color: $gray-600; font-weight: $font-weight-medium; }
 
-// 状态下拉（右侧固定）
 .status-dropdown-wrap {
   position: relative;
   flex-shrink: 0;
@@ -1322,7 +2300,6 @@ defineExpose({
   transition: background 0.15s;
 
   &:not(:last-child) { border-bottom: 1rpx solid $gray-100; }
-
   &.active .dropdown-item-label { color: $primary; font-weight: $font-weight-semibold; }
   &:active { background: $gray-50; }
 }
@@ -1336,16 +2313,9 @@ defineExpose({
   z-index: $z-dropdown + 4;
 }
 
-// ===================================
-// 主内容区（整页滚动）
-// ===================================
 .main-content {
   padding-bottom: 80rpx;
   background: $bg-page;
-
-  @include mobile {
-    padding-bottom: 110px; // 为底部操作栏 + TabBar 留空间
-  }
 }
 
 .content-container {
@@ -1357,15 +2327,11 @@ defineExpose({
   gap: 48rpx;
 }
 
-// 主列表区（左侧，自适应宽度）
 .task-main {
   flex: 1;
   min-width: 0;
 }
 
-// ===================================
-// 任务卡片
-// ===================================
 .task-list {
   display: flex;
   flex-direction: column;
@@ -1390,7 +2356,6 @@ defineExpose({
   /* #endif */
 }
 
-// --- 行1：类型 + 标题 + 状态 ---
 .card-row1 {
   display: flex;
   align-items: flex-start;
@@ -1424,8 +2389,8 @@ defineExpose({
     .type-badge-icon, .type-badge-label { color: $primary; }
   }
   &.type-tutor {
-    background: $success-100;
-    .type-badge-icon, .type-badge-label { color: $success; }
+    background: rgba(#8B5CF6, 0.1);
+    .type-badge-icon, .type-badge-label { color: #7C3AED; }
   }
   &.type-other {
     background: $gray-100;
@@ -1467,68 +2432,44 @@ defineExpose({
   flex-shrink: 0;
   white-space: nowrap;
 
-  &.status-0 { background: rgba(#1677FF, 0.1); color: #1677FF; }  // 待接单
-  &.status-1 { background: rgba(#13C2C2, 0.1); color: #13C2C2; }  // 已接取
-  &.status-2 { background: rgba(#1677FF, 0.08); color: #1677FF; } // 进行中
-  &.status-3 { background: rgba(#722ED1, 0.1); color: #722ED1; }  // 待确认
-  &.status-4 { background: rgba(#52C41A, 0.1); color: #52C41A; }  // 已完成
-  &.status-5 { background: $gray-100; color: $gray-400; }          // 已取消
-  &.status-6 { background: rgba(#FAAD14, 0.1); color: #FAAD14; }  // 已超时
-  &.status-expired { background: $gray-100; color: $gray-400; }    // 已截止
+  &.status-0 { background: rgba(#1677FF, 0.1); color: #1677FF; }
+  &.status-1 { background: rgba(#13C2C2, 0.1); color: #13C2C2; }
+  &.status-2 { background: rgba(#1677FF, 0.08); color: #1677FF; }
+  &.status-3 { background: rgba(#722ED1, 0.1); color: #722ED1; }
+  &.status-4 { background: rgba(#52C41A, 0.1); color: #52C41A; }
+  &.status-5 { background: $gray-100; color: $gray-400; }
+  &.status-6 { background: rgba(#FAAD14, 0.1); color: #FAAD14; }
+  &.status-expired { background: $gray-100; color: $gray-400; }
 }
 
-// --- 行3：头像 + 昵称 + 时间 + 地点 ---
+.status-text { display: block; }
+
 .card-row2 {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  margin-bottom: $sp-5;
-  overflow: hidden;
-
-  // 移动端：截断过长的昵称和地点，保持单行紧凑
-  @include mobile {
-    .meta-name { max-width: 120rpx; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .meta-loc  { flex: 1; min-width: 0;
-      .meta-loc-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    }
-  }
+  gap: $sp-2;
+  margin-bottom: $sp-4;
 }
 
-.meta-avatar {
+.meta-avatar { flex-shrink: 0; }
+
+.avatar-placeholder {
   width: 40rpx;
   height: 40rpx;
   border-radius: 50%;
-  flex-shrink: 0;
-  overflow: hidden;
-}
-
-.avatar-placeholder {
-  width: 100%;
-  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .avatar-char {
   font-size: 18rpx;
   font-weight: $font-weight-bold;
   color: $white;
-  line-height: 1;
 }
 
-.meta-name {
-  font-size: $font-size-sm;
-  color: $gray-600;
-  font-weight: $font-weight-medium;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 140rpx;
-  flex-shrink: 0;
-}
-
+.meta-name { font-size: $font-size-xs; color: $gray-600; font-weight: $font-weight-medium; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 160rpx; }
 .meta-dot { font-size: $font-size-sm; color: $gray-400; flex-shrink: 0; }
 .meta-time { font-size: $font-size-xs; color: $gray-400; flex-shrink: 0; }
 
@@ -1550,7 +2491,6 @@ defineExpose({
   white-space: nowrap;
 }
 
-// --- 行4：积分 + 快捷接单 ---
 .card-row3 {
   display: flex;
   align-items: center;
@@ -1588,9 +2528,6 @@ defineExpose({
 .reward-pts { font-size: $font-size-base; font-weight: $font-weight-bold; }
 .reward-unit { font-size: 22rpx; }
 
-// ===================================
-// 空状态
-// ===================================
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -1600,7 +2537,6 @@ defineExpose({
 }
 
 .empty-icon { color: $gray-300; margin-bottom: $sp-8; }
-.empty-text { font-size: $font-size-lg; color: $gray-500; margin-bottom: $sp-4; }
 .empty-tip { font-size: $font-size-sm; color: $gray-400; text-align: center; margin-bottom: $sp-8; }
 
 .empty-action-btn {
@@ -1625,9 +2561,6 @@ defineExpose({
 
 .empty-action-text { font-size: $font-size-sm; font-weight: $font-weight-medium; }
 
-// ===================================
-// 加载更多
-// ===================================
 .load-more {
   @include flex-center;
   padding: $sp-8;
@@ -1637,9 +2570,6 @@ defineExpose({
 
 .safe-area-bottom { height: 120rpx; }
 
-// ===================================
-// 侧边栏
-// ===================================
 .task-sidebar {
   width: 560rpx;
   flex-shrink: 0;
@@ -1647,9 +2577,8 @@ defineExpose({
   flex-direction: column;
   gap: $sp-6;
   position: sticky;
-  top: 240rpx; // fixed-nav(112) + filter-bar(~80) + gap(~48)
+  top: 240rpx;
 
-  // 移动端默认隐藏，FAB 触发后以抽屉形式显示
   @include mobile {
     display: none;
 
@@ -1676,7 +2605,6 @@ defineExpose({
   to   { transform: translateX(0);    opacity: 1; }
 }
 
-// 移动端侧边栏关闭按钮
 .mobile-sidebar-close {
   display: none;
 
@@ -1690,7 +2618,6 @@ defineExpose({
   }
 }
 
-// 移动端遮罩
 .mobile-sidebar-backdrop {
   display: none;
 
@@ -1705,8 +2632,6 @@ defineExpose({
   }
 }
 
-
-// 侧边栏通用卡片
 .sidebar-card {
   background: $white;
   border-radius: $radius-card;
@@ -1729,42 +2654,77 @@ defineExpose({
   font-size: $font-size-base;
   font-weight: $font-weight-semibold;
   color: $gray-800;
+  flex: 1;
 }
 
-// 我的任务统计
 .my-stats-grid {
-  display: flex;
-  gap: 0;
-  margin-bottom: $sp-6;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $sp-4;
+  margin-bottom: $sp-5;
 }
 
 .stat-cell {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: $sp-2;
-
-  &:not(:last-child) {
-    border-right: 1rpx solid $gray-100;
-  }
+  padding: $sp-5;
+  background: $gray-50;
+  border-radius: $radius-lg;
 }
 
 .stat-num {
-  font-size: $font-size-xl;
+  font-size: 40rpx;
   font-weight: $font-weight-bold;
   line-height: 1;
 
   &.stat-pending { color: #1677FF; }
   &.stat-ongoing { color: #13C2C2; }
-  &.stat-done { color: #52C41A; }
+  &.stat-done    { color: #52C41A; }
 }
 
 .stat-label { font-size: $font-size-xs; color: $gray-400; }
 
-.sidebar-link-row {
+.achievement-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-3;
+  background: rgba($primary, 0.05);
+  border-radius: $radius-lg;
+  padding: $sp-5;
+  margin-bottom: $sp-5;
+}
+
+.achievement-icon { color: #F59E0B; flex-shrink: 0; margin-top: 2rpx; }
+.achievement-content { display: flex; flex-direction: column; gap: $sp-2; }
+
+.achievement-text {
+  font-size: $font-size-xs;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+.achievement-highlight { color: $primary; font-weight: $font-weight-semibold; }
+
+.trend-row {
   display: flex;
   align-items: center;
+  gap: $sp-2;
+}
+
+.trend-icon { flex-shrink: 0; }
+
+.trend-text {
+  font-size: 22rpx;
+  font-weight: $font-weight-medium;
+
+  &.trend-up   { color: #52C41A; }
+  &.trend-down { color: #FF4D4F; }
+}
+
+.sidebar-link-row {
+  display: flex;
   gap: $sp-4;
 }
 
@@ -1774,32 +2734,26 @@ defineExpose({
   align-items: center;
   justify-content: center;
   gap: $sp-2;
-  padding: $sp-4 0;
-  border-radius: $radius-lg;
+  padding: $sp-4;
   background: $gray-50;
-  border: 1rpx solid $gray-200;
+  border-radius: $radius-lg;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: $transition-slow;
 
-  &:active { background: $primary-100; border-color: $primary; }
-
-  /* #ifdef H5 */
-  &:hover { background: $primary-100; border-color: $primary; .quick-btn-icon, .quick-btn-label { color: $primary; } }
-  /* #endif */
+  &:hover { background: $primary-100; }
+  &:active { transform: scale(0.96); }
 }
 
-.quick-btn-icon { color: $gray-500; flex-shrink: 0; }
-.quick-btn-label { font-size: $font-size-sm; color: $gray-600; font-weight: $font-weight-medium; }
+.quick-btn-icon { color: $primary; }
+.quick-btn-label { font-size: $font-size-xs; color: $gray-700; font-weight: $font-weight-medium; }
 
-// 平台统计
 .platform-stats {
   display: flex;
   align-items: center;
-  gap: 0;
+  justify-content: space-around;
 }
 
 .platform-stat-item {
-  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1808,63 +2762,52 @@ defineExpose({
 
 .platform-stat-divider {
   width: 1rpx;
-  height: 64rpx;
+  height: 48rpx;
   background: $gray-100;
 }
 
-.platform-stat-num {
-  font-size: $font-size-xl;
-  font-weight: $font-weight-bold;
-  color: $primary;
-  line-height: 1;
-}
-
+.platform-stat-num { font-size: $font-size-xl; font-weight: $font-weight-bold; color: $primary; }
 .platform-stat-label { font-size: $font-size-xs; color: $gray-400; }
 
-// 热门任务
-.hot-task-list {
-  display: flex;
-  flex-direction: column;
-  gap: $sp-5;
-}
+.hot-task-list { display: flex; flex-direction: column; gap: $sp-1; }
 
 .hot-task-item {
   display: flex;
   align-items: center;
-  gap: $sp-4;
+  gap: $sp-3;
+  padding: $sp-4 0;
+  border-bottom: 1rpx solid $gray-100;
   cursor: pointer;
-  padding: $sp-3 0;
 
-  &:not(:last-child) { border-bottom: 1rpx solid $gray-50; }
-  &:active { opacity: 0.75; }
+  &:last-child { border-bottom: none; }
+  &:active { opacity: 0.7; }
+
+  /* #ifdef H5 */
+  &:hover { .hot-title { color: $primary; } }
+  /* #endif */
 }
 
 .hot-rank {
-  width: 36rpx;
-  height: 36rpx;
-  border-radius: $radius-sm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22rpx;
+  font-size: 26rpx;
   font-weight: $font-weight-bold;
+  width: 24rpx;
+  text-align: center;
   flex-shrink: 0;
-  background: $gray-100;
-  color: $gray-500;
 
-  &.rank-1 { background: rgba(#FAAD14, 0.15); color: #D48806; }
-  &.rank-2 { background: rgba($gray-400, 0.15); color: $gray-500; }
-  &.rank-3 { background: rgba(#FF6B35, 0.12); color: #D4540A; }
+  &.rank-1 { color: #FF4D4F; }
+  &.rank-2 { color: #FA8C16; }
+  &.rank-3 { color: #FAAD14; }
+  color: $gray-400;
 }
 
 .hot-title {
   flex: 1;
-  min-width: 0;
-  font-size: $font-size-sm;
+  font-size: $font-size-xs;
   color: $gray-700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  transition: color 0.2s;
 }
 
 .hot-reward {
@@ -1875,130 +2818,62 @@ defineExpose({
   color: #FF6B35;
 }
 
-.hot-pts {
-  font-size: $font-size-sm;
-  font-weight: $font-weight-bold;
-  color: #FF6B35;
-}
+.hot-pts { font-size: $font-size-xs; font-weight: $font-weight-semibold; }
 
-// 发布引导卡片
-// 趋势行
-.achievement-content {
-  display: flex;
-  flex-direction: column;
-  gap: $sp-2;
-  flex: 1;
-}
-
-.trend-row {
-  display: flex;
-  align-items: center;
-  gap: $sp-2;
-}
-
-.trend-icon { flex-shrink: 0; }
-.trend-text { font-size: $font-size-xs; font-weight: $font-weight-medium; }
-.trend-up { color: #52C41A; }
-.trend-down { color: #FF4D4F; }
-
-// 成就文案
-.achievement-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: $sp-3;
-  background: rgba($primary, 0.05);
-  border-radius: $radius-lg;
-  padding: $sp-4 $sp-5;
-  margin-bottom: $sp-5;
-}
-
-.achievement-icon { color: $primary; flex-shrink: 0; margin-top: 2rpx; }
-
-.achievement-text {
-  font-size: $font-size-xs;
-  color: $gray-500;
-  line-height: 1.6;
-}
-
-.achievement-highlight {
-  font-weight: $font-weight-bold;
-  color: $primary;
-}
-
-// 附近任务
-.nearby-icon { color: #52C41A; }
-
-.nearby-refresh {
-  margin-left: auto;
-  cursor: pointer;
-  &:active { opacity: 0.6; }
-}
-
-.nearby-refresh-icon {
-  color: $gray-400;
-  transition: transform 0.3s linear;
-  &.spinning { animation: spin 1s linear infinite; }
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.nearby-task-list { display: flex; flex-direction: column; gap: $sp-4; }
+.nearby-task-list { display: flex; flex-direction: column; gap: $sp-1; }
 
 .nearby-task-item {
   display: flex;
   align-items: center;
-  gap: $sp-3;
-  padding: $sp-3 0;
+  padding: $sp-4 0;
+  border-bottom: 1rpx solid $gray-100;
   cursor: pointer;
-  &:not(:last-child) { border-bottom: 1rpx solid $gray-50; }
-  &:active { opacity: 0.75; }
+
+  &:last-child { border-bottom: none; }
+  &:active { opacity: 0.7; }
 }
 
-.nearby-task-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: $sp-2; }
+.nearby-task-info { flex: 1; min-width: 0; }
+.nearby-task-title { font-size: $font-size-xs; color: $gray-700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-.nearby-task-title {
-  font-size: $font-size-sm;
-  color: $gray-700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.nearby-task-meta {
+  display: flex;
+  align-items: center;
+  gap: $sp-2;
+  margin-top: $sp-1;
 }
 
-.nearby-task-meta { display: flex; align-items: center; gap: $sp-2; }
-.nearby-meta-icon { color: #52C41A; flex-shrink: 0; }
-.nearby-dist { font-size: $font-size-xs; color: #52C41A; font-weight: $font-weight-medium; }
-.nearby-sep { font-size: $font-size-xs; color: $gray-300; }
-.nearby-pts-icon { color: #FF6B35; flex-shrink: 0; }
-.nearby-pts { font-size: $font-size-xs; color: #FF6B35; font-weight: $font-weight-semibold; }
-.nearby-arrow { color: $gray-300; flex-shrink: 0; }
+.nearby-meta-icon { color: $gray-400; }
+.nearby-dist { font-size: 22rpx; color: $gray-400; }
+.nearby-sep { font-size: 22rpx; color: $gray-300; }
+.nearby-pts-icon { color: #FF6B35; }
+.nearby-pts { font-size: 22rpx; color: #FF6B35; font-weight: $font-weight-semibold; }
+.nearby-arrow { color: $gray-400; flex-shrink: 0; margin-left: auto; }
 
-// 定位引导
+.nearby-icon { color: #52C41A !important; }
+.nearby-refresh { margin-left: auto; color: $gray-400; cursor: pointer; }
+.nearby-refresh-icon { transition: transform 0.6s linear; &.spinning { animation: spin 1s linear infinite; } }
+
 .location-prompt {
   display: flex;
   align-items: center;
-  gap: $sp-4;
-  background: $white;
-  border-radius: $radius-card;
-  padding: $sp-6 $sp-7;
-  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06);
-  border: 1rpx dashed $gray-300;
+  gap: $sp-3;
+  padding: $sp-5 $sp-6;
+  background: rgba($primary, 0.04);
+  border-radius: $radius-lg;
+  border: 1rpx dashed rgba($primary, 0.25);
   cursor: pointer;
-  transition: all 0.15s;
+  transition: $transition-slow;
 
-  &:active { background: $gray-50; }
-  /* #ifdef H5 */
-  &:hover { border-color: $primary; background: rgba($primary, 0.03); .location-prompt-text { color: $primary; } .location-prompt-icon { color: $primary; } }
-  /* #endif */
+  &:hover { background: rgba($primary, 0.08); }
+  &:active { opacity: 0.75; }
 }
 
-.location-prompt-icon { color: $gray-400; flex-shrink: 0; }
-.location-prompt-text { flex: 1; font-size: $font-size-sm; color: $gray-500; }
-.location-prompt-arrow { color: $gray-400; }
-</style>
+.location-prompt-icon { color: $primary; flex-shrink: 0; }
+.location-prompt-text { flex: 1; font-size: $font-size-xs; color: $primary; }
+.location-prompt-arrow { color: $primary; flex-shrink: 0; }
 
-<!-- H5 端全局：隐藏滚动条 -->
-<style lang="scss">
-/* #ifdef H5 */
-::-webkit-scrollbar { display: none; }
-/* #endif */
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 </style>

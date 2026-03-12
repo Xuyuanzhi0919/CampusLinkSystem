@@ -56,11 +56,6 @@
           <!-- 签到 & 快捷操作卡片 -->
           <view class="action-card">
             <ActionArea
-              :points="userProfile?.points || 0"
-              :level="userProfile?.level || 0"
-              :level-name="levelName"
-              :badge-count="userBadges.filter(b => b.unlocked).length"
-              @points-click="handlePointsClick"
               @publish="() => uni.$emit('open-publish-sheet')"
             />
           </view>

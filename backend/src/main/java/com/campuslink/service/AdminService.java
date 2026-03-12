@@ -239,7 +239,7 @@ public class AdminService {
         // 查学校名称
         if (user.getSchoolId() != null) {
             School school = schoolMapper.selectById(user.getSchoolId());
-            if (school != null) vo.setSchoolName(school.getName());
+            if (school != null) vo.setSchoolName(school.getSchoolName());
         }
         return vo;
     }

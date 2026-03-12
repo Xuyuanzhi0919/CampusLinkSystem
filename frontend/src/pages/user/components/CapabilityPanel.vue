@@ -79,13 +79,22 @@ const capabilityItems = computed<CapabilityItem[]>(() => [
     badge: props.badges?.myQuestions
   },
   {
-    id: 'my-interactions',
+    id: 'my-notifications',
     title: '消息通知',
-    description: '点赞、评论、私信',
+    description: '点赞、评论、系统消息',
     icon: 'bell',
     color: 'rose',
     path: '/pages/notification/index',
-    badge: (props.badges?.notifications || 0) + (props.badges?.messages || 0)
+    badge: props.badges?.notifications || 0
+  },
+  {
+    id: 'my-messages',
+    title: '我的私信',
+    description: '与其他用户的对话',
+    icon: 'mail',
+    color: 'sky',
+    path: '/pages/message/index',
+    badge: props.badges?.messages || 0
   },
   {
     id: 'my-growth',
@@ -187,6 +196,7 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   &--green  { background: #ECFDF5; .cap-icon { color: #0D9488; } }
   &--rose   { background: #FFF1F2; .cap-icon { color: #E11D48; } }
   &--amber  { background: #FFFBEB; .cap-icon { color: #B45309; } }
+  &--sky    { background: #F0F9FF; .cap-icon { color: #0284C7; } }
 }
 
 /* 文字 */

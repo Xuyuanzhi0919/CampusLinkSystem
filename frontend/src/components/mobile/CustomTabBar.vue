@@ -55,12 +55,12 @@
                 </g>
               </template>
 
-              <!-- 问答图标 -->
+              <!-- 任务图标 -->
               <template v-else-if="index === 3">
                 <g fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M8 6h32a2 2 0 0 1 2 2v22a2 2 0 0 1-2 2H16l-8 8V8a2 2 0 0 1 2-2z"/>
-                  <path d="M24 14v2"/>
-                  <circle cx="24" cy="22" r="1.5" fill="currentColor" stroke="none"/>
+                  <rect x="10" y="4" width="28" height="4" rx="2"/>
+                  <rect x="6" y="10" width="36" height="32" rx="3"/>
+                  <path d="M16 22l5 5 11-10"/>
                 </g>
               </template>
 
@@ -168,7 +168,7 @@ const navigationStore = useNavigationStore()
 const userStore = useUserStore()
 
 // 使用统一导航 composable
-const { toHome, toResourceList, toQuestionList, toUserCenter } = useNavigation()
+const { toHome, toResourceList, toTaskList, toUserCenter } = useNavigation()
 
 // Bottom Sheet 状态
 const showBottomSheet = ref(false)
@@ -222,7 +222,7 @@ const tabList = [
   { text: '首页', path: '/pages/home/index', action: false, handler: toHome },
   { text: '资源', path: '/pages/resource/index', action: false, handler: toResourceList },
   { text: '发布', path: null, action: true, handler: null },
-  { text: '问答', path: '/pages/question/index', action: false, handler: toQuestionList },
+  { text: '任务', path: '/pages/task/index', action: false, handler: toTaskList },
   { text: '我的', path: '/pages/user/index', action: false, handler: toUserCenter }
 ]
 

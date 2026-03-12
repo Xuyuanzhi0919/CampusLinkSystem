@@ -59,8 +59,9 @@
         <el-table-column label="发布时间" width="160">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button text size="small" @click="openDetail(row)">详情</el-button>
             <el-button
               v-if="[0, 2, 3].includes(row.status)"
               text
@@ -88,6 +89,38 @@
       />
     </div>
   </div>
+
+  <!-- 任务详情抽屉 -->
+  <el-drawer v-model="detailVisible" title="任务详情" size="460px">
+    <template v-if="selectedTask">
+      <div class="drawer-section">
+        <div class="section-title">基本信息</div>
+        <el-descriptions :column="1" border size="small">
+          <el-descriptions-item label="任务标题">{{ selectedTask.title }}</el-descriptions-item>
+          <el-descriptions-item label="任务类型">{{ selectedTask.taskType || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="悬赏积分">{{ selectedTask.rewardPoints }}</el-descriptions-item>
+          <el-descriptions-item label="地点">{{ selectedTask.location || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="截止时间">
+            <span :class="{ 'expired-text': isExpired(selectedTask) }">{{ formatDate(selectedTask.deadline) }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="statusType(selectedTask.status)" size="small">{{ statusLabel(selectedTask.status) }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="发布者 ID">{{ selectedTask.publisherId }}</el-descriptions-item>
+          <el-descriptions-item label="接单者 ID">{{ selectedTask.accepterId ?? '暂无' }}</el-descriptions-item>
+          <el-descriptions-item label="完成时间">{{ formatDate(selectedTask.completedAt) }}</el-descriptions-item>
+          <el-descriptions-item label="发布时间">{{ formatDate(selectedTask.createdAt) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <div class="drawer-section" v-if="selectedTask.content">
+        <div class="section-title">任务描述</div>
+        <div class="content-box">{{ selectedTask.content }}</div>
+      </div>
+      <div class="drawer-actions" v-if="[0, 2, 3].includes(selectedTask.status)">
+        <el-button type="danger" @click="handleCancel(selectedTask); detailVisible = false">强制取消</el-button>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -98,6 +131,8 @@ import dayjs from 'dayjs'
 
 const loading = ref(false)
 const tasks = ref<AdminTask[]>([])
+const detailVisible = ref(false)
+const selectedTask = ref<AdminTask | null>(null)
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
@@ -148,6 +183,11 @@ function isExpired(row: AdminTask) {
   return row.deadline && dayjs(row.deadline).isBefore(dayjs()) && row.status < 4
 }
 
+function openDetail(row: AdminTask) {
+  selectedTask.value = row
+  detailVisible.value = true
+}
+
 async function handleCancel(row: AdminTask) {
   await ElMessageBox.confirm(`确认强制取消任务「${row.title}」？此操作不可逆。`, '强制取消', {
     type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
@@ -190,4 +230,13 @@ onMounted(fetchData)
 .expired { color: #f56c6c; }
 .ended-text { color: #d1d5db; font-size: 13px; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+.drawer-section { margin-bottom: 20px; }
+.section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+.content-box {
+  background: #f9fafb; border-radius: 8px; padding: 12px;
+  font-size: 13px; color: #374151; line-height: 1.7;
+  border: 1px solid #e5e7eb; white-space: pre-wrap;
+}
+.expired-text { color: #f56c6c; }
+.drawer-actions { margin-top: 24px; }
 </style>

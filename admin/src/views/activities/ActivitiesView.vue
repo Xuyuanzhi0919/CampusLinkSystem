@@ -59,8 +59,9 @@
             <el-tag :type="statusType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="100" fixed="right">
+        <el-table-column label="操作" width="160" fixed="right">
           <template #default="{ row }">
+            <el-button text size="small" @click="openDetail(row)">详情</el-button>
             <el-button
               v-if="row.status === 0 || row.status === 1"
               text type="danger" size="small"
@@ -86,6 +87,34 @@
       />
     </div>
   </div>
+
+  <!-- 活动详情抽屉 -->
+  <el-drawer v-model="detailVisible" title="活动详情" size="460px">
+    <template v-if="selectedActivity">
+      <div class="drawer-section">
+        <div class="section-title">基本信息</div>
+        <el-descriptions :column="1" border size="small">
+          <el-descriptions-item label="活动标题">{{ selectedActivity.title }}</el-descriptions-item>
+          <el-descriptions-item label="活动类型">{{ selectedActivity.activityType || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="主办社团">{{ selectedActivity.organizerName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="活动地点">{{ selectedActivity.location || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="开始时间">{{ formatDateFull(selectedActivity.startTime) }}</el-descriptions-item>
+          <el-descriptions-item label="结束时间">{{ formatDateFull(selectedActivity.endTime) }}</el-descriptions-item>
+          <el-descriptions-item label="参与人数">
+            {{ selectedActivity.currentParticipants }} / {{ selectedActivity.maxParticipants || '不限' }} 人
+          </el-descriptions-item>
+          <el-descriptions-item label="积分奖励">{{ selectedActivity.rewardPoints }} 积分</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="statusType(selectedActivity.status)" size="small">{{ statusLabel(selectedActivity.status) }}</el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="发布时间">{{ formatDateFull(selectedActivity.createdAt) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <div class="drawer-actions" v-if="selectedActivity.status === 0 || selectedActivity.status === 1">
+        <el-button type="danger" @click="handleCancel(selectedActivity); detailVisible = false">强制取消</el-button>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -96,6 +125,8 @@ import dayjs from 'dayjs'
 
 const loading = ref(false)
 const activities = ref<AdminActivity[]>([])
+const detailVisible = ref(false)
+const selectedActivity = ref<AdminActivity | null>(null)
 const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
@@ -146,6 +177,15 @@ function formatDate(d?: string) {
   return d ? dayjs(d).format('MM-DD HH:mm') : '-'
 }
 
+function formatDateFull(d?: string) {
+  return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
+}
+
+function openDetail(row: AdminActivity) {
+  selectedActivity.value = row
+  detailVisible.value = true
+}
+
 async function handleCancel(row: AdminActivity) {
   await ElMessageBox.confirm(`确认强制取消活动「${row.title}」？`, '强制取消', {
     type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
@@ -178,4 +218,7 @@ onMounted(fetchData)
 .sep { color: #d1d5db; margin: 0 2px; }
 .ended-text { color: #d1d5db; font-size: 13px; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+.drawer-section { margin-bottom: 20px; }
+.section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+.drawer-actions { margin-top: 24px; }
 </style>

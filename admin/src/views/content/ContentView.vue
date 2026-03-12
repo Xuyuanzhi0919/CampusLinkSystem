@@ -42,18 +42,22 @@
           </template>
         </el-table-column>
         <el-table-column prop="downloads" label="下载" width="70" align="center" />
-        <el-table-column label="状态" width="100" align="center">
+        <el-table-column label="状态" width="120" align="center">
           <template #default="{ row }">
             <el-tag :type="resourceStatusType(row.status)" size="small">
               {{ resourceStatusLabel(row.status) }}
             </el-tag>
+            <div v-if="row.status === 2 && row.rejectReason" class="reject-reason" :title="row.rejectReason">
+              {{ row.rejectReason }}
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="上传时间" width="160">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="220" fixed="right">
           <template #default="{ row }">
+            <el-button text size="small" @click="openResourceDetail(row)">详情</el-button>
             <el-button v-if="row.status === 0" text type="success" size="small" @click="reviewResource(row, 1)">通过</el-button>
             <el-button v-if="row.status === 0" text type="danger" size="small" @click="reviewResource(row, 2)">拒绝</el-button>
             <el-button v-if="row.status === 1" text type="warning" size="small" @click="reviewResource(row, 2)">下架</el-button>
@@ -97,6 +101,44 @@
       <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
   </div>
+
+  <!-- 资源详情抽屉 -->
+  <el-drawer v-model="resourceDetailVisible" title="资源详情" size="480px">
+    <template v-if="selectedResource">
+      <div class="drawer-section">
+        <div class="section-title">基本信息</div>
+        <el-descriptions :column="1" border size="small">
+          <el-descriptions-item label="标题">{{ selectedResource.title }}</el-descriptions-item>
+          <el-descriptions-item label="分类">{{ selectedResource.category || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="课程">{{ selectedResource.courseName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="文件类型">{{ selectedResource.fileType || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="文件名">{{ selectedResource.fileName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="下载次数">{{ selectedResource.downloads }}</el-descriptions-item>
+          <el-descriptions-item label="点赞数">{{ selectedResource.likes }}</el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="resourceStatusType(selectedResource.status)" size="small">
+              {{ resourceStatusLabel(selectedResource.status) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item v-if="selectedResource.rejectReason" label="拒绝原因">
+            <span style="color:#f56c6c">{{ selectedResource.rejectReason }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="上传者 ID">{{ selectedResource.uploaderId }}</el-descriptions-item>
+          <el-descriptions-item label="上传时间">{{ formatDate(selectedResource.createdAt) }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+      <div class="drawer-section" v-if="selectedResource.description">
+        <div class="section-title">资源描述</div>
+        <div class="content-box">{{ selectedResource.description }}</div>
+      </div>
+      <div class="drawer-actions">
+        <el-button v-if="selectedResource.status === 0" type="success" size="small" @click="reviewResource(selectedResource, 1); resourceDetailVisible = false">通过</el-button>
+        <el-button v-if="selectedResource.status === 0" type="danger" size="small" @click="reviewResource(selectedResource, 2); resourceDetailVisible = false">拒绝</el-button>
+        <el-button v-if="selectedResource.status === 1" type="warning" size="small" @click="reviewResource(selectedResource, 2); resourceDetailVisible = false">下架</el-button>
+        <el-button v-if="selectedResource.status === 2" type="success" size="small" @click="reviewResource(selectedResource, 1); resourceDetailVisible = false">恢复</el-button>
+      </div>
+    </template>
+  </el-drawer>
 </template>
 
 <script setup lang="ts">
@@ -118,6 +160,8 @@ const page = ref(1)
 const pageSize = ref(20)
 const total = ref(0)
 const resources = ref<AdminResource[]>([])
+const resourceDetailVisible = ref(false)
+const selectedResource = ref<AdminResource | null>(null)
 const questions = ref<AdminQuestion[]>([])
 
 async function fetchData() {
@@ -157,6 +201,11 @@ function formatDate(d?: string) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
 }
 
+function openResourceDetail(row: AdminResource) {
+  selectedResource.value = row
+  resourceDetailVisible.value = true
+}
+
 async function reviewResource(row: AdminResource, status: number) {
   let reason: string | undefined
   if (status === 2) {
@@ -188,4 +237,16 @@ onMounted(fetchData)
 .content-title { font-size: 14px; font-weight: 500; color: #1a1a2e; }
 .content-sub { font-size: 12px; color: #9ca3af; margin-top: 2px; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+.reject-reason {
+  font-size: 11px; color: #f56c6c; margin-top: 4px;
+  max-width: 100px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.drawer-section { margin-bottom: 20px; }
+.section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+.content-box {
+  background: #f9fafb; border-radius: 8px; padding: 12px;
+  font-size: 13px; color: #374151; line-height: 1.7;
+  border: 1px solid #e5e7eb; white-space: pre-wrap;
+}
+.drawer-actions { display: flex; gap: 10px; margin-top: 24px; }
 </style>

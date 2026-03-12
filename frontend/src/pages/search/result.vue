@@ -167,26 +167,23 @@
 
     <!-- 搜索结果区域 -->
     <view v-else class="search-result-section">
-      <!-- Tab 切换 -->
+      <!-- Tab 切换 + 结果统计 -->
       <view class="result-tabs">
-        <view
-          v-for="tab in tabs"
-          :key="tab.key"
-          class="tab-item"
-          :class="{ 'tab-item--active': activeTab === tab.key }"
-          @click="switchTab(tab.key)"
-        >
-          <text class="tab-text">{{ tab.label }}</text>
-          <text v-if="tab.count > 0" class="tab-count">({{ tab.count }})</text>
+        <view class="tabs-pills">
+          <view
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="tab-item"
+            :class="{ 'tab-item--active': activeTab === tab.key }"
+            @click="switchTab(tab.key)"
+          >
+            <text class="tab-text">{{ tab.label }}</text>
+            <text v-if="tab.count > 0" class="tab-badge">{{ tab.count }}</text>
+          </view>
         </view>
-      </view>
-
-      <!-- 搜索统计信息 -->
-      <view v-if="totalCount > 0 && !loading" class="search-stats">
-        <text class="stats-text">
-          共找到 <text class="stats-highlight">{{ totalCount }}</text> 条与「<text class="stats-keyword">{{ keyword }}</text>」相关的结果
+        <text v-if="totalCount > 0 && !loading" class="tabs-stats">
+          共 {{ totalCount }} 条{{ searchTime > 0 ? ` · ${searchTime}ms` : '' }}
         </text>
-        <text v-if="searchTime > 0" class="stats-time">（{{ searchTime }}ms）</text>
       </view>
 
       <!-- 排序和筛选栏（非全部Tab时显示） -->
@@ -368,10 +365,13 @@
           <!-- 全部结果 -->
           <template v-if="activeTab === 'all'">
             <!-- 资源结果 -->
-            <view v-if="resourceList.length > 0" class="result-group">
+            <view v-if="resourceList.length > 0" class="result-card">
               <view class="group-header">
-                <view class="group-title"><Icon name="book-open" :size="15" class="group-icon" />资源</view>
-                <text class="group-more" @click="switchTab('resource')">查看更多 →</text>
+                <view class="group-title">
+                  <Icon name="book-open" :size="15" class="group-icon" />
+                  <text>资源</text>
+                </view>
+                <text class="group-count">{{ resourceList.length }} 条</text>
               </view>
               <view class="result-items">
                 <ResourceCard
@@ -382,13 +382,20 @@
                   @click="goToResource(item.resourceId)"
                 />
               </view>
+              <view class="group-footer" @click="switchTab('resource')">
+                <text class="group-footer-text">查看全部资源</text>
+                <Icon name="chevron-right" :size="14" class="group-footer-icon" />
+              </view>
             </view>
 
             <!-- 问答结果 -->
-            <view v-if="questionList.length > 0" class="result-group">
+            <view v-if="questionList.length > 0" class="result-card">
               <view class="group-header">
-                <view class="group-title"><Icon name="help-circle" :size="15" class="group-icon" />问答</view>
-                <text class="group-more" @click="switchTab('question')">查看更多 →</text>
+                <view class="group-title">
+                  <Icon name="help-circle" :size="15" class="group-icon" />
+                  <text>问答</text>
+                </view>
+                <text class="group-count">{{ questionList.length }} 条</text>
               </view>
               <view class="result-items">
                 <QuestionCard
@@ -399,13 +406,20 @@
                   @click="goToQuestion(item.qid)"
                 />
               </view>
+              <view class="group-footer" @click="switchTab('question')">
+                <text class="group-footer-text">查看全部问答</text>
+                <Icon name="chevron-right" :size="14" class="group-footer-icon" />
+              </view>
             </view>
 
             <!-- 活动结果 -->
-            <view v-if="activityList.length > 0" class="result-group">
+            <view v-if="activityList.length > 0" class="result-card">
               <view class="group-header">
-                <view class="group-title"><Icon name="calendar" :size="15" class="group-icon" />活动</view>
-                <text class="group-more" @click="switchTab('activity')">查看更多 →</text>
+                <view class="group-title">
+                  <Icon name="calendar" :size="15" class="group-icon" />
+                  <text>活动</text>
+                </view>
+                <text class="group-count">{{ activityList.length }} 条</text>
               </view>
               <view class="result-items">
                 <ActivityCard
@@ -415,6 +429,10 @@
                   :keyword="keyword"
                   @click="goToActivity(item.activityId)"
                 />
+              </view>
+              <view class="group-footer" @click="switchTab('activity')">
+                <text class="group-footer-text">查看全部活动</text>
+                <Icon name="chevron-right" :size="14" class="group-footer-icon" />
               </view>
             </view>
           </template>
@@ -2020,99 +2038,75 @@ onUnmounted(() => {
   height: calc(100vh - 120rpx);
 }
 
-/* Tab 栏 */
+/* Tab 栏 + 统计信息 */
 .result-tabs {
   display: flex;
-  padding: 0 32rpx;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16rpx 32rpx;
   background: #FFFFFF;
   border-bottom: 1rpx solid $color-divider;
+  gap: 16rpx;
 }
 
-/* 搜索统计信息 */
-.search-stats {
+.tabs-pills {
   display: flex;
   align-items: center;
-  padding: 16rpx 32rpx;
-  background: rgba($campus-blue, 0.02);
-  border-bottom: 1rpx solid $color-divider;
+  gap: 12rpx;
+  flex-wrap: nowrap;
 }
 
-.stats-text {
-  font-size: 24rpx;
-  color: $color-text-tertiary;
-  line-height: 1.5;
-}
-
-.stats-highlight {
-  color: $campus-blue;
-  font-weight: $font-weight-semibold;
-}
-
-.stats-keyword {
-  color: $color-text-primary;
-  font-weight: $font-weight-medium;
-}
-
-.stats-time {
+.tabs-stats {
   font-size: 22rpx;
   color: $color-text-quaternary;
-  margin-left: 8rpx;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-/* 优化3：强化Tab选中态 */
+/* Pill 胶囊 Tab */
 .tab-item {
-  padding: 24rpx 32rpx;
-  position: relative;
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
+  padding: 12rpx 24rpx;
+  border-radius: 32rpx;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: $color-bg-hover;
 
-  &:hover:not(&--active) {
-    background: rgba($campus-blue, 0.04);
+  &:active {
+    transform: scale(0.96);
   }
 
   &--active {
-    background: rgba($campus-blue, 0.06);
+    background: $campus-blue;
 
     .tab-text {
-      color: $campus-blue;
+      color: #FFFFFF;
       font-weight: $font-weight-semibold;
     }
 
-    .tab-count {
-      background: rgba($campus-blue, 0.15);
-      color: $campus-blue;
-      font-weight: $font-weight-medium;
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 32rpx;
-      right: 32rpx;
-      height: 4rpx;
-      background: $campus-blue;
-      border-radius: 2rpx;
+    .tab-badge {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
     }
   }
 }
 
 .tab-text {
-  font-size: 28rpx;
+  font-size: 26rpx;
   color: $color-text-secondary;
   transition: all 0.2s ease;
 }
 
-.tab-count {
-  font-size: 22rpx;
+.tab-badge {
+  font-size: 20rpx;
   color: $color-text-quaternary;
-  padding: 4rpx 10rpx;
-  background: rgba(0, 0, 0, 0.04);
+  padding: 2rpx 10rpx;
+  background: rgba(0, 0, 0, 0.06);
   border-radius: 12rpx;
   transition: all 0.2s ease;
+  line-height: 1.4;
 }
 
 /* ========== 排序和筛选栏 ========== */
@@ -2281,39 +2275,31 @@ onUnmounted(() => {
 
 /* 内容容器：解决 scroll-view padding-right 在部分平台不生效的问题 */
 .result-list-inner {
-  padding: 24rpx 32rpx;
+  padding: 24rpx 24rpx;
   min-height: 100%;
   box-sizing: border-box;
 }
 
-/* 优化1：增加分区间距 40→64rpx (32px) */
-.result-group {
-  margin-bottom: 64rpx;
+/* 搜索结果分组卡片 */
+.result-card {
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.04);
+  border: 1rpx solid $color-border-light;
+  overflow: hidden;
+  margin-bottom: 24rpx;
 
   &:last-child {
-    margin-bottom: 32rpx;
-  }
-
-  @media (max-width: 768px) {
-    margin-bottom: 48rpx;
+    margin-bottom: 8rpx;
   }
 }
 
-/* 优化1：分组标题添加背景条和底部分隔线 */
 .group-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 24rpx;
-  margin-bottom: 24rpx;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 12rpx;
-  border-bottom: 1rpx solid rgba(0, 0, 0, 0.04);
-
-  @media (max-width: 768px) {
-    padding: 16rpx 20rpx;
-    margin-bottom: 20rpx;
-  }
+  padding: 24rpx 28rpx 20rpx;
+  border-bottom: 1rpx solid $color-divider;
 }
 
 .group-title {
@@ -2322,47 +2308,75 @@ onUnmounted(() => {
   color: $color-text-primary;
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 10rpx;
 }
 
 .group-icon {
-  color: $color-text-secondary;
+  color: $campus-blue;
   flex-shrink: 0;
 }
 
-.group-more {
-  font-size: 24rpx;
-  color: $campus-blue;
-  padding: 8rpx 16rpx;
-  border-radius: 20rpx;
-  transition: all 0.2s ease;
+.group-count {
+  font-size: 22rpx;
+  color: $color-text-quaternary;
+}
 
-  &:hover {
-    background: rgba($campus-blue, 0.08);
-  }
+.group-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8rpx;
+  padding: 24rpx;
+  border-top: 1rpx solid $color-divider;
+  cursor: pointer;
+  transition: background 0.15s ease;
 
   &:active {
-    transform: scale(0.96);
+    background: $color-bg-hover;
   }
+}
+
+.group-footer-text {
+  font-size: 26rpx;
+  color: $campus-blue;
+  font-weight: $font-weight-medium;
+}
+
+.group-footer-icon {
+  color: $campus-blue;
+  flex-shrink: 0;
 }
 
 .result-items {
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 0;
   width: 100%;
   box-sizing: border-box;
   overflow: hidden;
+  padding: 20rpx 28rpx;
+
+  > * + * {
+    margin-top: 16rpx;
+  }
 
   &--full {
-    gap: 20rpx;
+    padding: 20rpx 28rpx;
+
+    > * + * {
+      margin-top: 20rpx;
+    }
   }
 
   @media (max-width: 768px) {
-    gap: 12rpx;
+    padding: 16rpx 20rpx;
 
-    &--full {
-      gap: 16rpx;
+    > * + * {
+      margin-top: 12rpx;
+    }
+
+    &--full > * + * {
+      margin-top: 16rpx;
     }
   }
 }

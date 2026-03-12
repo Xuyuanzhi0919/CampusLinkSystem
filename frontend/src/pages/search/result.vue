@@ -439,43 +439,45 @@
 
           <!-- 单类型结果 -->
           <template v-else>
-            <view class="result-items result-items--full">
-              <template v-if="activeTab === 'resource'">
-                <ResourceCard
-                  v-for="item in resourceList"
-                  :key="item.resourceId"
-                  :resource="item"
-                  :keyword="keyword"
-                  @click="goToResource(item.resourceId)"
-                />
-              </template>
-              <template v-else-if="activeTab === 'question'">
-                <QuestionCard
-                  v-for="item in questionList"
-                  :key="item.qid"
-                  :question="item"
-                  :keyword="keyword"
-                  @click="goToQuestion(item.qid)"
-                />
-              </template>
-              <template v-else-if="activeTab === 'activity'">
-                <ActivityCard
-                  v-for="item in activityList"
-                  :key="item.activityId"
-                  :activity="item"
-                  :keyword="keyword"
-                  @click="goToActivity(item.activityId)"
-                />
-              </template>
-            </view>
+            <view class="result-card">
+              <view class="result-items result-items--full">
+                <template v-if="activeTab === 'resource'">
+                  <ResourceCard
+                    v-for="item in resourceList"
+                    :key="item.resourceId"
+                    :resource="item"
+                    :keyword="keyword"
+                    @click="goToResource(item.resourceId)"
+                  />
+                </template>
+                <template v-else-if="activeTab === 'question'">
+                  <QuestionCard
+                    v-for="item in questionList"
+                    :key="item.qid"
+                    :question="item"
+                    :keyword="keyword"
+                    @click="goToQuestion(item.qid)"
+                  />
+                </template>
+                <template v-else-if="activeTab === 'activity'">
+                  <ActivityCard
+                    v-for="item in activityList"
+                    :key="item.activityId"
+                    :activity="item"
+                    :keyword="keyword"
+                    @click="goToActivity(item.activityId)"
+                  />
+                </template>
+              </view>
 
-            <!-- 加载更多状态 -->
-            <view v-if="loadingMore" class="loading-more">
-              <view class="loading-spinner loading-spinner--small"></view>
-              <text>加载中...</text>
-            </view>
-            <view v-else-if="noMore" class="no-more">
-              <text>— 没有更多了 —</text>
+              <!-- 加载更多状态 -->
+              <view v-if="loadingMore" class="loading-more">
+                <view class="loading-spinner loading-spinner--small"></view>
+                <text>加载中...</text>
+              </view>
+              <view v-else-if="noMore" class="no-more">
+                <text>— 没有更多了 —</text>
+              </view>
             </view>
           </template>
         </view>
@@ -2275,7 +2277,7 @@ onUnmounted(() => {
 
 /* 内容容器：解决 scroll-view padding-right 在部分平台不生效的问题 */
 .result-list-inner {
-  padding: 24rpx 24rpx;
+  padding: 16rpx 32rpx 32rpx;
   min-height: 100%;
   box-sizing: border-box;
   max-width: 1200rpx;
@@ -2638,8 +2640,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 12rpx;
-  padding: 32rpx 0;
+  padding: 28rpx 0;
   font-size: 26rpx;
   color: $color-text-quaternary;
+  border-top: 1rpx solid $color-divider;
+  margin: 0 28rpx;
 }
 </style>

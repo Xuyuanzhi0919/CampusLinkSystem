@@ -53,12 +53,6 @@
           @stat-click="handleStatClick"
         />
         <view class="page-body">
-          <!-- 签到 & 快捷操作卡片 -->
-          <view class="action-card">
-            <ActionArea
-              @publish="() => uni.$emit('open-publish-sheet')"
-            />
-          </view>
           <!-- 个性化入口 -->
           <view class="customize-entry" @click="openCustomizeSheet">
             <text class="customize-entry__icon">⊞</text>
@@ -269,7 +263,6 @@ import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import Icon from '@/components/icons/index.vue'
 
 import HeroSection from './components/HeroSection.vue'
-import ActionArea from './components/ActionArea.vue'
 import QuickActions from './components/QuickActions.vue'
 import AchievementSection from './components/AchievementSection.vue'
 import CapabilityPanel from './components/CapabilityPanel.vue'
@@ -720,18 +713,6 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   }
 }
 
-/* 签到行动卡片 */
-.action-card {
-  background: #fff;
-  border-radius: 20rpx;
-  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.06);
-  overflow: hidden;
-
-  :deep(.action-area) {
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
 
 /* ========== 区块标签 ========== */
 .section-block {

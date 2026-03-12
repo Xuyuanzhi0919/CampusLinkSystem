@@ -4,10 +4,10 @@
     <view class="search-header">
       <view class="search-bar">
         <view class="back-btn" @click="handleBack">
-          <text class="back-icon">←</text>
+          <Icon name="arrow-left" :size="18" class="back-icon" />
         </view>
         <view class="search-input-wrapper">
-          <text class="search-icon">🔍</text>
+          <Icon name="search" :size="15" class="search-icon" />
           <input
             class="search-input"
             type="text"
@@ -21,7 +21,7 @@
             @blur="handleInputBlur"
           />
           <view v-if="keyword" class="clear-btn" @click="clearKeyword">
-            <text>✕</text>
+            <Icon name="x" :size="13" class="clear-icon" />
           </view>
         </view>
         <view class="search-btn" @click="handleSearch">
@@ -37,7 +37,7 @@
           class="suggestion-item"
           @click="handleSuggestionClick(item)"
         >
-          <text class="suggestion-icon">{{ getSuggestionIcon(item.type) }}</text>
+          <Icon :name="getSuggestionIcon(item.type)" :size="14" class="suggestion-icon" />
           <view class="suggestion-content">
             <text class="suggestion-text" v-html="highlightKeyword(item.text)"></text>
             <text v-if="item.count" class="suggestion-count">{{ formatSuggestCount(item.count) }}</text>
@@ -58,7 +58,7 @@
           </view>
         </view>
         <view class="topic-banner-close" @click="clearTopicSource">
-          <text>✕</text>
+          <Icon name="x" :size="14" class="topic-close-icon" />
         </view>
       </view>
       <view class="topic-banner-stats">
@@ -82,7 +82,7 @@
         <!-- AI 搜索提示模块 -->
         <view class="ai-search-hint">
           <view class="ai-hint-left">
-            <text class="ai-hint-icon">✨</text>
+            <Icon name="sparkles" :size="14" class="ai-hint-icon" />
             <text class="ai-hint-text">试试搜索：</text>
             <view class="ai-hint-suggestions">
               <text
@@ -97,14 +97,14 @@
           </view>
           <view class="ai-hint-right" @click="handleAISearch">
             <text>向 AI 提问</text>
-            <text class="ai-arrow">→</text>
+            <Icon name="arrow-right" :size="13" class="ai-arrow" />
           </view>
         </view>
 
         <!-- 热门搜索区（网格布局） -->
         <view class="search-section">
           <view class="section-header">
-            <text class="section-icon">🔥</text>
+            <Icon name="flame" :size="15" class="section-icon" />
             <text class="section-title">热门搜索</text>
           </view>
           <view class="hot-tags-grid">
@@ -122,9 +122,13 @@
                 <text>{{ getHotTagLabel(item.tag) }}</text>
               </view>
               <!-- 趋势图标 -->
-              <text v-if="item.trend && index >= 3" class="hot-trend" :class="`hot-trend--${item.trend}`">
-                {{ getTrendIcon(item.trend) }}
-              </text>
+              <Icon
+                v-if="item.trend && index >= 3 && getTrendIcon(item.trend)"
+                :name="getTrendIcon(item.trend)"
+                :size="12"
+                class="hot-trend"
+                :class="`hot-trend--${item.trend}`"
+              />
             </view>
           </view>
         </view>
@@ -133,7 +137,7 @@
         <view v-if="searchHistory.length > 0" class="search-section">
           <view class="section-header">
             <view class="section-header-left">
-              <text class="section-icon">🕒</text>
+              <Icon name="clock" :size="15" class="section-icon" />
               <text class="section-title">搜索历史</text>
             </view>
             <text class="section-action" @click="clearHistory">清空</text>
@@ -153,7 +157,7 @@
 
         <!-- 空状态引导（无历史记录时） -->
         <view v-if="searchHistory.length === 0" class="empty-history-hint">
-          <text class="empty-hint-icon">💡</text>
+          <Icon name="lightbulb" :size="16" class="empty-hint-icon" />
           <text class="empty-hint-text">输入关键词，探索校园资源与问答</text>
         </view>
       </view>
@@ -200,7 +204,7 @@
 
         <!-- 筛选按钮 -->
         <view class="filter-toggle" @click="toggleFilterPanel">
-          <text class="filter-icon">⚙</text>
+          <Icon name="sliders-horizontal" :size="14" class="filter-icon" />
           <text>筛选</text>
           <text v-if="hasActiveFilters" class="filter-badge">{{ activeFilterCount }}</text>
         </view>
@@ -313,7 +317,7 @@
           <!-- 放大镜插画 -->
           <view class="empty-illustration">
             <view class="empty-icon-wrapper">
-              <text class="empty-icon-main">🔍</text>
+              <Icon name="search" :size="44" class="empty-icon-main" />
               <view class="empty-icon-sparkle"></view>
             </view>
           </view>
@@ -327,9 +331,9 @@
           <!-- CTA 按钮 -->
           <view class="empty-cta">
             <view class="empty-cta-btn" @click="handleAISearch">
-              <text class="cta-icon">✨</text>
+              <Icon name="sparkles" :size="15" class="cta-icon" />
               <text class="cta-text">向 AI 提问</text>
-              <text class="cta-arrow">→</text>
+              <Icon name="arrow-right" :size="14" class="cta-arrow" />
             </view>
           </view>
 
@@ -472,6 +476,7 @@ import type { QuestionItem } from '@/types/question'
 import ResourceCard from './components/ResourceCard.vue'
 import QuestionCard from './components/QuestionCard.vue'
 import ActivityCard from './components/ActivityCard.vue'
+import Icon from '@/components/icons/index.vue'
 
 // 搜索关键词
 const keyword = ref('')
@@ -621,13 +626,12 @@ const getHotTagLabel = (tag: string): string => {
   return labels[tag] || ''
 }
 
-// 获取趋势图标
+// 获取趋势图标（返回 lucide 图标名）
 const getTrendIcon = (trend: string): string => {
   const icons: Record<string, string> = {
-    up: '↑',
-    down: '↓',
-    new: '🆕',
-    stable: ''
+    up:   'trending-up',
+    down: 'trending-down',
+    new:  'zap',
   }
   return icons[trend] || ''
 }
@@ -981,15 +985,15 @@ const handleSuggestionClick = (item: SuggestItem) => {
   }
 }
 
-// 获取建议项图标
-const getSuggestionIcon = (type: string) => {
+// 获取建议项图标（返回 lucide 图标名）
+const getSuggestionIcon = (type: string): string => {
   const icons: Record<string, string> = {
-    tag: '#',
-    hotWord: '🔥',
-    question: '❓',
-    resource: '📚'
+    tag:     'hash',
+    hotWord: 'flame',
+    question:'help-circle',
+    resource:'book-open',
   }
-  return icons[type] || '🔍'
+  return icons[type] || 'search'
 }
 
 // 获取建议项类型标签
@@ -1353,7 +1357,6 @@ onUnmounted(() => {
   flex-shrink: 0;
 
   .back-icon {
-    font-size: 32rpx;
     color: $color-text-secondary;
   }
 }
@@ -1376,9 +1379,10 @@ onUnmounted(() => {
 }
 
 .search-icon {
-  font-size: 28rpx;
   margin-right: 16rpx;
   opacity: 0.6;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
 }
 
 .search-input {
@@ -1399,8 +1403,7 @@ onUnmounted(() => {
   background: $color-text-quaternary;
   margin-left: 12rpx;
 
-  text {
-    font-size: 20rpx;
+  .clear-icon {
     color: #FFFFFF;
   }
 }
@@ -1458,7 +1461,6 @@ onUnmounted(() => {
   justify-content: center;
   background: $color-bg-hover;
   border-radius: 10rpx;
-  font-size: 24rpx;
   color: $color-text-secondary;
   flex-shrink: 0;
 }
@@ -1705,7 +1707,8 @@ onUnmounted(() => {
 }
 
 .ai-hint-icon {
-  font-size: 28rpx;
+  color: $campus-blue;
+  flex-shrink: 0;
 }
 
 .ai-hint-text {
@@ -1752,7 +1755,8 @@ onUnmounted(() => {
 }
 
 .ai-arrow {
-  font-size: 24rpx;
+  color: $campus-blue;
+  flex-shrink: 0;
 }
 
 /* 搜索模块通用 */
@@ -1774,7 +1778,8 @@ onUnmounted(() => {
 }
 
 .section-icon {
-  font-size: 28rpx;
+  color: $color-text-secondary;
+  flex-shrink: 0;
 }
 
 .section-title {
@@ -1978,7 +1983,7 @@ onUnmounted(() => {
 }
 
 .empty-hint-icon {
-  font-size: 32rpx;
+  color: $color-text-quaternary;
 }
 
 .empty-hint-text {
@@ -2139,7 +2144,8 @@ onUnmounted(() => {
 }
 
 .filter-icon {
-  font-size: 24rpx;
+  color: $color-text-secondary;
+  flex-shrink: 0;
 }
 
 .filter-badge {
@@ -2419,12 +2425,8 @@ onUnmounted(() => {
 }
 
 .empty-icon-main {
-  font-size: 72rpx;
+  color: $color-text-quaternary;
   opacity: 0.8;
-
-  @media (max-width: 768px) {
-    font-size: 64rpx;
-  }
 }
 
 .empty-icon-sparkle {
@@ -2514,7 +2516,8 @@ onUnmounted(() => {
 }
 
 .cta-icon {
-  font-size: 28rpx;
+  color: #FFFFFF;
+  flex-shrink: 0;
 }
 
 .cta-text {
@@ -2524,7 +2527,6 @@ onUnmounted(() => {
 }
 
 .cta-arrow {
-  font-size: 28rpx;
   color: #FFFFFF;
   opacity: 0.8;
   transition: transform 0.2s ease;

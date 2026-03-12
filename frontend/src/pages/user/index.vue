@@ -56,6 +56,10 @@
           <!-- 签到 & 快捷操作卡片 -->
           <view class="action-card">
             <ActionArea
+              :points="userProfile?.points || 0"
+              :level="userProfile?.level || 0"
+              :level-name="levelName"
+              :badge-count="userBadges.filter(b => b.unlocked).length"
               @points-click="handlePointsClick"
               @publish="() => uni.$emit('open-publish-sheet')"
             />
@@ -74,6 +78,7 @@
               @publish-task="handlePublishTask"
               @join-activity="handleJoinActivity"
               @go-to-mall="handleGoToMall"
+              @go-to-favorites="handleGoToFavorites"
             />
             <AchievementSection
               v-if="modKey === 'showAchievement' && userProfile && layoutConfig.showAchievement"
@@ -128,6 +133,7 @@
               @publish-resource="handlePublishResource"
               @ask-question="handleAskQuestion"
               @publish-task="handlePublishTask"
+              @go-to-favorites="handleGoToFavorites"
               @join-activity="handleJoinActivity"
               @go-to-mall="handleGoToMall"
             />
@@ -518,6 +524,7 @@ const handlePublishTask = () =>
   uni.navigateTo({ url: '/pages/task/publish', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 const handleJoinActivity = () => uni.navigateTo({ url: '/pages/club/my-activities' })
 const handleGoToMall = () => uni.navigateTo({ url: '/pages/user/points-mall' })
+const handleGoToFavorites = () => uni.navigateTo({ url: '/pages/user/favorites' })
 
 const handleStatClick = (key: string) => {
   const map: Record<string, string> = {

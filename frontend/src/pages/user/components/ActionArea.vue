@@ -1,52 +1,67 @@
 <template>
   <view class="action-area">
 
-    <!-- ── 主 CTA：发布内容（全宽） ── -->
-    <view class="publish-btn" @click="handlePublish">
-      <view class="publish-btn__left">
-        <view class="publish-btn__icon-wrap">
-          <Icon name="plus-circle" :size="22" class="publish-btn__icon" />
+    <!-- ── 发布内容（弱化版：浅橙卡片，非强渐变） ── -->
+    <view class="publish-card" @click="handlePublish">
+      <view class="publish-card__left">
+        <view class="publish-card__icon-wrap">
+          <Icon name="plus-circle" :size="20" class="publish-card__icon" />
         </view>
-        <view class="publish-btn__text">
-          <text class="publish-btn__title">发布内容</text>
-          <text class="publish-btn__sub">分享知识 · 贡献社区 · 赢积分</text>
+        <view class="publish-card__text">
+          <text class="publish-card__title">发布内容</text>
+          <text class="publish-card__sub">分享知识 · 贡献社区 · 赢积分</text>
         </view>
       </view>
-      <svg class="publish-btn__arrow" viewBox="0 0 16 16" fill="none">
-        <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2"
-          stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
+      <view class="publish-card__badge">
+        <text class="publish-card__badge-text">+10</text>
+        <svg class="publish-card__arrow" viewBox="0 0 10 10" fill="none">
+          <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </view>
     </view>
 
-    <!-- ── 次级入口：两列并排 ── -->
-    <view class="quick-grid">
+    <!-- ── 成长统一卡片（查看成长 + 我的徽章） ── -->
+    <view class="growth-card">
+
       <!-- 查看成长 -->
-      <view class="quick-item quick-item--growth" @click="handlePointsClick">
-        <view class="quick-item__icon-wrap">
-          <Icon name="trending-up" :size="18" class="quick-item__icon" />
+      <view class="growth-row" @click="handlePointsClick">
+        <view class="growth-row__icon-wrap growth-row__icon-wrap--orange">
+          <Icon name="trending-up" :size="17" class="growth-row__icon" />
         </view>
-        <view class="quick-item__texts">
-          <text class="quick-item__label">查看成长</text>
-          <text class="quick-item__desc">积分 / 等级</text>
+        <view class="growth-row__texts">
+          <text class="growth-row__label">查看成长</text>
+          <text class="growth-row__meta">
+            {{ levelName ? `${levelName} · ` : '' }}{{ points.toLocaleString() }} 积分
+          </text>
         </view>
-        <svg class="quick-item__arrow" viewBox="0 0 10 10" fill="none">
-          <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
+        <view class="growth-row__right">
+          <text v-if="level" class="growth-row__badge growth-row__badge--lv">Lv.{{ level }}</text>
+          <svg class="growth-row__arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </view>
       </view>
 
+      <!-- 分隔线 -->
+      <view class="growth-divider" />
+
       <!-- 我的徽章 -->
-      <view class="quick-item quick-item--badge" @click="handleBadgesClick">
-        <view class="quick-item__icon-wrap">
-          <Icon name="award" :size="18" class="quick-item__icon" />
+      <view class="growth-row" @click="handleBadgesClick">
+        <view class="growth-row__icon-wrap growth-row__icon-wrap--purple">
+          <Icon name="award" :size="17" class="growth-row__icon" />
         </view>
-        <view class="quick-item__texts">
-          <text class="quick-item__label">我的徽章</text>
-          <text class="quick-item__desc">荣誉 / 成就</text>
+        <view class="growth-row__texts">
+          <text class="growth-row__label">我的徽章</text>
+          <text class="growth-row__meta">荣誉 · 成就展示</text>
         </view>
-        <svg class="quick-item__arrow" viewBox="0 0 10 10" fill="none">
-          <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
-        </svg>
+        <view class="growth-row__right">
+          <text v-if="badgeCount > 0" class="growth-row__badge growth-row__badge--badge">{{ badgeCount }}枚</text>
+          <svg class="growth-row__arrow" viewBox="0 0 10 10" fill="none">
+            <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </view>
       </view>
+
     </view>
 
   </view>
@@ -54,6 +69,17 @@
 
 <script setup lang="ts">
 import Icon from '@/components/icons/index.vue'
+
+withDefaults(defineProps<{
+  points?: number
+  level?: number
+  levelName?: string
+  badgeCount?: number
+}>(), {
+  points: 0,
+  level: 0,
+  badgeCount: 0,
+})
 
 const emit = defineEmits<{
   pointsClick: []
@@ -68,123 +94,39 @@ const handleBadgesClick = () =>
 
 <style lang="scss" scoped>
 .action-area {
-  padding: 20rpx 24rpx 24rpx;
+  padding: 16rpx 24rpx 20rpx;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 14rpx;
 }
 
-// ── 主按钮
-.publish-btn {
+// ── 发布卡片（弱化：浅橙 + 橙色描边）
+.publish-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 24rpx;
-  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
-  border-radius: 20rpx;
-  box-shadow: 0 6rpx 20rpx rgba(249, 115, 22, 0.32),
-              inset 0 1rpx 0 rgba(255, 255, 255, 0.18);
-  cursor: pointer;
-  transition: transform 0.14s ease, box-shadow 0.14s ease;
-
-  &:active {
-    transform: scale(0.97);
-    box-shadow: 0 2rpx 8rpx rgba(249, 115, 22, 0.22);
-  }
-}
-
-.publish-btn__left {
-  display: flex;
-  align-items: center;
-  gap: 16rpx;
-}
-
-.publish-btn__icon-wrap {
-  width: 56rpx;
-  height: 56rpx;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 14rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.publish-btn__icon {
-  color: #fff;
-}
-
-.publish-btn__text {
-  display: flex;
-  flex-direction: column;
-  gap: 4rpx;
-}
-
-.publish-btn__title {
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.2;
-}
-
-.publish-btn__sub {
-  font-size: 22rpx;
-  color: rgba(255, 255, 255, 0.82);
-  font-weight: 400;
-}
-
-.publish-btn__arrow {
-  width: 32rpx;
-  height: 32rpx;
-  color: rgba(255, 255, 255, 0.8);
-  flex-shrink: 0;
-}
-
-// ── 次级入口网格
-.quick-grid {
-  display: flex;
-  gap: 12rpx;
-}
-
-.quick-item {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 12rpx;
-  padding: 18rpx 16rpx;
+  padding: 18rpx 20rpx 18rpx 16rpx;
+  background: #FFF7ED;
+  border: 1rpx solid rgba(249, 115, 22, 0.22);
+  border-left: 4rpx solid #F97316;
   border-radius: 16rpx;
-  border: 1rpx solid transparent;
   cursor: pointer;
-  transition: transform 0.13s ease;
+  transition: background 0.14s ease;
 
-  &:active { transform: scale(0.96); }
+  &:active { background: #FFEDD5; }
 }
 
-.quick-item--growth {
-  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
-  border-color: rgba(249, 115, 22, 0.16);
-
-  .quick-item__icon-wrap { background: rgba(249, 115, 22, 0.12); }
-  .quick-item__icon { color: #F97316; }
-  .quick-item__label { color: #92400E; }
-  .quick-item__desc { color: #C2410C; opacity: 0.65; }
-  .quick-item__arrow { color: #F97316; opacity: 0.6; }
+.publish-card__left {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  min-width: 0;
 }
 
-.quick-item--badge {
-  background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%);
-  border-color: rgba(99, 102, 241, 0.16);
-
-  .quick-item__icon-wrap { background: rgba(99, 102, 241, 0.12); }
-  .quick-item__icon { color: #6366F1; }
-  .quick-item__label { color: #3730A3; }
-  .quick-item__desc { color: #4338CA; opacity: 0.65; }
-  .quick-item__arrow { color: #6366F1; opacity: 0.6; }
-}
-
-.quick-item__icon-wrap {
-  width: 46rpx;
-  height: 46rpx;
+.publish-card__icon-wrap {
+  width: 48rpx;
+  height: 48rpx;
+  background: rgba(249, 115, 22, 0.12);
   border-radius: 12rpx;
   display: flex;
   align-items: center;
@@ -192,7 +134,101 @@ const handleBadgesClick = () =>
   flex-shrink: 0;
 }
 
-.quick-item__texts {
+.publish-card__icon { color: #F97316; }
+
+.publish-card__text {
+  display: flex;
+  flex-direction: column;
+  gap: 3rpx;
+}
+
+.publish-card__title {
+  font-size: 28rpx;
+  font-weight: 700;
+  color: #EA580C;
+  line-height: 1.2;
+}
+
+.publish-card__sub {
+  font-size: 22rpx;
+  color: #9CA3AF;
+}
+
+.publish-card__badge {
+  display: flex;
+  align-items: center;
+  gap: 4rpx;
+  flex-shrink: 0;
+}
+
+.publish-card__badge-text {
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #F97316;
+  background: rgba(249, 115, 22, 0.1);
+  padding: 2rpx 10rpx;
+  border-radius: 20rpx;
+}
+
+.publish-card__arrow {
+  width: 20rpx;
+  height: 20rpx;
+  color: #F97316;
+  opacity: 0.6;
+}
+
+// ── 成长统一卡片
+.growth-card {
+  background: #fff;
+  border: 1rpx solid #F3F4F6;
+  border-radius: 16rpx;
+  box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.growth-divider {
+  height: 1rpx;
+  background: #F3F4F6;
+  margin: 0 20rpx;
+}
+
+// ── 成长行
+.growth-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+  padding: 18rpx 20rpx;
+  cursor: pointer;
+  transition: background 0.13s ease;
+
+  &:active { background: #F9FAFB; }
+
+  // #ifdef H5
+  &:hover { background: #F9FAFB; }
+  // #endif
+}
+
+.growth-row__icon-wrap {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: 12rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &--orange {
+    background: #FFF7ED;
+    .growth-row__icon { color: #F97316; }
+  }
+
+  &--purple {
+    background: #EEF2FF;
+    .growth-row__icon { color: #6366F1; }
+  }
+}
+
+.growth-row__texts {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -200,21 +236,46 @@ const handleBadgesClick = () =>
   min-width: 0;
 }
 
-.quick-item__label {
-  font-size: 26rpx;
-  font-weight: 700;
+.growth-row__label {
+  font-size: 27rpx;
+  font-weight: 600;
+  color: #1F2937;
   line-height: 1.2;
 }
 
-.quick-item__desc {
+.growth-row__meta {
+  font-size: 21rpx;
+  color: #9CA3AF;
+  line-height: 1.2;
+}
+
+.growth-row__right {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  flex-shrink: 0;
+}
+
+.growth-row__badge {
   font-size: 20rpx;
-  font-weight: 400;
-  line-height: 1.2;
+  font-weight: 600;
+  padding: 3rpx 12rpx;
+  border-radius: 20rpx;
+
+  &--lv {
+    color: #F97316;
+    background: rgba(249, 115, 22, 0.1);
+  }
+
+  &--badge {
+    color: #6366F1;
+    background: rgba(99, 102, 241, 0.1);
+  }
 }
 
-.quick-item__arrow {
+.growth-row__arrow {
   width: 20rpx;
   height: 20rpx;
-  flex-shrink: 0;
+  color: #D1D5DB;
 }
 </style>

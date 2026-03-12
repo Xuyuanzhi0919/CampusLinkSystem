@@ -501,7 +501,7 @@ const handleEditProfile   = () => uni.navigateTo({ url: '/pages/user/edit-profil
 const handlePointsClick   = () => uni.navigateTo({ url: '/pages/user/points-history' })
 
 const handlePublishResource = () =>
-  uni.navigateTo({ url: '/pages/resource/publish', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
+  uni.navigateTo({ url: '/pages/resource/upload' })
 const handleAskQuestion = () =>
   uni.navigateTo({ url: '/pages/question/ask', fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 const handlePublishTask = () =>

@@ -1,67 +1,70 @@
 <template>
   <view class="action-area">
 
-    <!-- ── 发布内容（弱化版：浅橙卡片，非强渐变） ── -->
-    <view class="publish-card" @click="handlePublish">
-      <view class="publish-card__left">
-        <view class="publish-card__icon-wrap">
-          <Icon name="plus-circle" :size="20" class="publish-card__icon" />
+    <!-- ── 数据概览：等级 / 积分 / 徽章（三列直接展示） ── -->
+    <view class="stats-row">
+
+      <view class="stat-item" @click="handlePointsClick">
+        <view class="stat-icon stat-icon--lv">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 1L11.09 6.26L17 7.27L13 11.14L13.9 17L9 14.37L4.1 17L5 11.14L1 7.27L6.91 6.26L9 1Z"
+              stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </view>
-        <view class="publish-card__text">
-          <text class="publish-card__title">发布内容</text>
-          <text class="publish-card__sub">分享知识 · 贡献社区 · 赢积分</text>
+        <text class="stat-val">Lv.{{ level || 1 }}</text>
+        <text class="stat-label">{{ levelName || '校园新星' }}</text>
+      </view>
+
+      <view class="stat-sep" />
+
+      <view class="stat-item" @click="handlePointsClick">
+        <view class="stat-icon stat-icon--pts">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="9" cy="9" r="7.5" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M9 5.5v7M6.5 7.5C6.5 6.4 7.6 5.5 9 5.5s2.5.9 2.5 2c0 2-5 2-5 4 0 1.1 1.1 2 2.5 2s2.5-.9 2.5-2"
+              stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </view>
+        <text class="stat-val">{{ points.toLocaleString() }}</text>
+        <text class="stat-label">积分</text>
+      </view>
+
+      <view class="stat-sep" />
+
+      <view class="stat-item" @click="handleBadgesClick">
+        <view class="stat-icon stat-icon--badge">
+          <svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M11.6 9.67l1.14 6.4a.38.38 0 0 1-.61.35l-2.69-2.01a.75.75 0 0 0-.9 0L5.86 16.42a.38.38 0 0 1-.61-.35l1.14-6.4"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="9" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.6"/>
+          </svg>
+        </view>
+        <text class="stat-val">{{ badgeCount }}</text>
+        <text class="stat-label">枚徽章</text>
+      </view>
+
+    </view>
+
+    <!-- ── 分隔线 ── -->
+    <view class="area-divider" />
+
+    <!-- ── 发布入口（底部次级操作行） ── -->
+    <view class="publish-row" @click="handlePublish">
+      <view class="publish-row__left">
+        <view class="publish-row__icon">
+          <Icon name="edit-3" :size="15" class="publish-row__icon-svg" />
+        </view>
+        <view class="publish-row__texts">
+          <text class="publish-row__title">发布内容</text>
+          <text class="publish-row__sub">分享知识 · 贡献社区</text>
         </view>
       </view>
-      <view class="publish-card__badge">
-        <text class="publish-card__badge-text">+10</text>
-        <svg class="publish-card__arrow" viewBox="0 0 10 10" fill="none">
+      <view class="publish-row__right">
+        <text class="publish-row__reward">+10 积分</text>
+        <svg class="publish-row__arrow" viewBox="0 0 10 10" fill="none">
           <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
         </svg>
       </view>
-    </view>
-
-    <!-- ── 成长统一卡片（查看成长 + 我的徽章） ── -->
-    <view class="growth-card">
-
-      <!-- 查看成长 -->
-      <view class="growth-row" @click="handlePointsClick">
-        <view class="growth-row__icon-wrap growth-row__icon-wrap--orange">
-          <Icon name="trending-up" :size="17" class="growth-row__icon" />
-        </view>
-        <view class="growth-row__texts">
-          <text class="growth-row__label">查看成长</text>
-          <text class="growth-row__meta">
-            {{ levelName ? `${levelName} · ` : '' }}{{ points.toLocaleString() }} 积分
-          </text>
-        </view>
-        <view class="growth-row__right">
-          <text v-if="level" class="growth-row__badge growth-row__badge--lv">Lv.{{ level }}</text>
-          <svg class="growth-row__arrow" viewBox="0 0 10 10" fill="none">
-            <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </view>
-      </view>
-
-      <!-- 分隔线 -->
-      <view class="growth-divider" />
-
-      <!-- 我的徽章 -->
-      <view class="growth-row" @click="handleBadgesClick">
-        <view class="growth-row__icon-wrap growth-row__icon-wrap--purple">
-          <Icon name="award" :size="17" class="growth-row__icon" />
-        </view>
-        <view class="growth-row__texts">
-          <text class="growth-row__label">我的徽章</text>
-          <text class="growth-row__meta">荣誉 · 成就展示</text>
-        </view>
-        <view class="growth-row__right">
-          <text v-if="badgeCount > 0" class="growth-row__badge growth-row__badge--badge">{{ badgeCount }}枚</text>
-          <svg class="growth-row__arrow" viewBox="0 0 10 10" fill="none">
-            <path d="M3.5 7.5L6.5 5L3.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>
-        </view>
-      </view>
-
     </view>
 
   </view>
@@ -77,7 +80,7 @@ withDefaults(defineProps<{
   badgeCount?: number
 }>(), {
   points: 0,
-  level: 0,
+  level: 1,
   badgeCount: 0,
 })
 
@@ -94,186 +97,158 @@ const handleBadgesClick = () =>
 
 <style lang="scss" scoped>
 .action-area {
-  padding: 16rpx 24rpx 20rpx;
+  padding: 20rpx 0 0;
+}
+
+// ── 三列数据行
+.stats-row {
+  display: flex;
+  align-items: stretch;
+  padding: 4rpx 0 20rpx;
+}
+
+.stat-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14rpx;
-}
-
-// ── 发布卡片（弱化：浅橙 + 橙色描边）
-.publish-card {
-  display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 18rpx 20rpx 18rpx 16rpx;
-  background: #FFF7ED;
-  border: 1rpx solid rgba(249, 115, 22, 0.22);
-  border-left: 4rpx solid #F97316;
-  border-radius: 16rpx;
+  gap: 7rpx;
+  padding: 8rpx 0;
   cursor: pointer;
-  transition: background 0.14s ease;
+  transition: opacity 0.15s;
 
-  &:active { background: #FFEDD5; }
+  &:active { opacity: 0.65; }
 }
 
-.publish-card__left {
-  display: flex;
-  align-items: center;
-  gap: 14rpx;
-  min-width: 0;
+.stat-sep {
+  width: 1rpx;
+  background: #F0F0F0;
+  align-self: stretch;
+  margin: 8rpx 0;
 }
 
-.publish-card__icon-wrap {
-  width: 48rpx;
-  height: 48rpx;
-  background: rgba(249, 115, 22, 0.12);
-  border-radius: 12rpx;
+// 图标圆点
+.stat-icon {
+  width: 52rpx;
+  height: 52rpx;
+  border-radius: 14rpx;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+
+  svg {
+    width: 20rpx;
+    height: 20rpx;
+  }
+
+  &--lv {
+    background: #FFF7ED;
+    svg { color: #F97316; }
+  }
+
+  &--pts {
+    background: #FEFCE8;
+    svg { color: #CA8A04; }
+  }
+
+  &--badge {
+    background: #F5F3FF;
+    svg { color: #7C3AED; }
+  }
 }
 
-.publish-card__icon { color: #F97316; }
-
-.publish-card__text {
-  display: flex;
-  flex-direction: column;
-  gap: 3rpx;
+// 数值
+.stat-val {
+  font-size: 30rpx;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+  letter-spacing: -0.5rpx;
 }
 
-.publish-card__title {
-  font-size: 28rpx;
-  font-weight: 700;
-  color: #EA580C;
-  line-height: 1.2;
-}
-
-.publish-card__sub {
-  font-size: 22rpx;
-  color: #9CA3AF;
-}
-
-.publish-card__badge {
-  display: flex;
-  align-items: center;
-  gap: 4rpx;
-  flex-shrink: 0;
-}
-
-.publish-card__badge-text {
+// 标签
+.stat-label {
   font-size: 20rpx;
-  font-weight: 700;
-  color: #F97316;
-  background: rgba(249, 115, 22, 0.1);
-  padding: 2rpx 10rpx;
-  border-radius: 20rpx;
+  color: #9CA3AF;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
 }
 
-.publish-card__arrow {
-  width: 20rpx;
-  height: 20rpx;
-  color: #F97316;
-  opacity: 0.6;
-}
-
-// ── 成长统一卡片
-.growth-card {
-  background: #fff;
-  border: 1rpx solid #F3F4F6;
-  border-radius: 16rpx;
-  box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-.growth-divider {
+// ── 分隔线
+.area-divider {
   height: 1rpx;
   background: #F3F4F6;
   margin: 0 20rpx;
 }
 
-// ── 成长行
-.growth-row {
+// ── 发布行
+.publish-row {
   display: flex;
   align-items: center;
-  gap: 14rpx;
-  padding: 18rpx 20rpx;
+  justify-content: space-between;
+  padding: 18rpx 20rpx 20rpx;
   cursor: pointer;
-  transition: background 0.13s ease;
+  transition: background 0.13s;
+  border-radius: 0 0 16rpx 16rpx;
 
-  &:active { background: #F9FAFB; }
-
-  // #ifdef H5
-  &:hover { background: #F9FAFB; }
-  // #endif
+  &:active { background: #FFF7ED; }
 }
 
-.growth-row__icon-wrap {
-  width: 48rpx;
-  height: 48rpx;
+.publish-row__left {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.publish-row__icon {
+  width: 44rpx;
+  height: 44rpx;
+  background: rgba(249, 115, 22, 0.1);
   border-radius: 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-
-  &--orange {
-    background: #FFF7ED;
-    .growth-row__icon { color: #F97316; }
-  }
-
-  &--purple {
-    background: #EEF2FF;
-    .growth-row__icon { color: #6366F1; }
-  }
 }
 
-.growth-row__texts {
-  flex: 1;
+.publish-row__icon-svg { color: #F97316; }
+
+.publish-row__texts {
   display: flex;
   flex-direction: column;
   gap: 3rpx;
-  min-width: 0;
 }
 
-.growth-row__label {
-  font-size: 27rpx;
+.publish-row__title {
+  font-size: 26rpx;
   font-weight: 600;
-  color: #1F2937;
+  color: #374151;
   line-height: 1.2;
 }
 
-.growth-row__meta {
-  font-size: 21rpx;
+.publish-row__sub {
+  font-size: 20rpx;
   color: #9CA3AF;
-  line-height: 1.2;
 }
 
-.growth-row__right {
+.publish-row__right {
   display: flex;
   align-items: center;
-  gap: 8rpx;
+  gap: 6rpx;
   flex-shrink: 0;
 }
 
-.growth-row__badge {
-  font-size: 20rpx;
+.publish-row__reward {
+  font-size: 22rpx;
   font-weight: 600;
+  color: #F97316;
+  background: rgba(249, 115, 22, 0.08);
   padding: 3rpx 12rpx;
   border-radius: 20rpx;
-
-  &--lv {
-    color: #F97316;
-    background: rgba(249, 115, 22, 0.1);
-  }
-
-  &--badge {
-    color: #6366F1;
-    background: rgba(99, 102, 241, 0.1);
-  }
 }
 
-.growth-row__arrow {
+.publish-row__arrow {
   width: 20rpx;
   height: 20rpx;
   color: #D1D5DB;

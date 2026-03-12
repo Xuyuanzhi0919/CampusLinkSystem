@@ -2278,6 +2278,8 @@ onUnmounted(() => {
   padding: 24rpx 24rpx;
   min-height: 100%;
   box-sizing: border-box;
+  max-width: 1200rpx;
+  margin: 0 auto;
 }
 
 /* 搜索结果分组卡片 */

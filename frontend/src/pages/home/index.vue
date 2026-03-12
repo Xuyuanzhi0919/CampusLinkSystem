@@ -25,13 +25,6 @@
     <!-- 移动端金刚区导航（Hero 之后，内容之前：吸引 → 引导 → 消费） -->
     <!-- #ifdef H5 -->
     <GridNavigation v-if="!isDesktop" />
-    <!-- 签到横幅（仅移动端已登录用户显示） -->
-    <CheckInBanner
-      v-if="!isDesktop && userStore.isLoggedIn"
-      :is-checked-in="isCheckedIn"
-      :consecutive-days="consecutiveDays"
-      @check-in-success="handleCheckInSuccess"
-    />
     <!-- #endif -->
 
     <!-- 3. 页面主体（8:4 栅格布局） -->
@@ -126,10 +119,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onPullDownRefresh, onShow, onPageScroll } from '@dcloudio/uni-app'
 import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
-import { getCheckInStatus } from '@/services/user'
-
 // 移动端组件
-import { MobileHeader, GridNavigation, CustomTabBar, CheckInBanner } from '@/components/mobile'
+import { MobileHeader, GridNavigation, CustomTabBar } from '@/components/mobile'
 
 // PC 端组件（仅 H5）
 // #ifdef H5
@@ -163,28 +154,6 @@ import { useNavigation } from '@/composables/useNavigation'
 const nav = useNavigation()
 const navigationStore = useNavigationStore()
 const userStore = useUserStore()
-
-// ── 签到状态（仅移动端已登录时使用）
-const isCheckedIn = ref(false)
-const consecutiveDays = ref(0)
-
-const fetchCheckInStatus = async () => {
-  if (!userStore.isLoggedIn) return
-  try {
-    const status = await getCheckInStatus() as any
-    if (typeof status === 'boolean') {
-      isCheckedIn.value = status
-    } else if (status && typeof status === 'object') {
-      isCheckedIn.value = status.checkedIn ?? status.checked ?? false
-      consecutiveDays.value = status.consecutiveDays ?? status.days ?? 0
-    }
-  } catch { /* 静默失败，不影响首页渲染 */ }
-}
-
-const handleCheckInSuccess = (data: { consecutiveDays: number }) => {
-  isCheckedIn.value = true
-  consecutiveDays.value = data.consecutiveDays
-}
 
 // 平台判断 - 统一使用 1024px 作为桌面端断点
 const isDesktop = computed(() => {
@@ -381,8 +350,6 @@ onShow(() => {
   navigationStore.syncActivePath()
   // 确保 TabBar 可见
   navigationStore.showNav()
-  // 刷新签到状态（每次进入首页同步）
-  fetchCheckInStatus()
 })
 
 onPageScroll((e) => {

@@ -20,8 +20,7 @@ public class HandleReportRequest {
     private Integer status;
 
     /**
-     * 处理结果说明
+     * 处理结果说明（可选）
      */
-    @NotBlank(message = "处理结果说明不能为空")
     private String handleResult;
 }

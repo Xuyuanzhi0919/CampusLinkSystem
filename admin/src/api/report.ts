@@ -23,7 +23,7 @@ export function getReport(reportId: number) {
 }
 
 export function handleReport(reportId: number, result: string, action: number) {
-  return put<void>(`/admin/reports/${reportId}/handle`, { handleResult: result, action })
+  return put<void>(`/admin/reports/${reportId}/handle`, { handleResult: result, status: action })
 }
 
 export function getPendingCount() {

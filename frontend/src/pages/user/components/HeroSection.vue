@@ -10,14 +10,10 @@
       <!-- 头像 -->
       <view class="hero-avatar-wrap" @click="$emit('editProfile')">
         <image
-          v-if="profile?.avatarUrl"
           class="hero-avatar"
-          :src="profile.avatarUrl"
+          :src="avatarSrc"
           mode="aspectFill"
         />
-        <view v-else class="hero-avatar hero-avatar--fallback" :style="avatarFallbackStyle">
-          <text class="hero-avatar-letter">{{ profile?.nickname?.[0]?.toUpperCase() || '?' }}</text>
-        </view>
         <view class="hero-online" />
         <view class="hero-lv">
           <text class="hero-lv-text">Lv.{{ profile?.level || 1 }}</text>
@@ -108,14 +104,10 @@
         <!-- 头像 -->
         <view class="hero-avatar-wrap" @click="$emit('editProfile')">
           <image
-            v-if="profile?.avatarUrl"
             class="hero-avatar"
-            :src="profile.avatarUrl"
+            :src="avatarSrc"
             mode="aspectFill"
           />
-          <view v-else class="hero-avatar hero-avatar--fallback" :style="avatarFallbackStyle">
-            <text class="hero-avatar-letter">{{ profile?.nickname?.[0]?.toUpperCase() || '?' }}</text>
-          </view>
           <view class="hero-online" />
           <view class="hero-lv">
             <text class="hero-lv-text">Lv.{{ profile?.level || 1 }}</text>
@@ -192,11 +184,11 @@ defineEmits<{
   statClick: [key: string]
 }>()
 
-const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
-const avatarFallbackStyle = computed(() => {
-  const name = props.profile?.nickname || ''
-  const idx = name ? name.charCodeAt(0) % AVATAR_COLORS.length : 0
-  return { background: AVATAR_COLORS[idx] }
+const avatarSrc = computed(() => {
+  if (props.profile?.avatarUrl) return props.profile.avatarUrl
+  // 以用户 uid 或昵称为 seed，生成个人专属卡通头像
+  const seed = props.profile?.uid || props.profile?.userId || props.profile?.nickname || 'default'
+  return `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`
 })
 
 const timeLabel = computed(() => {
@@ -366,21 +358,6 @@ const quickStats = computed(() => [
   transition: opacity 0.2s;
 
   &:active { opacity: 0.85; }
-}
-
-.hero-avatar--fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.hero-avatar-letter {
-  font-size: 56rpx;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-  letter-spacing: 0;
-  user-select: none;
 }
 
 .hero-online {
@@ -622,10 +599,6 @@ const quickStats = computed(() => [
 /* PC 头像 —— 覆盖移动端 rpx 尺寸 */
 .hero--pc .hero-avatar-wrap {
   flex-shrink: 0;
-}
-
-.hero--pc .hero-avatar-letter {
-  font-size: 28px;
 }
 
 .hero--pc .hero-avatar {

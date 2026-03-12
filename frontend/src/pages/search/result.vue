@@ -836,9 +836,12 @@ const removeHistoryItem = (item: string) => {
 
 // AI 搜索（跳转到 AI 问答页面）
 const handleAISearch = () => {
-  uni.showToast({ title: 'AI 问答功能开发中', icon: 'none' })
-  // 后续可跳转到 AI 问答页面
-  // uni.navigateTo({ url: '/pages/ai/chat' })
+  const query = keyword.value.trim()
+  if (query) {
+    uni.navigateTo({ url: `/pages/ai/chat?q=${encodeURIComponent(query)}` })
+  } else {
+    uni.navigateTo({ url: '/pages/ai/chat' })
+  }
 }
 
 // 清空关键词

@@ -67,6 +67,46 @@
         </div>
       </el-col>
     </el-row>
+
+    <!-- 底部快捷入口 -->
+    <el-row :gutter="16" class="quick-row">
+      <el-col :span="8">
+        <div class="quick-card" @click="$router.push('/content?status=0')">
+          <div class="quick-icon pending">
+            <el-icon :size="20"><DocumentChecked /></el-icon>
+          </div>
+          <div class="quick-info">
+            <div class="quick-num">{{ data?.pendingResources ?? '-' }}</div>
+            <div class="quick-label">待审核资源</div>
+          </div>
+          <el-icon class="quick-arrow"><ArrowRight /></el-icon>
+        </div>
+      </el-col>
+      <el-col :span="8">
+        <div class="quick-card" @click="$router.push('/reports?status=0')">
+          <div class="quick-icon report">
+            <el-icon :size="20"><Flag /></el-icon>
+          </div>
+          <div class="quick-info">
+            <div class="quick-num">{{ data?.pendingReports ?? '-' }}</div>
+            <div class="quick-label">待处理举报</div>
+          </div>
+          <el-icon class="quick-arrow"><ArrowRight /></el-icon>
+        </div>
+      </el-col>
+      <el-col :span="8">
+        <div class="quick-card" @click="$router.push('/users?status=0')">
+          <div class="quick-icon banned">
+            <el-icon :size="20"><UserFilled /></el-icon>
+          </div>
+          <div class="quick-info">
+            <div class="quick-num">{{ data?.bannedUsers ?? '-' }}</div>
+            <div class="quick-label">封禁用户数</div>
+          </div>
+          <el-icon class="quick-arrow"><ArrowRight /></el-icon>
+        </div>
+      </el-col>
+    </el-row>
   </div>
 </template>
 
@@ -163,7 +203,7 @@ onMounted(async () => {
 
 .alert-row { margin-bottom: 20px; }
 
-.chart-row { }
+.chart-row { margin-bottom: 16px; }
 .chart-card {
   background: #fff;
   border-radius: 10px;
@@ -172,4 +212,29 @@ onMounted(async () => {
 }
 .chart-title { font-size: 15px; font-weight: 600; color: #374151; margin-bottom: 16px; }
 .chart { height: 220px; }
+
+.quick-row { margin-top: 0; }
+.quick-card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px 20px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.quick-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.quick-icon {
+  width: 44px; height: 44px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.quick-icon.pending { background: #fff7e6; color: #e6a23c; }
+.quick-icon.report  { background: #fef0f0; color: #f56c6c; }
+.quick-icon.banned  { background: #f0f2f5; color: #909399; }
+.quick-num { font-size: 24px; font-weight: 700; color: #1a1a2e; }
+.quick-label { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.quick-arrow { margin-left: auto; color: #d1d5db; }
 </style>

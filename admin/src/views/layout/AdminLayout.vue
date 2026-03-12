@@ -36,6 +36,10 @@
             <el-badge v-if="pendingReports > 0" :value="pendingReports" class="badge" />
           </template>
         </el-menu-item>
+        <el-menu-item index="/notices">
+          <el-icon><Bell /></el-icon>
+          <template #title>公告管理</template>
+        </el-menu-item>
         <el-menu-item index="/config">
           <el-icon><Setting /></el-icon>
           <template #title>系统配置</template>
@@ -108,6 +112,7 @@ const currentTitle = computed(() => {
     users: '用户管理',
     content: '内容管理',
     reports: '举报管理',
+    notices: '公告管理',
     config: '系统配置'
   }
   return map[route.path.split('/')[1]] || ''

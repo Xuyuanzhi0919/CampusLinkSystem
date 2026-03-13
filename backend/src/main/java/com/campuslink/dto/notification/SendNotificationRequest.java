@@ -32,6 +32,11 @@ public class SendNotificationRequest {
     private String notifyType;
 
     /**
+     * 按角色发送：student / teacher（userId 和 role 均为 null 时广播全体）
+     */
+    private String role;
+
+    /**
      * 关联对象类型
      */
     private String relatedType;

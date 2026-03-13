@@ -18,6 +18,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.util.StringUtils;
+
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -49,17 +51,31 @@ public class NotificationService {
     }
 
     /**
-     * 发送通知(管理员)
+     * 发送通知(管理员)：单发 → 按角色 → 全体广播
      */
     @Transactional
     public void sendNotification(SendNotificationRequest request) {
         if (request.getUserId() != null) {
-            // 发送给指定用户
             sendToUser(request.getUserId(), request);
+        } else if (StringUtils.hasText(request.getRole())) {
+            sendToRole(request.getRole(), request);
         } else {
-            // 发送给所有用户
             sendToAllUsers(request);
         }
+    }
+
+    /**
+     * 按角色批量发送
+     */
+    @Transactional
+    public void sendToRole(String role, SendNotificationRequest request) {
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getStatus, 1).eq(User::getRole, role);
+        List<User> users = userMapper.selectList(wrapper);
+        for (User user : users) {
+            createNotification(user.getUId(), request);
+        }
+        log.info("已向角色 {}（{}人）发送通知: {}", role, users.size(), request.getTitle());
     }
 
     /**

@@ -14,6 +14,8 @@ export interface AuditLog {
 export function listAuditLogs(params: {
   action?: string
   operatorId?: number
+  startDate?: string
+  endDate?: string
   page?: number
   pageSize?: number
 }) {

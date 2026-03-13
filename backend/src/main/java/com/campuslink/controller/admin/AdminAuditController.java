@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,18 +34,24 @@ public class AdminAuditController {
     private final AdminOperationLogMapper auditLogMapper;
     private final UserMapper userMapper;
 
-    @Operation(summary = "操作日志列表", description = "支持操作类型/操作人筛选，按时间倒序")
+    @Operation(summary = "操作日志列表", description = "支持操作类型/操作人/日期范围筛选，按时间倒序")
     @GetMapping("/logs")
     public Result<PageResult<AdminOperationLog>> listLogs(
             @RequestParam(required = false) String action,
             @RequestParam(required = false) Long operatorId,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize) {
 
         Page<AdminOperationLog> p = new Page<>(page, pageSize);
         LambdaQueryWrapper<AdminOperationLog> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(action)) wrapper.like(AdminOperationLog::getAction, action);
-        if (operatorId != null)          wrapper.eq(AdminOperationLog::getOperatorId, operatorId);
+        if (StringUtils.hasText(action))    wrapper.eq(AdminOperationLog::getAction, action);
+        if (operatorId != null)             wrapper.eq(AdminOperationLog::getOperatorId, operatorId);
+        if (StringUtils.hasText(startDate)) wrapper.ge(AdminOperationLog::getCreatedAt,
+                LocalDateTime.of(LocalDate.parse(startDate), LocalTime.MIN));
+        if (StringUtils.hasText(endDate))   wrapper.le(AdminOperationLog::getCreatedAt,
+                LocalDateTime.of(LocalDate.parse(endDate), LocalTime.MAX));
         wrapper.orderByDesc(AdminOperationLog::getCreatedAt);
 
         Page<AdminOperationLog> result = auditLogMapper.selectPage(p, wrapper);

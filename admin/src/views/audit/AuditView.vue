@@ -9,8 +9,7 @@
         v-model="actionFilter"
         placeholder="全部操作类型"
         clearable
-        style="width: 200px"
-        @change="fetchLogs"
+        style="width: 180px"
       >
         <el-option-group label="用户操作">
           <el-option label="封禁用户"     value="BAN_USER" />
@@ -28,7 +27,16 @@
           <el-option label="批量拒绝资源" value="BATCH_REJECT_RESOURCE" />
         </el-option-group>
       </el-select>
-      <el-button type="primary" icon="Search" @click="fetchLogs">查询</el-button>
+      <el-date-picker
+        v-model="dateRange"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        value-format="YYYY-MM-DD"
+        style="width: 260px"
+      />
+      <el-button type="primary" icon="Search" @click="search">查询</el-button>
       <el-button icon="Refresh" @click="reset">重置</el-button>
     </div>
 
@@ -90,6 +98,7 @@ const total = ref(0)
 const page = ref(1)
 const pageSize = ref(20)
 const actionFilter = ref('')
+const dateRange = ref<[string, string] | null>(null)
 
 const ACTION_MAP: Record<string, { label: string; type: string; dot: string }> = {
   BAN_USER:               { label: '封禁用户',     type: 'danger',  dot: 'dot-danger' },
@@ -126,6 +135,8 @@ async function fetchLogs() {
   try {
     const r = await listAuditLogs({
       action: actionFilter.value || undefined,
+      startDate: dateRange.value?.[0] || undefined,
+      endDate: dateRange.value?.[1] || undefined,
       page: page.value,
       pageSize: pageSize.value
     })
@@ -136,8 +147,14 @@ async function fetchLogs() {
   }
 }
 
+function search() {
+  page.value = 1
+  fetchLogs()
+}
+
 function reset() {
   actionFilter.value = ''
+  dateRange.value = null
   page.value = 1
   fetchLogs()
 }

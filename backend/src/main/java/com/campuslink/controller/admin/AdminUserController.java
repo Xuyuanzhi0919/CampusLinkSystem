@@ -71,6 +71,15 @@ public class AdminUserController {
         return Result.success("积分调整成功");
     }
 
+    @Operation(summary = "修改用户基本信息", description = "可修改昵称/邮箱/手机/专业/年级/学号")
+    @PutMapping("/{userId}/info")
+    public Result<Void> updateUserInfo(
+            @PathVariable Long userId,
+            @RequestBody AdminUpdateUserInfoRequest req) {
+        adminService.updateUserInfo(userId, req);
+        return Result.success("用户信息修改成功");
+    }
+
     @Operation(summary = "重置用户密码", description = "随机生成新密码并返回明文")
     @PutMapping("/{userId}/password")
     public Result<Map<String, String>> resetPassword(@PathVariable Long userId) {

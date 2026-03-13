@@ -57,3 +57,16 @@ export function batchSetStatus(userIds: number[], status: 0 | 1, reason?: string
 export function getUserStats(userId: number) {
   return get<UserStatsVO>(`/admin/users/${userId}/stats`)
 }
+
+export interface UpdateUserInfoPayload {
+  nickname?: string
+  email?: string
+  phone?: string
+  major?: string
+  grade?: number
+  studentId?: string
+}
+
+export function updateUserInfo(userId: number, payload: UpdateUserInfoPayload) {
+  return put<void>(`/admin/users/${userId}/info`, payload)
+}

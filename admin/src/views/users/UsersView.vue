@@ -121,32 +121,68 @@
 
         <el-tabs v-model="drawerTab" @tab-click="onDrawerTabClick">
           <el-tab-pane label="基本信息" name="info">
-            <el-descriptions :column="1" border class="detail-desc">
-              <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
-              <el-descriptions-item label="手机">{{ selectedUser.phone || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="角色">
-                <el-tag :type="roleType(selectedUser.role)" size="small">{{ roleLabel(selectedUser.role) }}</el-tag>
-              </el-descriptions-item>
-              <el-descriptions-item label="积分">{{ selectedUser.points }}</el-descriptions-item>
-              <el-descriptions-item label="等级">Lv.{{ selectedUser.level }}</el-descriptions-item>
-              <el-descriptions-item label="信用分">{{ selectedUser.creditScore?.toFixed(1) }}</el-descriptions-item>
-              <el-descriptions-item label="学校">{{ selectedUser.schoolName || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="专业">{{ selectedUser.major || '-' }}</el-descriptions-item>
-              <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.createdAt) }}</el-descriptions-item>
-              <el-descriptions-item label="最后登录">{{ formatDate(selectedUser.lastLoginTime) }}</el-descriptions-item>
-            </el-descriptions>
-            <div class="detail-actions">
-              <el-select v-model="selectedRole" placeholder="修改角色" style="width: 140px">
-                <el-option label="学生" value="student" />
-                <el-option label="教师" value="teacher" />
-                <el-option label="管理员" value="admin" />
-              </el-select>
-              <el-button
-                type="primary"
-                :disabled="!selectedRole || selectedRole === selectedUser.role"
-                @click="handleSetRole"
-              >确认修改</el-button>
-            </div>
+            <!-- 只读模式 -->
+            <template v-if="!editMode">
+              <el-descriptions :column="1" border class="detail-desc">
+                <el-descriptions-item label="昵称">{{ selectedUser.nickname || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
+                <el-descriptions-item label="手机">{{ selectedUser.phone || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="学号/工号">{{ selectedUser.studentId || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="角色">
+                  <el-tag :type="roleType(selectedUser.role)" size="small">{{ roleLabel(selectedUser.role) }}</el-tag>
+                </el-descriptions-item>
+                <el-descriptions-item label="积分">{{ selectedUser.points }}</el-descriptions-item>
+                <el-descriptions-item label="等级">Lv.{{ selectedUser.level }}</el-descriptions-item>
+                <el-descriptions-item label="信用分">{{ selectedUser.creditScore?.toFixed(1) }}</el-descriptions-item>
+                <el-descriptions-item label="学校">{{ selectedUser.schoolName || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="专业">{{ selectedUser.major || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="年级">{{ selectedUser.grade ? selectedUser.grade + '级' : '-' }}</el-descriptions-item>
+                <el-descriptions-item label="注册时间">{{ formatDate(selectedUser.createdAt) }}</el-descriptions-item>
+                <el-descriptions-item label="最后登录">{{ formatDate(selectedUser.lastLoginTime) }}</el-descriptions-item>
+              </el-descriptions>
+              <div class="detail-actions">
+                <el-button type="primary" plain icon="Edit" @click="startEdit">编辑信息</el-button>
+                <el-select v-model="selectedRole" placeholder="修改角色" style="width: 130px">
+                  <el-option label="学生" value="student" />
+                  <el-option label="教师" value="teacher" />
+                  <el-option label="管理员" value="admin" />
+                </el-select>
+                <el-button
+                  type="primary"
+                  :disabled="!selectedRole || selectedRole === selectedUser.role"
+                  @click="handleSetRole"
+                >确认角色</el-button>
+              </div>
+            </template>
+
+            <!-- 编辑模式 -->
+            <template v-else>
+              <div class="edit-form-title">修改用户信息</div>
+              <el-form :model="editForm" label-width="80px" class="edit-form">
+                <el-form-item label="昵称">
+                  <el-input v-model="editForm.nickname" placeholder="用户昵称" clearable />
+                </el-form-item>
+                <el-form-item label="邮箱">
+                  <el-input v-model="editForm.email" placeholder="邮箱地址" clearable />
+                </el-form-item>
+                <el-form-item label="手机">
+                  <el-input v-model="editForm.phone" placeholder="手机号码" clearable />
+                </el-form-item>
+                <el-form-item label="学号/工号">
+                  <el-input v-model="editForm.studentId" placeholder="学号或工号" clearable />
+                </el-form-item>
+                <el-form-item label="专业">
+                  <el-input v-model="editForm.major" placeholder="所属专业" clearable />
+                </el-form-item>
+                <el-form-item label="年级">
+                  <el-input-number v-model="editForm.grade" :min="2000" :max="2099" placeholder="入学年份" style="width:100%" />
+                </el-form-item>
+              </el-form>
+              <div class="edit-form-actions">
+                <el-button @click="cancelEdit">取消</el-button>
+                <el-button type="primary" :loading="editLoading" @click="submitEdit">保存修改</el-button>
+              </div>
+            </template>
           </el-tab-pane>
 
           <el-tab-pane label="内容统计" name="stats">
@@ -240,7 +276,8 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listUsers, getUserDetail, banUser, setRole, adjustPoints,
   getUserPointsHistory, resetPassword, batchSetStatus, getUserStats,
-  type PointsLogItem, type UserStatsVO
+  updateUserInfo,
+  type PointsLogItem, type UserStatsVO, type UpdateUserInfoPayload
 } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
@@ -288,6 +325,13 @@ const pointsForm = reactive({ userId: 0, delta: 0, reason: '' })
 // 重置密码
 const resetPwdVisible = ref(false)
 const resetPwdResult = ref('')
+
+// 编辑用户信息
+const editMode = ref(false)
+const editLoading = ref(false)
+const editForm = reactive<UpdateUserInfoPayload>({
+  nickname: '', email: '', phone: '', major: '', grade: undefined, studentId: ''
+})
 
 async function fetchUsers() {
   loading.value = true
@@ -349,6 +393,7 @@ async function openDetail(row: AdminUser) {
   selectedUser.value = row
   selectedRole.value = row.role
   drawerTab.value = 'info'
+  editMode.value = false
   pointsHistory.value = []
   pointsHistoryPage.value = 1
   contentStats.value = null
@@ -409,6 +454,45 @@ async function handleSetRole() {
   await setRole(selectedUser.value.uId, selectedRole.value)
   selectedUser.value.role = selectedRole.value as AdminUser['role']
   ElMessage.success('角色修改成功')
+}
+
+function startEdit() {
+  if (!selectedUser.value) return
+  editForm.nickname  = selectedUser.value.nickname || ''
+  editForm.email     = selectedUser.value.email || ''
+  editForm.phone     = selectedUser.value.phone || ''
+  editForm.major     = selectedUser.value.major || ''
+  editForm.grade     = selectedUser.value.grade ?? undefined
+  editForm.studentId = selectedUser.value.studentId || ''
+  editMode.value = true
+}
+
+function cancelEdit() {
+  editMode.value = false
+}
+
+async function submitEdit() {
+  if (!selectedUser.value) return
+  editLoading.value = true
+  try {
+    await updateUserInfo(selectedUser.value.uId, editForm)
+    // 同步到本地展示数据
+    Object.assign(selectedUser.value, {
+      nickname:  editForm.nickname  || selectedUser.value.nickname,
+      email:     editForm.email     || selectedUser.value.email,
+      phone:     editForm.phone     || selectedUser.value.phone,
+      major:     editForm.major     || selectedUser.value.major,
+      grade:     editForm.grade     ?? selectedUser.value.grade,
+      studentId: editForm.studentId || selectedUser.value.studentId,
+    })
+    // 同步表格行
+    const idx = users.value.findIndex(u => u.uId === selectedUser.value!.uId)
+    if (idx !== -1) Object.assign(users.value[idx], selectedUser.value)
+    ElMessage.success('用户信息已修改')
+    editMode.value = false
+  } finally {
+    editLoading.value = false
+  }
 }
 
 function openPointsDialog(row: AdminUser) {
@@ -497,5 +581,16 @@ onMounted(fetchUsers)
 .detail-loading {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; color: #909399; margin-bottom: 12px;
+}
+
+.edit-form-title {
+  font-size: 14px; font-weight: 600; color: #5b21b6;
+  margin-bottom: 16px; padding-bottom: 8px;
+  border-bottom: 2px solid #ede9fe;
+}
+.edit-form { margin-top: 4px; }
+.edit-form-actions {
+  display: flex; justify-content: flex-end; gap: 10px;
+  margin-top: 20px; padding-top: 16px; border-top: 1px solid #f3f4f6;
 }
 </style>

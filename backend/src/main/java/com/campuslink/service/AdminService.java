@@ -172,6 +172,20 @@ public class AdminService {
     }
 
     @Transactional
+    public void updateUserInfo(Long userId, AdminUpdateUserInfoRequest req) {
+        User user = userMapper.selectById(userId);
+        if (user == null) throw new BusinessException(404, "用户不存在");
+        if (StringUtils.hasText(req.getNickname())) user.setNickname(req.getNickname());
+        if (StringUtils.hasText(req.getEmail()))    user.setEmail(req.getEmail());
+        if (StringUtils.hasText(req.getPhone()))    user.setPhone(req.getPhone());
+        if (StringUtils.hasText(req.getMajor()))    user.setMajor(req.getMajor());
+        if (StringUtils.hasText(req.getStudentId())) user.setStudentId(req.getStudentId());
+        if (req.getGrade() != null)                 user.setGrade(req.getGrade());
+        userMapper.updateById(user);
+        log.info("管理员修改用户信息 - userId: {}", userId);
+    }
+
+    @Transactional
     public void adjustPoints(Long operatorId, Long userId, AdjustPointsRequest req) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");

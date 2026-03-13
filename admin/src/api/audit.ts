@@ -4,6 +4,7 @@ import type { PageResult } from '@/types'
 export interface AuditLog {
   id: number
   operatorId: number
+  operatorName: string
   action: string
   target: string
   detail: string

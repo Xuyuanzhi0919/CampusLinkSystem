@@ -1,6 +1,7 @@
 package com.campuslink.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -31,4 +32,8 @@ public class AdminOperationLog {
 
     /** 操作时间 */
     private LocalDateTime createdAt;
+
+    /** 操作者昵称（非数据库字段，查询时填充） */
+    @TableField(exist = false)
+    private String operatorName;
 }

@@ -6,6 +6,9 @@ import request from '@/utils/request'
 
 export interface PublicConfig {
   'points.daily_signin'?: string
+  'points.ask_question'?: string
+  'points.answer_question'?: string
+  'points.answer_accepted'?: string
   'upload.allowed_types'?: string
   'upload.max_file_size'?: string
   'upload.image_max_size'?: string

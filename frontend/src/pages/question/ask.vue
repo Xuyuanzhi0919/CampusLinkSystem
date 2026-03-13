@@ -392,6 +392,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { createQuestion, updateQuestion, getQuestionDetail } from '@/services/question'
+import { getPublicConfig } from '@/services/config'
 import { useUserStore } from '@/stores/user'
 import { chooseAndUploadImages } from '@/utils/upload'
 import { validateTitle, validateContent, validateImages } from '@/utils/validator'
@@ -403,6 +404,9 @@ import CNavBar from '@/components/layout/CNavBar.vue'
 
 // Store
 const userStore = useUserStore()
+
+// 发布问题基础扣分（从系统配置读取）
+const askQuestionBaseCost = ref(2)
 
 // 编辑模式
 const editMode = ref(false)
@@ -576,6 +580,14 @@ watch(
 
 // 页面加载时处理路由参数
 onLoad(async (options) => {
+  // 加载系统配置
+  try {
+    const cfg = await getPublicConfig()
+    if (cfg?.['points.ask_question']) {
+      askQuestionBaseCost.value = Math.abs(parseInt(cfg['points.ask_question']))
+    }
+  } catch { }
+
   if (options?.id) {
     // 编辑模式
     editMode.value = true
@@ -931,8 +943,9 @@ const handleSubmit = async () => {
       // 发布成功后删除草稿
       deleteDraft()
 
+      const totalCost = askQuestionBaseCost.value + (formData.value.bounty || 0)
       uni.showToast({
-        title: '发布成功',
+        title: `发布成功，消耗 ${totalCost} 积分`,
         icon: 'success'
       })
     }

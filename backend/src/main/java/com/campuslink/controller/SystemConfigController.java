@@ -32,6 +32,9 @@ public class SystemConfigController {
     public Result<Map<String, String>> getPublicConfigs() {
         String[] publicKeys = {
             "points.daily_signin",
+            "points.ask_question",
+            "points.answer_question",
+            "points.answer_accepted",
             "upload.allowed_types",
             "upload.max_file_size",
             "upload.image_max_size"

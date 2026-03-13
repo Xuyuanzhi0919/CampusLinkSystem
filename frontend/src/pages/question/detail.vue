@@ -489,7 +489,7 @@ const handleSubmitAnswer = async (data: { content: string; images: string[] }) =
   try {
     submittingAnswer.value = true
     await answerQuestion(questionId.value, { content: data.content, images: data.images })
-    uni.showToast({ title: '回答成功', icon: 'success' })
+    uni.showToast({ title: `回答成功 +${answerPoints.value} 积分`, icon: 'success' })
     answerInputRef.value?.clear()
     await loadAnswers(true)
     await questionStore.loadQuestionDetail(questionId.value, false)

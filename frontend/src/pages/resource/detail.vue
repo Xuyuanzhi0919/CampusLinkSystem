@@ -910,7 +910,10 @@ const confirmDownload = async () => {
     }
 
     uni.hideLoading()
-    uni.showToast({ title: '下载成功', icon: 'success' })
+    uni.showToast({
+      title: res.pointsCost > 0 ? `下载成功，消耗 ${res.pointsCost} 积分` : '下载成功（免费）',
+      icon: 'success'
+    })
 
     // 使用统一的文件下载 API
     await downloadFileUtil({

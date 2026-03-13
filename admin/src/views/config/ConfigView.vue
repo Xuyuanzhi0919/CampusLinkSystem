@@ -8,93 +8,101 @@
       </span>
     </div>
 
-    <div v-loading="loading">
+    <div class="tab-card" v-loading="loading">
+      <el-tabs v-model="activeTab" class="config-tabs">
 
-      <!-- ══ 行1：积分规则（全宽）══ -->
-      <div class="config-card">
-        <div class="card-header">
-          <div class="card-title-row">
-            <el-icon class="title-icon" style="color:#f59e0b"><Coin /></el-icon>
-            <span class="card-title">积分规则</span>
-            <span class="card-desc">正数为获得积分，负数为消耗积分</span>
-          </div>
-          <el-button type="primary" size="small" :loading="savingGroup === 'points'" @click="saveGroup('points')">
-            保存
-          </el-button>
-        </div>
-        <div class="points-grid">
-          <div class="field-box" v-for="f in pointsFields" :key="f.key">
-            <div class="field-label">{{ f.label }}</div>
-            <el-input-number
-              v-model="form[f.key]"
-              :min="-9999" :max="9999"
-              controls-position="right"
-              style="width: 100%"
-            />
-            <span class="pts-badge" :class="form[f.key] >= 0 ? 'pos' : 'neg'">
-              {{ form[f.key] >= 0 ? '+ 获得' : '− 消耗' }}
+        <!-- ══ 积分规则 ══ -->
+        <el-tab-pane name="points">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#f59e0b"><Coin /></el-icon>
+              积分规则
             </span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ 行2：等级体系（全宽）══ -->
-      <div class="config-card" style="margin-top: 16px">
-        <div class="card-header">
-          <div class="card-title-row">
-            <el-icon class="title-icon" style="color:#10b981"><Trophy /></el-icon>
-            <span class="card-title">等级体系</span>
-            <span class="card-desc">各等级所需最低积分，由低到高依次递增</span>
-          </div>
-          <el-button type="primary" size="small" :loading="savingGroup === 'level'" @click="saveGroup('level')">
-            保存
-          </el-button>
-        </div>
-        <div class="level-grid">
-          <div class="level-item" v-for="i in 10" :key="i">
-            <div class="lv-badge" :style="{ background: levelColor(i) }">Lv.{{ i }}</div>
-            <el-input-number
-              v-model="form[`level.threshold_${i}`]"
-              :min="0" :max="99999"
-              controls-position="right"
-              style="width: 140px"
-            />
-            <span class="field-unit">积分</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ 行3：上传配置 / 业务规则（50/50）══ -->
-      <el-row :gutter="16" style="margin-top: 16px">
-        <el-col :span="12">
-          <div class="config-card full-height">
-            <div class="card-header">
-              <div class="card-title-row">
-                <el-icon class="title-icon" style="color:#f97316"><Upload /></el-icon>
-                <span class="card-title">上传配置</span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">设置各操作对应的积分变化，正数为获得积分，负数为消耗积分。</p>
+            <div class="points-grid">
+              <div class="field-box" v-for="f in pointsFields" :key="f.key">
+                <label class="field-label">{{ f.label }}</label>
+                <el-input-number
+                  v-model="form[f.key]"
+                  :min="-9999" :max="9999"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+                <span class="pts-badge" :class="form[f.key] >= 0 ? 'pos' : 'neg'">
+                  {{ form[f.key] >= 0 ? '+ 获得' : '− 消耗' }}
+                </span>
               </div>
-              <el-button type="primary" size="small" :loading="savingGroup === 'upload'" @click="saveGroup('upload')">
-                保存
+            </div>
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'points'" @click="saveGroup('points')">
+                保存积分规则
               </el-button>
             </div>
-            <div class="form-rows">
-              <div class="form-row">
+          </div>
+        </el-tab-pane>
+
+        <!-- ══ 等级体系 ══ -->
+        <el-tab-pane name="level">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#10b981"><Trophy /></el-icon>
+              等级体系
+            </span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">各等级所需最低积分，依次递增。用户积分达到对应阈值后自动升级。</p>
+            <div class="level-grid">
+              <div class="level-item" v-for="i in 10" :key="i">
+                <div class="lv-badge" :style="{ background: levelColor(i) }">Lv.{{ i }}</div>
+                <div class="level-field">
+                  <el-input-number
+                    v-model="form[`level.threshold_${i}`]"
+                    :min="0" :max="99999"
+                    controls-position="right"
+                    style="width: 160px"
+                  />
+                  <span class="field-unit">积分</span>
+                </div>
+              </div>
+            </div>
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'level'" @click="saveGroup('level')">
+                保存等级设置
+              </el-button>
+            </div>
+          </div>
+        </el-tab-pane>
+
+        <!-- ══ 上传配置 ══ -->
+        <el-tab-pane name="upload">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#f97316"><Upload /></el-icon>
+              上传配置
+            </span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">控制用户上传文件的大小限制与允许的文件类型。</p>
+            <div class="form-list">
+              <div class="form-item">
                 <label class="form-label">普通文件上传限制</label>
                 <div class="inline-num">
-                  <el-input-number v-model="uploadMaxMB" :min="1" :max="1024" controls-position="right" style="width: 150px" />
+                  <el-input-number v-model="uploadMaxMB" :min="1" :max="1024" controls-position="right" style="width: 180px" />
                   <span class="field-unit">MB</span>
                 </div>
               </div>
-              <div class="form-row">
+              <div class="form-item">
                 <label class="form-label">图片上传限制</label>
                 <div class="inline-num">
-                  <el-input-number v-model="imageMaxMB" :min="1" :max="100" controls-position="right" style="width: 150px" />
+                  <el-input-number v-model="imageMaxMB" :min="1" :max="100" controls-position="right" style="width: 180px" />
                   <span class="field-unit">MB</span>
                 </div>
               </div>
-              <div class="form-row col">
-                <label class="form-label">允许的文件类型</label>
-                <el-input v-model="form['upload.allowed_types']" placeholder="pdf,doc,docx,ppt,pptx..." />
+              <div class="form-item col">
+                <label class="form-label">允许的文件类型 <span class="hint">（逗号分隔）</span></label>
+                <el-input v-model="form['upload.allowed_types']" placeholder="pdf,doc,docx,ppt,pptx,xls,xlsx,zip,rar,jpg,png" style="max-width:500px" />
                 <div class="type-tags" v-if="form['upload.allowed_types']">
                   <el-tag
                     v-for="t in (form['upload.allowed_types'] || '').split(',').filter((s: string) => s.trim())"
@@ -103,28 +111,33 @@
                 </div>
               </div>
             </div>
-          </div>
-        </el-col>
-
-        <el-col :span="12">
-          <div class="config-card full-height">
-            <div class="card-header">
-              <div class="card-title-row">
-                <el-icon class="title-icon" style="color:#ef4444"><Finished /></el-icon>
-                <span class="card-title">业务规则</span>
-              </div>
-              <el-button type="primary" size="small" :loading="savingGroup === 'business'" @click="saveGroup('business')">
-                保存
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'upload'" @click="saveGroup('upload')">
+                保存上传配置
               </el-button>
             </div>
-            <div class="form-rows">
-              <div class="form-row switch-row">
+          </div>
+        </el-tab-pane>
+
+        <!-- ══ 业务规则 ══ -->
+        <el-tab-pane name="business">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#ef4444"><Finished /></el-icon>
+              业务规则
+            </span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">平台核心业务限制，修改后立即生效。</p>
+            <div class="form-list">
+              <div class="form-item switch-item">
                 <div>
-                  <div class="switch-label">资源上传需审核</div>
-                  <div class="switch-desc">开启后资源需管理员审核才能被下载</div>
+                  <div class="form-label">资源上传需审核</div>
+                  <div class="item-desc">开启后用户上传的资源需管理员审核通过才能被其他用户下载</div>
                 </div>
                 <el-switch v-model="reviewRequired" />
               </div>
+              <el-divider style="margin: 4px 0" />
               <div class="business-grid">
                 <div class="field-box" v-for="f in businessFields" :key="f.key">
                   <label class="field-label">{{ f.label }}</label>
@@ -140,75 +153,86 @@
                 </div>
               </div>
             </div>
-          </div>
-        </el-col>
-      </el-row>
-
-      <!-- ══ 行4：AI 功能 / 平台信息（50/50）══ -->
-      <el-row :gutter="16" style="margin-top: 16px">
-        <el-col :span="12">
-          <div class="config-card">
-            <div class="card-header">
-              <div class="card-title-row">
-                <el-icon class="title-icon" style="color:#8b5cf6"><MagicStick /></el-icon>
-                <span class="card-title">AI 功能</span>
-              </div>
-              <el-button type="primary" size="small" :loading="savingGroup === 'ai'" @click="saveGroup('ai')">
-                保存
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'business'" @click="saveGroup('business')">
+                保存业务规则
               </el-button>
             </div>
-            <div class="form-rows">
-              <div class="form-row switch-row">
+          </div>
+        </el-tab-pane>
+
+        <!-- ══ AI 功能 ══ -->
+        <el-tab-pane name="ai">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#8b5cf6"><MagicStick /></el-icon>
+              AI 功能
+            </span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">控制平台 AI 问答功能的启用状态与行为参数。</p>
+            <div class="form-list">
+              <div class="form-item switch-item">
                 <div>
-                  <div class="switch-label">AI 问答功能</div>
-                  <div class="switch-desc">启用后用户可在问答中使用 AI</div>
+                  <div class="form-label">AI 问答功能</div>
+                  <div class="item-desc">启用后用户在问答页面可以获得 AI 自动回答</div>
                 </div>
                 <el-switch v-model="aiEnabled" />
               </div>
-              <div class="form-row switch-row">
+              <div class="form-item switch-item">
                 <div>
-                  <div class="switch-label">自动生成 AI 回答</div>
-                  <div class="switch-desc">问题发布后自动触发 AI 回答</div>
+                  <div class="form-label">自动生成 AI 回答</div>
+                  <div class="item-desc">问题发布后自动触发 AI 生成回答，关闭则仅在用户主动请求时触发</div>
                 </div>
                 <el-switch v-model="aiAutoAnswer" :disabled="!aiEnabled" />
               </div>
-              <div class="form-row">
+              <el-divider style="margin: 4px 0" />
+              <div class="form-item">
                 <label class="form-label">AI 回答延迟</label>
                 <div class="inline-num">
                   <el-input-number
                     v-model="form['ai.answer_delay']"
                     :min="0" :max="60"
                     controls-position="right"
-                    style="width: 150px"
+                    style="width: 180px"
                   />
-                  <span class="field-unit">秒</span>
+                  <span class="field-unit">秒（0 = 立即生成）</span>
                 </div>
               </div>
             </div>
-          </div>
-        </el-col>
-
-        <el-col :span="12">
-          <div class="config-card">
-            <div class="card-header">
-              <div class="card-title-row">
-                <el-icon class="title-icon" style="color:#3b82f6"><Setting /></el-icon>
-                <span class="card-title">平台信息</span>
-              </div>
-              <el-button type="primary" size="small" :loading="savingGroup === 'system'" @click="saveGroup('system')">
-                保存
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'ai'" @click="saveGroup('ai')">
+                保存 AI 设置
               </el-button>
             </div>
-            <div class="form-rows">
-              <div class="form-row col">
+          </div>
+        </el-tab-pane>
+
+        <!-- ══ 平台信息 ══ -->
+        <el-tab-pane name="system">
+          <template #label>
+            <span class="tab-label">
+              <el-icon style="color:#3b82f6"><Setting /></el-icon>
+              平台信息
+            </span>
+          </template>
+          <div class="tab-content">
+            <p class="section-desc">平台基础信息配置。</p>
+            <div class="form-list">
+              <div class="form-item col">
                 <label class="form-label">平台名称</label>
-                <el-input v-model="form['system.name']" placeholder="CampusLink 校园平台" />
+                <el-input v-model="form['system.name']" placeholder="CampusLink 校园平台" style="max-width: 360px" />
               </div>
             </div>
+            <div class="tab-footer">
+              <el-button type="primary" :loading="savingGroup === 'system'" @click="saveGroup('system')">
+                保存平台信息
+              </el-button>
+            </div>
           </div>
-        </el-col>
-      </el-row>
+        </el-tab-pane>
 
+      </el-tabs>
     </div>
   </div>
 </template>
@@ -223,6 +247,7 @@ import dayjs from 'dayjs'
 const loading = ref(false)
 const savingGroup = ref('')
 const lastSaved = ref('')
+const activeTab = ref('points')
 const form = reactive<Record<string, any>>({})
 
 // ─── 字段定义 ────────────────────────────────────────────
@@ -351,28 +376,54 @@ onMounted(fetchConfigs)
   font-size: 13px; color: #67c23a;
 }
 
-/* ── 卡片 ─────────────────────────────────────────────── */
-.config-card {
-  background: #fff; border-radius: 10px; padding: 22px;
+/* ── 外层卡片（包裹整个 tabs）──────────────────────────── */
+.tab-card {
+  background: #fff; border-radius: 10px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
 }
-.config-card.full-height { height: 100%; box-sizing: border-box; }
 
-.card-header {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid #e5e7eb;
+/* ── Tabs 样式覆盖 ────────────────────────────────────── */
+:deep(.config-tabs > .el-tabs__header) {
+  margin: 0;
+  padding: 0 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #e5e7eb;
 }
-.card-title-row { display: flex; align-items: center; gap: 8px; }
-.title-icon { font-size: 18px; }
-.card-title { font-size: 15px; font-weight: 700; color: #1a1a2e; }
-.card-desc { font-size: 12px; color: #9ca3af; }
+:deep(.config-tabs > .el-tabs__header .el-tabs__nav-wrap::after) {
+  display: none;
+}
+:deep(.config-tabs > .el-tabs__content) {
+  padding: 0;
+}
+
+.tab-label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px;
+}
+
+/* ── Tab 内容区 ───────────────────────────────────────── */
+.tab-content {
+  padding: 24px 28px;
+  min-height: 320px;
+}
+.section-desc {
+  font-size: 13px; color: #6b7280; margin: 0 0 20px;
+  line-height: 1.6;
+}
+
+/* ── 保存按钮区 ───────────────────────────────────────── */
+.tab-footer {
+  margin-top: 28px; padding-top: 18px;
+  border-top: 1px solid #e5e7eb;
+}
 
 /* ── 积分 4列网格 ─────────────────────────────────────── */
 .points-grid {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;
 }
 .field-box { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 12px; color: #6b7280; font-weight: 500; }
+.field-label { font-size: 13px; color: #374151; font-weight: 500; }
 .pts-badge {
   font-size: 11px; font-weight: 600; padding: 2px 7px;
   border-radius: 4px; align-self: flex-start;
@@ -382,7 +433,7 @@ onMounted(fetchConfigs)
 
 /* ── 等级 5列网格 ─────────────────────────────────────── */
 .level-grid {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
 }
 .level-item { display: flex; align-items: center; gap: 10px; }
 .lv-badge {
@@ -390,27 +441,30 @@ onMounted(fetchConfigs)
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; color: #fff;
 }
+.level-field { display: flex; align-items: center; gap: 8px; }
 .field-unit { font-size: 12px; color: #6b7280; white-space: nowrap; }
 
-/* ── 表单行 ───────────────────────────────────────────── */
-.form-rows { display: flex; flex-direction: column; gap: 16px; }
-.form-row {
+/* ── 通用表单列表 ─────────────────────────────────────── */
+.form-list { display: flex; flex-direction: column; gap: 18px; }
+.form-item {
   display: flex; align-items: center; justify-content: space-between;
 }
-.form-row.col { flex-direction: column; align-items: flex-start; gap: 6px; }
-.form-label { font-size: 13px; color: #374151; font-weight: 500; white-space: nowrap; }
+.form-item.col { flex-direction: column; align-items: flex-start; gap: 8px; }
+.form-label { font-size: 13px; color: #374151; font-weight: 500; }
+.hint { font-size: 12px; color: #9ca3af; font-weight: 400; }
 .inline-num { display: flex; align-items: center; gap: 8px; }
 
 /* ── 开关行 ───────────────────────────────────────────── */
-.switch-row { padding: 10px 12px; background: #f9fafb; border-radius: 8px; }
-.switch-label { font-size: 13px; color: #374151; font-weight: 500; }
-.switch-desc { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+.switch-item {
+  padding: 12px 16px; background: #f9fafb; border-radius: 8px;
+}
+.item-desc { font-size: 12px; color: #9ca3af; margin-top: 3px; }
 
 /* ── 业务规则 2列 ─────────────────────────────────────── */
 .business-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
 }
 
 /* ── 文件类型标签 ─────────────────────────────────────── */
-.type-tags { margin-top: 4px; }
+.type-tags { margin-top: 6px; }
 </style>

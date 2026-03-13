@@ -336,6 +336,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { onPageScroll, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
 import { getClubList, joinClub, quitClub } from '@/services/club'
+import { requireLogin } from '@/utils/auth'
 import type { ClubItem } from '@/types/club'
 import { clubSearchHistory } from '@/utils/searchHistory'
 import Icon from '@/components/icons/index.vue'
@@ -732,6 +733,7 @@ const handleBrowseRecommend = () => {
 
 // 跳转到创建社团页面
 const handleCreateClub = () => {
+  if (!requireLogin('create_club')) return
   uni.navigateTo({ url: '/pages/club/create' })
 }
 

@@ -1,8 +1,11 @@
 package com.campuslink.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.campuslink.dto.ai.AiChatRequest;
 import com.campuslink.dto.ai.AiChatResponse;
+import com.campuslink.entity.SystemConfig;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.SystemConfigMapper;
 import com.campuslink.service.AiAssistantService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -44,9 +47,17 @@ public class AiAssistantServiceImpl implements AiAssistantService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
+    private final SystemConfigMapper systemConfigMapper;
 
     @Override
     public AiChatResponse chat(Long userId, AiChatRequest request) {
+        // 检查 ai.enabled 系统开关
+        SystemConfig aiConfig = systemConfigMapper.selectOne(
+                new LambdaQueryWrapper<SystemConfig>().eq(SystemConfig::getConfigKey, "ai.enabled"));
+        if (aiConfig != null && "false".equals(aiConfig.getConfigValue())) {
+            throw new BusinessException(403, "AI 功能已关闭，请联系管理员");
+        }
+
         // 检查 API Key 配置
         if (apiKey == null || apiKey.trim().isEmpty()) {
             log.warn("DeepSeek API Key 未配置，使用模拟响应");

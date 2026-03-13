@@ -10,8 +10,10 @@ import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.entity.SystemConfig;
 import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.SchoolMapper;
+import com.campuslink.mapper.SystemConfigMapper;
 import com.campuslink.mapper.UserMapper;
 import com.campuslink.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,7 @@ public class UserService {
     private final com.campuslink.mapper.AnswerMapper answerMapper;
     private final com.campuslink.mapper.TaskMapper taskMapper;
     private final com.campuslink.mapper.FavoriteMapper favoriteMapper;
+    private final SystemConfigMapper systemConfigMapper;
 
     /**
      * 用户注册
@@ -442,8 +445,11 @@ public class UserService {
                     .build();
         }
 
-        // 签到奖励积分
-        final int CHECK_IN_POINTS = 10;
+        // 签到奖励积分：从系统配置读取，默认 10
+        SystemConfig signinConfig = systemConfigMapper.selectOne(
+                new LambdaQueryWrapper<SystemConfig>().eq(SystemConfig::getConfigKey, "points.daily_signin"));
+        final int CHECK_IN_POINTS = (signinConfig != null && signinConfig.getConfigValue() != null)
+                ? Integer.parseInt(signinConfig.getConfigValue()) : 10;
 
         // 更新用户积分
         user.setPoints(user.getPoints() + CHECK_IN_POINTS);

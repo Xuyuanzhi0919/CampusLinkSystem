@@ -378,11 +378,12 @@ const handleCheckIn = async () => {
     return
   }
   try {
-    await checkIn()
+    const res = await checkIn()
     isCheckedIn.value = true
     // 签到成功后刷新统计数据
     loadUserStats()
-    uni.showToast({ title: '签到成功！+10 积分', icon: 'success' })
+    const pts = res?.pointsEarned ?? 10
+    uni.showToast({ title: `签到成功！+${pts} 积分`, icon: 'success' })
   } catch (error) {
     uni.showToast({ title: '签到失败', icon: 'error' })
   }

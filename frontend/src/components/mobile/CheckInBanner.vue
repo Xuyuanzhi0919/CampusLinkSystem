@@ -2,7 +2,7 @@
   <view class="checkin-card" :class="{ 'is-done': isCheckedIn }">
 
     <!-- 积分飘字 -->
-    <view v-if="showPointsAnim" class="pts-pop">+10</view>
+    <view v-if="showPointsAnim" class="pts-pop">+{{ earnedPoints }}</view>
 
     <!-- 右上角装饰光晕（未签到时） -->
     <view v-if="!isCheckedIn" class="glow-orb" />
@@ -49,7 +49,7 @@
             <path d="M3 8.5L6.5 12L13 5" stroke="currentColor" stroke-width="2.2"
               stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          <text class="sign-text">{{ checking ? '签到中' : '签到\n+10' }}</text>
+          <text class="sign-text">{{ checking ? '签到中' : `签到\n+${signinPoints}` }}</text>
         </view>
         <view v-else class="done-btn">
           <svg class="done-icon" viewBox="0 0 16 16" fill="none">
@@ -83,14 +83,17 @@ import { checkIn } from '@/services/user'
 const props = defineProps<{
   isCheckedIn: boolean
   consecutiveDays: number
+  signinPoints?: number
 }>()
 
 const emit = defineEmits<{
-  checkInSuccess: [{ consecutiveDays: number }]
+  checkInSuccess: [{ consecutiveDays: number; pointsEarned: number }]
 }>()
 
+const signinPoints = computed(() => props.signinPoints ?? 10)
 const checking = ref(false)
 const showPointsAnim = ref(false)
+const earnedPoints = ref(signinPoints.value)
 
 /** 当前 7 天周期内第几天（1~7） */
 const cycleDay = computed(() => {
@@ -118,19 +121,20 @@ const rewardHint = computed(() => {
 
 /** 底部小字 */
 const footerText = computed(() => {
-  if (props.isCheckedIn) return '今日已签到 · 明日可领 +10 积分'
-  return '每日签到 +10 积分 · 连签 7 天得徽章'
+  if (props.isCheckedIn) return `今日已签到 · 明日可领 +${signinPoints} 积分`
+  return `每日签到 +${signinPoints} 积分 · 连签 7 天得徽章`
 })
 
 const handleClick = async () => {
   if (props.isCheckedIn || checking.value) return
   checking.value = true
   try {
-    await checkIn()
+    const res = await checkIn()
+    earnedPoints.value = res?.pointsEarned ?? signinPoints.value
     showPointsAnim.value = true
     setTimeout(() => { showPointsAnim.value = false }, 1400)
-    emit('checkInSuccess', { consecutiveDays: props.consecutiveDays + 1 })
-    uni.showToast({ title: '签到成功 +10 积分 🎉', icon: 'success' })
+    emit('checkInSuccess', { consecutiveDays: props.consecutiveDays + 1, pointsEarned: earnedPoints.value })
+    uni.showToast({ title: `签到成功 +${earnedPoints.value} 积分 🎉`, icon: 'success' })
   } catch (err: any) {
     uni.showToast({ title: err?.message || '签到失败，请稍后再试', icon: 'none' })
   } finally {

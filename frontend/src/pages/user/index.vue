@@ -550,11 +550,12 @@ const handleCheckIn = async () => {
     return
   }
   try {
-    await checkIn()
+    const res = await checkIn()
     isCheckedIn.value = true
     // 刷新积分统计
-    getUserStats().then(res => { if (res) userStats.value = res })
-    uni.showToast({ title: '签到成功 +10 积分', icon: 'success' })
+    getUserStats().then(r => { if (r) userStats.value = r })
+    const pts = res?.pointsEarned ?? 10
+    uni.showToast({ title: `签到成功 +${pts} 积分`, icon: 'success' })
   } catch (err: any) {
     uni.showToast({ title: err?.message || '签到失败，请稍后再试', icon: 'none' })
   }

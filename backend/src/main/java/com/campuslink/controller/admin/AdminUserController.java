@@ -114,6 +114,13 @@ public class AdminUserController {
         return Result.success(adminService.getUserStats(userId));
     }
 
+    @Operation(summary = "批量重算所有用户等级（修复历史数据）")
+    @PostMapping("/recalculate-levels")
+    public Result<String> recalculateLevels() {
+        int count = adminService.recalculateAllLevels();
+        return Result.success("完成，共更新 " + count + " 名用户等级");
+    }
+
     @Operation(summary = "用户积分流水")
     @GetMapping("/{userId}/points-history")
     public Result<PageResult<PointsLog>> getPointsHistory(

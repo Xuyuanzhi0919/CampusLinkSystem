@@ -45,6 +45,7 @@ public class AdminService {
     private final AnswerMapper answerMapper;
     private final NotificationMapper notificationMapper;
     private final com.campuslink.mapper.AdminOperationLogMapper auditLogMapper;
+    private final LevelService levelService;
 
     // ==================== 操作日志 ====================
 
@@ -267,6 +268,7 @@ public class AdminService {
 
         int newPoints = Math.max(0, user.getPoints() + req.getDelta());
         user.setPoints(newPoints);
+        levelService.checkAndUpgrade(user);
         userMapper.updateById(user);
 
         // 记录积分流水
@@ -280,6 +282,23 @@ public class AdminService {
         pointsLogMapper.insert(log2);
 
         log.info("管理员调整积分 - operator: {}, userId: {}, delta: {}", operatorId, userId, req.getDelta());
+    }
+
+    /**
+     * 批量重新计算所有用户等级（一次性修复历史数据）
+     */
+    @Transactional
+    public int recalculateAllLevels() {
+        List<User> users = userMapper.selectList(null);
+        int count = 0;
+        for (User user : users) {
+            if (levelService.checkAndUpgrade(user)) {
+                userMapper.updateById(user);
+                count++;
+            }
+        }
+        log.info("批量重算等级完成，共更新 {} 名用户", count);
+        return count;
     }
 
     // ==================== 批量操作 ====================

@@ -39,6 +39,7 @@ public class ResourceService {
     private final ResourceCommentService resourceCommentService;
     private final FavoriteService favoriteService;
     private final ResourceRatingService resourceRatingService;
+    private final LevelService levelService;
 
     /**
      * 上传资源
@@ -237,6 +238,7 @@ public class ResourceService {
             User uploader = userMapper.selectById(resource.getUploaderId());
             if (uploader != null) {
                 uploader.setPoints(uploader.getPoints() + resource.getScore());
+                levelService.checkAndUpgrade(uploader);
                 userMapper.updateById(uploader);
             }
 

@@ -49,6 +49,7 @@ public class UserService {
     private final com.campuslink.mapper.TaskMapper taskMapper;
     private final com.campuslink.mapper.FavoriteMapper favoriteMapper;
     private final SystemConfigMapper systemConfigMapper;
+    private final LevelService levelService;
 
     /**
      * 用户注册
@@ -453,6 +454,7 @@ public class UserService {
 
         // 更新用户积分
         user.setPoints(user.getPoints() + CHECK_IN_POINTS);
+        levelService.checkAndUpgrade(user);
         user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
 

@@ -33,6 +33,7 @@ public class QuestionService {
     private final AnswerMapper answerMapper;
     private final UserMapper userMapper;
     private final AnswerLikeMapper answerLikeMapper;
+    private final LevelService levelService;
 
     /**
      * 提问
@@ -340,6 +341,7 @@ public class QuestionService {
 
         // 回答者获得 5 积分
         user.setPoints(user.getPoints() + 5);
+        levelService.checkAndUpgrade(user);
         userMapper.updateById(user);
 
         // 更新问题的回答数量
@@ -452,6 +454,7 @@ public class QuestionService {
         User answerer = userMapper.selectById(answer.getResponderId());
         if (answerer != null && question.getRewardPoints() > 0) {
             answerer.setPoints(answerer.getPoints() + question.getRewardPoints());
+            levelService.checkAndUpgrade(answerer);
             userMapper.updateById(answerer);
         }
     }
@@ -715,6 +718,7 @@ public class QuestionService {
         if (user != null) {
             int refundPoints = 2 + (question.getRewardPoints() != null ? question.getRewardPoints() : 0);
             user.setPoints(user.getPoints() + refundPoints);
+            levelService.checkAndUpgrade(user);
             userMapper.updateById(user);
         }
 

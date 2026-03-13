@@ -44,6 +44,7 @@ public class TaskService {
     private final TaskLogMapper taskLogMapper;
     private final TaskRatingMapper taskRatingMapper;
     private final NotificationService notificationService;
+    private final LevelService levelService;
 
     /**
      * 发布任务
@@ -317,6 +318,7 @@ public class TaskService {
             if (accepter != null) {
                 Integer oldPoints = accepter.getPoints();
                 accepter.setPoints(oldPoints + task.getRewardPoints());
+                levelService.checkAndUpgrade(accepter);
                 userMapper.updateById(accepter);
 
                 // 记录积分日志
@@ -386,6 +388,7 @@ public class TaskService {
         if (publisher != null) {
             Integer oldPoints = publisher.getPoints();
             publisher.setPoints(oldPoints + task.getRewardPoints());
+            levelService.checkAndUpgrade(publisher);
             userMapper.updateById(publisher);
 
             // 记录积分日志
@@ -597,6 +600,7 @@ public class TaskService {
             if (publisher != null) {
                 Integer oldPoints = publisher.getPoints();
                 publisher.setPoints(oldPoints + task.getRewardPoints());
+                levelService.checkAndUpgrade(publisher);
                 userMapper.updateById(publisher);
 
                 // 记录积分日志
@@ -821,6 +825,7 @@ public class TaskService {
 
         Integer oldPoints = accepter.getPoints();
         accepter.setPoints(oldPoints + task.getRewardPoints());
+        levelService.checkAndUpgrade(accepter);
         userMapper.updateById(accepter);
 
         // 记录积分日志

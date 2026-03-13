@@ -27,6 +27,7 @@ public class TaskExpirationScheduler {
     private final TaskMapper taskMapper;
     private final UserMapper userMapper;
     private final TaskLogMapper taskLogMapper;
+    private final com.campuslink.service.LevelService levelService;
 
     /**
      * 每小时检查超时任务
@@ -117,6 +118,7 @@ public class TaskExpirationScheduler {
         if (publisher != null) {
             Integer oldPoints = publisher.getPoints();
             publisher.setPoints(oldPoints + task.getRewardPoints());
+            levelService.checkAndUpgrade(publisher);
             userMapper.updateById(publisher);
 
             log.info("退还发布者积分: userId={}, points={}, taskId={}",

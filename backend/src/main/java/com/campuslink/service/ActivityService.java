@@ -36,6 +36,7 @@ public class ActivityService {
     private final UserMapper userMapper;
     private final PointsLogMapper pointsLogMapper;
     private final FavoriteService favoriteService;
+    private final LevelService levelService;
 
     /**
      * 创建活动
@@ -287,6 +288,7 @@ public class ActivityService {
             User user = userMapper.selectById(userId);
             if (user != null) {
                 user.setPoints(user.getPoints() + activity.getRewardPoints());
+                levelService.checkAndUpgrade(user);
                 userMapper.updateById(user);
 
                 // 记录积分日志

@@ -198,7 +198,7 @@
                 <view v-for="feed in feeds" :key="feed.id" class="feed-item">
                   <!-- 头像 + 信息 -->
                   <view class="feed-header">
-                    <image class="feed-avatar" :src="feed.userAvatar || '/static/default-avatar.png'" mode="aspectFill" />
+                    <image class="feed-avatar" :src="feed.userAvatar || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
                     <view class="feed-meta">
                       <text class="feed-author">{{ feed.userName }}</text>
                       <text class="feed-time">{{ formatFeedTime(feed.createdAt) }}</text>
@@ -324,7 +324,7 @@
             <view v-if="currentTab === 'member'" class="member-container">
               <view v-if="members.length > 0" class="member-list">
                 <view v-for="member in members" :key="member.userId" class="member-card">
-                  <image class="member-avatar" :src="member.avatarUrl || '/static/default-avatar.png'" mode="aspectFill" />
+                  <image class="member-avatar" :src="member.avatarUrl || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
                   <view class="member-info">
                     <view class="member-name-row">
                       <text class="member-name">{{ member.nickname }}</text>
@@ -412,7 +412,7 @@
             </view>
             <view v-if="admins.length > 0" class="admin-list">
               <view v-for="admin in admins" :key="admin.userId" class="admin-item">
-                <image class="admin-avatar" :src="admin.avatarUrl || '/static/default-avatar.png'" mode="aspectFill" />
+                <image class="admin-avatar" :src="admin.avatarUrl || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
                 <view class="admin-info">
                   <text class="admin-name">{{ admin.nickname }}</text>
                   <text class="admin-role">{{ admin.role === 'founder' ? '社长' : '管理员' }}</text>
@@ -482,6 +482,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
+import { PLACEHOLDER_IMAGES } from '@/config/images'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost, getClubResources } from '@/services/club'
 import type { ClubPost, ClubResource } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
@@ -1369,15 +1370,17 @@ onUnmounted(() => {
 // =============================================
 .tabs-nav {
   display: flex;
-  background: linear-gradient(to bottom, $white 0%, rgba($gray-50, 0.5) 100%); // 添加渐变背景
+  flex-wrap: nowrap;
+  background: linear-gradient(to bottom, $white 0%, rgba($gray-50, 0.5) 100%);
   border-radius: $radius-lg;
-  padding: 12rpx; // 从 8rpx 增加到 12rpx
-  margin-bottom: 32rpx; // 从 $sp-6 (24rpx) 增加到 32rpx，增强和内容区的分隔
-  box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.08), // 增强阴影层次
+  padding: 8rpx;
+  margin-bottom: 32rpx;
+  box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.08),
               0 1rpx 4rpx rgba($gray-900, 0.04);
-  gap: 8rpx;
+  gap: 6rpx;
   overflow-x: auto;
-  border: 1rpx solid rgba($gray-200, 0.6); // 添加边框
+  -webkit-overflow-scrolling: touch;
+  border: 1rpx solid rgba($gray-200, 0.6);
 
   /* #ifdef H5 */
   &::-webkit-scrollbar {
@@ -1387,13 +1390,14 @@ onUnmounted(() => {
 }
 
 .tab-item {
-  flex: 1;
-  min-width: 120rpx;
+  flex: 0 0 auto;
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
   gap: 6rpx;
-  padding: 18rpx 24rpx; // 从 16rpx 增加到 18rpx，更有点击感
+  padding: 14rpx 20rpx;
   border-radius: $radius-md;
   cursor: pointer;
   transition: all $transition-base;
@@ -1429,6 +1433,8 @@ onUnmounted(() => {
   color: $gray-700;
   font-weight: $font-weight-medium;
   transition: color $transition-base;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tab-count {
@@ -1440,6 +1446,7 @@ onUnmounted(() => {
   min-width: 32rpx;
   text-align: center;
   transition: all $transition-base;
+  flex-shrink: 0;
 
   .tab-item--active & {
     background: rgba($white, 0.2);

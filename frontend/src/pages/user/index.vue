@@ -52,6 +52,11 @@
           @points-click="handlePointsClick"
           @stat-click="handleStatClick"
         />
+        <CheckInBanner
+          :is-checked-in="isCheckedIn"
+          :consecutive-days="userStats?.checkInDays ?? 0"
+          @check-in-success="handleBannerCheckIn"
+        />
         <view class="page-body">
           <!-- 个性化入口 -->
           <view class="customize-entry" @click="openCustomizeSheet">
@@ -257,7 +262,7 @@ import { onShow } from '@dcloudio/uni-app'
 import { useNavigationStore } from '@/stores/navigation'
 import { useUserStore } from '@/stores/user'
 import type { UserProfileData, UserStatsData } from '@/types/user'
-import { getUserProfile, getUserStats, getCheckInStatus, checkIn } from '@/services/user'
+import { getUserProfile, getUserStats, getCheckInStatus } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
 import Icon from '@/components/icons/index.vue'
@@ -269,7 +274,7 @@ import CapabilityPanel from './components/CapabilityPanel.vue'
 import SettingsSection from './components/SettingsSection.vue'
 import AccountActions from './components/AccountActions.vue'
 
-import { CustomTabBar } from '@/components/mobile'
+import { CustomTabBar, CheckInBanner } from '@/components/mobile'
 
 // #ifdef H5
 import { PCFloatingNav } from '@/components/desktop'
@@ -544,21 +549,11 @@ const handleSettingsClick = (item: any) => {
   if (item.path) uni.navigateTo({ url: item.path, fail: () => uni.showToast({ title: '页面开发中...', icon: 'none' }) })
 }
 
-const handleCheckIn = async () => {
-  if (isCheckedIn.value) {
-    uni.showToast({ title: '今日已签到', icon: 'none' })
-    return
-  }
-  try {
-    const res = await checkIn()
-    isCheckedIn.value = true
-    // 刷新积分统计
-    getUserStats().then(r => { if (r) userStats.value = r })
-    const pts = res?.pointsEarned ?? 10
-    uni.showToast({ title: `签到成功 +${pts} 积分`, icon: 'success' })
-  } catch (err: any) {
-    uni.showToast({ title: err?.message || '签到失败，请稍后再试', icon: 'none' })
-  }
+const handleBannerCheckIn = ({ consecutiveDays, pointsEarned }: { consecutiveDays: number; pointsEarned: number }) => {
+  isCheckedIn.value = true
+  if (userStats.value) userStats.value.checkInDays = consecutiveDays
+  // 刷新积分（延迟避免并发）
+  setTimeout(() => getUserStats().then(r => { if (r) userStats.value = r }), 500)
 }
 
 const handleLogout = () => {

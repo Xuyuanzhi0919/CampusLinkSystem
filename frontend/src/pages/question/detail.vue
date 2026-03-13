@@ -97,6 +97,25 @@
             </view>
           </view>
 
+          <!-- 积分激励条：问题未解决时显示，提示回答可获得的积分 -->
+          <view
+            v-if="question && question.status !== 1"
+            class="answer-incentive"
+          >
+            <text class="incentive-icon">💰</text>
+            <text class="incentive-text">
+              回答得
+              <text class="incentive-pts">+{{ answerPoints }}</text>
+              积分
+              <template v-if="question.bounty > 0">
+                · 悬赏
+                <text class="incentive-pts incentive-pts--bounty">+{{ question.bounty }}</text>
+              </template>
+              · 被采纳额外
+              <text class="incentive-pts incentive-pts--accepted">+{{ acceptedPoints }}</text>
+            </text>
+          </view>
+
           <!-- 回答列表 -->
           <view v-if="answers.length > 0" class="answers-list">
             <AnswerCard
@@ -252,6 +271,7 @@ import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 import { requireLogin } from '@/utils/auth'
+import { getPublicConfig } from '@/services/config'
 import { ClLoginGuideModal } from '@/components/cl'
 import LoginModal from '@/components/LoginModal.vue'
 
@@ -284,6 +304,10 @@ const submittingAnswer = ref(false)
 
 // 问题ID
 const questionId = ref(0)
+
+// 积分激励（从公开配置读取，初始默认值）
+const answerPoints = ref(5)
+const acceptedPoints = ref(20)
 
 // 更多菜单状态
 const showMorePopup = ref(false)
@@ -373,6 +397,11 @@ onLoad((options) => {
     loadQuestionDetail()
     loadAnswers()
   }
+  // 加载积分激励配置（不影响主流程，失败静默降级）
+  getPublicConfig().then(cfg => {
+    if (cfg?.['points.answer_question']) answerPoints.value = parseInt(cfg['points.answer_question'])
+    if (cfg?.['points.answer_accepted']) acceptedPoints.value = parseInt(cfg['points.answer_accepted'])
+  }).catch(() => {})
 })
 
 // 加载问题详情
@@ -1250,4 +1279,26 @@ const handleRetry = () => {
     transform: translateY(0);
   }
 }
+
+/* ── 积分激励条 ─────────────────────────────── */
+.answer-incentive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  margin: 0 0 2px;
+  background: linear-gradient(90deg, #fffbeb, #fef9c3);
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 6px 6px 0;
+  font-size: 12px;
+  color: #92400e;
+}
+.incentive-icon { font-size: 14px; flex-shrink: 0; }
+.incentive-text { line-height: 1.5; }
+.incentive-pts {
+  font-weight: 700;
+  color: #d97706;
+}
+.incentive-pts--bounty { color: #dc2626; }
+.incentive-pts--accepted { color: #7c3aed; }
 </style>

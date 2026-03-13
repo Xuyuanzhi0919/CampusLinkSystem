@@ -37,7 +37,7 @@ export const getClubDetail = (id: number) => {
  * @param data 社团数据
  */
 export const createClub = (data: ClubCreateParams) => {
-  return request.post<{ clubId: number }>('/club/create', data)
+  return request.post<number>('/club/create', data)
 }
 
 /**

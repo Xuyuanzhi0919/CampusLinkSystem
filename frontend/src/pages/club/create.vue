@@ -255,7 +255,7 @@ const handleSubmit = async () => {
 
     uni.showToast({ title: '社团创建成功', icon: 'success', duration: 2000 })
     setTimeout(() => {
-      uni.redirectTo({ url: `/pages/club/detail?id=${res.clubId}` })
+      uni.redirectTo({ url: `/pages/club/detail?id=${res}` })
     }, 1500)
   } catch (error: any) {
     uni.showToast({ title: error?.message || '创建失败，请重试', icon: 'none' })

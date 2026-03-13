@@ -193,7 +193,7 @@ public class AdminService {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");
         String newPassword = "CL" + String.format("%06d", new java.util.Random().nextInt(1000000));
-        user.setPassword(DigestUtils.md5DigestAsHex(newPassword.getBytes()));
+        user.setPasswordHash(DigestUtils.md5DigestAsHex(newPassword.getBytes()));
         userMapper.updateById(user);
         log.info("管理员重置用户密码 - userId: {}", userId);
         Map<String, String> result = new HashMap<>();

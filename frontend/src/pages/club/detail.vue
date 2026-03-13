@@ -759,8 +759,9 @@ const handlePublishFeed = () => {
 
 // 上传资料（成员）
 const handleUploadResource = () => {
+  const returnUrl = encodeURIComponent(`/pages/club/detail?id=${clubId.value}`)
   uni.navigateTo({
-    url: '/pages/resource/upload',
+    url: `/pages/resource/upload?returnUrl=${returnUrl}`,
     fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }

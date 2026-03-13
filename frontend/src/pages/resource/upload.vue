@@ -38,6 +38,7 @@ const form = ref({
  */
 const errors = ref<Record<string, string>>({})
 const submitting = ref(false)
+const returnUrl = ref('')
 
 /**
  * 🎯 分类选项
@@ -437,20 +438,18 @@ const handleSubmit = async () => {
     })
 
     // 4. 成功提示
+    const destUrl = returnUrl.value || '/pages/resource/index'
+    const confirmText = returnUrl.value ? '返回社团' : '返回资源广场'
     uni.showModal({
       title: '提交成功',
       content: `您的资源「${form.value.title}」已提交审核\n\n预计 1-2 个工作日内完成审核\n审核通过后将获得 10 积分奖励`,
       showCancel: false,
-      confirmText: '返回资源广场',
+      confirmText,
       success: () => {
-        // 5. 返回资源广场 (使用 redirectTo 确保能正常跳转)
         uni.redirectTo({
-          url: '/pages/resource/index',
+          url: destUrl,
           fail: () => {
-            // 如果 redirectTo 失败，尝试 reLaunch
-            uni.reLaunch({
-              url: '/pages/resource/index'
-            })
+            uni.reLaunch({ url: destUrl })
           }
         })
       }
@@ -524,8 +523,11 @@ PDF、Word (doc/docx)、PowerPoint (ppt/pptx)、Excel (xls/xlsx)、文本 (txt/m
 /**
  * 🎯 页面加载
  */
-onLoad(async () => {
+onLoad(async (options: any) => {
   console.log('[Upload] 页面加载')
+  if (options?.returnUrl) {
+    returnUrl.value = decodeURIComponent(options.returnUrl)
+  }
   // 从系统配置读取允许的文件类型和大小上限
   try {
     const cfg = await getPublicConfig()

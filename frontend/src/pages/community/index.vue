@@ -356,6 +356,8 @@ onShow(() => {
   // 同步 TabBar 激活状态，确保从子页面返回时高亮正确
   navigationStore.syncActivePath()
   navigationStore.showNav()
+  // 从子页面返回时刷新列表（如创建社团后返回）
+  loadClubs(true)
 })
 
 onUnmounted(() => {

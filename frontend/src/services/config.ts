@@ -12,6 +12,16 @@ export interface PublicConfig {
   'upload.allowed_types'?: string
   'upload.max_file_size'?: string
   'upload.image_max_size'?: string
+  'level.threshold_1'?: string
+  'level.threshold_2'?: string
+  'level.threshold_3'?: string
+  'level.threshold_4'?: string
+  'level.threshold_5'?: string
+  'level.threshold_6'?: string
+  'level.threshold_7'?: string
+  'level.threshold_8'?: string
+  'level.threshold_9'?: string
+  'level.threshold_10'?: string
   [key: string]: string | undefined
 }
 

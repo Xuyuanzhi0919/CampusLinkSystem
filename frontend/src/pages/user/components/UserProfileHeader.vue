@@ -52,10 +52,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import type { UserProfileData, UserStatsData } from '@/types/user'
 import LevelBadge from './LevelBadge.vue'
 import Icon from '@/components/icons/index.vue'
+import { getPublicConfig } from '@/services/config'
 
 interface Props {
   profile: UserProfileData | null
@@ -98,30 +99,43 @@ const rankingFullText = computed(() => {
   return '全站前 80%'
 })
 
-// 🎯 等级进度(距离下一级)
+// 等级阈值（从系统配置读取，默认值兜底）
+const levelThresholds = ref<number[]>([0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 5000])
+
+onMounted(async () => {
+  try {
+    const cfg = await getPublicConfig()
+    const parsed: number[] = []
+    for (let i = 1; i <= 10; i++) {
+      const val = cfg?.[`level.threshold_${i}` as keyof typeof cfg]
+      parsed.push(val ? parseInt(val) : levelThresholds.value[i - 1])
+    }
+    if (parsed.length === 10) levelThresholds.value = parsed
+  } catch { /* 使用默认值 */ }
+})
+
+// 等级进度（当前积分在当前级 → 下一级区间内的百分比）
 const levelProgress = computed(() => {
-  // TODO: 后端提供真实等级规则
-  // 这里简化:每500积分升1级
   const points = props.profile?.points || 0
-  const currentLevelPoints = Math.floor(points / 500) * 500
-  const nextLevelPoints = currentLevelPoints + 500
-  const progressPoints = points - currentLevelPoints
-  return Math.floor((progressPoints / 500) * 100)
+  const level = Math.min((props.profile?.level || 1), 10)
+  const curThreshold = levelThresholds.value[level - 1] ?? 0
+  const nextThreshold = levelThresholds.value[level] ?? curThreshold + 500
+  if (nextThreshold <= curThreshold) return 100
+  return Math.min(100, Math.floor(((points - curThreshold) / (nextThreshold - curThreshold)) * 100))
 })
 
 // 等级进度文本
 const levelProgressText = computed(() => {
   const points = props.profile?.points || 0
-  const currentLevelPoints = Math.floor(points / 500) * 500
-  const nextLevelPoints = currentLevelPoints + 500
-  const remainingPoints = nextLevelPoints - points
-  return `距离下一级还差 ${remainingPoints} 分`
+  const level = Math.min((props.profile?.level || 1), 10)
+  const nextThreshold = levelThresholds.value[level] ?? (levelThresholds.value[level - 1] + 500)
+  if (level >= 10) return '已达最高等级'
+  const remaining = Math.max(0, nextThreshold - points)
+  return `距离下一级还差 ${remaining} 分`
 })
 
 // 等级进度百分比
-const levelProgressPercent = computed(() => {
-  return `${levelProgress.value}%`
-})
+const levelProgressPercent = computed(() => `${levelProgress.value}%`)
 
 /**
  * 🎯 处理头像点击 - 预览头像

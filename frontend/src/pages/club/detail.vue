@@ -289,13 +289,18 @@
             <view v-if="currentTab === 'resource'" class="resource-container">
               <view v-if="isMember">
                 <view v-if="resources.length > 0" class="resource-list">
-                  <view v-for="resource in resources" :key="resource.id" class="resource-card">
+                  <view
+                    v-for="resource in resources"
+                    :key="resource.id"
+                    class="resource-card"
+                    @click="uni.navigateTo({ url: `/pages/resource/detail?id=${resource.id}` })"
+                  >
                     <Icon name="file-text" :size="20" class="resource-icon" />
                     <view class="resource-info">
                       <text class="resource-title">{{ resource.title }}</text>
-                      <text class="resource-meta">{{ resource.size }} · {{ resource.uploadTime }}</text>
+                      <text class="resource-meta">{{ resource.fileSize }} · {{ resource.uploaderName || '未知' }}</text>
                     </view>
-                    <Icon name="download" :size="16" class="resource-action" />
+                    <Icon name="chevron-right" :size="16" class="resource-action" />
                   </view>
                 </view>
                 <view v-else class="empty-placeholder">
@@ -477,7 +482,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers } from '@/services/club'
+import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost, getClubResources } from '@/services/club'
+import type { ClubPost, ClubResource } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
 import CButton from '@/components/ui/CButton.vue'
 import { CNavBar } from '@/components/layout'
@@ -499,9 +505,9 @@ const loginGuideActionType = ref('')
 const showLoginModal = ref(false)
 
 // 各模块数据
-const feeds = ref<any[]>([]) // 动态列表（暂用 any，实际应定义类型）
+const feeds = ref<ClubPost[]>([])
 const activities = ref<ActivityItem[]>([])
-const resources = ref<any[]>([]) // 资料列表
+const resources = ref<ClubResource[]>([])
 const members = ref<ClubMember[]>([])
 const admins = ref<ClubMember[]>([]) // 管理员
 const relatedClubs = ref<any[]>([]) // 相关社团
@@ -589,9 +595,12 @@ const loadClubDetail = async (id: number) => {
 
 // 加载动态列表
 const loadFeeds = async (id: number) => {
-  // TODO: 后端暂无社团动态接口，待实现
-  // 建议后端新增 GET /club/{clubId}/feeds 接口
-  feeds.value = []
+  try {
+    const res = await getClubPosts(id, { page: 1, pageSize: 20 })
+    feeds.value = res.list || []
+  } catch {
+    feeds.value = []
+  }
 }
 
 // 加载活动列表
@@ -608,11 +617,14 @@ const loadActivities = async (id: number) => {
   }
 }
 
-// 加载资料列表
+// 加载资料列表（仅成员可查看）
 const loadResources = async (id: number) => {
-  // TODO: 后端暂无社团资料接口，待实现
-  // 建议后端新增 GET /club/{clubId}/resources 接口
-  resources.value = []
+  try {
+    const res = await getClubResources(id, { page: 1, pageSize: 20 })
+    resources.value = res.list || []
+  } catch {
+    resources.value = []
+  }
 }
 
 // 加载成员列表
@@ -726,7 +738,22 @@ const handleEnter = () => {
 
 // 发布动态（成员）
 const handlePublishFeed = () => {
-  uni.showToast({ title: '动态发布功能开发中', icon: 'none' })
+  uni.showModal({
+    title: '发布动态',
+    editable: true,
+    placeholderText: '分享你的想法...',
+    success: async (res) => {
+      if (res.confirm && res.content?.trim()) {
+        try {
+          await createClubPost(clubId.value!, res.content.trim())
+          uni.showToast({ title: '发布成功', icon: 'success' })
+          if (clubId.value) await loadFeeds(clubId.value)
+        } catch (e: any) {
+          uni.showToast({ title: e.message || '发布失败', icon: 'none' })
+        }
+      }
+    }
+  })
 }
 
 // 上传资料（成员）

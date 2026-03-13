@@ -37,7 +37,11 @@ public class SystemConfigController {
             "points.answer_accepted",
             "upload.allowed_types",
             "upload.max_file_size",
-            "upload.image_max_size"
+            "upload.image_max_size",
+            "level.threshold_1",  "level.threshold_2",  "level.threshold_3",
+            "level.threshold_4",  "level.threshold_5",  "level.threshold_6",
+            "level.threshold_7",  "level.threshold_8",  "level.threshold_9",
+            "level.threshold_10"
         };
         Map<String, String> result = new java.util.LinkedHashMap<>();
         for (String key : publicKeys) {

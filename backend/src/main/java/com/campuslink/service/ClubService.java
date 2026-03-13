@@ -5,17 +5,23 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.club.ClubMemberResponse;
+import com.campuslink.dto.club.ClubPostResponse;
+import com.campuslink.dto.club.ClubResourceResponse;
 import com.campuslink.dto.club.ClubResponse;
 import com.campuslink.dto.club.CreateClubRequest;
 import com.campuslink.entity.Activity;
 import com.campuslink.entity.Club;
 import com.campuslink.entity.ClubMember;
+import com.campuslink.entity.Comment;
+import com.campuslink.entity.Resource;
 import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.ActivityMapper;
 import com.campuslink.mapper.ClubMapper;
 import com.campuslink.mapper.ClubMemberMapper;
+import com.campuslink.mapper.CommentMapper;
+import com.campuslink.mapper.ResourceMapper;
 import com.campuslink.mapper.SchoolMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +48,8 @@ public class ClubService {
     private final UserMapper userMapper;
     private final ActivityMapper activityMapper;
     private final SchoolMapper schoolMapper;
+    private final CommentMapper commentMapper;
+    private final ResourceMapper resourceMapper;
 
     /**
      * 创建社团
@@ -294,6 +302,126 @@ public class ClubService {
                 clubPage.getSize(),
                 clubPage.getPages()
         );
+    }
+
+    /**
+     * 获取社团动态列表（复用 comment 表，target_type='club'）
+     */
+    public PageResult<ClubPostResponse> getClubPosts(Long clubId, Integer page, Integer pageSize) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        Page<Comment> commentPage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Comment::getTargetType, "club")
+                .eq(Comment::getTargetId, clubId)
+                .isNull(Comment::getParentId)
+                .eq(Comment::getStatus, 1)
+                .orderByDesc(Comment::getCreatedAt);
+
+        commentPage = commentMapper.selectPage(commentPage, wrapper);
+
+        List<ClubPostResponse> posts = commentPage.getRecords().stream().map(comment -> {
+            ClubPostResponse resp = new ClubPostResponse();
+            resp.setId(comment.getCommentId());
+            resp.setUserId(comment.getUserId());
+            resp.setContent(comment.getContent());
+            resp.setCreatedAt(comment.getCreatedAt());
+            resp.setLikes(comment.getLikes() != null ? comment.getLikes() : 0);
+
+            User user = userMapper.selectById(comment.getUserId());
+            if (user != null) {
+                resp.setUserName(user.getNickname());
+                resp.setUserAvatar(user.getAvatarUrl());
+            }
+
+            LambdaQueryWrapper<Comment> replyWrapper = new LambdaQueryWrapper<>();
+            replyWrapper.eq(Comment::getParentId, comment.getCommentId()).eq(Comment::getStatus, 1);
+            resp.setComments(commentMapper.selectCount(replyWrapper).intValue());
+
+            return resp;
+        }).collect(Collectors.toList());
+
+        return new PageResult<>(posts, commentPage.getTotal(),
+                commentPage.getCurrent(), commentPage.getSize(), commentPage.getPages());
+    }
+
+    /**
+     * 发布社团动态（仅成员可操作）
+     */
+    public void createClubPost(Long clubId, Long userId, String content) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        LambdaQueryWrapper<ClubMember> mWrapper = new LambdaQueryWrapper<>();
+        mWrapper.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, userId);
+        if (clubMemberMapper.selectCount(mWrapper) == 0) {
+            throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+        }
+
+        Comment comment = new Comment();
+        comment.setUserId(userId);
+        comment.setTargetType("club");
+        comment.setTargetId(clubId);
+        comment.setContent(content);
+        comment.setLikes(0);
+        comment.setStatus(1);
+        comment.setCreatedAt(LocalDateTime.now());
+        commentMapper.insert(comment);
+        log.info("用户 {} 在社团 {} 发布了动态", userId, clubId);
+    }
+
+    /**
+     * 获取社团资料列表（仅成员可查看，返回成员上传的已通过审核资源）
+     */
+    public PageResult<ClubResourceResponse> getClubResources(Long clubId, Long userId, Integer page, Integer pageSize) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        if (userId == null) throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+        LambdaQueryWrapper<ClubMember> mWrapper = new LambdaQueryWrapper<>();
+        mWrapper.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, userId);
+        if (clubMemberMapper.selectCount(mWrapper) == 0) {
+            throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+        }
+
+        List<Long> memberIds = clubMemberMapper.selectList(
+                new LambdaQueryWrapper<ClubMember>().eq(ClubMember::getClubId, clubId)
+        ).stream().map(ClubMember::getUserId).collect(Collectors.toList());
+
+        if (memberIds.isEmpty()) {
+            return new PageResult<>(new ArrayList<>(), 0L, (long) page, (long) pageSize, 0L);
+        }
+
+        Page<Resource> resourcePage = new Page<>(page, pageSize);
+        LambdaQueryWrapper<Resource> rWrapper = new LambdaQueryWrapper<>();
+        rWrapper.in(Resource::getUploaderId, memberIds)
+                .eq(Resource::getStatus, 1)
+                .orderByDesc(Resource::getCreatedAt);
+
+        resourcePage = resourceMapper.selectPage(resourcePage, rWrapper);
+
+        List<ClubResourceResponse> resources = resourcePage.getRecords().stream().map(r -> {
+            ClubResourceResponse resp = new ClubResourceResponse();
+            resp.setId(r.getRid());
+            resp.setTitle(r.getTitle());
+            resp.setFileType(r.getFileType());
+            resp.setUploadTime(r.getCreatedAt());
+            resp.setFileSize(r.getFileSize() != null ? formatFileSize(r.getFileSize()) : "未知大小");
+            User uploader = userMapper.selectById(r.getUploaderId());
+            if (uploader != null) resp.setUploaderName(uploader.getNickname());
+            return resp;
+        }).collect(Collectors.toList());
+
+        return new PageResult<>(resources, resourcePage.getTotal(),
+                resourcePage.getCurrent(), resourcePage.getSize(), resourcePage.getPages());
+    }
+
+    private String formatFileSize(long bytes) {
+        if (bytes < 1024) return bytes + " B";
+        if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);
+        if (bytes < 1024L * 1024 * 1024) return String.format("%.1f MB", bytes / (1024.0 * 1024));
+        return String.format("%.1f GB", bytes / (1024.0 * 1024 * 1024));
     }
 
     /**

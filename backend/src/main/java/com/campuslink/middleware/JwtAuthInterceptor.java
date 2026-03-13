@@ -34,6 +34,7 @@ public class JwtAuthInterceptor implements HandlerInterceptor {
             ("GET".equals(method) && uri.matches(".*/resource/\\d+/comments$")) ||
             ("GET".equals(method) && uri.matches(".*/club/\\d+$")) ||
             ("GET".equals(method) && uri.matches(".*/club/\\d+/members$")) ||
+            ("GET".equals(method) && uri.matches(".*/club/\\d+/posts$")) ||
             ("GET".equals(method) && uri.matches(".*/activity/\\d+$"));
 
         if (isGuestAllowedGet) {

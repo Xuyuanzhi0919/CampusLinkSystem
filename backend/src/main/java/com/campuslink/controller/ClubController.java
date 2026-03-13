@@ -3,7 +3,10 @@ package com.campuslink.controller;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.club.ClubMemberResponse;
+import com.campuslink.dto.club.ClubPostResponse;
+import com.campuslink.dto.club.ClubResourceResponse;
 import com.campuslink.dto.club.ClubResponse;
+import com.campuslink.dto.club.CreateClubPostRequest;
 import com.campuslink.dto.club.CreateClubRequest;
 import com.campuslink.service.ClubService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -99,5 +102,37 @@ public class ClubController {
     ) {
         PageResult<ClubResponse> result = clubService.getMyClubs(userId, page, pageSize, managedOnly);
         return Result.success(result);
+    }
+
+    @Operation(summary = "获取社团动态列表")
+    @GetMapping("/{clubId}/posts")
+    public Result<PageResult<ClubPostResponse>> getClubPosts(
+            @PathVariable Long clubId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize
+    ) {
+        return Result.success(clubService.getClubPosts(clubId, page, pageSize));
+    }
+
+    @Operation(summary = "发布社团动态", description = "仅社团成员可发布")
+    @PostMapping("/{clubId}/posts")
+    public Result<Void> createClubPost(
+            @PathVariable Long clubId,
+            @Valid @RequestBody CreateClubPostRequest request,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        clubService.createClubPost(clubId, userId, request.getContent());
+        return Result.success("发布成功");
+    }
+
+    @Operation(summary = "获取社团资料列表", description = "仅社团成员可查看，返回成员上传的已审核资源")
+    @GetMapping("/{clubId}/resources")
+    public Result<PageResult<ClubResourceResponse>> getClubResources(
+            @PathVariable Long clubId,
+            @RequestParam(defaultValue = "1") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        return Result.success(clubService.getClubResources(clubId, userId, page, pageSize));
     }
 }

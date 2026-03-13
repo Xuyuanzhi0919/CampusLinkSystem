@@ -131,6 +131,7 @@
 import { ref, computed } from 'vue'
 import { CButton } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
+import { chooseAndUploadImages } from '@/utils/upload'
 
 // Props
 const props = withDefaults(defineProps<{
@@ -227,25 +228,21 @@ const insertEmoji = (emoji: string) => {
   content.value += emoji
 }
 
-// 选择图片
-const handleChooseImage = () => {
-  uni.chooseImage({
-    count: props.maxImages - images.value.length,
-    sizeType: ['compressed'],
-    sourceType: ['album', 'camera'],
-    success: (res) => {
-      // TODO: 上传图片到 OSS，这里暂时使用本地路径
-      images.value.push(...res.tempFilePaths)
-      emit('chooseImage')
-    },
-    fail: (err) => {
-      console.error('选择图片失败:', err)
-      uni.showToast({
-        title: '选择图片失败',
-        icon: 'none'
-      })
-    }
-  })
+// 选择并上传图片到 OSS
+const handleChooseImage = async () => {
+  const remaining = props.maxImages - images.value.length
+  if (remaining <= 0) return
+  try {
+    const urls = await chooseAndUploadImages({
+      count: remaining,
+      sizeType: ['compressed'],
+      sourceType: ['album', 'camera'],
+    })
+    images.value.push(...urls)
+    emit('chooseImage')
+  } catch {
+    // chooseAndUploadImages 内部已 toast 错误，此处静默
+  }
 }
 
 // 移除图片

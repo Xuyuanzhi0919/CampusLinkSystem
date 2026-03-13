@@ -2,7 +2,10 @@
   <div class="users-page">
     <div class="page-header">
       <h2 class="page-title">用户管理</h2>
-      <el-button icon="Download" @click="exportCSV">导出 CSV</el-button>
+      <div class="header-actions">
+        <el-button type="primary" icon="Plus" @click="openCreateDialog">新增用户</el-button>
+        <el-button icon="Download" @click="exportCSV">导出 CSV</el-button>
+      </div>
     </div>
 
     <!-- 搜索栏 -->
@@ -242,6 +245,44 @@
       </template>
     </el-drawer>
 
+    <!-- 新增用户对话框 -->
+    <el-dialog v-model="createVisible" title="新增用户" width="480px" @close="resetCreateForm">
+      <el-form ref="createFormRef" :model="createForm" :rules="createRules" label-width="90px">
+        <el-form-item label="用户名" prop="username">
+          <el-input v-model="createForm.username" placeholder="3-30位，登录使用" clearable />
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="createForm.password" type="password" placeholder="至少6位" show-password clearable />
+        </el-form-item>
+        <el-form-item label="昵称">
+          <el-input v-model="createForm.nickname" placeholder="不填则与用户名相同" clearable />
+        </el-form-item>
+        <el-form-item label="角色" prop="role">
+          <el-select v-model="createForm.role" style="width: 100%">
+            <el-option label="学生" value="student" />
+            <el-option label="教师" value="teacher" />
+            <el-option label="管理员" value="admin" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="邮箱">
+          <el-input v-model="createForm.email" placeholder="可选" clearable />
+        </el-form-item>
+        <el-form-item label="手机">
+          <el-input v-model="createForm.phone" placeholder="可选" clearable />
+        </el-form-item>
+        <el-form-item label="学号/工号">
+          <el-input v-model="createForm.studentId" placeholder="可选" clearable />
+        </el-form-item>
+        <el-form-item label="初始积分">
+          <el-input-number v-model="createForm.initialPoints" :min="0" :max="9999" style="width: 100%" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="createVisible = false">取消</el-button>
+        <el-button type="primary" :loading="createLoading" @click="submitCreate">确认创建</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 重置密码对话框 -->
     <el-dialog v-model="resetPwdVisible" title="重置密码结果" width="380px">
       <div class="reset-result">
@@ -273,14 +314,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, type Ref } from 'vue'
+import type { FormInstance } from 'element-plus'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   listUsers, getUserDetail, banUser, setRole, adjustPoints,
   getUserPointsHistory, resetPassword, batchSetStatus, getUserStats,
-  updateUserInfo,
-  type PointsLogItem, type UserStatsVO, type UpdateUserInfoPayload
+  updateUserInfo, createUser,
+  type PointsLogItem, type UserStatsVO, type UpdateUserInfoPayload, type AdminCreateUserPayload
 } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
@@ -540,6 +582,57 @@ async function submitPoints() {
   }
 }
 
+// ---- 新增用户 ----
+const createVisible = ref(false)
+const createLoading = ref(false)
+const createFormRef = ref<FormInstance>()
+const createForm = reactive<AdminCreateUserPayload>({
+  username: '',
+  password: '',
+  nickname: '',
+  email: '',
+  phone: '',
+  studentId: '',
+  role: 'student',
+  initialPoints: 100
+})
+const createRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 30, message: '长度 3-30 位', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '至少 6 位', trigger: 'blur' }
+  ],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+}
+
+function openCreateDialog() {
+  createVisible.value = true
+}
+
+function resetCreateForm() {
+  createFormRef.value?.resetFields()
+  Object.assign(createForm, {
+    username: '', password: '', nickname: '', email: '',
+    phone: '', studentId: '', role: 'student', initialPoints: 100
+  })
+}
+
+async function submitCreate() {
+  if (!await createFormRef.value?.validate().catch(() => false)) return
+  createLoading.value = true
+  try {
+    await createUser(createForm)
+    ElMessage.success('用户创建成功')
+    createVisible.value = false
+    fetchUsers()
+  } finally {
+    createLoading.value = false
+  }
+}
+
 function exportCSV() {
   const header = ['ID', '用户名', '昵称', '邮箱', '手机', '角色', '积分', '状态', '注册时间']
   const rows = users.value.map(u => [
@@ -561,6 +654,7 @@ onMounted(fetchUsers)
 
 <style scoped>
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-actions { display: flex; gap: 10px; }
 .page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
 .filter-bar { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 

@@ -29,6 +29,14 @@ public class AdminUserController {
     private final AdminService adminService;
     private final PointsLogMapper pointsLogMapper;
 
+    @Operation(summary = "手动创建用户", description = "管理员手动创建用户账号，用户名唯一")
+    @PostMapping
+    public Result<AdminUserVO> createUser(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
+            @Valid @RequestBody AdminCreateUserRequest req) {
+        return Result.success(adminService.createUser(operatorId, req));
+    }
+
     @Operation(summary = "用户列表", description = "分页查询用户，支持关键词/角色/状态筛选")
     @GetMapping
     public Result<PageResult<AdminUserVO>> listUsers(

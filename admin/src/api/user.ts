@@ -70,3 +70,18 @@ export interface UpdateUserInfoPayload {
 export function updateUserInfo(userId: number, payload: UpdateUserInfoPayload) {
   return put<void>(`/admin/users/${userId}/info`, payload)
 }
+
+export interface AdminCreateUserPayload {
+  username: string
+  password: string
+  nickname?: string
+  email?: string
+  phone?: string
+  studentId?: string
+  role?: string
+  initialPoints?: number
+}
+
+export function createUser(payload: AdminCreateUserPayload) {
+  return post<AdminUser>('/admin/users', payload)
+}

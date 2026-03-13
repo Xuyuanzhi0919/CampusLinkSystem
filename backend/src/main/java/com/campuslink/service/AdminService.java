@@ -85,6 +85,34 @@ public class AdminService {
         }
     }
 
+    // ==================== 用户创建 ====================
+
+    @Transactional
+    public AdminUserVO createUser(Long operatorId, AdminCreateUserRequest req) {
+        // 检查用户名唯一性
+        Long count = userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getUsername, req.getUsername()));
+        if (count > 0) throw new BusinessException(400, "用户名已存在");
+
+        User user = new User();
+        user.setUsername(req.getUsername());
+        user.setPasswordHash(DigestUtils.md5DigestAsHex(req.getPassword().getBytes()));
+        user.setNickname(StringUtils.hasText(req.getNickname()) ? req.getNickname() : req.getUsername());
+        user.setEmail(req.getEmail());
+        user.setPhone(req.getPhone());
+        user.setStudentId(req.getStudentId());
+        user.setRole(StringUtils.hasText(req.getRole()) ? req.getRole() : "student");
+        user.setStatus(1);
+        user.setPoints(req.getInitialPoints() != null ? req.getInitialPoints() : 100);
+        user.setCreatedAt(LocalDateTime.now());
+        user.setUpdatedAt(LocalDateTime.now());
+
+        userMapper.insert(user);
+        logOp(operatorId, "创建用户", userLabel(user.getUId()),
+                "手动创建账号，角色=" + user.getRole() + "，初始积分=" + user.getPoints());
+        return getUserDetail(user.getUId());
+    }
+
     // ==================== 仪表板 ====================
 
     public AdminDashboardVO getDashboard() {

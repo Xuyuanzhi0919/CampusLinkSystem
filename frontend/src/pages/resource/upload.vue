@@ -431,7 +431,7 @@ const handleSubmit = async () => {
       fileUrl: fileUrl.value,
       fileSize: fileSize.value,
       fileType: fileType.value as ResourceFileType,
-      category: parseInt(form.value.category, 10) as ResourceCategory,
+      category: form.value.category as any,
       courseName: form.value.courseName || undefined,
       score: 5  // 默认5积分
     })

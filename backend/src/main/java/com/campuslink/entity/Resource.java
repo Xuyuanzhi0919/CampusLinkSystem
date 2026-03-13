@@ -63,4 +63,8 @@ public class Resource {
 
     @TableField("updated_at")
     private LocalDateTime updatedAt;
+
+    /** 上传者昵称（非DB字段，管理端查询时填充） */
+    @TableField(exist = false)
+    private String uploaderName;
 }

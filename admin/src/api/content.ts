@@ -21,7 +21,7 @@ export function updateQuestionStatus(questionId: number, status: number, reason?
   return put<void>(`/admin/content/questions/${questionId}/status`, { status, reason })
 }
 
-export function listAnswers(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {
+export function listAnswers(params: { keyword?: string; status?: number; isAccepted?: number; page?: number; pageSize?: number }) {
   return get<PageResult<AdminAnswer>>('/admin/content/answers', params as Record<string, unknown>)
 }
 

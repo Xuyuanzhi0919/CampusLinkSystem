@@ -102,9 +102,11 @@ export interface AdminResource {
   title: string
   description: string
   uploaderId: number
+  uploaderName: string
   fileUrl: string
   fileName: string
   fileType: string
+  fileSize: number
   category: string
   courseName: string
   downloads: number
@@ -119,18 +121,23 @@ export interface AdminQuestion {
   title: string
   content: string
   askerId: number
+  askerName: string
   category: string
   tags: string
   status: number
-  viewCount: number
+  views: number
   answerCount: number
+  isSolved: number
+  rewardPoints: number
   createdAt: string
 }
 
 export interface AdminAnswer {
   aid: number
   questionId: number
+  questionTitle: string
   responderId: number
+  responderName: string
   content: string
   likes: number
   isAccepted: number

@@ -69,4 +69,12 @@ public class Answer {
      */
     @TableField("updated_at")
     private LocalDateTime updatedAt;
+
+    /** 回答者昵称（非DB字段，管理端查询时填充） */
+    @TableField(exist = false)
+    private String responderName;
+
+    /** 所属问题标题（非DB字段，管理端查询时填充） */
+    @TableField(exist = false)
+    private String questionTitle;
 }

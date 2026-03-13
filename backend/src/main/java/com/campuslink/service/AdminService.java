@@ -306,16 +306,20 @@ public class AdminService {
     public PageResult<Resource> listResources(AdminContentQueryRequest req) {
         Page<Resource> page = new Page<>(req.getPage(), req.getPageSize());
         LambdaQueryWrapper<Resource> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(req.getKeyword())) {
-            wrapper.like(Resource::getTitle, req.getKeyword());
-        }
-        if (req.getStatus() != null) {
-            wrapper.eq(Resource::getStatus, req.getStatus());
-        }
+        if (StringUtils.hasText(req.getKeyword())) wrapper.like(Resource::getTitle, req.getKeyword());
+        if (req.getStatus() != null) wrapper.eq(Resource::getStatus, req.getStatus());
         wrapper.orderByDesc(Resource::getCreatedAt);
         Page<Resource> result = resourceMapper.selectPage(page, wrapper);
-        return new PageResult<>(result.getRecords(), result.getTotal(),
-                (long) req.getPage(), (long) req.getPageSize(), result.getPages());
+        List<Resource> records = result.getRecords();
+        if (!records.isEmpty()) {
+            java.util.Set<Long> uids = records.stream().map(Resource::getUploaderId)
+                    .filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+            Map<Long, String> nameMap = userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUId, uids))
+                    .stream().collect(java.util.stream.Collectors.toMap(User::getUId,
+                            u -> StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername()));
+            records.forEach(r -> r.setUploaderName(nameMap.getOrDefault(r.getUploaderId(), "uid=" + r.getUploaderId())));
+        }
+        return new PageResult<>(records, result.getTotal(), (long) req.getPage(), (long) req.getPageSize(), result.getPages());
     }
 
     @Transactional
@@ -347,16 +351,20 @@ public class AdminService {
     public PageResult<Question> listQuestions(AdminContentQueryRequest req) {
         Page<Question> page = new Page<>(req.getPage(), req.getPageSize());
         LambdaQueryWrapper<Question> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(req.getKeyword())) {
-            wrapper.like(Question::getTitle, req.getKeyword());
-        }
-        if (req.getStatus() != null) {
-            wrapper.eq(Question::getStatus, req.getStatus());
-        }
+        if (StringUtils.hasText(req.getKeyword())) wrapper.like(Question::getTitle, req.getKeyword());
+        if (req.getStatus() != null) wrapper.eq(Question::getStatus, req.getStatus());
         wrapper.orderByDesc(Question::getCreatedAt);
         Page<Question> result = questionMapper.selectPage(page, wrapper);
-        return new PageResult<>(result.getRecords(), result.getTotal(),
-                (long) req.getPage(), (long) req.getPageSize(), result.getPages());
+        List<Question> records = result.getRecords();
+        if (!records.isEmpty()) {
+            java.util.Set<Long> uids = records.stream().map(Question::getAskerId)
+                    .filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+            Map<Long, String> nameMap = userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUId, uids))
+                    .stream().collect(java.util.stream.Collectors.toMap(User::getUId,
+                            u -> StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername()));
+            records.forEach(q -> q.setAskerName(nameMap.getOrDefault(q.getAskerId(), "uid=" + q.getAskerId())));
+        }
+        return new PageResult<>(records, result.getTotal(), (long) req.getPage(), (long) req.getPageSize(), result.getPages());
     }
 
     @Transactional
@@ -370,16 +378,30 @@ public class AdminService {
     public PageResult<Answer> listAnswers(AdminContentQueryRequest req) {
         Page<Answer> page = new Page<>(req.getPage(), req.getPageSize());
         LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
-        if (StringUtils.hasText(req.getKeyword())) {
-            wrapper.like(Answer::getContent, req.getKeyword());
-        }
-        if (req.getStatus() != null) {
-            wrapper.eq(Answer::getStatus, req.getStatus());
-        }
+        if (StringUtils.hasText(req.getKeyword())) wrapper.like(Answer::getContent, req.getKeyword());
+        if (req.getStatus() != null) wrapper.eq(Answer::getStatus, req.getStatus());
+        if (req.getIsAccepted() != null) wrapper.eq(Answer::getIsAccepted, req.getIsAccepted());
         wrapper.orderByDesc(Answer::getCreatedAt);
         Page<Answer> result = answerMapper.selectPage(page, wrapper);
-        return new PageResult<>(result.getRecords(), result.getTotal(),
-                (long) req.getPage(), (long) req.getPageSize(), result.getPages());
+        List<Answer> records = result.getRecords();
+        if (!records.isEmpty()) {
+            // 批量查询回答者昵称
+            java.util.Set<Long> rids = records.stream().map(Answer::getResponderId)
+                    .filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+            Map<Long, String> userMap = userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUId, rids))
+                    .stream().collect(java.util.stream.Collectors.toMap(User::getUId,
+                            u -> StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername()));
+            // 批量查询问题标题
+            java.util.Set<Long> qids = records.stream().map(Answer::getQuestionId)
+                    .filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toSet());
+            Map<Long, String> questionMap = questionMapper.selectList(new LambdaQueryWrapper<Question>().in(Question::getQid, qids))
+                    .stream().collect(java.util.stream.Collectors.toMap(Question::getQid, Question::getTitle));
+            records.forEach(a -> {
+                a.setResponderName(userMap.getOrDefault(a.getResponderId(), "uid=" + a.getResponderId()));
+                a.setQuestionTitle(questionMap.getOrDefault(a.getQuestionId(), "qid=" + a.getQuestionId()));
+            });
+        }
+        return new PageResult<>(records, result.getTotal(), (long) req.getPage(), (long) req.getPageSize(), result.getPages());
     }
 
     @Transactional

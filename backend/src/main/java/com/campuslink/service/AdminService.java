@@ -467,8 +467,8 @@ public class AdminService {
 
         Map<Long, User> userMap = new HashMap<>();
         if (!singleUserIds.isEmpty()) {
-            userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUid, singleUserIds))
-                    .forEach(u -> userMap.put(u.getUid(), u));
+            userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUId, singleUserIds))
+                    .forEach(u -> userMap.put(u.getUId(), u));
         }
 
         List<AdminNoticeHistoryVO> result = new ArrayList<>();

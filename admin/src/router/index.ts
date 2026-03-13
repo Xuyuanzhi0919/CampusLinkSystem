@@ -68,6 +68,12 @@ const router = createRouter({
           name: 'Config',
           component: () => import('@/views/config/ConfigView.vue'),
           meta: { title: '系统配置', icon: 'Setting' }
+        },
+        {
+          path: 'audit',
+          name: 'Audit',
+          component: () => import('@/views/audit/AuditView.vue'),
+          meta: { title: '操作日志', icon: 'Document' }
         }
       ]
     },

@@ -2,6 +2,7 @@
   <div class="users-page">
     <div class="page-header">
       <h2 class="page-title">用户管理</h2>
+      <el-button icon="Download" @click="exportCSV">导出 CSV</el-button>
     </div>
 
     <!-- 搜索栏 -->
@@ -525,6 +526,22 @@ async function submitPoints() {
   } finally {
     pointsLoading.value = false
   }
+}
+
+function exportCSV() {
+  const header = ['ID', '用户名', '昵称', '邮箱', '手机', '角色', '积分', '状态', '注册时间']
+  const rows = users.value.map(u => [
+    u.uId, u.username, u.nickname || '', u.email || '', u.phone || '',
+    roleLabel(u.role), u.points ?? 0,
+    u.status === 1 ? '正常' : '封禁',
+    formatDate(u.createdAt)
+  ])
+  const csv = [header, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `users_${new Date().toISOString().slice(0, 10)}.csv`
+  a.click(); URL.revokeObjectURL(url)
 }
 
 onMounted(fetchUsers)

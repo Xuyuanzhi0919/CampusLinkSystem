@@ -10,17 +10,17 @@ export interface SystemConfig {
 }
 
 export function listConfigs() {
-  return get<SystemConfig[]>('/config/list')
+  return get<SystemConfig[]>('/admin/config')
 }
 
 export function updateConfig(configKey: string, configValue: string, description?: string) {
-  return put<void>(`/config/${configKey}`, { configValue, description })
+  return put<void>(`/admin/config/${configKey}`, { configValue, description })
 }
 
 export function createConfig(data: { configKey: string; configValue: string; description?: string }) {
-  return post<void>('/config', data)
+  return post<void>('/admin/config', data)
 }
 
 export function deleteConfig(configKey: string) {
-  return del<void>(`/config/${configKey}`)
+  return del<void>(`/admin/config/${configKey}`)
 }

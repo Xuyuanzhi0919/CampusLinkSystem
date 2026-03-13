@@ -1597,3 +1597,19 @@ INSERT INTO `reward_items` (`name`, `description`, `points_cost`, `stock`, `cate
 ('会员体验 7 天',     '无限资源下载 + 问题推荐优先展示，有效期 7 天',                   500, -1,  'privilege', 'vip_trial',      7,  6);
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ----------------------------
+-- Table structure for admin_operation_log
+-- ----------------------------
+DROP TABLE IF EXISTS `admin_operation_log`;
+CREATE TABLE `admin_operation_log` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `operator_id` bigint NOT NULL COMMENT '操作管理员 userId',
+  `action` varchar(100) NOT NULL COMMENT '操作类型，如 BAN_USER',
+  `target` varchar(255) DEFAULT NULL COMMENT '操作对象描述',
+  `detail` text DEFAULT NULL COMMENT '详细说明',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_operator_id` (`operator_id`),
+  KEY `idx_created_at` (`created_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='管理员操作日志';

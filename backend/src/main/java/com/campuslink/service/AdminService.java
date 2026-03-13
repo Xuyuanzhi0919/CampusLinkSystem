@@ -44,6 +44,23 @@ public class AdminService {
     private final SchoolMapper schoolMapper;
     private final AnswerMapper answerMapper;
     private final NotificationMapper notificationMapper;
+    private final com.campuslink.mapper.AdminOperationLogMapper auditLogMapper;
+
+    // ==================== 操作日志 ====================
+
+    private void logOp(Long operatorId, String action, String target, String detail) {
+        try {
+            com.campuslink.entity.AdminOperationLog log = new com.campuslink.entity.AdminOperationLog();
+            log.setOperatorId(operatorId != null ? operatorId : 0L);
+            log.setAction(action);
+            log.setTarget(target);
+            log.setDetail(detail);
+            log.setCreatedAt(java.time.LocalDateTime.now());
+            auditLogMapper.insert(log);
+        } catch (Exception e) {
+            // 日志写入失败不影响主流程
+        }
+    }
 
     // ==================== 仪表板 ====================
 
@@ -154,25 +171,28 @@ public class AdminService {
     }
 
     @Transactional
-    public void banUser(Long userId, BanUserRequest req) {
+    public void banUser(Long operatorId, Long userId, BanUserRequest req) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");
         user.setStatus(req.getStatus());
         userMapper.updateById(user);
-        log.info("管理员操作用户状态 - userId: {}, status: {}, reason: {}", userId, req.getStatus(), req.getReason());
+        String action = req.getStatus() == 0 ? "BAN_USER" : "UNBAN_USER";
+        logOp(operatorId, action, "用户[uid=" + userId + "]", req.getReason());
+        log.info("管理员操作用户状态 - userId: {}, status: {}", userId, req.getStatus());
     }
 
     @Transactional
-    public void setRole(Long userId, SetRoleRequest req) {
+    public void setRole(Long operatorId, Long userId, SetRoleRequest req) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");
         user.setRole(req.getRole());
         userMapper.updateById(user);
+        logOp(operatorId, "SET_ROLE", "用户[uid=" + userId + "]", "角色改为 " + req.getRole());
         log.info("管理员修改用户角色 - userId: {}, role: {}", userId, req.getRole());
     }
 
     @Transactional
-    public void updateUserInfo(Long userId, AdminUpdateUserInfoRequest req) {
+    public void updateUserInfo(Long operatorId, Long userId, AdminUpdateUserInfoRequest req) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");
         if (StringUtils.hasText(req.getNickname())) user.setNickname(req.getNickname());
@@ -182,6 +202,7 @@ public class AdminService {
         if (StringUtils.hasText(req.getStudentId())) user.setStudentId(req.getStudentId());
         if (req.getGrade() != null)                 user.setGrade(req.getGrade());
         userMapper.updateById(user);
+        logOp(operatorId, "UPDATE_USER_INFO", "用户[uid=" + userId + "]", null);
         log.info("管理员修改用户信息 - userId: {}", userId);
     }
 
@@ -210,12 +231,14 @@ public class AdminService {
     // ==================== 批量操作 ====================
 
     @Transactional
-    public int batchSetStatus(BatchStatusRequest req) {
+    public int batchSetStatus(Long operatorId, BatchStatusRequest req) {
         if (req.getUserIds() == null || req.getUserIds().isEmpty()) return 0;
         LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<User>()
                 .set(User::getStatus, req.getStatus())
                 .in(User::getUId, req.getUserIds());
         int count = userMapper.update(null, wrapper);
+        String action = req.getStatus() == 0 ? "BATCH_BAN" : "BATCH_UNBAN";
+        logOp(operatorId, action, count + " 位用户", "ids=" + req.getUserIds());
         log.info("管理员批量操作用户状态 - count: {}, status: {}", count, req.getStatus());
         return count;
     }
@@ -238,12 +261,13 @@ public class AdminService {
     // ==================== 密码重置 ====================
 
     @Transactional
-    public Map<String, String> resetPassword(Long userId) {
+    public Map<String, String> resetPassword(Long operatorId, Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) throw new BusinessException(404, "用户不存在");
         String newPassword = "CL" + String.format("%06d", new java.util.Random().nextInt(1000000));
         user.setPasswordHash(DigestUtils.md5DigestAsHex(newPassword.getBytes()));
         userMapper.updateById(user);
+        logOp(operatorId, "RESET_PASSWORD", "用户[uid=" + userId + "]", null);
         log.info("管理员重置用户密码 - userId: {}", userId);
         Map<String, String> result = new HashMap<>();
         result.put("newPassword", newPassword);
@@ -268,7 +292,7 @@ public class AdminService {
     }
 
     @Transactional
-    public void updateResourceStatus(Long resourceId, UpdateContentStatusRequest req) {
+    public void updateResourceStatus(Long operatorId, Long resourceId, UpdateContentStatusRequest req) {
         Resource resource = resourceMapper.selectById(resourceId);
         if (resource == null) throw new BusinessException(404, "资源不存在");
         resource.setStatus(req.getStatus());
@@ -276,6 +300,21 @@ public class AdminService {
             resource.setRejectReason(req.getReason());
         }
         resourceMapper.updateById(resource);
+        String action = req.getStatus() == 1 ? "APPROVE_RESOURCE" : "REJECT_RESOURCE";
+        logOp(operatorId, action, "资源[rid=" + resourceId + "]", req.getReason());
+    }
+
+    @Transactional
+    public int batchReviewResources(Long operatorId, List<Long> resourceIds, Integer status, String rejectReason) {
+        LambdaUpdateWrapper<Resource> wrapper = new LambdaUpdateWrapper<Resource>()
+                .set(Resource::getStatus, status)
+                .set(status == 2 && StringUtils.hasText(rejectReason), Resource::getRejectReason, rejectReason)
+                .in(Resource::getRid, resourceIds);
+        int count = resourceMapper.update(null, wrapper);
+        String action = status == 1 ? "BATCH_APPROVE_RESOURCE" : "BATCH_REJECT_RESOURCE";
+        logOp(operatorId, action, count + " 个资源", "ids=" + resourceIds);
+        log.info("管理员批量审核资源 - count: {}, status: {}", count, status);
+        return count;
     }
 
     public PageResult<Question> listQuestions(AdminContentQueryRequest req) {

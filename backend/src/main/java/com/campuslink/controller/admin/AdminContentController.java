@@ -9,10 +9,14 @@ import com.campuslink.entity.Question;
 import com.campuslink.entity.Resource;
 import com.campuslink.service.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * 管理员内容管理接口（资源审核、问答管理）
@@ -37,10 +41,24 @@ public class AdminContentController {
     @Operation(summary = "审核/下架资源", description = "status: 1-通过 2-拒绝")
     @PutMapping("/resources/{resourceId}/status")
     public Result<Void> updateResourceStatus(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
             @PathVariable Long resourceId,
             @Valid @RequestBody UpdateContentStatusRequest req) {
-        adminService.updateResourceStatus(resourceId, req);
+        adminService.updateResourceStatus(operatorId, resourceId, req);
         return Result.success("操作成功");
+    }
+
+    @Operation(summary = "批量审核资源", description = "status: 1-通过 2-拒绝；拒绝时可附 rejectReason")
+    @PostMapping("/resources/batch-review")
+    public Result<Map<String, Integer>> batchReviewResources(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
+            @RequestBody Map<String, Object> body) {
+        @SuppressWarnings("unchecked")
+        List<Long> ids = ((List<Number>) body.get("resourceIds")).stream().map(Number::longValue).toList();
+        Integer status = (Integer) body.get("status");
+        String reason = (String) body.getOrDefault("rejectReason", null);
+        int count = adminService.batchReviewResources(operatorId, ids, status, reason);
+        return Result.success(Map.of("count", count));
     }
 
     // ==================== 问答管理 ====================

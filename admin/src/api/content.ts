@@ -1,4 +1,4 @@
-import { get, put } from './request'
+import { get, put, post } from './request'
 import type { AdminResource, AdminQuestion, AdminAnswer, PageResult } from '@/types'
 
 export function listResources(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {
@@ -7,6 +7,10 @@ export function listResources(params: { keyword?: string; status?: number; page?
 
 export function updateResourceStatus(resourceId: number, status: number, reason?: string) {
   return put<void>(`/admin/content/resources/${resourceId}/status`, { status, reason })
+}
+
+export function batchReviewResources(resourceIds: number[], status: 1 | 2, rejectReason?: string) {
+  return post<{ count: number }>('/admin/content/resources/batch-review', { resourceIds, status, rejectReason })
 }
 
 export function listQuestions(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {

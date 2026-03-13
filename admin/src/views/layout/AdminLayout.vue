@@ -56,6 +56,10 @@
           <el-icon><Setting /></el-icon>
           <template #title>系统配置</template>
         </el-menu-item>
+        <el-menu-item index="/audit">
+          <el-icon><Memo /></el-icon>
+          <template #title>操作日志</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -128,7 +132,8 @@ const currentTitle = computed(() => {
     clubs: '社团管理',
     activities: '活动管理',
     notices: '公告管理',
-    config: '系统配置'
+    config: '系统配置',
+    audit: '操作日志'
   }
   return map[route.path.split('/')[1]] || ''
 })

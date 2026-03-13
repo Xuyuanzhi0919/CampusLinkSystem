@@ -46,18 +46,20 @@ public class AdminUserController {
     @Operation(summary = "封禁/解封用户", description = "status=0 封禁，status=1 解封")
     @PutMapping("/{userId}/status")
     public Result<Void> banUser(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
             @PathVariable Long userId,
             @Valid @RequestBody BanUserRequest req) {
-        adminService.banUser(userId, req);
+        adminService.banUser(operatorId, userId, req);
         return Result.success(req.getStatus() == 0 ? "封禁成功" : "解封成功");
     }
 
     @Operation(summary = "修改用户角色", description = "角色：student/teacher/admin")
     @PutMapping("/{userId}/role")
     public Result<Void> setRole(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
             @PathVariable Long userId,
             @Valid @RequestBody SetRoleRequest req) {
-        adminService.setRole(userId, req);
+        adminService.setRole(operatorId, userId, req);
         return Result.success("角色修改成功");
     }
 
@@ -74,23 +76,27 @@ public class AdminUserController {
     @Operation(summary = "修改用户基本信息", description = "可修改昵称/邮箱/手机/专业/年级/学号")
     @PutMapping("/{userId}/info")
     public Result<Void> updateUserInfo(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
             @PathVariable Long userId,
             @RequestBody AdminUpdateUserInfoRequest req) {
-        adminService.updateUserInfo(userId, req);
+        adminService.updateUserInfo(operatorId, userId, req);
         return Result.success("用户信息修改成功");
     }
 
     @Operation(summary = "重置用户密码", description = "随机生成新密码并返回明文")
     @PutMapping("/{userId}/password")
-    public Result<Map<String, String>> resetPassword(@PathVariable Long userId) {
-        return Result.success(adminService.resetPassword(userId));
+    public Result<Map<String, String>> resetPassword(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
+            @PathVariable Long userId) {
+        return Result.success(adminService.resetPassword(operatorId, userId));
     }
 
     @Operation(summary = "批量封禁/解封用户")
     @PostMapping("/batch-status")
     public Result<Map<String, Integer>> batchSetStatus(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long operatorId,
             @Valid @RequestBody BatchStatusRequest req) {
-        int count = adminService.batchSetStatus(req);
+        int count = adminService.batchSetStatus(operatorId, req);
         return Result.success(Map.of("count", count));
     }
 

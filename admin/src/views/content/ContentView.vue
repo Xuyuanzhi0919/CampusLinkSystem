@@ -31,11 +31,27 @@
         </template>
       </el-select>
       <el-button type="primary" icon="Search" @click="fetchData">查询</el-button>
+      <el-button v-if="activeTab === 'resources'" icon="Download" @click="exportResourceCSV">导出 CSV</el-button>
+    </div>
+
+    <!-- 批量操作栏（仅资源 Tab） -->
+    <div class="batch-bar" v-if="activeTab === 'resources' && selectedResources.length > 0">
+      <span class="batch-count">已选 <strong>{{ selectedResources.length }}</strong> 个资源</span>
+      <el-button size="small" type="success" plain @click="batchReview(1)">批量通过</el-button>
+      <el-button size="small" type="danger" plain @click="batchReview(2)">批量拒绝</el-button>
+      <el-button size="small" @click="resourceTableRef?.clearSelection()">取消选择</el-button>
     </div>
 
     <!-- 资源表格 -->
     <div class="table-card" v-if="activeTab === 'resources'">
-      <el-table :data="resources" v-loading="loading" stripe>
+      <el-table
+        ref="resourceTableRef"
+        :data="resources"
+        v-loading="loading"
+        stripe
+        @selection-change="(rows: AdminResource[]) => selectedResources = rows"
+      >
+        <el-table-column type="selection" width="40" />
         <el-table-column label="资源标题" min-width="220" show-overflow-tooltip>
           <template #default="{ row }">
             <div class="content-title">{{ row.title }}</div>
@@ -183,7 +199,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listResources, updateResourceStatus, listQuestions, updateQuestionStatus, listAnswers, updateAnswerStatus } from '@/api/content'
+import { listResources, updateResourceStatus, batchReviewResources, listQuestions, updateQuestionStatus, listAnswers, updateAnswerStatus } from '@/api/content'
 import type { AdminResource, AdminQuestion, AdminAnswer } from '@/types'
 import dayjs from 'dayjs'
 
@@ -202,6 +218,10 @@ const resourceDetailVisible = ref(false)
 const selectedResource = ref<AdminResource | null>(null)
 const questions = ref<AdminQuestion[]>([])
 const answers = ref<AdminAnswer[]>([])
+
+// 批量操作
+const resourceTableRef = ref()
+const selectedResources = ref<AdminResource[]>([])
 
 async function fetchData() {
   loading.value = true
@@ -275,6 +295,45 @@ async function toggleAnswer(row: AdminAnswer, status: number) {
   ElMessage.success(status === 1 ? '已恢复' : '已隐藏')
 }
 
+async function batchReview(status: 1 | 2) {
+  const label = status === 1 ? '通过' : '拒绝'
+  let reason: string | undefined
+  if (status === 2) {
+    const { value } = await ElMessageBox.prompt('请输入拒绝原因（可选）', `批量${label}`, {
+      confirmButtonText: '确认', cancelButtonText: '取消'
+    }).catch(() => ({ value: null }))
+    if (value === null) return
+    reason = value || undefined
+  } else {
+    const confirmed = await ElMessageBox.confirm(
+      `确认批量通过已选 ${selectedResources.value.length} 个资源？`, `批量${label}`,
+      { type: 'success', confirmButtonText: '确认', cancelButtonText: '取消' }
+    ).catch(() => false)
+    if (!confirmed) return
+  }
+  const ids = selectedResources.value.map(r => r.rid)
+  const result = await batchReviewResources(ids, status, reason)
+  ElMessage.success(`已${label} ${result.count} 个资源`)
+  resourceTableRef.value?.clearSelection()
+  fetchData()
+}
+
+function exportResourceCSV() {
+  const header = ['资源ID', '标题', '分类', '文件类型', '下载数', '点赞数', '状态', '上传者ID', '上传时间']
+  const rows = resources.value.map(r => [
+    r.rid, r.title, r.category || '', r.fileType || '',
+    r.downloads ?? 0, r.likes ?? 0,
+    resourceStatusLabel(r.status),
+    r.uploaderId, formatDate(r.createdAt)
+  ])
+  const csv = [header, ...rows].map(row => row.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url; a.download = `resources_${new Date().toISOString().slice(0, 10)}.csv`
+  a.click(); URL.revokeObjectURL(url)
+}
+
 onMounted(fetchData)
 </script>
 
@@ -299,4 +358,13 @@ onMounted(fetchData)
 }
 .drawer-actions { display: flex; gap: 10px; margin-top: 24px; }
 .ended-text { color: #d1d5db; font-size: 13px; }
+
+.batch-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #c4b5fd; border-radius: 10px;
+  padding: 10px 16px; margin-bottom: 12px;
+}
+.batch-count { font-size: 13px; color: #5b21b6; margin-right: 4px; }
+.batch-count strong { font-size: 15px; color: #7c3aed; }
 </style>

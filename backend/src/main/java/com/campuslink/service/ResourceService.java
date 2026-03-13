@@ -245,12 +245,34 @@ public class ResourceService {
             resource.setDownloads(resource.getDownloads() + 1);
             resourceMapper.updateById(resource);
 
+            // 记录下载者扣分日志
+            PointsLog downloadLog = new PointsLog();
+            downloadLog.setUserId(userId);
+            downloadLog.setPointsChange(-pointsCost);
+            downloadLog.setPointsAfter(user.getPoints());
+            downloadLog.setReason("下载资源：" + resource.getTitle());
+            downloadLog.setRelatedType("resource");
+            downloadLog.setRelatedId(resourceId);
+            downloadLog.setCreatedAt(LocalDateTime.now());
+            pointsLogMapper.insert(downloadLog);
+
             // 给上传者增加积分
             User uploader = userMapper.selectById(resource.getUploaderId());
             if (uploader != null) {
                 uploader.setPoints(uploader.getPoints() + resource.getScore());
                 levelService.checkAndUpgrade(uploader);
                 userMapper.updateById(uploader);
+
+                // 记录上传者收益日志
+                PointsLog uploaderLog = new PointsLog();
+                uploaderLog.setUserId(uploader.getUId());
+                uploaderLog.setPointsChange(resource.getScore());
+                uploaderLog.setPointsAfter(uploader.getPoints());
+                uploaderLog.setReason("资源被下载：" + resource.getTitle());
+                uploaderLog.setRelatedType("resource");
+                uploaderLog.setRelatedId(resourceId);
+                uploaderLog.setCreatedAt(LocalDateTime.now());
+                pointsLogMapper.insert(uploaderLog);
             }
 
             // 记录下载日志

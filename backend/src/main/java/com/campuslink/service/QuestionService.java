@@ -7,11 +7,13 @@ import com.campuslink.common.ResultCode;
 import com.campuslink.dto.question.*;
 import com.campuslink.entity.Answer;
 import com.campuslink.entity.AnswerLike;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Question;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.AnswerLikeMapper;
 import com.campuslink.mapper.AnswerMapper;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.QuestionMapper;
 import com.campuslink.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +37,7 @@ public class QuestionService {
     private final AnswerLikeMapper answerLikeMapper;
     private final LevelService levelService;
     private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
+    private final PointsLogMapper pointsLogMapper;
 
     /**
      * 提问
@@ -93,6 +96,8 @@ public class QuestionService {
         question.setUpdatedAt(LocalDateTime.now());
 
         questionMapper.insert(question);
+        // 记录积分日志
+        recordLog(userId, -totalCost, user.getPoints(), "发布问题：" + request.getTitle(), "question", question.getQid());
         return question.getQid();
     }
 
@@ -366,6 +371,7 @@ public class QuestionService {
         user.setPoints(user.getPoints() + answerPoints);
         levelService.checkAndUpgrade(user);
         userMapper.updateById(user);
+        recordLog(userId, answerPoints, user.getPoints(), "回答问题：" + question.getTitle(), "question", question.getQid());
 
         // 更新问题的回答数量
         question.setAnswerCount(question.getAnswerCount() + 1);
@@ -485,6 +491,8 @@ public class QuestionService {
             answerer.setPoints(answerer.getPoints() + totalReward);
             levelService.checkAndUpgrade(answerer);
             userMapper.updateById(answerer);
+            recordLog(answerer.getUId(), totalReward, answerer.getPoints(),
+                    "回答被采纳：" + question.getTitle(), "question", question.getQid());
         }
     }
 
@@ -754,6 +762,8 @@ public class QuestionService {
             user.setPoints(user.getPoints() + refundPoints);
             levelService.checkAndUpgrade(user);
             userMapper.updateById(user);
+            recordLog(userId, refundPoints, user.getPoints(),
+                    "删除问题退还积分：" + question.getTitle(), "question", question.getQid());
         }
 
         // 软删除问题
@@ -965,5 +975,19 @@ public class QuestionService {
                 .sorted((q1, q2) -> Double.compare(q2.getQualityScore(), q1.getQualityScore()))
                 .limit(limit)
                 .collect(java.util.stream.Collectors.toList());
+    }
+
+    /** 记录积分变动日志 */
+    private void recordLog(Long userId, int pointsChange, int pointsAfter,
+                           String reason, String relatedType, Long relatedId) {
+        PointsLog log = new PointsLog();
+        log.setUserId(userId);
+        log.setPointsChange(pointsChange);
+        log.setPointsAfter(pointsAfter);
+        log.setReason(reason);
+        log.setRelatedType(relatedType);
+        log.setRelatedId(relatedId);
+        log.setCreatedAt(LocalDateTime.now());
+        pointsLogMapper.insert(log);
     }
 }

@@ -62,6 +62,29 @@ public class AdminService {
         }
     }
 
+    /** 生成用户标签，格式："昵称(uid=N)"，查不到时退化为 "uid=N" */
+    private String userLabel(Long userId) {
+        try {
+            User u = userMapper.selectById(userId);
+            if (u == null) return "uid=" + userId;
+            String name = StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername();
+            return name + "(uid=" + userId + ")";
+        } catch (Exception e) {
+            return "uid=" + userId;
+        }
+    }
+
+    /** 生成资源标签，格式："标题(rid=N)" */
+    private String resourceLabel(Long resourceId) {
+        try {
+            Resource r = resourceMapper.selectById(resourceId);
+            if (r == null) return "rid=" + resourceId;
+            return r.getTitle() + "(rid=" + resourceId + ")";
+        } catch (Exception e) {
+            return "rid=" + resourceId;
+        }
+    }
+
     // ==================== 仪表板 ====================
 
     public AdminDashboardVO getDashboard() {
@@ -177,7 +200,8 @@ public class AdminService {
         user.setStatus(req.getStatus());
         userMapper.updateById(user);
         String action = req.getStatus() == 0 ? "BAN_USER" : "UNBAN_USER";
-        logOp(operatorId, action, "用户[uid=" + userId + "]", req.getReason());
+        String uName = StringUtils.hasText(user.getNickname()) ? user.getNickname() : user.getUsername();
+        logOp(operatorId, action, uName + "(uid=" + userId + ")", req.getReason());
         log.info("管理员操作用户状态 - userId: {}, status: {}", userId, req.getStatus());
     }
 
@@ -187,7 +211,8 @@ public class AdminService {
         if (user == null) throw new BusinessException(404, "用户不存在");
         user.setRole(req.getRole());
         userMapper.updateById(user);
-        logOp(operatorId, "SET_ROLE", "用户[uid=" + userId + "]", "角色改为 " + req.getRole());
+        String uName2 = StringUtils.hasText(user.getNickname()) ? user.getNickname() : user.getUsername();
+        logOp(operatorId, "SET_ROLE", uName2 + "(uid=" + userId + ")", "角色改为 " + req.getRole());
         log.info("管理员修改用户角色 - userId: {}, role: {}", userId, req.getRole());
     }
 
@@ -202,7 +227,8 @@ public class AdminService {
         if (StringUtils.hasText(req.getStudentId())) user.setStudentId(req.getStudentId());
         if (req.getGrade() != null)                 user.setGrade(req.getGrade());
         userMapper.updateById(user);
-        logOp(operatorId, "UPDATE_USER_INFO", "用户[uid=" + userId + "]", null);
+        String uName3 = StringUtils.hasText(user.getNickname()) ? user.getNickname() : user.getUsername();
+        logOp(operatorId, "UPDATE_USER_INFO", uName3 + "(uid=" + userId + ")", null);
         log.info("管理员修改用户信息 - userId: {}", userId);
     }
 
@@ -267,7 +293,8 @@ public class AdminService {
         String newPassword = "CL" + String.format("%06d", new java.util.Random().nextInt(1000000));
         user.setPasswordHash(DigestUtils.md5DigestAsHex(newPassword.getBytes()));
         userMapper.updateById(user);
-        logOp(operatorId, "RESET_PASSWORD", "用户[uid=" + userId + "]", null);
+        String uName4 = StringUtils.hasText(user.getNickname()) ? user.getNickname() : user.getUsername();
+        logOp(operatorId, "RESET_PASSWORD", uName4 + "(uid=" + userId + ")", null);
         log.info("管理员重置用户密码 - userId: {}", userId);
         Map<String, String> result = new HashMap<>();
         result.put("newPassword", newPassword);
@@ -301,7 +328,7 @@ public class AdminService {
         }
         resourceMapper.updateById(resource);
         String action = req.getStatus() == 1 ? "APPROVE_RESOURCE" : "REJECT_RESOURCE";
-        logOp(operatorId, action, "资源[rid=" + resourceId + "]", req.getReason());
+        logOp(operatorId, action, resource.getTitle() + "(rid=" + resourceId + ")", req.getReason());
     }
 
     @Transactional

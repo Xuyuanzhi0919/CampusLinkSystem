@@ -198,7 +198,7 @@
                 <view v-for="feed in feeds" :key="feed.id" class="feed-item">
                   <!-- 头像 + 信息 -->
                   <view class="feed-header">
-                    <image class="feed-avatar" :src="feed.userAvatar || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
+                    <ClAvatar :src="feed.userAvatar" :name="feed.userName" size="medium" />
                     <view class="feed-meta">
                       <text class="feed-author">{{ feed.userName }}</text>
                       <text class="feed-time">{{ formatFeedTime(feed.createdAt) }}</text>
@@ -324,7 +324,7 @@
             <view v-if="currentTab === 'member'" class="member-container">
               <view v-if="members.length > 0" class="member-list">
                 <view v-for="member in members" :key="member.userId" class="member-card">
-                  <image class="member-avatar" :src="member.avatarUrl || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
+                  <ClAvatar :src="member.avatarUrl" :name="member.nickname" size="large" />
                   <view class="member-info">
                     <view class="member-name-row">
                       <text class="member-name">{{ member.nickname }}</text>
@@ -412,7 +412,7 @@
             </view>
             <view v-if="admins.length > 0" class="admin-list">
               <view v-for="admin in admins" :key="admin.userId" class="admin-item">
-                <image class="admin-avatar" :src="admin.avatarUrl || PLACEHOLDER_IMAGES.avatar" mode="aspectFill" />
+                <ClAvatar :src="admin.avatarUrl" :name="admin.nickname" size="small" />
                 <view class="admin-info">
                   <text class="admin-name">{{ admin.nickname }}</text>
                   <text class="admin-role">{{ admin.role === 'founder' ? '社长' : '管理员' }}</text>
@@ -482,8 +482,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { PLACEHOLDER_IMAGES } from '@/config/images'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost, getClubResources } from '@/services/club'
+import ClAvatar from '@/components/cl/ClAvatar.vue'
 import type { ClubPost, ClubResource } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
 import CButton from '@/components/ui/CButton.vue'
@@ -1497,13 +1497,6 @@ onUnmounted(() => {
   margin-bottom: $sp-4;
 }
 
-.feed-avatar {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: $radius-full;
-  background: $gray-100;
-  flex-shrink: 0;
-}
 
 .feed-meta {
   flex: 1;
@@ -1761,14 +1754,6 @@ onUnmounted(() => {
   &:hover {
     background: rgba($primary, 0.05);
   }
-}
-
-.member-avatar {
-  width: 80rpx;
-  height: 80rpx;
-  border-radius: $radius-full;
-  background: $gray-200;
-  flex-shrink: 0;
 }
 
 .member-info {
@@ -2042,13 +2027,6 @@ onUnmounted(() => {
   }
 }
 
-.admin-avatar {
-  width: 60rpx;
-  height: 60rpx;
-  border-radius: $radius-full;
-  background: $gray-200;
-  flex-shrink: 0;
-}
 
 .admin-info {
   flex: 1;

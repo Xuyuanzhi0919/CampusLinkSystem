@@ -5,20 +5,20 @@
     </div>
 
     <!-- 状态筛选栏 -->
-    <el-row :gutter="10" class="status-bar">
-      <el-col :span="4" v-for="s in statusSummary" :key="s.status">
-        <div class="status-chip" :class="{ active: statusFilter === s.status }" @click="switchStatus(s.status)">
-          <span class="chip-dot" :style="{ background: s.color }"></span>
-          <span>{{ s.label }}</span>
-        </div>
-      </el-col>
-      <el-col :span="4">
-        <div class="status-chip" :class="{ active: statusFilter === undefined }" @click="switchStatus(undefined)">
-          <span class="chip-dot" style="background:#909399"></span>
-          <span>全部</span>
-        </div>
-      </el-col>
-    </el-row>
+    <div class="status-bar">
+      <div
+        v-for="s in statusSummary" :key="s.status"
+        class="status-chip" :class="{ active: statusFilter === s.status }"
+        @click="switchStatus(s.status)"
+      >
+        <span class="chip-dot" :style="{ background: s.color }"></span>
+        <span>{{ s.label }}</span>
+      </div>
+      <div class="status-chip" :class="{ active: statusFilter === undefined }" @click="switchStatus(undefined)">
+        <span class="chip-dot" style="background:#909399"></span>
+        <span>全部</span>
+      </div>
+    </div>
 
     <div class="filter-bar">
       <el-input
@@ -27,7 +27,6 @@
         prefix-icon="Search"
         clearable
         style="width: 240px"
-        @change="fetchData"
       />
       <el-date-picker
         v-model="dateRange"
@@ -37,10 +36,10 @@
         end-placeholder="结束日期"
         value-format="YYYY-MM-DD"
         clearable
-        @change="fetchData"
         style="width: 240px"
       />
-      <el-button type="primary" icon="Search" @click="fetchData">查询</el-button>
+      <el-button type="primary" icon="Search" @click="search">查询</el-button>
+      <el-button icon="Refresh" @click="reset">重置</el-button>
     </div>
 
     <div class="table-card">
@@ -70,17 +69,19 @@
             <el-tag :type="statusType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="145" fixed="right">
           <template #default="{ row }">
-            <el-button text size="small" @click="openDetail(row)">详情</el-button>
-            <el-button
-              v-if="row.status === 0 || row.status === 1"
-              text type="danger" size="small"
-              @click="handleCancel(row)"
-            >
-              强制取消
-            </el-button>
-            <span v-else class="ended-text">—</span>
+            <div class="action-btns">
+              <el-button text size="small" @click="openDetail(row)">详情</el-button>
+              <el-button
+                v-if="row.status === 0 || row.status === 1"
+                text type="danger" size="small"
+                @click="handleCancel(row)"
+              >
+                强制取消
+              </el-button>
+              <span v-else class="ended-text">—</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -121,8 +122,14 @@
           <el-descriptions-item label="发布时间">{{ formatDateFull(selectedActivity.createdAt) }}</el-descriptions-item>
         </el-descriptions>
       </div>
+
+      <div class="drawer-section" v-if="selectedActivity.description">
+        <div class="section-title">活动简介</div>
+        <div class="content-box">{{ selectedActivity.description }}</div>
+      </div>
+
       <div class="drawer-actions" v-if="selectedActivity.status === 0 || selectedActivity.status === 1">
-        <el-button type="danger" @click="handleCancel(selectedActivity); detailVisible = false">强制取消</el-button>
+        <el-button type="danger" @click="handleCancel(selectedActivity)">强制取消</el-button>
       </div>
     </template>
   </el-drawer>
@@ -147,8 +154,8 @@ const dateRange = ref<[string, string] | null>(null)
 
 const statusSummary = [
   { status: 0, label: '待开始', color: '#909399' },
-  { status: 1, label: '进行中', color: '#409eff' },
-  { status: 2, label: '已结束', color: '#67c23a' },
+  { status: 1, label: '进行中', color: '#67c23a' },
+  { status: 2, label: '已结束', color: '#409eff' },
   { status: 3, label: '已取消', color: '#c0c4cc' },
 ]
 
@@ -170,6 +177,16 @@ async function fetchData() {
   }
 }
 
+function search() { page.value = 1; fetchData() }
+
+function reset() {
+  keyword.value = ''
+  dateRange.value = null
+  statusFilter.value = undefined
+  page.value = 1
+  fetchData()
+}
+
 function switchStatus(s: number | undefined) {
   statusFilter.value = s
   page.value = 1
@@ -182,7 +199,7 @@ function statusLabel(s: number) {
 
 function statusType(s: number): 'success' | 'warning' | 'danger' | 'info' | '' {
   const map: Record<number, 'success' | 'warning' | 'danger' | 'info' | ''> = {
-    0: '', 1: '', 2: 'success', 3: 'info'
+    0: 'info', 1: 'success', 2: '', 3: 'info'
   }
   return map[s] ?? ''
 }
@@ -201,12 +218,21 @@ function openDetail(row: AdminActivity) {
 }
 
 async function handleCancel(row: AdminActivity) {
-  await ElMessageBox.confirm(`确认强制取消活动「${row.title}」？`, '强制取消', {
-    type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
-  })
-  await cancelActivity(row.activityId)
-  ElMessage.success('活动已取消')
-  row.status = 3
+  try {
+    await ElMessageBox.confirm(`确认强制取消活动「${row.title}」？`, '强制取消', {
+      type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
+    })
+    await cancelActivity(row.activityId)
+    row.status = 3
+    if (selectedActivity.value?.activityId === row.activityId) {
+      selectedActivity.value.status = 3
+      detailVisible.value = false
+    }
+    ElMessage.success('活动已取消')
+    fetchData()
+  } catch {
+    // 用户取消，忽略
+  }
 }
 
 onMounted(fetchData)
@@ -215,7 +241,8 @@ onMounted(fetchData)
 <style scoped>
 .page-header { margin-bottom: 16px; }
 .page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
-.status-bar { margin-bottom: 16px; }
+
+.status-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .status-chip {
   display: flex; align-items: center; gap: 6px;
   padding: 8px 14px; background: #fff; border-radius: 8px;
@@ -224,15 +251,24 @@ onMounted(fetchData)
 }
 .status-chip:hover, .status-chip.active { border-color: #409eff; color: #409eff; background: #f0f7ff; }
 .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+
+.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
 .table-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .act-title { font-size: 14px; font-weight: 500; color: #1a1a2e; }
 .act-sub { font-size: 12px; color: #9ca3af; margin-top: 2px; }
 .time-range { font-size: 13px; color: #374151; }
 .sep { color: #d1d5db; margin: 0 2px; }
 .ended-text { color: #d1d5db; font-size: 13px; }
+.action-btns { display: flex; align-items: center; white-space: nowrap; gap: 2px; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+
+/* ─── 抽屉 ─────────────────────────────────────────────────── */
 .drawer-section { margin-bottom: 20px; }
 .section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px; }
+.content-box {
+  background: #f9fafb; border-radius: 8px; padding: 12px;
+  font-size: 13px; color: #374151; line-height: 1.7;
+  border: 1px solid #e5e7eb; white-space: pre-wrap;
+}
 .drawer-actions { margin-top: 24px; }
 </style>

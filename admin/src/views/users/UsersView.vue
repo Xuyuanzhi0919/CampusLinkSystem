@@ -74,16 +74,18 @@
         <el-table-column prop="createdAt" label="注册时间" width="160" sortable="custom">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
-            <el-button text size="small" @click="openDetail(row)">详情</el-button>
-            <el-button
-              text size="small"
-              :type="row.status === 1 ? 'danger' : 'success'"
-              @click="toggleBan(row)"
-            >{{ row.status === 1 ? '封禁' : '解封' }}</el-button>
-            <el-button text size="small" @click="openPointsDialog(row)">调积分</el-button>
-            <el-button text size="small" type="warning" @click="handleResetPassword(row)">重置密码</el-button>
+            <div class="action-btns">
+              <el-button text size="small" @click="openDetail(row)">详情</el-button>
+              <el-button
+                text size="small"
+                :type="row.status === 1 ? 'danger' : 'success'"
+                @click="toggleBan(row)"
+              >{{ row.status === 1 ? '封禁' : '解封' }}</el-button>
+              <el-button text size="small" @click="openPointsDialog(row)">调积分</el-button>
+              <el-button text size="small" type="warning" @click="handleResetPassword(row)">重置密码</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -572,6 +574,7 @@ onMounted(fetchUsers)
 .batch-count strong { font-size: 15px; color: #7c3aed; }
 
 .table-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.action-btns { display: flex; align-items: center; white-space: nowrap; gap: 2px; }
 .user-cell { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 500; color: #1a1a2e; }
 .user-sub { font-size: 12px; color: #9ca3af; }

@@ -69,14 +69,16 @@
         <el-table-column label="举报时间" width="150">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="170" fixed="right">
+        <el-table-column label="操作" width="175" fixed="right">
           <template #default="{ row }">
-            <el-button text size="small" @click="openDetail(row)">详情</el-button>
-            <template v-if="row.status === 0">
-              <el-button text type="success" size="small" @click="handle(row, 1)">处理</el-button>
-              <el-button text type="info"    size="small" @click="handle(row, 2)">驳回</el-button>
-            </template>
-            <span v-else class="handled-text">{{ statusLabel(row.status) }}</span>
+            <div class="action-btns">
+              <el-button text size="small" @click="openDetail(row)">详情</el-button>
+              <template v-if="row.status === 0">
+                <el-button text type="success" size="small" @click="handle(row, 1)">处理</el-button>
+                <el-button text type="info"    size="small" @click="handle(row, 2)">驳回</el-button>
+              </template>
+              <span v-else class="handled-text">{{ statusLabel(row.status) }}</span>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -341,6 +343,7 @@ onMounted(() => {
 .user-name  { font-size: 13px; color: #374151; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 72px; }
 .target-text { font-size: 13px; color: #374151; }
 .handled-text { color: #9ca3af; font-size: 13px; }
+.action-btns { display: flex; align-items: center; white-space: nowrap; gap: 2px; }
 
 /* ─── 抽屉 ────────────────────────────────────────────────────── */
 .drawer-section { margin-bottom: 20px; }

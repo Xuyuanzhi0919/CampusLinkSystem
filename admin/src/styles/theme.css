@@ -57,26 +57,7 @@
   --cp-shadow-glow:  0 0 0 3px rgba(124, 58, 237, 0.18);
 }
 
-/* ── 1b. Dark 模式变量（html.dark 类 / prefers-color-scheme） ── */
-html.dark,
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --cp-bg:       #0f0d1a;
-    --cp-surface:  #1a1730;
-    --cp-border:   rgba(124, 58, 237, 0.18);
-    --cp-text:     #e8e3f8;
-    --cp-text-2:   #a89ec8;
-    --cp-text-3:   #6b6385;
-
-    --cp-brand-bg:       rgba(124, 58, 237, 0.18);
-    --cp-brand-bg-soft:  rgba(124, 58, 237, 0.08);
-
-    --cp-shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-    --cp-shadow-md:  0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
-    --cp-shadow-lg:  0 8px 30px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3);
-  }
-}
-
+/* ── 1b. Dark 模式 CSS 变量（html.dark 由 theme store 控制） ── */
 html.dark {
   --cp-bg:       #0f0d1a;
   --cp-surface:  #1a1730;
@@ -304,28 +285,82 @@ h1, h2, h3, h4, h5, h6,
   letter-spacing: 0.5px;
 }
 
-/* ── 6b. Dark 模式覆盖 ─────────────────────────────────────── */
+/* ── 6b. Dark 模式覆盖（视图硬编码颜色统一处理） ──────────── */
+
+/* 卡片容器 */
+html.dark .table-card,
+html.dark .chart-card,
+html.dark .quick-card,
+html.dark .config-card { background: var(--cp-surface) !important; }
+
+/* 页面标题：渐变文字在 dark 下无需覆盖，保持渐变即可 */
+
+/* 图表标题与数字 */
+html.dark .chart-title { color: var(--cp-text-2) !important; }
+html.dark .quick-num   { color: var(--cp-text) !important; }
+
+/* 表格内文字 */
+html.dark .user-name,
+html.dark .content-title,
+html.dark .target-text,
+html.dark .section-title { color: var(--cp-text-2) !important; }
+
+html.dark .user-sub,
+html.dark .content-sub,
+html.dark .handled-text,
+html.dark .quick-label,
+html.dark .stats-label,
+html.dark .points-hint,
+html.dark .reset-hint,
+html.dark .detail-username { color: var(--cp-text-3) !important; }
+
+/* Element Plus 表格 */
 html.dark .el-table th {
   background: #1e1b33 !important;
   color: var(--cp-text) !important;
 }
-
 html.dark .el-table--striped .el-table__body tr.el-table__row--striped td {
   background: #17152b !important;
 }
+html.dark .el-table__row:hover td { background: #241f3d !important; }
 
-html.dark .el-table__row:hover td {
-  background: #241f3d !important;
-}
-
+/* Element Plus 描述列表 */
 html.dark .el-descriptions__label {
   background: #1e1b33 !important;
   color: var(--cp-text-2) !important;
 }
 
-html.dark ::-webkit-scrollbar-thumb {
-  background: rgba(124, 58, 237, 0.35);
+/* 内容页自定义 Tab 切换按钮 */
+html.dark .tab-btn {
+  color: var(--cp-text-2);
+  background: var(--cp-surface);
 }
+html.dark .tab-btn:hover { background: var(--cp-brand-bg); color: var(--cp-brand-light); }
+
+/* 配置页 Tab 卡片 & 头部 */
+html.dark .tab-card { background: var(--cp-surface) !important; }
+html.dark .config-tabs > .el-tabs__header {
+  background: #1a1730 !important;
+  border-bottom-color: var(--cp-border) !important;
+}
+
+/* 开关项浅色背景 */
+html.dark .switch-item { background: #1e1b33 !important; }
+
+/* 举报详情内容块 */
+html.dark .content-block {
+  background: #1e1b33 !important;
+  color: var(--cp-text-2) !important;
+}
+
+/* 配置页 Section 头部 */
+html.dark .config-section-header {
+  background: #1e1b33 !important;
+  border-bottom-color: var(--cp-border) !important;
+}
+
+/* 滚动条 */
+html.dark ::-webkit-scrollbar-thumb { background: rgba(124, 58, 237, 0.35); }
 
 /* ── 7. 动画 ────────────────────────────────────────────────── */
 @keyframes cp-fade-up {

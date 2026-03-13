@@ -13,18 +13,18 @@
         prefix-icon="Search"
         clearable
         style="width: 240px"
-        @change="fetchUsers"
       />
-      <el-select v-model="query.role" placeholder="全部角色" clearable @change="fetchUsers" style="width: 130px">
+      <el-select v-model="query.role" placeholder="全部角色" clearable style="width: 130px">
         <el-option label="学生" value="student" />
         <el-option label="教师" value="teacher" />
         <el-option label="管理员" value="admin" />
       </el-select>
-      <el-select v-model="query.status" placeholder="全部状态" clearable @change="fetchUsers" style="width: 130px">
+      <el-select v-model="query.status" placeholder="全部状态" clearable style="width: 130px">
         <el-option label="正常" :value="1" />
         <el-option label="封禁" :value="0" />
       </el-select>
-      <el-button type="primary" icon="Search" @click="fetchUsers">查询</el-button>
+      <el-button type="primary" icon="Search" @click="search">查询</el-button>
+      <el-button icon="Refresh" @click="resetQuery">重置</el-button>
     </div>
 
     <!-- 批量操作栏 -->
@@ -333,6 +333,16 @@ const editLoading = ref(false)
 const editForm = reactive<UpdateUserInfoPayload>({
   nickname: '', email: '', phone: '', major: '', grade: undefined, studentId: ''
 })
+
+function search() { query.page = 1; fetchUsers() }
+
+function resetQuery() {
+  query.keyword = ''
+  query.role = ''
+  query.status = undefined
+  query.page = 1
+  fetchUsers()
+}
 
 async function fetchUsers() {
   loading.value = true

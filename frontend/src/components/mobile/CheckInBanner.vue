@@ -137,8 +137,8 @@ const rewardHint = computed(() => {
 
 /** 底部小字 */
 const footerText = computed(() => {
-  if (props.isCheckedIn) return `今日已签到 · 明日可领 +${signinPoints} 积分`
-  return `每日签到 +${signinPoints} 积分 · 连签 7 天得徽章`
+  if (props.isCheckedIn) return `今日已签到 · 明日可领 +${signinPoints.value} 积分`
+  return `每日签到 +${signinPoints.value} 积分 · 连签 7 天得徽章`
 })
 
 const handleClick = async () => {

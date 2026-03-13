@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
 import { onLoad } from '@dcloudio/uni-app'
 import config from '@/config'
+import { getPublicConfig } from '@/services/config'
 import { createResource } from '@/services/resource'
 import type { ResourceFileType, ResourceCategory } from '@/types/resource'
 import CButton from '@/components/ui/CButton.vue'
@@ -68,10 +69,10 @@ const getCategoryBg    = (v: string) => categories.find(c => c.value === v)?.bg 
 const getCategoryLabel = (v: string) => categories.find(c => c.value === v)?.label ?? ''
 
 /**
- * 🎯 允许的文件格式
+ * 🎯 允许的文件格式（动态从系统配置读取，默认值作为降级）
  */
-const ALLOWED_EXTENSIONS = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'md']
-const MAX_FILE_SIZE = 50 * 1024 * 1024 // 50MB
+const allowedExtensions = ref(['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'txt', 'md'])
+const maxFileSize = ref(50 * 1024 * 1024) // 默认 50MB
 
 /**
  * 🎯 计算属性：文件是否已上传
@@ -102,13 +103,14 @@ const validateFile = (file: FileInfo) => {
   const extension = getFileExtension(file.name)
 
   // 验证格式
-  if (!ALLOWED_EXTENSIONS.includes(extension)) {
-    throw new Error(`不支持的文件格式，仅支持：${ALLOWED_EXTENSIONS.join('、')}`)
+  if (!allowedExtensions.value.includes(extension)) {
+    throw new Error(`不支持的文件格式，仅支持：${allowedExtensions.value.join('、')}`)
   }
 
   // 验证大小
-  if (file.size > MAX_FILE_SIZE) {
-    throw new Error('文件大小不能超过 50MB')
+  const maxMB = Math.round(maxFileSize.value / 1024 / 1024)
+  if (file.size > maxFileSize.value) {
+    throw new Error(`文件大小不能超过 ${maxMB}MB`)
   }
 
   // 验证文件名长度
@@ -123,8 +125,8 @@ const validateFile = (file: FileInfo) => {
 const chooseFile = async () => {
   try {
     const files = await chooseFileUtil({
-      extensions: ALLOWED_EXTENSIONS,
-      maxSize: MAX_FILE_SIZE,
+      extensions: allowedExtensions.value,
+      maxSize: maxFileSize.value,
       multiple: false
     })
 
@@ -522,8 +524,21 @@ PDF、Word (doc/docx)、PowerPoint (ppt/pptx)、Excel (xls/xlsx)、文本 (txt/m
 /**
  * 🎯 页面加载
  */
-onLoad(() => {
+onLoad(async () => {
   console.log('[Upload] 页面加载')
+  // 从系统配置读取允许的文件类型和大小上限
+  try {
+    const cfg = await getPublicConfig()
+    if (cfg?.['upload.allowed_types']) {
+      allowedExtensions.value = cfg['upload.allowed_types'].split(',').map((s: string) => s.trim()).filter(Boolean)
+    }
+    if (cfg?.['upload.max_file_size']) {
+      maxFileSize.value = parseInt(cfg['upload.max_file_size'])
+    }
+  } catch (e) {
+    // 配置读取失败时使用默认值，不影响上传功能
+    console.warn('[Upload] 读取上传配置失败，使用默认值')
+  }
 })
 </script>
 

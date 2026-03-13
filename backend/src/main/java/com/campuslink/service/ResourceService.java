@@ -7,11 +7,14 @@ import com.campuslink.common.PageResult;
 
 import com.campuslink.common.Result;
 import com.campuslink.common.ResultCode;
+import com.campuslink.dto.notification.SendNotificationRequest;
 import com.campuslink.dto.resource.*;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Resource;
 import com.campuslink.entity.School;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.ResourceMapper;
 import com.campuslink.mapper.SchoolMapper;
 import com.campuslink.mapper.UserMapper;
@@ -41,6 +44,8 @@ public class ResourceService {
     private final ResourceRatingService resourceRatingService;
     private final LevelService levelService;
     private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
+    private final NotificationService notificationService;
+    private final PointsLogMapper pointsLogMapper;
 
     /**
      * 上传资源
@@ -354,6 +359,43 @@ public class ResourceService {
         resource.setStatus(1); // 审核通过
         resource.setUpdatedAt(LocalDateTime.now());
         resourceMapper.updateById(resource);
+
+        // 给上传者发放积分
+        User uploader = userMapper.selectById(resource.getUploaderId());
+        if (uploader != null) {
+            com.campuslink.entity.SystemConfig uploadCfg = systemConfigMapper.selectOne(
+                    new LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                            .eq(com.campuslink.entity.SystemConfig::getConfigKey, "points.upload_resource"));
+            int uploadPoints = (uploadCfg != null && uploadCfg.getConfigValue() != null)
+                    ? Integer.parseInt(uploadCfg.getConfigValue()) : 10;
+            if (uploadPoints > 0) {
+                uploader.setPoints(uploader.getPoints() + uploadPoints);
+                levelService.checkAndUpgrade(uploader);
+                userMapper.updateById(uploader);
+
+                // 记录积分日志
+                PointsLog pointsLog = new PointsLog();
+                pointsLog.setUserId(uploader.getUId());
+                pointsLog.setPointsChange(uploadPoints);
+                pointsLog.setPointsAfter(uploader.getPoints());
+                pointsLog.setReason("资源审核通过：" + resource.getTitle());
+                pointsLog.setRelatedType("resource");
+                pointsLog.setRelatedId(resourceId);
+                pointsLog.setCreatedAt(LocalDateTime.now());
+                pointsLogMapper.insert(pointsLog);
+            }
+
+            // 通知上传者审核通过
+            SendNotificationRequest notification = new SendNotificationRequest();
+            notification.setUserId(uploader.getUId());
+            notification.setTitle("资源审核通过");
+            notification.setContent(String.format("您上传的资源「%s」已审核通过，获得 %d 积分奖励！",
+                    resource.getTitle(), uploadPoints));
+            notification.setNotifyType("resource");
+            notification.setRelatedType("resource");
+            notification.setRelatedId(resourceId);
+            notificationService.sendToUser(uploader.getUId(), notification);
+        }
     }
 
     /**
@@ -378,6 +420,20 @@ public class ResourceService {
         resource.setRejectReason(rejectReason);
         resource.setUpdatedAt(LocalDateTime.now());
         resourceMapper.updateById(resource);
+
+        // 通知上传者审核拒绝
+        User uploader = userMapper.selectById(resource.getUploaderId());
+        if (uploader != null) {
+            SendNotificationRequest notification = new SendNotificationRequest();
+            notification.setUserId(uploader.getUId());
+            notification.setTitle("资源审核未通过");
+            notification.setContent(String.format("您上传的资源「%s」审核未通过，原因：%s",
+                    resource.getTitle(), rejectReason));
+            notification.setNotifyType("resource");
+            notification.setRelatedType("resource");
+            notification.setRelatedId(resourceId);
+            notificationService.sendToUser(uploader.getUId(), notification);
+        }
     }
 
     /**

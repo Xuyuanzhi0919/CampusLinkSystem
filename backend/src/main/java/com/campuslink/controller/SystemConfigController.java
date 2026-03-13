@@ -26,6 +26,26 @@ public class SystemConfigController {
 
     private final SystemConfigService systemConfigService;
 
+    /** 公开配置（无需登录）：返回前端页面渲染所需的非敏感配置项 */
+    @Operation(summary = "获取公开配置", description = "返回前端渲染所需的非敏感配置（无需登录）")
+    @GetMapping("/public")
+    public Result<Map<String, String>> getPublicConfigs() {
+        String[] publicKeys = {
+            "points.daily_signin",
+            "upload.allowed_types",
+            "upload.max_file_size",
+            "upload.image_max_size"
+        };
+        Map<String, String> result = new java.util.LinkedHashMap<>();
+        for (String key : publicKeys) {
+            String value = systemConfigService.getConfigValue(key);
+            if (value != null) {
+                result.put(key, value);
+            }
+        }
+        return Result.success(result);
+    }
+
     /**
      * 创建系统配置
      */

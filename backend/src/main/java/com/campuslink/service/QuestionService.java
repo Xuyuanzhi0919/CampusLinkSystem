@@ -59,7 +59,13 @@ public class QuestionService {
             throw new BusinessException(ResultCode.BAD_REQUEST, "悬赏积分不能超过 " + maxReward + " 分");
         }
 
-        int totalCost = 2 + bounty; // 提问固定扣2分
+        // 从系统配置读取提问扣除积分
+        com.campuslink.entity.SystemConfig askCfg = systemConfigMapper.selectOne(
+                new LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                        .eq(com.campuslink.entity.SystemConfig::getConfigKey, "points.ask_question"));
+        int askCost = (askCfg != null && askCfg.getConfigValue() != null)
+                ? Math.abs(Integer.parseInt(askCfg.getConfigValue())) : 2;
+        int totalCost = askCost + bounty;
 
         // 检查用户积分是否足够
         if (user.getPoints() < totalCost) {
@@ -351,8 +357,13 @@ public class QuestionService {
 
         answerMapper.insert(answer);
 
-        // 回答者获得 5 积分
-        user.setPoints(user.getPoints() + 5);
+        // 从系统配置读取回答奖励积分
+        com.campuslink.entity.SystemConfig answerCfg = systemConfigMapper.selectOne(
+                new LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                        .eq(com.campuslink.entity.SystemConfig::getConfigKey, "points.answer_question"));
+        int answerPoints = (answerCfg != null && answerCfg.getConfigValue() != null)
+                ? Integer.parseInt(answerCfg.getConfigValue()) : 5;
+        user.setPoints(user.getPoints() + answerPoints);
         levelService.checkAndUpgrade(user);
         userMapper.updateById(user);
 
@@ -462,10 +473,16 @@ public class QuestionService {
         question.setUpdatedAt(LocalDateTime.now());
         questionMapper.updateById(question);
 
-        // 奖励回答者
+        // 奖励回答者：采纳基础奖励 + 悬赏积分
         User answerer = userMapper.selectById(answer.getResponderId());
-        if (answerer != null && question.getRewardPoints() > 0) {
-            answerer.setPoints(answerer.getPoints() + question.getRewardPoints());
+        if (answerer != null) {
+            com.campuslink.entity.SystemConfig acceptedCfg = systemConfigMapper.selectOne(
+                    new LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                            .eq(com.campuslink.entity.SystemConfig::getConfigKey, "points.answer_accepted"));
+            int acceptedBonus = (acceptedCfg != null && acceptedCfg.getConfigValue() != null)
+                    ? Integer.parseInt(acceptedCfg.getConfigValue()) : 20;
+            int totalReward = acceptedBonus + (question.getRewardPoints() != null ? question.getRewardPoints() : 0);
+            answerer.setPoints(answerer.getPoints() + totalReward);
             levelService.checkAndUpgrade(answerer);
             userMapper.updateById(answerer);
         }
@@ -725,10 +742,15 @@ public class QuestionService {
             throw new BusinessException(ResultCode.BAD_REQUEST.getCode(), "已解决的问题不能删除");
         }
 
-        // 退还积分：提问的2分 + 悬赏积分
+        // 退还积分：提问扣除的积分 + 悬赏积分
         User user = userMapper.selectById(userId);
         if (user != null) {
-            int refundPoints = 2 + (question.getRewardPoints() != null ? question.getRewardPoints() : 0);
+            com.campuslink.entity.SystemConfig askCfgRef = systemConfigMapper.selectOne(
+                    new LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                            .eq(com.campuslink.entity.SystemConfig::getConfigKey, "points.ask_question"));
+            int askCostRef = (askCfgRef != null && askCfgRef.getConfigValue() != null)
+                    ? Math.abs(Integer.parseInt(askCfgRef.getConfigValue())) : 2;
+            int refundPoints = askCostRef + (question.getRewardPoints() != null ? question.getRewardPoints() : 0);
             user.setPoints(user.getPoints() + refundPoints);
             levelService.checkAndUpgrade(user);
             userMapper.updateById(user);

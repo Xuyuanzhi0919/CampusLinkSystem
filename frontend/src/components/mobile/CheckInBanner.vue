@@ -77,8 +77,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { checkIn } from '@/services/user'
+import { getPublicConfig } from '@/services/config'
 
 const props = defineProps<{
   isCheckedIn: boolean
@@ -90,10 +91,25 @@ const emit = defineEmits<{
   checkInSuccess: [{ consecutiveDays: number; pointsEarned: number }]
 }>()
 
-const signinPoints = computed(() => props.signinPoints ?? 10)
+// 签到积分：优先用 prop，其次从公开配置读取，最后降级到 10
+const configSigninPoints = ref(10)
+const signinPoints = computed(() => props.signinPoints ?? configSigninPoints.value)
 const checking = ref(false)
 const showPointsAnim = ref(false)
 const earnedPoints = ref(signinPoints.value)
+
+onMounted(async () => {
+  if (props.signinPoints != null) return // prop 已提供，无需请求
+  try {
+    const cfg = await getPublicConfig()
+    if (cfg?.['points.daily_signin']) {
+      configSigninPoints.value = Math.abs(parseInt(cfg['points.daily_signin']))
+      earnedPoints.value = configSigninPoints.value
+    }
+  } catch {
+    // 降级使用默认值 10
+  }
+})
 
 /** 当前 7 天周期内第几天（1~7） */
 const cycleDay = computed(() => {

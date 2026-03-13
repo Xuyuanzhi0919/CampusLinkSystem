@@ -74,7 +74,7 @@
         <el-table-column label="发布时间" width="150">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="165" fixed="right">
           <template #default="{ row }">
             <el-button text size="small" @click="openDetail(row)">详情</el-button>
             <el-button

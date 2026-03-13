@@ -18,7 +18,7 @@ export interface AdminActivity {
   createdAt: string
 }
 
-export function listActivities(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {
+export function listActivities(params: { keyword?: string; status?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }) {
   return get<PageResult<AdminActivity>>('/admin/activities', params as Record<string, unknown>)
 }
 

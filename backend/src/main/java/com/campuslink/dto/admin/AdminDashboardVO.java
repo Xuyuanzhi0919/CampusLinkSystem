@@ -27,6 +27,7 @@ public class AdminDashboardVO {
     private Long pendingResources;   // 待审核资源
     private Long pendingReports;     // 待处理举报
     private Long bannedUsers;        // 封禁用户数
+    private Long pendingTasks;       // 待接单任务数
 
     // 近7天用户注册趋势：[{"date": "03-06", "count": 12}, ...]
     private List<Map<String, Object>> userTrend;

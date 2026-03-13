@@ -33,3 +33,7 @@ export interface PointsLogItem {
 export function getUserPointsHistory(userId: number, params: { page?: number; pageSize?: number }) {
   return get<PageResult<PointsLogItem>>(`/admin/users/${userId}/points-history`, params as Record<string, unknown>)
 }
+
+export function resetPassword(userId: number) {
+  return put<{ newPassword: string }>(`/admin/users/${userId}/password`)
+}

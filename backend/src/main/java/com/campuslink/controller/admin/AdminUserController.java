@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 /**
  * 管理员用户管理接口
@@ -67,6 +68,12 @@ public class AdminUserController {
             @Valid @RequestBody AdjustPointsRequest req) {
         adminService.adjustPoints(operatorId, userId, req);
         return Result.success("积分调整成功");
+    }
+
+    @Operation(summary = "重置用户密码", description = "随机生成新密码并返回明文")
+    @PutMapping("/{userId}/password")
+    public Result<Map<String, String>> resetPassword(@PathVariable Long userId) {
+        return Result.success(adminService.resetPassword(userId));
     }
 
     @Operation(summary = "用户积分流水")

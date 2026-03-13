@@ -26,8 +26,19 @@
         placeholder="搜索活动标题"
         prefix-icon="Search"
         clearable
-        style="width: 260px"
+        style="width: 240px"
         @change="fetchData"
+      />
+      <el-date-picker
+        v-model="dateRange"
+        type="daterange"
+        range-separator="至"
+        start-placeholder="开始日期"
+        end-placeholder="结束日期"
+        value-format="YYYY-MM-DD"
+        clearable
+        @change="fetchData"
+        style="width: 240px"
       />
       <el-button type="primary" icon="Search" @click="fetchData">查询</el-button>
     </div>
@@ -132,6 +143,7 @@ const page = ref(1)
 const pageSize = ref(20)
 const keyword = ref('')
 const statusFilter = ref<number | undefined>(undefined)
+const dateRange = ref<[string, string] | null>(null)
 
 const statusSummary = [
   { status: 0, label: '待开始', color: '#909399' },
@@ -146,6 +158,8 @@ async function fetchData() {
     const r = await listActivities({
       keyword: keyword.value || undefined,
       status: statusFilter.value,
+      startDate: dateRange.value?.[0] || undefined,
+      endDate: dateRange.value?.[1] || undefined,
       page: page.value,
       pageSize: pageSize.value
     })

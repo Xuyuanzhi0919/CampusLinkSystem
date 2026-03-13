@@ -16,7 +16,7 @@ export interface AdminTask {
   completedAt: string | null
 }
 
-export function listTasks(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {
+export function listTasks(params: { keyword?: string; status?: number; startDate?: string; endDate?: string; page?: number; pageSize?: number }) {
   return get<PageResult<AdminTask>>('/admin/tasks', params as Record<string, unknown>)
 }
 

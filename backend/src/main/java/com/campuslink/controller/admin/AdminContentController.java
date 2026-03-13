@@ -4,6 +4,7 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.admin.AdminContentQueryRequest;
 import com.campuslink.dto.admin.UpdateContentStatusRequest;
+import com.campuslink.entity.Answer;
 import com.campuslink.entity.Question;
 import com.campuslink.entity.Resource;
 import com.campuslink.service.AdminService;
@@ -57,6 +58,24 @@ public class AdminContentController {
             @PathVariable Long questionId,
             @Valid @RequestBody UpdateContentStatusRequest req) {
         adminService.updateQuestionStatus(questionId, req);
+        return Result.success("操作成功");
+    }
+
+    // ==================== 回答管理 ====================
+
+    @Operation(summary = "回答列表", description = "status: 0-已隐藏 1-正常")
+    @GetMapping("/answers")
+    public Result<PageResult<Answer>> listAnswers(
+            @ModelAttribute AdminContentQueryRequest req) {
+        return Result.success(adminService.listAnswers(req));
+    }
+
+    @Operation(summary = "更新回答状态", description = "status: 0-隐藏 1-恢复")
+    @PutMapping("/answers/{answerId}/status")
+    public Result<Void> updateAnswerStatus(
+            @PathVariable Long answerId,
+            @Valid @RequestBody UpdateContentStatusRequest req) {
+        adminService.updateAnswerStatus(answerId, req);
         return Result.success("操作成功");
     }
 }

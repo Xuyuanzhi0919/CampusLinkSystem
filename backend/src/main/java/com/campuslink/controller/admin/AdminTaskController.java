@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 
 /**
  * 管理员任务管理接口
@@ -29,6 +30,8 @@ public class AdminTaskController {
     public Result<PageResult<Task>> listTasks(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize) {
 
@@ -39,6 +42,12 @@ public class AdminTaskController {
         }
         if (status != null) {
             wrapper.eq(Task::getStatus, status);
+        }
+        if (StringUtils.hasText(startDate)) {
+            wrapper.ge(Task::getCreatedAt, LocalDate.parse(startDate).atStartOfDay());
+        }
+        if (StringUtils.hasText(endDate)) {
+            wrapper.le(Task::getCreatedAt, LocalDate.parse(endDate).atTime(23, 59, 59));
         }
         wrapper.orderByDesc(Task::getCreatedAt);
 

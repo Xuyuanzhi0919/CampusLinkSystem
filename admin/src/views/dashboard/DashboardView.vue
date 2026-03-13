@@ -107,13 +107,13 @@
         </div>
       </el-col>
       <el-col :span="6">
-        <div class="quick-card" @click="$router.push('/activities')">
+        <div class="quick-card" @click="$router.push('/tasks?status=0')">
           <div class="quick-icon activity">
-            <el-icon :size="20"><Calendar /></el-icon>
+            <el-icon :size="20"><List /></el-icon>
           </div>
           <div class="quick-info">
-            <div class="quick-num">{{ data?.totalActivities ?? '-' }}</div>
-            <div class="quick-label">活动总数</div>
+            <div class="quick-num">{{ data?.pendingTasks ?? '-' }}</div>
+            <div class="quick-label">待接单任务</div>
           </div>
           <el-icon class="quick-arrow"><ArrowRight /></el-icon>
         </div>

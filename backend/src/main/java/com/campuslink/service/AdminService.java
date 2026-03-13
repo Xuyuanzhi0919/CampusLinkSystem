@@ -20,8 +20,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.util.DigestUtils;
 
 /**
  * 管理员服务
@@ -39,6 +41,8 @@ public class AdminService {
     private final ReportMapper reportMapper;
     private final PointsLogMapper pointsLogMapper;
     private final SchoolMapper schoolMapper;
+    private final AnswerMapper answerMapper;
+    private final NotificationMapper notificationMapper;
 
     // ==================== 仪表板 ====================
 
@@ -71,6 +75,8 @@ public class AdminService {
                 new LambdaQueryWrapper<Report>().eq(Report::getStatus, 0)));
         vo.setBannedUsers(userMapper.selectCount(
                 new LambdaQueryWrapper<User>().eq(User::getStatus, 0)));
+        vo.setPendingTasks(taskMapper.selectCount(
+                new LambdaQueryWrapper<Task>().eq(Task::getStatus, 0)));
 
         // 近7天趋势
         vo.setUserTrend(buildTrend7Days("user"));
@@ -180,6 +186,21 @@ public class AdminService {
         log.info("管理员调整积分 - operator: {}, userId: {}, delta: {}", operatorId, userId, req.getDelta());
     }
 
+    // ==================== 密码重置 ====================
+
+    @Transactional
+    public Map<String, String> resetPassword(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) throw new BusinessException(404, "用户不存在");
+        String newPassword = "CL" + String.format("%06d", new java.util.Random().nextInt(1000000));
+        user.setPassword(DigestUtils.md5DigestAsHex(newPassword.getBytes()));
+        userMapper.updateById(user);
+        log.info("管理员重置用户密码 - userId: {}", userId);
+        Map<String, String> result = new HashMap<>();
+        result.put("newPassword", newPassword);
+        return result;
+    }
+
     // ==================== 内容管理 ====================
 
     public PageResult<Resource> listResources(AdminContentQueryRequest req) {
@@ -229,6 +250,48 @@ public class AdminService {
         if (question == null) throw new BusinessException(404, "问题不存在");
         question.setStatus(req.getStatus());
         questionMapper.updateById(question);
+    }
+
+    public PageResult<Answer> listAnswers(AdminContentQueryRequest req) {
+        Page<Answer> page = new Page<>(req.getPage(), req.getPageSize());
+        LambdaQueryWrapper<Answer> wrapper = new LambdaQueryWrapper<>();
+        if (StringUtils.hasText(req.getKeyword())) {
+            wrapper.like(Answer::getContent, req.getKeyword());
+        }
+        if (req.getStatus() != null) {
+            wrapper.eq(Answer::getStatus, req.getStatus());
+        }
+        wrapper.orderByDesc(Answer::getCreatedAt);
+        Page<Answer> result = answerMapper.selectPage(page, wrapper);
+        return new PageResult<>(result.getRecords(), result.getTotal(),
+                (long) req.getPage(), (long) req.getPageSize(), result.getPages());
+    }
+
+    @Transactional
+    public void updateAnswerStatus(Long answerId, UpdateContentStatusRequest req) {
+        Answer answer = answerMapper.selectById(answerId);
+        if (answer == null) throw new BusinessException(404, "回答不存在");
+        answer.setStatus(req.getStatus());
+        answerMapper.updateById(answer);
+    }
+
+    // ==================== 公告历史 ====================
+
+    public List<Notification> getNoticeHistory() {
+        List<Notification> all = notificationMapper.selectList(
+                new LambdaQueryWrapper<Notification>()
+                        .in(Notification::getNotifyType, "announcement", "system", "warning")
+                        .isNull(Notification::getRelatedId)
+                        .orderByDesc(Notification::getCreatedAt)
+                        .last("LIMIT 200")
+        );
+        Map<String, Notification> seen = new LinkedHashMap<>();
+        for (Notification n : all) {
+            String key = n.getTitle() + ":" + n.getNotifyType();
+            seen.putIfAbsent(key, n);
+            if (seen.size() >= 20) break;
+        }
+        return new ArrayList<>(seen.values());
     }
 
     // ==================== 内部工具 ====================

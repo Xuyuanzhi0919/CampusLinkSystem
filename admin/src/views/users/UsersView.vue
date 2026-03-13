@@ -69,6 +69,7 @@
               {{ row.status === 1 ? '封禁' : '解封' }}
             </el-button>
             <el-button text size="small" @click="openPointsDialog(row)">调积分</el-button>
+            <el-button text size="small" type="warning" @click="handleResetPassword(row)">重置密码</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -160,6 +161,17 @@
       </template>
     </el-drawer>
 
+    <!-- 重置密码对话框 -->
+    <el-dialog v-model="resetPwdVisible" title="重置密码结果" width="380px">
+      <div class="reset-result">
+        <div class="reset-hint">新密码已生成，请将密码告知用户并提醒及时修改</div>
+        <div class="reset-pwd-box">{{ resetPwdResult }}</div>
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="resetPwdVisible = false">确认</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 调整积分对话框 -->
     <el-dialog v-model="pointsVisible" title="手动调整积分" width="400px">
       <el-form :model="pointsForm" label-width="80px">
@@ -183,7 +195,7 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listUsers, getUserDetail, banUser, setRole, adjustPoints, getUserPointsHistory, type PointsLogItem } from '@/api/user'
+import { listUsers, getUserDetail, banUser, setRole, adjustPoints, getUserPointsHistory, resetPassword, type PointsLogItem } from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
@@ -212,6 +224,9 @@ const pointsHistoryLoading = ref(false)
 const pointsVisible = ref(false)
 const pointsLoading = ref(false)
 const pointsForm = reactive({ userId: 0, delta: 0, reason: '' })
+
+const resetPwdVisible = ref(false)
+const resetPwdResult = ref('')
 
 async function fetchUsers() {
   loading.value = true
@@ -297,6 +312,15 @@ function openPointsDialog(row: AdminUser) {
   pointsVisible.value = true
 }
 
+async function handleResetPassword(row: AdminUser) {
+  await ElMessageBox.confirm(`确认重置用户「${row.nickname || row.username}」的密码？`, '重置密码', {
+    type: 'warning', confirmButtonText: '确认重置', cancelButtonText: '取消'
+  })
+  const result = await resetPassword(row.uId)
+  resetPwdResult.value = result.newPassword
+  resetPwdVisible.value = true
+}
+
 async function submitPoints() {
   if (pointsForm.delta === 0) { ElMessage.warning('调整量不能为0'); return }
   pointsLoading.value = true
@@ -328,6 +352,14 @@ onMounted(fetchUsers)
 .detail-desc { margin-bottom: 24px; }
 .detail-actions { display: flex; gap: 12px; }
 .points-hint { font-size: 12px; color: #9ca3af; margin-left: 8px; }
+.reset-result { text-align: center; padding: 8px 0 16px; }
+.reset-hint { font-size: 13px; color: #6b7280; margin-bottom: 16px; }
+.reset-pwd-box {
+  font-size: 22px; font-weight: 700; color: #7c3aed;
+  background: #f5f3ff; border-radius: 10px; padding: 14px 24px;
+  letter-spacing: 2px; border: 2px dashed #a78bfa;
+  font-family: 'Outfit', monospace;
+}
 .detail-loading {
   display: flex; align-items: center; gap: 6px;
   font-size: 12px; color: #909399; margin-bottom: 12px;

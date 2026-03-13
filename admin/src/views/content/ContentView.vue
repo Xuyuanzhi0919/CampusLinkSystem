@@ -5,6 +5,7 @@
       <el-tabs v-model="activeTab" @tab-change="onTabChange">
         <el-tab-pane label="资源管理" name="resources" />
         <el-tab-pane label="问答管理" name="questions" />
+        <el-tab-pane label="回答管理" name="answers" />
       </el-tabs>
     </div>
 
@@ -70,7 +71,7 @@
     </div>
 
     <!-- 问答表格 -->
-    <div class="table-card" v-else>
+    <div class="table-card" v-else-if="activeTab === 'questions'">
       <el-table :data="questions" v-loading="loading" stripe>
         <el-table-column label="问题标题" min-width="260" show-overflow-tooltip>
           <template #default="{ row }">
@@ -98,6 +99,43 @@
         </el-table-column>
       </el-table>
       <el-empty v-if="!loading && questions.length === 0" description="暂无问答数据" />
+      <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @change="fetchData" class="pagination" />
+    </div>
+
+    <!-- 回答表格 -->
+    <div class="table-card" v-else>
+      <el-table :data="answers" v-loading="loading" stripe>
+        <el-table-column label="回答内容" min-width="300" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="content-title">{{ row.content }}</div>
+            <div class="content-sub">回答者 ID: {{ row.responderId }} · 问题 ID: {{ row.questionId }}</div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="likes" label="点赞" width="70" align="center" />
+        <el-table-column label="采纳" width="70" align="center">
+          <template #default="{ row }">
+            <el-tag v-if="row.isAccepted" type="success" size="small">已采纳</el-tag>
+            <span v-else class="ended-text">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="90" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'" size="small">
+              {{ row.status === 1 ? '正常' : '已隐藏' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="发布时间" width="160">
+          <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+        </el-table-column>
+        <el-table-column label="操作" width="120" fixed="right">
+          <template #default="{ row }">
+            <el-button v-if="row.status === 1" text type="danger" size="small" @click="toggleAnswer(row, 0)">隐藏</el-button>
+            <el-button v-else text type="success" size="small" @click="toggleAnswer(row, 1)">恢复</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-if="!loading && answers.length === 0" description="暂无回答数据" />
       <el-pagination v-model:current-page="page" v-model:page-size="pageSize" :total="total" :page-sizes="[10, 20, 50, 100]" layout="total, sizes, prev, pager, next" @change="fetchData" class="pagination" />
     </div>
   </div>
@@ -145,8 +183,8 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listResources, updateResourceStatus, listQuestions, updateQuestionStatus } from '@/api/content'
-import type { AdminResource, AdminQuestion } from '@/types'
+import { listResources, updateResourceStatus, listQuestions, updateQuestionStatus, listAnswers, updateAnswerStatus } from '@/api/content'
+import type { AdminResource, AdminQuestion, AdminAnswer } from '@/types'
 import dayjs from 'dayjs'
 
 const route = useRoute()
@@ -163,6 +201,7 @@ const resources = ref<AdminResource[]>([])
 const resourceDetailVisible = ref(false)
 const selectedResource = ref<AdminResource | null>(null)
 const questions = ref<AdminQuestion[]>([])
+const answers = ref<AdminAnswer[]>([])
 
 async function fetchData() {
   loading.value = true
@@ -172,9 +211,13 @@ async function fetchData() {
       const r = await listResources(params)
       resources.value = r.list
       total.value = r.total
-    } else {
+    } else if (activeTab.value === 'questions') {
       const r = await listQuestions(params)
       questions.value = r.list
+      total.value = r.total
+    } else {
+      const r = await listAnswers(params)
+      answers.value = r.list
       total.value = r.total
     }
   } finally {
@@ -226,6 +269,12 @@ async function toggleQuestion(row: AdminQuestion, status: number) {
   ElMessage.success(status === 1 ? '已恢复' : '已隐藏')
 }
 
+async function toggleAnswer(row: AdminAnswer, status: number) {
+  await updateAnswerStatus(row.aid, status)
+  row.status = status
+  ElMessage.success(status === 1 ? '已恢复' : '已隐藏')
+}
+
 onMounted(fetchData)
 </script>
 
@@ -249,4 +298,5 @@ onMounted(fetchData)
   border: 1px solid #e5e7eb; white-space: pre-wrap;
 }
 .drawer-actions { display: flex; gap: 10px; margin-top: 24px; }
+.ended-text { color: #d1d5db; font-size: 13px; }
 </style>

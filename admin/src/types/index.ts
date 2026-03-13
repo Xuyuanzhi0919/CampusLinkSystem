@@ -91,6 +91,7 @@ export interface DashboardVO {
   pendingResources: number
   pendingReports: number
   bannedUsers: number
+  pendingTasks: number
   userTrend: Array<{ date: string; count: number }>
   contentTrend: Array<{ date: string; count: number }>
 }
@@ -123,6 +124,17 @@ export interface AdminQuestion {
   status: number
   viewCount: number
   answerCount: number
+  createdAt: string
+}
+
+export interface AdminAnswer {
+  aid: number
+  questionId: number
+  responderId: number
+  content: string
+  likes: number
+  isAccepted: number
+  status: number
   createdAt: string
 }
 

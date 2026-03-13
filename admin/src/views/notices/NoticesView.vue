@@ -94,17 +94,38 @@
         </div>
       </el-col>
     </el-row>
+
+    <!-- 发送历史 -->
+    <div class="card history-card">
+      <h3 class="card-title">发送历史（最近20条广播）</h3>
+      <el-table :data="noticeHistory" v-loading="historyLoading" stripe size="small">
+        <el-table-column label="类型" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="notifyTypeTag(row.notifyType)" size="small">{{ notifyTypeLabel(row.notifyType) }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
+        <el-table-column prop="content" label="内容" min-width="240" show-overflow-tooltip />
+        <el-table-column label="发送时间" width="160">
+          <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
+        </el-table-column>
+      </el-table>
+      <el-empty v-if="!historyLoading && noticeHistory.length === 0" description="暂无发送记录" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
-import { sendNotice } from '@/api/notice'
+import { sendNotice, getNoticeHistory, type NoticeHistoryItem } from '@/api/notice'
+import dayjs from 'dayjs'
 
 const formRef = ref<FormInstance>()
 const sending = ref(false)
 const sendMode = ref<'all' | 'single'>('all')
+const noticeHistory = ref<NoticeHistoryItem[]>([])
+const historyLoading = ref(false)
 
 const form = reactive({
   userId: undefined as number | undefined,
@@ -152,6 +173,7 @@ async function handleSend() {
     })
     ElMessage.success(sendMode.value === 'all' ? '公告已广播，正在异步发送中' : '通知已发送')
     resetForm()
+    loadHistory()
   } finally {
     sending.value = false
   }
@@ -161,6 +183,29 @@ function resetForm() {
   formRef.value?.resetFields()
   form.userId = undefined
 }
+
+async function loadHistory() {
+  historyLoading.value = true
+  try {
+    noticeHistory.value = await getNoticeHistory()
+  } finally {
+    historyLoading.value = false
+  }
+}
+
+function notifyTypeLabel(t: string) {
+  return { announcement: '系统公告', system: '系统通知', warning: '警告提醒' }[t] || t
+}
+
+function notifyTypeTag(t: string): 'success' | 'warning' | 'danger' | '' {
+  return ({ announcement: '', system: 'success', warning: 'danger' } as Record<string, 'success' | 'warning' | 'danger' | ''>)[t] || ''
+}
+
+function formatDate(d?: string) {
+  return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
+}
+
+onMounted(loadHistory)
 </script>
 
 <style scoped>
@@ -232,4 +277,6 @@ function resetForm() {
   font-size: 12px;
   color: #9ca3af;
 }
+
+.history-card { margin-top: 20px; }
 </style>

@@ -2,8 +2,8 @@ package com.campuslink.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.campuslink.common.Result;
+import com.campuslink.dto.admin.AdminNoticeHistoryVO;
 import com.campuslink.dto.notification.SendNotificationRequest;
-import com.campuslink.entity.Notification;
 import com.campuslink.entity.ScheduledNotice;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.ScheduledNoticeMapper;
@@ -49,9 +49,9 @@ public class AdminNoticeController {
 
     // ─────────────────── 发送历史 ────────────────────────────
 
-    @Operation(summary = "公告发送历史", description = "返回最近 20 条去重记录")
+    @Operation(summary = "公告发送历史", description = "返回最近 20 条去重记录，含接收者信息和接收人数")
     @GetMapping("/history")
-    public Result<List<Notification>> getHistory() {
+    public Result<List<AdminNoticeHistoryVO>> getHistory() {
         return Result.success(adminService.getNoticeHistory());
     }
 

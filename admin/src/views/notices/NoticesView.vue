@@ -164,11 +164,24 @@
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
         <el-table-column prop="content" label="内容摘要" min-width="200" show-overflow-tooltip />
-        <el-table-column label="接收用户" width="110" align="center">
+        <el-table-column label="接收用户" width="150" align="center">
           <template #default="{ row }">
-            <el-tooltip content="广播时显示其中一位接收者 uid" placement="top">
-              <span class="uid-text">uid={{ row.userId }}</span>
-            </el-tooltip>
+            <!-- 广播/角色发送：多人 -->
+            <template v-if="row.recipientCount > 1">
+              <el-tag type="info" size="small">广播 {{ row.recipientCount }} 人</el-tag>
+            </template>
+            <!-- 单发：显示用户信息 -->
+            <template v-else>
+              <div v-if="row.nickname || row.username" class="history-user-cell">
+                <el-avatar :size="20" :src="row.avatarUrl" style="flex-shrink:0">
+                  {{ (row.nickname || row.username)?.charAt(0) }}
+                </el-avatar>
+                <el-tooltip :content="`uid=${row.userId} @${row.username}`" placement="top">
+                  <span class="history-user-name">{{ row.nickname || row.username }}</span>
+                </el-tooltip>
+              </div>
+              <span v-else class="uid-text">uid={{ row.userId }}</span>
+            </template>
           </template>
         </el-table-column>
         <el-table-column label="发送时间" width="160">
@@ -239,7 +252,18 @@
         </el-descriptions-item>
         <el-descriptions-item label="标题">{{ selectedHistory.title }}</el-descriptions-item>
         <el-descriptions-item label="发送时间">{{ formatDate(selectedHistory.createdAt) }}</el-descriptions-item>
-        <el-descriptions-item label="接收 uid">{{ selectedHistory.userId }}</el-descriptions-item>
+        <el-descriptions-item label="接收用户">
+          <template v-if="selectedHistory.recipientCount > 1">
+            <el-tag type="info" size="small">广播 {{ selectedHistory.recipientCount }} 人</el-tag>
+          </template>
+          <template v-else>
+            <span v-if="selectedHistory.nickname || selectedHistory.username">
+              {{ selectedHistory.nickname || selectedHistory.username }}
+              <span style="color:#9ca3af;margin-left:4px">(@{{ selectedHistory.username }}，uid={{ selectedHistory.userId }})</span>
+            </span>
+            <span v-else>uid={{ selectedHistory.userId }}</span>
+          </template>
+        </el-descriptions-item>
       </el-descriptions>
       <div class="detail-content-box">{{ selectedHistory.content }}</div>
     </template>
@@ -526,6 +550,16 @@ onMounted(() => {
 .preview-title { font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px; }
 .preview-content { font-size: 13px; color: #374151; line-height: 1.7; white-space: pre-wrap; margin-bottom: 14px; }
 .preview-meta { display: flex; justify-content: space-between; font-size: 12px; color: #9ca3af; }
+
+/* ─── 历史接收用户单元格 ───────────────────────────────── */
+.history-user-cell {
+  display: flex; align-items: center; gap: 6px; justify-content: center;
+}
+.history-user-name {
+  font-size: 12px; color: #374151; max-width: 80px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.uid-text { font-size: 12px; color: #9ca3af; }
 
 /* ─── 历史详情 ────────────────────────────────────────── */
 .detail-content-box {

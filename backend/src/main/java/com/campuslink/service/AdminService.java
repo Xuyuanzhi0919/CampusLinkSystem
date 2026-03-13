@@ -442,21 +442,57 @@ public class AdminService {
 
     // ==================== 公告历史 ====================
 
-    public List<Notification> getNoticeHistory() {
+    public List<AdminNoticeHistoryVO> getNoticeHistory() {
         List<Notification> all = notificationMapper.selectList(
                 new LambdaQueryWrapper<Notification>()
                         .in(Notification::getNotifyType, "announcement", "system", "warning")
                         .isNull(Notification::getRelatedId)
                         .orderByDesc(Notification::getCreatedAt)
-                        .last("LIMIT 200")
+                        .last("LIMIT 500")
         );
-        Map<String, Notification> seen = new LinkedHashMap<>();
+
+        // 按 title+notifyType 分组：取第一条作代表，统计接收人数
+        Map<String, List<Notification>> grouped = new LinkedHashMap<>();
         for (Notification n : all) {
             String key = n.getTitle() + ":" + n.getNotifyType();
-            seen.putIfAbsent(key, n);
-            if (seen.size() >= 20) break;
+            grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(n);
+            if (grouped.size() >= 20) break;
         }
-        return new ArrayList<>(seen.values());
+
+        // 收集需要解析用户名的 userId（单发时才有意义）
+        List<Long> singleUserIds = new ArrayList<>();
+        grouped.values().forEach(list -> {
+            if (list.size() == 1) singleUserIds.add(list.get(0).getUserId());
+        });
+
+        Map<Long, User> userMap = new HashMap<>();
+        if (!singleUserIds.isEmpty()) {
+            userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUid, singleUserIds))
+                    .forEach(u -> userMap.put(u.getUid(), u));
+        }
+
+        List<AdminNoticeHistoryVO> result = new ArrayList<>();
+        for (List<Notification> list : grouped.values()) {
+            Notification rep = list.get(0);
+            AdminNoticeHistoryVO vo = new AdminNoticeHistoryVO();
+            vo.setNotificationId(rep.getNotificationId());
+            vo.setNotifyType(rep.getNotifyType());
+            vo.setTitle(rep.getTitle());
+            vo.setContent(rep.getContent());
+            vo.setCreatedAt(rep.getCreatedAt());
+            vo.setRecipientCount(list.size());
+            vo.setUserId(rep.getUserId());
+            if (list.size() == 1) {
+                User u = userMap.get(rep.getUserId());
+                if (u != null) {
+                    vo.setUsername(u.getUsername());
+                    vo.setNickname(u.getNickname());
+                    vo.setAvatarUrl(u.getAvatarUrl());
+                }
+            }
+            result.add(vo);
+        }
+        return result;
     }
 
     // ==================== 内部工具 ====================

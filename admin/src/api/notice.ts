@@ -16,11 +16,17 @@ export function sendNotice(data: SendNoticeRequest) {
 // ─── 发送历史 ──────────────────────────────────────────────
 export interface NoticeHistoryItem {
   notificationId: number
-  userId: number         // 接收者 uid（广播时为其中一条记录的接收者）
+  notifyType: string
   title: string
   content: string
-  notifyType: string
   createdAt: string
+  /** 该标题下总接收人数：>1 为广播，==1 为单发 */
+  recipientCount: number
+  // 单发时以下字段有效
+  userId: number
+  username?: string
+  nickname?: string
+  avatarUrl?: string
 }
 
 export function getNoticeHistory() {

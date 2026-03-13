@@ -625,7 +625,9 @@ const handleSend = async () => {
     // 详细的错误提示
     let errorMsg = '发送失败，请重试'
 
-    if (error.statusCode === 401 || error.errMsg?.includes('401')) {
+    if (error.statusCode === 403 || error.errMsg?.includes('403')) {
+      errorMsg = 'AI 功能暂未开放，请联系管理员'
+    } else if (error.statusCode === 401 || error.errMsg?.includes('401')) {
       errorMsg = '未登录，请先登录后再使用'
     } else if (error.statusCode === 429 || error.errMsg?.includes('429')) {
       errorMsg = 'AI 服务繁忙，请稍后再试'
@@ -641,7 +643,7 @@ const handleSend = async () => {
 
     uni.showToast({
       title: errorMsg,
-      icon: 'error',
+      icon: error.statusCode === 403 ? 'none' : 'error',
       duration: 3000
     })
 

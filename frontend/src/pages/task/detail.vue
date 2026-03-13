@@ -65,6 +65,19 @@
         </view>
       </view>
 
+      <!-- 积分激励条：待接单、非发布者时显示 -->
+      <view
+        v-if="task && task.status === 0 && !isPublisher && !isExpired"
+        class="task-incentive"
+      >
+        <text class="task-incentive__icon">💰</text>
+        <text class="task-incentive__text">
+          接单并完成任务可获得
+          <text class="task-incentive__pts">+{{ task.rewardPoints }}</text>
+          积分奖励
+        </text>
+      </view>
+
       <!-- ===== 双列主体 ===== -->
       <view class="detail-body">
 
@@ -1328,5 +1341,22 @@ onUnmounted(() => {
   display: flex;
   gap: $sp-4;
   .mobile-btn { flex: 1; }
+}
+
+/* ── 接单积分激励条 ───────────────────────── */
+.task-incentive {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px;
+  margin-bottom: 2px;
+  background: linear-gradient(90deg, #fffbeb, #fef9c3);
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 6px 6px 0;
+  font-size: 13px;
+  color: #92400e;
+  &__icon { font-size: 15px; flex-shrink: 0; }
+  &__text { line-height: 1.5; }
+  &__pts { font-weight: 700; color: #d97706; }
 }
 </style>

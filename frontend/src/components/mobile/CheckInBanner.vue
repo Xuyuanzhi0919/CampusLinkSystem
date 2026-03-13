@@ -167,7 +167,7 @@ const goGrowth = () => {
 // ── 卡片容器
 .checkin-card {
   position: relative;
-  margin: 0 14px 10px;
+  margin: 0 14px 4px;
   padding: 13px 14px 10px;
   border-radius: 18px;
   background: linear-gradient(145deg, #FFFAF5 0%, #FFF7ED 100%);

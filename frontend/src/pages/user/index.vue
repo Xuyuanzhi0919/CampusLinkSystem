@@ -697,7 +697,7 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   display: flex;
   flex-direction: column;
   gap: 14rpx;
-  padding: 16rpx 24rpx 0;
+  padding: 6rpx 24rpx 0;
   width: 100%;
   box-sizing: border-box;
 
@@ -880,7 +880,8 @@ defineExpose({ onPullDownRefresh: handleRefresh })
   align-items: center;
   gap: 8rpx;
   align-self: flex-end;   // 右对齐（page-body 是 flex-col）
-  padding: 10rpx 22rpx;
+  padding: 6rpx 18rpx;
+  margin-bottom: -4rpx;  // 补偿下方 gap，使按钮与第一张卡片视觉间距不过大
   border-radius: 40rpx;
   background: rgba($campus-blue, 0.06);
   cursor: pointer;

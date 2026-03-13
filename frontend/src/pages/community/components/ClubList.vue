@@ -168,11 +168,12 @@
         <view class="club-search">
           <Icon name="search" :size="13" class="club-search__icon" />
           <input
-            v-model="searchKeyword"
+            :value="props.searchKeyword"
             class="club-search__input"
             placeholder="搜索社团名称或简介..."
+            @input="emit('update:searchKeyword', ($event.target as HTMLInputElement).value)"
           />
-          <view v-if="searchKeyword" class="club-search__clear" @click="searchKeyword = ''">
+          <view v-if="props.searchKeyword" class="club-search__clear" @click="emit('update:searchKeyword', '')">
             <Icon name="x" :size="12" />
           </view>
         </view>
@@ -182,8 +183,8 @@
               v-for="cat in categories"
               :key="cat.value"
               class="cat-tab"
-              :class="{ active: activeCategory === cat.value }"
-              @click="activeCategory = cat.value"
+              :class="{ active: props.selectedCategory === cat.value }"
+              @click="emit('update:selectedCategory', cat.value)"
             >
               <text class="cat-tab-label">{{ cat.label }}</text>
             </view>
@@ -204,7 +205,7 @@
       <view v-if="filteredList.length === 0" class="filter-empty">
         <Icon name="search" :size="32" class="filter-empty__icon" />
         <text class="filter-empty__text">没有找到匹配的社团</text>
-        <view class="filter-empty__reset" @click="searchKeyword = ''; activeCategory = ''">
+        <view class="filter-empty__reset" @click="emit('update:searchKeyword', ''); emit('update:selectedCategory', '')">
           <text>清除筛选</text>
         </view>
       </view>
@@ -309,12 +310,20 @@ interface Props {
   list: any[]
   loading: boolean
   hasMore?: boolean
+  searchKeyword?: string
+  selectedCategory?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  hasMore: true
+  hasMore: true,
+  searchKeyword: '',
+  selectedCategory: ''
 })
-const emit = defineEmits<{ (e: 'refresh'): void }>()
+const emit = defineEmits<{
+  (e: 'refresh'): void
+  (e: 'update:searchKeyword', val: string): void
+  (e: 'update:selectedCategory', val: string): void
+}>()
 
 const { toClubDetail } = useNavigation()
 const joiningIds = ref<Set<number>>(new Set())
@@ -378,9 +387,6 @@ const getCategoryColor = (cat?: string) =>
 const getCategoryColorDim = (cat?: string) =>
   categoryColorDimMap[cat || ''] || '#7A5A00'
 
-const searchKeyword = ref('')
-const activeCategory = ref('')
-
 const categories = [
   { value: '', label: '全部' },
   { value: '学术', label: '学术' },
@@ -391,19 +397,8 @@ const categories = [
   { value: '综合', label: '综合' },
 ]
 
-const filteredList = computed(() => {
-  let result = props.list
-  if (activeCategory.value) {
-    result = result.filter((c: any) => c.category === activeCategory.value)
-  }
-  if (searchKeyword.value.trim()) {
-    const kw = searchKeyword.value.trim().toLowerCase()
-    result = result.filter((c: any) =>
-      c.clubName?.toLowerCase().includes(kw) || c.description?.toLowerCase().includes(kw)
-    )
-  }
-  return result
-})
+// 过滤已在后端完成，直接使用 props.list
+const filteredList = computed(() => props.list)
 
 const formatMemberCount = (count: number) => {
   if (!count) return '0'

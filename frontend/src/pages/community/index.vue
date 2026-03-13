@@ -62,7 +62,14 @@
               <view class="r-dot"></view>
             </view>
           </view>
-          <ClubList :list="clubList" :loading="clubLoading" :has-more="clubHasMore" @refresh="loadClubs(true)" />
+          <ClubList
+            :list="clubList"
+            :loading="clubLoading"
+            :has-more="clubHasMore"
+            v-model:searchKeyword="clubSearchKeyword"
+            v-model:selectedCategory="clubCategory"
+            @refresh="loadClubs(true)"
+          />
         </scroll-view>
       </swiper-item>
 
@@ -115,7 +122,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { onShow } from '@dcloudio/uni-app'
 import ClubList from './components/ClubList.vue'
 import ActivityList from './components/ActivityList.vue'
@@ -153,6 +160,10 @@ const tabScrollTops = ref([0, 0])
 const showScrollTop = ref(false)
 // scroll-top 绑定值：undefined 时不干预，数字时控制 scroll-view 位置
 const scrollTopBindings = ref<(number | undefined)[]>([undefined, undefined])
+
+// 社团搜索/分类状态（server-side）
+const clubSearchKeyword = ref('')
+const clubCategory = ref('')
 
 // 社团数据
 const clubList = ref<any[]>([])
@@ -262,7 +273,10 @@ const loadClubs = async (isRefresh = false) => {
 
     const res = await getClubList({
       page,
-      pageSize: 20
+      pageSize: 20,
+      sortBy: 'latest',
+      keyword: clubSearchKeyword.value || undefined,
+      category: clubCategory.value || undefined
     })
 
     if (isRefresh) {
@@ -343,6 +357,13 @@ const handleActivityRefresh = async () => {
   await loadActivities(true)
   activityRefreshing.value = false
 }
+
+// 搜索/分类变化时重新从第1页加载
+watch([clubSearchKeyword, clubCategory], () => {
+  clubPage.value = 1
+  clubHasMore.value = true
+  loadClubs(true)
+})
 
 // 页面加载时初始化社团列表（第一个 Tab）
 onMounted(() => {

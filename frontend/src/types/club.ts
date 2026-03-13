@@ -78,6 +78,8 @@ export interface ActivityDetail extends ActivityItem {
 export interface ClubListParams {
   schoolId?: number
   keyword?: string
+  category?: string
+  sortBy?: string
   page?: number
   pageSize?: number
 }

@@ -1,7 +1,11 @@
 package com.campuslink.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.campuslink.dto.resource.OssSignatureResponse;
+import com.campuslink.entity.SystemConfig;
+import com.campuslink.mapper.SystemConfigMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +39,9 @@ public class OssService {
 
     @Value("${aliyun.oss.upload-dir}")
     private String uploadDir;
+
+    @Autowired
+    private SystemConfigMapper systemConfigMapper;
 
     /**
      * 生成 OSS 上传签名
@@ -88,12 +95,21 @@ public class OssService {
         formatter.setTimeZone(new SimpleTimeZone(0, "GMT"));
         String expirationStr = formatter.format(expiration);
 
-        // Policy JSON (限制文件大小最大 50MB)
-        // 使用 starts-with 代替 eq,更宽松的匹配
+        // 从 system_config 读取最大文件大小，默认 200MB
+        long maxFileSize = 209715200L;
+        try {
+            SystemConfig cfg = systemConfigMapper.selectOne(
+                    new LambdaQueryWrapper<SystemConfig>().eq(SystemConfig::getConfigKey, "upload.max_file_size"));
+            if (cfg != null && cfg.getConfigValue() != null) {
+                maxFileSize = Long.parseLong(cfg.getConfigValue());
+            }
+        } catch (Exception ignored) {}
+
         return String.format(
-                "{\"expiration\":\"%s\",\"conditions\":[[\"content-length-range\",0,52428800],[\"starts-with\",\"$key\",\"%s\"]]}",
+                "{\"expiration\":\"%s\",\"conditions\":[[\"content-length-range\",0,%d],[\"starts-with\",\"$key\",\"%s\"]]}",
                 expirationStr,
-                uploadDir  // 只限制上传目录
+                maxFileSize,
+                uploadDir
         );
     }
 

@@ -32,6 +32,7 @@ public class CommentService {
     private final ResourceMapper resourceMapper;
     private final QuestionMapper questionMapper;
     private final AnswerMapper answerMapper;
+    private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
 
     /**
      * 创建评论
@@ -49,6 +50,18 @@ public class CommentService {
             Comment parentComment = commentMapper.selectById(request.getParentId());
             if (parentComment == null || parentComment.getStatus() == 0) {
                 throw new BusinessException(ResultCode.BAD_REQUEST, "父评论不存在或已删除");
+            }
+        }
+
+        // 验证评论长度
+        if (request.getContent() != null) {
+            com.campuslink.entity.SystemConfig maxLenCfg = systemConfigMapper.selectOne(
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                            .eq(com.campuslink.entity.SystemConfig::getConfigKey, "comment.max_length"));
+            int maxLen = (maxLenCfg != null && maxLenCfg.getConfigValue() != null)
+                    ? Integer.parseInt(maxLenCfg.getConfigValue()) : 500;
+            if (request.getContent().length() > maxLen) {
+                throw new BusinessException(com.campuslink.common.ResultCode.BAD_REQUEST, "评论内容不能超过 " + maxLen + " 字");
             }
         }
 

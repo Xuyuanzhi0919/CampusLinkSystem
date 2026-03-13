@@ -45,6 +45,7 @@ public class TaskService {
     private final TaskRatingMapper taskRatingMapper;
     private final NotificationService notificationService;
     private final LevelService levelService;
+    private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
 
     /**
      * 发布任务
@@ -54,6 +55,16 @@ public class TaskService {
         User user = userMapper.selectById(userId);
         if (user == null) {
             throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 验证悬赏积分不超过系统配置上限
+        com.campuslink.entity.SystemConfig maxRewardCfg = systemConfigMapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                        .eq(com.campuslink.entity.SystemConfig::getConfigKey, "task.max_reward_points"));
+        int maxReward = (maxRewardCfg != null && maxRewardCfg.getConfigValue() != null)
+                ? Integer.parseInt(maxRewardCfg.getConfigValue()) : 100;
+        if (request.getRewardPoints() > maxReward) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "悬赏积分不能超过 " + maxReward + " 分");
         }
 
         // 检查用户积分是否足够

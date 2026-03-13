@@ -40,6 +40,7 @@ public class ResourceService {
     private final FavoriteService favoriteService;
     private final ResourceRatingService resourceRatingService;
     private final LevelService levelService;
+    private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
 
     /**
      * 上传资源
@@ -68,7 +69,12 @@ public class ResourceService {
         resource.setScore(request.getScore() != null ? request.getScore() : 5);
         resource.setDownloads(0);
         resource.setLikes(0);
-        resource.setStatus(0); // 0-待审核
+        // 根据 resource.review_required 决定初始状态：true=待审核，false=直接通过
+        com.campuslink.entity.SystemConfig reviewCfg = systemConfigMapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                        .eq(com.campuslink.entity.SystemConfig::getConfigKey, "resource.review_required"));
+        int initialStatus = (reviewCfg == null || !"false".equals(reviewCfg.getConfigValue())) ? 0 : 1;
+        resource.setStatus(initialStatus);
         resource.setCreatedAt(LocalDateTime.now());
         resource.setUpdatedAt(LocalDateTime.now());
 

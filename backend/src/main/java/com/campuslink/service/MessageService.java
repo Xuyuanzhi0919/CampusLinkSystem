@@ -38,6 +38,7 @@ public class MessageService {
     private final UserMapper userMapper;
     private final ApplicationEventPublisher eventPublisher;
     private final RedisTemplate<String, String> redisTemplate;
+    private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
 
     /**
      * 消息发送限流: 每分钟最多发送条数
@@ -95,6 +96,18 @@ public class MessageService {
         // 4. 不能给自己发消息
         if (senderId.equals(request.getReceiverId())) {
             throw new BusinessException(ResultCode.BAD_REQUEST, "不能给自己发送消息");
+        }
+
+        // 5. 验证消息长度
+        if (request.getContent() != null) {
+            com.campuslink.entity.SystemConfig maxLenCfg = systemConfigMapper.selectOne(
+                    new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                            .eq(com.campuslink.entity.SystemConfig::getConfigKey, "message.max_length"));
+            int maxLen = (maxLenCfg != null && maxLenCfg.getConfigValue() != null)
+                    ? Integer.parseInt(maxLenCfg.getConfigValue()) : 1000;
+            if (request.getContent().length() > maxLen) {
+                throw new BusinessException(ResultCode.BAD_REQUEST, "消息内容不能超过 " + maxLen + " 字");
+            }
         }
 
         // 获取发送者信息(用于事件)

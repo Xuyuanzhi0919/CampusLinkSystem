@@ -54,8 +54,8 @@ spring:
   # 文件上传配置
   servlet:
     multipart:
-      max-file-size: 10MB
-      max-request-size: 10MB
+      max-file-size: 500MB
+      max-request-size: 500MB
 
   # 邮件配置（账号密码配置在 application-local.yml 中）
   mail:

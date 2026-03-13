@@ -34,6 +34,7 @@ public class QuestionService {
     private final UserMapper userMapper;
     private final AnswerLikeMapper answerLikeMapper;
     private final LevelService levelService;
+    private final com.campuslink.mapper.SystemConfigMapper systemConfigMapper;
 
     /**
      * 提问
@@ -47,6 +48,17 @@ public class QuestionService {
 
         // 计算需要扣除的总积分：提问2分 + 悬赏积分
         int bounty = request.getBounty() != null ? request.getBounty() : 0;
+
+        // 验证悬赏积分不超过系统配置上限
+        com.campuslink.entity.SystemConfig maxRewardCfg = systemConfigMapper.selectOne(
+                new com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper<com.campuslink.entity.SystemConfig>()
+                        .eq(com.campuslink.entity.SystemConfig::getConfigKey, "question.max_reward_points"));
+        int maxReward = (maxRewardCfg != null && maxRewardCfg.getConfigValue() != null)
+                ? Integer.parseInt(maxRewardCfg.getConfigValue()) : 50;
+        if (bounty > maxReward) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "悬赏积分不能超过 " + maxReward + " 分");
+        }
+
         int totalCost = 2 + bounty; // 提问固定扣2分
 
         // 检查用户积分是否足够

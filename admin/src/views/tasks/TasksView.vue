@@ -4,35 +4,28 @@
       <h2 class="page-title">任务管理</h2>
     </div>
 
-    <!-- 统计栏 -->
-    <el-row :gutter="12" class="status-bar">
-      <el-col :span="4" v-for="s in statusSummary" :key="s.status">
-        <div
-          class="status-chip"
-          :class="{ active: statusFilter === s.status }"
-          @click="switchStatus(s.status)"
-        >
-          <span class="chip-dot" :style="{ background: s.color }"></span>
-          <span>{{ s.label }}</span>
-        </div>
-      </el-col>
-      <el-col :span="4">
-        <div class="status-chip" :class="{ active: statusFilter === undefined }" @click="switchStatus(undefined)">
-          <span class="chip-dot" style="background:#909399"></span>
-          <span>全部</span>
-        </div>
-      </el-col>
-    </el-row>
+    <!-- 状态 chip 栏 -->
+    <div class="status-bar">
+      <div
+        v-for="s in statusSummary"
+        :key="s.status ?? 'all'"
+        class="status-chip"
+        :class="{ active: statusFilter === s.status }"
+        @click="switchStatus(s.status)"
+      >
+        <span class="chip-dot" :style="{ background: s.color }"></span>
+        <span>{{ s.label }}</span>
+      </div>
+    </div>
 
-    <!-- 搜索 -->
+    <!-- 搜索栏 -->
     <div class="filter-bar">
       <el-input
         v-model="keyword"
         placeholder="搜索任务标题"
         prefix-icon="Search"
         clearable
-        style="width: 240px"
-        @change="fetchData"
+        style="width: 220px"
       />
       <el-date-picker
         v-model="dateRange"
@@ -42,10 +35,10 @@
         end-placeholder="结束日期"
         value-format="YYYY-MM-DD"
         clearable
-        @change="fetchData"
         style="width: 240px"
       />
-      <el-button type="primary" icon="Search" @click="fetchData">查询</el-button>
+      <el-button type="primary" icon="Search" @click="search">查询</el-button>
+      <el-button icon="Refresh" @click="reset">重置</el-button>
     </div>
 
     <div class="table-card">
@@ -57,27 +50,36 @@
             <div class="task-sub">{{ row.taskType }} · 悬赏 {{ row.rewardPoints }} 积分</div>
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100" align="center">
+        <el-table-column label="发布者" width="120">
+          <template #default="{ row }">
+            <span class="user-name">{{ row.publisherName || row.publisherId }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="接单者" width="120">
+          <template #default="{ row }">
+            <span v-if="row.accepterName" class="user-name">{{ row.accepterName }}</span>
+            <span v-else class="text-muted">—</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="95" align="center">
           <template #default="{ row }">
             <el-tag :type="statusType(row.status)" size="small">{{ statusLabel(row.status) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="截止时间" width="160">
+        <el-table-column label="截止时间" width="150">
           <template #default="{ row }">
             <span :class="{ expired: isExpired(row) }">{{ formatDate(row.deadline) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="发布时间" width="160">
+        <el-table-column label="发布时间" width="150">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
             <el-button text size="small" @click="openDetail(row)">详情</el-button>
             <el-button
               v-if="[0, 2, 3].includes(row.status)"
-              text
-              type="danger"
-              size="small"
+              text type="danger" size="small"
               @click="handleCancel(row)"
             >
               强制取消
@@ -117,8 +119,12 @@
           <el-descriptions-item label="状态">
             <el-tag :type="statusType(selectedTask.status)" size="small">{{ statusLabel(selectedTask.status) }}</el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="发布者 ID">{{ selectedTask.publisherId }}</el-descriptions-item>
-          <el-descriptions-item label="接单者 ID">{{ selectedTask.accepterId ?? '暂无' }}</el-descriptions-item>
+          <el-descriptions-item label="发布者">
+            {{ selectedTask.publisherName || selectedTask.publisherId }}
+          </el-descriptions-item>
+          <el-descriptions-item label="接单者">
+            {{ selectedTask.accepterName || (selectedTask.accepterId ? `uid=${selectedTask.accepterId}` : '暂无') }}
+          </el-descriptions-item>
           <el-descriptions-item label="完成时间">{{ formatDate(selectedTask.completedAt) }}</el-descriptions-item>
           <el-descriptions-item label="发布时间">{{ formatDate(selectedTask.createdAt) }}</el-descriptions-item>
         </el-descriptions>
@@ -152,11 +158,13 @@ const statusFilter = ref<number | undefined>(undefined)
 const dateRange = ref<[string, string] | null>(null)
 
 const statusSummary = [
-  { status: 0, label: '待接单', color: '#909399' },
-  { status: 2, label: '进行中', color: '#409eff' },
-  { status: 3, label: '待确认', color: '#e6a23c' },
-  { status: 4, label: '已完成', color: '#67c23a' },
-  { status: 5, label: '已取消', color: '#c0c4cc' },
+  { status: undefined, label: '全部',   color: '#909399' },
+  { status: 0,         label: '待接单', color: '#909399' },
+  { status: 2,         label: '进行中', color: '#409eff' },
+  { status: 3,         label: '待确认', color: '#e6a23c' },
+  { status: 4,         label: '已完成', color: '#67c23a' },
+  { status: 5,         label: '已取消', color: '#c0c4cc' },
+  { status: 6,         label: '已超时', color: '#f56c6c' },
 ]
 
 async function fetchData() {
@@ -177,6 +185,16 @@ async function fetchData() {
   }
 }
 
+function search() { page.value = 1; fetchData() }
+
+function reset() {
+  keyword.value = ''
+  dateRange.value = null
+  statusFilter.value = undefined
+  page.value = 1
+  fetchData()
+}
+
 function switchStatus(s: number | undefined) {
   statusFilter.value = s
   page.value = 1
@@ -189,12 +207,12 @@ function statusLabel(s: number) {
 
 function statusType(s: number): 'success' | 'warning' | 'danger' | 'info' | '' {
   const map: Record<number, 'success' | 'warning' | 'danger' | 'info' | ''> = {
-    0: '', 1: 'info', 2: '', 3: 'warning', 4: 'success', 5: 'info', 6: 'danger'
+    0: 'info', 1: 'info', 2: '', 3: 'warning', 4: 'success', 5: 'info', 6: 'danger'
   }
   return map[s] ?? ''
 }
 
-function formatDate(d?: string) {
+function formatDate(d?: string | null) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
 }
 
@@ -208,12 +226,17 @@ function openDetail(row: AdminTask) {
 }
 
 async function handleCancel(row: AdminTask) {
-  await ElMessageBox.confirm(`确认强制取消任务「${row.title}」？此操作不可逆。`, '强制取消', {
-    type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
-  })
-  await cancelTask(row.tid)
-  ElMessage.success('任务已取消')
-  row.status = 5
+  try {
+    await ElMessageBox.confirm(`确认强制取消任务「${row.title}」？此操作不可逆。`, '强制取消', {
+      type: 'warning', confirmButtonText: '确认取消', cancelButtonText: '关闭'
+    })
+    await cancelTask(row.tid)
+    ElMessage.success('任务已取消')
+    row.status = 5
+    fetchData()
+  } catch {
+    // 用户点取消，忽略
+  }
 }
 
 onMounted(fetchData)
@@ -223,10 +246,14 @@ onMounted(fetchData)
 .page-header { margin-bottom: 16px; }
 .page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
 
-.status-bar { margin-bottom: 16px; }
+/* ─── 状态栏 ──────────────────────────────────────────────────── */
+.status-bar {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin-bottom: 16px;
+}
 .status-chip {
   display: flex; align-items: center; gap: 6px;
-  padding: 8px 14px;
+  padding: 7px 14px;
   background: #fff;
   border-radius: 8px;
   cursor: pointer;
@@ -234,6 +261,7 @@ onMounted(fetchData)
   color: #6b7280;
   border: 1px solid #e5e7eb;
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .status-chip:hover, .status-chip.active {
   border-color: #409eff;
@@ -242,13 +270,20 @@ onMounted(fetchData)
 }
 .chip-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 
-.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; }
+/* ─── 过滤栏 ──────────────────────────────────────────────────── */
+.filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+
+/* ─── 表格 ────────────────────────────────────────────────────── */
 .table-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .task-title { font-size: 14px; font-weight: 500; color: #1a1a2e; }
 .task-sub { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+.user-name { font-size: 13px; color: #374151; font-weight: 500; }
+.text-muted { color: #d1d5db; font-size: 13px; }
 .expired { color: #f56c6c; }
 .ended-text { color: #d1d5db; font-size: 13px; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+
+/* ─── 抽屉 ────────────────────────────────────────────────────── */
 .drawer-section { margin-bottom: 20px; }
 .section-title { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 10px; }
 .content-box {

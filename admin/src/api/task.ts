@@ -4,6 +4,7 @@ import type { PageResult } from '@/types'
 export interface AdminTask {
   tid: number
   publisherId: number
+  publisherName: string
   title: string
   content: string
   taskType: string
@@ -11,6 +12,7 @@ export interface AdminTask {
   location: string
   deadline: string
   accepterId: number | null
+  accepterName: string | null
   status: number
   createdAt: string
   completedAt: string | null

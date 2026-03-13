@@ -127,4 +127,12 @@ public class Task {
      */
     @TableField("started_at")
     private LocalDateTime startedAt;
+
+    /** 发布者昵称（非DB字段，查询时批量填充） */
+    @TableField(exist = false)
+    private String publisherName;
+
+    /** 接单者昵称（非DB字段，查询时批量填充） */
+    @TableField(exist = false)
+    private String accepterName;
 }

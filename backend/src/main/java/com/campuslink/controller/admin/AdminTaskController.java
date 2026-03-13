@@ -5,14 +5,21 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.entity.Task;
+import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.TaskMapper;
+import com.campuslink.mapper.UserMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 管理员任务管理接口
@@ -24,6 +31,7 @@ import java.time.LocalDate;
 public class AdminTaskController {
 
     private final TaskMapper taskMapper;
+    private final UserMapper userMapper;
 
     @Operation(summary = "任务列表", description = "status: 0待接单 2进行中 3待确认 4已完成 5已取消 6已超时")
     @GetMapping
@@ -52,8 +60,31 @@ public class AdminTaskController {
         wrapper.orderByDesc(Task::getCreatedAt);
 
         Page<Task> result = taskMapper.selectPage(p, wrapper);
+        List<Task> records = result.getRecords();
+
+        // 批量解析发布者/接单者昵称
+        Set<Long> uids = new HashSet<>();
+        records.forEach(t -> {
+            uids.add(t.getPublisherId());
+            if (t.getAccepterId() != null) uids.add(t.getAccepterId());
+        });
+        if (!uids.isEmpty()) {
+            Map<Long, String> nameMap = userMapper.selectList(
+                    new LambdaQueryWrapper<User>().in(User::getUId, uids)
+            ).stream().collect(Collectors.toMap(
+                    User::getUId,
+                    u -> StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername()
+            ));
+            records.forEach(t -> {
+                t.setPublisherName(nameMap.getOrDefault(t.getPublisherId(), "uid=" + t.getPublisherId()));
+                if (t.getAccepterId() != null) {
+                    t.setAccepterName(nameMap.getOrDefault(t.getAccepterId(), "uid=" + t.getAccepterId()));
+                }
+            });
+        }
+
         return Result.success(new PageResult<>(
-                result.getRecords(), result.getTotal(),
+                records, result.getTotal(),
                 (long) page, (long) pageSize, result.getPages()
         ));
     }

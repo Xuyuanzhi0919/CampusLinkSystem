@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 管理员社团管理接口
@@ -32,11 +34,12 @@ public class AdminClubController {
     private final ClubMapper clubMapper;
     private final UserMapper userMapper;
 
-    @Operation(summary = "社团列表", description = "支持关键词/状态筛选")
+    @Operation(summary = "社团列表", description = "支持关键词/状态/官方类型筛选")
     @GetMapping
     public Result<PageResult<AdminClubVO>> listClubs(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) Integer status,
+            @RequestParam(required = false) Integer isOfficial,
             @RequestParam(defaultValue = "1") Integer page,
             @RequestParam(defaultValue = "20") Integer pageSize) {
 
@@ -48,17 +51,31 @@ public class AdminClubController {
         if (status != null) {
             wrapper.eq(Club::getStatus, status);
         }
+        if (isOfficial != null) {
+            wrapper.eq(Club::getIsOfficial, isOfficial);
+        }
         wrapper.orderByDesc(Club::getCreatedAt);
 
         Page<Club> result = clubMapper.selectPage(p, wrapper);
-        List<AdminClubVO> list = result.getRecords().stream().map(club -> {
+        List<Club> records = result.getRecords();
+
+        // 批量解析创建者昵称，避免 N+1 查询
+        Set<Long> founderIds = records.stream()
+                .map(Club::getFounderId)
+                .filter(id -> id != null)
+                .collect(Collectors.toSet());
+        Map<Long, String> nameMap = founderIds.isEmpty() ? Map.of() :
+                userMapper.selectList(new LambdaQueryWrapper<User>().in(User::getUId, founderIds))
+                        .stream().collect(Collectors.toMap(
+                                User::getUId,
+                                u -> StringUtils.hasText(u.getNickname()) ? u.getNickname() : u.getUsername()
+                        ));
+
+        List<AdminClubVO> list = records.stream().map(club -> {
             AdminClubVO vo = new AdminClubVO();
             BeanUtils.copyProperties(club, vo);
             if (club.getFounderId() != null) {
-                User founder = userMapper.selectById(club.getFounderId());
-                if (founder != null) {
-                    vo.setFounderName(founder.getNickname() != null ? founder.getNickname() : founder.getUsername());
-                }
+                vo.setFounderName(nameMap.getOrDefault(club.getFounderId(), "uid=" + club.getFounderId()));
             }
             return vo;
         }).toList();

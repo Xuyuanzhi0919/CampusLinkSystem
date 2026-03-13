@@ -15,7 +15,7 @@ export interface AdminClub {
   createdAt: string
 }
 
-export function listClubs(params: { keyword?: string; status?: number; page?: number; pageSize?: number }) {
+export function listClubs(params: { keyword?: string; status?: number; isOfficial?: number; page?: number; pageSize?: number }) {
   return get<PageResult<AdminClub>>('/admin/clubs', params as Record<string, unknown>)
 }
 

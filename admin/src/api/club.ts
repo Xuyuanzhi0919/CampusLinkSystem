@@ -22,3 +22,17 @@ export function listClubs(params: { keyword?: string; status?: number; isOfficia
 export function updateClubStatus(clubId: number, status: number) {
   return put<void>(`/admin/clubs/${clubId}/status`, { status })
 }
+
+export function toggleClubOfficial(clubId: number) {
+  return put<string>(`/admin/clubs/${clubId}/official`)
+}
+
+export interface AdminUpdateClubInfoPayload {
+  clubName: string
+  category?: string
+  description?: string
+}
+
+export function updateClubInfo(clubId: number, payload: AdminUpdateClubInfoPayload) {
+  return put<void>(`/admin/clubs/${clubId}/info`, payload)
+}

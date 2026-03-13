@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.admin.AdminClubVO;
+import com.campuslink.dto.admin.AdminUpdateClubInfoRequest;
 import com.campuslink.entity.Club;
+import jakarta.validation.Valid;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
 import com.campuslink.mapper.ClubMapper;
@@ -81,6 +83,31 @@ public class AdminClubController {
         }).toList();
 
         return Result.success(new PageResult<>(list, result.getTotal(), (long) page, (long) pageSize, result.getPages()));
+    }
+
+    @Operation(summary = "设置/取消官方认证", description = "自动切换 isOfficial 状态")
+    @PutMapping("/{clubId}/official")
+    public Result<String> toggleOfficial(@PathVariable Long clubId) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(404, "社团不存在");
+        int newOfficial = (club.getIsOfficial() != null && club.getIsOfficial() == 1) ? 0 : 1;
+        club.setIsOfficial(newOfficial);
+        clubMapper.updateById(club);
+        return Result.success(newOfficial == 1 ? "已设为官方社团" : "已取消官方认证");
+    }
+
+    @Operation(summary = "编辑社团基本信息", description = "可修改名称/分类/简介")
+    @PutMapping("/{clubId}/info")
+    public Result<Void> updateInfo(
+            @PathVariable Long clubId,
+            @Valid @RequestBody AdminUpdateClubInfoRequest req) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(404, "社团不存在");
+        club.setClubName(req.getClubName());
+        if (req.getCategory() != null) club.setCategory(req.getCategory());
+        if (req.getDescription() != null) club.setDescription(req.getDescription());
+        clubMapper.updateById(club);
+        return Result.success("社团信息已更新");
     }
 
     @Operation(summary = "启用/禁用社团", description = "status=0禁用，status=1启用")

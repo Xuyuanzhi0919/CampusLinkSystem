@@ -122,6 +122,14 @@
       </div>
 
       <div class="drawer-actions">
+        <el-button @click="openEdit(selectedClub)">编辑信息</el-button>
+        <el-button
+          :type="selectedClub.isOfficial === 1 ? '' : 'warning'"
+          @click="toggleOfficial(selectedClub)"
+          :loading="officialLoading"
+        >
+          {{ selectedClub.isOfficial === 1 ? '取消官方' : '设为官方' }}
+        </el-button>
         <el-button
           :type="selectedClub.status === 1 ? 'danger' : 'success'"
           @click="toggleStatus(selectedClub)"
@@ -131,12 +139,42 @@
       </div>
     </template>
   </el-drawer>
+
+  <!-- 编辑社团信息对话框 -->
+  <el-dialog v-model="editVisible" title="编辑社团信息" width="480px" @close="resetEditForm">
+    <el-form ref="editFormRef" :model="editForm" :rules="editRules" label-width="80px">
+      <el-form-item label="社团名称" prop="clubName">
+        <el-input v-model="editForm.clubName" placeholder="请输入社团名称" maxlength="50" show-word-limit />
+      </el-form-item>
+      <el-form-item label="社团分类" prop="category">
+        <el-input v-model="editForm.category" placeholder="如：文艺、体育、学术..." maxlength="30" show-word-limit />
+      </el-form-item>
+      <el-form-item label="社团简介" prop="description">
+        <el-input
+          v-model="editForm.description"
+          type="textarea"
+          :rows="4"
+          placeholder="请输入社团简介"
+          maxlength="500"
+          show-word-limit
+        />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="editVisible = false">取消</el-button>
+      <el-button type="primary" :loading="editLoading" @click="submitEdit">保存</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listClubs, updateClubStatus, type AdminClub } from '@/api/club'
+import type { FormInstance, FormRules } from 'element-plus'
+import {
+  listClubs, updateClubStatus, toggleClubOfficial, updateClubInfo,
+  type AdminClub, type AdminUpdateClubInfoPayload
+} from '@/api/club'
 import dayjs from 'dayjs'
 
 const loading = ref(false)
@@ -149,6 +187,22 @@ const pageSize = ref(20)
 const keyword = ref('')
 const statusFilter = ref<number | undefined>(undefined)
 const officialFilter = ref<number | undefined>(undefined)
+
+// 编辑社团信息
+const editVisible = ref(false)
+const editLoading = ref(false)
+const editFormRef = ref<FormInstance>()
+const editForm = reactive<AdminUpdateClubInfoPayload>({
+  clubName: '',
+  category: '',
+  description: ''
+})
+const editRules: FormRules = {
+  clubName: [{ required: true, message: '请输入社团名称', trigger: 'blur' }]
+}
+
+// 官方认证
+const officialLoading = ref(false)
 
 async function fetchData() {
   loading.value = true
@@ -191,7 +245,6 @@ async function toggleStatus(row: AdminClub) {
     })
     await updateClubStatus(row.clubId, newStatus)
     row.status = newStatus
-    // 同步更新抽屉内的状态
     if (selectedClub.value?.clubId === row.clubId) {
       selectedClub.value.status = newStatus
     }
@@ -199,6 +252,62 @@ async function toggleStatus(row: AdminClub) {
     fetchData()
   } catch {
     // 用户取消，忽略
+  }
+}
+
+async function toggleOfficial(row: AdminClub) {
+  const action = row.isOfficial === 1 ? '取消官方认证' : '设为官方社团'
+  try {
+    await ElMessageBox.confirm(`确认对社团「${row.clubName}」${action}？`, '提示', {
+      type: 'warning', confirmButtonText: '确认', cancelButtonText: '取消'
+    })
+    officialLoading.value = true
+    const msg = await toggleClubOfficial(row.clubId)
+    const newOfficial = row.isOfficial === 1 ? 0 : 1
+    row.isOfficial = newOfficial
+    if (selectedClub.value?.clubId === row.clubId) {
+      selectedClub.value.isOfficial = newOfficial
+    }
+    ElMessage.success(msg || action + '成功')
+    fetchData()
+  } catch {
+    // 用户取消，忽略
+  } finally {
+    officialLoading.value = false
+  }
+}
+
+function openEdit(row: AdminClub) {
+  editForm.clubName = row.clubName
+  editForm.category = row.category || ''
+  editForm.description = row.description || ''
+  editVisible.value = true
+}
+
+function resetEditForm() {
+  editFormRef.value?.resetFields()
+}
+
+async function submitEdit() {
+  if (!selectedClub.value) return
+  const valid = await editFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+  editLoading.value = true
+  try {
+    await updateClubInfo(selectedClub.value.clubId, {
+      clubName: editForm.clubName,
+      category: editForm.category || undefined,
+      description: editForm.description || undefined
+    })
+    // 同步更新本地数据
+    selectedClub.value.clubName = editForm.clubName
+    selectedClub.value.category = editForm.category || ''
+    selectedClub.value.description = editForm.description || ''
+    ElMessage.success('社团信息已更新')
+    editVisible.value = false
+    fetchData()
+  } finally {
+    editLoading.value = false
   }
 }
 
@@ -232,5 +341,5 @@ onMounted(fetchData)
   font-size: 13px; color: #374151; line-height: 1.7;
   border: 1px solid #e5e7eb; white-space: pre-wrap;
 }
-.drawer-actions { margin-top: 24px; }
+.drawer-actions { margin-top: 24px; display: flex; gap: 10px; flex-wrap: wrap; }
 </style>

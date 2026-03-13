@@ -1,6 +1,7 @@
 package com.campuslink.controller.admin;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.campuslink.common.Result;
 import com.campuslink.entity.SystemConfig;
 import com.campuslink.exception.BusinessException;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +60,18 @@ public class AdminConfigController {
         if (desc != null) config.setDescription(desc);
         systemConfigMapper.updateById(config);
         return Result.success("更新成功");
+    }
+
+    @Operation(summary = "批量更新配置", description = "仅更新已存在的 key，不新增不删除，管理后台分组保存用")
+    @PutMapping("/batch")
+    public Result<Void> batchUpdate(@RequestBody Map<String, String> updates) {
+        if (updates == null || updates.isEmpty()) return Result.success("无需更新");
+        updates.forEach((key, value) -> systemConfigMapper.update(null,
+                new LambdaUpdateWrapper<SystemConfig>()
+                        .eq(SystemConfig::getConfigKey, key)
+                        .set(SystemConfig::getConfigValue, value)
+                        .set(SystemConfig::getUpdatedAt, LocalDateTime.now())));
+        return Result.success("配置已保存");
     }
 
     @Operation(summary = "删除配置")

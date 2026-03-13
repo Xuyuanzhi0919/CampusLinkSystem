@@ -24,3 +24,7 @@ export function createConfig(data: { configKey: string; configValue: string; des
 export function deleteConfig(configKey: string) {
   return del<void>(`/admin/config/${configKey}`)
 }
+
+export function batchUpdateConfigs(data: Record<string, string>) {
+  return put<void>('/admin/config/batch', data)
+}

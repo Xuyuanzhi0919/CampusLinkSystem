@@ -44,6 +44,14 @@ public class UserController {
         return Result.success(user);
     }
 
+    @Operation(summary = "获取用户公开统计", description = "获取任意用户的公开统计数据（问题数、回答数等）")
+    @GetMapping("/{id}/stats")
+    public Result<UserStatsVO> getUserStatsById(
+            @Parameter(description = "用户ID") @PathVariable Long id) {
+        UserStatsVO stats = userService.getUserStats(id);
+        return Result.success(stats);
+    }
+
     @Operation(summary = "获取当前用户信息", description = "获取当前登录用户的详细信息")
     @GetMapping("/me")
     public Result<UserVO> getCurrentUser(

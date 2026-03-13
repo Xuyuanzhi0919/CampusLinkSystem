@@ -27,10 +27,17 @@ export const updateUserProfile = (data: UpdateProfileRequest) => {
 }
 
 /**
- * 获取用户统计数据
+ * 获取当前用户统计数据
  */
 export const getUserStats = () => {
   return request.get<UserStatsData>('/user/stats')
+}
+
+/**
+ * 获取指定用户公开统计（问题数、回答数等）
+ */
+export const getUserStatsById = (id: number) => {
+  return request.get<UserStatsData>(`/user/${id}/stats`)
 }
 
 /**

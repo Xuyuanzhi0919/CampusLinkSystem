@@ -98,7 +98,7 @@ import { EmptyState } from '@/components/empty-state'
 import { ClFeedQAItem } from '@/components/cl'
 // #endif
 
-import { getQuestionList } from '@/services/question'
+import { getQuestionList, likeQuestion, unlikeQuestion } from '@/services/question'
 import { requireLogin } from '@/utils/auth'
 import { useNavigation } from '@/composables/useNavigation'
 
@@ -181,12 +181,25 @@ const handleAnswerClick = (question: any) => {
   })
 }
 
-// 点赞问题（需要登录）
-const handleLikeClick = (question: any) => {
+// 点赞问题（需要登录，乐观更新）
+const handleLikeClick = async (question: any) => {
   if (!question?.id) return
   if (!requireLogin('like')) return
-  // TODO: 实现点赞逻辑
-  console.log('点赞问题:', question.id)
+
+  const prev = question.isLiked
+  question.isLiked = !prev
+  question.likes = (question.likes ?? 0) + (question.isLiked ? 1 : -1)
+
+  try {
+    const res = question.isLiked
+      ? await likeQuestion(question.id)
+      : await unlikeQuestion(question.id)
+    if (res?.likes !== undefined) question.likes = res.likes
+  } catch {
+    // 回滚
+    question.isLiked = prev
+    question.likes = (question.likes ?? 0) + (prev ? 1 : -1)
+  }
 }
 
 // 评论问题（需要登录）

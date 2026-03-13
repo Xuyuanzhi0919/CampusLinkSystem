@@ -141,11 +141,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import type { QuestionDetail } from '@/types/question'
 import { CCard, CButton } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
+import { getUserStatsById } from '@/services/user'
+import { getQuestionList } from '@/services/question'
 
 // Props
 const props = defineProps<{
@@ -179,26 +181,47 @@ const askerLevel = computed(() => {
   return props.question.askerLevel ?? 1 // 默认等级1
 })
 
-// 提问者历史统计（模拟数据）
-const askerQuestionCount = ref(23) // TODO: 从后端获取
-const askerAnswerCount = ref(47)  // TODO: 从后端获取
+// 提问者历史统计（从后端获取）
+const askerQuestionCount = ref(0)
+const askerAnswerCount = ref(0)
 
-// 是否关注提问者
-const isFollowingAsker = ref(false) // TODO: 从后端获取
+// 是否关注提问者（暂不实现关注接口，保留 UI）
+const isFollowingAsker = ref(false)
 
-// 相关问题列表（模拟数据，实际应从后端获取）
-const relatedQuestions = ref([
-  // TODO: 从后端获取强相关问题（基于分类、标签、关键词等）
-  // 示例数据结构：
-  // {
-  //   id: 1,
-  //   title: "如何使用 Vue 3 的 Composition API？",
-  //   answerCount: 12,
-  //   views: 1234,
-  //   bounty: 50,
-  //   status: 1
-  // }
-])
+// 相关问题列表（从后端获取同分类问题）
+const relatedQuestions = ref<any[]>([])
+
+// 加载提问者统计 & 相关问题
+async function loadSidebarData() {
+  const askerId = props.question.askerId
+  const category = props.question.category
+  const currentId = props.question.id
+
+  await Promise.allSettled([
+    // 提问者统计
+    (async () => {
+      if (!askerId) return
+      try {
+        const stats = await getUserStatsById(askerId)
+        askerQuestionCount.value = stats.questionCount ?? 0
+        askerAnswerCount.value = stats.answerCount ?? 0
+      } catch { /* 静默 */ }
+    })(),
+
+    // 相关问题：同分类，排除当前问题，取前 5 条
+    (async () => {
+      try {
+        const res = await getQuestionList({ category, pageSize: 6 })
+        relatedQuestions.value = (res.records ?? [])
+          .filter((q: any) => q.id !== currentId)
+          .slice(0, 5)
+      } catch { /* 静默 */ }
+    })()
+  ])
+}
+
+onMounted(loadSidebarData)
+watch(() => props.question.id, loadSidebarData)
 
 // 处理点击提问者
 const handleAskerClick = () => {

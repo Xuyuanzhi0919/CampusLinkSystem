@@ -80,6 +80,14 @@ export const acceptAnswer = (questionId: number, answerId: number) => {
  * 点赞回答
  * @param answerId 回答ID
  */
+export const likeQuestion = (id: number) => {
+  return request.post<{ likes: number }>(`/question/${id}/like`)
+}
+
+export const unlikeQuestion = (id: number) => {
+  return request.delete<{ likes: number }>(`/question/${id}/like`)
+}
+
 export const likeAnswer = (answerId: number) => {
   return request.post(`/answer/${answerId}/like`)
 }

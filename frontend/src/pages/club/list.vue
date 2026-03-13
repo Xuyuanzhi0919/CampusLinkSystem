@@ -335,7 +335,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { onPageScroll, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app'
-import { getClubList, joinClub } from '@/services/club'
+import { getClubList, joinClub, quitClub } from '@/services/club'
 import type { ClubItem } from '@/types/club'
 import { clubSearchHistory } from '@/utils/searchHistory'
 import Icon from '@/components/icons/index.vue'
@@ -786,12 +786,14 @@ const handleClubAction = (club: ClubItem) => {
       cancelText: '继续等待',
       success: (res) => {
         if (res.confirm) {
-          // TODO: 调用取消申请接口
-          uni.showToast({
-            title: '申请已取消',
-            icon: 'success'
-          })
-          club.isPending = false
+          try {
+            await quitClub(club.clubId)
+            uni.showToast({ title: '申请已取消', icon: 'success' })
+            club.isPending = false
+            club.isMember = false
+          } catch (e: any) {
+            uni.showToast({ title: e?.message || '操作失败', icon: 'none' })
+          }
         }
       }
     })

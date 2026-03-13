@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.List;
 
 /**
  * 管理员用户管理接口
@@ -74,6 +75,20 @@ public class AdminUserController {
     @PutMapping("/{userId}/password")
     public Result<Map<String, String>> resetPassword(@PathVariable Long userId) {
         return Result.success(adminService.resetPassword(userId));
+    }
+
+    @Operation(summary = "批量封禁/解封用户")
+    @PostMapping("/batch-status")
+    public Result<Map<String, Integer>> batchSetStatus(
+            @Valid @RequestBody BatchStatusRequest req) {
+        int count = adminService.batchSetStatus(req);
+        return Result.success(Map.of("count", count));
+    }
+
+    @Operation(summary = "用户内容统计", description = "返回该用户发布的资源/问题/回答/任务数量")
+    @GetMapping("/{userId}/stats")
+    public Result<Map<String, Long>> getUserStats(@PathVariable Long userId) {
+        return Result.success(adminService.getUserStats(userId));
     }
 
     @Operation(summary = "用户积分流水")

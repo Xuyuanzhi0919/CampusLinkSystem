@@ -17,4 +17,8 @@ public class AdminUserQueryRequest {
     private Integer page = 1;
     /** 每页数量，默认20 */
     private Integer pageSize = 20;
+    /** 排序字段：createdAt/points/lastLoginTime，默认 createdAt */
+    private String sortBy = "createdAt";
+    /** 排序方向：asc/desc，默认 desc */
+    private String sortOrder = "desc";
 }

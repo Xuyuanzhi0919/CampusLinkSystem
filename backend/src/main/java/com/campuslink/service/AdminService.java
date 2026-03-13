@@ -1,6 +1,7 @@
 package com.campuslink.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.campuslink.common.PageResult;
 import com.campuslink.dto.admin.*;
@@ -130,7 +131,13 @@ public class AdminService {
         if (req.getStatus() != null) {
             wrapper.eq(User::getStatus, req.getStatus());
         }
-        wrapper.orderByDesc(User::getCreatedAt);
+        String sortBy = StringUtils.hasText(req.getSortBy()) ? req.getSortBy() : "createdAt";
+        boolean asc = "asc".equalsIgnoreCase(req.getSortOrder());
+        switch (sortBy) {
+            case "points" -> { if (asc) wrapper.orderByAsc(User::getPoints); else wrapper.orderByDesc(User::getPoints); }
+            case "lastLoginTime" -> { if (asc) wrapper.orderByAsc(User::getLastLoginTime); else wrapper.orderByDesc(User::getLastLoginTime); }
+            default -> { if (asc) wrapper.orderByAsc(User::getCreatedAt); else wrapper.orderByDesc(User::getCreatedAt); }
+        }
 
         Page<User> result = userMapper.selectPage(page, wrapper);
         List<AdminUserVO> list = result.getRecords().stream().map(this::toAdminUserVO).toList();
@@ -184,6 +191,34 @@ public class AdminService {
         pointsLogMapper.insert(log2);
 
         log.info("管理员调整积分 - operator: {}, userId: {}, delta: {}", operatorId, userId, req.getDelta());
+    }
+
+    // ==================== 批量操作 ====================
+
+    @Transactional
+    public int batchSetStatus(BatchStatusRequest req) {
+        if (req.getUserIds() == null || req.getUserIds().isEmpty()) return 0;
+        LambdaUpdateWrapper<User> wrapper = new LambdaUpdateWrapper<User>()
+                .set(User::getStatus, req.getStatus())
+                .in(User::getUId, req.getUserIds());
+        int count = userMapper.update(null, wrapper);
+        log.info("管理员批量操作用户状态 - count: {}, status: {}", count, req.getStatus());
+        return count;
+    }
+
+    // ==================== 用户内容统计 ====================
+
+    public Map<String, Long> getUserStats(Long userId) {
+        Map<String, Long> stats = new HashMap<>();
+        stats.put("resources", resourceMapper.selectCount(
+                new LambdaQueryWrapper<Resource>().eq(Resource::getUploaderId, userId)));
+        stats.put("questions", questionMapper.selectCount(
+                new LambdaQueryWrapper<Question>().eq(Question::getAskerId, userId)));
+        stats.put("answers", answerMapper.selectCount(
+                new LambdaQueryWrapper<Answer>().eq(Answer::getResponderId, userId)));
+        stats.put("tasks", taskMapper.selectCount(
+                new LambdaQueryWrapper<Task>().eq(Task::getPublisherId, userId)));
+        return stats;
     }
 
     // ==================== 密码重置 ====================

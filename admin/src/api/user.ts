@@ -1,7 +1,19 @@
 import { get, put, post } from './request'
 import type { AdminUser, AdminUserQuery, PageResult } from '@/types'
 
-export function listUsers(query: AdminUserQuery) {
+export interface AdminUserQueryWithSort extends AdminUserQuery {
+  sortBy?: string
+  sortOrder?: string
+}
+
+export interface UserStatsVO {
+  resources: number
+  questions: number
+  answers: number
+  tasks: number
+}
+
+export function listUsers(query: AdminUserQueryWithSort) {
   return get<PageResult<AdminUser>>('/admin/users', query as Record<string, unknown>)
 }
 
@@ -36,4 +48,12 @@ export function getUserPointsHistory(userId: number, params: { page?: number; pa
 
 export function resetPassword(userId: number) {
   return put<{ newPassword: string }>(`/admin/users/${userId}/password`)
+}
+
+export function batchSetStatus(userIds: number[], status: 0 | 1, reason?: string) {
+  return post<{ count: number }>('/admin/users/batch-status', { userIds, status, reason })
+}
+
+export function getUserStats(userId: number) {
+  return get<UserStatsVO>(`/admin/users/${userId}/stats`)
 }

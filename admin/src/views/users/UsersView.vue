@@ -26,9 +26,25 @@
       <el-button type="primary" icon="Search" @click="fetchUsers">查询</el-button>
     </div>
 
+    <!-- 批量操作栏 -->
+    <div class="batch-bar" v-if="selectedRows.length > 0">
+      <span class="batch-count">已选 <strong>{{ selectedRows.length }}</strong> 位用户</span>
+      <el-button size="small" type="danger" plain @click="batchBan(0)">批量封禁</el-button>
+      <el-button size="small" type="success" plain @click="batchBan(1)">批量解封</el-button>
+      <el-button size="small" @click="clearSelection">取消选择</el-button>
+    </div>
+
     <!-- 用户表格 -->
     <div class="table-card">
-      <el-table :data="users" v-loading="loading" stripe>
+      <el-table
+        ref="tableRef"
+        :data="users"
+        v-loading="loading"
+        stripe
+        @selection-change="handleSelectionChange"
+        @sort-change="onSortChange"
+      >
+        <el-table-column type="selection" width="40" />
         <el-table-column label="用户" min-width="180">
           <template #default="{ row }">
             <div class="user-cell">
@@ -46,7 +62,7 @@
             <el-tag :type="roleType(row.role)" size="small">{{ roleLabel(row.role) }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="points" label="积分" width="80" align="center" />
+        <el-table-column prop="points" label="积分" width="90" align="center" sortable="custom" />
         <el-table-column label="状态" width="80" align="center">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
@@ -54,20 +70,17 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="注册时间" width="160">
+        <el-table-column prop="createdAt" label="注册时间" width="160" sortable="custom">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="250" fixed="right">
           <template #default="{ row }">
             <el-button text size="small" @click="openDetail(row)">详情</el-button>
             <el-button
-              text
-              size="small"
+              text size="small"
               :type="row.status === 1 ? 'danger' : 'success'"
               @click="toggleBan(row)"
-            >
-              {{ row.status === 1 ? '封禁' : '解封' }}
-            </el-button>
+            >{{ row.status === 1 ? '封禁' : '解封' }}</el-button>
             <el-button text size="small" @click="openPointsDialog(row)">调积分</el-button>
             <el-button text size="small" type="warning" @click="handleResetPassword(row)">重置密码</el-button>
           </template>
@@ -87,7 +100,7 @@
     </div>
 
     <!-- 用户详情抽屉 -->
-    <el-drawer v-model="detailVisible" title="用户详情" size="460px">
+    <el-drawer v-model="detailVisible" title="用户详情" size="480px">
       <template v-if="selectedUser">
         <div v-if="detailLoading" class="detail-loading">
           <el-icon class="is-loading"><Loading /></el-icon>
@@ -128,8 +141,37 @@
                 <el-option label="教师" value="teacher" />
                 <el-option label="管理员" value="admin" />
               </el-select>
-              <el-button type="primary" :disabled="!selectedRole" @click="handleSetRole">确认修改</el-button>
+              <el-button
+                type="primary"
+                :disabled="!selectedRole || selectedRole === selectedUser.role"
+                @click="handleSetRole"
+              >确认修改</el-button>
             </div>
+          </el-tab-pane>
+
+          <el-tab-pane label="内容统计" name="stats">
+            <div v-if="contentStatsLoading" class="stats-loading">
+              <el-icon class="is-loading"><Loading /></el-icon> 加载中...
+            </div>
+            <div v-else-if="contentStats" class="stats-grid">
+              <div class="stats-item">
+                <div class="stats-num">{{ contentStats.resources }}</div>
+                <div class="stats-label">上传资源</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-num">{{ contentStats.questions }}</div>
+                <div class="stats-label">发布问题</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-num">{{ contentStats.answers }}</div>
+                <div class="stats-label">回答数</div>
+              </div>
+              <div class="stats-item">
+                <div class="stats-num">{{ contentStats.tasks }}</div>
+                <div class="stats-label">发布任务</div>
+              </div>
+            </div>
+            <el-empty v-else-if="!contentStatsLoading" description="暂无数据" />
           </el-tab-pane>
 
           <el-tab-pane label="积分流水" name="points">
@@ -195,7 +237,11 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { listUsers, getUserDetail, banUser, setRole, adjustPoints, getUserPointsHistory, resetPassword, type PointsLogItem } from '@/api/user'
+import {
+  listUsers, getUserDetail, banUser, setRole, adjustPoints,
+  getUserPointsHistory, resetPassword, batchSetStatus, getUserStats,
+  type PointsLogItem, type UserStatsVO
+} from '@/api/user'
 import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
@@ -203,28 +249,43 @@ const route = useRoute()
 const loading = ref(false)
 const users = ref<AdminUser[]>([])
 const total = ref(0)
+const tableRef = ref()
 const query = reactive({
   keyword: '',
   role: '',
   status: route.query.status !== undefined ? Number(route.query.status) : undefined as number | undefined,
   page: 1,
-  pageSize: 20
+  pageSize: 20,
+  sortBy: 'createdAt',
+  sortOrder: 'desc'
 })
 
+// 批量操作
+const selectedRows = ref<AdminUser[]>([])
+
+// 详情抽屉
 const detailVisible = ref(false)
 const selectedUser = ref<AdminUser | null>(null)
 const detailLoading = ref(false)
 const selectedRole = ref('')
 const drawerTab = ref('info')
+
+// 内容统计
+const contentStats = ref<UserStatsVO | null>(null)
+const contentStatsLoading = ref(false)
+
+// 积分流水
 const pointsHistory = ref<PointsLogItem[]>([])
 const pointsHistoryTotal = ref(0)
 const pointsHistoryPage = ref(1)
 const pointsHistoryLoading = ref(false)
 
+// 调整积分
 const pointsVisible = ref(false)
 const pointsLoading = ref(false)
 const pointsForm = reactive({ userId: 0, delta: 0, reason: '' })
 
+// 重置密码
 const resetPwdVisible = ref(false)
 const resetPwdResult = ref('')
 
@@ -251,14 +312,47 @@ function formatDate(d?: string) {
   return d ? dayjs(d).format('YYYY-MM-DD HH:mm') : '-'
 }
 
+// ---- 排序 ----
+function onSortChange({ prop, order }: { prop: string; order: string | null }) {
+  query.sortBy = order ? prop : 'createdAt'
+  query.sortOrder = order === 'ascending' ? 'asc' : 'desc'
+  query.page = 1
+  fetchUsers()
+}
+
+// ---- 批量操作 ----
+function handleSelectionChange(rows: AdminUser[]) {
+  selectedRows.value = rows
+}
+
+function clearSelection() {
+  tableRef.value?.clearSelection()
+}
+
+async function batchBan(status: 0 | 1) {
+  const label = status === 0 ? '封禁' : '解封'
+  const confirmed = await ElMessageBox.confirm(
+    `确认对已选 ${selectedRows.value.length} 位用户执行「${label}」操作？`,
+    `批量${label}`,
+    { type: 'warning', confirmButtonText: `确认${label}`, cancelButtonText: '取消' }
+  ).catch(() => false)
+  if (!confirmed) return
+  const ids = selectedRows.value.map(r => r.uId)
+  const result = await batchSetStatus(ids, status)
+  ElMessage.success(`已${label} ${result.count} 位用户`)
+  clearSelection()
+  fetchUsers()
+}
+
+// ---- 详情抽屉 ----
 async function openDetail(row: AdminUser) {
   selectedUser.value = row
   selectedRole.value = row.role
   drawerTab.value = 'info'
   pointsHistory.value = []
   pointsHistoryPage.value = 1
+  contentStats.value = null
   detailVisible.value = true
-  // 异步拉取最新数据，不阻塞抽屉打开
   detailLoading.value = true
   try {
     const fresh = await getUserDetail(row.uId)
@@ -272,6 +366,18 @@ async function openDetail(row: AdminUser) {
 function onDrawerTabClick(tab: { paneName: string }) {
   if (tab.paneName === 'points' && pointsHistory.value.length === 0) {
     loadPointsHistory()
+  } else if (tab.paneName === 'stats' && !contentStats.value) {
+    loadContentStats()
+  }
+}
+
+async function loadContentStats() {
+  if (!selectedUser.value) return
+  contentStatsLoading.value = true
+  try {
+    contentStats.value = await getUserStats(selectedUser.value.uId)
+  } finally {
+    contentStatsLoading.value = false
   }
 }
 
@@ -313,9 +419,12 @@ function openPointsDialog(row: AdminUser) {
 }
 
 async function handleResetPassword(row: AdminUser) {
-  await ElMessageBox.confirm(`确认重置用户「${row.nickname || row.username}」的密码？`, '重置密码', {
-    type: 'warning', confirmButtonText: '确认重置', cancelButtonText: '取消'
-  })
+  const confirmed = await ElMessageBox.confirm(
+    `确认重置用户「${row.nickname || row.username}」的密码？`,
+    '重置密码',
+    { type: 'warning', confirmButtonText: '确认重置', cancelButtonText: '取消' }
+  ).catch(() => false)
+  if (!confirmed) return
   const result = await resetPassword(row.uId)
   resetPwdResult.value = result.newPassword
   resetPwdVisible.value = true
@@ -340,17 +449,42 @@ onMounted(fetchUsers)
 <style scoped>
 .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
-.filter-bar { display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-bar { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+
+.batch-bar {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+  border: 1px solid #c4b5fd; border-radius: 10px;
+  padding: 10px 16px; margin-bottom: 12px;
+}
+.batch-count { font-size: 13px; color: #5b21b6; margin-right: 4px; }
+.batch-count strong { font-size: 15px; color: #7c3aed; }
+
 .table-card { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 .user-cell { display: flex; align-items: center; gap: 10px; }
 .user-name { font-size: 14px; font-weight: 500; color: #1a1a2e; }
 .user-sub { font-size: 12px; color: #9ca3af; }
 .pagination { margin-top: 16px; justify-content: flex-end; }
+
 .detail-header { display: flex; gap: 16px; align-items: center; margin-bottom: 24px; }
 .detail-name { font-size: 18px; font-weight: 600; }
 .detail-username { color: #6b7280; font-size: 13px; margin-bottom: 4px; }
 .detail-desc { margin-bottom: 24px; }
-.detail-actions { display: flex; gap: 12px; }
+.detail-actions { display: flex; gap: 12px; margin-top: 20px; }
+
+.stats-loading { display: flex; align-items: center; gap: 6px; color: #909399; font-size: 13px; padding: 20px 0; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 8px; }
+.stats-item {
+  background: linear-gradient(135deg, #f5f3ff, #faf8ff);
+  border: 1px solid #ede9fe; border-radius: 12px;
+  padding: 20px; text-align: center;
+}
+.stats-num {
+  font-size: 32px; font-weight: 800; color: #7c3aed;
+  font-family: 'Outfit', sans-serif; line-height: 1;
+}
+.stats-label { font-size: 12px; color: #9ca3af; margin-top: 8px; font-weight: 500; }
+
 .points-hint { font-size: 12px; color: #9ca3af; margin-left: 8px; }
 .reset-result { text-align: center; padding: 8px 0 16px; }
 .reset-hint { font-size: 13px; color: #6b7280; margin-bottom: 16px; }

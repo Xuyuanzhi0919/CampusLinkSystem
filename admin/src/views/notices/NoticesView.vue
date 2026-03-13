@@ -11,14 +11,36 @@
           <h3 class="card-title">发送公告 / 通知</h3>
           <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
             <el-form-item label="发送对象">
-              <el-radio-group v-model="sendMode" @change="form.userId = undefined">
+              <el-radio-group v-model="sendMode" @change="onSendModeChange">
                 <el-radio value="all">全体用户</el-radio>
                 <el-radio value="single">指定用户</el-radio>
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item v-if="sendMode === 'single'" label="用户ID" prop="userId">
-              <el-input-number v-model="form.userId" :min="1" placeholder="输入用户 ID" style="width: 200px" />
+            <!-- 指定用户 + 用户查询 -->
+            <el-form-item v-if="sendMode === 'single'" label="用户 ID">
+              <div class="user-input-row">
+                <el-input-number
+                  v-model="form.userId"
+                  :min="1"
+                  placeholder="输入用户 ID"
+                  style="width: 160px"
+                  @change="resetLookup"
+                />
+                <el-button @click="lookupUser" :loading="lookupLoading">查询</el-button>
+              </div>
+              <!-- 查询结果预览 -->
+              <div v-if="lookedUpUser" class="user-preview-box">
+                <el-icon color="#67c23a" style="flex-shrink:0"><SuccessFilled /></el-icon>
+                <el-avatar :size="22" :src="lookedUpUser.avatarUrl">{{ lookedUpUser.nickname?.charAt(0) }}</el-avatar>
+                <span class="preview-name">{{ lookedUpUser.nickname || lookedUpUser.username }}</span>
+                <span class="preview-sub">@{{ lookedUpUser.username }}</span>
+                <el-tag v-if="lookedUpUser.status === 0" type="danger" size="small">已封禁</el-tag>
+              </div>
+              <div v-if="lookupError" class="lookup-error">
+                <el-icon color="#f56c6c"><CircleCloseFilled /></el-icon>
+                <span>用户不存在</span>
+              </div>
             </el-form-item>
 
             <el-form-item label="类型" prop="notifyType">
@@ -54,7 +76,7 @@
         </div>
       </el-col>
 
-      <!-- 说明提示 -->
+      <!-- 说明提示 + 快捷模板 -->
       <el-col :span="10">
         <div class="card tips-card">
           <h3 class="card-title">使用说明</h3>
@@ -97,7 +119,7 @@
 
     <!-- 发送历史 -->
     <div class="card history-card">
-      <h3 class="card-title">发送历史（最近20条广播）</h3>
+      <h3 class="card-title">发送历史（最近 20 条，按标题去重）</h3>
       <el-table :data="noticeHistory" v-loading="historyLoading" stripe size="small">
         <el-table-column label="类型" width="100" align="center">
           <template #default="{ row }">
@@ -105,7 +127,14 @@
           </template>
         </el-table-column>
         <el-table-column prop="title" label="标题" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="content" label="内容" min-width="240" show-overflow-tooltip />
+        <el-table-column prop="content" label="内容" min-width="220" show-overflow-tooltip />
+        <el-table-column label="接收用户" width="120" align="center">
+          <template #default="{ row }">
+            <el-tooltip content="广播时显示其中一位接收者 uid" placement="top">
+              <span class="uid-text">uid={{ row.userId }}</span>
+            </el-tooltip>
+          </template>
+        </el-table-column>
         <el-table-column label="发送时间" width="160">
           <template #default="{ row }">{{ formatDate(row.createdAt) }}</template>
         </el-table-column>
@@ -118,7 +147,10 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance } from 'element-plus'
+import { InfoFilled, SuccessFilled, WarningFilled, CircleCloseFilled } from '@element-plus/icons-vue'
 import { sendNotice, getNoticeHistory, type NoticeHistoryItem } from '@/api/notice'
+import { getUserDetail } from '@/api/user'
+import type { AdminUser } from '@/types'
 import dayjs from 'dayjs'
 
 const formRef = ref<FormInstance>()
@@ -126,6 +158,11 @@ const sending = ref(false)
 const sendMode = ref<'all' | 'single'>('all')
 const noticeHistory = ref<NoticeHistoryItem[]>([])
 const historyLoading = ref(false)
+
+// 用户查询
+const lookupLoading = ref(false)
+const lookedUpUser = ref<AdminUser | null>(null)
+const lookupError = ref(false)
 
 const form = reactive({
   userId: undefined as number | undefined,
@@ -135,8 +172,8 @@ const form = reactive({
 })
 
 const rules = {
-  title: [{ required: true, message: '请输入标题', trigger: 'blur' }],
-  content: [{ required: true, message: '请输入内容', trigger: 'blur' }],
+  title:      [{ required: true, message: '请输入标题', trigger: 'blur' }],
+  content:    [{ required: true, message: '请输入内容', trigger: 'blur' }],
   notifyType: [{ required: true, message: '请选择类型', trigger: 'change' }]
 }
 
@@ -152,15 +189,61 @@ function applyTemplate(t: typeof templates[0]) {
   form.notifyType = t.notifyType
 }
 
+function onSendModeChange() {
+  form.userId = undefined
+  resetLookup()
+}
+
+function resetLookup() {
+  lookedUpUser.value = null
+  lookupError.value = false
+}
+
+async function lookupUser() {
+  if (!form.userId) {
+    ElMessage.warning('请先输入用户 ID')
+    return
+  }
+  lookupLoading.value = true
+  resetLookup()
+  try {
+    lookedUpUser.value = await getUserDetail(form.userId)
+  } catch {
+    lookupError.value = true
+  } finally {
+    lookupLoading.value = false
+  }
+}
+
 async function handleSend() {
   if (!await formRef.value?.validate().catch(() => false)) return
 
+  if (sendMode.value === 'single') {
+    if (!form.userId) {
+      ElMessage.warning('请先输入并查询用户 ID')
+      return
+    }
+    if (!lookedUpUser.value) {
+      ElMessage.warning('请先点击「查询」确认用户存在')
+      return
+    }
+    if (lookedUpUser.value.status === 0) {
+      ElMessage.warning('该用户已封禁，无法发送通知')
+      return
+    }
+  }
+
+  // 广播二次确认（用户取消时静默退出）
   if (sendMode.value === 'all') {
-    await ElMessageBox.confirm(
-      `即将向全体用户广播公告「${form.title}」，确认发送？`,
-      '广播确认',
-      { type: 'warning', confirmButtonText: '确认广播', cancelButtonText: '取消' }
-    )
+    try {
+      await ElMessageBox.confirm(
+        `即将向全体用户广播公告「${form.title}」，确认发送？`,
+        '广播确认',
+        { type: 'warning', confirmButtonText: '确认广播', cancelButtonText: '取消' }
+      )
+    } catch {
+      return
+    }
   }
 
   sending.value = true
@@ -182,6 +265,7 @@ async function handleSend() {
 function resetForm() {
   formRef.value?.resetFields()
   form.userId = undefined
+  resetLookup()
 }
 
 async function loadHistory() {
@@ -210,73 +294,72 @@ onMounted(loadHistory)
 
 <style scoped>
 .page-header { margin-bottom: 20px; }
+.page-title { font-size: 20px; font-weight: 600; color: #1a1a2e; }
 
 .card {
   background: #fff;
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(109,40,217,0.09), 0 1px 4px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .card-title {
-  font-family: 'Outfit', sans-serif;
   font-size: 15px;
   font-weight: 700;
-  color: #1e1b4b;
+  color: #1a1a2e;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #ede9fe;
+  border-bottom: 1px solid #e5e7eb;
 }
 
+/* ─── 使用说明 ────────────────────────────────────────── */
 .tips-list {
   list-style: none;
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-
 .tips-list li {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 13px;
-  color: #4b5563;
-  line-height: 1.6;
+  display: flex; align-items: flex-start; gap: 8px;
+  font-size: 13px; color: #4b5563; line-height: 1.6;
 }
 
-.template-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+/* ─── 快捷模板 ────────────────────────────────────────── */
+.template-list { display: flex; flex-direction: column; gap: 8px; }
 .template-item {
   padding: 10px 14px;
-  border: 1px solid #ede9fe;
-  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
-  background: #faf8ff;
+  transition: border-color 0.2s, background 0.2s;
+  background: #fafafa;
 }
-
 .template-item:hover {
-  border-color: #7c3aed;
-  background: #ede9fe;
-  transform: translateX(2px);
+  border-color: #409eff;
+  background: #f0f7ff;
 }
-
 .template-label {
-  font-size: 13px;
-  font-weight: 700;
-  color: #1e1b4b;
+  font-size: 13px; font-weight: 600; color: #1a1a2e;
   display: block;
-  font-family: 'Outfit', sans-serif;
+}
+.template-preview { font-size: 12px; color: #9ca3af; }
+
+/* ─── 用户查询 ────────────────────────────────────────── */
+.user-input-row { display: flex; gap: 8px; align-items: center; }
+.user-preview-box {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; padding: 6px 10px;
+  background: #f0f9eb; border-radius: 6px;
+  border: 1px solid #b7eb8f; font-size: 13px;
+}
+.preview-name { font-weight: 500; color: #1a1a2e; }
+.preview-sub { color: #9ca3af; }
+.lookup-error {
+  display: flex; align-items: center; gap: 6px;
+  margin-top: 8px; font-size: 13px; color: #f56c6c;
 }
 
-.template-preview {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
+/* ─── 历史 ────────────────────────────────────────────── */
 .history-card { margin-top: 20px; }
+.uid-text { font-size: 12px; color: #6b7280; }
 </style>

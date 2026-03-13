@@ -13,6 +13,7 @@ export function sendNotice(data: SendNoticeRequest) {
 
 export interface NoticeHistoryItem {
   notificationId: number
+  userId: number         // 接收者 uid（广播时为其中一条记录的接收者）
   title: string
   content: string
   notifyType: string

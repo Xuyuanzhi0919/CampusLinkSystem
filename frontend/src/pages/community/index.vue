@@ -9,6 +9,10 @@
           <text class="brand-title">社区</text>
         </view>
         <text class="brand-subtitle">发现精彩社团，参与校园活动</text>
+        <view class="create-club-btn" @click="handleCreateClub">
+          <Icon name="plus" :size="16" class="create-icon" />
+          <text class="create-text">创建社团</text>
+        </view>
       </view>
     </view>
 
@@ -118,6 +122,7 @@ import ActivityList from './components/ActivityList.vue'
 import { getClubList, getActivityList } from '@/services/club'
 import Icon from '@/components/icons/index.vue'
 import { useNavigationStore } from '@/stores/navigation'
+import { requireLogin } from '@/utils/auth'
 
 // 移动端组件
 import { CustomTabBar } from '@/components/mobile'
@@ -200,6 +205,11 @@ const handleScroll = (e: any, tabIndex: number) => {
     uni.$emit('inner-scroll', { scrollTop: top })
     // #endif
   }
+}
+
+const handleCreateClub = () => {
+  if (!requireLogin('create_club')) return
+  uni.navigateTo({ url: '/pages/club/create' })
 }
 
 /**
@@ -401,6 +411,29 @@ onUnmounted(() => {
 .brand-subtitle {
   font-size: 13px;
   color: $color-text-tertiary;
+}
+
+.create-club-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: $campus-blue;
+  color: #fff;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+
+  &:active {
+    background: #1d4ed8;
+  }
+
+  .create-icon {
+    flex-shrink: 0;
+  }
 }
 
 /* ========== Tab 切换栏 ========== */

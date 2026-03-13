@@ -79,6 +79,17 @@
           </el-breadcrumb>
         </div>
         <div class="header-right">
+          <!-- 主题切换 -->
+          <el-tooltip :content="themeTooltip" placement="bottom">
+            <el-button text circle @click="themeStore.toggle()">
+              <el-icon :size="18">
+                <Sunny v-if="themeStore.mode === 'light'" />
+                <Moon v-else-if="themeStore.mode === 'dark'" />
+                <Monitor v-else />
+              </el-icon>
+            </el-button>
+          </el-tooltip>
+
           <el-dropdown @command="handleCommand">
             <div class="user-info">
               <el-avatar :size="32" :src="authStore.userInfo?.avatarUrl">
@@ -111,15 +122,23 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessageBox } from 'element-plus'
+import { Sunny, Moon, Monitor } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
 import { getPendingCount } from '@/api/report'
 
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
 
+const themeStore = useThemeStore()
 const isCollapsed = ref(false)
 const pendingReports = ref(0)
+
+const themeTooltip = computed(() => {
+  const map = { light: '浅色模式（点击切换深色）', dark: '深色模式（点击切换跟随系统）', auto: '跟随系统（点击切换浅色）' }
+  return map[themeStore.mode]
+})
 
 const activeMenu = computed(() => '/' + (route.path.split('/')[1] || 'dashboard'))
 const currentTitle = computed(() => {
@@ -234,11 +253,12 @@ onMounted(async () => {
 
 /* ─── 顶栏 ──────────────────────────────────────────────────── */
 .header {
-  background: #fff;
+  background: var(--cp-surface, #fff);
   border-bottom: none;
-  box-shadow: 0 1px 0 #ede9fe, 0 2px 16px rgba(109,40,217,.05);
+  box-shadow: 0 1px 0 var(--cp-border, #ede9fe), 0 2px 16px rgba(109,40,217,.05);
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 24px; height: 60px; flex-shrink: 0;
+  transition: background 0.25s, box-shadow 0.25s;
 }
 
 .header-left { display: flex; align-items: center; gap: 14px; }
@@ -255,11 +275,11 @@ onMounted(async () => {
 
 .user-info {
   display: flex; align-items: center; gap: 9px;
-  cursor: pointer; font-size: 14px; font-weight: 600; color: #1e1b4b;
+  cursor: pointer; font-size: 14px; font-weight: 600; color: var(--cp-text, #1e1b4b);
   padding: 5px 12px 5px 5px; border-radius: 24px;
   transition: background 0.2s;
 }
-.user-info:hover { background: #ede9fe; }
+.user-info:hover { background: var(--cp-brand-bg, #ede9fe); }
 :deep(.user-info .el-avatar) {
   box-shadow: 0 0 0 2px #fff, 0 0 0 4px rgba(124,58,237,.3);
 }

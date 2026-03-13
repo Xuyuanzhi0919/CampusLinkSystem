@@ -8,22 +8,6 @@ import lombok.Data;
 
 import java.time.LocalDateTime;
 
-/**
- * 定时公告实体
- *
- * 建表 SQL（需手动执行）：
- * CREATE TABLE scheduled_notice (
- *   id          BIGINT PRIMARY KEY AUTO_INCREMENT,
- *   title       VARCHAR(100) NOT NULL,
- *   content     VARCHAR(500) NOT NULL,
- *   notify_type VARCHAR(20)  NOT NULL,
- *   target_type VARCHAR(10)  NOT NULL COMMENT 'all/single/role',
- *   target_value VARCHAR(50)  DEFAULT NULL COMMENT 'userId 或 role 值',
- *   scheduled_at DATETIME    NOT NULL,
- *   status      TINYINT      DEFAULT 0 COMMENT '0-待发送 1-已发送 2-已取消',
- *   created_at  DATETIME     DEFAULT CURRENT_TIMESTAMP
- * ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
- */
 @Data
 @TableName("scheduled_notice")
 public class ScheduledNotice {

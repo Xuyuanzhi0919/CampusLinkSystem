@@ -122,9 +122,9 @@
           <div v-if="selectedReport.evidenceImages" class="evidence-images">
             <div class="section-title" style="margin-top: 12px">证据截图</div>
             <el-image
-              v-for="(img, i) in selectedReport.evidenceImages.split(',')"
-              :key="i" :src="img"
-              :preview-src-list="selectedReport.evidenceImages.split(',')"
+              v-for="(img, i) in parseImages(selectedReport.evidenceImages)"
+              :key="i" :src="img.trim()"
+              :preview-src-list="parseImages(selectedReport.evidenceImages)"
               fit="cover" class="evidence-img"
             />
           </div>
@@ -238,7 +238,7 @@ function reportTypeLabel(t: number) {
 }
 
 function reportTagType(t: number) {
-  return ({ 1: 'primary', 2: 'info', 3: 'warning', 4: '' } as Record<number, string>)[t] || ''
+  return ({ 1: 'primary', 2: 'info', 3: 'warning', 4: 'success' } as Record<number, string>)[t] || ''
 }
 
 function reasonLabel(t: number) {
@@ -251,6 +251,14 @@ function statusLabel(s: number) {
 
 function statusType(s: number) {
   return ({ 0: 'warning', 1: 'success', 2: 'info' } as Record<number, string>)[s] || ''
+}
+
+function parseImages(raw: string): string[] {
+  try {
+    const parsed = JSON.parse(raw)
+    if (Array.isArray(parsed)) return parsed.map(s => String(s).trim()).filter(Boolean)
+  } catch { /* 不是 JSON，回退到逗号分割 */ }
+  return raw.split(',').map(s => s.trim()).filter(Boolean)
 }
 
 function formatDate(d?: string) {
@@ -281,6 +289,7 @@ async function submitHandle() {
       selectedReport.value.status = handleAction.value
     }
     handleVisible.value = false
+    detailVisible.value = false
     // 刷新待处理计数
     loadPendingCount()
     fetchData()

@@ -418,6 +418,34 @@ public class ClubService {
                 resourcePage.getCurrent(), resourcePage.getSize(), resourcePage.getPages());
     }
 
+    /**
+     * 删除社团动态（admin/founder 可删任意；成员只能删自己的）
+     */
+    @Transactional
+    public void deleteClubPost(Long clubId, Long postId, Long userId) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        LambdaQueryWrapper<ClubMember> memberCheck = new LambdaQueryWrapper<>();
+        memberCheck.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, userId);
+        ClubMember currentMember = clubMemberMapper.selectOne(memberCheck);
+        if (currentMember == null) throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+
+        Comment comment = commentMapper.selectById(postId);
+        if (comment == null || !"club".equals(comment.getTargetType()) || !clubId.equals(comment.getTargetId())) {
+            throw new BusinessException(404, "动态不存在");
+        }
+
+        boolean isAdmin = "admin".equals(currentMember.getRole()) || "founder".equals(currentMember.getRole());
+        if (!comment.getUserId().equals(userId) && !isAdmin) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        comment.setStatus(0);
+        commentMapper.updateById(comment);
+        log.info("用户 {} 删除了社团 {} 的动态 {}", userId, clubId, postId);
+    }
+
     private String formatFileSize(long bytes) {
         if (bytes < 1024) return bytes + " B";
         if (bytes < 1024 * 1024) return String.format("%.1f KB", bytes / 1024.0);

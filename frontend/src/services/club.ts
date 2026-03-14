@@ -173,6 +173,13 @@ export const createClubPost = (clubId: number, content: string) => {
 }
 
 /**
+ * 删除社团动态（管理员/创始人可删任意；成员只能删自己的）
+ */
+export const deleteClubPost = (clubId: number, postId: number) => {
+  return request.delete(`/club/${clubId}/posts/${postId}`)
+}
+
+/**
  * 获取社团资料列表（仅成员）
  */
 export const getClubResources = (clubId: number, params: { page?: number; pageSize?: number } = {}) => {

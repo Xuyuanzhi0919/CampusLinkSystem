@@ -163,6 +163,17 @@ public class ClubController {
         return Result.success("已移除");
     }
 
+    @Operation(summary = "删除社团动态", description = "管理员/创始人可删除任意动态，成员只能删除自己的")
+    @DeleteMapping("/{clubId}/posts/{postId}")
+    public Result<Void> deleteClubPost(
+            @PathVariable Long clubId,
+            @PathVariable Long postId,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        clubService.deleteClubPost(clubId, postId, userId);
+        return Result.success("已删除");
+    }
+
     @Operation(summary = "修改成员角色", description = "仅创始人可操作，角色可为 member 或 admin")
     @PutMapping("/{clubId}/members/{memberId}/role")
     public Result<Void> updateMemberRole(

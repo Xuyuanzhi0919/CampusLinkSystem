@@ -304,6 +304,13 @@
                     </view>
                     <text class="member-join-time">{{ formatJoinTime(member.joinedAt) }}</text>
                   </view>
+                  <view
+                    v-if="isMember && member.userId !== currentUserId"
+                    class="member-msg-btn"
+                    @click="handleContact(member.userId)"
+                  >
+                    <Icon name="message-circle" :size="16" class="member-msg-icon" />
+                  </view>
                 </view>
               </view>
               <view v-else class="empty-placeholder">
@@ -311,6 +318,7 @@
                   <Icon name="users" :size="40" class="empty-icon" />
                 </view>
                 <text class="empty-text">暂无成员</text>
+                <text v-if="isMember" class="empty-hint">快去邀请小伙伴一起加入吧~</text>
               </view>
             </view>
 
@@ -342,11 +350,16 @@
         <view class="sidebar">
           <!-- ① 社团状态卡（信任锚点）-->
           <view class="sidebar-card">
-            <view class="card-header">
+            <view class="card-header card-header--clickable" @click="sidebarCollapsed.info = !sidebarCollapsed.info">
               <Icon name="info" :size="14" class="header-icon" />
               <text class="card-title">社团信息</text>
+              <Icon :name="sidebarCollapsed.info ? 'chevron-right' : 'chevron-down'" :size="14" class="collapse-icon" />
             </view>
-            <view class="status-list">
+            <view v-show="!sidebarCollapsed.info" class="status-list">
+              <view v-if="club.category" class="status-item">
+                <text class="status-label">社团分类</text>
+                <text class="status-value">{{ club.category }}</text>
+              </view>
               <view class="status-item">
                 <text class="status-label">成员数量</text>
                 <text class="status-value">{{ club.memberCount || 0 }}</text>
@@ -371,11 +384,12 @@
 
           <!-- ② 管理员/联系方式 -->
           <view class="sidebar-card">
-            <view class="card-header">
+            <view class="card-header card-header--clickable" @click="sidebarCollapsed.admin = !sidebarCollapsed.admin">
               <Icon name="users" :size="14" class="header-icon" />
               <text class="card-title">管理员</text>
+              <Icon :name="sidebarCollapsed.admin ? 'chevron-right' : 'chevron-down'" :size="14" class="collapse-icon" />
             </view>
-            <view v-if="admins.length > 0" class="admin-list">
+            <view v-show="!sidebarCollapsed.admin" v-if="admins.length > 0" class="admin-list">
               <view v-for="admin in admins" :key="admin.userId" class="admin-item">
                 <ClAvatar :src="admin.avatarUrl" :name="admin.nickname" size="small" />
                 <view class="admin-info">
@@ -385,7 +399,7 @@
                 <Icon name="message-circle" :size="14" class="contact-icon" @click="handleContact(admin.userId)" />
               </view>
             </view>
-            <view v-else class="admin-empty">
+            <view v-show="!sidebarCollapsed.admin" v-else class="admin-empty">
               <Icon name="user" :size="20" class="admin-empty-icon" />
               <text class="admin-empty-text">暂无管理员信息</text>
             </view>
@@ -393,26 +407,29 @@
 
           <!-- ③ 相关推荐社团（可选）-->
           <view class="sidebar-card">
-            <view class="card-header">
+            <view class="card-header card-header--clickable" @click="sidebarCollapsed.related = !sidebarCollapsed.related">
               <Icon name="compass" :size="14" class="header-icon" />
               <text class="card-title">相关社团</text>
+              <Icon :name="sidebarCollapsed.related ? 'chevron-right' : 'chevron-down'" :size="14" class="collapse-icon" />
             </view>
-            <view v-if="relatedClubs.length > 0" class="related-club-list">
-              <view
-                v-for="relatedClub in relatedClubs"
-                :key="relatedClub.clubId"
-                class="related-club-item"
-                @click="goToClubDetail(relatedClub.clubId)"
-              >
-                <image class="related-club-logo" :src="relatedClub.logoUrl || '/static/default-club.png'" mode="aspectFill" />
-                <view class="related-club-info">
-                  <text class="related-club-name">{{ relatedClub.clubName }}</text>
-                  <text class="related-club-meta">{{ relatedClub.memberCount || 0 }} 人</text>
+            <view v-show="!sidebarCollapsed.related">
+              <view v-if="relatedClubs.length > 0" class="related-club-list">
+                <view
+                  v-for="relatedClub in relatedClubs"
+                  :key="relatedClub.clubId"
+                  class="related-club-item"
+                  @click="goToClubDetail(relatedClub.clubId)"
+                >
+                  <image class="related-club-logo" :src="relatedClub.logoUrl || '/static/default-club.png'" mode="aspectFill" />
+                  <view class="related-club-info">
+                    <text class="related-club-name">{{ relatedClub.clubName }}</text>
+                    <text class="related-club-meta">{{ relatedClub.memberCount || 0 }} 人</text>
+                  </view>
                 </view>
               </view>
-            </view>
-            <view v-else class="admin-empty">
-              <text class="admin-empty-text">暂无同类型社团推荐</text>
+              <view v-else class="admin-empty">
+                <text class="admin-empty-text">暂无同类型社团推荐</text>
+              </view>
             </view>
           </view>
         </view>
@@ -445,7 +462,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost } from '@/services/club'
 import ClAvatar from '@/components/cl/ClAvatar.vue'
@@ -458,6 +475,7 @@ import { requireLogin } from '@/utils/auth'
 import ClLoginGuideModal from '@/components/cl/ClLoginGuideModal.vue'
 import LoginModal from '@/components/LoginModal.vue'
 import ClClubDefaultCover from '@/components/cl/ClClubDefaultCover.vue'
+import { useUserStore } from '@/stores/user'
 
 // ========== 状态 ==========
 const loading = ref(false)
@@ -483,6 +501,11 @@ const tabLoaded = ref<Record<string, boolean>>({
   activity: false,
   member: false
 })
+
+const userStore = useUserStore()
+const currentUserId = computed(() => userStore.userInfo?.uid || (userStore.userInfo as any)?.userId || 0)
+// 侧边栏折叠状态（related 默认折叠）
+const sidebarCollapsed = reactive({ info: false, admin: false, related: true })
 
 // ========== 计算属性 ==========
 // 用户状态
@@ -1312,16 +1335,14 @@ onUnmounted(() => {
 .tabs-nav {
   display: flex;
   flex-wrap: nowrap;
-  background: linear-gradient(to bottom, $white 0%, rgba($gray-50, 0.5) 100%);
+  background: $white;
   border-radius: $radius-lg;
-  padding: 8rpx;
+  padding: 0;
   margin-bottom: 32rpx;
-  box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.08),
-              0 1rpx 4rpx rgba($gray-900, 0.04);
-  gap: 6rpx;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.06);
+  border: 1rpx solid rgba($gray-200, 0.6);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  border: 1rpx solid rgba($gray-200, 0.6);
 
   /* #ifdef H5 */
   &::-webkit-scrollbar {
@@ -1338,27 +1359,30 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 6rpx;
-  padding: 14rpx 20rpx;
-  border-radius: $radius-md;
+  padding: 24rpx 28rpx;
+  border-radius: 0;
   cursor: pointer;
   transition: all $transition-base;
   white-space: nowrap;
   position: relative;
+  border-bottom: 3rpx solid transparent;
 
   &:hover {
-    background: rgba($primary, 0.08); // 从 0.05 增加到 0.08
-    transform: translateY(-1rpx); // 添加微妙的上浮效果
+    background: rgba($primary, 0.04);
+
+    .tab-icon,
+    .tab-label {
+      color: $primary;
+    }
   }
 
   &--active {
-    background: linear-gradient(135deg, $primary 0%, rgba($primary, 0.9) 100%); // 渐变背景
-    box-shadow: 0 4rpx 12rpx rgba($primary, 0.25), // 激活态阴影
-                0 2rpx 4rpx rgba($primary, 0.15);
+    border-bottom-color: $primary;
 
     .tab-icon,
     .tab-label,
     .tab-count {
-      color: $white;
+      color: $primary;
     }
   }
 }
@@ -2056,5 +2080,48 @@ onUnmounted(() => {
   color: $gray-400;
   text-align: center;
   padding: $sp-6 0;
+}
+
+// 成员私信按钮
+.member-msg-btn {
+  width: 56rpx;
+  height: 56rpx;
+  @include flex-center;
+  background: rgba($primary, 0.08);
+  border-radius: $radius-full;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: all $transition-fast;
+
+  &:hover {
+    background: rgba($primary, 0.15);
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+}
+
+.member-msg-icon {
+  color: $primary;
+}
+
+// 侧边栏折叠图标和可点击头部
+.card-header--clickable {
+  cursor: pointer;
+  user-select: none;
+
+  &:hover {
+    background: rgba($gray-100, 0.5);
+    margin: -8rpx;
+    padding: 8rpx;
+    border-radius: $radius-sm;
+  }
+}
+
+.collapse-icon {
+  color: $gray-400;
+  margin-left: auto;
+  transition: transform $transition-base;
 }
 </style>

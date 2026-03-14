@@ -30,7 +30,7 @@
           <view class="link-list">
             <text class="link-item" @click="handleNavigate('/pages/resource/index')">资源广场</text>
             <text class="link-item" @click="handleNavigate('/pages/question/index')">问答社区</text>
-            <text class="link-item" @click="handleNavigate('/pages/club/list')">社团活动</text>
+            <text class="link-item" @click="handleNavigate('/pages/community/index')">社团活动</text>
             <text class="link-item" @click="handleNavigate('/pages/task/index')">任务中心</text>
             <text class="link-item" @click="handleNavigate('/pages/user/index')">个人中心</text>
           </view>

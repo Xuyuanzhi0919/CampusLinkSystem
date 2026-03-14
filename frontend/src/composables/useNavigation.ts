@@ -140,9 +140,9 @@ export function useNavigation() {
     navigateTo('/pages/club/activity-list')
   }
 
-  /** 跳转到社团列表 */
+  /** 跳转到社区（社团/活动/问答聚合页） */
   const toClubList = () => {
-    navigateTo('/pages/club/list')
+    navigateTo('/pages/community/index')
   }
 
   /** 跳转到任务大厅 */

@@ -39,7 +39,7 @@
             <view class="nav-icon task-icon">📋</view>
             <text class="nav-label">任务</text>
           </view>
-          <view class="nav-item" @click="handleNavigate('/pages/club/list')">
+          <view class="nav-item" @click="handleNavigate('/pages/community/index')">
             <view class="nav-icon club-icon">🎯</view>
             <text class="nav-label">社团</text>
           </view>

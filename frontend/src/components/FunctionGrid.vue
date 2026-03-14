@@ -65,7 +65,7 @@ const functions: FunctionItem[] = [
     icon: '👥',
     name: '社团活动',
     desc: '精彩活动',
-    path: '/pages/club/list',
+    path: '/pages/community/index',
     theme: 'orange', // 活力橙系
   },
   {

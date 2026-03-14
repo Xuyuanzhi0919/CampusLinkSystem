@@ -76,7 +76,7 @@ const capabilityItems = computed<CapabilityItem[]>(() => [
     description: `已加入 ${props.badges?.myClubs || 0} 个社团`,
     icon: 'users',
     color: 'purple',
-    path: '/pages/club/list',
+    path: '/pages/community/index',
   },
   {
     id: 'my-questions',

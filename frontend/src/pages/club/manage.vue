@@ -159,8 +159,14 @@
                   </view>
                   <text class="post-content">{{ post.content }}</text>
                   <view class="post-stats">
-                    <text class="post-stat">❤️ {{ post.likes }}</text>
-                    <text class="post-stat">💬 {{ post.comments }}</text>
+                    <view class="post-stat">
+                      <ClIcon name="icon-heart" size="xs" color="#8A8A8A" />
+                      <text class="post-stat-count">{{ post.likes }}</text>
+                    </view>
+                    <view class="post-stat">
+                      <ClIcon name="icon-message" size="xs" color="#8A8A8A" />
+                      <text class="post-stat-count">{{ post.comments }}</text>
+                    </view>
                   </view>
                 </view>
                 <view v-if="!postsLoading && posts.length === 0" class="empty-tip">
@@ -266,8 +272,14 @@
                         {{ ACTIVITY_STATUS_LABELS[act.status] }}
                       </view>
                     </view>
-                    <text class="activity-time">🕐 {{ formatDateTime(act.startTime) }}</text>
-                    <text class="activity-location">📍 {{ act.location }}</text>
+                    <view class="activity-time">
+                      <ClIcon name="icon-clock" size="xs" color="#8A8A8A" />
+                      <text>{{ formatDateTime(act.startTime) }}</text>
+                    </view>
+                    <view class="activity-location">
+                      <ClIcon name="icon-location" size="xs" color="#8A8A8A" />
+                      <text>{{ act.location }}</text>
+                    </view>
                     <view class="activity-participants-row">
                       <text class="activity-participants">
                         {{ act.currentParticipants }}/{{ act.maxParticipants }} 人报名
@@ -1789,11 +1801,17 @@ $white: #FFFFFF;
 .post-stats {
   display: flex;
   gap: 14px;
+}
 
-  .post-stat {
-    font-size: 13px;
-    color: $text-muted;
-  }
+.post-stat {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.post-stat-count {
+  font-size: 13px;
+  color: $text-muted;
 }
 
 // ── 资料库 ────────────────────────────────────────────
@@ -1925,6 +1943,9 @@ $white: #FFFFFF;
 
 .activity-time,
 .activity-location {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 13px;
   color: $text-secondary;
 }

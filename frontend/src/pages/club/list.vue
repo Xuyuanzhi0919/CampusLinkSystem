@@ -786,7 +786,7 @@ const handleClubAction = (club: ClubItem) => {
       content: '你的加入申请正在审核中,是否取消申请?',
       confirmText: '取消申请',
       cancelText: '继续等待',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
           try {
             await quitClub(club.clubId)

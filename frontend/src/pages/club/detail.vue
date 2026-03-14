@@ -464,6 +464,74 @@
       <CButton type="secondary" size="md" @click="retry">重新加载</CButton>
     </view>
 
+    <!-- 发布动态弹窗 -->
+    <view v-if="showPublishModal" class="publish-overlay" @click.self="closePublishModal">
+      <view class="publish-modal">
+        <!-- 移动端拖拽手柄 -->
+        <view class="publish-drag-handle">
+          <view class="publish-drag-pill" />
+        </view>
+
+        <!-- 弹窗头部 -->
+        <view class="publish-modal-header">
+          <text class="publish-modal-title">发布动态</text>
+          <view class="publish-modal-close" @click="closePublishModal">
+            <Icon name="x" :size="16" class="publish-close-icon" />
+          </view>
+        </view>
+        <view class="publish-modal-divider" />
+
+        <!-- 弹窗主体 -->
+        <view class="publish-modal-body">
+          <!-- 用户信息行 -->
+          <view class="publish-user-row">
+            <ClAvatar
+              :src="userStore.userInfo?.avatarUrl || (userStore.userInfo as any)?.avatar"
+              :name="userStore.userInfo?.nickname || '我'"
+              size="small"
+            />
+            <view class="publish-user-info">
+              <text class="publish-user-name">{{ userStore.userInfo?.nickname || '我' }}</text>
+              <text class="publish-user-target">发布到：{{ club?.clubName }}</text>
+            </view>
+          </view>
+
+          <!-- 输入区 -->
+          <textarea
+            v-model="publishContent"
+            class="publish-textarea"
+            placeholder="分享你的想法，和社团成员聊聊..."
+            :maxlength="500"
+            auto-height
+          />
+
+          <!-- 底部操作栏 -->
+          <view class="publish-footer">
+            <view class="publish-attachments">
+              <view class="publish-attach-btn">
+                <Icon name="image" :size="16" class="publish-attach-icon" />
+              </view>
+              <view class="publish-attach-btn">
+                <Icon name="smile" :size="16" class="publish-attach-icon" />
+              </view>
+            </view>
+            <view class="publish-footer-right">
+              <text class="publish-char-count">{{ publishContent.length }} / 500</text>
+              <CButton type="ghost" size="sm" @click="closePublishModal">取消</CButton>
+              <CButton
+                type="primary"
+                size="sm"
+                :loading="publishLoading"
+                @click="submitPublishFeed"
+              >
+                发布
+              </CButton>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+
     <!-- 登录引导弹窗 -->
     <ClLoginGuideModal
       :visible="showLoginGuide"
@@ -506,6 +574,11 @@ const currentTab = ref<'feed' | 'activity' | 'resource' | 'member' | 'about'>('f
 const showLoginGuide = ref(false)
 const loginGuideActionType = ref('')
 const showLoginModal = ref(false)
+
+// 发布动态弹窗
+const showPublishModal = ref(false)
+const publishContent = ref('')
+const publishLoading = ref(false)
 
 // 各模块数据
 const feeds = ref<ClubPost[]>([])
@@ -728,24 +801,34 @@ const handleEnter = () => {
   })
 }
 
-// 发布动态（成员）
+// 发布动态（成员）— 打开自定义弹窗
 const handlePublishFeed = () => {
-  uni.showModal({
-    title: '发布动态',
-    editable: true,
-    placeholderText: '分享你的想法...',
-    success: async (res) => {
-      if (res.confirm && res.content?.trim()) {
-        try {
-          await createClubPost(clubId.value!, res.content.trim())
-          uni.showToast({ title: '发布成功', icon: 'success' })
-          if (clubId.value) await loadFeeds(clubId.value)
-        } catch (e: any) {
-          uni.showToast({ title: e.message || '发布失败', icon: 'none' })
-        }
-      }
-    }
-  })
+  publishContent.value = ''
+  showPublishModal.value = true
+}
+
+const closePublishModal = () => {
+  showPublishModal.value = false
+  publishContent.value = ''
+}
+
+const submitPublishFeed = async () => {
+  const content = publishContent.value.trim()
+  if (!content) {
+    uni.showToast({ title: '请输入内容', icon: 'none' })
+    return
+  }
+  publishLoading.value = true
+  try {
+    await createClubPost(clubId.value!, content)
+    uni.showToast({ title: '发布成功', icon: 'success' })
+    closePublishModal()
+    if (clubId.value) await loadFeeds(clubId.value)
+  } catch (e: any) {
+    uni.showToast({ title: e.message || '发布失败', icon: 'none' })
+  } finally {
+    publishLoading.value = false
+  }
 }
 
 // 发布活动（管理员）
@@ -2257,5 +2340,202 @@ onUnmounted(() => {
   color: $gray-400;
   margin-left: auto;
   transition: transform $transition-base;
+}
+
+// =============================================
+// 发布动态弹窗
+// =============================================
+
+/* #ifdef H5 */
+.publish-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  @include mobile {
+    align-items: flex-end;
+  }
+}
+/* #endif */
+
+.publish-modal {
+  width: 560px;
+  max-width: 92vw;
+  background: $white;
+  border-radius: 16px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.16);
+  overflow: hidden;
+
+  @include mobile {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 20px 20px 0 0;
+  }
+}
+
+// 移动端拖拽手柄
+.publish-drag-handle {
+  display: none;
+  justify-content: center;
+  padding: 12px 0 8px;
+
+  @include mobile {
+    display: flex;
+  }
+}
+
+.publish-drag-pill {
+  width: 40px;
+  height: 4px;
+  background: #D8D6D2;
+  border-radius: 2px;
+}
+
+// 弹窗头部
+.publish-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px 18px;
+}
+
+.publish-modal-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.publish-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-50;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $gray-100;
+  }
+}
+
+.publish-close-icon {
+  color: $gray-500;
+}
+
+.publish-modal-divider {
+  height: 1px;
+  background: #F0EFEC;
+}
+
+// 弹窗主体
+.publish-modal-body {
+  padding: 22px 28px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+// 用户信息行
+.publish-user-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.publish-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.publish-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-900;
+}
+
+.publish-user-target {
+  font-size: 11px;
+  color: $gray-500;
+}
+
+// 文本输入区
+.publish-textarea {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px 16px;
+  background: $gray-50;
+  border: 1px solid #F0EFEC;
+  border-radius: 12px;
+  font-size: 14px;
+  color: $gray-700;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  font-family: $font-family;
+  transition: border-color $transition-fast;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $gray-400;
+  }
+
+  &:focus {
+    border-color: rgba($primary, 0.3);
+    background: $white;
+  }
+}
+
+// 底部操作栏
+.publish-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.publish-attachments {
+  display: flex;
+  gap: 8px;
+}
+
+.publish-attach-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gray-50;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background $transition-fast;
+
+  &:hover {
+    background: $gray-100;
+  }
+}
+
+.publish-attach-icon {
+  color: $gray-500;
+}
+
+.publish-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.publish-char-count {
+  font-size: 12px;
+  color: $gray-400;
 }
 </style>

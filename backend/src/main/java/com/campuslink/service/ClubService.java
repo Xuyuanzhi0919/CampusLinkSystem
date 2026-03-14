@@ -70,7 +70,7 @@ public class ClubService {
         club.setSchoolId(user.getSchoolId() != null ? user.getSchoolId() : 1L);
         club.setFounderId(userId);
         club.setMemberCount(1);
-        club.setStatus(1);
+        club.setStatus(2); // 待审核，需管理员批准
         club.setCreatedAt(LocalDateTime.now());
         club.setUpdatedAt(LocalDateTime.now());
 

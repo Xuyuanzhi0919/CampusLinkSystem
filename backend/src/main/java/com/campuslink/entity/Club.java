@@ -56,9 +56,15 @@ public class Club {
     private Integer memberCount;
 
     /**
-     * 状态：0-已解散，1-正常
+     * 状态：0-已解散，1-正常，2-待审核，3-已拒绝
      */
     private Integer status;
+
+    /**
+     * 审核拒绝原因（status=3 时填写）
+     */
+    @TableField("reject_reason")
+    private String rejectReason;
 
     /**
      * 是否官方/校级社团：0-否，1-是

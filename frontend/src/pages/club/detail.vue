@@ -285,42 +285,7 @@
               </view>
             </view>
 
-            <!-- ③ 资料 Tab -->
-            <view v-if="currentTab === 'resource'" class="resource-container">
-              <view v-if="isMember">
-                <view v-if="resources.length > 0" class="resource-list">
-                  <view
-                    v-for="resource in resources"
-                    :key="resource.id"
-                    class="resource-card"
-                    @click="uni.navigateTo({ url: `/pages/resource/detail?id=${resource.id}` })"
-                  >
-                    <Icon name="file-text" :size="20" class="resource-icon" />
-                    <view class="resource-info">
-                      <text class="resource-title">{{ resource.title }}</text>
-                      <text class="resource-meta">{{ resource.fileSize }} · {{ resource.uploaderName || '未知' }}</text>
-                    </view>
-                    <Icon name="chevron-right" :size="16" class="resource-action" />
-                  </view>
-                </view>
-                <view v-else class="empty-placeholder">
-                  <view class="empty-icon-wrap">
-                    <Icon name="folder" :size="40" class="empty-icon" />
-                  </view>
-                  <text class="empty-text">暂无资料</text>
-                  <text class="empty-hint">上传学习资料，与成员共享</text>
-                  <CButton type="primary" size="sm" @click="handleUploadResource">上传资料</CButton>
-                </view>
-              </view>
-              <!-- 未加入提示 -->
-              <view v-else class="lock-placeholder">
-                <Icon name="lock" :size="48" class="lock-icon" />
-                <text class="lock-text">加入社团后可查看资料</text>
-                <CButton type="primary" size="md" @click="handleJoin">立即加入</CButton>
-              </view>
-            </view>
-
-            <!-- ④ 成员 Tab -->
+            <!-- ③ 成员 Tab -->
             <view v-if="currentTab === 'member'" class="member-container">
               <view v-if="members.length > 0" class="member-list">
                 <view v-for="member in members" :key="member.userId" class="member-card">
@@ -482,9 +447,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost, getClubResources } from '@/services/club'
+import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost } from '@/services/club'
 import ClAvatar from '@/components/cl/ClAvatar.vue'
-import type { ClubPost, ClubResource } from '@/services/club'
+import type { ClubPost } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
 import CButton from '@/components/ui/CButton.vue'
 import { CNavBar } from '@/components/layout'
@@ -508,7 +473,6 @@ const showLoginModal = ref(false)
 // 各模块数据
 const feeds = ref<ClubPost[]>([])
 const activities = ref<ActivityItem[]>([])
-const resources = ref<ClubResource[]>([])
 const members = ref<ClubMember[]>([])
 const admins = ref<ClubMember[]>([]) // 管理员
 const relatedClubs = ref<any[]>([]) // 相关社团
@@ -517,7 +481,6 @@ const relatedClubs = ref<any[]>([]) // 相关社团
 const tabLoaded = ref<Record<string, boolean>>({
   feed: false,
   activity: false,
-  resource: false,
   member: false
 })
 
@@ -564,7 +527,6 @@ const lastActiveTime = computed(() => {
 const tabs = computed(() => [
   { value: 'feed', label: '动态', icon: 'message-square', count: feeds.value.length || undefined },
   { value: 'activity', label: '活动', icon: 'calendar', count: club.value?.activityCount ?? (activities.value.length || undefined) },
-  { value: 'resource', label: '资料', icon: 'folder', count: isMember.value ? (resources.value.length || undefined) : undefined },
   { value: 'member', label: '成员', icon: 'users', count: club.value?.memberCount ?? (members.value.length || undefined) },
   { value: 'about', label: '简介', icon: 'info' }
 ])
@@ -618,16 +580,6 @@ const loadActivities = async (id: number) => {
   }
 }
 
-// 加载资料列表（仅成员可查看）
-const loadResources = async (id: number) => {
-  try {
-    const res = await getClubResources(id, { page: 1, pageSize: 20 })
-    resources.value = res.list || []
-  } catch {
-    resources.value = []
-  }
-}
-
 // 加载成员列表
 const loadMembers = async (id: number) => {
   try {
@@ -662,9 +614,6 @@ const handleTabChange = async (tab: typeof currentTab.value) => {
   if (tab === 'activity' && !tabLoaded.value.activity) {
     await loadActivities(id)
     tabLoaded.value.activity = true
-  } else if (tab === 'resource' && !tabLoaded.value.resource && isMember.value) {
-    await loadResources(id)
-    tabLoaded.value.resource = true
   } else if (tab === 'member' && !tabLoaded.value.member) {
     await loadMembers(id)
     tabLoaded.value.member = true
@@ -754,15 +703,6 @@ const handlePublishFeed = () => {
         }
       }
     }
-  })
-}
-
-// 上传资料（成员）
-const handleUploadResource = () => {
-  const returnUrl = encodeURIComponent(`/pages/club/detail?id=${clubId.value}`)
-  uni.navigateTo({
-    url: `/pages/resource/upload?returnUrl=${returnUrl}`,
-    fail: () => uni.showToast({ title: '功能开发中', icon: 'none' })
   })
 }
 

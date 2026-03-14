@@ -13,7 +13,7 @@
             :loading="submitting"
             @click="handleSubmit"
           >
-            {{ submitting ? '创建中...' : '创建社团' }}
+            {{ submitting ? '提交中...' : '提交申请' }}
           </CButton>
         </view>
       </template>
@@ -126,7 +126,7 @@
           :loading="submitting"
           @click="handleSubmit"
         >
-          {{ submitting ? '创建中...' : '创建社团' }}
+          {{ submitting ? '提交中...' : '提交申请' }}
         </CButton>
       </view>
     </view>
@@ -253,10 +253,13 @@ const handleSubmit = async () => {
       category: form.category,
     })
 
-    uni.showToast({ title: '社团创建成功', icon: 'success', duration: 2000 })
-    setTimeout(() => {
-      uni.redirectTo({ url: `/pages/club/detail?id=${res}` })
-    }, 1500)
+    uni.showModal({
+      title: '申请已提交',
+      content: '管理员审核通过后，社团将在社团广场正式展示，请耐心等待。',
+      showCancel: false,
+      confirmText: '知道了',
+      success: () => { uni.navigateBack() }
+    })
   } catch (error: any) {
     uni.showToast({ title: error?.message || '创建失败，请重试', icon: 'none' })
   } finally {

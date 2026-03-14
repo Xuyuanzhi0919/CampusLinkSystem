@@ -6,6 +6,7 @@ import com.campuslink.common.PageResult;
 import com.campuslink.common.Result;
 import com.campuslink.dto.admin.AdminClubVO;
 import com.campuslink.dto.admin.AdminUpdateClubInfoRequest;
+import com.campuslink.dto.admin.UpdateContentStatusRequest;
 import com.campuslink.entity.Club;
 import jakarta.validation.Valid;
 import com.campuslink.entity.User;
@@ -108,6 +109,26 @@ public class AdminClubController {
         if (req.getDescription() != null) club.setDescription(req.getDescription());
         clubMapper.updateById(club);
         return Result.success("社团信息已更新");
+    }
+
+    @Operation(summary = "审核社团申请", description = "status=1通过，status=3拒绝（需填写reason）")
+    @PutMapping("/{clubId}/review")
+    public Result<Void> reviewApplication(
+            @PathVariable Long clubId,
+            @Valid @RequestBody UpdateContentStatusRequest req) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(404, "社团不存在");
+        if (club.getStatus() != 2) throw new BusinessException(400, "该社团不处于待审核状态");
+        Integer newStatus = req.getStatus();
+        if (newStatus != 1 && newStatus != 3) throw new BusinessException(400, "status 只允许为 1（通过）或 3（拒绝）");
+        club.setStatus(newStatus);
+        if (newStatus == 3) {
+            club.setRejectReason(req.getReason());
+        } else {
+            club.setRejectReason(null);
+        }
+        clubMapper.updateById(club);
+        return Result.success(newStatus == 1 ? "已批准" : "已拒绝");
     }
 
     @Operation(summary = "启用/禁用社团", description = "status=0禁用，status=1启用")

@@ -33,9 +33,9 @@
 
       <!-- ========== 基本设置 ========== -->
       <view v-if="activeTab === 'info'" class="tab-panel">
-        <!-- Logo 预览 + 上传提示 -->
-        <view class="logo-section">
-          <view class="logo-preview">
+        <!-- Logo 上传 -->
+        <view class="logo-section" @click="handlePickLogo">
+          <view class="logo-preview" :class="{ 'logo-preview--uploading': uploading }">
             <image
               v-if="form.logoUrl"
               :src="form.logoUrl"
@@ -45,10 +45,13 @@
             <view v-else class="logo-placeholder">
               <text class="logo-placeholder-text">{{ club.clubName?.charAt(0) || '社' }}</text>
             </view>
+            <!-- 上传蒙层 -->
+            <view class="logo-overlay">
+              <text v-if="uploading" class="logo-overlay-text">上传中...</text>
+              <text v-else class="logo-overlay-text">点击更换</text>
+            </view>
           </view>
-          <view class="logo-hint">
-            <text class="logo-hint-text">Logo URL（选填）</text>
-          </view>
+          <text class="logo-hint-text">点击更换 Logo</text>
         </view>
 
         <view class="form-section">
@@ -60,16 +63,6 @@
               class="form-input"
               placeholder="请输入社团名称"
               maxlength="100"
-            />
-          </view>
-
-          <!-- Logo URL -->
-          <view class="form-item">
-            <text class="form-label">Logo URL</text>
-            <input
-              v-model="form.logoUrl"
-              class="form-input"
-              placeholder="https://..."
             />
           </view>
 
@@ -220,6 +213,7 @@ import {
   removeMember,
   updateMemberRole,
 } from '@/services/club'
+import { getOSSSignature, uploadToOSS } from '@/utils/upload'
 import type { ClubDetail, ClubMember } from '@/types/club'
 import dayjs from 'dayjs'
 
@@ -240,6 +234,7 @@ const clubId = ref<number>(0)
 const club = ref<ClubDetail | null>(null)
 const loading = ref(true)
 const saving = ref(false)
+const uploading = ref(false)
 const activeTab = ref('info')
 
 const members = ref<ClubMember[]>([])
@@ -324,6 +319,29 @@ function loadMoreMembers() {
 }
 
 // ─── 操作 ─────────────────────────────────────────────
+function handlePickLogo() {
+  if (uploading.value) return
+  uni.chooseImage({
+    count: 1,
+    sizeType: ['compressed'],
+    sourceType: ['album', 'camera'],
+    success: async (res) => {
+      const tempPath = res.tempFilePaths[0]
+      uploading.value = true
+      try {
+        const fileName = tempPath.split('/').pop() || 'logo.jpg'
+        const signature = await getOSSSignature(fileName)
+        const url = await uploadToOSS(tempPath, signature)
+        form.value.logoUrl = url
+      } catch {
+        uni.showToast({ title: 'Logo 上传失败', icon: 'none' })
+      } finally {
+        uploading.value = false
+      }
+    },
+  })
+}
+
 async function handleSaveInfo() {
   if (!form.value.clubName.trim()) {
     uni.showToast({ title: '社团名称不能为空', icon: 'none' })
@@ -512,6 +530,7 @@ function formatJoinTime(time: string) {
   flex-direction: column;
   align-items: center;
   margin-bottom: 20px;
+  cursor: pointer;
 }
 
 .logo-preview {
@@ -524,6 +543,7 @@ function formatJoinTime(time: string) {
   align-items: center;
   justify-content: center;
   margin-bottom: 8px;
+  position: relative;
 
   .logo-img {
     width: 100%;
@@ -535,11 +555,34 @@ function formatJoinTime(time: string) {
     font-size: 28px;
     font-weight: 700;
   }
+
+  .logo-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .logo-overlay-text {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  &:hover .logo-overlay,
+  &--uploading .logo-overlay {
+    opacity: 1;
+  }
 }
 
 .logo-hint-text {
   font-size: 12px;
-  color: var(--color-text-tertiary, #999);
+  color: var(--color-primary, #3b82f6);
 }
 
 .form-section {

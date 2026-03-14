@@ -1240,7 +1240,7 @@ $white: #FFFFFF;
 }
 
 .pc-panel {
-  max-width: 900px;
+  width: 100%;
 }
 
 .panel-header {

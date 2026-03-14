@@ -649,8 +649,11 @@ onLoad((options) => {
 
 .form-container {
   padding: $sp-4;
+  max-width: 720px;
+  margin: 0 auto;
 
   @media (max-width: 749px) {
+    max-width: none;
     padding-bottom: 80px; // 留出移动端底部操作栏空间
   }
 }

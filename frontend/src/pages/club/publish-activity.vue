@@ -20,6 +20,7 @@
     </CNavBar>
 
     <scroll-view class="content-area" scroll-y>
+      <view class="page-layout">
       <view class="form-container">
 
         <!-- 所属社团 -->
@@ -233,6 +234,86 @@
         </CCard>
 
       </view>
+
+      <!-- PC 端右侧栏（移动端隐藏） -->
+      <view class="activity-sidebar">
+
+        <!-- 积分奖励 -->
+        <view class="sidebar-card">
+          <view class="sidebar-card__header">
+            <Icon name="gift" :size="16" class="sidebar-card__icon" />
+            <text class="sidebar-card__title">活动奖励</text>
+          </view>
+          <view class="reward-list">
+            <view class="reward-row">
+              <text class="reward-dot">•</text>
+              <text class="reward-desc">参与者签到后获得 <text class="reward-em">+10 积分</text></text>
+            </view>
+            <view class="reward-row">
+              <text class="reward-dot">•</text>
+              <text class="reward-desc">可自定义额外奖励积分（最高 50）</text>
+            </view>
+            <view class="reward-row">
+              <text class="reward-dot">•</text>
+              <text class="reward-desc">活动越精彩，社团影响力越高</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 发布建议 -->
+        <view class="sidebar-card">
+          <view class="sidebar-card__header">
+            <Icon name="lightbulb" :size="16" class="sidebar-card__icon" />
+            <text class="sidebar-card__title">填写建议</text>
+          </view>
+          <view class="guide-steps">
+            <view class="guide-step">
+              <view class="step-num">1</view>
+              <text class="step-text">标题简洁明了，突出活动亮点</text>
+            </view>
+            <view class="guide-step">
+              <view class="step-num">2</view>
+              <text class="step-text">描述包含参与要求和注意事项</text>
+            </view>
+            <view class="guide-step">
+              <view class="step-num">3</view>
+              <text class="step-text">地点填写具体楼栋/房间号</text>
+            </view>
+            <view class="guide-step">
+              <view class="step-num">4</view>
+              <text class="step-text">结束时间至少比开始晚 30 分钟</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 注意事项 -->
+        <view class="sidebar-card">
+          <view class="sidebar-card__header">
+            <Icon name="alert-circle" :size="16" class="sidebar-card__icon sidebar-card__icon--warn" />
+            <text class="sidebar-card__title">注意事项</text>
+          </view>
+          <view class="notice-list">
+            <view class="notice-item">
+              <Icon name="clock" :size="13" class="notice-icon" />
+              <text class="notice-text">活动开始时间须为未来时间</text>
+            </view>
+            <view class="notice-item">
+              <Icon name="users" :size="13" class="notice-icon" />
+              <text class="notice-text">参与人数上限建议结合场地容量设置</text>
+            </view>
+            <view class="notice-item">
+              <Icon name="info" :size="13" class="notice-icon" />
+              <text class="notice-text">发布后活动信息将对全体用户可见</text>
+            </view>
+            <view class="notice-item">
+              <Icon name="alert-triangle" :size="13" class="notice-icon notice-icon--warn" />
+              <text class="notice-text">虚假/违规活动将被下架并扣除积分</text>
+            </view>
+          </view>
+        </view>
+
+      </view>
+      </view><!-- end page-layout -->
     </scroll-view>
 
     <!-- 底部操作栏（移动端固定，PC 端隐藏） -->
@@ -647,15 +728,164 @@ onLoad((options) => {
   height: 0;
 }
 
-.form-container {
-  padding: $sp-4;
-  max-width: 720px;
+// PC 端双栏布局容器
+.page-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  max-width: 1100px;
   margin: 0 auto;
+  padding: $sp-4;
 
   @media (max-width: 749px) {
-    max-width: none;
-    padding-bottom: 80px; // 留出移动端底部操作栏空间
+    flex-direction: column;
+    padding: 0;
+    gap: 0;
   }
+}
+
+.form-container {
+  flex: 1;
+  min-width: 0;
+
+  @media (max-width: 749px) {
+    padding: $sp-4;
+    padding-bottom: 80px;
+  }
+}
+
+// PC 端右侧栏
+.activity-sidebar {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+
+  @media (max-width: 749px) {
+    display: none;
+  }
+}
+
+.sidebar-card {
+  background: $white;
+  border: 1px solid $gray-200;
+  border-radius: $radius-lg;
+  padding: $sp-4;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: $sp-2;
+    margin-bottom: $sp-3;
+    padding-bottom: $sp-3;
+    border-bottom: 1px solid $gray-100;
+  }
+
+  &__icon {
+    color: $primary;
+    flex-shrink: 0;
+
+    &--warn {
+      color: $warning;
+    }
+  }
+
+  &__title {
+    font-size: $font-size-sm;
+    font-weight: 600;
+    color: $gray-800;
+  }
+}
+
+.reward-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.reward-row {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  font-size: $font-size-xs;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+.reward-dot {
+  color: $gray-400;
+  flex-shrink: 0;
+  font-weight: bold;
+}
+
+.reward-em {
+  color: $accent;
+  font-weight: 600;
+}
+
+.guide-steps {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.guide-step {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+}
+
+.step-num {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: $primary;
+  color: $white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.step-text {
+  font-size: $font-size-xs;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+.notice-list {
+  display: flex;
+  flex-direction: column;
+  gap: $sp-2;
+}
+
+.notice-item {
+  display: flex;
+  align-items: flex-start;
+  gap: $sp-2;
+  font-size: $font-size-xs;
+  color: $gray-600;
+  line-height: 1.5;
+}
+
+.notice-icon {
+  color: $gray-400;
+  flex-shrink: 0;
+  margin-top: 1px;
+
+  &--warn {
+    color: $warning;
+  }
+}
+
+.notice-text {
+  flex: 1;
 }
 
 // 表单卡片

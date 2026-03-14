@@ -346,12 +346,20 @@ const filteredSchools = computed(() => {
 })
 
 const openSchoolPicker = async () => {
+  if (schoolsLoading.value) return  // 防止并发调用
   if (!schoolsLoaded.value) {
     schoolsLoading.value = true
     showSchoolPicker.value = true
     nextTick(() => { schoolSheetUp.value = true })
     try {
-      schools.value = await getAllSchools()
+      const rawSchools = await getAllSchools()
+      // 按校名去重，防止数据库存在同名重复记录
+      const seen = new Set<string>()
+      schools.value = rawSchools.filter(s => {
+        if (seen.has(s.schoolName)) return false
+        seen.add(s.schoolName)
+        return true
+      })
       schoolsLoaded.value = true
     } catch {
       uni.showToast({ title: '加载学校列表失败', icon: 'none' })

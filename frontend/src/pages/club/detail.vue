@@ -194,9 +194,17 @@
           <view class="tab-content">
             <!-- ① 动态 Tab（默认）-->
             <view v-if="currentTab === 'feed'" class="feed-container">
-              <!-- 发布动态按钮（成员始终可见） -->
-              <view v-if="isMember" class="feed-publish-bar">
-                <CButton type="primary" size="sm" @click="handlePublishFeed">+ 发布动态</CButton>
+              <!-- 发布动态输入栏（成员始终可见） -->
+              <view v-if="isMember" class="feed-compose-bar" @click="handlePublishFeed">
+                <ClAvatar
+                  :src="userStore.userInfo?.avatarUrl || (userStore.userInfo as any)?.avatar"
+                  :name="userStore.userInfo?.nickname || '我'"
+                  size="small"
+                />
+                <text class="feed-compose-placeholder">分享你的想法...</text>
+                <view class="feed-compose-btn">
+                  <Icon name="send" :size="16" class="feed-compose-send-icon" />
+                </view>
               </view>
               <view v-if="feeds.length > 0" class="feed-list">
                 <view v-for="feed in feeds" :key="feed.id" class="feed-item">
@@ -1056,25 +1064,21 @@ onUnmounted(() => {
 // 优化：增强视觉层次，避免"太平"
 // =============================================
 .hero-section {
-  background: linear-gradient(135deg,
-    rgba($primary, 0.03) 0%,
-    rgba($primary, 0.01) 50%,
-    $white 100%
-  );
-  border-bottom: 2rpx solid rgba($primary, 0.08); // 加强分隔线
-  padding: 64rpx 0; // 从 48rpx 增加到 64rpx，增加呼吸感
+  background: linear-gradient(135deg, #4A5D43 0%, #7C9070 55%, #5B9BD5 100%);
+  border-bottom: none;
+  padding: 64rpx 0;
   position: relative;
+  overflow: hidden;
 
-  // 添加微妙的背景纹理
+  // 微妙光晕装饰
   &::before {
     content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: radial-gradient(circle at 20% 50%, rgba($primary, 0.04) 0%, transparent 50%),
-                      radial-gradient(circle at 80% 80%, rgba($accent, 0.02) 0%, transparent 50%);
+    top: -40%;
+    right: -5%;
+    width: 700rpx;
+    height: 700rpx;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -1117,15 +1121,15 @@ onUnmounted(() => {
   height: 100%;
   border-radius: $radius-lg;
   background: $gray-100;
-  border: 4rpx solid $white; // 从 2rpx 加粗到 4rpx，增强存在感
-  box-shadow: 0 8rpx 32rpx rgba($gray-900, 0.12), // 加强阴影层次
-              0 2rpx 8rpx rgba($gray-900, 0.08);
+  border: 4rpx solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.3),
+              0 4rpx 12rpx rgba(0, 0, 0, 0.2);
   transition: transform $transition-base, box-shadow $transition-base;
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 12rpx 48rpx rgba($gray-900, 0.16),
-                0 4rpx 12rpx rgba($gray-900, 0.12);
+    box-shadow: 0 16rpx 56rpx rgba(0, 0, 0, 0.35),
+                0 6rpx 16rpx rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -1154,12 +1158,12 @@ onUnmounted(() => {
 }
 
 .club-title {
-  font-size: 52rpx; // 从 48rpx 增大到 52rpx，增强视觉重量
+  font-size: 52rpx;
   font-weight: $font-weight-bold;
-  color: $gray-900;
+  color: $white;
   letter-spacing: 0.5rpx;
   line-height: 1.2;
-  text-shadow: 0 1rpx 2rpx rgba($gray-900, 0.04); // 添加微妙的文字阴影
+  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
 
   @include mobile {
     font-size: 38rpx;
@@ -1171,19 +1175,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 4rpx;
   padding: 4rpx 12rpx;
-  background: linear-gradient(135deg, rgba($accent, 0.12) 0%, rgba($accent, 0.08) 100%);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: $radius-full;
   flex-shrink: 0;
+  border: 1rpx solid rgba(255, 255, 255, 0.3);
 }
 
 .active-icon {
-  color: $accent;
+  color: $white;
   flex-shrink: 0;
 }
 
 .active-text {
   font-size: 20rpx;
-  color: $accent;
+  color: $white;
   font-weight: $font-weight-medium;
 }
 
@@ -1192,28 +1197,29 @@ onUnmounted(() => {
   align-items: center;
   gap: 4rpx;
   padding: 4rpx 12rpx;
-  background: linear-gradient(135deg, rgba($primary, 0.12) 0%, rgba($primary, 0.08) 100%);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: $radius-full;
   flex-shrink: 0;
+  border: 1rpx solid rgba(255, 255, 255, 0.4);
 }
 
 .official-icon {
-  color: $primary;
+  color: $white;
 }
 
 .official-text {
   font-size: 20rpx;
-  color: $primary;
+  color: $white;
   font-weight: $font-weight-medium;
 }
 
 .club-slogan {
   display: block;
-  font-size: 28rpx; // 14px
-  color: $gray-600;
+  font-size: 28rpx;
+  color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
   margin-bottom: $sp-6;
-  @include text-ellipsis(1); // 最多1行
+  @include text-ellipsis(1);
 
   @include mobile {
     font-size: 26rpx;
@@ -1238,11 +1244,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 6rpx;
   font-size: 24rpx;
-  color: $gray-600;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .metric-icon {
-  color: $gray-500;
+  color: rgba(255, 255, 255, 0.75);
   flex-shrink: 0;
 }
 
@@ -1258,10 +1264,11 @@ onUnmounted(() => {
 
 .metric-text {
   font-size: 24rpx;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .metric-divider {
-  color: $gray-300;
+  color: rgba(255, 255, 255, 0.35);
   font-size: 24rpx;
 }
 
@@ -1269,21 +1276,22 @@ onUnmounted(() => {
 .member-badge {
   margin-top: $sp-4;
   padding: $sp-2 $sp-4;
-  background: linear-gradient(135deg, rgba($success, 0.08) 0%, rgba($success, 0.04) 100%);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: $radius-md;
-  border: 1rpx solid rgba($success, 0.15);
+  border: 1rpx solid rgba(255, 255, 255, 0.25);
   display: inline-flex;
   align-items: center;
+  gap: 6rpx;
 }
 
 .member-badge-icon {
-  color: $success;
+  color: $white;
   flex-shrink: 0;
 }
 
 .member-badge-text {
   font-size: 24rpx;
-  color: $success;
+  color: $white;
   font-weight: $font-weight-medium;
 }
 
@@ -1294,6 +1302,34 @@ onUnmounted(() => {
   align-items: center;
   gap: $sp-3;
   margin-top: $sp-5;
+
+  @include mobile {
+    width: 100%;
+
+    :deep(.c-button--lg) {
+      width: 100%;
+      max-width: 560rpx;
+    }
+  }
+
+  // 深色背景上的按钮覆盖
+  :deep(.c-button--primary) {
+    background-color: $white !important;
+    color: #4A5D43 !important;
+    border-color: $white !important;
+    font-weight: $font-weight-semibold !important;
+    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2) !important;
+  }
+
+  :deep(.c-button--secondary) {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    color: $white !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  :deep(.c-button--text) {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
 }
 
 // 次要操作组（管理/退出，始终在主按钮下方）
@@ -1305,11 +1341,11 @@ onUnmounted(() => {
   margin-top: $sp-1;
 
   .quit-btn {
-    color: $gray-400;
+    color: rgba(255, 255, 255, 0.6) !important;
     font-size: 24rpx;
 
     &:hover {
-      color: $error;
+      color: rgba(255, 120, 120, 0.9) !important;
     }
   }
 }
@@ -1399,6 +1435,7 @@ onUnmounted(() => {
 
   &--active {
     border-bottom-color: $primary;
+    background: rgba(124, 144, 112, 0.1);
 
     .tab-icon,
     .tab-label,
@@ -1444,41 +1481,77 @@ onUnmounted(() => {
 // 优化：增强卡片感和呼吸空间
 // =============================================
 .tab-content {
-  background: $white;
+  background: $gray-50;
   border-radius: $radius-lg;
-  padding: 48rpx; // 从 $sp-8 (32rpx) 增加到 48rpx，增强呼吸感
-  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.06), // 柔和的阴影
-              0 1rpx 4rpx rgba($gray-900, 0.04);
+  padding: 40rpx;
+  box-shadow: 0 2rpx 12rpx rgba($gray-900, 0.04),
+              0 1rpx 4rpx rgba($gray-900, 0.02);
   min-height: 600rpx;
-  border: 1rpx solid rgba($gray-200, 0.4); // 添加边框
-  transition: box-shadow $transition-base;
-
-  &:hover {
-    box-shadow: 0 4rpx 20rpx rgba($gray-900, 0.08),
-                0 2rpx 8rpx rgba($gray-900, 0.06);
-  }
+  border: 1rpx solid rgba($gray-200, 0.4);
 }
 
 // ① 动态 Tab
-.feed-publish-bar {
+.feed-compose-bar {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: $sp-4;
+  align-items: center;
+  gap: $sp-3;
+  padding: 16rpx 20rpx;
+  background: $white;
+  border: 1rpx solid $gray-200;
+  border-radius: $radius-full;
+  margin-bottom: $sp-5;
+  cursor: pointer;
+  transition: all $transition-fast;
+  box-shadow: 0 2rpx 6rpx rgba($gray-900, 0.05);
+
+  &:hover {
+    border-color: rgba($primary, 0.3);
+    box-shadow: 0 2rpx 12rpx rgba($primary, 0.1);
+  }
+
+  &:active {
+    transform: scale(0.995);
+  }
+}
+
+.feed-compose-placeholder {
+  flex: 1;
+  font-size: 26rpx;
+  color: $gray-400;
+}
+
+.feed-compose-btn {
+  width: 52rpx;
+  height: 52rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $primary;
+  border-radius: $radius-full;
+  flex-shrink: 0;
+}
+
+.feed-compose-send-icon {
+  color: $white;
 }
 
 .feed-list {
   display: flex;
   flex-direction: column;
-  gap: $sp-6;
+  gap: $sp-4;
 }
 
 .feed-item {
-  padding-bottom: $sp-6;
-  border-bottom: 1rpx solid $gray-100;
+  background: $white;
+  border: 1rpx solid rgba($gray-200, 0.7);
+  border-radius: $radius-lg;
+  padding: $sp-6;
+  box-shadow: 0 2rpx 8rpx rgba($gray-900, 0.05);
+  transition: box-shadow $transition-fast, transform $transition-fast;
 
-  &:last-child {
-    border-bottom: none;
-    padding-bottom: 0;
+  &:hover {
+    box-shadow: 0 4rpx 16rpx rgba($gray-900, 0.08);
+    transform: translateY(-1rpx);
   }
 }
 

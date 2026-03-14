@@ -103,11 +103,10 @@
               <text class="member-badge-text">你是第 {{ memberPosition }} 位加入的成员</text>
             </view>
 
-            <!-- CTA 按钮（双按钮横排，对应设计稿）-->
+            <!-- CTA 按钮 -->
             <view class="hero-actions">
-              <!-- 横排双按钮行 -->
               <view class="hero-actions-row">
-                <!-- 左侧主按钮 -->
+                <!-- 未加入：唯一目标——加入 -->
                 <CButton
                   v-if="!isMember && !isPending"
                   type="primary"
@@ -117,6 +116,8 @@
                 >
                   加入社团
                 </CButton>
+
+                <!-- 申请中：等待反馈 -->
                 <CButton
                   v-else-if="isPending"
                   type="secondary"
@@ -129,28 +130,21 @@
                     <text>申请审核中</text>
                   </view>
                 </CButton>
+
+                <!-- 已加入：主操作改为发布动态 -->
                 <CButton
                   v-else
                   type="primary"
                   size="lg"
                   class="hero-btn-main"
-                  @click="handleEnter"
+                  @click="handlePublishFeed"
                 >
-                  进入讨论
+                  发布动态
                 </CButton>
 
-                <!-- 右侧副按钮（非成员显示"进入讨论"；成员显示"管理社团"） -->
+                <!-- 管理员副按钮：管理社团 -->
                 <CButton
-                  v-if="!isMember"
-                  type="ghost"
-                  size="lg"
-                  class="hero-btn-sub"
-                  @click="handleEnter"
-                >
-                  进入讨论
-                </CButton>
-                <CButton
-                  v-else-if="isAdmin"
+                  v-if="isAdmin"
                   type="ghost"
                   size="lg"
                   class="hero-btn-sub"
@@ -160,7 +154,7 @@
                 </CButton>
               </view>
 
-              <!-- 次要操作：管理员快捷操作 + 退出 -->
+              <!-- 次要操作：发布活动（管理员）+ 退出社团（成员）-->
               <view class="secondary-actions">
                 <CButton
                   v-if="isAdmin"
@@ -177,7 +171,7 @@
                   class="quit-btn"
                   @click="handleQuit"
                 >
-                  退出
+                  退出社团
                 </CButton>
               </view>
             </view>

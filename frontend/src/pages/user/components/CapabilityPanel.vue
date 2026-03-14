@@ -50,6 +50,7 @@ interface Props {
     myQuestions?: number
     notifications?: number
     messages?: number
+    myClubs?: number
   }
 }
 
@@ -68,6 +69,14 @@ const capabilityItems = computed<CapabilityItem[]>(() => [
     color: 'blue',
     path: '/pages/resource/my',
     badge: props.badges?.myResources
+  },
+  {
+    id: 'my-clubs',
+    title: '我的社团',
+    description: `已加入 ${props.badges?.myClubs || 0} 个社团`,
+    icon: 'users',
+    color: 'purple',
+    path: '/pages/club/list',
   },
   {
     id: 'my-questions',
@@ -197,6 +206,7 @@ const handleCardClick = (item: CapabilityItem) => emit('itemClick', item)
   &--rose   { background: #FFF1F2; .cap-icon { color: #E11D48; } }
   &--amber  { background: #FFFBEB; .cap-icon { color: #B45309; } }
   &--sky    { background: #F0F9FF; .cap-icon { color: #0284C7; } }
+  &--purple { background: #F5F3FF; .cap-icon { color: #7C3AED; } }
 }
 
 /* 文字 */

@@ -265,6 +265,7 @@ import type { UserProfileData, UserStatsData } from '@/types/user'
 import { getUserProfile, getUserStats, getCheckInStatus } from '@/services/user'
 import { getUnreadCount } from '@/services/notification'
 import { getUnreadCount as getMessageUnreadCount } from '@/services/message'
+import { getMyClubs } from '@/services/club'
 import Icon from '@/components/icons/index.vue'
 
 import HeroSection from './components/HeroSection.vue'
@@ -402,6 +403,7 @@ const userProfile = ref<UserProfileData | null>(null)
 const userStats = ref<UserStatsData | null>(null)
 const unreadNotifications = ref(0)
 const unreadMessages = ref(0)
+const myClubsCount = ref(0)
 const isCheckedIn = ref(false)
 
 // 滚动状态
@@ -466,7 +468,8 @@ const capabilityBadges = computed(() => ({
   myResources:   userStats.value?.resourceCount || 0,
   myQuestions:   userStats.value?.questionCount || 0,
   notifications: unreadNotifications.value,
-  messages:      unreadMessages.value
+  messages:      unreadMessages.value,
+  myClubs:       myClubsCount.value
 }))
 
 // 数据加载
@@ -478,18 +481,20 @@ const loadUserData = async () => {
     return
   }
   try {
-    const [profileRes, statsRes, checkInStatus, notifRes, msgRes] = await Promise.all([
+    const [profileRes, statsRes, checkInStatus, notifRes, msgRes, clubsRes] = await Promise.all([
       getUserProfile(),
       getUserStats(),
       getCheckInStatus(),
       getUnreadCount(),
-      getMessageUnreadCount()
+      getMessageUnreadCount(),
+      getMyClubs({ page: 1, pageSize: 1 }).catch(() => null)
     ])
     userProfile.value = profileRes
     userStats.value = statsRes
     isCheckedIn.value = !!checkInStatus
     unreadNotifications.value = notifRes
     unreadMessages.value = msgRes
+    myClubsCount.value = clubsRes?.total || 0
     if (profileRes) userStore.setUserInfo(profileRes)
   } catch (err: any) {
     console.error('加载用户数据失败:', err)

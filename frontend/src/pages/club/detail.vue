@@ -562,10 +562,10 @@ const lastActiveTime = computed(() => {
 
 // Tabs 配置
 const tabs = computed(() => [
-  { value: 'feed', label: '动态', icon: 'message-square', count: feeds.value.length },
-  { value: 'activity', label: '活动', icon: 'calendar', count: activities.value.length },
-  { value: 'resource', label: '资料', icon: 'folder', count: isMember.value ? resources.value.length : undefined },
-  { value: 'member', label: '成员', icon: 'users', count: members.value.length },
+  { value: 'feed', label: '动态', icon: 'message-square', count: feeds.value.length || undefined },
+  { value: 'activity', label: '活动', icon: 'calendar', count: club.value?.activityCount ?? (activities.value.length || undefined) },
+  { value: 'resource', label: '资料', icon: 'folder', count: isMember.value ? (resources.value.length || undefined) : undefined },
+  { value: 'member', label: '成员', icon: 'users', count: club.value?.memberCount ?? (members.value.length || undefined) },
   { value: 'about', label: '简介', icon: 'info' }
 ])
 

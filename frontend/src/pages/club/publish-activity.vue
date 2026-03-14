@@ -681,7 +681,7 @@ const handleSubmit = async () => {
     })
     setTimeout(() => {
       uni.redirectTo({
-        url: `/pages/club/activity-detail?id=${response.activityId}`
+        url: `/pages/club/activity-detail?id=${response}`
       })
     }, 1500)
   } catch (error: any) {

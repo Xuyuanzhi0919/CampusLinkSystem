@@ -78,7 +78,7 @@ export const getActivityDetail = (id: number) => {
  * @param data 活动数据
  */
 export const createActivity = (clubId: number, data: ActivityCreateParams) => {
-  return request.post<{ activityId: number }>(`/activity/club/${clubId}/create`, data)
+  return request.post<number>(`/activity/club/${clubId}/create`, data)
 }
 
 /**

@@ -55,9 +55,14 @@ public class ClubResponse {
     private Integer activityCount;
 
     /**
-     * 状态：0-已解散，1-正常
+     * 状态：0-已解散，1-正常，2-待审核，3-已拒绝
      */
     private Integer status;
+
+    /**
+     * 审核拒绝原因（status=3 时有值）
+     */
+    private String rejectReason;
 
     /**
      * 当前用户角色（如果已加入）

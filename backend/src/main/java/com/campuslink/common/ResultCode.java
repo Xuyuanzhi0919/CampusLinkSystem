@@ -65,7 +65,11 @@ public enum ResultCode {
     NOT_CLUB_MEMBER(50007, "不是社团成员"),
     FOUNDER_CANNOT_LEAVE(50008, "创始人不能退出社团"),
     NOT_CLUB_ADMIN(50009, "不是社团管理员"),
-    NOT_ACTIVITY_PARTICIPANT(50010, "未报名该活动");
+    NOT_ACTIVITY_PARTICIPANT(50010, "未报名该活动"),
+
+    // 社团审核 50011-50012
+    CLUB_PENDING_REVIEW(50011, "社团审核中，暂不可访问"),
+    CLUB_REVIEW_REJECTED(50012, "社团申请已被拒绝");
 
     private final Integer code;
     private final String message;

@@ -1092,7 +1092,9 @@ onUnmounted(() => {
 
   @include mobile {
     padding: 0 $sp-8;
-    gap: 32rpx;
+    gap: 20rpx;
+    flex-direction: column;
+    align-items: center;
   }
 }
 
@@ -1127,6 +1129,13 @@ onUnmounted(() => {
 .club-hero-info {
   flex: 1;
   min-width: 0;
+
+  @include mobile {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 .club-title-row {
@@ -1135,6 +1144,10 @@ onUnmounted(() => {
   gap: $sp-3;
   margin-bottom: $sp-4;
   flex-wrap: wrap;
+
+  @include mobile {
+    justify-content: center;
+  }
 }
 
 .club-title {
@@ -1201,6 +1214,7 @@ onUnmounted(() => {
 
   @include mobile {
     font-size: 26rpx;
+    text-align: center;
   }
 }
 
@@ -1210,6 +1224,10 @@ onUnmounted(() => {
   gap: $sp-4;
   margin-bottom: $sp-8;
   flex-wrap: wrap;
+
+  @include mobile {
+    justify-content: center;
+  }
 }
 
 .metric-item {

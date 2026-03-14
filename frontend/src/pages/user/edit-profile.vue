@@ -211,62 +211,62 @@
         <view class="sheet-bottom" />
       </view>
     </view>
-  </view>
 
-  <!-- ── 学校选择底部弹窗 ── -->
-  <view
-    v-if="showSchoolPicker"
-    class="grade-overlay"
-    :class="{ 'grade-overlay--dim': schoolSheetUp }"
-    @click="closeSchoolPicker"
-  >
+    <!-- ── 学校选择底部弹窗 ── -->
     <view
-      class="grade-sheet school-sheet"
-      :class="{ 'grade-sheet--up': schoolSheetUp }"
-      @click.stop
+      v-if="showSchoolPicker"
+      class="grade-overlay"
+      :class="{ 'grade-overlay--dim': schoolSheetUp }"
+      @click="closeSchoolPicker"
     >
-      <view class="sheet-bar" />
-      <view class="sheet-header">
-        <text class="sheet-cancel" @click="closeSchoolPicker">取消</text>
-        <text class="sheet-title">选择学校</text>
-        <text class="sheet-cancel sheet-cancel--ghost">取消</text>
-      </view>
-      <view class="sheet-header-sep" />
-      <!-- 搜索框 -->
-      <view class="school-search-wrap">
-        <input
-          v-model="schoolKeyword"
-          class="school-search-input"
-          placeholder="搜索学校..."
-          @click.stop
-        />
-      </view>
-      <!-- 学校列表 -->
-      <scroll-view class="school-scroll" scroll-y>
-        <view class="sheet-list">
-          <view v-if="schoolsLoading" class="school-loading">
-            <text class="school-loading-text">加载中...</text>
-          </view>
-          <template v-else>
-            <view
-              v-for="school in filteredSchools"
-              :key="school.schoolId"
-              class="sheet-item"
-              :class="{ 'sheet-item--active': formData.schoolId === school.schoolId }"
-              @click="selectSchool(school)"
-            >
-              <text class="sheet-item-label">{{ school.schoolName }}</text>
-              <view v-if="formData.schoolId === school.schoolId" class="sheet-check">
-                <text class="check-icon">✓</text>
-              </view>
-            </view>
-            <view v-if="filteredSchools.length === 0" class="school-empty">
-              <text class="school-empty-text">未找到相关学校</text>
-            </view>
-          </template>
+      <view
+        class="grade-sheet school-sheet"
+        :class="{ 'grade-sheet--up': schoolSheetUp }"
+        @click.stop
+      >
+        <view class="sheet-bar" />
+        <view class="sheet-header">
+          <text class="sheet-cancel" @click="closeSchoolPicker">取消</text>
+          <text class="sheet-title">选择学校</text>
+          <text class="sheet-cancel sheet-cancel--ghost">取消</text>
         </view>
-      </scroll-view>
-      <view class="sheet-bottom" />
+        <view class="sheet-header-sep" />
+        <!-- 搜索框 -->
+        <view class="school-search-wrap">
+          <input
+            v-model="schoolKeyword"
+            class="school-search-input"
+            placeholder="搜索学校..."
+            @click.stop
+          />
+        </view>
+        <!-- 学校列表 -->
+        <scroll-view class="school-scroll" scroll-y>
+          <view class="sheet-list">
+            <view v-if="schoolsLoading" class="school-loading">
+              <text class="school-loading-text">加载中...</text>
+            </view>
+            <template v-else>
+              <view
+                v-for="school in filteredSchools"
+                :key="school.schoolId"
+                class="sheet-item"
+                :class="{ 'sheet-item--active': formData.schoolId === school.schoolId }"
+                @click="selectSchool(school)"
+              >
+                <text class="sheet-item-label">{{ school.schoolName }}</text>
+                <view v-if="formData.schoolId === school.schoolId" class="sheet-check">
+                  <text class="check-icon">✓</text>
+                </view>
+              </view>
+              <view v-if="filteredSchools.length === 0" class="school-empty">
+                <text class="school-empty-text">未找到相关学校</text>
+              </view>
+            </template>
+          </view>
+        </scroll-view>
+        <view class="sheet-bottom" />
+      </view>
     </view>
   </view>
 </template>
@@ -337,11 +337,7 @@ const showSchoolPicker = ref(false)
 const schoolSheetUp = ref(false)
 const schoolKeyword = ref('')
 
-const selectedSchoolName = computed(() => {
-  if (!formData.value.schoolId) return ''
-  const school = schools.value.find(s => s.schoolId === formData.value.schoolId)
-  return school?.schoolName || ''
-})
+const selectedSchoolName = ref('')
 
 const filteredSchools = computed(() => {
   const kw = schoolKeyword.value.trim().toLowerCase()
@@ -378,6 +374,7 @@ const closeSchoolPicker = () => {
 
 const selectSchool = (school: SchoolItem) => {
   formData.value.schoolId = school.schoolId
+  selectedSchoolName.value = school.schoolName
   closeSchoolPicker()
 }
 
@@ -453,6 +450,7 @@ const loadUserProfile = async () => {
       phone: profile.phone || '',
       schoolId: profile.schoolId || null
     }
+    selectedSchoolName.value = profile.schoolName || ''
 
     // 保存原始数据
     originalData.value = JSON.stringify(formData.value)

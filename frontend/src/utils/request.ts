@@ -72,7 +72,7 @@ class Request {
     }
   }
 
-  // 检查Token是否即将过期 (剩余时间少于15分钟)
+  // 检查Token是否即将过期或已过期 (剩余时间少于15分钟，或已经过期)
   private isTokenExpiringSoon(token: string): boolean {
     const payload = this.parseJWT(token)
     if (!payload || !payload.exp) return false
@@ -82,7 +82,15 @@ class Request {
     const timeLeft = expirationTime - currentTime
     const fifteenMinutes = 15 * 60 * 1000 // 15分钟
 
-    return timeLeft > 0 && timeLeft < fifteenMinutes
+    // timeLeft < 0 表示已过期，同样需要刷新
+    return timeLeft < fifteenMinutes
+  }
+
+  // 检查Token是否已过期
+  private isTokenExpired(token: string): boolean {
+    const payload = this.parseJWT(token)
+    if (!payload || !payload.exp) return true
+    return payload.exp * 1000 < Date.now()
   }
 
   // 刷新Token
@@ -123,7 +131,7 @@ class Request {
   private async beforeRequest(options: RequestOptions): Promise<RequestOptions> {
     const token = this.getToken()
 
-    // 检查Token是否即将过期,自动刷新
+    // 检查Token是否即将过期或已过期，自动刷新
     if (token && this.isTokenExpiringSoon(token) && !this.isRefreshing) {
       this.isRefreshing = true
       const success = await this.refreshAccessToken()
@@ -133,6 +141,17 @@ class Request {
         logger.info('Token已自动刷新')
       } else {
         logger.warn('Token自动刷新失败')
+        // Token 已过期且刷新失败（refresh token 也过期），终止本次请求
+        const currentToken = this.getToken()
+        if (!currentToken || this.isTokenExpired(currentToken)) {
+          this.clearToken()
+          uni.$emit('show-login-guide', {
+            actionType: 'default',
+            title: '登录已过期',
+            content: '登录信息已过期，请重新登录后继续操作'
+          })
+          return Promise.reject(new Error('登录已过期，请重新登录'))
+        }
       }
     }
 

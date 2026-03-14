@@ -1369,8 +1369,11 @@ onMounted(() => {
 }
 
 .school-scroll {
-  flex: 1;
-  overflow: hidden;
+  height: 45vh;
+
+  @media (min-width: 1024px) {
+    height: 380px;
+  }
 }
 
 .school-loading,

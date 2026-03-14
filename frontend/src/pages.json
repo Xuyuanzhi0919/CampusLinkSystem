@@ -181,6 +181,13 @@
 			}
 		},
 		{
+			"path": "pages/club/manage",
+			"style": {
+				"navigationBarTitleText": "管理社团",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/user/index",
 			"style": {
 				"navigationBarTitleText": "我的",

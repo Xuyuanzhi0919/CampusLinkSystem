@@ -179,3 +179,32 @@ export const getClubResources = (clubId: number, params: { page?: number; pageSi
   return request.get<PageResult<ClubResource>>(`/club/${clubId}/resources`, params)
 }
 
+// ────────── 社团管理接口 ──────────
+
+export interface UpdateClubParams {
+  clubName: string
+  description?: string
+  logoUrl?: string
+  category?: string
+}
+
+/**
+ * 更新社团信息（创始人或管理员）
+ */
+export const updateClub = (clubId: number, data: UpdateClubParams) => {
+  return request.put(`/club/${clubId}`, data)
+}
+
+/**
+ * 移除社团成员
+ */
+export const removeMember = (clubId: number, memberId: number) => {
+  return request.delete(`/club/${clubId}/members/${memberId}`)
+}
+
+/**
+ * 修改成员角色（仅创始人，role: 'member' | 'admin'）
+ */
+export const updateMemberRole = (clubId: number, memberId: number, role: 'member' | 'admin') => {
+  return request.put(`/club/${clubId}/members/${memberId}/role`, { role })
+}

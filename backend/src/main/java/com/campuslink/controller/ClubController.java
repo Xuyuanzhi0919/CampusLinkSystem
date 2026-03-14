@@ -8,6 +8,7 @@ import com.campuslink.dto.club.ClubResourceResponse;
 import com.campuslink.dto.club.ClubResponse;
 import com.campuslink.dto.club.CreateClubPostRequest;
 import com.campuslink.dto.club.CreateClubRequest;
+import com.campuslink.dto.club.UpdateClubRequest;
 import com.campuslink.service.ClubService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +16,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 /**
  * 社团控制器
@@ -134,5 +137,41 @@ public class ClubController {
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId
     ) {
         return Result.success(clubService.getClubResources(clubId, userId, page, pageSize));
+    }
+
+    // ────────── 社团管理接口 ──────────
+
+    @Operation(summary = "更新社团信息", description = "创始人或管理员可修改社团名称、简介、Logo、分类")
+    @PutMapping("/{clubId}")
+    public Result<Void> updateClub(
+            @PathVariable Long clubId,
+            @Valid @RequestBody UpdateClubRequest request,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        clubService.updateClub(clubId, userId, request);
+        return Result.success("更新成功");
+    }
+
+    @Operation(summary = "移除社团成员", description = "创始人可移除管理员/成员；管理员可移除普通成员")
+    @DeleteMapping("/{clubId}/members/{memberId}")
+    public Result<Void> removeMember(
+            @PathVariable Long clubId,
+            @PathVariable Long memberId,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        clubService.removeMember(clubId, memberId, userId);
+        return Result.success("已移除");
+    }
+
+    @Operation(summary = "修改成员角色", description = "仅创始人可操作，角色可为 member 或 admin")
+    @PutMapping("/{clubId}/members/{memberId}/role")
+    public Result<Void> updateMemberRole(
+            @PathVariable Long clubId,
+            @PathVariable Long memberId,
+            @RequestBody Map<String, String> body,
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId
+    ) {
+        clubService.updateMemberRole(clubId, memberId, body.get("role"), userId);
+        return Result.success("角色已更新");
     }
 }

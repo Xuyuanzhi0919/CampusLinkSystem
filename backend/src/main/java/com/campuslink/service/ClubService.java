@@ -9,6 +9,7 @@ import com.campuslink.dto.club.ClubPostResponse;
 import com.campuslink.dto.club.ClubResourceResponse;
 import com.campuslink.dto.club.ClubResponse;
 import com.campuslink.dto.club.CreateClubRequest;
+import com.campuslink.dto.club.UpdateClubRequest;
 import com.campuslink.entity.Activity;
 import com.campuslink.entity.Club;
 import com.campuslink.entity.ClubMember;
@@ -513,5 +514,100 @@ public class ClubService {
         }
 
         return response;
+    }
+
+    /**
+     * 更新社团信息（创始人或管理员）
+     */
+    @Transactional
+    public void updateClub(Long clubId, Long userId, UpdateClubRequest request) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        // 权限校验：必须是 founder 或 admin
+        LambdaQueryWrapper<ClubMember> adminCheck = new LambdaQueryWrapper<>();
+        adminCheck.eq(ClubMember::getClubId, clubId)
+                  .eq(ClubMember::getUserId, userId)
+                  .in(ClubMember::getRole, List.of("founder", "admin"));
+        if (clubMemberMapper.selectCount(adminCheck) == 0) {
+            throw new BusinessException(ResultCode.NOT_CLUB_ADMIN);
+        }
+
+        club.setClubName(request.getClubName());
+        if (request.getDescription() != null) club.setDescription(request.getDescription());
+        if (request.getLogoUrl() != null) club.setLogoUrl(request.getLogoUrl());
+        if (request.getCategory() != null) club.setCategory(request.getCategory());
+        club.setUpdatedAt(LocalDateTime.now());
+        clubMapper.updateById(club);
+    }
+
+    /**
+     * 移除社团成员（创始人可移除任何人；管理员可移除普通成员）
+     */
+    @Transactional
+    public void removeMember(Long clubId, Long targetUserId, Long currentUserId) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        // 查当前操作者身份
+        LambdaQueryWrapper<ClubMember> currentQuery = new LambdaQueryWrapper<>();
+        currentQuery.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, currentUserId);
+        ClubMember current = clubMemberMapper.selectOne(currentQuery);
+        if (current == null || "member".equals(current.getRole())) {
+            throw new BusinessException(ResultCode.NOT_CLUB_ADMIN);
+        }
+
+        // 查目标成员
+        LambdaQueryWrapper<ClubMember> targetQuery = new LambdaQueryWrapper<>();
+        targetQuery.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, targetUserId);
+        ClubMember target = clubMemberMapper.selectOne(targetQuery);
+        if (target == null) throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+
+        // 不能移除创始人
+        if ("founder".equals(target.getRole())) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+        // 管理员只能被创始人移除
+        if ("admin".equals(target.getRole()) && !"founder".equals(current.getRole())) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        clubMemberMapper.delete(targetQuery);
+        club.setMemberCount(Math.max(0, club.getMemberCount() - 1));
+        clubMapper.updateById(club);
+    }
+
+    /**
+     * 修改成员角色（仅创始人可操作：member ↔ admin）
+     */
+    @Transactional
+    public void updateMemberRole(Long clubId, Long targetUserId, String role, Long currentUserId) {
+        Club club = clubMapper.selectById(clubId);
+        if (club == null) throw new BusinessException(ResultCode.CLUB_NOT_FOUND);
+
+        // 只有 founder 能改角色
+        LambdaQueryWrapper<ClubMember> founderCheck = new LambdaQueryWrapper<>();
+        founderCheck.eq(ClubMember::getClubId, clubId)
+                    .eq(ClubMember::getUserId, currentUserId)
+                    .eq(ClubMember::getRole, "founder");
+        if (clubMemberMapper.selectCount(founderCheck) == 0) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        LambdaQueryWrapper<ClubMember> targetQuery = new LambdaQueryWrapper<>();
+        targetQuery.eq(ClubMember::getClubId, clubId).eq(ClubMember::getUserId, targetUserId);
+        ClubMember target = clubMemberMapper.selectOne(targetQuery);
+        if (target == null) throw new BusinessException(ResultCode.NOT_CLUB_MEMBER);
+        if ("founder".equals(target.getRole())) {
+            throw new BusinessException(ResultCode.FORBIDDEN);
+        }
+
+        // 只允许 member ↔ admin
+        if (!"member".equals(role) && !"admin".equals(role)) {
+            throw new BusinessException(ResultCode.BAD_REQUEST);
+        }
+
+        target.setRole(role);
+        clubMemberMapper.updateById(target);
     }
 }

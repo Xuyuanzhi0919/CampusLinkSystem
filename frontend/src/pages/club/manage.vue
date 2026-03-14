@@ -699,7 +699,7 @@ const FILE_TYPE_MAP: Record<string, string> = {
 }
 const tabs = [
   { value: 'info',       label: '基本设置', icon: 'icon-settings'   },
-  { value: 'posts',      label: '社团动态', icon: 'icon-pencil'     },
+  { value: 'posts',      label: '社团动态', icon: 'icon-activity'  },
   { value: 'resources',  label: '资料库',   icon: 'icon-book'       },
   { value: 'activities', label: '活动管理', icon: 'icon-calendar'   },
   { value: 'members',    label: '成员管理', icon: 'icon-user-group' },

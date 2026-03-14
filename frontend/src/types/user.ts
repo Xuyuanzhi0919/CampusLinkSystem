@@ -51,6 +51,7 @@ export interface UpdateProfileRequest {
   studentId?: string
   major?: string
   grade?: number
+  schoolId?: number | null
 }
 
 /**

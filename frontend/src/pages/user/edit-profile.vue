@@ -116,6 +116,19 @@
 
           <view class="row-sep" />
 
+          <!-- 学校 -->
+          <view class="form-row form-row--picker" @click="openSchoolPicker">
+            <view class="label-wrap">
+              <text class="row-label">学校</text>
+            </view>
+            <text :class="formData.schoolId ? 'row-value' : 'row-placeholder'">
+              {{ selectedSchoolName || '请选择' }}
+            </text>
+            <text class="picker-chevron">›</text>
+          </view>
+
+          <view class="row-sep" />
+
           <!-- 手机号 -->
           <view class="form-row" :class="{ 'form-row--error': errors.phone }">
             <view class="label-wrap">
@@ -199,6 +212,63 @@
       </view>
     </view>
   </view>
+
+  <!-- ── 学校选择底部弹窗 ── -->
+  <view
+    v-if="showSchoolPicker"
+    class="grade-overlay"
+    :class="{ 'grade-overlay--dim': schoolSheetUp }"
+    @click="closeSchoolPicker"
+  >
+    <view
+      class="grade-sheet school-sheet"
+      :class="{ 'grade-sheet--up': schoolSheetUp }"
+      @click.stop
+    >
+      <view class="sheet-bar" />
+      <view class="sheet-header">
+        <text class="sheet-cancel" @click="closeSchoolPicker">取消</text>
+        <text class="sheet-title">选择学校</text>
+        <text class="sheet-cancel sheet-cancel--ghost">取消</text>
+      </view>
+      <view class="sheet-header-sep" />
+      <!-- 搜索框 -->
+      <view class="school-search-wrap">
+        <input
+          v-model="schoolKeyword"
+          class="school-search-input"
+          placeholder="搜索学校..."
+          @click.stop
+        />
+      </view>
+      <!-- 学校列表 -->
+      <scroll-view class="school-scroll" scroll-y>
+        <view class="sheet-list">
+          <view v-if="schoolsLoading" class="school-loading">
+            <text class="school-loading-text">加载中...</text>
+          </view>
+          <template v-else>
+            <view
+              v-for="school in filteredSchools"
+              :key="school.schoolId"
+              class="sheet-item"
+              :class="{ 'sheet-item--active': formData.schoolId === school.schoolId }"
+              @click="selectSchool(school)"
+            >
+              <text class="sheet-item-label">{{ school.schoolName }}</text>
+              <view v-if="formData.schoolId === school.schoolId" class="sheet-check">
+                <text class="check-icon">✓</text>
+              </view>
+            </view>
+            <view v-if="filteredSchools.length === 0" class="school-empty">
+              <text class="school-empty-text">未找到相关学校</text>
+            </view>
+          </template>
+        </view>
+      </scroll-view>
+      <view class="sheet-bottom" />
+    </view>
+  </view>
 </template>
 
 <script setup lang="ts">
@@ -208,6 +278,7 @@ import { useUserStore } from '@/stores/user'
 import type { UpdateProfileRequest } from '@/types/user'
 import { getUserProfile, updateUserProfile } from '@/services/user'
 import { getUploadSignature } from '@/services/resource'
+import { getAllSchools, type SchoolItem } from '@/services/school'
 import CButton from '@/components/ui/CButton.vue'
 
 const userStore = useUserStore()
@@ -219,7 +290,8 @@ const formData = ref<UpdateProfileRequest & { avatarUrl?: string }>({
   studentId: '',
   major: '',
   grade: undefined,
-  phone: ''
+  phone: '',
+  schoolId: null
 })
 
 // 原始数据 (用于判断是否有修改)
@@ -256,6 +328,58 @@ const charCount = computed(() => formData.value.nickname?.length || 0)
 // 年级底部弹窗控制
 const showGradePicker = ref(false)
 const gradeSheetUp = ref(false)
+
+// 学校选择状态
+const schools = ref<SchoolItem[]>([])
+const schoolsLoaded = ref(false)
+const schoolsLoading = ref(false)
+const showSchoolPicker = ref(false)
+const schoolSheetUp = ref(false)
+const schoolKeyword = ref('')
+
+const selectedSchoolName = computed(() => {
+  if (!formData.value.schoolId) return ''
+  const school = schools.value.find(s => s.schoolId === formData.value.schoolId)
+  return school?.schoolName || ''
+})
+
+const filteredSchools = computed(() => {
+  const kw = schoolKeyword.value.trim().toLowerCase()
+  if (!kw) return schools.value
+  return schools.value.filter(s => s.schoolName.toLowerCase().includes(kw))
+})
+
+const openSchoolPicker = async () => {
+  if (!schoolsLoaded.value) {
+    schoolsLoading.value = true
+    showSchoolPicker.value = true
+    nextTick(() => { schoolSheetUp.value = true })
+    try {
+      schools.value = await getAllSchools()
+      schoolsLoaded.value = true
+    } catch {
+      uni.showToast({ title: '加载学校列表失败', icon: 'none' })
+      closeSchoolPicker()
+      return
+    } finally {
+      schoolsLoading.value = false
+    }
+  } else {
+    schoolKeyword.value = ''
+    showSchoolPicker.value = true
+    nextTick(() => { schoolSheetUp.value = true })
+  }
+}
+
+const closeSchoolPicker = () => {
+  schoolSheetUp.value = false
+  setTimeout(() => { showSchoolPicker.value = false }, 300)
+}
+
+const selectSchool = (school: SchoolItem) => {
+  formData.value.schoolId = school.schoolId
+  closeSchoolPicker()
+}
 
 const openGradePicker = () => {
   showGradePicker.value = true
@@ -326,7 +450,8 @@ const loadUserProfile = async () => {
       studentId: profile.studentId || '',
       major: profile.major || '',
       grade: profile.grade || undefined,
-      phone: profile.phone || ''
+      phone: profile.phone || '',
+      schoolId: profile.schoolId || null
     }
 
     // 保存原始数据
@@ -526,6 +651,9 @@ const handleSave = async () => {
     // 只有当手机号不为空且不包含星号（不是脱敏状态）时才提交
     if (formData.value.phone && !formData.value.phone.includes('*')) {
       updateData.phone = formData.value.phone
+    }
+    if (formData.value.schoolId) {
+      updateData.schoolId = formData.value.schoolId
     }
 
     // 调用更新接口
@@ -1198,6 +1326,70 @@ onMounted(() => {
 
   @media (min-width: 1024px) {
     height: 24px;
+  }
+}
+
+// ─── 学校选择弹窗扩展 ─────────────────────────────────
+.school-sheet {
+  max-height: 75vh;
+  display: flex;
+  flex-direction: column;
+
+  @media (min-width: 1024px) {
+    max-height: 560px;
+  }
+}
+
+.school-search-wrap {
+  padding: 16rpx 40rpx;
+  border-bottom: 1rpx solid $gray-100;
+  flex-shrink: 0;
+
+  @media (min-width: 1024px) {
+    padding: 10px 28px;
+  }
+}
+
+.school-search-input {
+  width: 100%;
+  height: 68rpx;
+  padding: 0 24rpx;
+  background: $gray-50;
+  border-radius: $radius-md;
+  font-size: 26rpx;
+  color: $gray-800;
+  box-sizing: border-box;
+
+  @media (min-width: 1024px) {
+    height: 36px;
+    padding: 0 14px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+}
+
+.school-scroll {
+  flex: 1;
+  overflow: hidden;
+}
+
+.school-loading,
+.school-empty {
+  padding: 60rpx 40rpx;
+  text-align: center;
+
+  @media (min-width: 1024px) {
+    padding: 32px 28px;
+  }
+}
+
+.school-loading-text,
+.school-empty-text {
+  font-size: 26rpx;
+  color: $gray-400;
+
+  @media (min-width: 1024px) {
+    font-size: 14px;
   }
 }
 </style>

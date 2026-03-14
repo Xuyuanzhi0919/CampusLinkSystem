@@ -127,7 +127,7 @@
               <ClAvatar
                 :src="member.avatarUrl"
                 :name="member.nickname"
-                :size="40"
+                size="large"
               />
               <view class="member-info">
                 <text class="member-name">{{ member.nickname }}</text>

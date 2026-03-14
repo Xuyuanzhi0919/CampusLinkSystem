@@ -63,10 +63,10 @@
         >
           <!-- 头像 + 用户信息 -->
           <view class="comment-header">
-            <image
-              :src="comment.userAvatar || defaultAvatar"
-              class="user-avatar"
-              mode="aspectFill"
+            <ClAvatar
+              :src="comment.userAvatar"
+              :name="comment.userName"
+              size="medium"
             />
             <view class="user-meta">
               <text class="user-name">{{ comment.userName }}</text>
@@ -103,10 +103,10 @@
               :key="reply.commentId"
               class="reply-item"
             >
-              <image
-                :src="reply.userAvatar || defaultAvatar"
-                class="reply-avatar"
-                mode="aspectFill"
+              <ClAvatar
+                :src="reply.userAvatar"
+                :name="reply.userName"
+                size="small"
               />
               <view class="reply-body">
                 <view class="reply-header">
@@ -166,9 +166,9 @@
 import { ref, onMounted } from 'vue'
 import type { ResourceComment } from '@/types/comment'
 import { getResourceComments, addComment, deleteComment } from '@/services/comment'
-import { PLACEHOLDER_IMAGES } from '@/config/images'
 import { requireLogin } from '@/utils/auth'
 import Icon from '@/components/icons/index.vue'
+import ClAvatar from '@/components/cl/ClAvatar.vue'
 
 interface Props {
   resourceId: number
@@ -188,7 +188,6 @@ const replyingTo = ref<number | null>(null)
 const currentPage = ref(1)
 const totalPages = ref(1)
 const hasMore = ref(false)
-const defaultAvatar = PLACEHOLDER_IMAGES.avatar
 
 // 焦点状态
 const inputFocused = ref(false)
@@ -517,14 +516,6 @@ const formatTime = (dateStr: string) => {
   margin-bottom: $sp-3;
 }
 
-.user-avatar {
-  width: 64rpx;
-  height: 64rpx;
-  border-radius: $radius-full;
-  border: 2rpx solid $gray-100;
-  flex-shrink: 0;
-  background: $gray-100;
-}
 
 .user-meta {
   flex: 1;
@@ -657,14 +648,6 @@ const formatTime = (dateStr: string) => {
   }
 }
 
-.reply-avatar {
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: $radius-full;
-  border: 1.5rpx solid $gray-100;
-  flex-shrink: 0;
-  background: $gray-100;
-}
 
 .reply-body {
   flex: 1;

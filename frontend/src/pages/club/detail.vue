@@ -44,7 +44,7 @@
     <!-- 社团详情 -->
     <view v-else-if="club" class="detail-wrapper">
       <!-- ========== Hero 区（第一屏，极其重要）========== -->
-      <view class="hero-section">
+      <view class="hero-section" :style="heroStyle">
         <view class="hero-container">
           <!-- 社团头像 -->
           <view class="club-avatar-wrapper">
@@ -580,6 +580,72 @@ const showPublishModal = ref(false)
 const publishContent = ref('')
 const publishLoading = ref(false)
 
+// ========== Hero 动态配色 ==========
+const heroColor = ref({ r: 124, g: 144, b: 112 }) // 默认：鼠尾草绿
+
+const heroStyle = computed(() => {
+  const { r, g, b } = heroColor.value
+  // 混入白色生成浅色系渐变
+  const mix = (c: number, ratio: number) => Math.round(c + (255 - c) * ratio)
+  const l1 = `rgb(${mix(r, 0.65)},${mix(g, 0.65)},${mix(b, 0.65)})`
+  const l2 = `rgb(${mix(r, 0.80)},${mix(g, 0.80)},${mix(b, 0.80)})`
+  return { background: `linear-gradient(135deg, ${l1} 0%, ${l2} 60%, #FAFAF8 100%)` }
+})
+
+// 预设调色板（无 Logo 时按名称哈希选取）
+const COLOR_PALETTE = [
+  { r: 124, g: 144, b: 112 }, // 鼠尾草绿
+  { r: 91,  g: 155, b: 213 }, // 天蓝
+  { r: 198, g: 126, b: 100 }, // 赤陶
+  { r: 152, g: 121, b: 186 }, // 薰衣草紫
+  { r: 70,  g: 164, b: 157 }, // 松石绿
+  { r: 221, g: 158, b: 64  }, // 琥珀
+  { r: 76,  g: 133, b: 180 }, // 钢蓝
+  { r: 169, g: 120, b: 90  }, // 棕褐
+]
+
+const getColorFromName = (name: string) => {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) {
+    hash = (hash * 31 + name.charCodeAt(i)) & 0xffffffff
+  }
+  return COLOR_PALETTE[Math.abs(hash) % COLOR_PALETTE.length]
+}
+
+// H5 端：从 Logo 图片提取主色
+// #ifdef H5
+const extractLogoColor = (src: string): void => {
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.onload = () => {
+    try {
+      const canvas = document.createElement('canvas')
+      const size = 32
+      canvas.width = size
+      canvas.height = size
+      const ctx = canvas.getContext('2d')!
+      ctx.drawImage(img, 0, 0, size, size)
+      const data = ctx.getImageData(0, 0, size, size).data
+      let r = 0, g = 0, b = 0, count = 0
+      for (let i = 0; i < data.length; i += 16) {
+        if (data[i + 3] < 128) continue // 跳过透明像素
+        r += data[i]; g += data[i + 1]; b += data[i + 2]; count++
+      }
+      if (count > 0) {
+        heroColor.value = {
+          r: Math.round(r / count),
+          g: Math.round(g / count),
+          b: Math.round(b / count)
+        }
+      }
+    } catch {
+      // Canvas 跨域失败，保持名称哈希色
+    }
+  }
+  img.src = src
+}
+// #endif
+
 // 各模块数据
 const feeds = ref<ClubPost[]>([])
 const activities = ref<ActivityItem[]>([])
@@ -652,6 +718,11 @@ const loadClubDetail = async (id: number) => {
   try {
     const res = await getClubDetail(id)
     club.value = res
+    // 先用名称快速设色，再从 Logo 异步提取精确色（不阻塞渲染）
+    heroColor.value = getColorFromName(res.clubName)
+    // #ifdef H5
+    if (res.logoUrl) extractLogoColor(res.logoUrl)
+    // #endif
   } catch (error: any) {
     console.error('加载社团详情失败:', error)
     uni.showToast({
@@ -1155,13 +1226,14 @@ onUnmounted(() => {
 // 优化：增强视觉层次，避免"太平"
 // =============================================
 .hero-section {
-  background: linear-gradient(135deg, #4A5D43 0%, #7C9070 55%, #5B9BD5 100%);
+  // background 由 :style="heroStyle" 动态注入（浅色系渐变）
   border-bottom: none;
   padding: 64rpx 0;
   position: relative;
   overflow: hidden;
+  transition: background 0.4s ease;
 
-  // 微妙光晕装饰
+  // 微妙装饰光圈（浅色背景下使用半透明深色）
   &::before {
     content: '';
     position: absolute;
@@ -1169,7 +1241,7 @@ onUnmounted(() => {
     right: -5%;
     width: 700rpx;
     height: 700rpx;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(0, 0, 0, 0.04) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -1212,15 +1284,15 @@ onUnmounted(() => {
   height: 100%;
   border-radius: $radius-lg;
   background: $gray-100;
-  border: 4rpx solid rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12rpx 40rpx rgba(0, 0, 0, 0.3),
-              0 4rpx 12rpx rgba(0, 0, 0, 0.2);
+  border: 4rpx solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.14),
+              0 2rpx 8rpx rgba(0, 0, 0, 0.08);
   transition: transform $transition-base, box-shadow $transition-base;
 
   &:hover {
     transform: scale(1.02);
-    box-shadow: 0 16rpx 56rpx rgba(0, 0, 0, 0.35),
-                0 6rpx 16rpx rgba(0, 0, 0, 0.25);
+    box-shadow: 0 12rpx 48rpx rgba(0, 0, 0, 0.18),
+                0 4rpx 12rpx rgba(0, 0, 0, 0.10);
   }
 }
 
@@ -1251,10 +1323,9 @@ onUnmounted(() => {
 .club-title {
   font-size: 52rpx;
   font-weight: $font-weight-bold;
-  color: $white;
+  color: $gray-900;
   letter-spacing: 0.5rpx;
   line-height: 1.2;
-  text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.2);
 
   @include mobile {
     font-size: 38rpx;
@@ -1266,20 +1337,20 @@ onUnmounted(() => {
   align-items: center;
   gap: 4rpx;
   padding: 4rpx 12rpx;
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.07);
   border-radius: $radius-full;
   flex-shrink: 0;
-  border: 1rpx solid rgba(255, 255, 255, 0.3);
+  border: 1rpx solid rgba(0, 0, 0, 0.12);
 }
 
 .active-icon {
-  color: $white;
+  color: $gray-700;
   flex-shrink: 0;
 }
 
 .active-text {
   font-size: 20rpx;
-  color: $white;
+  color: $gray-700;
   font-weight: $font-weight-medium;
 }
 
@@ -1288,26 +1359,26 @@ onUnmounted(() => {
   align-items: center;
   gap: 4rpx;
   padding: 4rpx 12rpx;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.07);
   border-radius: $radius-full;
   flex-shrink: 0;
-  border: 1rpx solid rgba(255, 255, 255, 0.4);
+  border: 1rpx solid rgba(0, 0, 0, 0.12);
 }
 
 .official-icon {
-  color: $white;
+  color: $gray-700;
 }
 
 .official-text {
   font-size: 20rpx;
-  color: $white;
+  color: $gray-700;
   font-weight: $font-weight-medium;
 }
 
 .club-slogan {
   display: block;
   font-size: 28rpx;
-  color: rgba(255, 255, 255, 0.85);
+  color: $gray-600;
   line-height: 1.6;
   margin-bottom: $sp-6;
   @include text-ellipsis(1);
@@ -1335,11 +1406,11 @@ onUnmounted(() => {
   align-items: center;
   gap: 6rpx;
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: $gray-700;
 }
 
 .metric-icon {
-  color: rgba(255, 255, 255, 0.75);
+  color: $gray-500;
   flex-shrink: 0;
 }
 
@@ -1355,11 +1426,11 @@ onUnmounted(() => {
 
 .metric-text {
   font-size: 24rpx;
-  color: rgba(255, 255, 255, 0.9);
+  color: $gray-700;
 }
 
 .metric-divider {
-  color: rgba(255, 255, 255, 0.35);
+  color: $gray-400;
   font-size: 24rpx;
 }
 
@@ -1367,22 +1438,22 @@ onUnmounted(() => {
 .member-badge {
   margin-top: $sp-4;
   padding: $sp-2 $sp-4;
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.07);
   border-radius: $radius-md;
-  border: 1rpx solid rgba(255, 255, 255, 0.25);
+  border: 1rpx solid rgba(0, 0, 0, 0.12);
   display: inline-flex;
   align-items: center;
   gap: 6rpx;
 }
 
 .member-badge-icon {
-  color: $white;
+  color: $gray-700;
   flex-shrink: 0;
 }
 
 .member-badge-text {
   font-size: 24rpx;
-  color: $white;
+  color: $gray-700;
   font-weight: $font-weight-medium;
 }
 
@@ -1393,31 +1464,6 @@ onUnmounted(() => {
   align-items: flex-start;
   gap: $sp-3;
   margin-top: $sp-5;
-
-  // 深色背景按钮覆盖
-  :deep(.c-button--primary) {
-    background-color: $white !important;
-    color: #4A5D43 !important;
-    border-color: $white !important;
-    font-weight: $font-weight-semibold !important;
-    box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.2) !important;
-  }
-
-  :deep(.c-button--secondary) {
-    background-color: rgba(255, 255, 255, 0.15) !important;
-    color: $white !important;
-    border-color: rgba(255, 255, 255, 0.4) !important;
-  }
-
-  :deep(.c-button--ghost) {
-    background-color: rgba(255, 255, 255, 0.1) !important;
-    color: $white !important;
-    border-color: rgba(255, 255, 255, 0.45) !important;
-  }
-
-  :deep(.c-button--text) {
-    color: rgba(255, 255, 255, 0.75) !important;
-  }
 
   @include mobile {
     width: 100%;

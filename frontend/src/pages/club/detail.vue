@@ -103,42 +103,64 @@
               <text class="member-badge-text">你是第 {{ memberPosition }} 位加入的成员</text>
             </view>
 
-            <!-- CTA 按钮（核心决策点，布局始终保持一致）-->
+            <!-- CTA 按钮（双按钮横排，对应设计稿）-->
             <view class="hero-actions">
-              <!-- 未加入：主按钮 -->
-              <CButton
-                v-if="!isMember && !isPending"
-                type="primary"
-                size="lg"
-                @click="handleJoin"
-              >
-                加入社团
-              </CButton>
+              <!-- 横排双按钮行 -->
+              <view class="hero-actions-row">
+                <!-- 左侧主按钮 -->
+                <CButton
+                  v-if="!isMember && !isPending"
+                  type="primary"
+                  size="lg"
+                  class="hero-btn-main"
+                  @click="handleJoin"
+                >
+                  加入社团
+                </CButton>
+                <CButton
+                  v-else-if="isPending"
+                  type="secondary"
+                  size="lg"
+                  class="hero-btn-main"
+                  disabled
+                >
+                  <view class="btn-inner">
+                    <Icon name="clock" :size="16" class="btn-icon" />
+                    <text>申请审核中</text>
+                  </view>
+                </CButton>
+                <CButton
+                  v-else
+                  type="primary"
+                  size="lg"
+                  class="hero-btn-main"
+                  @click="handleEnter"
+                >
+                  进入讨论
+                </CButton>
 
-              <!-- 申请中：禁用状态 -->
-              <CButton
-                v-else-if="isPending"
-                type="secondary"
-                size="lg"
-                disabled
-              >
-                <view class="btn-inner">
-                  <Icon name="clock" :size="16" class="btn-icon" />
-                  <text>申请审核中</text>
-                </view>
-              </CButton>
+                <!-- 右侧副按钮（非成员显示"进入讨论"；成员显示"管理社团"） -->
+                <CButton
+                  v-if="!isMember"
+                  type="ghost"
+                  size="lg"
+                  class="hero-btn-sub"
+                  @click="handleEnter"
+                >
+                  进入讨论
+                </CButton>
+                <CButton
+                  v-else-if="isAdmin"
+                  type="ghost"
+                  size="lg"
+                  class="hero-btn-sub"
+                  @click="handleManage"
+                >
+                  管理社团
+                </CButton>
+              </view>
 
-              <!-- 已加入：主按钮变为"进入讨论" -->
-              <CButton
-                v-else
-                type="primary"
-                size="lg"
-                @click="handleEnter"
-              >
-                进入讨论
-              </CButton>
-
-              <!-- 次要操作：管理/退出（弱化，始终在按钮下方）-->
+              <!-- 次要操作：管理员快捷操作 + 退出 -->
               <view class="secondary-actions">
                 <CButton
                   v-if="isAdmin"
@@ -147,14 +169,6 @@
                   @click="handlePublishActivity"
                 >
                   发布活动
-                </CButton>
-                <CButton
-                  v-if="isAdmin"
-                  type="text"
-                  size="sm"
-                  @click="handleManage"
-                >
-                  管理社团
                 </CButton>
                 <CButton
                   v-if="isMember"
@@ -1295,24 +1309,15 @@ onUnmounted(() => {
   font-weight: $font-weight-medium;
 }
 
-// Hero 操作区（布局始终保持一致）
+// Hero 操作区
 .hero-actions {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: $sp-3;
   margin-top: $sp-5;
 
-  @include mobile {
-    width: 100%;
-
-    :deep(.c-button--lg) {
-      width: 100%;
-      max-width: 560rpx;
-    }
-  }
-
-  // 深色背景上的按钮覆盖
+  // 深色背景按钮覆盖
   :deep(.c-button--primary) {
     background-color: $white !important;
     color: #4A5D43 !important;
@@ -1327,18 +1332,53 @@ onUnmounted(() => {
     border-color: rgba(255, 255, 255, 0.4) !important;
   }
 
+  :deep(.c-button--ghost) {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    color: $white !important;
+    border-color: rgba(255, 255, 255, 0.45) !important;
+  }
+
   :deep(.c-button--text) {
     color: rgba(255, 255, 255, 0.75) !important;
   }
+
+  @include mobile {
+    width: 100%;
+    align-items: center;
+  }
 }
 
-// 次要操作组（管理/退出，始终在主按钮下方）
+// 双按钮横排行
+.hero-actions-row {
+  display: flex;
+  gap: $sp-4;
+  align-items: center;
+
+  @include mobile {
+    width: 100%;
+    gap: $sp-3;
+  }
+}
+
+// 主 / 副按钮（移动端等分填充）
+.hero-btn-main,
+.hero-btn-sub {
+  @include mobile {
+    flex: 1;
+  }
+}
+
+// 次要操作组（发布活动 + 退出）
 .secondary-actions {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: $sp-4;
   margin-top: $sp-1;
+
+  @include mobile {
+    justify-content: center;
+  }
 
   .quit-btn {
     color: rgba(255, 255, 255, 0.6) !important;

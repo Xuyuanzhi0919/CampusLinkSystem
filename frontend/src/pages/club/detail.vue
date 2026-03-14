@@ -194,6 +194,10 @@
           <view class="tab-content">
             <!-- ① 动态 Tab（默认）-->
             <view v-if="currentTab === 'feed'" class="feed-container">
+              <!-- 发布动态按钮（成员始终可见） -->
+              <view v-if="isMember" class="feed-publish-bar">
+                <CButton type="primary" size="sm" @click="handlePublishFeed">+ 发布动态</CButton>
+              </view>
               <view v-if="feeds.length > 0" class="feed-list">
                 <view v-for="feed in feeds" :key="feed.id" class="feed-item">
                   <!-- 头像 + 信息 -->
@@ -226,7 +230,6 @@
                 </view>
                 <text class="empty-text">暂无动态</text>
                 <text class="empty-hint">{{ isMember ? '发布第一条动态，和成员们分享吧' : '成员发布的动态将在这里展示' }}</text>
-                <CButton v-if="isMember" type="primary" size="sm" @click="handlePublishFeed">发布动态</CButton>
               </view>
             </view>
 
@@ -1457,6 +1460,12 @@ onUnmounted(() => {
 }
 
 // ① 动态 Tab
+.feed-publish-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: $sp-4;
+}
+
 .feed-list {
   display: flex;
   flex-direction: column;

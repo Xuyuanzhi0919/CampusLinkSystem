@@ -1,163 +1,160 @@
 <template>
-  <view class="publish-selector-page">
+  <view class="publish-page">
 
-    <!-- 统一渐变头部 -->
-    <view class="page-header">
-      <view class="header-nav">
-        <view class="nav-back" @click="handleBack">
-          <Icon name="arrow-left" :size="20" color="#FFFFFF" />
+    <!-- ══════════════ 移动端布局 ══════════════ -->
+    <template v-if="!isDesktop">
+      <!-- 蓝色渐变 Header -->
+      <view class="mobile-header">
+        <view class="header-nav">
+          <view class="nav-back" @click="handleBack">
+            <Icon name="arrow-left" :size="18" color="#FFFFFF" />
+          </view>
+          <text class="nav-title">发布内容</text>
+          <view class="nav-placeholder" />
         </view>
-        <text class="nav-title">发布内容</text>
-        <view class="nav-placeholder" />
-      </view>
-      <view class="header-hero">
-        <text class="hero-title">你想做什么？</text>
-        <text class="hero-sub">选择一种方式，参与校园互助</text>
-      </view>
-    </view>
-
-    <!-- 主内容区 -->
-    <scroll-view class="content-area" scroll-y>
-      <view class="selector-container">
-
-        <!-- 发布类型网格 -->
-        <view class="publish-grid">
-          <!-- 提问 - 主推行为 -->
-          <view class="publish-card publish-card--primary" @click="handleNavigate('question')">
-            <view class="card-badge">常用</view>
-            <view class="card-icon-wrapper question">
-              <Icon name="help-circle" :size="32" class="card-icon" />
-            </view>
-            <view class="card-content">
-              <text class="card-title">提问</text>
-              <text class="card-motivation">作业 / 考试 / 代码不会？马上问</text>
-              <view class="card-benefits">
-                <view class="benefit-item primary">
-                  <Icon name="zap" :size="14" />
-                  <text>平均 15 分钟内获得回答</text>
-                </view>
-              </view>
-              <view class="card-features">
-                <view class="feature-tag">
-                  <Icon name="award" :size="12" />
-                  <text>悬赏积分</text>
-                </view>
-                <view class="feature-tag">
-                  <Icon name="users" :size="12" />
-                  <text>多人抢答</text>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 上传资源 - 主推行为 -->
-          <view class="publish-card publish-card--primary" @click="handleNavigate('resource')">
-            <view class="card-badge">常用</view>
-            <view class="card-icon-wrapper resource">
-              <Icon name="file-text" :size="32" class="card-icon" />
-            </view>
-            <view class="card-content">
-              <text class="card-title">资源</text>
-              <text class="card-motivation">上传资料，获取积分和认可</text>
-              <view class="card-benefits">
-                <view class="benefit-item accent">
-                  <Icon name="gift" :size="14" />
-                  <text>审核通过 +10 积分 · 下载越多赚越多</text>
-                </view>
-              </view>
-              <view class="card-features">
-                <view class="feature-tag">
-                  <Icon name="trending-up" :size="12" />
-                  <text>提升等级</text>
-                </view>
-                <view class="feature-tag">
-                  <Icon name="star" :size="12" />
-                  <text>建立声誉</text>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 发布活动 -->
-          <view class="publish-card" @click="handleNavigate('activity')">
-            <view class="card-icon-wrapper activity">
-              <Icon name="users" :size="32" class="card-icon" />
-            </view>
-            <view class="card-content">
-              <text class="card-title">活动</text>
-              <text class="card-motivation">组织社团 / 校园活动，扩大影响力</text>
-              <view class="card-features">
-                <view class="feature-tag">
-                  <Icon name="users" :size="12" />
-                  <text>快速召集</text>
-                </view>
-                <view class="feature-tag">
-                  <Icon name="map-pin" :size="12" />
-                  <text>线下聚会</text>
-                </view>
-              </view>
-            </view>
-          </view>
-
-          <!-- 发布任务 -->
-          <view class="publish-card" @click="handleNavigate('task')">
-            <view class="card-icon-wrapper task">
-              <Icon name="award" :size="32" class="card-icon" />
-            </view>
-            <view class="card-content">
-              <text class="card-title">悬赏</text>
-              <text class="card-motivation">快速完成任务，获得积分奖励</text>
-              <view class="card-benefits">
-                <view class="benefit-item warning">
-                  <Icon name="gift" :size="14" />
-                  <text>完成后立即获得 1-100 积分</text>
-                </view>
-              </view>
-              <view class="card-features">
-                <view class="feature-tag">
-                  <Icon name="target" :size="12" />
-                  <text>精准匹配</text>
-                </view>
-                <view class="feature-tag">
-                  <Icon name="clock" :size="12" />
-                  <text>快速响应</text>
-                </view>
-              </view>
-            </view>
-          </view>
-        </view>
-
-        <!-- 底部提示 -->
-        <view class="bottom-tips">
-          <Icon name="lightbulb" :size="16" class="tip-icon" />
-          <text class="tip-text">选择合适的发布方式，可以更快获得帮助、积分和反馈</text>
+        <view class="header-hero">
+          <text class="hero-title">你想做什么？</text>
+          <text class="hero-sub">参与互助，分享成就校园</text>
         </view>
       </view>
-    </scroll-view>
 
-    <!-- PC端悬浮导航（仅桌面端） -->
+      <!-- 滚动内容区 -->
+      <scroll-view class="mobile-content" scroll-y>
+        <view class="mobile-inner">
+          <text class="section-label">选择发布类型</text>
+
+          <view class="publish-grid">
+            <view
+              v-for="card in publishCards"
+              :key="card.id"
+              class="publish-card"
+              @click="handleNavigate(card.id)"
+            >
+              <!-- 顶行：图标 + badge -->
+              <view class="card-top">
+                <view class="card-icon-bg" :class="card.type">
+                  <Icon :name="card.icon" :size="18" :color="cardColor(card.type)" />
+                </view>
+                <view class="card-badge" :class="card.type">{{ card.badge }}</view>
+              </view>
+              <!-- 标题 -->
+              <text class="card-title">{{ card.title }}</text>
+              <!-- 描述 -->
+              <text class="card-desc">{{ card.desc }}</text>
+              <!-- 积分提示条 -->
+              <view class="card-benefit" :class="card.type">
+                <Icon :name="card.benefitIcon" :size="12" :color="cardColor(card.type)" />
+                <text>{{ card.benefitText }}</text>
+              </view>
+              <!-- 底行：标签 + 箭头 -->
+              <view class="card-bottom">
+                <view class="card-tags">
+                  <view v-for="tag in card.tags" :key="tag.text" class="card-tag">
+                    <Icon :name="tag.icon" :size="11" color="#64748B" />
+                    <text>{{ tag.text }}</text>
+                  </view>
+                </view>
+                <Icon name="chevron-right" :size="14" color="#94A3B8" />
+              </view>
+            </view>
+          </view>
+
+          <!-- 底部提示 -->
+          <view class="bottom-tip">
+            <Icon name="lightbulb" :size="14" color="#2563EB" />
+            <text class="tip-text">选择合适的发布方式，可以更快获得帮助和积分</text>
+          </view>
+        </view>
+      </scroll-view>
+
+      <CustomTabBar />
+    </template>
+
+    <!-- ══════════════ PC 端布局 ══════════════ -->
     <!-- #ifdef H5 -->
-    <PCFloatingNav v-if="isDesktop" />
+    <template v-else>
+      <WebHeader />
+
+      <view class="pc-page">
+        <!-- 左侧 Hero -->
+        <view class="pc-hero">
+          <view class="pc-label-row">
+            <view class="pc-label-bar" />
+            <text class="pc-label-text">发布中心</text>
+          </view>
+          <text class="pc-title">你想做什么？</text>
+          <text class="pc-subtitle">参与校园互助，让每一个问题都有解答</text>
+          <view class="pc-accent">
+            <view class="pc-accent-line" />
+            <view class="pc-accent-dot" />
+          </view>
+          <view class="pc-stats">
+            <view class="pc-stat">
+              <text class="pc-stat-num">1,200+</text>
+              <text class="pc-stat-label">学生互助</text>
+            </view>
+            <view class="pc-stat-divider" />
+            <view class="pc-stat">
+              <text class="pc-stat-num">98%</text>
+              <text class="pc-stat-label">问题得到解答</text>
+            </view>
+          </view>
+          <view class="pc-tip-box">
+            <Icon name="lightbulb" :size="14" color="#2563EB" />
+            <text class="pc-tip-text">选择合适的方式，更快获得帮助和积分</text>
+          </view>
+        </view>
+
+        <!-- 右侧 2×2 卡片网格 -->
+        <view class="pc-grid">
+          <view v-for="(row, ri) in gridRows" :key="ri" class="pc-grid-row">
+            <view
+              v-for="card in row"
+              :key="card.id"
+              class="pc-card"
+              @click="handleNavigate(card.id)"
+            >
+              <view class="card-top">
+                <view class="card-icon-bg" :class="card.type">
+                  <Icon :name="card.icon" :size="18" :color="cardColor(card.type)" />
+                </view>
+                <view class="card-badge" :class="card.type">{{ card.badge }}</view>
+              </view>
+              <text class="card-title">{{ card.title }}</text>
+              <text class="card-desc">{{ card.desc }}</text>
+              <view class="card-benefit" :class="card.type">
+                <Icon :name="card.benefitIcon" :size="12" :color="cardColor(card.type)" />
+                <text>{{ card.benefitText }}</text>
+              </view>
+              <view class="card-bottom">
+                <view class="card-tags">
+                  <view v-for="tag in card.tags" :key="tag.text" class="card-tag">
+                    <Icon :name="tag.icon" :size="11" color="#64748B" />
+                    <text>{{ tag.text }}</text>
+                  </view>
+                </view>
+                <Icon name="arrow-right" :size="15" color="#94A3B8" />
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </template>
     <!-- #endif -->
 
-    <!-- 移动端自定义底部导航 -->
-    <CustomTabBar v-if="!isDesktop" />
   </view>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import Icon from '@/components/icons/index.vue'
-
-// 移动端组件
 import { CustomTabBar } from '@/components/mobile'
 
-// PC 端组件（仅 H5）
 // #ifdef H5
-import { PCFloatingNav } from '@/components/desktop'
+import { WebHeader } from '@/components/desktop'
 // #endif
 
-// 🎯 平台判断 - 统一使用 1024px 作为桌面端断点
+// ── 平台判断 ──
 const isDesktop = computed(() => {
   // #ifdef H5
   return window.innerWidth >= 1024
@@ -167,56 +164,94 @@ const isDesktop = computed(() => {
   // #endif
 })
 
-/**
- * 🎯 导航到具体发布页面
- */
+// ── 卡片颜色映射 ──
+const TYPE_COLORS: Record<string, string> = {
+  question: '#2563EB',
+  resource: '#14B8A6',
+  activity: '#16A34A',
+  task:     '#FF6B35',
+}
+const cardColor = (type: string) => TYPE_COLORS[type] ?? '#2563EB'
+
+// ── 卡片数据 ──
+const publishCards = [
+  {
+    id: 'question', type: 'question',
+    title: '提问', badge: '常用',
+    icon: 'message-circle',
+    desc: '作业·考试·代码，快速获得解答',
+    benefitIcon: 'zap', benefitText: '平均 15 分钟内获得回答',
+    tags: [{ icon: 'book-open', text: '作业答疑' }, { icon: 'laptop', text: '代码调试' }],
+  },
+  {
+    id: 'resource', type: 'resource',
+    title: '资源', badge: '常用',
+    icon: 'file-text',
+    desc: '上传课件资料，获取积分和认可',
+    benefitIcon: 'gift', benefitText: '通过审核 +10 积分',
+    tags: [{ icon: 'trending-up', text: '提升等级' }, { icon: 'star', text: '建立声誉' }],
+  },
+  {
+    id: 'activity', type: 'activity',
+    title: '活动', badge: '热门',
+    icon: 'users',
+    desc: '组织社团活动，扩大影响力',
+    benefitIcon: 'zap', benefitText: '参与活动 +10 积分',
+    tags: [{ icon: 'users', text: '快速召集' }, { icon: 'map-pin', text: '线下聚会' }],
+  },
+  {
+    id: 'task', type: 'task',
+    title: '悬赏', badge: '赚积分',
+    icon: 'award',
+    desc: '发布任务快速获得积分奖励',
+    benefitIcon: 'gift', benefitText: '完成后立即获得 1-100 积分',
+    tags: [{ icon: 'target', text: '精准匹配' }, { icon: 'zap', text: '快速响应' }],
+  },
+]
+
+// PC 端 2×2 行分组
+const gridRows = [publishCards.slice(0, 2), publishCards.slice(2, 4)]
+
+// ── 导航 ──
 const handleNavigate = (type: string) => {
   const routes: Record<string, string> = {
     question: '/pages/question/ask',
     resource: '/pages/resource/upload',
-    activity: '/pages/club/publish-activity', // 待开发
-    task: '/pages/task/publish'// 已完成
+    activity: '/pages/club/publish-activity',
+    task:     '/pages/task/publish',
   }
-
   const url = routes[type]
-  if (url) {
-    uni.navigateTo({ url })
-  } else {
-    uni.showToast({
-      title: '功能开发中',
-      icon: 'none'
-    })
-  }
+  if (url) uni.navigateTo({ url })
+  else uni.showToast({ title: '功能开发中', icon: 'none' })
 }
 
-/**
- * 🎯 返回上一页
- */
 const handleBack = () => {
   const pages = getCurrentPages()
-  if (pages.length > 1) {
-    uni.navigateBack()
-  } else {
-    uni.switchTab({ url: '/pages/home/index' })
-  }
+  if (pages.length > 1) uni.navigateBack()
+  else uni.switchTab({ url: '/pages/home/index' })
 }
 </script>
 
 <style lang="scss" scoped>
 @import '@/styles/variables.scss';
 
-.publish-selector-page {
+// ════════════════════════════════════
+//  页面基础
+// ════════════════════════════════════
+.publish-page {
   min-height: 100vh;
-  background: #F1F5F9;
+  background: #F8FAFC;
   display: flex;
   flex-direction: column;
 }
 
-// ── 统一渐变头部 ──
-.page-header {
+// ════════════════════════════════════
+//  移动端 Header
+// ════════════════════════════════════
+.mobile-header {
   flex-shrink: 0;
-  background: linear-gradient(160deg, #3B82F6 0%, #60A5FA 55%, #93C5FD 100%);
-  border-radius: 0 0 24px 24px;
+  background: linear-gradient(160deg, #2563EB 0%, #3B82F6 60%, #60A5FA 100%);
+  border-radius: 0 0 20px 20px;
 }
 
 .header-nav {
@@ -235,251 +270,353 @@ const handleBack = () => {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  &:active { opacity: 0.6; }
+  &:active { opacity: 0.65; }
 }
 
 .nav-title {
   flex: 1;
   text-align: center;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 700;
-  color: #FFFFFF;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .nav-placeholder { width: 36px; }
 
 .header-hero {
-  padding: 12px 20px 20px;
-  text-align: center;
+  padding: 10px 24px 22px;
 }
 
 .hero-title {
   display: block;
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 800;
   color: #FFFFFF;
+  letter-spacing: -0.5px;
   margin-bottom: 4px;
 }
 
 .hero-sub {
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.78);
 }
 
-// 内容区域
-.content-area {
+// ════════════════════════════════════
+//  移动端内容区
+// ════════════════════════════════════
+.mobile-content {
   flex: 1;
 }
 
-.selector-container {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: $sp-5 $sp-5 $sp-8;
-
-  @include desktop {
-    padding: $sp-8 $sp-10;
-  }
+.mobile-inner {
+  padding: 16px 16px 32px;
 }
 
-// 发布类型网格
+.section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+// ════════════════════════════════════
+//  卡片网格（移动端 2列）
+// ════════════════════════════════════
 .publish-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: $sp-5;
-
-  @include mobile {
-    grid-template-columns: 1fr;
-    gap: $sp-4;
-  }
+  gap: 12px;
 }
 
-// 发布卡片
-.publish-card {
-  position: relative;
-  background: $white;
-  border: 2px solid $gray-200;
-  border-radius: $radius-lg;
-  padding: $sp-6;
+// ════════════════════════════════════
+//  卡片（移动 & PC 共用结构）
+// ════════════════════════════════════
+.publish-card,
+.pc-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: box-shadow 0.2s, border-color 0.2s, transform 0.2s;
 
   &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-    border-color: $primary;
-  }
-
-  &:active {
+    border-color: #BFDBFE;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
     transform: translateY(-2px);
   }
-
-  // 🎯 主推行为样式(提问 & 资源)
-  &--primary {
-    border-color: $primary;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-
-    &:hover {
-      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.15);
-      transform: translateY(-6px); // 更大的上浮距离
-    }
-  }
+  &:active { transform: translateY(0); }
 }
 
-// 常用徽章
-.card-badge {
-  position: absolute;
-  top: $sp-3;
-  right: $sp-3;
-  padding: 4px $sp-2;
-  background: linear-gradient(135deg, $primary 0%, lighten($primary, 8%) 100%);
-  color: $white;
-  font-size: 20rpx;
-  font-weight: $font-weight-semibold;
-  border-radius: $radius-sm;
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+// 顶行：图标 + badge
+.card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.card-icon-wrapper {
-  width: 64px;
-  height: 64px;
-  border-radius: $radius-base;
+// 图标背景
+.card-icon-bg {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: $sp-4;
+  flex-shrink: 0;
 
-  &.question {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
-
-    .card-icon {
-      color: $primary;
-    }
-  }
-
-  &.resource {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.1) 0%, rgba(255, 107, 53, 0.05) 100%);
-
-    .card-icon {
-      color: $accent;
-    }
-  }
-
-  &.activity {
-    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
-
-    .card-icon {
-      color: $success;
-    }
-  }
-
-  &.task {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
-
-    .card-icon {
-      color: $warning;
-    }
-  }
+  &.question { background: #EFF6FF; }
+  &.resource  { background: #F0FDFA; }
+  &.activity  { background: #F0FDF4; }
+  &.task      { background: #FFF0EB; }
 }
 
-.card-content {
-  .card-title {
-    display: block;
-    font-size: $font-size-xl;
-    font-weight: $font-weight-semibold;
-    color: $gray-900;
-    margin-bottom: $sp-1;
-  }
+// badge 标签
+.card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 5px;
 
-  // 🎯 场景化动机描述(替代原 card-desc)
-  .card-motivation {
-    display: block;
-    font-size: $font-size-sm;
-    color: $gray-700;
-    margin-bottom: $sp-3;
-    line-height: $line-height-relaxed;
-    font-weight: $font-weight-medium;
-  }
+  &.question { background: #EFF6FF; color: #2563EB; }
+  &.resource  { background: #F0FDFA; color: #14B8A6; }
+  &.activity  { background: #F0FDF4; color: #16A34A; }
+  &.task      { background: #FFF0EB; color: #FF6B35; }
 }
 
-// 🎯 核心收益展示区(新增)
-.card-benefits {
-  margin-bottom: $sp-3;
+// 标题
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0F172A;
 }
 
-.benefit-item {
+// 描述
+.card-desc {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+// 积分提示条
+.card-benefit {
   display: flex;
   align-items: center;
-  gap: $sp-1;
-  padding: $sp-2 $sp-3;
-  border-radius: $radius-base;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  line-height: $line-height-relaxed;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 7px;
+  font-size: 11px;
+  font-weight: 600;
 
-  // 提问 - 蓝色
-  &.primary {
-    background: linear-gradient(135deg, rgba(37, 99, 235, 0.12) 0%, rgba(37, 99, 235, 0.06) 100%);
-    color: $primary;
-  }
-
-  // 资源 - 橙色
-  &.accent {
-    background: linear-gradient(135deg, rgba(255, 107, 53, 0.12) 0%, rgba(255, 107, 53, 0.06) 100%);
-    color: $accent;
-  }
-
-  // 悬赏 - 黄色
-  &.warning {
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%);
-    color: $warning;
-  }
+  &.question { background: #EFF6FF; color: #2563EB; }
+  &.resource  { background: #F0FDFA; color: #14B8A6; }
+  &.activity  { background: #F0FDF4; color: #16A34A; }
+  &.task      { background: #FFF0EB; color: #FF6B35; }
 }
 
-.card-features {
+// 底行：标签 + 箭头
+.card-bottom {
   display: flex;
-  gap: $sp-2;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.card-tags {
+  display: flex;
+  gap: 5px;
   flex-wrap: wrap;
 }
 
-.feature-tag {
+.card-tag {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px $sp-2;
-  background: $gray-100;
-  border-radius: $radius-sm;
-  font-size: $font-size-xs;
-  color: $gray-700;
-  transition: all 0.2s;
-
-  .publish-card:hover & {
-    background: lighten($primary, 48%);
-    color: $primary;
-  }
+  gap: 3px;
+  padding: 3px 7px;
+  background: #F1F5F9;
+  border-radius: 5px;
+  font-size: 10px;
+  color: #64748B;
 }
 
-// 底部提示
-.bottom-tips {
+// ════════════════════════════════════
+//  底部提示（移动端）
+// ════════════════════════════════════
+.bottom-tip {
   display: flex;
   align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #EFF6FF;
+  border-radius: 10px;
+}
+
+.tip-text {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+// ════════════════════════════════════
+//  PC 端整体布局
+// ════════════════════════════════════
+.pc-page {
+  display: flex;
+  align-items: stretch;
+  gap: 64px;
+  padding: 56px 160px;
+  min-height: calc(100vh - 64px);
+  background: #F8FAFC;
+}
+
+// ── PC Hero 左侧 ──
+.pc-hero {
+  width: 360px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  gap: $sp-2;
-  margin-top: $sp-8;
-  padding: $sp-5;
-  background: linear-gradient(135deg, lighten($primary, 50%) 0%, lighten($primary, 52%) 100%);
-  border-radius: $radius-base;
-  border: 1px solid lighten($primary, 45%);
+  gap: 20px;
+}
 
-  .tip-icon {
-    color: darken($primary, 5%);
-    flex-shrink: 0;
+.pc-label-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pc-label-bar {
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: #2563EB;
+}
+
+.pc-label-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563EB;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.pc-title {
+  font-size: 44px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -1px;
+  line-height: 1.08;
+}
+
+.pc-subtitle {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.65;
+}
+
+.pc-accent {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pc-accent-line {
+  width: 48px;
+  height: 4px;
+  border-radius: 2px;
+  background: #2563EB;
+}
+
+.pc-accent-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563EB;
+}
+
+.pc-stats {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.pc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pc-stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: #0F172A;
+  font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.pc-stat-label {
+  font-size: 12px;
+  color: #94A3B8;
+}
+
+.pc-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: #E2E8F0;
+}
+
+.pc-tip-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #EFF6FF;
+  border-radius: 12px;
+}
+
+.pc-tip-text {
+  font-size: 12px;
+  color: #475569;
+  line-height: 1.4;
+}
+
+// ── PC 卡片网格右侧 ──
+.pc-grid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pc-grid-row {
+  display: flex;
+  gap: 16px;
+  flex: 1;
+}
+
+.pc-card {
+  flex: 1;
+  padding: 20px;
+  border-radius: 12px;
+  gap: 14px;
+
+  .card-title {
+    font-size: 18px;
   }
-
-  .tip-text {
-    font-size: $font-size-base;
-    color: $gray-800;
-    line-height: $line-height-relaxed;
-    font-weight: $font-weight-medium;
+  .card-desc {
+    font-size: 13px;
+  }
+  .card-benefit {
+    font-size: 12px;
+  }
+  .card-tag {
+    font-size: 11px;
   }
 }
 </style>

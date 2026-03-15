@@ -726,6 +726,7 @@ onLoad((options) => {
 .content-area {
   flex: 1;
   height: 0;
+  width: 100%;
 }
 
 // PC 端双栏布局容器
@@ -733,9 +734,11 @@ onLoad((options) => {
   display: flex;
   align-items: flex-start;
   gap: 24px;
+  width: 100%;
   max-width: 1100px;
   margin: 0 auto;
   padding: $sp-4;
+  box-sizing: border-box;
 
   @media (max-width: 749px) {
     flex-direction: column;
@@ -999,6 +1002,7 @@ onLoad((options) => {
   font-size: $font-size-base;
   color: $gray-900;
   transition: border-color 0.2s;
+  box-sizing: border-box;
   &:focus { border-color: $primary; }
   &::placeholder { color: $gray-400; }
 }
@@ -1014,6 +1018,7 @@ onLoad((options) => {
   color: $gray-900;
   line-height: 1.6;
   transition: border-color 0.2s;
+  box-sizing: border-box;
   &:focus { border-color: $primary; }
   &::placeholder { color: $gray-400; }
 }

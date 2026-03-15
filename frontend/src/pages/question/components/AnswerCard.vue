@@ -142,6 +142,7 @@ import { CCard, CButton } from '@/components/ui'
 import Icon from '@/components/icons/index.vue'
 import BestAnswerBadge from './BestAnswerBadge.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
+import { shareContent } from '@/utils/share'
 
 // Props
 interface Props {
@@ -224,12 +225,12 @@ const handleCopy = () => {
   })
 }
 
-// 分享回答
+// 分享回答（跳转到所属问题页）
 const handleShare = () => {
   hideMoreMenu()
-  uni.showToast({
-    title: '分享功能开发中',
-    icon: 'none'
+  shareContent({
+    title: `回答分享`,
+    path: `/pages/question/detail?id=${props.answer.questionId}`,
   })
 }
 

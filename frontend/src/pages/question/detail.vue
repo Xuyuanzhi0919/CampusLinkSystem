@@ -271,6 +271,7 @@ import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 import { requireLogin } from '@/utils/auth'
+import { shareContent } from '@/utils/share'
 import { checkFavorite, addFavorite, removeFavorite } from '@/services/favorite'
 import { getPublicConfig } from '@/services/config'
 import { ClLoginGuideModal } from '@/components/cl'
@@ -411,10 +412,13 @@ const loadQuestionDetail = async () => {
     loading.value = true
     error.value = null
     await questionStore.loadQuestionDetail(questionId.value)
-    // 登录状态下检查收藏状态
+    // 登录状态下检查收藏和关注状态
     if (userStore.isLoggedIn) {
       checkFavorite('question', questionId.value).then(res => {
         questionCollected.value = res?.isFavorited ?? false
+      }).catch(() => {})
+      checkFavorite('question_follow', questionId.value).then(res => {
+        questionFollowing.value = res?.isFavorited ?? false
       }).catch(() => {})
     }
   } catch (err: any) {
@@ -632,8 +636,21 @@ const handleQuestionLike = () => {
 }
 
 // 其他操作
-const handleFollow = () => {
-  uni.showToast({ title: '关注功能开发中', icon: 'none' })
+const handleFollow = async () => {
+  if (!requireLogin('collect')) return
+  try {
+    if (questionFollowing.value) {
+      await removeFavorite('question_follow', question.value!.qid)
+      questionFollowing.value = false
+      uni.showToast({ title: '已取消关注', icon: 'none' })
+    } else {
+      await addFavorite('question_follow', question.value!.qid)
+      questionFollowing.value = true
+      uni.showToast({ title: '关注成功，有新回答将通知你', icon: 'success' })
+    }
+  } catch {
+    uni.showToast({ title: '操作失败，请重试', icon: 'none' })
+  }
 }
 
 const handleCollect = async () => {
@@ -654,7 +671,10 @@ const handleCollect = async () => {
 }
 
 const handleShare = () => {
-  uni.showToast({ title: '分享功能开发中', icon: 'none' })
+  shareContent({
+    title: question.value?.title || '分享问答',
+    path: `/pages/question/detail?id=${questionId.value}`,
+  })
 }
 
 const handleReportQuestion = () => {

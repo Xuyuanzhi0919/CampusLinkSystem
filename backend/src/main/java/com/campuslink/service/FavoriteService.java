@@ -162,6 +162,9 @@ public class FavoriteService {
 
         if (targetType != null && !targetType.isEmpty()) {
             wrapper.eq(Favorite::getTargetType, targetType);
+        } else {
+            // 全部收藏时，排除"关注"类型（question_follow），避免混入收藏列表
+            wrapper.ne(Favorite::getTargetType, "question_follow");
         }
 
         wrapper.orderByDesc(Favorite::getCreatedAt);

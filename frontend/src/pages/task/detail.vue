@@ -369,6 +369,7 @@ import {
   Share2, ChevronRight, Flag,
 } from 'lucide-vue-next'
 import Request from '@/utils/request'
+import { shareContent } from '@/utils/share'
 import {
   getTaskById,
   acceptTask,
@@ -686,7 +687,10 @@ const showMoreMenu = () => { moreMenuVisible.value = true }
 
 const onMenuShare = () => {
   moreMenuVisible.value = false
-  uni.showToast({ title: '分享功能开发中', icon: 'none' })
+  shareContent({
+    title: task.value?.title || '分享任务',
+    path: `/pages/task/detail?id=${task.value?.tid}`,
+  })
 }
 const onMenuFavorite = async () => {
   moreMenuVisible.value = false

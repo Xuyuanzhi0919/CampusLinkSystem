@@ -2,6 +2,7 @@ package com.campuslink.service;
 
 import com.campuslink.common.ResultCode;
 import com.campuslink.dto.task.PublishTaskRequest;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Task;
 import com.campuslink.entity.User;
 import com.campuslink.exception.BusinessException;
@@ -93,13 +94,13 @@ class TaskServiceTest {
         when(userMapper.selectById(1L)).thenReturn(publisher);
         when(systemConfigMapper.selectOne(any())).thenReturn(null); // 使用默认上限100
         when(taskMapper.insert(any(Task.class))).thenReturn(1);
-        when(userMapper.updateById(any())).thenReturn(1);
-        when(pointsLogMapper.insert(any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
+        when(pointsLogMapper.insert(any(PointsLog.class))).thenReturn(1);
 
         taskService.publishTask(1L, buildRequest("帮我打印课件", 50));
 
         // 验证积分被扣除（updateById 被调用一次更新积分）
-        verify(userMapper, times(1)).updateById(argThat(u -> ((User) u).getPoints() == 450));
+        verify(userMapper, times(1)).updateById(argThat((User u) -> u.getPoints() == 450));
         // 验证任务被插入
         verify(taskMapper, times(1)).insert(any(Task.class));
     }

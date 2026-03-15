@@ -88,8 +88,8 @@ class ResourceServiceTest {
         resourceService.uploadResource(1L, buildRequest("数据结构笔记"));
 
         // 验证插入的资源状态为 0（待审核）
-        verify(resourceMapper, times(1)).insert(argThat(r ->
-                ((Resource) r).getStatus() == 0
+        verify(resourceMapper, times(1)).insert(argThat((Resource r) ->
+                r.getStatus() == 0
         ));
     }
 
@@ -106,8 +106,8 @@ class ResourceServiceTest {
         resourceService.uploadResource(1L, req);
 
         // 验证资源使用了上传者的学校 ID
-        verify(resourceMapper, times(1)).insert(argThat(r ->
-                ((Resource) r).getSchoolId() != null && ((Resource) r).getSchoolId().equals(1L)
+        verify(resourceMapper, times(1)).insert(argThat((Resource r) ->
+                r.getSchoolId() != null && r.getSchoolId().equals(1L)
         ));
     }
 
@@ -124,8 +124,8 @@ class ResourceServiceTest {
         resourceService.uploadResource(1L, req);
 
         // 验证默认积分为 5
-        verify(resourceMapper, times(1)).insert(argThat(r ->
-                ((Resource) r).getScore() != null && ((Resource) r).getScore() == 5
+        verify(resourceMapper, times(1)).insert(argThat((Resource r) ->
+                r.getScore() != null && r.getScore() == 5
         ));
     }
 
@@ -138,8 +138,8 @@ class ResourceServiceTest {
 
         resourceService.uploadResource(1L, buildRequest("高等数学期末复习"));
 
-        verify(resourceMapper, times(1)).insert(argThat(r ->
-                Long.valueOf(1L).equals(((Resource) r).getUploaderId())
+        verify(resourceMapper, times(1)).insert(argThat((Resource r) ->
+                Long.valueOf(1L).equals(r.getUploaderId())
         ));
     }
 }

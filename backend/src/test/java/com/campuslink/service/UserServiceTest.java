@@ -95,7 +95,7 @@ class UserServiceTest {
         request.setPassword("password123");
 
         when(userMapper.selectOne(any(LambdaQueryWrapper.class))).thenReturn(mockUser);
-        when(userMapper.updateById(any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
         when(jwtUtil.generateToken(anyLong(), anyString(), anyString())).thenReturn("access-token");
         when(jwtUtil.generateRefreshToken(anyLong())).thenReturn("refresh-token");
 
@@ -159,12 +159,12 @@ class UserServiceTest {
         request.setNewPassword("newpassword456");
 
         when(userMapper.selectById(1L)).thenReturn(mockUser);
-        when(userMapper.updateById(any())).thenReturn(1);
+        when(userMapper.updateById(any(User.class))).thenReturn(1);
 
         userService.changePassword(1L, request);
 
-        verify(userMapper, times(1)).updateById(argThat(u ->
-                ((User) u).getPasswordHash().equals(DigestUtils.md5DigestAsHex("newpassword456".getBytes()))
+        verify(userMapper, times(1)).updateById(argThat((User u) ->
+                u.getPasswordHash().equals(DigestUtils.md5DigestAsHex("newpassword456".getBytes()))
         ));
     }
 

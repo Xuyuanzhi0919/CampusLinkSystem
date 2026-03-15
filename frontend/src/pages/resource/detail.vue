@@ -2421,10 +2421,15 @@ const closePreview = () => {
 }
 
 .recommend-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: $sp-4;
+  display: flex;
+  flex-direction: column;
+  gap: $sp-3;
   margin-top: $sp-4;
+
+  // 卡片自身有 margin-bottom，在 flex 容器里用 gap 代替，消除叠加
+  :deep(.resource-card) {
+    margin-bottom: 0;
+  }
 }
 
 // 底部占位

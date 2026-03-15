@@ -469,7 +469,7 @@ const handleBack = () => {
 // ════════════════════════════════════
 .pc-page {
   display: flex;
-  align-items: stretch;
+  align-items: center;
   gap: 64px;
   padding: 56px 160px;
   min-height: calc(100vh - 64px);
@@ -482,7 +482,6 @@ const handleBack = () => {
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
   gap: 20px;
 }
 
@@ -597,7 +596,7 @@ const handleBack = () => {
 .pc-grid-row {
   display: flex;
   gap: 16px;
-  flex: 1;
+  height: 220px;
 }
 
 .pc-card {

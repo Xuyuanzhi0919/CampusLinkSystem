@@ -32,6 +32,30 @@ CampusLink 是一个专为高校学生设计的综合性数字校园平台，覆
 
 ---
 
+## 界面预览
+
+### 桌面端
+
+| 首页 | 问答社区 | 资源广场 |
+|:---:|:---:|:---:|
+| ![首页](pictures/desktop-home.png) | ![问答社区](pictures/desktop-question.png) | ![资源广场](pictures/desktop-resource.png) |
+
+| 资源详情 | 个人中心 | 社团管理 |
+|:---:|:---:|:---:|
+| ![资源详情](pictures/desktop-resource-detail.png) | ![个人中心](pictures/desktop-profile.png) | ![社团管理](pictures/desktop-club.png) |
+
+### 移动端
+
+| 首页 | 问答社区 | 资源列表 | 资源详情 |
+|:---:|:---:|:---:|:---:|
+| ![首页](pictures/mobile-home.png) | ![问答社区](pictures/mobile-question.png) | ![资源列表](pictures/mobile-resource.png) | ![资源详情](pictures/mobile-resource-detail.png) |
+
+| 任务大厅 | 活动详情 | 积分明细 | 个人中心 |
+|:---:|:---:|:---:|:---:|
+| ![任务大厅](pictures/mobile-task.png) | ![活动详情](pictures/mobile-activity.png) | ![积分明细](pictures/mobile-points.png) | ![个人中心](pictures/mobile-profile.png) |
+
+---
+
 ## 功能特性
 
 ### 资源管理

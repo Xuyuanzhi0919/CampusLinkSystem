@@ -83,4 +83,12 @@ public class AuthController {
         // 客户端清除 Token 即可，服务端无需处理（除非使用 Token 黑名单）
         return Result.success("退出成功", null);
     }
+
+    @Operation(summary = "检查用户名是否可用", description = "注册时实时校验用户名唯一性")
+    @GetMapping("/check-username")
+    public Result<Boolean> checkUsername(
+            @Parameter(description = "用户名") @RequestParam @NotBlank String username) {
+        boolean available = userService.isUsernameAvailable(username);
+        return Result.success(available ? "用户名可用" : "用户名已被占用", available);
+    }
 }

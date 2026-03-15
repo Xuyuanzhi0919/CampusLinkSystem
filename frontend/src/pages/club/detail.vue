@@ -551,7 +551,7 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
-import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost } from '@/services/club'
+import { getClubDetail, joinClub, quitClub, getActivityList, getClubMembers, getClubPosts, createClubPost, getRelatedClubs } from '@/services/club'
 import ClAvatar from '@/components/cl/ClAvatar.vue'
 import type { ClubPost } from '@/services/club'
 import type { ClubDetail, ActivityItem, ActivityStatus, ClubMember } from '@/types/club'
@@ -782,12 +782,14 @@ const loadMembers = async (id: number) => {
   }
 }
 
-// 加载相关社团
+// 加载相关社团（同类别推荐，排除自身）
 const loadRelatedClubs = async (id: number) => {
-  // TODO: 后端暂无相关社团推荐接口，待实现
-  // 建议后端新增 GET /club/{clubId}/related 接口
-  // 可根据分类、标签、学校等推荐相似社团
-  relatedClubs.value = []
+  try {
+    const list = await getRelatedClubs(id, 5)
+    relatedClubs.value = list || []
+  } catch {
+    relatedClubs.value = []
+  }
 }
 
 // ========== 交互逻辑 ==========

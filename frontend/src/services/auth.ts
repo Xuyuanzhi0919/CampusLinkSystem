@@ -85,6 +85,14 @@ export const logout = () => {
 }
 
 /**
+ * 检查用户名是否可用
+ * @returns true 表示可用，false 表示已被占用
+ */
+export const checkUsernameAvailable = (username: string) => {
+  return request.get<boolean>('/auth/check-username', { username })
+}
+
+/**
  * 发送验证码请求参数
  */
 export interface SendCodeRequest {

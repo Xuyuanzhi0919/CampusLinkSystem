@@ -153,6 +153,14 @@ public class UserService {
     }
 
     /**
+     * 检查用户名是否可用（未被占用返回 true）
+     */
+    public boolean isUsernameAvailable(String username) {
+        return userMapper.selectCount(
+                new LambdaQueryWrapper<User>().eq(User::getUsername, username)) == 0;
+    }
+
+    /**
      * 根据 ID 获取用户信息
      */
     public UserVO getUserById(Long userId) {

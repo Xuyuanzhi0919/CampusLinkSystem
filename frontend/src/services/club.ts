@@ -33,6 +33,15 @@ export const getRecommendedClubs = (limit: number = 10) => {
 }
 
 /**
+ * 获取相关社团（同类别推荐，排除自身）
+ * @param clubId 当前社团ID
+ * @param limit 返回条数，默认5
+ */
+export const getRelatedClubs = (clubId: number, limit: number = 5) => {
+  return request.get<ClubItem[]>(`/club/${clubId}/related`, { limit })
+}
+
+/**
  * 获取社团详情
  * @param id 社团ID
  */

@@ -219,7 +219,7 @@
 
 <script setup lang="ts">
 import { ref, watch, computed, onUnmounted } from 'vue'
-import { register, sendCode, type RegisterRequest, type AuthResponse, type SendCodeRequest } from '@/services/auth'
+import { register, sendCode, checkUsernameAvailable, type RegisterRequest, type AuthResponse, type SendCodeRequest } from '@/services/auth'
 import config from '@/config'
 import { getAllSchools, type SchoolItem } from '@/services/school'
 import Icon from '@/components/icons/index.vue'
@@ -541,17 +541,26 @@ const handleUsernameBlur = async () => {
     return
   }
 
-  // TODO: 调用后端API检查用户名是否已被占用
-  // 暂时跳过后端检查，假设都可用
   usernameChecking.value = true
-
-  // 模拟API调用延迟
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  usernameChecking.value = false
-  usernameError.value = false
-  usernameAvailable.value = true
-  usernameHint.value = '用户名可用 ✓'
+  try {
+    const available = await checkUsernameAvailable(username)
+    if (available) {
+      usernameError.value = false
+      usernameAvailable.value = true
+      usernameHint.value = '用户名可用 ✓'
+    } else {
+      usernameError.value = true
+      usernameAvailable.value = false
+      usernameHint.value = '用户名已被占用，请换一个'
+    }
+  } catch {
+    // 网络异常时静默降级，不阻塞注册流程
+    usernameError.value = false
+    usernameAvailable.value = true
+    usernameHint.value = ''
+  } finally {
+    usernameChecking.value = false
+  }
 }
 
 // 重置表单

@@ -74,6 +74,15 @@ public class ClubController {
         return Result.success(clubResponse);
     }
 
+    @Operation(summary = "获取相关社团", description = "同类别社团推荐，排除自身，按成员数排序")
+    @GetMapping("/{clubId}/related")
+    public Result<List<ClubResponse>> getRelatedClubs(
+            @PathVariable Long clubId,
+            @Parameter(description = "返回条数") @RequestParam(defaultValue = "5") Integer limit
+    ) {
+        return Result.success(clubService.getRelatedClubs(clubId, limit));
+    }
+
     @Operation(summary = "加入社团")
     @PostMapping("/{clubId}/join")
     public Result<Void> joinClub(

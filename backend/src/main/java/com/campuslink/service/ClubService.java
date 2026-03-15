@@ -198,6 +198,27 @@ public class ClubService {
     }
 
     /**
+     * 获取相关社团：同类别、排除自身、按成员数降序，最多返回 limit 条
+     */
+    public List<ClubResponse> getRelatedClubs(Long clubId, int limit) {
+        Club self = clubMapper.selectById(clubId);
+        if (self == null) {
+            return java.util.Collections.emptyList();
+        }
+        LambdaQueryWrapper<Club> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Club::getStatus, 1)
+               .ne(Club::getClubId, clubId)
+               .orderByDesc(Club::getMemberCount)
+               .last("LIMIT " + limit);
+        if (self.getCategory() != null && !self.getCategory().isBlank()) {
+            wrapper.eq(Club::getCategory, self.getCategory());
+        }
+        return clubMapper.selectList(wrapper).stream()
+                .map(c -> convertToResponse(c, null))
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
      * 获取社团详情
      */
     public ClubResponse getClubDetail(Long clubId, Long userId) {

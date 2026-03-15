@@ -1600,6 +1600,25 @@ INSERT INTO `reward_items` (`name`, `description`, `points_cost`, `stock`, `cate
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ----------------------------
+-- Table structure for scheduled_notice
+-- ----------------------------
+DROP TABLE IF EXISTS `scheduled_notice`;
+CREATE TABLE `scheduled_notice` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) NOT NULL COMMENT '公告标题',
+  `content` text NOT NULL COMMENT '公告内容',
+  `notify_type` varchar(50) NOT NULL DEFAULT 'announcement' COMMENT '通知类型：announcement/system/warning',
+  `target_type` varchar(20) NOT NULL DEFAULT 'all' COMMENT '发送目标类型：all/single/role',
+  `target_value` varchar(100) DEFAULT NULL COMMENT '目标值：userId（single）或 role 值（role）',
+  `scheduled_at` datetime NOT NULL COMMENT '计划发送时间',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '0-待发送 1-已发送 2-已取消',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_scheduled_at` (`scheduled_at`),
+  KEY `idx_status` (`status`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='定时公告';
+
+-- ----------------------------
 -- Table structure for admin_operation_log
 -- ----------------------------
 DROP TABLE IF EXISTS `admin_operation_log`;

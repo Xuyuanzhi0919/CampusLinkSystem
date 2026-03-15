@@ -304,6 +304,79 @@ public class UserService {
     }
 
     /**
+     * 获取用户徽章列表（含解锁状态）
+     */
+    public List<UserBadgeVO> getUserBadges(Long userId) {
+        User user = userMapper.selectById(userId);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+        UserStatsVO stats = getUserStats(userId);
+
+        // 统计用户资源被收藏次数
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resQuery = new LambdaQueryWrapper<>();
+        resQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .select(com.campuslink.entity.Resource::getRid);
+        List<com.campuslink.entity.Resource> myRes = resourceMapper.selectList(resQuery);
+        int resourceCollectedCount = 0;
+        if (!myRes.isEmpty()) {
+            List<Long> resIds = myRes.stream()
+                    .map(com.campuslink.entity.Resource::getRid).collect(java.util.stream.Collectors.toList());
+            LambdaQueryWrapper<com.campuslink.entity.Favorite> favQ = new LambdaQueryWrapper<>();
+            favQ.eq(com.campuslink.entity.Favorite::getTargetType, "resource")
+                .in(com.campuslink.entity.Favorite::getTargetId, resIds);
+            resourceCollectedCount = Math.toIntExact(favoriteMapper.selectCount(favQ));
+        }
+
+        String registeredDate = user.getCreatedAt() != null
+                ? user.getCreatedAt().toLocalDate().toString() : null;
+
+        List<UserBadgeVO> badges = new ArrayList<>();
+        // ─── 成长类 ───
+        badges.add(UserBadgeVO.builder().id(1).name("新人报到").icon("star").color("amber").category("growth")
+                .unlocked(true).unlockedAt(registeredDate)
+                .description("完成首次登录，踏入校园社区").condition("完成首次登录注册账号").reward(20).build());
+        badges.add(UserBadgeVO.builder().id(5).name("签到达人").icon("calendar-check").color("blue").category("growth")
+                .unlocked(stats.getCheckInDays() >= 7).unlockedAt(stats.getCheckInDays() >= 7 ? registeredDate : null)
+                .description("坚持签到，养成学习好习惯").condition("连续签到 7 天").reward(30).build());
+        badges.add(UserBadgeVO.builder().id(6).name("学习标兵").icon("book-open").color("teal").category("growth")
+                .unlocked(stats.getCheckInDays() >= 30).unlockedAt(stats.getCheckInDays() >= 30 ? registeredDate : null)
+                .description("高频签到，学习态度满分").condition("连续签到 30 天").reward(50).build());
+        badges.add(UserBadgeVO.builder().id(7).name("等级达人").icon("trending-up").color("violet").category("growth")
+                .unlocked(user.getLevel() != null && user.getLevel() >= 5)
+                .description("积分快速成长，等级大幅提升").condition("账号等级达到 Lv.5").reward(30).build());
+        // ─── 贡献类 ───
+        badges.add(UserBadgeVO.builder().id(2).name("资源贡献").icon("file-text").color("blue").category("contribution")
+                .unlocked(stats.getResourceCount() >= 5)
+                .description("分享知识，让更多人受益").condition("上传并通过审核 5 个资源").reward(30).build());
+        badges.add(UserBadgeVO.builder().id(8).name("优质内容").icon("award").color("amber").category("contribution")
+                .unlocked(resourceCollectedCount >= 10)
+                .description("内容质量过硬，广受好评").condition("上传的资源累计获得 10 次收藏").reward(40).build());
+        badges.add(UserBadgeVO.builder().id(9).name("资源达人").icon("layers").color("violet").category("contribution")
+                .unlocked(stats.getResourceCount() >= 20)
+                .description("持续输出，成为社区知识库").condition("累计上传 20 个优质资源").reward(80).build());
+        // ─── 互动类 ───
+        badges.add(UserBadgeVO.builder().id(3).name("热心助人").icon("heart").color("rose").category("interaction")
+                .unlocked(stats.getAnswerCount() >= 10)
+                .description("积极回答，传递知识的温度").condition("累计回答 10 个问题").reward(30).build());
+        badges.add(UserBadgeVO.builder().id(4).name("人气王").icon("users").color("blue").category("interaction")
+                .unlocked(stats.getLikeCount() >= 50)
+                .description("内容深受欢迎，人气爆棚").condition("累计获得 50 个点赞").reward(50).build());
+        badges.add(UserBadgeVO.builder().id(10).name("获赞达人").icon("thumbs-up").color("teal").category("interaction")
+                .unlocked(stats.getLikeCount() >= 200)
+                .description("高质量内容持续输出，获赞无数").condition("累计获得 200 个点赞").reward(100).build());
+        badges.add(UserBadgeVO.builder().id(11).name("收藏达人").icon("bookmark").color("violet").category("interaction")
+                .unlocked(stats.getFavoriteCount() >= 50)
+                .description("广泛收集精华内容，学习资料丰富").condition("累计收藏 50 个内容").reward(30).build());
+        // ─── 限定类 ───
+        badges.add(UserBadgeVO.builder().id(12).name("开学季").icon("graduation-cap").color("teal").category("limited")
+                .unlocked(false).description("2024 年开学季限定徽章").condition("参与 2024 年开学季活动").reward(50).build());
+        badges.add(UserBadgeVO.builder().id(13).name("新年快乐").icon("gift").color("rose").category("limited")
+                .unlocked(false).description("新年限定徽章，满满的祝福").condition("参与新年活动并完成签到").reward(50).build());
+        return badges;
+    }
+
+    /**
      * 更新个人资料
      */
     @Transactional(rollbackFor = Exception.class)

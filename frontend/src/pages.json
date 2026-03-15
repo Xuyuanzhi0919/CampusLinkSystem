@@ -197,6 +197,13 @@
 			}
 		},
 		{
+			"path": "pages/user/profile",
+			"style": {
+				"navigationBarTitleText": "用户主页",
+				"navigationStyle": "custom"
+			}
+		},
+		{
 			"path": "pages/user/edit-profile",
 			"style": {
 				"navigationBarTitleText": "编辑资料",

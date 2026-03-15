@@ -7,9 +7,11 @@ import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.LikedItemVO;
 import com.campuslink.dto.PointsLogVO;
 import com.campuslink.dto.user.UpdateProfileRequest;
+import com.campuslink.dto.UserBadgeVO;
 import com.campuslink.dto.UserStatsVO;
 import com.campuslink.dto.UserVO;
 import com.campuslink.service.UserService;
+import java.util.List;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -120,6 +122,13 @@ public class UserController {
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "20") Integer pageSize) {
         PageResult<LikedItemVO> result = userService.getLikedItems(userId, page, pageSize);
         return Result.success(result);
+    }
+
+    @Operation(summary = "获取我的徽章列表", description = "获取当前用户的徽章列表及解锁状态")
+    @GetMapping("/badges")
+    public Result<List<UserBadgeVO>> getUserBadges(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
+        return Result.success(userService.getUserBadges(userId));
     }
 
     @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")

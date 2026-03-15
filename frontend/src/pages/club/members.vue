@@ -179,11 +179,7 @@ const formatJoinTime = (time: string) => {
  * 跳转用户主页
  */
 const goToUserProfile = (userId: number) => {
-  // TODO: 跳转到用户主页（暂未实现）
-  uni.showToast({
-    title: '功能开发中',
-    icon: 'none',
-  })
+  uni.navigateTo({ url: `/pages/user/profile?id=${userId}` })
 }
 </script>
 

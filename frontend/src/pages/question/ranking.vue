@@ -99,11 +99,7 @@ const goBack = () => {
  * 点击榜单项
  */
 const handleItemClick = (item: any) => {
-  // 暂时不跳转,可以后续实现用户详情页
-  uni.showToast({
-    title: item.nickname,
-    icon: 'none'
-  })
+  uni.navigateTo({ url: `/pages/user/profile?id=${item.uid}` })
 }
 
 // 页面加载

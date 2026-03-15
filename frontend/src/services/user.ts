@@ -20,6 +20,13 @@ export const getUserProfile = () => {
 }
 
 /**
+ * 获取指定用户公开信息
+ */
+export const getUserById = (id: number) => {
+  return request.get<UserProfileData>(`/user/${id}`)
+}
+
+/**
  * 更新用户资料
  */
 export const updateUserProfile = (data: UpdateProfileRequest) => {

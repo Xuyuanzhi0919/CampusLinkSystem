@@ -732,7 +732,7 @@ public class TaskService {
 
         // 创建举报请求
         CreateReportRequest request = new CreateReportRequest();
-        request.setReportType(4); // 任务举报类型为4
+        request.setReportType(5); // 任务举报类型为5
         request.setTargetId(taskId);
         request.setReasonType(Integer.parseInt(reportData.getOrDefault("reasonType", "5"))); // 默认为"其他"
         request.setDescription(reportData.getOrDefault("description", ""));
@@ -783,7 +783,17 @@ public class TaskService {
         recordTaskLog(taskId, userId, "submit", currentStatus.getCode(),
             TaskStatus.SUBMITTED.getCode(), "执行者提交任务结果");
 
-        // TODO: 发送通知给发布者审核
+        // 通知发布者：接单者已提交结果，请审核
+        User submitter = userMapper.selectById(userId);
+        SendNotificationRequest publisherNotif = new SendNotificationRequest();
+        publisherNotif.setUserId(task.getPublisherId());
+        publisherNotif.setTitle("任务结果待审核");
+        publisherNotif.setContent(String.format("用户 %s 已提交任务「%s」的结果，请审核",
+            submitter != null ? submitter.getNickname() : "接单者", task.getTitle()));
+        publisherNotif.setNotifyType("task");
+        publisherNotif.setRelatedType("task");
+        publisherNotif.setRelatedId(taskId);
+        notificationService.sendToUser(task.getPublisherId(), publisherNotif);
     }
 
     /**
@@ -861,7 +871,17 @@ public class TaskService {
             TaskStatus.COMPLETED.getCode(),
             "发布者确认任务完成" + (feedback != null ? ", 反馈: " + feedback : ""));
 
-        // TODO: 发送通知给接单者
+        // 通知接单者：结果审核通过，获得积分
+        SendNotificationRequest accepterNotif = new SendNotificationRequest();
+        accepterNotif.setUserId(accepter.getUId());
+        accepterNotif.setTitle("任务审核通过");
+        accepterNotif.setContent(String.format("您提交的任务「%s」结果已审核通过，获得 %d 积分奖励！%s",
+            task.getTitle(), task.getRewardPoints(),
+            (feedback != null && !feedback.trim().isEmpty()) ? " 发布者反馈：" + feedback : ""));
+        accepterNotif.setNotifyType("task");
+        accepterNotif.setRelatedType("task");
+        accepterNotif.setRelatedId(task.getTid());
+        notificationService.sendToUser(accepter.getUId(), accepterNotif);
     }
 
     /**
@@ -892,7 +912,19 @@ public class TaskService {
         recordTaskLog(task.getTid(), publisherId, "reject", currentStatus.getCode(),
             TaskStatus.IN_PROGRESS.getCode(), "发布者拒绝结果并要求重新提交: " + feedback);
 
-        // TODO: 发送通知给接单者
+        // 通知接单者：结果被拒绝，需重新提交
+        User accepter = userMapper.selectById(task.getAccepterId());
+        if (accepter != null) {
+            SendNotificationRequest accepterNotif = new SendNotificationRequest();
+            accepterNotif.setUserId(accepter.getUId());
+            accepterNotif.setTitle("任务结果需要修改");
+            accepterNotif.setContent(String.format("您提交的任务「%s」结果未通过审核，请修改后重新提交。原因：%s",
+                task.getTitle(), feedback));
+            accepterNotif.setNotifyType("task");
+            accepterNotif.setRelatedType("task");
+            accepterNotif.setRelatedId(task.getTid());
+            notificationService.sendToUser(accepter.getUId(), accepterNotif);
+        }
     }
 
     /**

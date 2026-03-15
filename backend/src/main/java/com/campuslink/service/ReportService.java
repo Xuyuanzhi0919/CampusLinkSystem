@@ -34,6 +34,8 @@ public class ReportService {
     private final UserMapper userMapper;
     private final ActivityMapper activityMapper;
     private final CommentMapper commentMapper;
+    private final QuestionMapper questionMapper;
+    private final TaskMapper taskMapper;
 
     // 举报类型映射
     private static final Map<Integer, String> REPORT_TYPE_MAP = new HashMap<>();
@@ -43,10 +45,11 @@ public class ReportService {
     private static final Map<Integer, String> STATUS_MAP = new HashMap<>();
 
     static {
-        REPORT_TYPE_MAP.put(1, "帖子");
+        REPORT_TYPE_MAP.put(1, "问答帖子");
         REPORT_TYPE_MAP.put(2, "评论");
         REPORT_TYPE_MAP.put(3, "用户");
         REPORT_TYPE_MAP.put(4, "活动");
+        REPORT_TYPE_MAP.put(5, "任务");
 
         REASON_TYPE_MAP.put(1, "垃圾信息");
         REASON_TYPE_MAP.put(2, "违规内容");
@@ -230,10 +233,9 @@ public class ReportService {
         String targetName = "";
 
         switch (reportType) {
-            case 1: // 帖子
-                // 帖子功能暂未实现,先跳过验证
-                exists = true;
-                targetName = "帖子";
+            case 1: // 问答帖子
+                exists = questionMapper.selectById(targetId) != null;
+                targetName = "问答帖子";
                 break;
             case 2: // 评论
                 exists = commentMapper.selectById(targetId) != null;
@@ -246,6 +248,10 @@ public class ReportService {
             case 4: // 活动
                 exists = activityMapper.selectById(targetId) != null;
                 targetName = "活动";
+                break;
+            case 5: // 任务
+                exists = taskMapper.selectById(targetId) != null;
+                targetName = "任务";
                 break;
         }
 
@@ -294,9 +300,12 @@ public class ReportService {
     private String getTargetContent(Integer reportType, Long targetId) {
         try {
             switch (reportType) {
-                case 1: // 帖子
-                    // 帖子功能暂未实现
-                    return "帖子ID: " + targetId;
+                case 1: // 问答帖子
+                    Question question = questionMapper.selectById(targetId);
+                    if (question != null) {
+                        return truncate(question.getTitle(), 50);
+                    }
+                    return "问答帖子ID: " + targetId;
                 case 2: // 评论
                     Comment comment = commentMapper.selectById(targetId);
                     if (comment != null) {
@@ -313,6 +322,12 @@ public class ReportService {
                     Activity activity = activityMapper.selectById(targetId);
                     if (activity != null) {
                         return truncate(activity.getTitle(), 50);
+                    }
+                    break;
+                case 5: // 任务
+                    Task task = taskMapper.selectById(targetId);
+                    if (task != null) {
+                        return truncate(task.getTitle(), 50);
                     }
                     break;
             }

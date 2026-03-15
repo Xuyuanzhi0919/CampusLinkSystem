@@ -80,6 +80,14 @@
 			}
 		},
 		{
+			"path": "pages/auth/reset-password",
+			"style": {
+				"navigationBarTitleText": "找回密码",
+				"navigationStyle": "custom",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
 			"path": "pages/question/index",
 			"style": {
 				"navigationBarTitleText": "问答社区",

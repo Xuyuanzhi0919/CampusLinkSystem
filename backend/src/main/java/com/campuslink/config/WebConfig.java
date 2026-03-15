@@ -56,6 +56,7 @@ public class WebConfig implements WebMvcConfigurer {
                         "/auth/login",         // 登录
                         "/auth/refresh",       // 刷新Token
                         "/auth/email/send",    // 发送邮箱验证码（注册前调用，无需登录）
+                        "/auth/reset-password", // 重置密码（无需登录）
                         "/auth/wechat/login",  // 微信小程序登录
                         "/health",             // 健康检查
                         "/api/pdf/**",         // PDF代理服务（公开访问）

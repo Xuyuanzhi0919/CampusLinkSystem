@@ -13,6 +13,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -90,5 +91,27 @@ public class AuthController {
             @Parameter(description = "用户名") @RequestParam @NotBlank String username) {
         boolean available = userService.isUsernameAvailable(username);
         return Result.success(available ? "用户名可用" : "用户名已被占用", available);
+    }
+
+    /** 重置密码请求体 */
+    @Data
+    static class ResetPasswordRequest {
+        @NotBlank(message = "邮箱不能为空")
+        @Email(message = "邮箱格式不正确")
+        private String email;
+
+        @NotBlank(message = "验证码不能为空")
+        private String code;
+
+        @NotBlank(message = "新密码不能为空")
+        @Size(min = 6, max = 20, message = "密码长度需在6-20位之间")
+        private String newPassword;
+    }
+
+    @Operation(summary = "重置密码", description = "通过邮箱验证码找回密码")
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@Valid @RequestBody ResetPasswordRequest req) {
+        userService.resetPassword(req.getEmail(), req.getCode(), req.getNewPassword());
+        return Result.success("密码重置成功，请使用新密码登录", null);
     }
 }

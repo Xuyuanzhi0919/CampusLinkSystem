@@ -93,6 +93,13 @@ export const checkUsernameAvailable = (username: string) => {
 }
 
 /**
+ * 重置密码（找回密码）
+ */
+export const resetPassword = (data: { email: string; code: string; newPassword: string }) => {
+  return request.post<null>('/auth/reset-password', data)
+}
+
+/**
  * 发送验证码请求参数
  */
 export interface SendCodeRequest {

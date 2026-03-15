@@ -93,7 +93,7 @@
         <scroll-view scroll-x class="badges-scroll">
           <view class="badges-container">
             <view
-              v-for="badge in mockBadges"
+              v-for="badge in badges"
               :key="badge.id"
               class="badge-card"
               :class="{ locked: !badge.unlocked }"
@@ -160,7 +160,7 @@
 import { computed, ref, onMounted } from 'vue'
 import type { FunctionItem } from '@/types/user'
 import Icon from '@/components/icons/index.vue'
-import { getUserRecentActivities } from '@/services/user'
+import { getUserRecentActivities, getUserBadges } from '@/services/user'
 
 interface Props {
   badges?: {
@@ -210,17 +210,33 @@ const formatRelativeTime = (dateStr: string): string => {
 }
 
 onMounted(async () => {
-  try {
-    const data = await getUserRecentActivities(5)
-    recentActivities.value = (data || []).map(item => ({
+  // 并行加载：最近活动 + 徽章
+  const [activitiesRes, badgesRes] = await Promise.allSettled([
+    getUserRecentActivities(5),
+    getUserBadges()
+  ])
+
+  if (activitiesRes.status === 'fulfilled') {
+    recentActivities.value = (activitiesRes.value || []).map((item: any) => ({
       type: item.type as RecentActivity['type'],
       icon: item.icon,
       text: item.text,
       time: item.createdAt ? formatRelativeTime(item.createdAt) : '',
       path: item.path
     }))
-  } catch {
-    // 加载失败时静默处理，不显示最近活动区块
+  }
+
+  if (badgesRes.status === 'fulfilled') {
+    badges.value = (badgesRes.value || []).map((b: any) => ({
+      id: b.id,
+      name: b.name,
+      icon: b.icon || 'award',
+      description: b.description || '',
+      condition: b.condition,
+      unlocked: !!b.unlocked,
+      unlockedAt: b.unlockedAt,
+      color: b.color,
+    }))
   }
 })
 
@@ -317,61 +333,21 @@ const myInteractionItems = computed<FunctionItem[]>(() => [
 
 /**
  * 🎯 徽章系统
- * TODO: 后端提供真实的徽章数据
  */
 interface Badge {
-  id: string
+  id: number | string
   name: string
   icon: string
   description: string
+  condition?: string
   unlocked: boolean
-  progress?: number // 进度百分比 (0-100)
+  unlockedAt?: string
+  color?: string
 }
 
-const mockBadges = computed<Badge[]>(() => [
-  {
-    id: 'early-bird',
-    name: '早起鸟',
-    icon: 'award',
-    description: '连续签到7天',
-    unlocked: true
-  },
-  {
-    id: 'resource-contributor',
-    name: '资源贡献者',
-    icon: 'star',
-    description: '上传10个资源',
-    unlocked: true
-  },
-  {
-    id: 'helper',
-    name: '热心助人',
-    icon: 'heart',
-    description: '回答50个问题',
-    unlocked: false,
-    progress: 60
-  },
-  {
-    id: 'task-master',
-    name: '任务达人',
-    icon: 'check-circle',
-    description: '完成20个任务',
-    unlocked: false,
-    progress: 35
-  },
-  {
-    id: 'social-butterfly',
-    name: '社交达人',
-    icon: 'users',
-    description: '参加10次活动',
-    unlocked: false,
-    progress: 80
-  }
-])
+const badges = ref<Badge[]>([])
 
-const totalBadges = computed(() => {
-  return mockBadges.value.filter(badge => badge.unlocked).length
-})
+const totalBadges = computed(() => badges.value.filter(b => b.unlocked).length)
 
 /**
  * 处理徽章点击

@@ -207,12 +207,7 @@ const handleGoToRegister = () => {
 }
 
 const handleForgotPassword = () => {
-  uni.showModal({
-    title: '找回密码',
-    content: '找回密码功能正在开发中，如需帮助请发送邮件至 support@campuslink.com',
-    showCancel: false,
-    confirmText: '知道了'
-  })
+  uni.navigateTo({ url: '/pages/auth/reset-password' })
 }
 
 const handleBack = () => {

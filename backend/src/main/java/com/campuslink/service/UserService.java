@@ -153,6 +153,30 @@ public class UserService {
     }
 
     /**
+     * 通过邮箱验证码重置密码（找回密码）
+     */
+    @Transactional
+    public void resetPassword(String email, String code, String newPassword) {
+        // 验证邮箱验证码（type = reset）
+        emailCodeService.verify(email, "reset", code);
+
+        // 查询用户
+        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(User::getEmail, email);
+        User user = userMapper.selectOne(wrapper);
+        if (user == null) {
+            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+        }
+
+        // 更新密码
+        user.setPasswordHash(encryptPassword(newPassword));
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+
+        log.info("用户找回密码成功: userId={}, email={}", user.getUId(), email);
+    }
+
+    /**
      * 检查用户名是否可用（未被占用返回 true）
      */
     public boolean isUsernameAvailable(String username) {

@@ -107,3 +107,26 @@ export interface LikedItem {
 export const getLikedItems = (page: number = 1, pageSize: number = 20) => {
   return request.get<PageResult<LikedItem>>('/user/likes/received', { page, pageSize })
 }
+
+/**
+ * 获取我的徽章列表（含解锁状态）
+ */
+export const getUserBadges = () => {
+  return request.get<any[]>('/user/badges')
+}
+
+export interface UserActivity {
+  type: 'resource' | 'question' | 'task'
+  icon: string
+  text: string
+  targetId: number
+  createdAt: string
+  path: string
+}
+
+/**
+ * 获取当前用户最近活动记录
+ */
+export const getUserRecentActivities = (limit: number = 5) => {
+  return request.get<UserActivity[]>('/user/recent-activities', { limit })
+}

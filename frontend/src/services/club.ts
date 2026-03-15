@@ -25,6 +25,14 @@ export const getClubList = (params: ClubListParams = {}) => {
 }
 
 /**
+ * 获取推荐社团列表（基于热度 + 官方加成 + 用户兴趣偏好）
+ * @param limit 返回条数，默认10
+ */
+export const getRecommendedClubs = (limit: number = 10) => {
+  return request.get<ClubItem[]>('/club/recommended', { limit })
+}
+
+/**
  * 获取社团详情
  * @param id 社团ID
  */

@@ -20,6 +20,12 @@
     >
       <view class="page-inner">
 
+        <!-- ── 加载中占位 ── -->
+        <view v-if="badgeLoading" class="badge-loading">
+          <view class="badge-loading__spinner" />
+          <text class="badge-loading__text">加载徽章中...</text>
+        </view>
+
         <!-- ── 成就概览 Banner ── -->
         <view class="overview-banner">
           <!-- 背景装饰圆 -->
@@ -326,9 +332,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
 import CNavBar from '@/components/layout/CNavBar.vue'
 import Icon from '@/components/icons/index.vue'
+import { getUserBadges } from '@/services/user'
 
 /* ──────────────────────────────────────────
    类型定义
@@ -347,27 +354,10 @@ interface Badge {
 }
 
 /* ──────────────────────────────────────────
-   徽章数据
+   徽章数据（从 API 加载）
 ────────────────────────────────────────── */
-const allBadges: Badge[] = [
-  // ─── 成长类 ───
-  { id: 1,  name: '新人报到',  icon: 'star',           color: 'amber',  category: 'growth',       unlocked: true,  unlockedAt: '2024-09-01', description: '完成首次登录，踏入校园社区',     condition: '完成首次登录注册账号',           reward: 20 },
-  { id: 5,  name: '签到达人',  icon: 'calendar-check', color: 'blue',   category: 'growth',       unlocked: false, description: '坚持签到，养成学习好习惯',       condition: '连续签到 7 天',                  reward: 30 },
-  { id: 6,  name: '学习标兵',  icon: 'book-open',      color: 'teal',   category: 'growth',       unlocked: false, description: '高频签到，学习态度满分',         condition: '连续签到 30 天',                 reward: 50 },
-  { id: 7,  name: '等级达人',  icon: 'trending-up',    color: 'violet', category: 'growth',       unlocked: false, description: '积分快速成长，等级大幅提升',     condition: '账号等级达到 Lv.5',              reward: 30 },
-  // ─── 贡献类 ───
-  { id: 2,  name: '资源贡献',  icon: 'file-text',      color: 'blue',   category: 'contribution', unlocked: false, description: '分享知识，让更多人受益',         condition: '上传并通过审核 5 个资源',         reward: 30 },
-  { id: 8,  name: '优质内容',  icon: 'award',          color: 'amber',  category: 'contribution', unlocked: false, description: '内容质量过硬，广受好评',         condition: '上传的资源累计获得 10 次收藏',    reward: 40 },
-  { id: 9,  name: '资源达人',  icon: 'layers',         color: 'violet', category: 'contribution', unlocked: false, description: '持续输出，成为社区知识库',       condition: '累计上传 20 个优质资源',          reward: 80 },
-  // ─── 互动类 ───
-  { id: 3,  name: '热心助人',  icon: 'heart',          color: 'rose',   category: 'interaction',  unlocked: false, description: '积极回答，传递知识的温度',       condition: '累计回答 10 个问题',             reward: 30 },
-  { id: 4,  name: '人气王',    icon: 'users',          color: 'blue',   category: 'interaction',  unlocked: false, description: '内容深受欢迎，人气爆棚',         condition: '累计获得 50 个点赞',             reward: 50 },
-  { id: 10, name: '获赞达人',  icon: 'thumbs-up',      color: 'teal',   category: 'interaction',  unlocked: false, description: '高质量内容持续输出，获赞无数',   condition: '累计获得 200 个点赞',            reward: 100 },
-  { id: 11, name: '收藏达人',  icon: 'bookmark',       color: 'violet', category: 'interaction',  unlocked: false, description: '广泛收集精华内容，学习资料丰富', condition: '累计收藏 50 个内容',             reward: 30 },
-  // ─── 限定类 ───
-  { id: 12, name: '开学季',    icon: 'graduation-cap', color: 'teal',   category: 'limited',      unlocked: false, description: '2024 年开学季限定徽章',         condition: '参与 2024 年开学季活动',         reward: 50 },
-  { id: 13, name: '新年快乐',  icon: 'gift',           color: 'rose',   category: 'limited',      unlocked: false, description: '新年限定徽章，满满的祝福',       condition: '参与新年活动并完成签到',           reward: 50 },
-]
+const badgeLoading = ref(true)
+const allBadges = ref<Badge[]>([])
 
 /* ──────────────────────────────────────────
    常量配置
@@ -515,11 +505,13 @@ const ruleUp   = ref(false)
 /* ──────────────────────────────────────────
    计算属性
 ────────────────────────────────────────── */
-const unlockedCount   = computed(() => allBadges.filter(b => b.unlocked).length)
-const remainCount     = computed(() => allBadges.length - unlockedCount.value)
-const progressPercent = computed(() => Math.round((unlockedCount.value / allBadges.length) * 100))
+const unlockedCount   = computed(() => allBadges.value.filter(b => b.unlocked).length)
+const remainCount     = computed(() => allBadges.value.length - unlockedCount.value)
+const progressPercent = computed(() =>
+  allBadges.value.length ? Math.round((unlockedCount.value / allBadges.value.length) * 100) : 0
+)
 const totalRewardPoints = computed(() =>
-  allBadges.filter(b => b.unlocked).reduce((sum, b) => sum + b.reward, 0)
+  allBadges.value.filter(b => b.unlocked).reduce((sum, b) => sum + b.reward, 0)
 )
 
 const achievementTitle = computed(() => {
@@ -545,7 +537,7 @@ const nextReward = computed(() => {
 })
 
 const sortedBadges = computed(() => {
-  const unlocked = allBadges
+  const unlocked = allBadges.value
     .filter(b => b.unlocked)
     .sort((a, b) => {
       if (a.unlockedAt && b.unlockedAt) return b.unlockedAt.localeCompare(a.unlockedAt)
@@ -553,7 +545,7 @@ const sortedBadges = computed(() => {
       if (b.unlockedAt) return 1
       return 0
     })
-  return [...unlocked, ...allBadges.filter(b => !b.unlocked)]
+  return [...unlocked, ...allBadges.value.filter(b => !b.unlocked)]
 })
 
 const filteredBadges = computed(() => {
@@ -562,15 +554,15 @@ const filteredBadges = computed(() => {
 })
 
 const tabCount = (key: string) => {
-  if (key === 'all') return allBadges.length
-  return allBadges.filter(b => b.category === key).length
+  if (key === 'all') return allBadges.value.length
+  return allBadges.value.filter(b => b.category === key).length
 }
 
 /* ──────────────────────────────────────────
    工具方法
 ────────────────────────────────────────── */
 const getBadge = (id: number): Badge | null =>
-  allBadges.find(b => b.id === id) ?? null
+  allBadges.value.find(b => b.id === id) ?? null
 
 /* ──────────────────────────────────────────
    首页固定
@@ -651,6 +643,20 @@ const handleGoTask = () => {
   closeDetailModal()
   setTimeout(() => goToTask(category), 320)
 }
+
+/* ──────────────────────────────────────────
+   生命周期
+────────────────────────────────────────── */
+onMounted(async () => {
+  try {
+    const data = await getUserBadges()
+    allBadges.value = data || []
+  } catch (e) {
+    uni.showToast({ title: '徽章加载失败', icon: 'none' })
+  } finally {
+    badgeLoading.value = false
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -1766,5 +1772,31 @@ const handleGoTask = () => {
   padding: 20rpx 28rpx;
 
   @media (min-width: 1024px) { padding: 16px 28px; }
+}
+
+.badge-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 60rpx 0;
+  gap: 16rpx;
+
+  &__spinner {
+    width: 48rpx;
+    height: 48rpx;
+    border: 4rpx solid #e5e7eb;
+    border-top-color: #377DFF;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  &__text {
+    font-size: 26rpx;
+    color: #9ca3af;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 </style>

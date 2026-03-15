@@ -157,9 +157,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import type { FunctionItem } from '@/types/user'
 import Icon from '@/components/icons/index.vue'
+import { getUserRecentActivities } from '@/services/user'
 
 interface Props {
   badges?: {
@@ -181,9 +182,7 @@ const emit = defineEmits<{
 }>()
 
 /**
- * 🎯 最近活动动态
- * TODO: 后端提供真实的用户活动记录API
- * 这里使用模拟数据演示
+ * 最近活动动态（从后端加载真实数据）
  */
 interface RecentActivity {
   type: 'resource' | 'question' | 'task' | 'activity'
@@ -193,35 +192,36 @@ interface RecentActivity {
   path?: string
 }
 
-const recentActivities = computed<RecentActivity[]>(() => {
-  // TODO: 从后端获取真实的用户活动记录
-  // 这里返回模拟数据
-  const mockActivities: RecentActivity[] = [
-    {
-      type: 'resource',
-      icon: 'file-text',
-      text: '上传了《数据结构期末复习笔记》',
-      time: '2小时前',
-      path: '/pages/resource/detail?id=123'
-    },
-    {
-      type: 'question',
-      icon: 'message-circle',
-      text: '回答了问题《如何理解红黑树？》',
-      time: '5小时前',
-      path: '/pages/question/detail?id=456'
-    },
-    {
-      type: 'task',
-      icon: 'clock',
-      text: '接受了任务《帮忙打印课件》',
-      time: '昨天',
-      path: '/pages/task/detail?id=789'
-    }
-  ]
+const recentActivities = ref<RecentActivity[]>([])
 
-  // 只返回最近3条活动
-  return mockActivities.slice(0, 3)
+const formatRelativeTime = (dateStr: string): string => {
+  const now = new Date()
+  const date = new Date(dateStr)
+  const diffMs = now.getTime() - date.getTime()
+  const diffMinutes = Math.floor(diffMs / 60000)
+  if (diffMinutes < 1) return '刚刚'
+  if (diffMinutes < 60) return `${diffMinutes}分钟前`
+  const diffHours = Math.floor(diffMinutes / 60)
+  if (diffHours < 24) return `${diffHours}小时前`
+  const diffDays = Math.floor(diffHours / 24)
+  if (diffDays === 1) return '昨天'
+  if (diffDays < 7) return `${diffDays}天前`
+  return `${date.getMonth() + 1}月${date.getDate()}日`
+}
+
+onMounted(async () => {
+  try {
+    const data = await getUserRecentActivities(5)
+    recentActivities.value = (data || []).map(item => ({
+      type: item.type as RecentActivity['type'],
+      icon: item.icon,
+      text: item.text,
+      time: item.createdAt ? formatRelativeTime(item.createdAt) : '',
+      path: item.path
+    }))
+  } catch {
+    // 加载失败时静默处理，不显示最近活动区块
+  }
 })
 
 /**

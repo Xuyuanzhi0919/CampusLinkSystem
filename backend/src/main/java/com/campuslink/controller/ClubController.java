@@ -17,6 +17,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,6 +53,15 @@ public class ClubController {
     ) {
         PageResult<ClubResponse> result = clubService.getClubList(userId, page, pageSize, keyword, category, sortBy);
         return Result.success(result);
+    }
+
+    @Operation(summary = "获取推荐社团", description = "基于热度、官方加成和用户兴趣偏好返回推荐社团列表")
+    @GetMapping("/recommended")
+    public Result<List<ClubResponse>> getRecommendedClubs(
+            @Parameter(description = "返回条数") @RequestParam(defaultValue = "10") Integer limit,
+            @Parameter(hidden = true) @RequestAttribute(value = "userId", required = false) Long userId
+    ) {
+        return Result.success(clubService.getRecommendedClubs(userId, limit));
     }
 
     @Operation(summary = "获取社团详情")

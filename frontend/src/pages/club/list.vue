@@ -719,16 +719,10 @@ const handlePageClick = () => {
   }
 }
 
-// P1优化: 浏览推荐社团(暂时提示功能开发中)
+// 浏览推荐社团：切换到推荐排序并滚动到列表顶部
 const handleBrowseRecommend = () => {
-  uni.showToast({
-    title: '推荐社团功能开发中',
-    icon: 'none',
-    duration: 2000
-  })
-
-  // TODO: 后续实现推荐逻辑
-  // uni.navigateTo({ url: '/pages/club/recommend' })
+  currentSort.value = 'recommended'
+  loadClubList(true)
 }
 
 // 跳转到创建社团页面

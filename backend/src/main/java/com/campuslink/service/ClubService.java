@@ -33,7 +33,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -106,12 +109,9 @@ public class ClubService {
                     .like(Club::getDescription, keyword.trim()));
         }
 
-        // 分类筛选：根据社团名称或简介判断分类
-        // TODO: 后续可以在 club 表添加 category 字段
+        // 分类筛选：使用 category 字段精确匹配
         if (category != null && !category.trim().isEmpty() && !"all".equals(category)) {
-            wrapper.and(w -> w.like(Club::getClubName, category)
-                    .or()
-                    .like(Club::getDescription, category));
+            wrapper.eq(Club::getCategory, category.trim());
         }
 
         // 排序逻辑
@@ -124,8 +124,9 @@ public class ClubService {
                 break;
             case "recommended":
             default:
-                // 推荐排序：成员数 >= 10 优先，然后按成员数降序
-                wrapper.orderByDesc(Club::getMemberCount)
+                // 推荐排序：官方社团优先，再按成员数降序
+                wrapper.orderByDesc(Club::getIsOfficial)
+                        .orderByDesc(Club::getMemberCount)
                         .orderByDesc(Club::getCreatedAt);
                 break;
         }
@@ -143,6 +144,57 @@ public class ClubService {
                 clubPage.getSize(),
                 clubPage.getPages()
         );
+    }
+
+    /**
+     * 获取推荐社团列表（基于热度 + 官方加成 + 用户分类偏好）
+     */
+    public List<ClubResponse> getRecommendedClubs(Long userId, int limit) {
+        // 查询所有正常社团
+        LambdaQueryWrapper<Club> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Club::getStatus, 1);
+        List<Club> allClubs = clubMapper.selectList(wrapper);
+
+        // 获取用户已加入的社团分类（用于偏好匹配）
+        Set<String> userCategories = new HashSet<>();
+        Set<Long> joinedClubIds = new HashSet<>();
+        if (userId != null) {
+            LambdaQueryWrapper<ClubMember> memberQuery = new LambdaQueryWrapper<>();
+            memberQuery.eq(ClubMember::getUserId, userId);
+            List<ClubMember> memberships = clubMemberMapper.selectList(memberQuery);
+            for (ClubMember cm : memberships) {
+                joinedClubIds.add(cm.getClubId());
+            }
+            // 收集已加入社团的分类
+            for (Club c : allClubs) {
+                if (joinedClubIds.contains(c.getClubId()) && c.getCategory() != null) {
+                    userCategories.add(c.getCategory());
+                }
+            }
+        }
+
+        LocalDateTime thirtyDaysAgo = LocalDateTime.now().minusDays(30);
+
+        // 计算每个社团的推荐得分
+        List<Club> scored = allClubs.stream()
+                .sorted(Comparator.comparingInt((Club c) -> {
+                    int score = 0;
+                    // 热度分：成员数（上限100，最多200分）
+                    score += Math.min(c.getMemberCount() == null ? 0 : c.getMemberCount(), 100) * 2;
+                    // 官方社团加成
+                    if (c.getIsOfficial() != null && c.getIsOfficial() == 1) score += 100;
+                    // 新社团冷启动加成（30天内创建）
+                    if (c.getCreatedAt() != null && c.getCreatedAt().isAfter(thirtyDaysAgo)) score += 20;
+                    // 用户分类偏好加成
+                    if (c.getCategory() != null && userCategories.contains(c.getCategory())) score += 40;
+                    return -score; // 降序
+                }).thenComparingInt(c -> -(c.getMemberCount() == null ? 0 : c.getMemberCount())))
+                .collect(Collectors.toList());
+
+        return scored.stream()
+                .limit(limit)
+                .map(club -> convertToResponse(club, userId))
+                .collect(Collectors.toList());
     }
 
     /**

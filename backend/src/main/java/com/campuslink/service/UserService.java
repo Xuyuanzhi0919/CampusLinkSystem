@@ -377,6 +377,94 @@ public class UserService {
     }
 
     /**
+     * 获取用户最近活动记录（资源上传、问题回答、任务发布/接取）
+     */
+    public List<UserActivityVO> getUserRecentActivities(Long userId, int limit) {
+        List<UserActivityVO> activities = new ArrayList<>();
+
+        // 1. 最近上传的资源
+        LambdaQueryWrapper<com.campuslink.entity.Resource> resQuery = new LambdaQueryWrapper<>();
+        resQuery.eq(com.campuslink.entity.Resource::getUploaderId, userId)
+                .orderByDesc(com.campuslink.entity.Resource::getCreatedAt)
+                .last("LIMIT 5");
+        List<com.campuslink.entity.Resource> resources = resourceMapper.selectList(resQuery);
+        for (com.campuslink.entity.Resource r : resources) {
+            activities.add(UserActivityVO.builder()
+                    .type("resource")
+                    .icon("file-text")
+                    .text("上传了《" + r.getTitle() + "》")
+                    .targetId(r.getRid())
+                    .createdAt(r.getCreatedAt())
+                    .path("/pages/resource/detail?id=" + r.getRid())
+                    .build());
+        }
+
+        // 2. 最近回答的问题
+        LambdaQueryWrapper<com.campuslink.entity.Answer> ansQuery = new LambdaQueryWrapper<>();
+        ansQuery.eq(com.campuslink.entity.Answer::getResponderId, userId)
+                .orderByDesc(com.campuslink.entity.Answer::getCreatedAt)
+                .last("LIMIT 5");
+        List<com.campuslink.entity.Answer> answers = answerMapper.selectList(ansQuery);
+        for (com.campuslink.entity.Answer a : answers) {
+            String qTitle = "问题";
+            if (a.getQuestionId() != null) {
+                com.campuslink.entity.Question q = questionMapper.selectById(a.getQuestionId());
+                if (q != null) qTitle = q.getTitle();
+            }
+            activities.add(UserActivityVO.builder()
+                    .type("question")
+                    .icon("message-circle")
+                    .text("回答了问题《" + qTitle + "》")
+                    .targetId(a.getQuestionId())
+                    .createdAt(a.getCreatedAt())
+                    .path("/pages/question/detail?id=" + a.getQuestionId())
+                    .build());
+        }
+
+        // 3. 最近发布的任务
+        LambdaQueryWrapper<com.campuslink.entity.Task> taskPubQuery = new LambdaQueryWrapper<>();
+        taskPubQuery.eq(com.campuslink.entity.Task::getPublisherId, userId)
+                .orderByDesc(com.campuslink.entity.Task::getCreatedAt)
+                .last("LIMIT 3");
+        List<com.campuslink.entity.Task> publishedTasks = taskMapper.selectList(taskPubQuery);
+        for (com.campuslink.entity.Task t : publishedTasks) {
+            activities.add(UserActivityVO.builder()
+                    .type("task")
+                    .icon("clock")
+                    .text("发布了任务《" + t.getTitle() + "》")
+                    .targetId(t.getTid())
+                    .createdAt(t.getCreatedAt())
+                    .path("/pages/task/detail?id=" + t.getTid())
+                    .build());
+        }
+
+        // 4. 最近接取的任务
+        LambdaQueryWrapper<com.campuslink.entity.Task> taskAccQuery = new LambdaQueryWrapper<>();
+        taskAccQuery.eq(com.campuslink.entity.Task::getAccepterId, userId)
+                .orderByDesc(com.campuslink.entity.Task::getCreatedAt)
+                .last("LIMIT 3");
+        List<com.campuslink.entity.Task> acceptedTasks = taskMapper.selectList(taskAccQuery);
+        for (com.campuslink.entity.Task t : acceptedTasks) {
+            activities.add(UserActivityVO.builder()
+                    .type("task")
+                    .icon("check-circle")
+                    .text("接取了任务《" + t.getTitle() + "》")
+                    .targetId(t.getTid())
+                    .createdAt(t.getCreatedAt())
+                    .path("/pages/task/detail?id=" + t.getTid())
+                    .build());
+        }
+
+        // 按创建时间降序，取前 limit 条
+        activities.sort((a1, a2) -> {
+            if (a1.getCreatedAt() == null) return 1;
+            if (a2.getCreatedAt() == null) return -1;
+            return a2.getCreatedAt().compareTo(a1.getCreatedAt());
+        });
+        return activities.subList(0, Math.min(limit, activities.size()));
+    }
+
+    /**
      * 更新个人资料
      */
     @Transactional(rollbackFor = Exception.class)

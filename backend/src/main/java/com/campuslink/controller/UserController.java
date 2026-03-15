@@ -7,6 +7,7 @@ import com.campuslink.dto.CheckInResponse;
 import com.campuslink.dto.LikedItemVO;
 import com.campuslink.dto.PointsLogVO;
 import com.campuslink.dto.user.UpdateProfileRequest;
+import com.campuslink.dto.UserActivityVO;
 import com.campuslink.dto.UserBadgeVO;
 import com.campuslink.dto.UserStatsVO;
 import com.campuslink.dto.UserVO;
@@ -129,6 +130,14 @@ public class UserController {
     public Result<List<UserBadgeVO>> getUserBadges(
             @Parameter(hidden = true) @RequestAttribute("userId") Long userId) {
         return Result.success(userService.getUserBadges(userId));
+    }
+
+    @Operation(summary = "获取最近活动记录", description = "获取当前用户的最近操作记录（资源上传、问题回答、任务等）")
+    @GetMapping("/recent-activities")
+    public Result<List<UserActivityVO>> getRecentActivities(
+            @Parameter(hidden = true) @RequestAttribute("userId") Long userId,
+            @Parameter(description = "返回条数") @RequestParam(defaultValue = "5") Integer limit) {
+        return Result.success(userService.getUserRecentActivities(userId, limit));
     }
 
     @Operation(summary = "获取用户贡献排行榜", description = "获取积分排行榜前N名用户")

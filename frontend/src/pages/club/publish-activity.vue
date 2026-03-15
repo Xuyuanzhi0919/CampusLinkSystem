@@ -742,6 +742,7 @@ onLoad((options) => {
 
   @media (max-width: 749px) {
     flex-direction: column;
+    align-items: stretch;
     padding: 0;
     gap: 0;
   }
@@ -1076,7 +1077,7 @@ onLoad((options) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: calc((100% - 40rpx) / 6);
+  width: calc((100% - 40px) / 6);
   padding: $sp-2;
   background: $white;
   border: 1px solid $gray-200;

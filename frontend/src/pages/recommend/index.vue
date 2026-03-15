@@ -53,9 +53,9 @@
             <text class="card-title">{{ item.title }}</text>
             <text class="card-desc">{{ item.description }}</text>
             <view class="card-meta">
-              <text class="meta-item">{{ item.type }}</text>
+              <text class="meta-item">{{ item.typeLabel }}</text>
               <text class="meta-dot">·</text>
-              <text class="meta-item">{{ item.count }} 人浏览</text>
+              <text class="meta-item">{{ item.count }} {{ item.countLabel }}</text>
             </view>
           </view>
 
@@ -68,11 +68,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { onLoad } from '@dcloudio/uni-app'
 import EmptyState from '@/components/EmptyState.vue'
 import SkeletonCard from '@/components/SkeletonCard.vue'
 import { CNavBar } from '@/components/layout'
+import { getResourceList } from '@/services/resource'
+import { getQuestionList } from '@/services/question'
+import { getTaskList } from '@/services/task'
+
+interface RecommendItem {
+  id: number
+  icon: string
+  title: string
+  description: string
+  type: 'resource' | 'question' | 'task'
+  typeLabel: string
+  color: string
+  count: number
+  countLabel: string
+}
+
+const TYPE_COLOR: Record<string, string> = {
+  resource: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  question: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+  task: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+}
 
 // Tab 配置
 const tabs = [
@@ -85,7 +106,7 @@ const tabs = [
 // 状态
 const currentTab = ref(0)
 const isLoading = ref(false)
-const allList = ref<any[]>([])
+const allList = ref<RecommendItem[]>([])
 
 // 当前列表
 const currentList = computed(() => {
@@ -95,70 +116,71 @@ const currentList = computed(() => {
 })
 
 /**
- * 加载推荐数据
+ * 加载推荐数据（并行拉取三类内容）
  */
 const loadData = async () => {
   isLoading.value = true
   try {
-    // 模拟数据
-    await new Promise((resolve) => setTimeout(resolve, 800))
-    
-    allList.value = [
-      {
-        id: 1,
-        icon: '📚',
-        title: '高等数学复习资料',
-        description: '期末考试必备，包含历年真题和详细解析',
-        type: 'resource',
-        color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        count: 1234
-      },
-      {
-        id: 2,
-        icon: '💬',
-        title: '如何准备英语四级考试？',
-        description: '分享备考经验和学习方法',
-        type: 'question',
-        color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        count: 856
-      },
-      {
-        id: 3,
-        icon: '📝',
-        title: '帮忙代取快递',
-        description: '明天下午有空的同学帮忙取一下',
-        type: 'task',
-        color: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        count: 432
-      },
-      {
-        id: 4,
-        icon: '📖',
-        title: '计算机网络课件分享',
-        description: '老师上课的PPT，整理好了',
-        type: 'resource',
-        color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-        count: 2341
-      },
-      {
-        id: 5,
-        icon: '❓',
-        title: '数据结构树的遍历问题',
-        description: '前序、中序、后序遍历的区别',
-        type: 'question',
-        color: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-        count: 678
-      },
-      {
-        id: 6,
-        icon: '🎯',
-        title: '寻找组队参加编程比赛',
-        description: 'ACM比赛，需要2名队友',
-        type: 'task',
-        color: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)',
-        count: 234
+    const [resourceRes, questionRes, taskRes] = await Promise.allSettled([
+      getResourceList({ sortBy: 'downloads', sortOrder: 'desc', page: 1, pageSize: 8 }),
+      getQuestionList({ page: 1, pageSize: 8 }),
+      getTaskList({ status: 0, sortBy: 'reward_points', sortOrder: 'desc', page: 1, pageSize: 8 }),
+    ])
+
+    const items: RecommendItem[] = []
+
+    if (resourceRes.status === 'fulfilled' && resourceRes.value?.list) {
+      for (const r of resourceRes.value.list) {
+        const desc = r.description || ''
+        items.push({
+          id: r.resourceId,
+          icon: '📚',
+          title: r.title,
+          description: desc.length > 50 ? desc.slice(0, 50) + '…' : desc,
+          type: 'resource',
+          typeLabel: '资源',
+          color: TYPE_COLOR.resource,
+          count: r.downloads ?? 0,
+          countLabel: '次下载',
+        })
       }
-    ]
+    }
+
+    if (questionRes.status === 'fulfilled' && questionRes.value?.list) {
+      for (const q of questionRes.value.list) {
+        const desc = q.content || ''
+        items.push({
+          id: q.qid,
+          icon: '💬',
+          title: q.title,
+          description: desc.length > 50 ? desc.slice(0, 50) + '…' : desc,
+          type: 'question',
+          typeLabel: '问答',
+          color: TYPE_COLOR.question,
+          count: q.views ?? 0,
+          countLabel: '次浏览',
+        })
+      }
+    }
+
+    if (taskRes.status === 'fulfilled' && taskRes.value?.list) {
+      for (const t of taskRes.value.list) {
+        const desc = t.content || ''
+        items.push({
+          id: t.tid,
+          icon: '🎯',
+          title: t.title,
+          description: desc.length > 50 ? desc.slice(0, 50) + '…' : desc,
+          type: 'task',
+          typeLabel: '任务',
+          color: TYPE_COLOR.task,
+          count: t.rewardPoints ?? 0,
+          countLabel: '积分悬赏',
+        })
+      }
+    }
+
+    allList.value = items
   } finally {
     isLoading.value = false
   }
@@ -181,7 +203,7 @@ const goBack = () => {
 /**
  * 点击推荐项
  */
-const handleItemClick = (item: any) => {
+const handleItemClick = (item: RecommendItem) => {
   const routes: Record<string, string> = {
     resource: '/pages/resource/detail?id=' + item.id,
     question: '/pages/question/detail?id=' + item.id,

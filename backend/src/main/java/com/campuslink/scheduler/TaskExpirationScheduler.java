@@ -1,13 +1,17 @@
 package com.campuslink.scheduler;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.campuslink.dto.notification.SendNotificationRequest;
+import com.campuslink.entity.PointsLog;
 import com.campuslink.entity.Task;
 import com.campuslink.entity.TaskLog;
 import com.campuslink.entity.User;
 import com.campuslink.enums.TaskStatus;
+import com.campuslink.mapper.PointsLogMapper;
 import com.campuslink.mapper.TaskLogMapper;
 import com.campuslink.mapper.TaskMapper;
 import com.campuslink.mapper.UserMapper;
+import com.campuslink.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -28,6 +32,8 @@ public class TaskExpirationScheduler {
     private final UserMapper userMapper;
     private final TaskLogMapper taskLogMapper;
     private final com.campuslink.service.LevelService levelService;
+    private final NotificationService notificationService;
+    private final PointsLogMapper pointsLogMapper;
 
     /**
      * 每小时检查超时任务
@@ -107,7 +113,44 @@ public class TaskExpirationScheduler {
             task.getTid(),
             oldStatus == TaskStatus.ACTIVE.getCode() ? "已退还" : "无需退还");
 
-        // TODO: 发送通知给相关用户
+        // 发送通知给相关用户
+        sendExpirationNotifications(task, oldStatus);
+    }
+
+    /**
+     * 发送任务超时通知
+     */
+    private void sendExpirationNotifications(Task task, Integer oldStatus) {
+        // 通知发布者
+        SendNotificationRequest publisherNotif = new SendNotificationRequest();
+        publisherNotif.setUserId(task.getPublisherId());
+        publisherNotif.setNotifyType("task");
+        publisherNotif.setRelatedType("task");
+        publisherNotif.setRelatedId(task.getTid());
+
+        if (oldStatus == TaskStatus.ACTIVE.getCode()) {
+            // 未被接单：告知积分已退还
+            publisherNotif.setTitle("任务已超时");
+            publisherNotif.setContent(String.format("您发布的任务「%s」已超时关闭，悬赏积分 %d 分已退还至您的账户。",
+                    task.getTitle(), task.getRewardPoints()));
+        } else {
+            // 已被接单：告知超时
+            publisherNotif.setTitle("任务已超时");
+            publisherNotif.setContent(String.format("您发布的任务「%s」已超时，请您尽快处理后续事宜。", task.getTitle()));
+        }
+        notificationService.sendToUser(task.getPublisherId(), publisherNotif);
+
+        // 若有接单者，同时通知接单者
+        if (task.getAccepterId() != null) {
+            SendNotificationRequest accepterNotif = new SendNotificationRequest();
+            accepterNotif.setUserId(task.getAccepterId());
+            accepterNotif.setTitle("接单任务已超时");
+            accepterNotif.setContent(String.format("您接取的任务「%s」已超时关闭，请联系发布者了解详情。", task.getTitle()));
+            accepterNotif.setNotifyType("task");
+            accepterNotif.setRelatedType("task");
+            accepterNotif.setRelatedId(task.getTid());
+            notificationService.sendToUser(task.getAccepterId(), accepterNotif);
+        }
     }
 
     /**
@@ -124,7 +167,16 @@ public class TaskExpirationScheduler {
             log.info("退还发布者积分: userId={}, points={}, taskId={}",
                 publisher.getUId(), task.getRewardPoints(), task.getTid());
 
-            // TODO: 记录积分日志
+            // 记录积分日志
+            PointsLog pointsLog = new PointsLog();
+            pointsLog.setUserId(publisher.getUId());
+            pointsLog.setPointsChange(task.getRewardPoints());
+            pointsLog.setPointsAfter(publisher.getPoints());
+            pointsLog.setReason("任务超时退款：" + task.getTitle());
+            pointsLog.setRelatedType("task");
+            pointsLog.setRelatedId(task.getTid());
+            pointsLog.setCreatedAt(LocalDateTime.now());
+            pointsLogMapper.insert(pointsLog);
         }
     }
 

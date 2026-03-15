@@ -462,7 +462,7 @@ import Icon from '@/components/icons/index.vue'
 // #ifdef H5
 import { PDFViewer } from '@/components/desktop'
 // #endif
-import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource, rateResource } from '@/services/resource'
+import { getResourceDetail, downloadResource, likeResource, unlikeResource, reportResource, rateResource, getResourceList } from '@/services/resource'
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import type { ResourceDetail, ResourceItem, ResourceCategory } from '@/types/resource'
 import { PLACEHOLDER_IMAGES } from '@/config/images'
@@ -714,11 +714,27 @@ const loadUserInfo = () => {
   }
 }
 
-// 加载相关推荐（模拟数据，实际应调用API）
+// 加载相关推荐：按同类别+高下载量排序，排除当前资源
 const loadRelatedResources = async () => {
-  // TODO: 调用后端API获取相关推荐
-  // 临时使用空数组
-  relatedResources.value = []
+  try {
+    const params: any = {
+      sortBy: 'downloads',
+      sortOrder: 'desc',
+      page: 1,
+      pageSize: 5,
+    }
+    if (resource.value.category) {
+      params.category = resource.value.category
+    }
+    const res = await getResourceList(params)
+    const list = res?.list || []
+    // 排除当前资源自身
+    relatedResources.value = list
+      .filter((r: ResourceItem) => r.resourceId !== resource.value.resourceId)
+      .slice(0, 4)
+  } catch {
+    // 推荐加载失败静默降级
+  }
 }
 
 // 格式化文件大小

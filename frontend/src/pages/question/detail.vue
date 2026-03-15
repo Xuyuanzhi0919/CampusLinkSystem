@@ -271,6 +271,7 @@ import AnswerCard from './components/AnswerCard.vue'
 import AnswerInput from './components/AnswerInput.vue'
 import { formatNumber, formatTime } from '@/utils/formatters'
 import { requireLogin } from '@/utils/auth'
+import { checkFavorite, addFavorite, removeFavorite } from '@/services/favorite'
 import { getPublicConfig } from '@/services/config'
 import { ClLoginGuideModal } from '@/components/cl'
 import LoginModal from '@/components/LoginModal.vue'
@@ -410,6 +411,12 @@ const loadQuestionDetail = async () => {
     loading.value = true
     error.value = null
     await questionStore.loadQuestionDetail(questionId.value)
+    // 登录状态下检查收藏状态
+    if (userStore.isLoggedIn) {
+      checkFavorite('question', questionId.value).then(res => {
+        questionCollected.value = res?.isFavorited ?? false
+      }).catch(() => {})
+    }
   } catch (err: any) {
     console.error('加载问题详情失败:', err)
     // 401 由 request.ts 统一处理（引导登录），此处不渲染错误页以避免闪烁
@@ -629,8 +636,21 @@ const handleFollow = () => {
   uni.showToast({ title: '关注功能开发中', icon: 'none' })
 }
 
-const handleCollect = () => {
-  uni.showToast({ title: '收藏功能开发中', icon: 'none' })
+const handleCollect = async () => {
+  if (!requireLogin('collect')) return
+  try {
+    if (questionCollected.value) {
+      await removeFavorite('question', question.value!.qid)
+      questionCollected.value = false
+      uni.showToast({ title: '已取消收藏', icon: 'none' })
+    } else {
+      await addFavorite('question', question.value!.qid)
+      questionCollected.value = true
+      uni.showToast({ title: '收藏成功', icon: 'success' })
+    }
+  } catch {
+    uni.showToast({ title: '操作失败，请重试', icon: 'none' })
+  }
 }
 
 const handleShare = () => {

@@ -168,6 +168,9 @@ config/local.js
 # Claude Code 配置文件
 CLAUDE.md
 
+# 项目文档（本地开发文档，不上传远程）
+docs/
+
 # 文档草稿
 *.draft.md
 TODO.md

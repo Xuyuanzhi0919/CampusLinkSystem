@@ -86,6 +86,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/ws/**",              // WebSocket 端点
                         "/location/reverse-geocode",  // 反地理编码（公开，无需登录）
                         "/config/public",      // 公开配置（signin积分、文件类型等，游客可读）
+                        "/notice/public",      // 校园公告列表（游客可浏览）
+                        "/auth/check-username", // 用户名可用性检查（注册前调用，无需登录）
                         "/admin/**"            // 管理员接口由 AdminAuthInterceptor 专门处理
                 );
     }

@@ -14,17 +14,37 @@ OUT = "/Users/chasexu/XuProject/CampusLink/thesis-figures"
 plt.rcParams['font.family'] = ['Heiti TC', 'STHeiti', 'Hiragino Sans GB', 'Songti SC', 'sans-serif']
 plt.rcParams['axes.unicode_minus'] = False
 
+# ── 灰色调色板 ──────────────────────────────────────────────
+G_BG      = '#F7F7F7'   # 页面背景
+G_BOX_F   = '#ECECEC'   # 普通框填充
+G_BOX_E   = '#555555'   # 普通框边框
+G_DIA_F   = '#DCDCDC'   # 菱形填充
+G_DIA_E   = '#666666'   # 菱形边框
+G_TERM_F  = '#D0D0D0'   # 终止椭圆填充
+G_TERM_E  = '#333333'   # 终止椭圆边框
+G_HDR_F   = '#4A4A4A'   # 深色标题框填充
+G_HDR_E   = '#333333'   # 深色标题框边框
+G_OK_F    = '#C8C8C8'   # 成功/完成框填充
+G_OK_E    = '#444444'   # 成功/完成框边框
+G_ERR_F   = '#B8B8B8'   # 错误/取消框填充
+G_ERR_E   = '#777777'   # 错误/取消框边框
+G_ARR     = '#444444'   # 箭头颜色
+G_NOTE_F  = '#E5E5E5'   # 注释框填充
+G_NOTE_E  = '#888888'   # 注释框边框
+
 # ──────────────────────────────────────────────────────────────
 # 工具函数
 # ──────────────────────────────────────────────────────────────
-def box(ax, x, y, w, h, text, fc='#E8F4FD', ec='#2980B9', fontsize=9, radius=0.02, bold=False):
+def box(ax, x, y, w, h, text, fc=None, ec=None, fontsize=9, radius=0.02, bold=False):
+    if fc is None: fc = G_BOX_F
+    if ec is None: ec = G_BOX_E
     rect = FancyBboxPatch((x - w/2, y - h/2), w, h,
                           boxstyle=f"round,pad={radius}", fc=fc, ec=ec, lw=1.2, zorder=3)
     ax.add_patch(rect)
     weight = 'bold' if bold else 'normal'
     ax.text(x, y, text, ha='center', va='center', fontsize=fontsize, weight=weight, zorder=4)
 
-def diamond(ax, x, y, w, h, text, fc='#FFF9C4', ec='#F39C12', fontsize=8.5):
+def diamond(ax, x, y, w, h, text, fc=G_DIA_F, ec=G_DIA_E, fontsize=8.5):
     pts = np.array([[x, y+h/2],[x+w/2, y],[x, y-h/2],[x-w/2, y]])
     poly = plt.Polygon(pts, fc=fc, ec=ec, lw=1.2, zorder=3)
     ax.add_patch(poly)
@@ -42,19 +62,19 @@ def arrow(ax, x1, y1, x2, y2, label='', color='#555', lw=1.2, style='->', curved
         mx, my = (x1+x2)/2, (y1+y2)/2
         ax.text(mx+0.02, my+0.02, label, fontsize=7.5, color='#333', zorder=5)
 
-def oval(ax, x, y, rx, ry, text, fc='#EBF5FB', ec='#1A5276', fontsize=8.5):
+def oval(ax, x, y, rx, ry, text, fc=G_BOX_F, ec=G_BOX_E, fontsize=8.5):
     ell = mpatches.Ellipse((x, y), rx*2, ry*2, fc=fc, ec=ec, lw=1.2, zorder=3)
     ax.add_patch(ell)
     ax.text(x, y, text, ha='center', va='center', fontsize=fontsize, zorder=4)
 
 def stick_figure(ax, x, y, label, size=0.06):
     """简单小人"""
-    head = plt.Circle((x, y+size*1.8), size*0.55, fc='white', ec='#2C3E50', lw=1.2, zorder=3)
+    head = plt.Circle((x, y+size*1.8), size*0.55, fc='white', ec='#333333', lw=1.2, zorder=3)
     ax.add_patch(head)
-    ax.plot([x, x], [y+size*1.2, y-size*0.4], color='#2C3E50', lw=1.2, zorder=3)
-    ax.plot([x-size, x+size], [y+size*0.6, y+size*0.6], color='#2C3E50', lw=1.2, zorder=3)
-    ax.plot([x, x-size*0.7], [y-size*0.4, y-size*1.4], color='#2C3E50', lw=1.2, zorder=3)
-    ax.plot([x, x+size*0.7], [y-size*0.4, y-size*1.4], color='#2C3E50', lw=1.2, zorder=3)
+    ax.plot([x, x], [y+size*1.2, y-size*0.4], color='#333333', lw=1.2, zorder=3)
+    ax.plot([x-size, x+size], [y+size*0.6, y+size*0.6], color='#333333', lw=1.2, zorder=3)
+    ax.plot([x, x-size*0.7], [y-size*0.4, y-size*1.4], color='#333333', lw=1.2, zorder=3)
+    ax.plot([x, x+size*0.7], [y-size*0.4, y-size*1.4], color='#333333', lw=1.2, zorder=3)
     ax.text(x, y-size*1.9, label, ha='center', va='top', fontsize=8.5, weight='bold', zorder=4)
 
 def save(fig, name):
@@ -69,14 +89,14 @@ def draw_usecase():
     fig, ax = plt.subplots(figsize=(14, 9))
     ax.set_xlim(0, 14); ax.set_ylim(0, 9)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(7, 8.6, 'CampusLink 系统用例图', ha='center', va='center', fontsize=13, weight='bold')
 
     # 系统边界
     sys_box = FancyBboxPatch((2.5, 0.4), 9, 7.8, boxstyle="round,pad=0.1",
-                              fc='#F0F8FF', ec='#2980B9', lw=1.5, zorder=1)
+                              fc='#F2F2F2', ec='#555555', lw=1.5, zorder=1)
     ax.add_patch(sys_box)
-    ax.text(7, 8.0, 'CampusLink 系统', ha='center', va='center', fontsize=10, color='#2980B9', weight='bold')
+    ax.text(7, 8.0, 'CampusLink 系统', ha='center', va='center', fontsize=10, color='#333333', weight='bold')
 
     # 角色
     stick_figure(ax, 0.9, 5.8, '普通用户\n(学生/教师)', size=0.07)
@@ -100,7 +120,7 @@ def draw_usecase():
         (7.5, 4.0, '个人中心'),
     ]
     for (x, y, t) in user_cases:
-        oval(ax, x, y, 1.55, 0.32, t, fc='#EBF5FB', ec='#2471A3')
+        oval(ax, x, y, 1.55, 0.32, t, fc='#ECECEC', ec='#555555')
         if x < 5.5:
             arrow(ax, 1.3, 5.8, x-1.55, y, color='#555')
 
@@ -111,7 +131,7 @@ def draw_usecase():
         (7.5, 1.6, '管理社团成员'),
     ]
     for (x, y, t) in club_cases:
-        oval(ax, x, y, 1.55, 0.32, t, fc='#E8F8F5', ec='#1E8449')
+        oval(ax, x, y, 1.55, 0.32, t, fc='#D8D8D8', ec='#444444')
         arrow(ax, 1.3, 2.8, x-1.55, y, color='#555')
 
     # 系统管理员用例
@@ -125,7 +145,7 @@ def draw_usecase():
         (10.5, 2.0, '操作日志审计'),
     ]
     for (x, y, t) in admin_cases:
-        oval(ax, x, y, 1.55, 0.32, t, fc='#FEF9E7', ec='#D68910')
+        oval(ax, x, y, 1.55, 0.32, t, fc='#C8C8C8', ec='#666666')
         arrow(ax, 12.7, 4.3, x+1.55, y, color='#555')
 
     # 社团管理员继承普通用户（虚线）
@@ -135,9 +155,9 @@ def draw_usecase():
 
     # 图例
     legend_items = [
-        mpatches.Patch(fc='#EBF5FB', ec='#2471A3', label='普通用户用例'),
-        mpatches.Patch(fc='#E8F8F5', ec='#1E8449', label='社团管理员用例'),
-        mpatches.Patch(fc='#FEF9E7', ec='#D68910', label='系统管理员用例'),
+        mpatches.Patch(fc='#ECECEC', ec='#555555', label='普通用户用例'),
+        mpatches.Patch(fc='#D8D8D8', ec='#444444', label='社团管理员用例'),
+        mpatches.Patch(fc='#C8C8C8', ec='#666666', label='系统管理员用例'),
     ]
     ax.legend(handles=legend_items, loc='lower right', fontsize=8, framealpha=0.8)
 
@@ -150,10 +170,10 @@ def draw_er():
     fig, ax = plt.subplots(figsize=(16, 11))
     ax.set_xlim(0, 16); ax.set_ylim(0, 11)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(8, 10.6, 'CampusLink 数据库核心 ER 图', ha='center', va='center', fontsize=13, weight='bold')
 
-    def er_box(x, y, title, fields, w=2.8, fc='#E8F4FD', ec='#2980B9'):
+    def er_box(x, y, title, fields, w=2.8, fc='#ECECEC', ec='#555555'):
         row_h = 0.32
         h = row_h * (len(fields) + 1) + 0.1
         # 标题行
@@ -165,18 +185,18 @@ def draw_er():
         # 字段行
         for i, (fname, ftype) in enumerate(fields):
             fy = y - row_h*(i+1)
-            row_fc = '#F5FAFF' if i % 2 == 0 else 'white'
+            row_fc = '#F2F2F2' if i % 2 == 0 else 'white'
             row_rect = plt.Rectangle((x-w/2, fy-row_h/2), w, row_h,
-                                      fc=row_fc, ec='#BDC3C7', lw=0.5, zorder=3)
+                                      fc=row_fc, ec='#AAAAAA', lw=0.5, zorder=3)
             ax.add_patch(row_rect)
             key_mark = '🔑 ' if ftype.startswith('PK') else ('🔗 ' if ftype.startswith('FK') else '   ')
             ax.text(x-w/2+0.12, fy, f"{fname}", ha='left', va='center', fontsize=7.5, zorder=4)
             ax.text(x+w/2-0.08, fy, ftype.replace('PK','').replace('FK','').strip(),
                     ha='right', va='center', fontsize=6.8, color='#777', zorder=4)
             if ftype.startswith('PK'):
-                ax.text(x-w/2+0.02, fy, '■', ha='left', va='center', fontsize=6, color='#E74C3C', zorder=4)
+                ax.text(x-w/2+0.02, fy, '■', ha='left', va='center', fontsize=6, color='#333333', zorder=4)
             elif ftype.startswith('FK'):
-                ax.text(x-w/2+0.02, fy, '◆', ha='left', va='center', fontsize=6, color='#8E44AD', zorder=4)
+                ax.text(x-w/2+0.02, fy, '◆', ha='left', va='center', fontsize=6, color='#666666', zorder=4)
         # 外框
         full_rect = plt.Rectangle((x-w/2, y-h+row_h/2), w, h,
                                     fc='none', ec=ec, lw=1.2, zorder=5)
@@ -284,14 +304,14 @@ def draw_er():
         p1 = get_anchor(t1, s1)
         p2 = get_anchor(t2, s2)
         ax.annotate('', xy=p2, xytext=p1,
-                    arrowprops=dict(arrowstyle='->', color='#7F8C8D', lw=1.0,
+                    arrowprops=dict(arrowstyle='->', color='#888888', lw=1.0,
                                    connectionstyle='arc3,rad=0.0'), zorder=2)
         mx, my = (p1[0]+p2[0])/2, (p1[1]+p2[1])/2
         ax.text(mx+0.05, my+0.08, lbl, fontsize=6.5, color='#555', zorder=5)
 
     # 图例
-    pk_patch = mpatches.Patch(fc='#E74C3C', label='■ 主键 PK')
-    fk_patch = mpatches.Patch(fc='#8E44AD', label='◆ 外键 FK')
+    pk_patch = mpatches.Patch(fc='#555555', label='■ 主键 PK')
+    fk_patch = mpatches.Patch(fc='#888888', label='◆ 外键 FK')
     ax.legend(handles=[pk_patch, fk_patch], loc='lower left', fontsize=8, framealpha=0.8)
 
     save(fig, '02_er_diagram.png')
@@ -303,18 +323,18 @@ def draw_login_flow():
     fig, ax = plt.subplots(figsize=(7, 12))
     ax.set_xlim(0, 7); ax.set_ylim(0, 12)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(3.5, 11.6, '用户注册 / 登录流程图', ha='center', fontsize=12, weight='bold')
 
     def rbox(x, y, text, **kw): box(ax, x, y, 2.4, 0.55, text, **kw)
     def dmd(x, y, text): diamond(ax, x, y, 2.4, 0.55, text)
     def term(x, y, text):
-        e = mpatches.Ellipse((x, y), 2.0, 0.5, fc='#D5F5E3', ec='#1E8449', lw=1.2, zorder=3)
+        e = mpatches.Ellipse((x, y), 2.0, 0.5, fc=G_TERM_F, ec=G_TERM_E, lw=1.2, zorder=3)
         ax.add_patch(e)
         ax.text(x, y, text, ha='center', va='center', fontsize=9, weight='bold', zorder=4)
 
     # ——— 注册流程 (左列 x=1.8) ———
-    ax.text(1.8, 11.2, '注  册', ha='center', fontsize=10, weight='bold', color='#154360')
+    ax.text(1.8, 11.2, '注  册', ha='center', fontsize=10, weight='bold', color='#333333')
     term(1.8, 10.8, '开 始')
     arrow(ax, 1.8, 10.55, 1.8, 10.1)
     rbox(1.8, 9.85, '填写用户名/密码/邮箱')
@@ -324,14 +344,14 @@ def draw_login_flow():
     dmd(1.8, 7.85, '验证码是否\n正确且未过期?')
     # No
     arrow(ax, 2.5, 7.85, 3.4, 7.85, label='否')
-    rbox(4.3, 7.85, '返回错误提示', fc='#FADBD8', ec='#C0392B')
+    rbox(4.3, 7.85, '返回错误提示', fc=G_ERR_F, ec=G_ERR_E)
     arrow(ax, 4.3, 8.12, 4.3, 8.85)
     arrow(ax, 4.3, 8.85, 2.82, 8.85)
     # Yes
     arrow(ax, 1.8, 7.57, 1.8, 7.1, label='是')
     dmd(1.8, 6.85, '用户名是否\n已存在?')
     arrow(ax, 2.5, 6.85, 3.4, 6.85, label='是')
-    rbox(4.3, 6.85, '返回冲突错误', fc='#FADBD8', ec='#C0392B')
+    rbox(4.3, 6.85, '返回冲突错误', fc=G_ERR_F, ec=G_ERR_E)
     arrow(ax, 1.8, 6.57, 1.8, 6.1, label='否')
     rbox(1.8, 5.85, 'MD5 哈希密码')
     arrow(ax, 1.8, 5.57, 1.8, 5.1)
@@ -340,7 +360,7 @@ def draw_login_flow():
     term(1.8, 3.85, '注册成功')
 
     # ——— 登录流程 (右列 x=5.2) ———
-    ax.text(5.2, 11.2, '登  录', ha='center', fontsize=10, weight='bold', color='#154360')
+    ax.text(5.2, 11.2, '登  录', ha='center', fontsize=10, weight='bold', color='#333333')
     term(5.2, 10.8, '开 始')
     arrow(ax, 5.2, 10.55, 5.2, 10.1)
     rbox(5.2, 9.85, '输入用户名 / 密码')
@@ -366,10 +386,10 @@ def draw_login_flow():
         err_x = fx + 1.5
         arrow(ax, fx+1.2, fy, err_x+0.6, fy, label=lbl)
         ax.text(err_x+1.1, fy, txt, ha='left', va='center', fontsize=7.5,
-                color='#C0392B', zorder=4)
+                color='#666666', zorder=4)
 
     # 分隔线
-    ax.plot([3.5, 3.5], [3.5, 11.4], '--', color='#BDC3C7', lw=1, zorder=1)
+    ax.plot([3.5, 3.5], [3.5, 11.4], '--', color='#AAAAAA', lw=1, zorder=1)
 
     save(fig, '03_login_flow.png')
 
@@ -380,13 +400,13 @@ def draw_token_flow():
     fig, ax = plt.subplots(figsize=(8, 11))
     ax.set_xlim(0, 8); ax.set_ylim(0, 11)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(4, 10.6, 'JWT 双令牌刷新流程图', ha='center', fontsize=12, weight='bold')
 
     def rbox(x, y, text, **kw): box(ax, x, y, 2.8, 0.55, text, **kw)
     def dmd(x, y, text): diamond(ax, x, y, 2.8, 0.6, text)
     def term(x, y, text):
-        e = mpatches.Ellipse((x, y), 2.4, 0.5, fc='#D5F5E3', ec='#1E8449', lw=1.2, zorder=3)
+        e = mpatches.Ellipse((x, y), 2.4, 0.5, fc=G_TERM_F, ec=G_TERM_E, lw=1.2, zorder=3)
         ax.add_patch(e)
         ax.text(x, y, text, ha='center', va='center', fontsize=9, weight='bold', zorder=4)
 
@@ -401,7 +421,7 @@ def draw_token_flow():
     dmd(4, 8.1, 'isRefreshing\n== true?')
     # 已在刷新
     arrow(ax, 5.4, 8.1, 6.8, 8.1, label='是')
-    rbox(6.8, 7.8, '加入 requestQueue\n等待刷新完成', fc='#FEF9E7', ec='#D4AC0D', fontsize=8)
+    rbox(6.8, 7.8, '加入 requestQueue\n等待刷新完成', fc=G_NOTE_F, ec=G_NOTE_E, fontsize=8)
     # 未在刷新
     arrow(ax, 4, 7.8, 4, 7.3, label='否')
     rbox(4, 7.05, '设置 isRefreshing=true')
@@ -419,13 +439,13 @@ def draw_token_flow():
 
     # 失败分支
     arrow(ax, 5.4, 5.0, 6.0, 5.0, label='否')
-    rbox(7.1, 5.0, '清空 Token\n跳转登录页', fc='#FADBD8', ec='#C0392B', fontsize=8)
+    rbox(7.1, 5.0, '清空 Token\n跳转登录页', fc=G_ERR_F, ec=G_ERR_E, fontsize=8)
 
     # requestQueue 重发连线
     ax.annotate('', xy=(5.4, 2.95), xytext=(6.8, 7.5),
-                arrowprops=dict(arrowstyle='->', color='#8E44AD', lw=1, linestyle='dashed',
+                arrowprops=dict(arrowstyle='->', color='#666666', lw=1, linestyle='dashed',
                                 connectionstyle='arc3,rad=-0.3'), zorder=2)
-    ax.text(6.5, 5.4, '刷新完成后\n统一重发', ha='center', fontsize=7, color='#8E44AD', style='italic')
+    ax.text(6.5, 5.4, '刷新完成后\n统一重发', ha='center', fontsize=7, color='#666666', style='italic')
 
     save(fig, '04_token_refresh.png')
 
@@ -436,23 +456,23 @@ def draw_resource_flow():
     fig, ax = plt.subplots(figsize=(7, 12))
     ax.set_xlim(0, 7); ax.set_ylim(0, 12)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(3.5, 11.6, '资源上传审核流程图', ha='center', fontsize=12, weight='bold')
 
     def rbox(x, y, text, **kw): box(ax, x, y, 2.6, 0.55, text, **kw)
     def dmd(x, y, text): diamond(ax, x, y, 2.6, 0.58, text)
     def term(x, y, text):
-        e = mpatches.Ellipse((x, y), 2.2, 0.5, fc='#D5F5E3', ec='#1E8449', lw=1.2, zorder=3)
+        e = mpatches.Ellipse((x, y), 2.2, 0.5, fc=G_TERM_F, ec=G_TERM_E, lw=1.2, zorder=3)
         ax.add_patch(e)
         ax.text(x, y, text, ha='center', va='center', fontsize=9, weight='bold', zorder=4)
 
     # 用户侧
-    ax.text(2.5, 11.2, '用 户 侧', ha='center', fontsize=10, weight='bold', color='#154360')
+    ax.text(2.5, 11.2, '用 户 侧', ha='center', fontsize=10, weight='bold', color='#333333')
     term(2.5, 10.8, '用户选择文件上传')
     arrow(ax, 2.5, 10.55, 2.5, 10.1)
     dmd(2.5, 9.82, '文件格式 / 大小\n是否合规?')
     arrow(ax, 3.8, 9.82, 5.0, 9.82, label='否')
-    rbox(5.7, 9.82, '提示格式或大小\n超限错误', fc='#FADBD8', ec='#C0392B', fontsize=8)
+    rbox(5.7, 9.82, '提示格式或大小\n超限错误', fc=G_ERR_F, ec=G_ERR_E, fontsize=8)
     arrow(ax, 2.5, 9.53, 2.5, 9.1, label='是')
     rbox(2.5, 8.85, '请求后端获取\nOSS 上传签名', fontsize=8)
     arrow(ax, 2.5, 8.57, 2.5, 8.1)
@@ -460,10 +480,10 @@ def draw_resource_flow():
     arrow(ax, 2.5, 7.57, 2.5, 7.1)
     rbox(2.5, 6.85, '提交资源元信息\n至后端入库', fontsize=8)
     arrow(ax, 2.5, 6.57, 2.5, 6.1)
-    rbox(2.5, 5.85, '资源状态: 待审核(0)\n仅上传者可见', fc='#FEF9E7', ec='#D4AC0D', fontsize=8)
+    rbox(2.5, 5.85, '资源状态: 待审核(0)\n仅上传者可见', fc=G_NOTE_F, ec=G_NOTE_E, fontsize=8)
 
     # 管理员侧
-    ax.text(2.5, 5.2, '管 理 员 侧', ha='center', fontsize=10, weight='bold', color='#154360')
+    ax.text(2.5, 5.2, '管 理 员 侧', ha='center', fontsize=10, weight='bold', color='#333333')
     arrow(ax, 2.5, 5.57, 2.5, 5.1)
     rbox(2.5, 4.85, '管理员查看待审核\n资源列表（含预览）', fontsize=8)
     arrow(ax, 2.5, 4.57, 2.5, 4.1)
@@ -473,7 +493,7 @@ def draw_resource_flow():
     arrow(ax, 1.2, 3.82, 0.2, 3.82)
     ax.text(0.2, 3.82, '通过', ha='right', va='center', fontsize=8)
     arrow(ax, 0.5, 3.82, 0.5, 2.8)
-    rbox(0.5, 2.6, '状态→1(通过)\n资源公开可见', fc='#D5F5E3', ec='#1E8449', fontsize=8)
+    rbox(0.5, 2.6, '状态→1(通过)\n资源公开可见', fc=G_OK_F, ec=G_OK_E, fontsize=8)
     arrow(ax, 0.5, 2.32, 0.5, 1.8)
     rbox(0.5, 1.6, '发放上传积分+10\n通知用户', fontsize=8)
 
@@ -481,11 +501,11 @@ def draw_resource_flow():
     arrow(ax, 3.8, 3.82, 4.8, 3.82)
     ax.text(4.8, 3.82, '拒绝', ha='left', va='center', fontsize=8)
     arrow(ax, 5.1, 3.82, 5.1, 2.8)
-    rbox(5.1, 2.6, '状态→2(拒绝)\n填写拒绝原因', fc='#FADBD8', ec='#C0392B', fontsize=8)
+    rbox(5.1, 2.6, '状态→2(拒绝)\n填写拒绝原因', fc=G_ERR_F, ec=G_ERR_E, fontsize=8)
     arrow(ax, 5.1, 2.32, 5.1, 1.8)
     rbox(5.1, 1.6, '推送通知至上传者\n用户可修改重新提交', fontsize=8)
 
-    ax.plot([0, 7], [5.38, 5.38], '--', color='#BDC3C7', lw=1, zorder=1)
+    ax.plot([0, 7], [5.38, 5.38], '--', color='#AAAAAA', lw=1, zorder=1)
 
     save(fig, '05_resource_flow.png')
 
@@ -496,16 +516,16 @@ def draw_task_state():
     fig, ax = plt.subplots(figsize=(10, 7))
     ax.set_xlim(0, 10); ax.set_ylim(0, 7)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(5, 6.6, '任务大厅状态机流转图', ha='center', fontsize=12, weight='bold')
 
     states = {
-        'PENDING':     (2,   5.0, '待接单\nPENDING(0)',   '#EBF5FB', '#2980B9'),
-        'IN_PROGRESS': (5.5, 5.0, '进行中\nIN_PROGRESS(2)', '#E8F8F5', '#1E8449'),
-        'SUBMITTED':   (8.5, 5.0, '待确认\nSUBMITTED(3)',  '#FEF9E7', '#D4AC0D'),
-        'COMPLETED':   (8.5, 2.5, '已完成\nCOMPLETED(4)',  '#D5F5E3', '#1E8449'),
-        'CANCELLED':   (5.5, 2.5, '已取消\nCANCELLED(5)',  '#FADBD8', '#C0392B'),
-        'EXPIRED':     (2,   2.5, '已超时\nEXPIRED(6)',    '#F5CBA7', '#CA6F1E'),
+        'PENDING':     (2,   5.0, '待接单\nPENDING(0)',   '#EEEEEE', '#555555'),
+        'IN_PROGRESS': (5.5, 5.0, '进行中\nIN_PROGRESS(2)', '#E0E0E0', '#444444'),
+        'SUBMITTED':   (8.5, 5.0, '待确认\nSUBMITTED(3)',  '#D8D8D8', '#666666'),
+        'COMPLETED':   (8.5, 2.5, '已完成\nCOMPLETED(4)',  '#CCCCCC', '#333333'),
+        'CANCELLED':   (5.5, 2.5, '已取消\nCANCELLED(5)',  '#C0C0C0', '#888888'),
+        'EXPIRED':     (2,   2.5, '已超时\nEXPIRED(6)',    '#B8B8B8', '#777777'),
     }
     w, h = 2.2, 0.85
     centers = {}
@@ -533,7 +553,7 @@ def draw_task_state():
         x1, y1 = centers[s]; dx1, dy1 = side_offset[ss]
         x2, y2 = centers[e]; dx2, dy2 = side_offset[es]
         conn = f'arc3,rad={rad}' if rad else 'arc3,rad=0'
-        color = '#2ECC71' if e == 'COMPLETED' else ('#E74C3C' if e in ('CANCELLED','EXPIRED') else '#2980B9')
+        color = '#444444' if e == 'COMPLETED' else ('#888888' if e in ('CANCELLED','EXPIRED') else '#555555')
         ax.annotate('', xy=(x2+dx2, y2+dy2), xytext=(x1+dx1, y1+dy1),
                     arrowprops=dict(arrowstyle='->', color=color, lw=1.5,
                                    connectionstyle=conn), zorder=2)
@@ -549,9 +569,9 @@ def draw_task_state():
     # 图例
     from matplotlib.patches import Patch
     legend_elements = [
-        Patch(fc='#D5F5E3', ec='#1E8449', label='正常完成'),
-        Patch(fc='#FADBD8', ec='#C0392B', label='已取消'),
-        Patch(fc='#F5CBA7', ec='#CA6F1E', label='已超时'),
+        Patch(fc=G_OK_F, ec=G_OK_E, label='正常完成'),
+        Patch(fc=G_ERR_F, ec=G_ERR_E, label='已取消'),
+        Patch(fc='#B8B8B8', ec='#777777', label='已超时'),
     ]
     ax.legend(handles=legend_elements, loc='lower right', fontsize=8.5, framealpha=0.9)
     ax.text(5, 0.4, '* 定时任务每小时扫描超时任务，自动将 PENDING/IN_PROGRESS 转为 EXPIRED',
@@ -566,11 +586,11 @@ def draw_seq_oss():
     fig, ax = plt.subplots(figsize=(10, 9))
     ax.set_xlim(0, 10); ax.set_ylim(0, 9)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(5, 8.7, '资源 OSS 直传时序图', ha='center', fontsize=12, weight='bold')
 
     actors = [('用户浏览器', 1.5), ('前端 uni-app', 3.5), ('Spring Boot\n后端', 6.0), ('阿里云 OSS', 8.5)]
-    colors = ['#2980B9', '#1E8449', '#8E44AD', '#CA6F1E']
+    colors = ['#4A4A4A', '#5E5E5E', '#717171', '#848484']
 
     for i, (name, x) in enumerate(actors):
         box(ax, x, 8.2, 1.6, 0.5, name, fc=colors[i], ec=colors[i], fontsize=9, bold=True)
@@ -586,7 +606,7 @@ def draw_seq_oss():
         ly = y + 0.12 if label_above else y - 0.16
         ax.text(lx, ly, text, ha='center', fontsize=8, color='#1A1A1A', zorder=5)
 
-    def act_bar(x, y, h, fc='#EBF5FB', ec='#2980B9'):
+    def act_bar(x, y, h, fc='#DEDEDE', ec='#666666'):
         rect = plt.Rectangle((x-0.25, y-h), 0.5, h, fc=fc, ec=ec, lw=1, zorder=3)
         ax.add_patch(rect)
 
@@ -621,12 +641,12 @@ def draw_seq_token():
     fig, ax = plt.subplots(figsize=(11, 9))
     ax.set_xlim(0, 11); ax.set_ylim(0, 9)
     ax.axis('off')
-    ax.set_facecolor('#FAFAFA')
+    ax.set_facecolor(G_BG)
     ax.text(5.5, 8.7, 'JWT Token 并发刷新时序图', ha='center', fontsize=12, weight='bold')
 
     actors = [('请求 A', 1.2), ('请求 B', 2.8), ('请求 C', 4.4),
               ('前端 request.ts', 6.5), ('后端 /auth/refresh', 9.5)]
-    colors = ['#2980B9', '#1E8449', '#8E44AD', '#CA6F1E', '#C0392B']
+    colors = ['#3A3A3A', '#505050', '#656565', '#7A7A7A', '#919191']
 
     for i, (name, x) in enumerate(actors):
         c = colors[i]
@@ -641,40 +661,41 @@ def draw_seq_token():
         lx = (x1 + x2) / 2
         ax.text(lx, y + 0.11, text, ha='center', fontsize=7.5, color='#1A1A1A', zorder=5)
 
-    def note(x, y, text, fc='#FEF9E7'):
-        box(ax, x, y, 2.0, 0.38, text, fc=fc, ec='#D4AC0D', fontsize=7.5)
+    def note(x, y, text, fc=None):
+        if fc is None: fc = G_NOTE_F
+        box(ax, x, y, 2.0, 0.38, text, fc=fc, ec=G_NOTE_E, fontsize=7.5)
 
     # 三个并发请求到达
     for (rx, y) in [(1.2, 7.4), (2.8, 7.15), (4.4, 6.9)]:
         msg(rx, 6.5, y, '发起 API 请求')
 
-    note(6.5, 6.3, '检测 Token 剩余 < 15min', fc='#FEF9E7')
+    note(6.5, 6.3, '检测 Token 剩余 < 15min')
 
     # 请求A 触发刷新
     msg(6.5, 9.5, 5.9, '请求A: POST /auth/refresh')
-    note(6.5, 5.5, 'isRefreshing = true\n请求B/C 入队等待', fc='#EBF5FB')
+    note(6.5, 5.5, 'isRefreshing = true\n请求B/C 入队等待')
 
     # 请求B C 入队
     ax.annotate('', xy=(6.5, 5.1), xytext=(2.8, 6.85),
-                arrowprops=dict(arrowstyle='->', color='#1E8449', lw=1, linestyle='dashed',
+                arrowprops=dict(arrowstyle='->', color='#555555', lw=1, linestyle='dashed',
                                 connectionstyle='arc3,rad=0.2'), zorder=2)
-    ax.text(4.5, 6.0, '加入 requestQueue', ha='center', fontsize=7.5, color='#1E8449')
+    ax.text(4.5, 6.0, '加入 requestQueue', ha='center', fontsize=7.5, color='#555555')
     ax.annotate('', xy=(6.5, 5.0), xytext=(4.4, 6.65),
-                arrowprops=dict(arrowstyle='->', color='#8E44AD', lw=1, linestyle='dashed',
+                arrowprops=dict(arrowstyle='->', color='#666666', lw=1, linestyle='dashed',
                                 connectionstyle='arc3,rad=0.15'), zorder=2)
 
     # 后端返回新Token
-    msg(9.5, 6.5, 4.5, '返回新 AccessToken', color='#C0392B', dashed=True, back=True)
-    note(6.5, 4.1, '更新本地 Token\nisRefreshing = false', fc='#D5F5E3')
+    msg(9.5, 6.5, 4.5, '返回新 AccessToken', color='#666666', dashed=True, back=True)
+    note(6.5, 4.1, '更新本地 Token\nisRefreshing = false')
 
     # 批量重发
     for (rx, y) in [(1.2, 3.5), (2.8, 3.25), (4.4, 3.0)]:
         msg(6.5, rx, y, '携带新Token重发原请求', dashed=True)
 
-    note(6.5, 2.6, '遍历 requestQueue\n批量 resolve', fc='#EBF5FB')
+    note(6.5, 2.6, '遍历 requestQueue\n批量 resolve')
 
     for (rx, y) in [(1.2, 2.0), (2.8, 1.75), (4.4, 1.5)]:
-        ax.text(rx, y, '✓ 请求完成', ha='center', fontsize=8, color='#1E8449', weight='bold')
+        ax.text(rx, y, '✓ 请求完成', ha='center', fontsize=8, color='#444444', weight='bold')
 
     save(fig, '08_seq_token.png')
 

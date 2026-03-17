@@ -714,6 +714,78 @@ def draw_seq_token():
 
 
 # ══════════════════════════════════════════════════════════════
+# 9. 系统总体架构图
+# ══════════════════════════════════════════════════════════════
+def draw_architecture():
+    fig, ax = plt.subplots(figsize=(13, 8))
+    ax.set_xlim(0, 13); ax.set_ylim(0, 8)
+    ax.axis('off')
+    ax.set_facecolor(G_BG)
+    ax.text(6.5, 7.65, 'CampusLink 系统总体架构图', ha='center', fontsize=13, weight='bold')
+
+    # 四层定义：(层名, y中心, 层高, 填充色, 边框色)
+    layers = [
+        ('客户端层',  6.3, 1.1, '#EEEEEE', '#666666'),
+        ('接  入  层',  4.8, 0.7, '#E4E4E4', '#666666'),
+        ('服务层',    3.1, 1.4, '#DCDCDC', '#555555'),
+        ('数据层',    1.4, 1.4, '#D0D0D0', '#444444'),
+    ]
+    for (name, cy, lh, fc, ec) in layers:
+        rect = FancyBboxPatch((0.3, cy - lh/2), 12.4, lh,
+                              boxstyle="round,pad=0.05", fc=fc, ec=ec, lw=1.4, zorder=1)
+        ax.add_patch(rect)
+        ax.text(0.08, cy, name, ha='center', va='center', fontsize=8.5, weight='bold',
+                color='#333', rotation=0, zorder=2)
+
+    # ── 组件框：用单次 ax.text + \n 渲染多行，避免行间重叠 ──
+    def comp(x, y, w, h, lines, fc=G_BOX_F, ec=G_BOX_E, fs=8):
+        r = FancyBboxPatch((x - w/2, y - h/2), w, h,
+                           boxstyle="round,pad=0.06", fc=fc, ec=ec, lw=1.2, zorder=3)
+        ax.add_patch(r)
+        ax.text(x, y, '\n'.join(lines), ha='center', va='center',
+                fontsize=fs, linespacing=1.55, zorder=4)
+
+    # 客户端层
+    comp(3.0, 6.3, 2.8, 0.88, ['H5 用户端 (uni-app)', 'Vue 3 + TypeScript', 'Port: 5173'], fc='#F5F5F5', ec='#777777')
+    comp(7.5, 6.3, 2.8, 0.88, ['管理后台 (Vue 3)', 'Element Plus + ECharts', 'Port: 5174'], fc='#F0F0F0', ec='#777777')
+    comp(11.0, 6.3, 1.5, 0.88, ['移动端 H5', '(微信/浏览器)'], fc='#EBEBEB', ec='#888888')
+
+    # 接入层
+    comp(3.8, 4.8, 3.2, 0.52, ['Nginx 反向代理（生产）', 'HTTPS 终止 / 负载均衡'], fc='#EBEBEB', ec='#666666')
+    comp(8.8, 4.8, 3.2, 0.52, ['Vite Proxy（开发）', '/api  →  localhost:8080'], fc='#EBEBEB', ec='#666666')
+
+    # 服务层
+    comp(2.5, 3.15, 3.2, 1.15, ['Spring Boot 3.4.0', '24 个 REST 控制器', 'context-path: /api/v1', 'Port: 8080'], fc='#E8E8E8', ec='#555555')
+    comp(6.3, 3.15, 2.4, 1.15, ['WebSocket 实时通信', '私信推送 / 通知推送'], fc='#E0E0E0', ec='#666666')
+    comp(9.5, 3.15, 2.5, 1.15, ['阿里云 OSS 对象存储', 'DeepSeek API', 'AI 助手功能'], fc='#DADADA', ec='#777777')
+
+    # 数据层
+    comp(2.5, 1.45, 2.8, 1.1, ['MySQL 8.0', '17 张核心业务表', '逻辑删除 + 自动填充'], fc='#D8D8D8', ec='#444444')
+    comp(6.3, 1.45, 2.8, 1.1, ['Redis 7.0', '验证码 TTL 缓存', '高频查询缓存'], fc='#D0D0D0', ec='#555555')
+    comp(10.0, 1.45, 2.4, 1.1, ['MyBatisPlus 持久层', 'JPA 实体共用', '双 ORM 并存'], fc='#CCCCCC', ec='#666666')
+
+    # 垂直连接箭头（层间）
+    for x in [3.0, 7.5]:
+        arrow(ax, x, 5.86, x, 5.07, color=G_ARR)
+    for x in [3.8, 8.8]:
+        arrow(ax, x, 4.54, x, 3.73, color=G_ARR)
+    for x in [2.5, 6.3]:
+        arrow(ax, x, 2.73, x, 2.0, color=G_ARR)
+
+    # 拦截器链标注（在服务层右侧用小字注明）
+    note_x = 12.1
+    for (ny, txt) in [(3.55, 'AdminAuthInterceptor  /admin/**'),
+                      (3.15, 'OptionalJwtInterceptor  (游客可访问)'),
+                      (2.75, 'JwtAuthInterceptor  (强制登录)')]:
+        ax.text(note_x, ny, txt, ha='left', va='center',
+                fontsize=6.5, color='#555', style='italic', zorder=5)
+    ax.plot([11.7, 12.05], [3.73, 3.73], '-', color='#AAAAAA', lw=0.8, zorder=2)
+    ax.text(11.88, 3.78, '拦截器链', ha='center', fontsize=6.5, color='#777', zorder=5)
+
+    save(fig, '09_architecture.png')
+
+
+# ══════════════════════════════════════════════════════════════
 # 运行所有
 # ══════════════════════════════════════════════════════════════
 if __name__ == '__main__':
@@ -726,4 +798,5 @@ if __name__ == '__main__':
     draw_task_state()
     draw_seq_oss()
     draw_seq_token()
+    draw_architecture()
     print("全部完成！")

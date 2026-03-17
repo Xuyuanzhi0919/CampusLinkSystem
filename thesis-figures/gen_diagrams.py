@@ -320,76 +320,89 @@ def draw_er():
 # 3. 用户注册登录流程图
 # ══════════════════════════════════════════════════════════════
 def draw_login_flow():
-    fig, ax = plt.subplots(figsize=(7, 12))
-    ax.set_xlim(0, 7); ax.set_ylim(0, 12)
+    # 宽度 11，注册列 x=2.2，登录列 x=7.8，错误框严格在各自半区内
+    fig, ax = plt.subplots(figsize=(11, 11))
+    ax.set_xlim(0, 11); ax.set_ylim(3.3, 12)
     ax.axis('off')
     ax.set_facecolor(G_BG)
-    ax.text(3.5, 11.6, '用户注册 / 登录流程图', ha='center', fontsize=12, weight='bold')
+    ax.text(5.5, 11.65, '用户注册 / 登录流程图', ha='center', fontsize=12, weight='bold')
 
-    def rbox(x, y, text, **kw): box(ax, x, y, 2.4, 0.55, text, **kw)
-    def dmd(x, y, text): diamond(ax, x, y, 2.4, 0.55, text)
+    LX, RX = 2.2, 7.8   # 注册列、登录列中心
+    DIV = 5.5             # 分隔线
+    BW, BH = 2.4, 0.52
+    DW, DH = 2.4, 0.56
+
+    def rbox(x, y, text, **kw): box(ax, x, y, BW, BH, text, **kw)
+    def dmd(x, y, text): diamond(ax, x, y, DW, DH, text)
     def term(x, y, text):
-        e = mpatches.Ellipse((x, y), 2.0, 0.5, fc=G_TERM_F, ec=G_TERM_E, lw=1.2, zorder=3)
+        e = mpatches.Ellipse((x, y), 2.1, 0.46, fc=G_TERM_F, ec=G_TERM_E, lw=1.2, zorder=3)
         ax.add_patch(e)
         ax.text(x, y, text, ha='center', va='center', fontsize=9, weight='bold', zorder=4)
+    def err_r(x, y, text):   # 右侧小错误框
+        box(ax, x, y, 1.8, BH, text, fc=G_ERR_F, ec=G_ERR_E, fontsize=8)
 
-    # ——— 注册流程 (左列 x=1.8) ———
-    ax.text(1.8, 11.2, '注  册', ha='center', fontsize=10, weight='bold', color='#333333')
-    term(1.8, 10.8, '开 始')
-    arrow(ax, 1.8, 10.55, 1.8, 10.1)
-    rbox(1.8, 9.85, '填写用户名/密码/邮箱')
-    arrow(ax, 1.8, 9.57, 1.8, 9.1)
-    rbox(1.8, 8.85, '发送邮箱验证码\n(Redis TTL 5min)', fontsize=8)
-    arrow(ax, 1.8, 8.57, 1.8, 8.1)
-    dmd(1.8, 7.85, '验证码是否\n正确且未过期?')
-    # No
-    arrow(ax, 2.5, 7.85, 3.4, 7.85, label='否')
-    rbox(4.3, 7.85, '返回错误提示', fc=G_ERR_F, ec=G_ERR_E)
-    arrow(ax, 4.3, 8.12, 4.3, 8.85)
-    arrow(ax, 4.3, 8.85, 2.82, 8.85)
-    # Yes
-    arrow(ax, 1.8, 7.57, 1.8, 7.1, label='是')
-    dmd(1.8, 6.85, '用户名是否\n已存在?')
-    arrow(ax, 2.5, 6.85, 3.4, 6.85, label='是')
-    rbox(4.3, 6.85, '返回冲突错误', fc=G_ERR_F, ec=G_ERR_E)
-    arrow(ax, 1.8, 6.57, 1.8, 6.1, label='否')
-    rbox(1.8, 5.85, 'MD5 哈希密码')
-    arrow(ax, 1.8, 5.57, 1.8, 5.1)
-    rbox(1.8, 4.85, '创建用户记录\n发放注册积分+100', fontsize=8)
-    arrow(ax, 1.8, 4.57, 1.8, 4.1)
-    term(1.8, 3.85, '注册成功')
+    # ══ 注册流程（左列）══
+    ax.text(LX, 11.3, '注  册', ha='center', fontsize=10, weight='bold', color='#333333')
+    term(LX, 10.9, '开 始')
+    arrow(ax, LX, 10.66, LX, 10.18)
+    rbox(LX, 9.92, '填写用户名/密码/邮箱')
+    arrow(ax, LX, 9.66, LX, 9.18)
+    rbox(LX, 8.92, '发送邮箱验证码\n(Redis TTL 5min)', fontsize=8)
+    arrow(ax, LX, 8.66, LX, 8.18)
+    dmd(LX, 7.9, '验证码是否\n正确且未过期?')
+    # 否 → 右侧错误框（x=4.3，不超过分隔线 5.5）
+    ax.annotate('', xy=(3.4, 7.9), xytext=(LX+DW/2, 7.9),
+                arrowprops=dict(arrowstyle='->', color=G_ARR, lw=1.2), zorder=2)
+    ax.text(LX+DW/2+0.08, 7.96, '否', ha='left', fontsize=8, color='#333', zorder=5)
+    err_r(4.3, 7.9, '验证码错误')
+    # 回环：从错误框顶部向上回到发送验证码框
+    ax.annotate('', xy=(4.3, 8.92), xytext=(4.3, 8.17),
+                arrowprops=dict(arrowstyle='->', color=G_ARR, lw=1.0), zorder=2)
+    ax.annotate('', xy=(LX+BW/2, 8.92), xytext=(4.3, 8.92),
+                arrowprops=dict(arrowstyle='->', color=G_ARR, lw=1.0), zorder=2)
+    # 是 ↓
+    arrow(ax, LX, 7.62, LX, 7.14, label='是')
+    dmd(LX, 6.86, '用户名是否\n已存在?')
+    # 是 → 右侧错误框
+    ax.annotate('', xy=(3.4, 6.86), xytext=(LX+DW/2, 6.86),
+                arrowprops=dict(arrowstyle='->', color=G_ARR, lw=1.2), zorder=2)
+    ax.text(LX+DW/2+0.08, 6.92, '是', ha='left', fontsize=8, color='#333', zorder=5)
+    err_r(4.3, 6.86, '用户名冲突')
+    # 否 ↓
+    arrow(ax, LX, 6.58, LX, 6.1, label='否')
+    rbox(LX, 5.84, 'MD5 哈希密码')
+    arrow(ax, LX, 5.58, LX, 5.1)
+    rbox(LX, 4.84, '创建用户记录\n发放注册积分+100', fontsize=8)
+    arrow(ax, LX, 4.58, LX, 4.1)
+    term(LX, 3.84, '注册成功')
 
-    # ——— 登录流程 (右列 x=5.2) ———
-    ax.text(5.2, 11.2, '登  录', ha='center', fontsize=10, weight='bold', color='#333333')
-    term(5.2, 10.8, '开 始')
-    arrow(ax, 5.2, 10.55, 5.2, 10.1)
-    rbox(5.2, 9.85, '输入用户名 / 密码')
-    arrow(ax, 5.2, 9.57, 5.2, 9.1)
-    dmd(5.2, 8.85, '用户是否\n存在?')
-    arrow(ax, 5.2, 8.57, 5.2, 8.1, label='是')
-    dmd(5.2, 7.85, '密码哈希\n是否匹配?')
-    arrow(ax, 5.2, 7.57, 5.2, 7.1, label='是')
-    dmd(5.2, 6.85, '账号是否\n正常(status=1)?')
-    arrow(ax, 5.2, 6.57, 5.2, 6.1, label='是')
-    rbox(5.2, 5.85, '生成 AccessToken(2h)\n+ RefreshToken(7d)', fontsize=8)
-    arrow(ax, 5.2, 5.57, 5.2, 5.1)
-    rbox(5.2, 4.85, '更新最后登录时间\n返回双Token+用户信息', fontsize=8)
-    arrow(ax, 5.2, 4.57, 5.2, 4.1)
-    term(5.2, 3.85, '登录成功')
+    # ══ 登录流程（右列）══
+    ax.text(RX, 11.3, '登  录', ha='center', fontsize=10, weight='bold', color='#333333')
+    term(RX, 10.9, '开 始')
+    arrow(ax, RX, 10.66, RX, 10.18)
+    rbox(RX, 9.92, '输入用户名 / 密码')
+    arrow(ax, RX, 9.66, RX, 9.18)
+    dmd(RX, 8.9, '用户是否存在?')
+    arrow(ax, RX, 8.62, RX, 8.14, label='是')
+    dmd(RX, 7.86, '密码哈希\n是否匹配?')
+    arrow(ax, RX, 7.58, RX, 7.1, label='是')
+    dmd(RX, 6.82, '账号是否\n正常(status=1)?')
+    arrow(ax, RX, 6.54, RX, 6.06, label='是')
+    rbox(RX, 5.8, '生成 AccessToken(2h)\n+ RefreshToken(7d)', fontsize=8)
+    arrow(ax, RX, 5.54, RX, 5.06)
+    rbox(RX, 4.8, '更新最后登录时间\n返回双Token+用户信息', fontsize=8)
+    arrow(ax, RX, 4.54, RX, 4.06)
+    term(RX, 3.8, '登录成功')
 
-    # 失败分支
-    for (fx, fy, lbl, txt) in [
-        (5.2, 8.85, '否', '用户不存在'),
-        (5.2, 7.85, '否', '密码错误'),
-        (5.2, 6.85, '否', '账号已封禁'),
-    ]:
-        err_x = fx + 1.5
-        arrow(ax, fx+1.2, fy, err_x+0.6, fy, label=lbl)
-        ax.text(err_x+1.1, fy, txt, ha='left', va='center', fontsize=7.5,
-                color='#666666', zorder=4)
+    # 登录失败分支（文字标注向右，不超出画布）
+    for (fy, txt) in [(8.9, '用户不存在'), (7.86, '密码错误'), (6.82, '账号已封禁')]:
+        ax.annotate('', xy=(10.5, fy), xytext=(RX+DW/2, fy),
+                    arrowprops=dict(arrowstyle='->', color=G_ARR, lw=1.1), zorder=2)
+        ax.text(RX+DW/2+0.08, fy+0.1, '否', ha='left', fontsize=8, color='#333', zorder=5)
+        ax.text(10.55, fy, txt, ha='left', va='center', fontsize=8, color='#555', zorder=4)
 
     # 分隔线
-    ax.plot([3.5, 3.5], [3.5, 11.4], '--', color='#AAAAAA', lw=1, zorder=1)
+    ax.plot([DIV, DIV], [3.6, 11.45], '--', color='#AAAAAA', lw=1, zorder=1)
 
     save(fig, '03_login_flow.png')
 

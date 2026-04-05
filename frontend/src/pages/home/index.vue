@@ -332,16 +332,42 @@ onPullDownRefresh(() => {
 onMounted(() => {
   // 监听直接打开登录弹窗事件
   uni.$on('show-login-modal', () => {
-    showLoginModal.value = true
+    // #ifdef H5
+    // Web端（桌面端）：显示弹窗
+    if (window.innerWidth > 768) {
+      showLoginModal.value = true
+    } else {
+      // 移动端H5：跳转到登录页
+      uni.navigateTo({ url: '/pages/auth/login' })
+    }
+    // #endif
+
+    // #ifndef H5
+    // 非H5端（小程序等）：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+    // #endif
   })
 
   // 监听登录引导弹窗事件（带操作类型和文案）
   uni.$on('show-login-guide', (data: any) => {
-    loginGuideActionType.value = data?.actionType || 'default'
-    loginGuideTitle.value = data?.title || '需要登录'
-    loginGuideContent.value = data?.content || '登录后即可继续操作'
-    loginGuideCallback = data?.onSuccess || null
-    showLoginGuideModal.value = true
+    // #ifdef H5
+    // Web端（桌面端）：显示弹窗
+    if (window.innerWidth > 768) {
+      loginGuideActionType.value = data?.actionType || 'default'
+      loginGuideTitle.value = data?.title || '需要登录'
+      loginGuideContent.value = data?.content || '登录后即可继续操作'
+      loginGuideCallback = data?.onSuccess || null
+      showLoginGuideModal.value = true
+    } else {
+      // 移动端H5：跳转到登录页
+      uni.navigateTo({ url: '/pages/auth/login' })
+    }
+    // #endif
+
+    // #ifndef H5
+    // 非H5端（小程序等）：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+    // #endif
   })
 })
 

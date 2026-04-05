@@ -353,6 +353,22 @@
       </view>
     </view>
 
+    <!-- 登录引导弹窗 -->
+    <ClLoginGuideModal
+      v-model:visible="showLoginGuide"
+      :action-type="loginGuideActionType"
+      :title="loginGuideTitle"
+      :content="loginGuideContent"
+      @confirm="handleLoginGuideConfirm"
+    />
+
+    <!-- 登录弹窗 -->
+    <LoginModal
+      :visible="showLoginModal"
+      @update:visible="showLoginModal = $event"
+      @login-success="handleLoginSuccess"
+    />
+
   </view>
 </template>
 
@@ -381,6 +397,8 @@ import {
 import { addFavorite, removeFavorite } from '@/services/favorite'
 import { TaskStatus, type TaskDetail, type TaskType } from '@/types/task'
 import { useUserStore } from '@/stores/user'
+import { ClLoginGuideModal } from '@/components/cl'
+import LoginModal from '@/components/LoginModal.vue'
 
 const userStore = useUserStore()
 const task = ref<TaskDetail | null>(null)
@@ -388,6 +406,13 @@ const loading = ref(true)
 const displayLocation = ref('')
 const locationLoading = ref(false)
 const isCoordLocation = ref(false)
+
+// 登录引导弹窗状态
+const showLoginGuide = ref(false)
+const loginGuideActionType = ref('default')
+const loginGuideTitle = ref('需要登录')
+const loginGuideContent = ref('登录后即可继续操作')
+const showLoginModal = ref(false)
 
 const AVATAR_COLORS = ['#1677FF', '#52C41A', '#FF6B35', '#722ED1', '#EB2F96', '#13C2C2', '#FA8C16']
 const getAvatarBg = (name: string) => {
@@ -600,6 +625,31 @@ const loadTaskDetail = async (id: number) => {
     }
     calcCountdown()
   } catch (e: any) {
+    // 401 由 request.ts 统一处理（引导登录），此处不渲染错误页以避免闪烁
+    const msg = e?.message || ''
+    if (msg.includes('未授权') || msg.includes('请先登录') || e?.statusCode === 401) {
+      loading.value = false
+
+      // #ifdef H5
+      // Web端（桌面端）：显示弹窗
+      if (window.innerWidth > 768) {
+        loginGuideActionType.value = 'default'
+        loginGuideTitle.value = '需要登录'
+        loginGuideContent.value = '登录后即可查看任务详情'
+        showLoginGuide.value = true
+      } else {
+        // 移动端H5：跳转到登录页
+        uni.navigateTo({ url: '/pages/auth/login' })
+      }
+      // #endif
+
+      // #ifndef H5
+      // 非H5端（小程序等）：跳转到登录页
+      uni.navigateTo({ url: '/pages/auth/login' })
+      // #endif
+
+      return
+    }
     uni.showToast({ title: e.message || '加载失败', icon: 'none' })
     task.value = null
   } finally {
@@ -701,16 +751,84 @@ const onMenuReport = () => {
   uni.navigateTo({ url: `/pages/report/index?type=task&id=${task.value?.tid}` })
 }
 
+// 登录引导弹窗处理
+const handleLoginGuideConfirm = () => {
+  showLoginGuide.value = false
+
+  // #ifdef H5
+  // Web端（桌面端）：显示登录弹窗
+  if (window.innerWidth > 768) {
+    showLoginModal.value = true
+  } else {
+    // 移动端H5：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+  }
+  // #endif
+
+  // #ifndef H5
+  // 非H5端（小程序等）：跳转到登录页
+  uni.navigateTo({ url: '/pages/auth/login' })
+  // #endif
+}
+
+const handleLoginSuccess = () => {
+  showLoginModal.value = false
+  // 登录成功后重新加载详情
+  const pages = getCurrentPages()
+  const options = (pages[pages.length - 1] as any)?.options || {}
+  if (options.id) loadTaskDetail(Number(options.id))
+}
+
 onMounted(() => {
   const pages = getCurrentPages()
   const options = (pages[pages.length - 1] as any)?.options || {}
   if (options.id) loadTaskDetail(Number(options.id))
   else loading.value = false
   countdownTimer = setInterval(calcCountdown, 60000)
+
+  // 监听登录引导事件
+  uni.$on('show-login-guide', (data: any) => {
+    loginGuideActionType.value = data?.actionType || 'default'
+    loginGuideTitle.value = data?.title || '需要登录'
+    loginGuideContent.value = data?.content || '登录后即可继续操作'
+
+    // #ifdef H5
+    // Web端（桌面端）：显示弹窗
+    if (window.innerWidth > 768) {
+      showLoginGuide.value = true
+    } else {
+      // 移动端H5：跳转到登录页
+      uni.navigateTo({ url: '/pages/auth/login' })
+    }
+    // #endif
+
+    // #ifndef H5
+    // 非H5端（小程序等）：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+    // #endif
+  })
+  uni.$on('show-login-modal', () => {
+    // #ifdef H5
+    // Web端（桌面端）：显示弹窗
+    if (window.innerWidth > 768) {
+      showLoginModal.value = true
+    } else {
+      // 移动端H5：跳转到登录页
+      uni.navigateTo({ url: '/pages/auth/login' })
+    }
+    // #endif
+
+    // #ifndef H5
+    // 非H5端（小程序等）：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+    // #endif
+  })
 })
 
 onUnmounted(() => {
   if (countdownTimer) clearInterval(countdownTimer)
+  uni.$off('show-login-guide')
+  uni.$off('show-login-modal')
 })
 </script>
 

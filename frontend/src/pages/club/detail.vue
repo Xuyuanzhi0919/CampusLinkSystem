@@ -1008,17 +1008,57 @@ onLoad((options) => {
 // 引导弹窗点击"去登录"→ 打开登录弹窗
 const handleLoginGuideConfirm = () => {
   showLoginGuide.value = false
-  showLoginModal.value = true
+
+  // #ifdef H5
+  // Web端（桌面端）：显示登录弹窗
+  if (window.innerWidth > 768) {
+    showLoginModal.value = true
+  } else {
+    // 移动端H5：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+  }
+  // #endif
+
+  // #ifndef H5
+  // 非H5端（小程序等）：跳转到登录页
+  uni.navigateTo({ url: '/pages/auth/login' })
+  // #endif
 }
 
 // 保存 handler 引用，确保 off 时精准移除，不影响其他页面的监听器
 const onShowLoginGuide = (data: any) => {
-  loginGuideActionType.value = data?.actionType || 'join'
-  showLoginGuide.value = true
+  // #ifdef H5
+  // Web端（桌面端）：显示弹窗
+  if (window.innerWidth > 768) {
+    loginGuideActionType.value = data?.actionType || 'join'
+    showLoginGuide.value = true
+  } else {
+    // 移动端H5：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+  }
+  // #endif
+
+  // #ifndef H5
+  // 非H5端（小程序等）：跳转到登录页
+  uni.navigateTo({ url: '/pages/auth/login' })
+  // #endif
 }
 const onShowLoginModal = () => {
-  showLoginGuide.value = false
-  showLoginModal.value = true
+  // #ifdef H5
+  // Web端（桌面端）：显示弹窗
+  if (window.innerWidth > 768) {
+    showLoginGuide.value = false
+    showLoginModal.value = true
+  } else {
+    // 移动端H5：跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
+  }
+  // #endif
+
+  // #ifndef H5
+  // 非H5端（小程序等）：跳转到登录页
+  uni.navigateTo({ url: '/pages/auth/login' })
+  // #endif
 }
 
 onMounted(() => {

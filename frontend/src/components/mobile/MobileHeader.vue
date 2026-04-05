@@ -86,11 +86,8 @@ const handleSearch = () => {
 // 通知
 const handleMessage = () => {
   if (!userStore.isLoggedIn) {
-    uni.$emit('show-login-guide', {
-      actionType: 'message',
-      title: '查看通知需要登录',
-      content: '登录后可查看点赞、评论等系统通知'
-    })
+    // 移动端：直接跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
     return
   }
 
@@ -102,7 +99,8 @@ const handleMessage = () => {
 // 用户
 const handleUser = () => {
   if (!userStore.isLoggedIn) {
-    uni.$emit('show-login-modal')
+    // 移动端：直接跳转到登录页
+    uni.navigateTo({ url: '/pages/auth/login' })
     return
   }
 
